@@ -75,7 +75,7 @@ if DAP4_DEFINED
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
 	D4EnumDefsTest D4GroupTest D4ParserSax2Test D4AttributesTest D4EnumTest \
 	chunked_iostream_test D4AsyncDocTest DMRTest D4FilterClauseTest \
-	D4SequenceTest
+	D4SequenceTest DmrRoundTripTest DmrToDap2Test
 endif
 
 else
@@ -218,6 +218,12 @@ D4AsyncDocTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DMRTest_SOURCES = DMRTest.cc $(TEST_SRC)
 DMRTest_LDADD = ../libdap.la $(AM_LDADD)
+
+DmrRoundTripTest_SOURCES = DmrRoundTripTest.cc $(TEST_SRC)
+DmrRoundTripTest_LDADD = ../libdap.la $(AM_LDADD)
+
+DmrToDap2Test_SOURCES = DmrToDap2Test.cc $(TEST_SRC)
+DmrToDap2Test_LDADD = ../libdap.la $(AM_LDADD)
 
 D4FilterClauseTest_SOURCES = D4FilterClauseTest.cc
 D4FilterClauseTest_LDADD = ../libdap.la $(AM_LDADD)

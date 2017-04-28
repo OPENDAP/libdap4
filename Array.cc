@@ -35,7 +35,7 @@
 
 #include "config.h"
 
-#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include <algorithm>
 #include <functional>
@@ -272,7 +272,7 @@ bool Array::is_dap2_grid(){
 
 BaseType
 *Array::transform_to_dap2(){
-    cerr << __func__ << "() - BEGIN Array '"<< name() << "'" << endl;
+    DBG(cerr << __func__ << "() - BEGIN Array '"<< name() << "'" << endl;);
 
     BaseType *dest;
     if(is_dap4()){
@@ -290,26 +290,43 @@ BaseType
                 D4Map *d4_map =  (*i);
                 Array *d4_map_array = const_cast<Array*>(d4_map->array());
                 Array *d2_map_array = (Array *) d4_map_array->transform_to_dap2();
-                g->add_map(d2_map_array,false);
-                AttrTable at = d2_map_array->get_attr_table();
-                DBG( cerr << __func__ << "() - " <<
-                    "DAS For Grid Map '" << d2_map_array->name() << "':" << endl;
-                     at.print(cerr); );
+                if(d2_map_array){
+                    g->add_map(d2_map_array,false);
+                    AttrTable at = d2_map_array->get_attr_table();
+                    DBG( cerr << __func__ << "() - " <<
+                        "DAS For Grid Map '" << d2_map_array->name() << "':" << endl;
+                         at.print(cerr); );
+                }
             }
         }
         else {
             DBG( cerr << __func__ << "() - Array '"<< name() << " is not a Grid!"  << endl);
-            dest = this->ptr_duplicate();
-            // convert the d4 attributes to a dap2 attribute table.
-            AttrTable *attrs = this->attributes()->get_AttrTable();
-            attrs->set_name(name());
-            dest->set_attr_table(*attrs);
-            dest->set_is_dap4(false);
-            AttrTable at = dest->get_attr_table();
-            DBG( cerr << __func__ << "() - " <<
-                "DAS for new Array '" << dest->name() << "':" << endl;
-                at.print(cerr); )
+            BaseType *proto = this->prototype();
+            switch(proto->type()){
+            case dods_enum_c:
+            case dods_opaque_c:
+            {
+                dest = NULL;
 
+
+                break;
+            }
+            default:
+            {
+                dest = this->ptr_duplicate();
+                // convert the d4 attributes to a dap2 attribute table.
+                AttrTable *attrs = this->attributes()->get_AttrTable();
+                attrs->set_name(name());
+                dest->set_attr_table(*attrs);
+                dest->set_is_dap4(false);
+                AttrTable at = dest->get_attr_table();
+                DBG( cerr << __func__ << "() - " <<
+                    "DAS for new Array '" << dest->name() << "':" << endl;
+                    at.print(cerr); )
+
+                break;
+            }
+            }
         }
 
     }
@@ -317,7 +334,7 @@ BaseType
         dest = this->ptr_duplicate();
     }
     // attrs->print(cerr,"",true);
-    cerr << __func__ << "() - END Array '"<< name() << "'" << endl;
+    DBG( cerr << __func__ << "() - END Array '"<< name() << "'" << endl;);
 
     return dest;
 }

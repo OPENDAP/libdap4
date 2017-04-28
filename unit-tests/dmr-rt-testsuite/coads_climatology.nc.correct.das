@@ -13,8 +13,7 @@ Attributes {
             String modulo " ";
         }
         COADSY {
-            String units "degrees_east";
-            String modulo " ";
+            String units "degrees_north";
             String point_spacing "even";
         }
         COADSX {
@@ -37,8 +36,7 @@ Attributes {
             String modulo " ";
         }
         COADSY {
-            String units "degrees_east";
-            String modulo " ";
+            String units "degrees_north";
             String point_spacing "even";
         }
         COADSX {
@@ -61,8 +59,7 @@ Attributes {
             String modulo " ";
         }
         COADSY {
-            String units "degrees_east";
-            String modulo " ";
+            String units "degrees_north";
             String point_spacing "even";
         }
         COADSX {
@@ -85,8 +82,7 @@ Attributes {
             String modulo " ";
         }
         COADSY {
-            String units "degrees_east";
-            String modulo " ";
+            String units "degrees_north";
             String point_spacing "even";
         }
         COADSX {

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="3B42.980909.5.HDF">
+    <Dimension name="scan" size="1"/>
+    <Dimension name="longitude" size="360"/>
+    <Dimension name="latitude" size="80"/>
+    <Structure name="DATA_GRANULE">
+        <Structure name="PlanetaryGrid">
+            <Float32 name="percipitate">
+                <Dim name="/scan"/>
+                <Dim name="/longitude"/>
+                <Dim name="/latitude"/>
+            </Float32>
+            <Float32 name="relError">
+                <Dim name="/scan"/>
+                <Dim name="/longitude"/>
+                <Dim name="/latitude"/>
+            </Float32>
+        </Structure>
+    </Structure>
+</Dataset>

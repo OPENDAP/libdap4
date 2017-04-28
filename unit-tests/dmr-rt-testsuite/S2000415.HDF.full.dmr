@@ -1,0 +1,812 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="S2000415.HDF">
+    <Dimension name="row" size="458"/>
+    <Dimension name="WVC" size="24"/>
+    <Dimension name="position" size="4"/>
+    <Structure name="NSCAT Rev 20">
+        <Int16 name="WVC_Lat">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Attribute name="long_name" type="String">
+                <Value>latitude</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>deg</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>0.01</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>22</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="Int16">
+                <Value>-9000</Value>
+                <Value>7771</Value>
+            </Attribute>
+        </Int16>
+        <UInt16 name="WVC_Lon">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Attribute name="long_name" type="String">
+                <Value>longitude</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>deg</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>0.01</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>22</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="UInt16">
+                <Value>0</Value>
+                <Value>31242</Value>
+            </Attribute>
+        </UInt16>
+        <Byte name="Num_Sigma0">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Attribute name="long_name" type="String">
+                <Value>The total number of sigma-0 measurements</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>counts</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>1</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>21</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="Byte">
+                <Value>0</Value>
+                <Value>19</Value>
+            </Attribute>
+        </Byte>
+        <Byte name="Num_Beam_12">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Attribute name="long_name" type="String">
+                <Value>The total number of sigma-0s received from beam 1 or 2</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>counts</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>1</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>21</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="Byte">
+                <Value>0</Value>
+                <Value>6</Value>
+            </Attribute>
+        </Byte>
+        <Byte name="Num_Beam_34">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Attribute name="long_name" type="String">
+                <Value>The total number of sigma-0s received from beam 3 or 4</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>counts</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>1</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>21</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="Byte">
+                <Value>0</Value>
+                <Value>6</Value>
+            </Attribute>
+        </Byte>
+        <Byte name="Num_Beam_56">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Attribute name="long_name" type="String">
+                <Value>The total number of sigma-0s received from beam 5 or 6</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>counts</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>1</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>21</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="Byte">
+                <Value>0</Value>
+                <Value>6</Value>
+            </Attribute>
+        </Byte>
+        <Byte name="Num_Beam_78">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Attribute name="long_name" type="String">
+                <Value>The total number of sigma-0s received from beam 7 or 8</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>counts</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>1</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>21</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="Byte">
+                <Value>0</Value>
+                <Value>6</Value>
+            </Attribute>
+        </Byte>
+        <Byte name="WVC_Quality_Flag">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Attribute name="long_name" type="String">
+                <Value>WVC Quality Flag</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>1</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>21</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="Byte">
+                <Value>0</Value>
+                <Value>3</Value>
+            </Attribute>
+        </Byte>
+        <UInt16 name="Mean_Wind">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Attribute name="long_name" type="String">
+                <Value>Mean Wind Speed</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>m/s</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>0.01</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>23</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="UInt16">
+                <Value>0</Value>
+                <Value>2374</Value>
+            </Attribute>
+        </UInt16>
+        <UInt16 name="Wind_Speed">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Dim name="/position"/>
+            <Attribute name="long_name" type="String">
+                <Value>Wind speed associated with a WVC</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>m/s</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>0.01</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>23</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="UInt16">
+                <Value>0</Value>
+                <Value>2571</Value>
+            </Attribute>
+        </UInt16>
+        <UInt16 name="Wind_Dir">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Dim name="/position"/>
+            <Attribute name="long_name" type="String">
+                <Value>Wind direction solution associated with a WVC</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>deg</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>0.01</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>23</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="UInt16">
+                <Value>0</Value>
+                <Value>35997</Value>
+            </Attribute>
+        </UInt16>
+        <UInt16 name="Error_Speed">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Dim name="/position"/>
+            <Attribute name="long_name" type="String">
+                <Value>Uncertainty estimated for the wind speed value</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>m/s</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>0.01</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>23</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="UInt16">
+                <Value>0</Value>
+                <Value>2410</Value>
+            </Attribute>
+        </UInt16>
+        <UInt16 name="Error_Dir">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Dim name="/position"/>
+            <Attribute name="long_name" type="String">
+                <Value>Uncertainty estimated for the wind direction value</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>deg</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>0.01</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>23</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="UInt16">
+                <Value>0</Value>
+                <Value>2435</Value>
+            </Attribute>
+        </UInt16>
+        <Int16 name="MLE_Likelihood">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Dim name="/position"/>
+            <Attribute name="long_name" type="String">
+                <Value>Relative likelihood that a given win vector solution is correct</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>0.1</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>22</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="Int16">
+                <Value>-32768</Value>
+                <Value>2825</Value>
+            </Attribute>
+        </Int16>
+        <Byte name="Num_Ambigs">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Attribute name="long_name" type="String">
+                <Value>Number of ambiguous wind vectors reported for a given cell</Value>
+            </Attribute>
+            <Attribute name="units" type="String">
+                <Value>counts</Value>
+            </Attribute>
+            <Attribute name="scale_factor" type="Float64">
+                <Value>1</Value>
+            </Attribute>
+            <Attribute name="scale_factor_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="add_offset_err" type="Float64">
+                <Value>0</Value>
+            </Attribute>
+            <Attribute name="calibrated_nt" type="Int32">
+                <Value>21</Value>
+            </Attribute>
+            <Attribute name="valid_range" type="Byte">
+                <Value>0</Value>
+                <Value>4</Value>
+            </Attribute>
+        </Byte>
+        <Sequence name="SwathIndex">
+            <Structure name="begin">
+                <Int16 name="begin__0"/>
+            </Structure>
+        </Sequence>
+        <Sequence name="NSCAT L2">
+            <Structure name="Mean_Time">
+                <String name="Mean_Time__0"/>
+            </Structure>
+            <Structure name="Low_Wind_Speed_Flag">
+                <UInt32 name="Low_Wind_Speed_Flag__0"/>
+            </Structure>
+            <Structure name="High_Wind_Speed_Flag">
+                <UInt32 name="High_Wind_Speed_Flag__0"/>
+            </Structure>
+        </Sequence>
+        <Attribute name="WVC_Lat_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="WVC_Lat_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="WVC_Lon_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="WVC_Lon_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Num_Sigma0_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Num_Sigma0_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Num_Beam_12_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Num_Beam_12_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Num_Beam_34_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Num_Beam_34_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Num_Beam_56_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Num_Beam_56_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Num_Beam_78_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Num_Beam_78_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="WVC_Quality_Flag_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="WVC_Quality_Flag_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Mean_Wind_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Mean_Wind_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Wind_Speed_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Wind_Speed_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Wind_Speed_dim_2" type="Container">
+            <Attribute name="name" type="String">
+                <Value>position</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>position of the ambiguities</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Wind_Dir_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Wind_Dir_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Wind_Dir_dim_2" type="Container">
+            <Attribute name="name" type="String">
+                <Value>position</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>position of the ambiguities</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Error_Speed_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Error_Speed_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Error_Speed_dim_2" type="Container">
+            <Attribute name="name" type="String">
+                <Value>position</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>position of the ambiguities</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Error_Dir_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Error_Dir_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Error_Dir_dim_2" type="Container">
+            <Attribute name="name" type="String">
+                <Value>position</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>position of the ambiguities</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="MLE_Likelihood_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="MLE_Likelihood_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="MLE_Likelihood_dim_2" type="Container">
+            <Attribute name="name" type="String">
+                <Value>position</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>position of the ambiguities</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Num_Ambigs_dim_0" type="Container">
+            <Attribute name="name" type="String">
+                <Value>row</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC row</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="Num_Ambigs_dim_1" type="Container">
+            <Attribute name="name" type="String">
+                <Value>WVC</Value>
+            </Attribute>
+            <Attribute name="long_name" type="String">
+                <Value>WVC index</Value>
+            </Attribute>
+        </Attribute>
+    </Structure>
+    <Attribute name="HDF_GLOBAL" type="Container">
+        <Attribute name="Producer_Agency" type="String">
+            <Value>NASA\\000</Value>
+        </Attribute>
+        <Attribute name="Producer_Institution" type="String">
+            <Value>JPL\\000</Value>
+        </Attribute>
+        <Attribute name="Sensor_Name" type="String">
+            <Value>NSCAT\\000</Value>
+        </Attribute>
+        <Attribute name="Project_ID" type="String">
+            <Value>NSCAT\\000</Value>
+        </Attribute>
+        <Attribute name="SIS_ID" type="String">
+            <Value>597-512-24/1996-07-01\\000</Value>
+        </Attribute>
+        <Attribute name="Build_ID" type="String">
+            <Value>3.2.1/1996-11-05\\000</Value>
+        </Attribute>
+        <Attribute name="ADEOS_Data_Package_ID" type="String">
+            <Value>S2\\000</Value>
+        </Attribute>
+        <Attribute name="ADEOS_Data_Package_Type" type="String">
+            <Value>S\\000</Value>
+        </Attribute>
+        <Attribute name="Product_Creation_Time" type="String">
+            <Value>1996-318T01:35:16.000\\000</Value>
+        </Attribute>
+        <Attribute name="Data_Type" type="String">
+            <Value>L2\\000</Value>
+        </Attribute>
+        <Attribute name="Data_Status" type="String">
+            <Value>COMPLETE\\000</Value>
+        </Attribute>
+        <Attribute name="First_Rev_Number" type="Int32">
+            <Value>415</Value>
+        </Attribute>
+        <Attribute name="First_Rev_Eq_Crossing_Time" type="String">
+            <Value>1996-259T04:01:28.226\\000</Value>
+        </Attribute>
+        <Attribute name="First_Rev_Eq_Crossing_Lon" type="Float32">
+            <Value>279.983</Value>
+        </Attribute>
+        <Attribute name="First_Data_Time" type="String">
+            <Value>1996-259T03:43:48.945\\000</Value>
+        </Attribute>
+        <Attribute name="Last_Data_Time" type="String">
+            <Value>1996-259T05:09:48.997\\000</Value>
+        </Attribute>
+        <Attribute name="Num_Expected_Output_Records" type="Int32">
+            <Value>458</Value>
+        </Attribute>
+        <Attribute name="Num_Actual_Output_Records" type="Int32">
+            <Value>458</Value>
+        </Attribute>
+        <Attribute name="Ambig_Removal_Method" type="String">
+            <Value>Baseline used\\000</Value>
+        </Attribute>
+        <Attribute name="HDF_Build_ID" type="String">
+            <Value>JPL D-xxxxx 12/15/94\\000</Value>
+        </Attribute>
+        <Attribute name="HDF_SIS_ID" type="String">
+            <Value>JPL D-12060 12/15/94\\000</Value>
+        </Attribute>
+        <Attribute name="HDF_Conversion_Organization" type="String">
+            <Value>JPL PO.DAAC\\000</Value>
+        </Attribute>
+        <Attribute name="HDF_Conversion_Time" type="String">
+            <Value>1996-320T17:32:34       </Value>
+        </Attribute>
+        <Attribute name="Data_Format_Type" type="String">
+            <Value>HDF\\000</Value>
+        </Attribute>
+    </Attribute>
+</Dataset>

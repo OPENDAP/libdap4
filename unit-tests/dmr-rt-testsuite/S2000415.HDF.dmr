@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="S2000415.HDF">
+    <Dimension name="row" size="458"/>
+    <Dimension name="WVC" size="24"/>
+    <Dimension name="position" size="4"/>
+    <Structure name="NSCAT Rev 20">
+        <Int16 name="WVC_Lat">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+        </Int16>
+        <UInt16 name="WVC_Lon">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+        </UInt16>
+        <Byte name="Num_Sigma0">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+        </Byte>
+        <Byte name="Num_Beam_12">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+        </Byte>
+        <Byte name="Num_Beam_34">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+        </Byte>
+        <Byte name="Num_Beam_56">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+        </Byte>
+        <Byte name="Num_Beam_78">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+        </Byte>
+        <Byte name="WVC_Quality_Flag">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+        </Byte>
+        <UInt16 name="Mean_Wind">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+        </UInt16>
+        <UInt16 name="Wind_Speed">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Dim name="/position"/>
+        </UInt16>
+        <UInt16 name="Wind_Dir">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Dim name="/position"/>
+        </UInt16>
+        <UInt16 name="Error_Speed">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Dim name="/position"/>
+        </UInt16>
+        <UInt16 name="Error_Dir">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Dim name="/position"/>
+        </UInt16>
+        <Int16 name="MLE_Likelihood">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+            <Dim name="/position"/>
+        </Int16>
+        <Byte name="Num_Ambigs">
+            <Dim name="/row"/>
+            <Dim name="/WVC"/>
+        </Byte>
+        <Sequence name="SwathIndex">
+            <Structure name="begin">
+                <Int16 name="begin__0"/>
+            </Structure>
+        </Sequence>
+        <Sequence name="NSCAT L2">
+            <Structure name="Mean_Time">
+                <String name="Mean_Time__0"/>
+            </Structure>
+            <Structure name="Low_Wind_Speed_Flag">
+                <UInt32 name="Low_Wind_Speed_Flag__0"/>
+            </Structure>
+            <Structure name="High_Wind_Speed_Flag">
+                <UInt32 name="High_Wind_Speed_Flag__0"/>
+            </Structure>
+        </Sequence>
+    </Structure>
+</Dataset>

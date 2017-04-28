@@ -1,0 +1,22 @@
+Dataset {
+    Structure {
+        Int32 i;
+        Int32 j;
+    } s[dim1 = 5];
+    Structure {
+        Int32 i;
+        String a[3];
+    } t[dim1 = 5];
+    Structure {
+        Int32 i;
+        String a[3];
+    } u[dim1 = 5][dim2 = 3];
+    Structure {
+        Int32 i;
+        String a[3];
+        Structure {
+            Int32 i;
+            String a[3];
+        } w[dim1 = 5][dim2 = 3];
+    } v[dim1 = 5][2];
+} DMR_2.4;

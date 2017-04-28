@@ -22,6 +22,7 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#define DODS_DEBUG
 
 #include "config.h"
 
@@ -142,6 +143,14 @@ D4Opaque::value() const
 {
     return d_buf;
 }
+
+BaseType *
+D4Opaque::transform_to_dap2(){
+    DBG(cerr << __func__ << "() - BEGIN" << endl;);
+    DBG(cerr << __func__ << "() - END" << endl;);
+    return NULL;
+}
+
 
 void
 D4Opaque::print_val(ostream &out, string space, bool print_decl_p)

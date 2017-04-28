@@ -38,7 +38,7 @@
 #include <iostream>
 #include <sstream>
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 //#define DODS_DEBUG2
 
 #include "D4Group.h"
@@ -258,20 +258,31 @@ DDS *DMR::getDDS(DMR &dmr)
 
     set<string> shared_dim_candidates;
 
+    vector<BaseType *> dropped_vars;
     for (D4Group::Vars_iter i = root->var_begin(), e = root->var_end(); i != e; ++i)
     {
+        DBG( cerr << __func__ << "() - Processing top level variable '"<< (*i)->type_name() << " " <<  (*i)->name() << "' to DDS." << endl; );
         BaseType *new_var = (*i)->transform_to_dap2();
-        dds->add_var_nocopy(new_var);
-
-        Grid *grid = dynamic_cast <Grid *>(new_var);
-        if(grid){
-            Grid::Map_iter m = grid->map_begin();
-            for( ; m != grid->map_end() ; m++){
-                shared_dim_candidates.insert((*m)->name());
+        if(new_var!=0){
+            DBG( cerr << __func__ << "() - Adding variable name: '"<< new_var->name() << "' " <<
+                "type: " <<  new_var->type() << " " <<
+                "type_name: " << new_var->type_name() << " to DDS." << endl; );
+            dds->add_var_nocopy(new_var);
+            Grid *grid = dynamic_cast <Grid *>(new_var);
+            if(grid){
+                Grid::Map_iter m = grid->map_begin();
+                for( ; m != grid->map_end() ; m++){
+                    shared_dim_candidates.insert((*m)->name());
+                }
             }
+        }
+        else {
+            DBG( cerr << __func__ << "Adding variable '"<< (*i)->type_name() << " " <<  (*i)->name() << "' to drop list." << endl; );
+            dropped_vars.push_back((*i));
         }
     }
 
+#if 0
     // Now drop the top level shared dimensions used by Grids
     vector<string> shared_dims;
     for(DDS::Vars_iter j = dds->var_begin(); j!= dds->var_end(); j++){
@@ -284,13 +295,38 @@ DDS *DMR::getDDS(DMR &dmr)
     for(unsigned int k=0; k<shared_dims.size(); k++){
         dds->del_var(shared_dims[k]);
     }
-
+#endif
 
     // Now copy the global attributes
     AttrTable *target_at = &(dds->get_attr_table());
     // cerr << __func__ << "Top Level AttrTable: " << (void *)target_at << endl;
     D4Attributes::load_AttrTable(target_at,root->attributes());
     // cerr << __func__ << "Top Level AttrTable size: " << target_at->get_size() << endl;
+
+    if(!dropped_vars.empty()){
+        AttrTable *all_gone = new AttrTable();
+        all_gone->set_name("Dropped_Dap4_Variables");
+        for(unsigned int i=0; i<dropped_vars.size(); i++){
+            BaseType *bt = dropped_vars[i];
+            ostringstream oss;
+            oss << "variable_" << i ;
+            AttrTable *dropped_info = new AttrTable();
+            dropped_info->set_name(oss.str());
+            string type_name = bt->type_name();
+            if(bt->is_vector_type()){
+                Vector *v = dynamic_cast <Vector *>(bt);
+                type_name = type_name + " of " + v->prototype()->type_name();
+
+            }
+            dropped_info->append_attr("type","String",type_name);
+            dropped_info->append_attr("name","String",bt->name());
+            all_gone->append_container(dropped_info,oss.str());
+        }
+        target_at->append_container(all_gone,"Dropped_Dap4_Variables");
+    }
+
+
+
     return dds;
 }
 

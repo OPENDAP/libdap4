@@ -1,4 +1,7 @@
 Dataset {
+    Float64 COADSX[COADSX = 180];
+    Float64 COADSY[COADSY = 90];
+    Float64 TIME[TIME = 12];
     Grid {
       Array:
         Float32 SST[TIME = 12][COADSY = 90][COADSX = 180];

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="3B42.980909.5.HDF">
+    <Dimension name="scan" size="1"/>
+    <Dimension name="longitude" size="360"/>
+    <Dimension name="latitude" size="80"/>
+    <Structure name="DATA_GRANULE">
+        <Structure name="PlanetaryGrid">
+            <Float32 name="percipitate">
+                <Dim name="/scan"/>
+                <Dim name="/longitude"/>
+                <Dim name="/latitude"/>
+            </Float32>
+            <Float32 name="relError">
+                <Dim name="/scan"/>
+                <Dim name="/longitude"/>
+                <Dim name="/latitude"/>
+            </Float32>
+        </Structure>
+    </Structure>
+    <Attribute name="HDF_GLOBAL" type="Container"/>
+    <Attribute name="CoreMetadata" type="Container">
+        <Attribute name="OrbitNumber" type="Container">
+            <Attribute name="Value" type="Int32">
+                <Value>-9999</Value>
+            </Attribute>
+            <Attribute name="Data_Location" type="String">
+                <Value>PGE</Value>
+            </Attribute>
+            <Attribute name="Mandatory" type="String">
+                <Value>FALSE</Value>
+            </Attribute>
+        </Attribute>
+        <Attribute name="RangeBeginningDate" type="Container">
+            <Attribute name="Value" type="String">
+                <Value>1998/09/09</Value>
+            </Attribute>
+            <Attribute name="Data_Location" type="String">
+                <Value>PGE</Value>
+            </Attribute>
+            <Attribute name="Mandatory" type="String">
+                <Value>FALSE</Value>
+            </Attribute>
+        </Attribute>
+    </Attribute>
+    <Attribute name="percipitate" type="Container">
+        <Attribute name="name" type="String">
+            <Value>dim_0_scan</Value>
+            <Value>dim_1_longitude</Value>
+            <Value>dim_2_latitude</Value>
+        </Attribute>
+    </Attribute>
+    <Attribute name="relError" type="Container">
+        <Attribute name="name" type="String">
+            <Value>dim_0_scan</Value>
+            <Value>dim_1_longitude</Value>
+            <Value>dim_2_latitude</Value>
+        </Attribute>
+    </Attribute>
+</Dataset>
