@@ -78,6 +78,7 @@ public:
 
     virtual bool ops(BaseType *b, int op);
     virtual bool d4_ops(BaseType *b, int op);
+    virtual BaseType *transform_to_dap2();
 
     virtual void dump(ostream &strm) const ;
 };

@@ -303,6 +303,7 @@ DDS *DMR::getDDS(DMR &dmr)
     D4Attributes::load_AttrTable(target_at,root->attributes());
     // cerr << __func__ << "Top Level AttrTable size: " << target_at->get_size() << endl;
 
+#if 0
     if(!dropped_vars.empty()){
         AttrTable *all_gone = new AttrTable();
         all_gone->set_name("Dropped_Dap4_Variables");
@@ -324,6 +325,47 @@ DDS *DMR::getDDS(DMR &dmr)
         }
         target_at->append_container(all_gone,"Dropped_Dap4_Variables");
     }
+#endif
+
+    if(!dropped_vars.empty()){
+        AttrTable *dv_table = new AttrTable;
+        dv_table->set_name("dropped_dap4_vars");
+        for(unsigned int i=0; i<dropped_vars.size(); i++){
+            BaseType *bt = dropped_vars[i];
+            AttrTable *bt_attr_table = new AttrTable(bt->get_attr_table());
+            ostringstream vname;
+            vname << "var_" << i ;
+            bt_attr_table->set_name(vname.str());
+            bt_attr_table->append_attr("type","String", bt->type_name());
+
+            ostringstream name;
+            name << bt->name();
+            string type_name = bt->type_name();
+            if(bt->is_vector_type()){
+                Array *array = dynamic_cast <Array *>(bt);
+                if(array){
+                    type_name = array->prototype()->type_name();
+                    Array::Dim_iter d_iter = array->dim_begin();
+                    Array::Dim_iter end = array->dim_end();
+                    for( ; d_iter< end ; d_iter++){
+                        name << "[";
+                        string dim_name = (*d_iter).name;
+                        if(!dim_name.empty()){
+                            name << dim_name << "=" << (*d_iter).size;
+                        }
+                        else {
+                            name << (*d_iter).size;
+                        }
+                        name << "]";
+                    }
+                }
+            }
+            bt_attr_table->append_attr("name","String", name.str());
+            dv_table->append_container(bt_attr_table,bt_attr_table->get_name());
+        }
+        target_at->append_container(dv_table,dv_table->get_name());
+   }
+
 
 
 

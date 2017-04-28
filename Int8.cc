@@ -214,6 +214,26 @@ bool Int8::d4_ops(BaseType *b, int op)
     }
 }
 
+/** @brief DAP4 to DAP2 transform
+ *
+ * Return a DAP2 'copy' of the variable. In this
+ * case, since Int8 doesn't have a natural representation
+ * in DAP2 we are going to just call it a Byte .
+ * Why? Because SIZE.
+ *
+ * @param root The root group that should hold this new variable. Add Group-level
+ * stuff here (e.g., D4Dimensions).
+ * @param container Add the new variable to this container.
+ *
+ * @return A pointer to the transformed variable
+ */
+BaseType *
+Int8::transform_to_dap2()
+{
+    BaseType *bt = BaseType::transform_to_dap2();
+    bt->set_type(dods_byte_c);
+    return bt;
+}
 /**
  * @brief dumps information about this object
  *

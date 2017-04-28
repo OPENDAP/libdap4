@@ -67,8 +67,6 @@
 #include "util.h"
 #include "escaping.h"
 
-
-// #define DODS_DEBUG 1
 #include "debug.h"
 
 using namespace std;
@@ -233,13 +231,23 @@ BaseType::transform_to_dap4(D4Group */*root*/, Constructor */*container*/)
  * For the current BaseType, return a DAP2 'copy' of the variable.
  *
  * @note For most DAP4 types, in this implementation of DAP2 the corresponding
- * DAP4 type is the same. The different types are Sequences (which are D4Sequences
- * in the DAP4 implementation), Grids (which are coverages) and Arrays (which use
- * shared dimensions).
+ * DAP4 type is the same.
+ * These types have a different representations in DAP2 and DAP4:
+ *  Sequences (which are D4Sequences in the DAP4 implementation),
+ *  - Grids (which are semantically subsumed by coverages in DAP4)
+ *  - Arrays (which use shared dimensions in DAP4)
  *
- * @param root The root group that should hold this new variable. Add Group-level
- * stuff here (e.g., D4Dimensions).
- * @param container Add the new variable to this container.
+ *  Additionally DAP4 adds the following types:
+ *  - UInt8, Int8, and Char which map to Byte in DAP2.
+ *  - Int64, Unit64 which have no natural representation in DAP2.
+ *  - Opaque Possible Byte stuff[] plus metadata?
+ *  - Enum's can be represented as Int32.
+ *
+ *  - Groups, with the exception of the root group nmust
+ *    support two switchable behaviors:
+ *    - Become Structures.
+ *    - Flatten into / separated object names
+ *
  *
  * @return A pointer to the transformed variable
  */

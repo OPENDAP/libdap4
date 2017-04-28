@@ -155,6 +155,8 @@ Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
 	return dest;
 }
 
+
+
 string
 Constructor::FQN() const
 {

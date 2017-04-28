@@ -139,6 +139,9 @@ public:
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
+
+    virtual BaseType *transform_to_dap2();
+
 };
 
 } /* namespace libdap */

@@ -96,6 +96,7 @@ public:
     virtual BaseType *ptr_duplicate();
 
     virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
+    virtual BaseType *transform_to_dap2();
 
     virtual bool is_linear();
 

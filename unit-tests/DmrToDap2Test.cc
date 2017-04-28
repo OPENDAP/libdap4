@@ -340,6 +340,7 @@ public:
     CPPUNIT_TEST(basic_dmr_to_dap2_2_2);
     CPPUNIT_TEST(basic_dmr_to_dap2_2_3);
     CPPUNIT_TEST(basic_dmr_to_dap2_2_4);
+    CPPUNIT_TEST(basic_dmr_to_dap2_2_5); // Drops Variables
 
     CPPUNIT_TEST(enum_dmr_to_dap2_0_0);
     CPPUNIT_TEST(enum_dmr_to_dap2_0_1);
@@ -348,19 +349,21 @@ public:
     CPPUNIT_TEST(enum_dmr_to_dap2_1_2);
     CPPUNIT_TEST(enum_dmr_to_dap2_1_3);
     CPPUNIT_TEST(enum_dmr_to_dap2_1_4);
+    CPPUNIT_TEST(enum_dmr_to_dap2_2_0); // Drops Variables
+    CPPUNIT_TEST(enum_dmr_to_dap2_2_1); // Drops Variables
+    CPPUNIT_TEST(enum_dmr_to_dap2_3_0); // Drops Variables
+    CPPUNIT_TEST(enum_dmr_to_dap2_3_1); // Drops Variables
 
 #endif
 
-    CPPUNIT_TEST(enum_dmr_to_dap2_2_0);
+
+    CPPUNIT_TEST(enum_dmr_to_dap2_4_0);
+
 
 #if 0 // bad
-    CPPUNIT_TEST(basic_dmr_to_dap2_2_5);
-    CPPUNIT_TEST(enum_dmr_to_dap2_1_5);
+    CPPUNIT_TEST(enum_dmr_to_dap2_1_5); // Parser issue with look-ahead
 
-    CPPUNIT_TEST(enum_dmr_to_dap2_2_1);
-    CPPUNIT_TEST(enum_dmr_to_dap2_3_0);
-    CPPUNIT_TEST(enum_dmr_to_dap2_3_1);
-    CPPUNIT_TEST(enum_dmr_to_dap2_4_0);
+
     CPPUNIT_TEST(enum_dmr_to_dap2_4_1);
     CPPUNIT_TEST(enum_dmr_to_dap2_4_2);
     CPPUNIT_TEST(dmr_to_grid_01);
