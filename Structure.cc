@@ -33,7 +33,7 @@
 //
 // jhrg 9/14/94
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "config.h"
 

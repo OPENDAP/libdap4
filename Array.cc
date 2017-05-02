@@ -35,7 +35,7 @@
 
 #include "config.h"
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include <algorithm>
 #include <functional>
