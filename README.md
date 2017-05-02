@@ -54,12 +54,9 @@ documentation build, although it may be somewhat fragile.
   * _git rm_ the files in _html_
   * commit
   * Switch back to the _master_ branch
-  * Build the docs (_doxygen <conf file>_)
+  * Build the docs (_doxygen doxy.conf_)
   * Check that there's a bunch of file in _html_
   * Switch to _gh-pages_
-  * _git add html_; _git commit -m "Added new docs"_; git push
+  * _git add html_; _git commit -m "Added new docs"_; _git push_
   * Switch back to _master_
-
-
-
 
