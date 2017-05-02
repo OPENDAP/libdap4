@@ -1,5 +1,5 @@
 ## This gitignore file is the same as the master version _except_
-## that it does not ignore the 'html directory that holds the
+## that it does not ignore the 'html' directory that holds the
 ## documentation files. jhrg 5/2/17
 
 ## directories
@@ -101,9 +101,6 @@ d4_function/stack.hh
 
 libdap-*.tar.gz
 libdap-*
-
-html
-latex
 
 tests/DASTest
 tests/DDSTest
