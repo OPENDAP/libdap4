@@ -1,0 +1,113 @@
+# -*- shell-script -*-
+#
+# Initial Travic-CI control file. 6.5.15 jhrg
+# Updated many times... finally using docker (containers). 7.14.15 jhrg
+
+# Use the docker container-based build systems
+sudo: false
+
+cache:
+  directories:
+  - $HOME/bison
+
+language: cpp
+
+compiler:
+  - gcc
+  - clang
+
+# whitelist; assume tags for releases use the familiar dot notation
+# Building a tag will trigger a deployment; see the 'deploy' section
+# down below
+branches:
+  only:
+    - master
+    - coverity_scan
+    - /^*-[0-9]+\.[0-9]+\.[0-9]+/
+
+# This may solve the coverity issue where a push to the coverity_scan
+# branch runs the scanner twice (once for each of our compilers).
+# ...not sure and it's hard to test since we get only one run/day,
+# but running the scan twice breaks the build because we're allowed
+# only one run/day.
+matrix:
+  exclude:
+    - compiler: clang
+    - env: COVERITY_SCAN_BRANCH=1
+
+addons:
+  coverity_scan:
+    project:
+      name: "OPENDAP/libdap4"
+      description: "Build submitted via Travis CI"
+    notification_email: jgallagher@opendap.org
+    build_command: "make -j7"
+    branch_pattern: coverity_scan
+  apt:
+    packages:
+      - libxml2-dev
+      - uuid-dev
+      - libcurl4-openssl-dev
+      - libcppunit-dev
+    
+# Use this to prepare the system to install prerequisites or
+# dependencies
+# before_install:
+
+# Use this to install any prerequisites or dependencies necessary to
+# run your build
+install:
+  - bash ./install_libdap_source_deps.sh
+  - export PATH=$HOME/bison/bin:$PATH
+
+# Use this to prepare your build for testing e.g. copy database
+# configurations, environment variables, etc.
+#
+# I set prefix and PATH even though it's not really needed.
+#
+#  Added code coverage. jhrg 2/16/17
+before_script:
+  - export prefix=$HOME/OPENDAP/build
+  - export PATH=$prefix/bin:/usr/local/bin:$PATH
+  - autoreconf --force --install --verbose
+  - ./configure --prefix=$prefix
+
+# Code coverage is not working on link.
+# debug on AWS and then test --enable-coverage --enable-developer
+
+# All commands must exit with code 0 on success. Anything else is
+# considered failure. Note that each line of 'script' is run, regardless
+# of exit status (in the preceding sections, execution stops on the
+# first error).
+#
+script:
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install && make distcheck -j7; fi
+
+# Add ./get_code_cov.sh when linux code coverage builds
+
+# Add this once coverage builds and the gcov script works.
+# after_success:
+#  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then bash <(curl -s https://codecov.io/bash)
+
+# after_failure:
+
+# after_script:
+
+# Figure out how to do this for incremental builds. This version works
+# only for tagged pushes.
+# deploy:
+#   provider: releases
+#   skip_cleanup: true
+#   api_key:
+#     secure: r4QZiJ+Pp9VPZYeL7s7jW1XMIgnceymGUqDS083AoqylSYsZOElqv2PCOrXSLAo1l0xgGwDaDFCy0HPEVCJzM7b/rNEOkQFQ6lUCuKQy4Jy3kNDpxLZdg8qk65ZkHxlUAwnbJ0HPF8sri6gXLO/7ytz4tYnVuVsMPl3qXG25I9o=
+#   file: libdap_*.deb
+#   on:
+#     repo: OPENDAP/libdap4
+#     condition: $CC = gcc
+#     tags: true
+    
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   # via the "travis encrypt" command using the project repo's public key
+   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
