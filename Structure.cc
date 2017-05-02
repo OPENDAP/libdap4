@@ -176,87 +176,52 @@ Structure::transform_to_dap4(D4Group *root, Constructor *container)
  *
  * @return A pointer to the transformed variable
  */
-BaseType *
-Structure::transform_to_dap2()
+vector<BaseType *> *
+Structure::transform_to_dap2(AttrTable *parent_attr_table)
 {
     DBG(cerr << " " << __func__ << " BEGIN" << endl);
     Structure *dest = new Structure(name());
 
     // convert the Structure's d4 attributes to a dap2 attribute table.
-    AttrTable *attrs = this->attributes()->get_AttrTable();
-    attrs->set_name(name());
-    dest->set_attr_table(*attrs);
+    AttrTable *attrs = this->attributes()->get_AttrTable(name());
     dest->set_is_dap4(false);
 
     vector<BaseType *> dropped_vars;
     for (Structure::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-        BaseType *new_var = (*i)->transform_to_dap2();
-        if (new_var) {  // Might be un-mappable so we'll be dropping it.
-            new_var->set_parent(dest);
-            dest->add_var_nocopy(new_var);
+        vector<BaseType *> *new_vars = (*i)->transform_to_dap2(attrs);
+        if (new_vars) {  // Might be un-mappable
+            // It's not so game on..
+            vector<BaseType*>::iterator vIter = new_vars->begin();
+            vector<BaseType*>::iterator end = new_vars->end();
+            for( ; vIter!=end ; vIter++ ){
+                BaseType *new_var = (*vIter);
+                new_var->set_parent(dest);
+                dest->add_var_nocopy(new_var);
+                (*vIter) = NULL;
+            }
+            delete new_vars;
+
         }
         else {
+            // Got a NULL, so we are dropping this var.
             dropped_vars.push_back(*i);
         }
     }
-#if 0
-    if(dropped_vars.size()){
-        AttrTable *dv_table = new AttrTable;
-        dv_table->set_name("dropped_dap4_vars");
-        for(unsigned int i=0; i<dropped_vars.size(); i++){
-            BaseType *bt = dropped_vars[i];
-            AttrTable *bt_attr_table = new AttrTable(bt->get_attr_table());
-            bt_attr_table->set_name(bt->name());
-            bt_attr_table->append_attr("type","String", bt->type_name());
-            bt_attr_table->append_attr("name","String", bt->name());
-            dv_table->append_container(bt_attr_table,bt_attr_table->get_name());
-        }
-        attrs->append_container(dv_table,dv_table->get_name());
+
+    AttrTable *dv_attr_table = make_dropped_vars_attr_table(&dropped_vars);
+    if(dv_attr_table){
+        DBG(cerr << " " << __func__ << "() - Adding "<< dv_attr_table->get_name() << " AttrTable" << endl);
+        attrs->append_container(dv_attr_table,dv_attr_table->get_name());
     }
-#endif
-    if(!dropped_vars.empty()){
-        AttrTable *dv_table = new AttrTable;
-        dv_table->set_name("dropped_dap4_vars");
-        for(unsigned int i=0; i<dropped_vars.size(); i++){
-            BaseType *bt = dropped_vars[i];
-            AttrTable *bt_attr_table = new AttrTable(bt->get_attr_table());
-            ostringstream vname;
-            vname << "var_" << i ;
-            bt_attr_table->set_name(vname.str());
-            bt_attr_table->append_attr("type","String", bt->type_name());
-
-            ostringstream name;
-            name << bt->name();
-            string type_name = bt->type_name();
-            if(bt->is_vector_type()){
-                Array *array = dynamic_cast <Array *>(bt);
-                if(array){
-                    type_name = array->prototype()->type_name();
-                    Array::Dim_iter d_iter = array->dim_begin();
-                    Array::Dim_iter end = array->dim_end();
-                    for( ; d_iter< end ; d_iter++){
-                        name << "[";
-                        string dim_name = (*d_iter).name;
-                        if(!dim_name.empty()){
-                            name << dim_name << "=" << (*d_iter).size;
-                        }
-                        else {
-                            name << (*d_iter).size;
-                        }
-                        name << "]";
-                    }
-                }
-            }
-            bt_attr_table->append_attr("name","String", name.str());
-            dv_table->append_container(bt_attr_table,bt_attr_table->get_name());
-        }
-        attrs->append_container(dv_table,dv_table->get_name());
-        dest->set_attr_table(*attrs);
-   }
-
     DBG(attrs->print(cerr,"",true););
+    // Since this does a copy we gotta delete the attrs when done
+    dest->set_attr_table(*attrs);
+    delete attrs;
+
+    vector<BaseType *> *result =  new vector<BaseType *>();
+    result->push_back(dest);
     DBG(cerr << " " << __func__ << " END" << endl);
-    return dest;
+    return result;
 }
 
 

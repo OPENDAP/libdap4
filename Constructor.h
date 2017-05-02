@@ -149,6 +149,7 @@ public:
     virtual bool check_semantics(string &msg, bool all = false);
 
     virtual void transfer_attributes(AttrTable *at);
+    static AttrTable *make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars);
 
     virtual void dump(ostream &strm) const ;
 };

@@ -1,0 +1,7 @@
+Dataset {
+    Byte e;
+    Byte b1;
+    Byte /g1/e;
+    UInt16 /g2/e;
+    UInt16 /g2/gg2/e;
+} DMR_4.2;

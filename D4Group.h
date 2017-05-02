@@ -140,7 +140,8 @@ public:
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
 
-    virtual BaseType *transform_to_dap2();
+    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
+    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool use_name_prefix);
 
 };
 

@@ -248,8 +248,8 @@ UInt64::d4_ops(BaseType *b, int op)
  *
  * @return A pointer to the transformed variable
  */
-BaseType *
-UInt64::transform_to_dap2()
+std::vector<BaseType *> *
+UInt64::transform_to_dap2(AttrTable *)
 {
 #if 0
     BaseType *dest = this->ptr_duplicate();

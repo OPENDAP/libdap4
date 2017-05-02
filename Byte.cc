@@ -341,11 +341,19 @@ bool Byte::d4_ops(BaseType *b, int op)
  *
  * @return A pointer to the transformed variable
  */
-BaseType *
-Byte::transform_to_dap2()
+std::vector<BaseType *> *
+Byte::transform_to_dap2(AttrTable *parent_attr_table)
 {
     DBG(cerr << __func__ << "() - BEGIN" << endl;);
-    BaseType *dest = BaseType::transform_to_dap2();
+    vector<BaseType *> *vec = BaseType::transform_to_dap2(parent_attr_table);
+    if(vec->size()!=1){
+        ostringstream oss;
+        oss << __func__ << "() -  Something Bad Happened. This transform should produce only ";
+        oss << " a single BaseType yet it produced " << vec->size();
+        throw new Error(internal_error,oss.str());
+    }
+
+    BaseType *dest = (*vec)[0];
     DBG(cerr << __func__ << "() - type():       " << type() << endl;);
     DBG(cerr << __func__ << "() - dest->type(): " << dest->type() << endl;);
 
@@ -358,7 +366,7 @@ Byte::transform_to_dap2()
     DBG (dest->get_attr_table().print(cerr););
 
     DBG(cerr << __func__ << "() - END" << endl;);
-    return dest;
+    return vec;
 }
 
 /** @brief dumps information about this object

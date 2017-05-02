@@ -227,12 +227,18 @@ bool Int8::d4_ops(BaseType *b, int op)
  *
  * @return A pointer to the transformed variable
  */
-BaseType *
-Int8::transform_to_dap2()
+std::vector<BaseType *> *
+Int8::transform_to_dap2(AttrTable *parent_attr_table)
 {
-    BaseType *bt = BaseType::transform_to_dap2();
-    bt->set_type(dods_byte_c);
-    return bt;
+    vector<BaseType *> *vec = BaseType::transform_to_dap2(parent_attr_table);
+    if(vec->size()!=1){
+        ostringstream oss;
+        oss << __func__ << "() -  Something Bad Happened. This transform should produce only ";
+        oss << " a single BaseType yet it produced " << vec->size();
+        throw new Error(internal_error,oss.str());
+    }
+    (*vec)[0]->set_type(dods_byte_c);
+    return vec;
 }
 /**
  * @brief dumps information about this object

@@ -145,7 +145,7 @@ public:
             string result_dmr(xml.get_doc());
             string baseline_dmr = readTestBaseline(dmr_file);
 
-            DBG(cerr << "BASELINE DMR("<< baseline_dmr.size() << " chars): " << endl << baseline_dmr << endl);
+            DBG(cerr << "BASELINE DMR("<< baseline_dmr.size() << " chars): " << dmr_file << endl << baseline_dmr << endl);
             DBG(cerr << "RESULT DMR("<< result_dmr.size() << " chars): " << endl << result_dmr << endl);
             CPPUNIT_ASSERT(result_dmr == baseline_dmr);
 
@@ -153,14 +153,14 @@ public:
             std::ostringstream result_dds;
             dds->print(result_dds);
             string baseline_dds = readTestBaseline(dds_file);
-            DBG(cerr << "BASELINE DDS("<< baseline_dds.size() << " chars): " << endl << baseline_dds << endl);
+            DBG(cerr << "BASELINE DDS("<< baseline_dds.size() << " chars): " << dds_file << endl << baseline_dds << endl);
             DBG(cerr << "RESULT DDS("<< result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
             CPPUNIT_ASSERT(result_dds.str() == baseline_dds);
 
             std::ostringstream result_das;
             dds->print_das(result_das);
             string source_das = readTestBaseline(das_file);
-            DBG(cerr << "BASELINE DAS("<< source_das.size() << " chars): " << endl << source_das << endl);
+            DBG(cerr << "BASELINE DAS("<< source_das.size() << " chars): " << das_file << endl << source_das << endl);
             DBG(cerr << "RESULT DAS("<< result_das.str().size() << " chars): " << endl << result_das.str() << endl);
             CPPUNIT_ASSERT(result_das.str() == source_das);
 
@@ -331,15 +331,16 @@ public:
 
     CPPUNIT_TEST_SUITE( DmrToDap2Test );
 
-#if 0 // good
+
+#if 1 // good
     CPPUNIT_TEST(dmr_to_dap2_01);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_0);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_1);
     CPPUNIT_TEST(basic_dmr_to_dap2_2_0);
     CPPUNIT_TEST(basic_dmr_to_dap2_2_1);
     CPPUNIT_TEST(basic_dmr_to_dap2_2_2);
-    CPPUNIT_TEST(basic_dmr_to_dap2_2_3);
     CPPUNIT_TEST(basic_dmr_to_dap2_2_4);
+    CPPUNIT_TEST(basic_dmr_to_dap2_2_3);
     CPPUNIT_TEST(basic_dmr_to_dap2_2_5); // Drops Variables
 
     CPPUNIT_TEST(enum_dmr_to_dap2_0_0);
@@ -354,19 +355,25 @@ public:
     CPPUNIT_TEST(enum_dmr_to_dap2_3_0); // Drops Variables
     CPPUNIT_TEST(enum_dmr_to_dap2_3_1); // Drops Variables
 
+    CPPUNIT_TEST(enum_dmr_to_dap2_4_0); // Drops Groups
+    CPPUNIT_TEST(enum_dmr_to_dap2_4_1); // Drops Groups
+    CPPUNIT_TEST(enum_dmr_to_dap2_4_1);
+    CPPUNIT_TEST(enum_dmr_to_dap2_4_2);
+
 #endif
 
 
-    CPPUNIT_TEST(enum_dmr_to_dap2_4_0);
+//    CPPUNIT_TEST(dmr_to_grid_01);
+
+
 
 
 #if 0 // bad
     CPPUNIT_TEST(enum_dmr_to_dap2_1_5); // Parser issue with look-ahead
 
 
-    CPPUNIT_TEST(enum_dmr_to_dap2_4_1);
-    CPPUNIT_TEST(enum_dmr_to_dap2_4_2);
-    CPPUNIT_TEST(dmr_to_grid_01);
+
+
 #endif
 
 

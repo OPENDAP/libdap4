@@ -87,8 +87,8 @@ void D4Enum::m_duplicate(const D4Enum &src)
  *
  *
  */
-BaseType *
-D4Enum::transform_to_dap2(){
+std::vector<BaseType *> *
+D4Enum::transform_to_dap2(AttrTable *){
     BaseType *my_pretty_pony;
 
     DBG(cerr << __func__ << "() - BEGIN" << endl;);
@@ -171,8 +171,7 @@ D4Enum::transform_to_dap2(){
     /**
      * Grab the attributes!
      */
-    AttrTable d2_attrs = *(this->attributes()->get_AttrTable());
-    d2_attrs.set_name(name());
+    AttrTable d2_attrs = *(this->attributes()->get_AttrTable(name()));
     my_pretty_pony->set_attr_table(d2_attrs);
 
     // cerr << "D4Enum::transform_to_dap2() - my_pretty_pony attrs: "<< endl;
@@ -208,8 +207,10 @@ D4Enum::transform_to_dap2(){
         my_pretty_pony->get_attr_table().append_attr("d4:enum_label","String",my_label);
     my_pretty_pony->get_attr_table().append_container(enum_def,enum_def->get_name());
 
+    vector<BaseType *> *result = new vector<BaseType *>();
+    result->push_back(my_pretty_pony);
     DBG(cerr << __func__ << "() - END" << endl;);
-    return my_pretty_pony;
+    return result;
 }
 
 void D4Enum::m_check_value(int64_t v) const

@@ -214,7 +214,7 @@ public:
     virtual BaseType *ptr_duplicate();
 
     virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
-    virtual BaseType *transform_to_dap2();
+    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
 
     void add_var(BaseType *v, Part p = nil);
     void add_var_nocopy(BaseType *v, Part p = nil);

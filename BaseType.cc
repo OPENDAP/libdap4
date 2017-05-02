@@ -251,17 +251,19 @@ BaseType::transform_to_dap4(D4Group */*root*/, Constructor */*container*/)
  *
  * @return A pointer to the transformed variable
  */
-BaseType *
-BaseType::transform_to_dap2()
+std::vector<BaseType *> *
+BaseType::transform_to_dap2(AttrTable *)
 {
     BaseType *dest = this->ptr_duplicate();
     // convert the d4 attributes to a dap2 attribute table.
-    AttrTable *attrs = this->attributes()->get_AttrTable();
-    attrs->set_name(name());
+    AttrTable *attrs = this->attributes()->get_AttrTable(name());
     dest->set_attr_table(*attrs);
     dest->set_is_dap4(false);
     // attrs->print(cerr,"",true);
-    return dest;
+
+    vector<BaseType *> *result =  new vector<BaseType *>();
+    result->push_back(dest);
+    return result;
 }
 
 

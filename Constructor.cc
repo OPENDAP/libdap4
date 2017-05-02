@@ -32,7 +32,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include <string>
 #include <sstream>
@@ -835,6 +835,50 @@ void Constructor::transfer_attributes(AttrTable *at_container)
     }
 }
 
+AttrTable *
+Constructor::make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars) {
+    DBG( cerr << __func__ << "() - BEGIN" << endl;);
+
+    AttrTable *dv_table = NULL;
+    if(!dropped_vars->empty()){
+        dv_table = new AttrTable;
+        dv_table->set_name("dap4:dropped_members");
+        vector<BaseType *>::iterator dvIter = dropped_vars->begin();
+        vector<BaseType *>::iterator dvEnd = dropped_vars->end();
+        unsigned int i = 0;
+        for( ; dvIter!=dvEnd ; dvIter++, i++){
+            BaseType *bt = (*dvIter);
+            AttrTable *bt_attr_table = new AttrTable(bt->get_attr_table());
+            bt_attr_table->set_name(bt->name());
+            string type_name = bt->type_name();
+            if(bt->is_vector_type()){
+                Array *array = dynamic_cast <Array *>(bt);
+                if(array){
+                    type_name = array->prototype()->type_name();
+                    DBG( cerr << __func__ << "() - The variable " << bt->name() << " is an Array of '"<< type_name << "'" << endl;);
+                    Array::Dim_iter d_iter = array->dim_begin();
+                    Array::Dim_iter end = array->dim_end();
+                    for( ; d_iter< end ; d_iter++){
+
+                        ostringstream dim_size;
+                        dim_size << (*d_iter).size;
+                        bt_attr_table->append_attr(
+                            "array_dimensions",
+                            AttrType_to_String(Attr_uint32),
+                            dim_size.str());
+                    }
+                }
+            }
+            bt_attr_table->append_attr("dap4:type","String", type_name);
+            dv_table->append_container(bt_attr_table,bt_attr_table->get_name());
+            // Clear entry now that we're done.
+            (*dvIter) = 0;
+        }
+   }
+    DBG( cerr << __func__ << "() - END " << endl;);
+    return dv_table;
+
+}
 
 
 /** @brief dumps information about this object

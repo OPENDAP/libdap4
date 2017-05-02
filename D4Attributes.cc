@@ -340,10 +340,11 @@ D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs)
  *
  * @param at Read the DAP2 attributes from here.
  */
-AttrTable *D4Attributes::get_AttrTable()
+AttrTable *D4Attributes::get_AttrTable(const string name)
 {
     AttrTable *my_pretty_pony = new AttrTable();
     load_AttrTable(my_pretty_pony, this);
+    my_pretty_pony->set_name(name);
     return my_pretty_pony;
 }
 

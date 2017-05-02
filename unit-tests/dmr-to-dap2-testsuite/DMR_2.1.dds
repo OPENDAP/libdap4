@@ -7,8 +7,6 @@ Dataset {
     UInt16 e[10];
     Int32 f[dim1 = 5];
     UInt32 g[dim1 = 5];
-    Int64 h[dim1 = 5];
-    UInt64 i[dim1 = 5];
     Float32 j[dim1 = 5];
     Float64 k[dim1 = 5];
 } DMR_2.1;

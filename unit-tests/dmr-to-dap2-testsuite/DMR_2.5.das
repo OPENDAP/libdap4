@@ -1,12 +1,12 @@
 Attributes {
-    dropped_dap4_vars {
-        var_0 {
-            String type "Array";
-            String name "e[dim1=5]";
+    dap4:dropped_members {
+        e {
+            UInt32 array_dimensions 5;
+            String dap4:type "Enum";
         }
-        var_1 {
-            String type "Array";
-            String name "o[dim1=5]";
+        o {
+            UInt32 array_dimensions 5;
+            String dap4:type "Opaque";
         }
     }
 }

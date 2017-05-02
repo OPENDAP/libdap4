@@ -2,18 +2,15 @@ Attributes {
     b1 {
     }
     s {
-        dropped_dap4_vars {
-            var_0 {
-                String type "Int64";
-                String name "i64";
+        dap4:dropped_members {
+            i64 {
+                String dap4:type "Int64";
             }
-            var_1 {
-                String type "UInt64";
-                String name "ui64";
+            ui64 {
+                String dap4:type "UInt64";
             }
-            var_2 {
-                String type "Opaque";
-                String name "o";
+            o {
+                String dap4:type "Opaque";
             }
         }
         c1 {
