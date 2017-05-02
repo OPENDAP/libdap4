@@ -121,27 +121,27 @@ docs: ${DOXYGEN_CONF}
 
 # This target will fail if the gh-pages branch is not present
 gh-pages-present:
-        @git branch --list | grep gh-pages
+	@git branch --list | grep gh-pages
 
 # Before buildin gnew gh-pages, remove the old ones
 clean-gh-pages: gh-pages-present
-        git checkout gh-pages
-        -git rm -rf ${HTML_DOCS}/*
-        git commit -m "Removed old docs"
-        git checkout master
+	git checkout -q gh-pages
+	-git rm -rf ${HTML_DOCS}/*
+	git commit -q -m "Removed old docs"
+	git checkout -q master
 
 generate-gh-docs: clean-gh-pages 
-        doxygen ${DOXYGEN_CONF}
+	doxygen ${DOXYGEN_CONF}
 
 update-gh-pages: generate-gh-docs
-        git checkout gh-pages
-        git add ${HTML_DOCS}
-        git commit -m "Added new docs"
-        git push
+	git checkout -q gh-pages
+	git add ${HTML_DOCS}
+	git commit -m "Added new docs"
+	git push -q
 
 gh-docs: update-gh-pages
-        @echo "Documentation updated on the gh-pages branch"
-        git checkout master
+	@echo "Documentation updated on the gh-pages branch"
+	git checkout -q master
 	@echo "Back on the master branch"
 
 # cccc computes metrics like Lines of code and McCabe. It's available
