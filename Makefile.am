@@ -106,16 +106,45 @@ pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 CLEANFILES = *.log *.output *.gcda *.gcno $(BISON_SRC) $(FLEX_SRC) \
 	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
+HTML_DOCS=html
+DOXYGEN_CONF=doxy.conf
+
+# This target only builds the documents, it does not move them to
+# github. Use the 'gh-docs' target below for that.
 .PHONY: docs
-docs: doxy.conf
-	doxygen doxy.conf
-	(cd docs && tar -czf html.tar.gz html)
+docs: ${DOXYGEN_CONF}
+	doxygen ${DOXYGEN_CONF}
 
-# Not needed. jhrg 1/4/16
-# doxy.conf: doxy.conf.in config.status
-# 	./config.status --file=doxy.conf
+# GitHub.io docs rules. Dependencies are used to force order with/if a
+# parallel build is used.
+.PHONY: gh-pages-present clean-gh-pages generate-docs update-gh-pages gh-docs 
 
-# cccc computes metrics like Lines of code and McCabe. It'a available
+# This target will fail if the gh-pages branch is not present
+gh-pages-present:
+        @git branch --list | grep gh-pages
+
+# Before buildin gnew gh-pages, remove the old ones
+clean-gh-pages: gh-pages-present
+        git checkout gh-pages
+        -git rm -rf ${HTML_DOCS}/*
+        git commit -m "Removed old docs"
+        git checkout master
+
+generate-gh-docs: clean-gh-pages 
+        doxygen ${DOXYGEN_CONF}
+
+update-gh-pages: generate-gh-docs
+        git checkout gh-pages
+        git add ${HTML_DOCS}
+        git commit -m "Added new docs"
+        git push
+
+gh-docs: update-gh-pages
+        @echo "Documentation updated on the gh-pages branch"
+        git checkout master
+	@echo "Back on the master branch"
+
+# cccc computes metrics like Lines of code and McCabe. It's available
 # on the web...
 .PHONY: cccc
 cccc:
