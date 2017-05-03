@@ -183,12 +183,6 @@ public:
     }
 
     // Test a DDS with simple scalar types and no attributes
-    void dmr_to_grid_01() {
-        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
-        test_template("coads_climatology.nc");
-        DBG(cerr << __func__ << "() - END" << endl);
-    }
-
     void basic_dmr_to_dap2_0_0() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("DMR_0.0");
@@ -329,10 +323,24 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
+    void dmr_to_grid_01() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        test_template("coads_climatology.nc");
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+
+    void dmr_to_grid_02() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        test_template("sst.mnmean.nc.gz");
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+
+
+
     CPPUNIT_TEST_SUITE( DmrToDap2Test );
 
 
-#if 1 // good
+#if 0 // good
     CPPUNIT_TEST(dmr_to_dap2_01);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_0);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_1);
@@ -360,10 +368,11 @@ public:
     CPPUNIT_TEST(enum_dmr_to_dap2_4_1);
     CPPUNIT_TEST(enum_dmr_to_dap2_4_2);
 
+    CPPUNIT_TEST(dmr_to_grid_01);
 #endif
 
 
-    CPPUNIT_TEST(dmr_to_grid_01);
+    CPPUNIT_TEST(dmr_to_grid_02);
 
 
 

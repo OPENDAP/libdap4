@@ -1,0 +1,14 @@
+Dataset {
+    Float32 lat[lat = 89];
+    Float32 lon[lon = 180];
+    Float64 time[time = 1857];
+    Float64 time_bnds[time = 1857][nbnds = 2];
+    Grid {
+      Array:
+        Int16 sst[time = 1857][lat = 89][lon = 180];
+      Maps:
+        Float64 time[time = 1857];
+        Float32 lat[lat = 89];
+        Float32 lon[lon = 180];
+    } sst;
+} sst.mnmean.nc;

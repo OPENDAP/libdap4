@@ -243,9 +243,10 @@ BaseType::transform_to_dap4(D4Group */*root*/, Constructor */*container*/)
  *  - Opaque Possible Byte stuff[] plus metadata?
  *  - Enum's can be represented as Int32.
  *
- *  - Groups, with the exception of the root group nmust
- *    support two switchable behaviors:
- *    - Flatten into / separated object names
+ *  - Groups, with the exception of the root group "disappear" into the
+ *    names of their member variables. Specifically the Group name is add as a prefix
+ *    followed by a "/" separator to the names of all of the Group's member groups
+ *    variables.
  *
  * @param  The AttrTable pointer parent_attr_table is used by Groups, which disappear
  * from the DAP2 representation. Their children are returned in the the BAseType vector
