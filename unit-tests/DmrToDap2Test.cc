@@ -335,12 +335,18 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
+    void dmr_to_grid_03() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        test_template("sresa1b_ncar_ccsm3_0_run1_200001.nc");
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+
 
 
     CPPUNIT_TEST_SUITE( DmrToDap2Test );
 
 
-#if 1 // good (as in should be working) tests
+#if 0 // good (as in should be working) tests
     CPPUNIT_TEST(dmr_to_dap2_01);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_0);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_1);
@@ -373,16 +379,15 @@ public:
 
 #endif
 
+    CPPUNIT_TEST(dmr_to_grid_03);
 
 
 
 
 
 #if 0 // bad tests, here then is the woodshed of Testville.
-    CPPUNIT_TEST(enum_dmr_to_dap2_1_5); // Parser issue with look-ahead
 
-
-
+    CPPUNIT_TEST(enum_dmr_to_dap2_1_5); // Broken: Parser issue with look-ahead
 
 #endif
 
