@@ -147,7 +147,6 @@ D4Opaque::value() const
 std::vector<BaseType *> *
 D4Opaque::transform_to_dap2(AttrTable *){
     DBG(cerr << __func__ << "() - Transform not implemented DAP4 Opaque type." << endl;);
-    DBG(cerr << __func__ << "() - END" << endl;);
     return NULL;
 }
 

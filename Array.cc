@@ -280,7 +280,7 @@ Array::transform_to_dap2(AttrTable *){
     BaseType *dest;
     if(is_dap4()){
         if(is_dap2_grid()){
-            cerr << __func__ << "() - Array '"<< name() << " IS DAP2 GRID!"  << endl;
+            DBG(cerr << __func__ << "() - Array '"<< name() << " IS DAP2 GRID!"  << endl;);
             Grid *g = new Grid(name());
             dest = g;
             Array *grid_array = (Array *) this->ptr_duplicate();
