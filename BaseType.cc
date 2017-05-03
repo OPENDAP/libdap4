@@ -245,11 +245,15 @@ BaseType::transform_to_dap4(D4Group */*root*/, Constructor */*container*/)
  *
  *  - Groups, with the exception of the root group nmust
  *    support two switchable behaviors:
- *    - Become Structures.
  *    - Flatten into / separated object names
  *
- *
- * @return A pointer to the transformed variable
+ * @param  The AttrTable pointer parent_attr_table is used by Groups, which disappear
+ * from the DAP2 representation. Their childrean are returned in the the BAseType vector
+ * thewir attributes are added to parent_attr_table;
+ * @return A pointer to a vector of BaseType pointers (right?). In most cases this vector
+ * will contain a single pointer but DAP4 types 'disappear' such as Group will return all
+ * of their member variables in the vector. DAP4 types with no representation in DAP2
+ * (ex: UInt64) the will return a NULL pointer and so this must be tested!
  */
 std::vector<BaseType *> *
 BaseType::transform_to_dap2(AttrTable *)

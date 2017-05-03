@@ -318,7 +318,6 @@ Array::transform_to_dap2(AttrTable *){
                     delete d2_result;
                 }
                 else {
-                    // FIXME - Add something to the metadata about this dropped map.
                     dropped_maps.push_back(d4_map_array);
                 }
             }
