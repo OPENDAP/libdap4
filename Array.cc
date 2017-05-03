@@ -285,11 +285,16 @@ Array::transform_to_dap2(AttrTable *){
             dest = g;
             Array *grid_array = (Array *) this->ptr_duplicate();
             g->set_array(grid_array);
-            AttrTable grid_attr_tbl = g->get_attr_table();
 
-            vector<BaseType *> dropped_maps;
+            // Get the metadata into the Grid
+            AttrTable *grid_attrs = attributes()->get_AttrTable(name());
+            g->set_attr_table(*grid_attrs); // Copy it into the Grid object.
+            grid_array->set_attr_table(*grid_attrs); // Copy it into the Grid's Array.
+            delete grid_attrs;
 
+            // Process the Map Arrays.
             D4Maps *d4_maps = this->maps();
+            vector<BaseType *> dropped_maps;
             D4Maps::D4MapsIter miter = d4_maps->map_begin();
             D4Maps::D4MapsIter end = d4_maps->map_end();
             for( ; miter!=end; miter++){
@@ -298,6 +303,7 @@ Array::transform_to_dap2(AttrTable *){
                 vector<BaseType *> *d2_result = d4_map_array->transform_to_dap2(&(g->get_attr_table()));
                 if(d2_result){
                     // FIXME - This is probably slow and needs a better pattern. const_cast? static_cast?
+                    // TODO - QC the d2_result array for the limited semantics allowed by Grid.
                     Array *d2_map_array = dynamic_cast<Array *>((*d2_result)[0]);
                     if(d2_map_array){
                         g->add_map(d2_map_array,false);
@@ -309,6 +315,7 @@ Array::transform_to_dap2(AttrTable *){
                     else {
                         throw Error(internal_error,string(__func__)+" Unable to interpret returned DAP2 content.");
                     }
+                    delete d2_result;
                 }
                 else {
                     // FIXME - Add something to the metadata about this dropped map.
@@ -319,41 +326,7 @@ Array::transform_to_dap2(AttrTable *){
             // Did we have a transform failure?
             if(!dropped_maps.empty()){
                 // Yup... tell the story in the attributes.
-                AttrTable *dv_table = new AttrTable;
-                dv_table->set_name("dropped_dap4_map_arrays");
-                for(unsigned int i=0; i<dropped_maps.size(); i++){
-                    BaseType *bt = dropped_maps[i];
-                    AttrTable *bt_attr_table = new AttrTable(bt->get_attr_table());
-                    ostringstream vname;
-                    vname << "var_" << i ;
-                    bt_attr_table->set_name(vname.str());
-                    bt_attr_table->append_attr("type","String", bt->type_name());
-
-                    ostringstream name;
-                    name << bt->name();
-                    string type_name = bt->type_name();
-                    if(bt->is_vector_type()){
-                        Array *array = dynamic_cast <Array *>(bt);
-                        if(array){
-                            type_name = array->prototype()->type_name();
-                            Array::Dim_iter d_iter = array->dim_begin();
-                            Array::Dim_iter end = array->dim_end();
-                            for( ; d_iter< end ; d_iter++){
-                                name << "[";
-                                string dim_name = (*d_iter).name;
-                                if(!dim_name.empty()){
-                                    name << dim_name << "=" << (*d_iter).size;
-                                }
-                                else {
-                                    name << (*d_iter).size;
-                                }
-                                name << "]";
-                            }
-                        }
-                    }
-                    bt_attr_table->append_attr("name","String", name.str());
-                    dv_table->append_container(bt_attr_table,bt_attr_table->get_name());
-                }
+                AttrTable *dv_table = Constructor::make_dropped_vars_attr_table(&dropped_maps);
                 dest->get_attr_table().append_container(dv_table,dv_table->get_name());
             }
         }

@@ -363,7 +363,7 @@ public:
 #endif
 
 
-//    CPPUNIT_TEST(dmr_to_grid_01);
+    CPPUNIT_TEST(dmr_to_grid_01);
 
 
 
