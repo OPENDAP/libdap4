@@ -159,6 +159,8 @@ unit-tests/D4MarshallerTest
 unit-tests/D4ParserSax2Test
 unit-tests/D4UnMarshallerTest
 unit-tests/DMRTest
+unit-tests/DmrRoundTripTest
+unit-tests/DmrToDap2Test
 unit-tests/chunked_iostream_test
 unit-tests/D4FilterClauseTest
 unit-tests/D4SequenceTest
