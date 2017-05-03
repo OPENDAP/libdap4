@@ -340,7 +340,7 @@ public:
     CPPUNIT_TEST_SUITE( DmrToDap2Test );
 
 
-#if 0 // good
+#if 1 // good (as in should be working) tests
     CPPUNIT_TEST(dmr_to_dap2_01);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_0);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_1);
@@ -369,15 +369,16 @@ public:
     CPPUNIT_TEST(enum_dmr_to_dap2_4_2);
 
     CPPUNIT_TEST(dmr_to_grid_01);
+    CPPUNIT_TEST(dmr_to_grid_02);
+
 #endif
 
 
-    CPPUNIT_TEST(dmr_to_grid_02);
 
 
 
 
-#if 0 // bad
+#if 0 // bad tests, here then is the woodshed of Testville.
     CPPUNIT_TEST(enum_dmr_to_dap2_1_5); // Parser issue with look-ahead
 
 
