@@ -615,32 +615,20 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
 
 /** @brief DAP4 to DAP2 transform
  *
- * For the current BaseType, return a DAP2 'copy' of the variable.
- *
- * @note For most DAP4 types, in this implementation of DAP2 the corresponding
- * DAP4 type is the same.
- * These types have a different representations in DAP2 and DAP4:
- *  Sequences (which are D4Sequences in the DAP4 implementation),
- *  - Grids (which are semantically subsumed by coverages in DAP4)
- *  - Arrays (which use shared dimensions in DAP4)
- *
- *  Additionally DAP4 adds the following types:
- *  - UInt8, Int8, and Char which map to Byte in DAP2.
- *  - Int64, Unit64 which have no natural representation in DAP2.
- *
- *  - Opaque Possible Byte stuff[] plus metadata?
- *
- *  - Enum's can be represented as Int32 with the context for the
- *    value given by encoding the EnumDef in the Attributes of the
- *    Enum variable.
- *
- *  - Groups, with the exception of the root group probably need to
- *    support two behaviors to satisfy user demand:
- *    - Become Structures.
- *    - Flatten into the child names using the "/"  separator.
+ * D4Group objects, with the exception of the root group, "disappear"
+ * into the names of their member variables. Specifically the Group
+ * name is add as a prefix followed by a "/" separator to the names
+ * of all of the Group's member groups variables. The Group attributes
+ * (metadata) are transfered to the parent_attr_table. The Group
+ * members are collected returned in vector.
  *
  *
- * @return A pointer to the transformed variable
+ * @param  The AttrTable pointer parent_attr_table is used by Groups, which disappear
+ * from the DAP2 representation. Their children are returned in the the BAseType vector
+ * their attributes are added to parent_attr_table;
+ * @return A pointer to a vector of BaseType pointers (right?). In this D4Group case the
+ * vector will contain DAP2 versions of all of the member variables of the D4Group instance.
+ * (ex: UInt64) the will return a NULL pointer and so this must be tested!
  */
 vector<BaseType *> *
 D4Group::transform_to_dap2(AttrTable *parent_attr_table){

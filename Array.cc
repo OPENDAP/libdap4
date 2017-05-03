@@ -272,7 +272,21 @@ bool Array::is_dap2_grid(){
     return is_grid;
 }
 
-
+/**
+ * @brief Transforms this instance of a D4Array into the corresponding DAP2 object.
+ *
+ * This transformation may return an Array or a Grid object. The DAP2 Grid construct
+ * is semantically contained in the DAP4 concept of arrays with Map arrays. If all
+ * of the Maps are one dimensional then the D4Array can be represented as a
+ * Grid object.
+ *
+ * @param  The AttrTable pointer parent_attr_table is used by Groups, which disappear
+ * from the DAP2 representation. Their children are returned in the the BAseType vector
+ * their attributes are added to parent_attr_table.
+ * @return A pointer to a vector of BaseType pointers (right?). In this D4Array case
+ * returned vector may contain a DAP2 Array or a Grid. Or, if the Array' prototype is
+ * a type that cannot be represented in DAP2 the return will be NULL.
+ */
 std::vector<BaseType *> *
 Array::transform_to_dap2(AttrTable *){
     DBG(cerr << __func__ << "() - BEGIN Array '"<< name() << "'" << endl;);
@@ -280,7 +294,7 @@ Array::transform_to_dap2(AttrTable *){
     BaseType *dest;
     if(is_dap4()){
         if(is_dap2_grid()){
-            DBG(cerr << __func__ << "() - Array '"<< name() << " IS DAP2 GRID!"  << endl;);
+            DBG(cerr << __func__ << "() - Array '"<< name() << " is dap2 Grid!"  << endl;);
             Grid *g = new Grid(name());
             dest = g;
             Array *grid_array = (Array *) this->ptr_duplicate();
@@ -289,7 +303,7 @@ Array::transform_to_dap2(AttrTable *){
             // Get the metadata into the Grid
             AttrTable *grid_attrs = attributes()->get_AttrTable(name());
             g->set_attr_table(*grid_attrs); // Copy it into the Grid object.
-            grid_array->set_attr_table(*grid_attrs); // Copy it into the Grid's Array.
+            grid_array->set_attr_table(*grid_attrs); // Copy it into the data Array.
             delete grid_attrs;
 
             // Process the Map Arrays.

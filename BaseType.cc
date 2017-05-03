@@ -248,8 +248,8 @@ BaseType::transform_to_dap4(D4Group */*root*/, Constructor */*container*/)
  *    - Flatten into / separated object names
  *
  * @param  The AttrTable pointer parent_attr_table is used by Groups, which disappear
- * from the DAP2 representation. Their childrean are returned in the the BAseType vector
- * thewir attributes are added to parent_attr_table;
+ * from the DAP2 representation. Their children are returned in the the BAseType vector
+ * their attributes are added to parent_attr_table;
  * @return A pointer to a vector of BaseType pointers (right?). In most cases this vector
  * will contain a single pointer but DAP4 types 'disappear' such as Group will return all
  * of their member variables in the vector. DAP4 types with no representation in DAP2
