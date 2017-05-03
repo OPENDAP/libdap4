@@ -38,7 +38,7 @@
 #include <iostream>
 #include <sstream>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 //#define DODS_DEBUG2
 
 #include "D4Group.h"

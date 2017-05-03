@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#define DODS_DEBUG 1
+// #define DODS_DEBUG
 
 #include <cassert>
 #include <sstream>
