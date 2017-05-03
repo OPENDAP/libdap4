@@ -341,6 +341,18 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
+    void dmr_to_grid_04() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        test_template("tos_O1_2001-2002.nc");
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+
+    void dmr_to_grid_05() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        test_template("cami_0000-09-01_64x128_L26_c030918.nc");
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+
 
 
     CPPUNIT_TEST_SUITE( DmrToDap2Test );
@@ -376,6 +388,9 @@ public:
 
     CPPUNIT_TEST(dmr_to_grid_01);
     CPPUNIT_TEST(dmr_to_grid_02);
+
+    CPPUNIT_TEST(dmr_to_grid_04);
+    CPPUNIT_TEST(dmr_to_grid_05);
 
 #endif
 

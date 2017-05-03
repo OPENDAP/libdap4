@@ -1,0 +1,336 @@
+Dataset {
+    Float64 lat[lat = 64];
+    Float64 lon[lon = 128];
+    Float64 lev[lev = 26];
+    Float64 ilev[ilev = 27];
+    Float64 time[time = 1];
+    Grid {
+      Array:
+        Float64 hyai[ilev = 27];
+      Maps:
+        Float64 ilev[ilev = 27];
+    } hyai;
+    Grid {
+      Array:
+        Float64 hybi[ilev = 27];
+      Maps:
+        Float64 ilev[ilev = 27];
+    } hybi;
+    Grid {
+      Array:
+        Float64 hyam[lev = 26];
+      Maps:
+        Float64 lev[lev = 26];
+    } hyam;
+    Grid {
+      Array:
+        Float64 hybm[lev = 26];
+      Maps:
+        Float64 lev[lev = 26];
+    } hybm;
+    Grid {
+      Array:
+        Float64 gw[lat = 64];
+      Maps:
+        Float64 lat[lat = 64];
+    } gw;
+    Float64 P0;
+    String date_written[time = 1];
+    String time_written[time = 1];
+    Int32 ntrm;
+    Int32 ntrn;
+    Int32 ntrk;
+    Int32 ndbase;
+    Int32 nsbase;
+    Int32 nbdate;
+    Int32 nbsec;
+    Int32 mdt;
+    Grid {
+      Array:
+        Int32 ndcur[time = 1];
+      Maps:
+        Float64 time[time = 1];
+    } ndcur;
+    Grid {
+      Array:
+        Int32 nscur[time = 1];
+      Maps:
+        Float64 time[time = 1];
+    } nscur;
+    Grid {
+      Array:
+        Int32 date[time = 1];
+      Maps:
+        Float64 time[time = 1];
+    } date;
+    Grid {
+      Array:
+        Int32 datesec[time = 1];
+      Maps:
+        Float64 time[time = 1];
+    } datesec;
+    Grid {
+      Array:
+        Int32 nsteph[time = 1];
+      Maps:
+        Float64 time[time = 1];
+    } nsteph;
+    Grid {
+      Array:
+        Float64 U[time = 1][lat = 64][lev = 26][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lev[lev = 26];
+        Float64 lon[lon = 128];
+    } U;
+    Grid {
+      Array:
+        Float64 V[time = 1][lat = 64][lev = 26][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lev[lev = 26];
+        Float64 lon[lon = 128];
+    } V;
+    Grid {
+      Array:
+        Float64 T[time = 1][lat = 64][lev = 26][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lev[lev = 26];
+        Float64 lon[lon = 128];
+    } T;
+    Grid {
+      Array:
+        Float64 Q[time = 1][lat = 64][lev = 26][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lev[lev = 26];
+        Float64 lon[lon = 128];
+    } Q;
+    Grid {
+      Array:
+        Float64 PS[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } PS;
+    Grid {
+      Array:
+        Float64 PHIS[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } PHIS;
+    Grid {
+      Array:
+        Float64 SGH[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } SGH;
+    Grid {
+      Array:
+        Float64 LANDM[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } LANDM;
+    Grid {
+      Array:
+        Float64 PBLH[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } PBLH;
+    Grid {
+      Array:
+        Float64 TPERT[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } TPERT;
+    Grid {
+      Array:
+        Float64 QPERT[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } QPERT;
+    Grid {
+      Array:
+        Float64 CLOUD[time = 1][lat = 64][lev = 26][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lev[lev = 26];
+        Float64 lon[lon = 128];
+    } CLOUD;
+    Grid {
+      Array:
+        Float64 QCWAT[time = 1][lat = 64][lev = 26][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lev[lev = 26];
+        Float64 lon[lon = 128];
+    } QCWAT;
+    Grid {
+      Array:
+        Float64 TCWAT[time = 1][lat = 64][lev = 26][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lev[lev = 26];
+        Float64 lon[lon = 128];
+    } TCWAT;
+    Grid {
+      Array:
+        Float64 LCWAT[time = 1][lat = 64][lev = 26][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lev[lev = 26];
+        Float64 lon[lon = 128];
+    } LCWAT;
+    Grid {
+      Array:
+        Float64 TSICERAD[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } TSICERAD;
+    Grid {
+      Array:
+        Float64 TS[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } TS;
+    Grid {
+      Array:
+        Float64 TSICE[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } TSICE;
+    Grid {
+      Array:
+        Float64 TS1[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } TS1;
+    Grid {
+      Array:
+        Float64 TS2[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } TS2;
+    Grid {
+      Array:
+        Float64 TS3[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } TS3;
+    Grid {
+      Array:
+        Float64 TS4[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } TS4;
+    Grid {
+      Array:
+        Float64 SNOWHICE[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } SNOWHICE;
+    Grid {
+      Array:
+        Float64 LANDFRAC[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } LANDFRAC;
+    Grid {
+      Array:
+        Float64 TBOT[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } TBOT;
+    Grid {
+      Array:
+        Float64 ICEFRAC[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } ICEFRAC;
+    Grid {
+      Array:
+        Float64 SICTHK[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } SICTHK;
+    Grid {
+      Array:
+        Float64 TSOCN[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } TSOCN;
+    Grid {
+      Array:
+        Float64 CLDLIQ[time = 1][lat = 64][lev = 26][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lev[lev = 26];
+        Float64 lon[lon = 128];
+    } CLDLIQ;
+    Grid {
+      Array:
+        Float64 CLDICE[time = 1][lat = 64][lev = 26][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lev[lev = 26];
+        Float64 lon[lon = 128];
+    } CLDICE;
+    Grid {
+      Array:
+        Float64 LANDM_COSLAT[time = 1][lat = 64][lon = 128];
+      Maps:
+        Float64 time[time = 1];
+        Float64 lat[lat = 64];
+        Float64 lon[lon = 128];
+    } LANDM_COSLAT;
+} cami_0000-09-01_64x128_L26_c030918.nc;

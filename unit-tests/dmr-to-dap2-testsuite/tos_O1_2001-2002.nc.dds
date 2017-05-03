@@ -1,0 +1,16 @@
+Dataset {
+    Float64 lon[lon = 180];
+    Float64 lon_bnds[lon = 180][bnds = 2];
+    Float64 lat[lat = 170];
+    Float64 lat_bnds[lat = 170][bnds = 2];
+    Float64 time[time = 24];
+    Float64 time_bnds[time = 24][bnds = 2];
+    Grid {
+      Array:
+        Float32 tos[time = 24][lat = 170][lon = 180];
+      Maps:
+        Float64 time[time = 24];
+        Float64 lat[lat = 170];
+        Float64 lon[lon = 180];
+    } tos;
+} tos_O1_2001-2002.nc;
