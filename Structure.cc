@@ -177,7 +177,7 @@ Structure::transform_to_dap4(D4Group *root, Constructor *container)
  * @return A pointer to the transformed variable
  */
 vector<BaseType *> *
-Structure::transform_to_dap2(AttrTable *parent_attr_table)
+Structure::transform_to_dap2(AttrTable *)
 {
     DBG(cerr << " " << __func__ << " BEGIN" << endl);
     Structure *dest = new Structure(name());
