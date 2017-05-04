@@ -219,8 +219,8 @@ public:
     void test_grid_rt_01() {
         DBG(cerr << endl << __func__ << "() - BEGIN: " <<
             "Testing simple Grid->D4Array->Grid with 'correct' DAS." << endl);
-        i_am_broken(__func__);
-//       test_roundtrip_template("attr_test_01.dds", "attr_test_01.dmr", "attr_test_01.das");
+ //       i_am_broken(__func__);
+        test_roundtrip_template("attr_test_01.dds", "attr_test_01.dmr", "attr_test_01.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 

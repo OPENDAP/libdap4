@@ -397,9 +397,6 @@ public:
     CPPUNIT_TEST(dmr_to_grid_03);
 
 
-
-
-
 #if 0 // bad tests, here then is the woodshed of Testville.
 
     CPPUNIT_TEST(enum_dmr_to_dap2_1_5); // Broken: Parser issue with look-ahead
