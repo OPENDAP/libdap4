@@ -117,7 +117,7 @@ private:
         parser_end
     };
 
-    xmlSAXHandler ddx_sax_parser;
+    xmlSAXHandler d_dmr_sax_parser;
 
     // The results of the parse operation are stored in these fields.
     // This is passed into the parser using the intern() methods.
@@ -166,8 +166,8 @@ private:
     unsigned int unknown_depth;
 
     // These are used for processing errors.
-    string error_msg;  // Error message(s), if any.
-    xmlParserCtxtPtr context; // used for error message line numbers
+    string d_error_msg;  // Error message(s), if any.
+    xmlParserCtxtPtr d_context; // used for error message line numbers
 
     // These hold temporary values read during the parse.
     string dods_attr_name; // DAP4 attributes, not XML attributes
@@ -257,25 +257,25 @@ public:
     D4ParserSax2() :
         d_dmr(0), d_enum_def(0), d_dim_def(0),
         other_xml(""), other_xml_depth(0), unknown_depth(0),
-        error_msg(""), context(0),
+        d_error_msg(""), d_context(0),
         dods_attr_name(""), dods_attr_type(""),
         char_data(""), root_ns(""), d_debug(false), d_strict(true)
     {
         //xmlSAXHandler ddx_sax_parser;
-        memset(&ddx_sax_parser, 0, sizeof(xmlSAXHandler));
+        memset(&d_dmr_sax_parser, 0, sizeof(xmlSAXHandler));
 
-        ddx_sax_parser.getEntity = &D4ParserSax2::dmr_get_entity;
-        ddx_sax_parser.startDocument = &D4ParserSax2::dmr_start_document;
-        ddx_sax_parser.endDocument = &D4ParserSax2::dmr_end_document;
-        ddx_sax_parser.characters = &D4ParserSax2::dmr_get_characters;
-        ddx_sax_parser.ignorableWhitespace = &D4ParserSax2::dmr_ignoreable_whitespace;
-        ddx_sax_parser.cdataBlock = &D4ParserSax2::dmr_get_cdata;
-        ddx_sax_parser.warning = &D4ParserSax2::dmr_error;
-        ddx_sax_parser.error = &D4ParserSax2::dmr_error;
-        ddx_sax_parser.fatalError = &D4ParserSax2::dmr_fatal_error;
-        ddx_sax_parser.initialized = XML_SAX2_MAGIC;
-        ddx_sax_parser.startElementNs = &D4ParserSax2::dmr_start_element;
-        ddx_sax_parser.endElementNs = &D4ParserSax2::dmr_end_element;
+        d_dmr_sax_parser.getEntity = &D4ParserSax2::dmr_get_entity;
+        d_dmr_sax_parser.startDocument = &D4ParserSax2::dmr_start_document;
+        d_dmr_sax_parser.endDocument = &D4ParserSax2::dmr_end_document;
+        d_dmr_sax_parser.characters = &D4ParserSax2::dmr_get_characters;
+        d_dmr_sax_parser.ignorableWhitespace = &D4ParserSax2::dmr_ignoreable_whitespace;
+        d_dmr_sax_parser.cdataBlock = &D4ParserSax2::dmr_get_cdata;
+        d_dmr_sax_parser.warning = &D4ParserSax2::dmr_error;
+        d_dmr_sax_parser.error = &D4ParserSax2::dmr_error;
+        d_dmr_sax_parser.fatalError = &D4ParserSax2::dmr_fatal_error;
+        d_dmr_sax_parser.initialized = XML_SAX2_MAGIC;
+        d_dmr_sax_parser.startElementNs = &D4ParserSax2::dmr_start_element;
+        d_dmr_sax_parser.endElementNs = &D4ParserSax2::dmr_end_element;
     }
 
     void intern(istream &f, DMR *dest_dmr, bool debug = false);

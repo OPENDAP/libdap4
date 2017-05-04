@@ -51,7 +51,6 @@
 #include "util.h"
 #include "debug.h"
 
-
 namespace libdap {
 
 static const char *states[] = {
@@ -591,7 +590,7 @@ void D4ParserSax2::process_variable_helper(Type t, ParseState s, const xmlChar *
 void D4ParserSax2::dmr_start_document(void * p)
 {
     D4ParserSax2 *parser = static_cast<D4ParserSax2*>(p);
-    parser->error_msg = "";
+    parser->d_error_msg = "";
     parser->char_data = "";
 
     // Set this in intern_helper so that the loop test for the parser_end
@@ -1206,10 +1205,10 @@ void D4ParserSax2::dmr_fatal_error(void * p, const char *msg, ...)
     vsnprintf(str, 1024, msg, args);
     va_end(args);
 
-    int line = xmlSAX2GetLineNumber(parser->context);
+    int line = xmlSAX2GetLineNumber(parser->d_context);
 
-    if (!parser->error_msg.empty()) parser->error_msg += "\n";
-    parser->error_msg += "At line " + long_to_string(line) + ": " + string(str);
+    if (!parser->d_error_msg.empty()) parser->d_error_msg += "\n";
+    parser->d_error_msg += "At line " + long_to_string(line) + ": " + string(str);
 }
 
 void D4ParserSax2::dmr_error(void *p, const char *msg, ...)
@@ -1224,10 +1223,10 @@ void D4ParserSax2::dmr_error(void *p, const char *msg, ...)
     vsnprintf(str, 1024, msg, args);
     va_end(args);
 
-    int line = xmlSAX2GetLineNumber(parser->context);
+    int line = xmlSAX2GetLineNumber(parser->d_context);
 
-    if (!parser->error_msg.empty()) parser->error_msg += "\n";
-    parser->error_msg += "At line " + long_to_string(line) + ": " + string(str);
+    if (!parser->d_error_msg.empty()) parser->d_error_msg += "\n";
+    parser->d_error_msg += "At line " + long_to_string(line) + ": " + string(str);
 }
 //@}
 
@@ -1236,11 +1235,11 @@ void D4ParserSax2::dmr_error(void *p, const char *msg, ...)
  */
 void D4ParserSax2::cleanup_parse()
 {
-    bool wellFormed = context->wellFormed;
-    bool valid = context->valid;
+    bool wellFormed = d_context->wellFormed;
+    bool valid = d_context->valid;
 
-    context->sax = NULL;
-    xmlFreeParserCtxt(context);
+    d_context->sax = NULL;
+    xmlFreeParserCtxt(d_context);
 
     delete d_enum_def;
     d_enum_def = 0;
@@ -1256,13 +1255,13 @@ void D4ParserSax2::cleanup_parse()
     }
 
     if (!wellFormed)
-        throw Error("The DMR was not well formed. " + error_msg);
+        throw Error("The DMR was not well formed. " + d_error_msg);
     else if (!valid)
-        throw Error("The DMR was not valid." + error_msg);
+        throw Error("The DMR was not valid." + d_error_msg);
     else if (get_state() == parser_error)
-        throw Error(error_msg);
+        throw Error(d_error_msg);
     else if (get_state() == parser_fatal_error)
-        throw InternalErr(error_msg);
+        throw InternalErr(d_error_msg);
 }
 
 /**
@@ -1306,19 +1305,19 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 
     if (debug) cerr << "line: (" << line++ << "): " << chars << endl;
 
-    context = xmlCreatePushParserCtxt(&ddx_sax_parser, this, chars, res - 1, "stream");
-    context->validate = true;
+    d_context = xmlCreatePushParserCtxt(&d_dmr_sax_parser, this, chars, res - 1, "stream");
+    d_context->validate = true;
     push_state(parser_start);
 
     f.getline(chars, size);
     while ((f.gcount() > 0) && (get_state() != parser_end)) {
         if (debug) cerr << "line: (" << line++ << "): " << chars << endl;
-        xmlParseChunk(context, chars, f.gcount() - 1, 0);
+        xmlParseChunk(d_context, chars, f.gcount() - 1, 0);
         f.getline(chars, size);
     }
 
     // This call ends the parse.
-    xmlParseChunk(context, chars, 0, 1/*terminate*/);
+    xmlParseChunk(d_context, chars, 0, 1/*terminate*/);
 #else
     int line_num = 1;
     string line;
@@ -1329,8 +1328,8 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 
     if (debug) cerr << "line: (" << line_num << "): " << endl << line << endl << endl;
 
-    context = xmlCreatePushParserCtxt(&ddx_sax_parser, this, line.c_str(), line.length(), "stream");
-    context->validate = true;
+    d_context = xmlCreatePushParserCtxt(&d_dmr_sax_parser, this, line.c_str(), line.length(), "stream");
+    d_context->validate = true;
     push_state(parser_start);
 
     // Get the first line of stuff
@@ -1340,7 +1339,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     if (debug) cerr << "line: (" << line_num << "): " << endl << line << endl << endl;
 
     while (!f.eof() && (get_state() != parser_end)) {
-        xmlParseChunk(context, line.c_str(), line.length(), 0);
+        xmlParseChunk(d_context, line.c_str(), line.length(), 0);
 
         // Get the next line
         getline(f, line);
@@ -1350,7 +1349,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     }
 
     // This call ends the parse.
-    xmlParseChunk(context, line.c_str(), 0, 1/*terminate*/);
+    xmlParseChunk(d_context, line.c_str(), 0, 1/*terminate*/);
 #endif
 
     // This checks that the state on the parser stack is parser_end and throws
@@ -1395,11 +1394,11 @@ void D4ParserSax2::intern(const char *buffer, int size, DMR *dest_dmr, bool debu
     d_dmr = dest_dmr; // dump values in dest_dmr
 
     push_state(parser_start);
-    context = xmlCreatePushParserCtxt(&ddx_sax_parser, this, buffer, size, "stream");
-    context->validate = true;
+    d_context = xmlCreatePushParserCtxt(&d_dmr_sax_parser, this, buffer, size, "stream");
+    d_context->validate = true;
 
     // This call ends the parse.
-    xmlParseChunk(context, buffer, 0, 1/*terminate*/);
+    xmlParseChunk(d_context, buffer, 0, 1/*terminate*/);
 
     // This checks that the state on the parser stack is parser_end and throws
     // an exception if it's not (i.e., the loop exited with gcount() == 0).
