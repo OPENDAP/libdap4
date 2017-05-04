@@ -1292,6 +1292,8 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 
     d_dmr = dest_dmr; // dump values here
 
+#if 0
+    // Old, bad, code. Lines are limited to 1023 chars including the element text.
     const int size = 1024;
     char chars[size];
     int line = 1;
@@ -1299,6 +1301,8 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     f.getline(chars, size);
     int res = f.gcount();
     if (res == 0) throw Error("No input found while parsing the DMR.");
+
+    getline(f, line);
 
     if (debug) cerr << "line: (" << line++ << "): " << chars << endl;
 
@@ -1315,6 +1319,39 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 
     // This call ends the parse.
     xmlParseChunk(context, chars, 0, 1/*terminate*/);
+#else
+    int line_num = 1;
+    string line;
+
+    // Get the <xml ... ?> line
+    getline(f, line);
+    if (line.length() == 0) throw Error("No input found while parsing the DMR.");
+
+    if (debug) cerr << "line: (" << line_num << "): " << endl << line << endl << endl;
+
+    context = xmlCreatePushParserCtxt(&ddx_sax_parser, this, line.c_str(), line.length(), "stream");
+    context->validate = true;
+    push_state(parser_start);
+
+    // Get the first line of stuff
+    getline(f, line);
+    ++line_num;
+
+    if (debug) cerr << "line: (" << line_num << "): " << endl << line << endl << endl;
+
+    while (!f.eof() && (get_state() != parser_end)) {
+        xmlParseChunk(context, line.c_str(), line.length(), 0);
+
+        // Get the next line
+        getline(f, line);
+        ++line_num;
+
+        if (debug) cerr << "line: (" << line_num << "): " << endl << line << endl << endl;
+    }
+
+    // This call ends the parse.
+    xmlParseChunk(context, line.c_str(), 0, 1/*terminate*/);
+#endif
 
     // This checks that the state on the parser stack is parser_end and throws
     // an exception if it's not (i.e., the loop exited with gcount() == 0).
@@ -1360,8 +1397,6 @@ void D4ParserSax2::intern(const char *buffer, int size, DMR *dest_dmr, bool debu
     push_state(parser_start);
     context = xmlCreatePushParserCtxt(&ddx_sax_parser, this, buffer, size, "stream");
     context->validate = true;
-    //push_state(parser_start);
-    //xmlParseChunk(context, buffer, size, 0);
 
     // This call ends the parse.
     xmlParseChunk(context, buffer, 0, 1/*terminate*/);
