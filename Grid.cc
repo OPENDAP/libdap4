@@ -172,6 +172,7 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
 				map->set_parent(container);
 				container->add_var_nocopy(map);	// this adds the array to the container
 			}
+	        // TODO - I think the names of the D4Map objects need to be FQNs FIX
 			D4Map *dap4_map = new D4Map(map->name(), map, coverage);	// bind the 'map' to the coverage
 			coverage->maps()->add_map(dap4_map);	// bind the coverage to the map
 		}
