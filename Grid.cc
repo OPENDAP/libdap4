@@ -149,8 +149,6 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
 {
     BaseType *btp = array_var()->transform_to_dap4(root, container);
     Array *coverage = static_cast<Array*>(btp);
-    if (!coverage)
-    	throw InternalErr(__FILE__, __LINE__, "Expected an Array while transforming a Grid (coverage)");
 
 	coverage->set_parent(container);
 
@@ -160,26 +158,18 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
 	for (Map_iter i = map_begin(), e = map_end(); i != e; ++i) {
     	btp = (*i)->transform_to_dap4(root, container);
         Array *map = static_cast<Array*>(btp);
-        if (!map)
-        	throw InternalErr(__FILE__, __LINE__, "Expected an Array while transforming a Grid (map)");
 
-    	// map must be non-null (Grids cannot contain Grids in DAP2)
-		if (map) {
-			// Only add the map/array if it not already present; given the scoping rules
-			// for DAP2 and the assumption the DDS is valid, testing for the same name
-			// is good enough.
-			if (!root->var(map->name())) {
-				map->set_parent(container);
-				container->add_var_nocopy(map);	// this adds the array to the container
-			}
-	        // TODO - I think the names of the D4Map objects need to be FQNs FIX
-			D4Map *dap4_map = new D4Map(map->name(), map, coverage);	// bind the 'map' to the coverage
-			coverage->maps()->add_map(dap4_map);	// bind the coverage to the map
-		}
-		else {
-			throw InternalErr(__FILE__, __LINE__,
-					"transform_to_dap4() returned a null value where there can be no Grid.");
-		}
+        // Only add the map/array if it's not already present; given the scoping rules
+        // for DAP2 and the assumption the DDS is valid, testing for the same name
+        // is good enough.
+        if (!root->var(map->name())) {
+            map->set_parent(container);
+            container->add_var_nocopy(map);	// this adds the array to the container
+        }
+
+        // FIXME - I think the names of the D4Map objects need to be FQNs ndp/jhrg 5/4/17
+        D4Map *dap4_map = new D4Map(map->name(), map, coverage);	// bind the 'map' to the coverage
+        coverage->maps()->add_map(dap4_map);	// bind the coverage to the map
 	}
 
 	container->add_var_nocopy(coverage);
