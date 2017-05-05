@@ -149,40 +149,23 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
 {
     BaseType *btp = array_var()->transform_to_dap4(root, container);
     Array *coverage = static_cast<Array*>(btp);
-
 	coverage->set_parent(container);
 
 	// Next find the maps; add them to the coverage and to the container,
 	// the latter only on the condition that they are not already there.
-
 	for (Map_iter i = map_begin(), e = map_end(); i != e; ++i) {
-    	btp = (*i)->transform_to_dap4(root, container);
-        Array *map = static_cast<Array*>(btp);
-
         // Only add the map/array if it's not already present; given the scoping rules
         // for DAP2 and the assumption the DDS is valid, testing for the same name
-        // is good enough.
-        Array *new_dap4_map_array = static_cast<Array*>(root->var(map->name()));
-        if (!new_dap4_map_array) {
-            map->set_parent(container);
-            container->add_var_nocopy(map);	// this adds the array to the container
-            // We need the name of the map relative to the new dap4 data object,
-            // so, once we add it, we find it
-            // new_dap4_map_array = static_cast<Array*>(root->var(map->name()));
-            new_dap4_map_array = map;
+        // is good enough. The point here is to be sure to only use the existing maps
+        Array *the_map_array = static_cast<Array*>(root->var((*i)->name()));
+        if (!the_map_array) {
+            the_map_array = static_cast<Array*>( (*i)->transform_to_dap4(root, container));
+            the_map_array->set_parent(container);
+            container->add_var_nocopy(the_map_array);	// this adds the array to the container
         }
-
-        DBG (cerr << __func__ << "() -"
-            " map->name(): '" << map->name() << "'" <<
-            " map->FQN(): '" << map->FQN() << "'" <<
-            " new_dap4_map_array->name(): '" << new_dap4_map_array->name() << "'" <<
-            " new_dap4_map_array->FQN(): '" << new_dap4_map_array->FQN() << "'" <<
-            endl;);
-
-        // FIXME - I think the names of the D4Map objects need to be FQNs ndp/jhrg 5/4/17
         // Here we use the Map Array that we pulled out of the root group as the Map
         // name and Map  Array reference for our map.
-        D4Map *dap4_map = new D4Map(new_dap4_map_array->FQN(), new_dap4_map_array, coverage);	// bind the 'map' to the coverage
+        D4Map *dap4_map = new D4Map(the_map_array->FQN(), the_map_array, coverage);	// bind the 'map' to the coverage
         coverage->maps()->add_map(dap4_map);	// bind the coverage to the map
 	}
 
