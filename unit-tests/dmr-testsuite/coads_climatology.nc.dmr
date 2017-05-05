@@ -16,32 +16,32 @@
         <Dim name="/TIME"/>
         <Dim name="/COADSY"/>
         <Dim name="/COADSX"/>
-        <Map name="TIME"/>
-        <Map name="COADSY"/>
-        <Map name="COADSX"/>
+        <Map name="/TIME"/>
+        <Map name="/COADSY"/>
+        <Map name="/COADSX"/>
     </Float32>
     <Float32 name="AIRT">
         <Dim name="/TIME"/>
         <Dim name="/COADSY"/>
         <Dim name="/COADSX"/>
-        <Map name="TIME"/>
-        <Map name="COADSY"/>
-        <Map name="COADSX"/>
+        <Map name="/TIME"/>
+        <Map name="/COADSY"/>
+        <Map name="/COADSX"/>
     </Float32>
     <Float32 name="UWND">
         <Dim name="/TIME"/>
         <Dim name="/COADSY"/>
         <Dim name="/COADSX"/>
-        <Map name="TIME"/>
-        <Map name="COADSY"/>
-        <Map name="COADSX"/>
+        <Map name="/TIME"/>
+        <Map name="/COADSY"/>
+        <Map name="/COADSX"/>
     </Float32>
     <Float32 name="VWND">
         <Dim name="/TIME"/>
         <Dim name="/COADSY"/>
         <Dim name="/COADSX"/>
-        <Map name="TIME"/>
-        <Map name="COADSY"/>
-        <Map name="COADSX"/>
+        <Map name="/TIME"/>
+        <Map name="/COADSY"/>
+        <Map name="/COADSX"/>
     </Float32>
 </Dataset>
