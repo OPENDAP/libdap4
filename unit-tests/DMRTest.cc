@@ -66,8 +66,7 @@ static bool debug = false;
 
 using namespace CppUnit;
 using namespace std;
-
-namespace libdap {
+using namespace libdap;
 
 class DMRTest: public TestFixture {
 private:
@@ -318,9 +317,6 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DMRTest);
 
-
-} // namepsace libdap
-
 int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
@@ -346,7 +342,7 @@ int main(int argc, char*argv[]) {
     }
     else {
         while (i < argc) {
-            test = string("libdap::DMRTest::") + argv[i++];
+            test = string("DMRTest::") + argv[i++];
             DBG(cerr << "test: " << test << endl);
             wasSuccessful = wasSuccessful && runner.run(test);
         }

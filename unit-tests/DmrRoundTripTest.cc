@@ -66,10 +66,10 @@ static bool debug = false;
 
 using namespace CppUnit;
 using namespace std;
+using namespace libdap;
 
 static string THE_TESTS_DIR("/dmr-rt-testsuite/");
 
-namespace libdap {
 
 class DmrRoundTripTest: public TestFixture {
 private:
@@ -261,7 +261,6 @@ public:
 CPPUNIT_TEST_SUITE_REGISTRATION(DmrRoundTripTest);
 
 
-} // namepsace libdap
 
 int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
@@ -288,7 +287,7 @@ int main(int argc, char*argv[]) {
     }
     else {
         while (i < argc) {
-            test = string("libdap::DMRTest::") + argv[i++];
+            test = string("DmrRoundTripTest::") + argv[i++];
             DBG(cerr << "test: " << test << endl);
             wasSuccessful = wasSuccessful && runner.run(test);
         }

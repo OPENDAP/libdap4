@@ -68,10 +68,9 @@ static bool mo_debug = false;
 
 using namespace CppUnit;
 using namespace std;
+using namespace libdap;
 
 static string THE_TESTS_DIR("/dmr-to-dap2-testsuite/");
-
-namespace libdap {
 
 class DmrToDap2Test: public TestFixture {
 private:
@@ -358,7 +357,7 @@ public:
     CPPUNIT_TEST_SUITE( DmrToDap2Test );
 
 
-#if 0 // good (as in should be working) tests
+#if 1 // good (as in should be working) tests
     CPPUNIT_TEST(dmr_to_dap2_01);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_0);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_1);
@@ -388,13 +387,12 @@ public:
 
     CPPUNIT_TEST(dmr_to_grid_01);
     CPPUNIT_TEST(dmr_to_grid_02);
-
+    CPPUNIT_TEST(dmr_to_grid_03);
     CPPUNIT_TEST(dmr_to_grid_04);
     CPPUNIT_TEST(dmr_to_grid_05);
 
 #endif
 
-    CPPUNIT_TEST(dmr_to_grid_03);
 
 
 #if 0 // bad tests, here then is the woodshed of Testville.
@@ -409,9 +407,6 @@ public:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DmrToDap2Test);
-
-
-} // namepsace libdap
 
 int main(int argc, char*argv[]) {
     CppUnit::TextTestRunner runner;
@@ -441,7 +436,7 @@ int main(int argc, char*argv[]) {
     }
     else {
         while (i < argc) {
-            test = string("libdap::DMRTest::") + argv[i++];
+            test = string("DmrToDap2Test::") + argv[i++];
             DBG(cerr << "test: " << test << endl);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
