@@ -166,6 +166,8 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
         if (!new_dap4_map_array) {
             map->set_parent(container);
             container->add_var_nocopy(map);	// this adds the array to the container
+            // We need the name of the map relative to the new dap4 data object,
+            // so, once we add it, we find it
             new_dap4_map_array = root->var(map->name());
         }
 
@@ -177,6 +179,8 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
             endl;);
 
         // FIXME - I think the names of the D4Map objects need to be FQNs ndp/jhrg 5/4/17
+        // Here we use the Map Array that we pulled out of the root group as the Map
+        // name and Map  Array reference for our map.
         D4Map *dap4_map = new D4Map(new_dap4_map_array->FQN(), new_dap4_map_array, coverage);	// bind the 'map' to the coverage
         coverage->maps()->add_map(dap4_map);	// bind the coverage to the map
 	}
