@@ -162,13 +162,13 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
         // Only add the map/array if it's not already present; given the scoping rules
         // for DAP2 and the assumption the DDS is valid, testing for the same name
         // is good enough.
-        BaseType *new_dap4_map_array = root->var(map->name());
+        Array *new_dap4_map_array = static_cast<Array*>(root->var(map->name()));
         if (!new_dap4_map_array) {
             map->set_parent(container);
             container->add_var_nocopy(map);	// this adds the array to the container
             // We need the name of the map relative to the new dap4 data object,
             // so, once we add it, we find it
-            new_dap4_map_array = root->var(map->name());
+            new_dap4_map_array = static_cast<Array*>(root->var(map->name()));
         }
 
         DBG (cerr << __func__ << "() -"
