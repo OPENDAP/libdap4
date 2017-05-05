@@ -157,6 +157,8 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
         // Only add the map/array if it's not already present; given the scoping rules
         // for DAP2 and the assumption the DDS is valid, testing for the same name
         // is good enough. The point here is to be sure to only use the existing maps
+	    // This is an important issue when there are multiple Grids in the same
+	    // dataset that utilize the same Map arrays data.
         Array *the_map_array = static_cast<Array*>(root->var((*i)->name()));
         if (!the_map_array) {
             the_map_array = static_cast<Array*>( (*i)->transform_to_dap4(root, container));
