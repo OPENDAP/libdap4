@@ -1,9 +1,24 @@
 ## directories
 .deps
 .libs
-autom4te.cache
+.idea
+.dirstamp
+.cproject
+.project
+.settings
+.DS_Store
+*/.DS_Store
 
-## files
+autom4te.cache
+Default
+docs
+html
+tmp
+
+# CLion CMake directory; might make this visible later on... jhrg 2/8/17
+cmake-build-*
+
+## file ptterns
 *~
 *.o
 *.lo
@@ -20,19 +35,10 @@ lex.*.cc
 *.gcov
 *.gcno
 *.gcda
-
-.dirstamp
-.cproject
-.project
-.settings
-.DS_Store
-*/.DS_Store
-.idea
 # OSX Instruments run-time profiling 
 *.trace
-# CLion CMake directory; might make this visible later on... jhrg 2/8/17
-cmake-build-*
 
+# literal files
 Makefile
 Makefile.in
 conf/compile
@@ -162,7 +168,3 @@ unit-tests/D4FilterClauseTest
 unit-tests/D4SequenceTest
 
 unit-tests/chunked-io/
-/Default/
-/docs/
-/.idea/
-/tmp
