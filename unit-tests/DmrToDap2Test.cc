@@ -408,24 +408,39 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DmrToDap2Test);
 
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "d");
+int
+main(int argc, char *argv[])
+{
+    GetOpt getopt(argc, argv, "dh");
     int option_char;
 
     while ((option_char = getopt()) != -1)
         switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-        case 'D':
-            mo_debug = 1;  // debug is a static global
-            break;
-        default:
-            break;
+            case 'd':
+                debug = 1;  // debug is a static global
+                break;
+
+            case 'D':
+                mo_debug = 1;  // debug is a static global
+                break;
+
+            case 'h': {     // help - show test names
+                cerr << "Usage: DmrToDap2Test has the following tests:" << endl;
+                const std::vector<Test*> &tests = DmrToDap2Test::suite()->getTests();
+                unsigned int prefix_len = DmrToDap2Test::suite()->getName().append("::").length();
+                for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                    cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+                }
+                return 1;
+                break;
+            }
+
+            default:
+                break;
         }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -435,14 +450,12 @@ int main(int argc, char*argv[]) {
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("DmrToDap2Test::") + argv[i++];
-            DBG(cerr << "test: " << test << endl);
+        for ( ; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = DmrToDap2Test::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
-
-    xmlMemoryDump();
 
     return wasSuccessful ? 0 : 1;
 }
