@@ -35,7 +35,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include <algorithm>
 #include <functional>
@@ -193,52 +193,69 @@ Array::operator=(const Array &rhs)
 BaseType *
 Array::transform_to_dap4(D4Group *root, Constructor */*container*/)
 {
+    DBG(cerr << __func__ << "() - BEGIN (array:" << name() << ")" << endl;);
 	Array *dest = static_cast<Array*>(ptr_duplicate());
 
 	// If it's already a DAP4 object then we can just return it!
-	if(is_dap4())
+	if(is_dap4()){
+	    DBG(cerr << __func__ << "() - END (Already DAP4 type) " << endl;);
 	    return dest;
-
+	}
 	// Process the Array's dimensions, making D4 shared dimensions for
 	// D2 dimensions that are named. If there is just a size, don't make
 	// a D4Dimension (In DAP4 you cannot share a dimension unless it has
 	// a name). jhrg 3/18/14
 
-	D4Dimensions *dims = root->dims();
-	for (Array::Dim_iter d = dest->dim_begin(), e = dest->dim_end(); d != e; ++d) {
-		if (!(*d).name.empty()) {
+	D4Dimensions *root_dims = root->dims();
+	for (Array::Dim_iter dap2_dim = dest->dim_begin(), e = dest->dim_end(); dap2_dim != e; ++dap2_dim) {
+		if (!(*dap2_dim).name.empty()) {
+	        DBG(cerr << __func__ << "() - Processing the array dimension '" << (*dap2_dim).name << "'" << endl;);
+
 			// If a D4Dimension with the name already exists, use it.
-			D4Dimension *d4_dim = dims->find_dim((*d).name);
+			D4Dimension *d4_dim = root_dims->find_dim((*dap2_dim).name);
 			if (!d4_dim) {
-				d4_dim = new D4Dimension((*d).name, (*d).size);
-				dims->add_dim_nocopy(d4_dim);
+				d4_dim = new D4Dimension((*dap2_dim).name, (*dap2_dim).size);
+				root_dims->add_dim_nocopy(d4_dim);
+		        DBG(cerr << __func__ << "() -" <<
+		            " Added NEW D4Dimension '"<< d4_dim->name() << "' (" <<
+		            (void *)d4_dim << ") to root->dims()"<< endl;);
 			}
-			// TODO Revisit this decision. jhrg 3/18/14
-			// ...in case the name/size are different, make a unique D4Dimension
-			// but don't fiddle with the name. Not sure I like this idea, so I'm
-			// making the case explicit (could be rolled in to the block above).
-			// jhrg 3/18/14
-			//
-			// This is causing problems in the FITS handler because there are cases
-			// where two arrays have dimensions with the same name but different
-			// sizes. The deserializing code is using the first size listed, which is
-			// wrong in some cases. I'm going to try making this new D4Dimension using
-			// the dim name along with the variable name. jhrg 8/15/14
-			else if (d4_dim->size() != (unsigned long) (*d).size) {
-				d4_dim = new D4Dimension((*d).name + "_" + name(), (*d).size);
-				dims->add_dim_nocopy(d4_dim);
+	        else {
+	            DBG(cerr << __func__ << "() -" <<
+	                " Using Existing D4Dimension '"<< d4_dim->name() << "' (" <<
+	                (void *)d4_dim << ")"<< endl;);
+
+	            if (d4_dim->size() != (unsigned long) (*dap2_dim).size) {
+                // TODO Revisit this decision. jhrg 3/18/14
+                // ...in case the name/size are different, make a unique D4Dimension
+                // but don't fiddle with the name. Not sure I like this idea, so I'm
+                // making the case explicit (could be rolled in to the block above).
+                // jhrg 3/18/14
+                //
+                // This is causing problems in the FITS handler because there are cases
+                // where two arrays have dimensions with the same name but different
+                // sizes. The deserializing code is using the first size listed, which is
+                // wrong in some cases. I'm going to try making this new D4Dimension using
+                // the dim name along with the variable name. jhrg 8/15/14
+                    d4_dim = new D4Dimension((*dap2_dim).name + "_" + name(), (*dap2_dim).size);
+                    DBG(cerr << __func__ << "() -" <<
+                         " Utilizing Name/Size Conflict Naming Artifice. name'"<< d4_dim->name() << "' (" <<
+                         (void *)d4_dim << ")"<< endl;);
+                    root_dims->add_dim_nocopy(d4_dim);
+	            }
 			}
 			// At this point d4_dim's name and size == those of (*d) so just set
 			// the D4Dimension pointer so it matches the one in the D4Group.
-			(*d).dim = d4_dim;
+			(*dap2_dim).dim = d4_dim;
 		}
+
 	}
 
 	// Copy the D2 attributes to D4 Attributes
 	dest->attributes()->transform_to_dap4(get_attr_table());
 
 	dest->set_is_dap4(true);
-
+    DBG(cerr << __func__ << "() - END (array:" << name() << ")" << endl;);
 	return dest;
 }
 
@@ -292,9 +309,12 @@ Array::transform_to_dap2(AttrTable *){
     DBG(cerr << __func__ << "() - BEGIN Array '"<< name() << "'" << endl;);
 
     BaseType *dest;
-    if(is_dap4()){
+    if(is_dap4()){ // Don't convert a DAP2 thing
+
+        // Can Precious be represented as a DAP2 Grid
         if(is_dap2_grid()){
-            DBG(cerr << __func__ << "() - Array '"<< name() << " is dap2 Grid!"  << endl;);
+            // Oh yay! Grids are special.
+            DBG(cerr << __func__ << "() - Array '"<< name() << "' is dap2 Grid!"  << endl;);
             Grid *g = new Grid(name());
             dest = g;
             Array *grid_array = (Array *) this->ptr_duplicate();
@@ -316,10 +336,15 @@ Array::transform_to_dap2(AttrTable *){
                 Array *d4_map_array = const_cast<Array*>(d4_map->array());
                 vector<BaseType *> *d2_result = d4_map_array->transform_to_dap2(&(g->get_attr_table()));
                 if(d2_result){
-                    // FIXME - This is probably slow and needs a better pattern. const_cast? static_cast?
-                    // TODO - QC the d2_result array for the limited semantics allowed by Grid.
+                    if(d2_result->size()>1)
+                        throw Error(internal_error,string(__func__)+"() - ERROR: D4Map Array conversion resulted in multiple DAP2 objects.");
+
+                    // TODO - This is probably slow and needs a better pattern. const_cast? static_cast?
                     Array *d2_map_array = dynamic_cast<Array *>((*d2_result)[0]);
                     if(d2_map_array){
+                        if(d2_map_array->dimensions()!=1)
+                            throw Error(internal_error,string(__func__)+"() - ERROR: DAP2 array from D4Map Array conversion has more than 1 dimension.");
+
                         g->add_map(d2_map_array,false);
                         AttrTable at = d2_map_array->get_attr_table();
                         DBG( cerr << __func__ << "() - " <<
@@ -327,7 +352,7 @@ Array::transform_to_dap2(AttrTable *){
                              at.print(cerr); );
                     }
                     else {
-                        throw Error(internal_error,string(__func__)+" Unable to interpret returned DAP2 content.");
+                        throw Error(internal_error,string(__func__)+"() - Unable to interpret returned DAP2 content.");
                     }
                     delete d2_result;
                 }
@@ -344,6 +369,7 @@ Array::transform_to_dap2(AttrTable *){
             }
         }
         else {
+            // It's not a Grid so we can make a simple copy of our Precious.
             DBG( cerr << __func__ << "() - Array '"<< name() << "' is not a Grid!"  << endl);
             BaseType *proto = this->prototype();
             switch(proto->type()){
@@ -352,6 +378,9 @@ Array::transform_to_dap2(AttrTable *){
             case dods_enum_c:
             case dods_opaque_c:
             {
+                // For now we punt on these type as they have no easy representation in
+                // the DAP2 data model. By setting this to NULL we cause the Array to be
+                // dropped and this will be reflected in the metadata (DAS).
                 dest = NULL;
                 break;
             }
@@ -374,6 +403,7 @@ Array::transform_to_dap2(AttrTable *){
 
     }
     else {
+        // If it's a DAP2 Array already then we just make a copy of our Precious.
         dest = this->ptr_duplicate();
     }
     // attrs->print(cerr,"",true);

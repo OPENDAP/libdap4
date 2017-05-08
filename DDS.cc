@@ -51,7 +51,7 @@
 #include <algorithm>
 #include <functional>
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 //#define DODS_DEBUG2
 
 #include "GNURegex.h"
@@ -739,17 +739,17 @@ DDS::leaf_match(const string &n, BaseType::btp_stack *s)
 
     for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
         BaseType *btp = *i;
-        DBG(cerr << "DDS::leaf_match: Looking for " << n << " in: " << btp->d_name() << endl);
+        DBG(cerr << "DDS::leaf_match: Looking for " << n << " in: " << btp->name() << endl);
         // Look for the d_name in the dataset's top-level
         if (btp->name() == n) {
-            DBG(cerr << "Found " << n << " in: " << btp->d_name() << endl);
+            DBG(cerr << "Found " << n << " in: " << btp->name() << endl);
             return btp;
         }
 
         if (btp->is_constructor_type()) {
             BaseType *found = btp->var(n, false, s);
             if (found) {
-                DBG(cerr << "Found " << n << " in: " << btp->d_name() << endl);
+                DBG(cerr << "Found " << n << " in: " << btp->name() << endl);
                 return found;
             }
         }

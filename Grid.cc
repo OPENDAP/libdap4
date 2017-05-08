@@ -147,28 +147,57 @@ Grid::operator=(const Grid &rhs)
 BaseType *
 Grid::transform_to_dap4(D4Group *root, Constructor *container)
 {
+    DBG(cerr << __func__ << "() - BEGIN (gird:"<< name() << ")" << endl;);
+
     BaseType *btp = array_var()->transform_to_dap4(root, container);
     Array *coverage = static_cast<Array*>(btp);
 	coverage->set_parent(container);
 
+	DBG(cerr << __func__ << "() - Added DAP4 coverage Array '"<< coverage->name() <<
+	    "' to parent container: '" << container->name() << "'" << endl;);
+
 	// Next find the maps; add them to the coverage and to the container,
 	// the latter only on the condition that they are not already there.
 	for (Map_iter i = map_begin(), e = map_end(); i != e; ++i) {
-        // Only add the map/array if it's not already present; given the scoping rules
-        // for DAP2 and the assumption the DDS is valid, testing for the same name
-        // is good enough. The point here is to be sure to only use the existing maps
-	    // This is an important issue when there are multiple Grids in the same
+	    DBG(cerr << __func__ << "() - Processing Map Array:  '"<< (*i)->name() << "' ("<< (void *)(*i)<< ")" << endl;);
+        // Only add the map/array if it's not already present in the target DAP2 container.
+	    // Given the scoping rules for DAP2 and the assumption the DDS is valid, testing for
+	    // the same name is good enough. The point here is to be sure to only use the
+	    // existing maps. This is an important issue when there are multiple Grids in the same
 	    // dataset that utilize the same Map arrays data.
-        Array *the_map_array = static_cast<Array*>(root->var((*i)->name()));
-        if (!the_map_array) {
-            the_map_array = static_cast<Array*>( (*i)->transform_to_dap4(root, container));
-            the_map_array->set_parent(container);
-            container->add_var_nocopy(the_map_array);	// this adds the array to the container
+        Array *the_map_array;;
+        Array *root_map_array = static_cast<Array*>(root->var((*i)->name()));
+        Array *container_map_array = static_cast<Array*>(container->var((*i)->name()));
+        if (!root_map_array) {
+            // Not in the root group so we have to add it.
+            DBG(cerr << __func__ << "() - No Map Array '" << (*i)->name() << "' present in the root Group ("<<root->name()<< ":"<<(void*)root<< "). Let's fix that..." << endl;);
+            if(!container_map_array){
+                DBG(cerr << __func__ << "() - No Map Array '" << (*i)->name() << "' present in the current DAP4 container ("<<container->name()<< ":"<<(void*)container<< "). Let's fix that..." << endl;);
+                the_map_array = static_cast<Array*>( (*i)->transform_to_dap4(root, container));
+                DBG(cerr << __func__ << "() - Transformed array '"<< the_map_array->name() <<
+                    "' to DAP4 Array (" << (void *) the_map_array << ")" << endl;);
+                // the_map_array->set_parent(container);
+                container->add_var_nocopy(the_map_array);	// this adds the array to the container
+                DBG(cerr << __func__ << "() - Added new DAP4 Array: '"<< the_map_array->name() <<
+                    "' (" << (void *) the_map_array << ") to container: '" << container->name() << "'" << endl;);
+            }
+            else {
+                the_map_array = container_map_array;
+                DBG(cerr << __func__ << "() - Located Map Array '" << the_map_array->name() << "' (" <<
+                    (void *) the_map_array << ") present in the current DAP4 container ("<<container->name()<< ":"<<(void*)container<< "). Let's fix that..." << endl;);
+            }
+        }
+        else {
+            the_map_array = root_map_array;
+            DBG(cerr << __func__ << "() - Located Map Array '" << the_map_array->name() << "' (" <<
+                (void *) the_map_array << ") present in the root group ("<<root->name()<< ":"<<(void*)root<< "). Let's fix that..." << endl;);
         }
         // Here we use the Map Array that we pulled out of the root group as the Map
         // name and Map  Array reference for our map.
         D4Map *dap4_map = new D4Map(the_map_array->FQN(), the_map_array, coverage);	// bind the 'map' to the coverage
         coverage->maps()->add_map(dap4_map);	// bind the coverage to the map
+        DBG(cerr << __func__ << "() - Added DAP4 Map Array:  '"<< (*i)->name() <<
+            "' (" << (void *) the_map_array << ") to coverage: '" << coverage->name() << "'" << endl;);
 	}
 
 	container->add_var_nocopy(coverage);
@@ -177,7 +206,9 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
     // in favor of a set of relations, Grid::transform_to_dap4() does not
     // return a BaseType*. Callers should assume it has correctly added
     // stuff to the container and group.
-    return 0;
+    DBG(cerr << __func__ << "() - END (grid:" << name() << ")" << endl;);
+
+	return 0;
 }
 
 

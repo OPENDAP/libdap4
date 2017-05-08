@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+#define DODS_DEBUG
 
 #include <iostream>
 #include <sstream>
@@ -635,16 +635,19 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table){
     return transform_to_dap2(parent_attr_table,false);
 }
 vector<BaseType *> *
-D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool root_names)
+D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool is_root)
 {
-    DBG( cerr << __func__ << "() - BEGIN ("<< name() << " root_names: "<< (root_names?"true":"false") << ")" << endl;);
+    DBG( cerr << __func__ << "() - BEGIN ("<< name() << " is_root: "<< (is_root?"true":"false") << ")" << endl;);
     vector<BaseType *> *results = new vector<BaseType *>();
     vector<BaseType *> dropped_vars;
 
     AttrTable *group_attrs;
     group_attrs = attributes()->get_AttrTable(name());
 
-    if(root_names){
+    /**
+     * If this is the root group then we handle the attributes differently.
+     */
+    if(is_root){
         DBG( cerr << __func__ << "() - Promoting group attributes to parent" << endl;);
        // If it's a root group we copy all the stuff up into the parent attr table
         for (AttrTable::Attr_iter i = group_attrs->attr_begin(), e = group_attrs->attr_end(); i != e; ++i) {
@@ -665,9 +668,13 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool root_names)
         group_attrs = parent_attr_table;
     }
 
-    for (D4Group::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-        DBG( cerr << __func__ << "() - Processing member variable " << (*i)->name() << endl;);
-        vector<BaseType *> *new_vars = (*i)->transform_to_dap2(group_attrs);
+    /**
+     * Now we process the child variables of this group
+     */
+    for (D4Group::Vars_citer varIter = var_begin(), e = var_end(); varIter != e; ++varIter) {
+        DBG( cerr << __func__ << "() - Processing member variable '" << (*varIter)->name() <<
+            "' root: " << (is_root?"true":"false") << endl;);
+        vector<BaseType *> *new_vars = (*varIter)->transform_to_dap2(group_attrs);
         if (new_vars) {  // Might be un-mappable
             // It's not so game on..
             vector<BaseType*>::iterator vIter = new_vars->begin();
@@ -675,17 +682,20 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool root_names)
             for( ; vIter!=end ; vIter++ ){
                 BaseType *new_var = (*vIter);
 
-                string new_name = (root_names?"":FQN()) + new_var->name();
+                string new_name = (is_root?"":FQN()) + new_var->name();
                 new_var->set_name(new_name);
                 results->push_back(new_var);
                 (*vIter) = NULL;
+                DBG( cerr << __func__ << "() - Added member variable '" << (*varIter)->name() << "' " <<
+                    "to results vector. root: "<< (is_root?"true":"false") << endl;);
             }
             delete new_vars;
         }
         else {
-            DBG( cerr << __func__ << "() - Dropping member variable " << (*i)->name() << endl;);
+            DBG( cerr << __func__ << "() - Dropping member variable " << (*varIter)->name() <<
+            " root: " << (is_root?"true":"false") << endl;);
             // Got back a NULL, so we are dropping this var.
-            dropped_vars.push_back(*i);
+            dropped_vars.push_back(*varIter);
         }
     }
     // Process dropped DAP4 vars
@@ -700,13 +710,14 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool root_names)
 
     }
 
-    // Get all the child groups.
+    /**
+     *  Get all the child groups.
+     */
     D4Group::groupsIter gIter = grp_begin();
     D4Group::groupsIter gEnd = grp_end();
     for( ; gIter!=gEnd ; gIter++){
         D4Group *grp = *gIter;
         DBG( cerr << __func__ << "() - Processing D4Group " << grp->name() << endl;);
-
         vector<BaseType *> *d2_vars = grp->transform_to_dap2(group_attrs);
         if(d2_vars){
             DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variables." << endl;);
@@ -722,7 +733,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool root_names)
 
     }
 
-    if(!root_names){
+    if(!is_root){
         group_attrs->set_name(name());
         parent_attr_table->append_container(group_attrs,group_attrs->get_name());
     }
