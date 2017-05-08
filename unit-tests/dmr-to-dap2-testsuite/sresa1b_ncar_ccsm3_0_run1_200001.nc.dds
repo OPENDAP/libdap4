@@ -1,0 +1,48 @@
+Dataset {
+    Float32 lat[lat = 128];
+    Float32 lon[lon = 256];
+    Grid {
+      Array:
+        Float32 area[lat = 128][lon = 256];
+      Maps:
+        Float32 lat[lat = 128];
+        Float32 lon[lon = 256];
+    } area;
+    Float64 lat_bnds[lat = 128][bnds = 2];
+    Float64 lon_bnds[lon = 256][bnds = 2];
+    Grid {
+      Array:
+        Int32 msk_rgn[lat = 128][lon = 256];
+      Maps:
+        Float32 lat[lat = 128];
+        Float32 lon[lon = 256];
+    } msk_rgn;
+    Float64 plev[plev = 17];
+    Float64 time[time = 1];
+    Grid {
+      Array:
+        Float32 pr[time = 1][lat = 128][lon = 256];
+      Maps:
+        Float64 time[time = 1];
+        Float32 lat[lat = 128];
+        Float32 lon[lon = 256];
+    } pr;
+    Grid {
+      Array:
+        Float32 tas[time = 1][lat = 128][lon = 256];
+      Maps:
+        Float64 time[time = 1];
+        Float32 lat[lat = 128];
+        Float32 lon[lon = 256];
+    } tas;
+    Float64 time_bnds[time = 1][bnds = 2];
+    Grid {
+      Array:
+        Float32 ua[time = 1][plev = 17][lat = 128][lon = 256];
+      Maps:
+        Float64 time[time = 1];
+        Float64 plev[plev = 17];
+        Float32 lat[lat = 128];
+        Float32 lon[lon = 256];
+    } ua;
+} sresa1b_ncar_ccsm3_0_run1_200001.nc;
