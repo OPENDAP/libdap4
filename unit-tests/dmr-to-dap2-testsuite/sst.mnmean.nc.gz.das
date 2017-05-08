@@ -44,20 +44,6 @@ Attributes {
         String statistic "Mean";
         String parent_stat "Mean";
         sst {
-            String long_name "Monthly Means of Sea Surface Temperature";
-            Float32 valid_range -5.00000000, 40.0000000;
-            Float32 actual_range -1.79999995, 34.2399979;
-            String units "degC";
-            Float32 add_offset 0.00000000;
-            Float32 scale_factor 0.00999999978;
-            Int16 missing_value 32767;
-            Int16 precision 2;
-            Int16 least_significant_digit 1;
-            String var_desc "Sea Surface Temperature";
-            String dataset "NOAA Extended Reconstructed SST V3";
-            String level_desc "Surface";
-            String statistic "Mean";
-            String parent_stat "Mean";
         }
         time {
             String units "days since 1800-1-1 00:00:00";

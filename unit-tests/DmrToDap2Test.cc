@@ -336,8 +336,7 @@ public:
 
     void dmr_to_grid_03() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
-        //test_template("sresa1b_ncar_ccsm3_0_run1_200001.nc");
-        test_template("foo");
+        test_template("sresa1b_ncar_ccsm3_0_run1_200001.nc");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 

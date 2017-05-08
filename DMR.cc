@@ -234,16 +234,11 @@ void DMR::build_using_dds(DDS &dds)
         // to the root object. For example, this happens in
         // Grid with the Map Arrays - ndp - 05/08/17
         if(!d4_var){
+            // no variable of this name is in the root group at this point. Add it.
             DBG(cerr << __func__ << "() - Transforming top level variable: '" <<
                 (*i)->name() << "'" << endl; );
 
-            BaseType *new_var = (*i)->transform_to_dap4(root() /*group*/, root() /*container*/);
-            // If the variable being transformed is a Grid,
-            // then Grid::transform_to_dap4() will add all the arrays to the
-            // container (root() in this case) and return null, indicating that
-            // this code does not need to do anything to add the transformed variable.
-            if (new_var)
-                root()->add_var_nocopy(new_var);
+            (*i)->transform_to_dap4(root() /*group*/, root() /*container*/);
         }
         else {
             DBG(cerr << __func__ << "() - Skipping variable: " <<

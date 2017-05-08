@@ -111,13 +111,13 @@ public:
 			BaseTypeFactory factory;
 			DDS dds(&factory, dds_file);
 			dds.parse(prefix + dds_file);
-			DBG(cerr << "SOURCE DDS: " << endl; dds.print(cerr));
+			DBG(cerr << "SOURCE DDS: " << prefix + dds_file << endl; dds.print(cerr));
 
 			if (!das_file.empty()) {
 				DAS das;
 				das.parse(prefix + das_file);
 				dds.transfer_attributes(&das);
-                DBG(cerr << "SOURCE DAS: " << endl; das.print(cerr));
+                DBG(cerr << "SOURCE DAS: " << prefix + das_file << endl; das.print(cerr));
 
                 DBG(cerr << "dds.print_das(): " << endl; dds.print_das(cerr));
                 // DBG(cerr << "dds.print_xml(): " << endl; dds.print_xml(cerr,false,"blob_foo"));
@@ -137,6 +137,9 @@ public:
 
     void test_roundtrip_template(const string &dds_file, const string &dmr_baseline, const string &das_file = "", bool expected_fail=false) {
         DBG(cerr << __func__ << "() - BEGIN" << endl);
+
+
+
         DMR *dmr = 0;
         try {
             dmr = build_dmr(dds_file, das_file);
@@ -147,7 +150,7 @@ public:
             string prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
             string result_dmr(xml.get_doc());
             string baseline_dmr = readTestBaseline(prefix + dmr_baseline);
-            DBG(cerr << "BASELINE DMR("<< baseline_dmr.size() << " chars): " << endl << baseline_dmr << endl);
+            DBG(cerr << "BASELINE DMR("<< baseline_dmr.size() << " chars): " << prefix + dmr_baseline << endl << baseline_dmr << endl);
             DBG(cerr << "RESULT DMR("<< result_dmr.size() << " chars): " << endl << result_dmr << endl);
 
             CPPUNIT_ASSERT(result_dmr == baseline_dmr);
@@ -157,7 +160,7 @@ public:
             dds->print(result_dds);
 
             string source_dds = readTestBaseline(prefix + dds_file);
-            DBG(cerr << "SOURCE DDS("<< source_dds.size() << " chars): " << endl << source_dds << endl);
+            DBG(cerr << "SOURCE DDS("<< source_dds.size() << " chars): " << prefix + dds_file <<  endl << source_dds << endl);
 
             DBG(cerr << "RESULT DDS("<< result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
             CPPUNIT_ASSERT(result_dds.str() == source_dds);
@@ -167,7 +170,7 @@ public:
                 dds->print_das(result_das);
 
                 string source_das = readTestBaseline(prefix + das_file);
-                DBG(cerr << "SOURCE DAS("<< source_das.size() << " chars): " << endl << source_das << endl);
+                DBG(cerr << "SOURCE DAS("<< source_das.size() << " chars): " << prefix + das_file << endl << source_das << endl);
 
                 DBG(cerr << "RESULT DAS("<< result_das.str().size() << " chars): " << endl << result_das.str() << endl);
                 CPPUNIT_ASSERT(result_das.str() == source_das);

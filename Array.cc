@@ -191,14 +191,16 @@ Array::operator=(const Array &rhs)
 }
 
 BaseType *
-Array::transform_to_dap4(D4Group *root, Constructor */*container*/)
+Array::transform_to_dap4(D4Group *root, Constructor *container)
 {
     DBG(cerr << __func__ << "() - BEGIN (array:" << name() << ")" << endl;);
 	Array *dest = static_cast<Array*>(ptr_duplicate());
 
 	// If it's already a DAP4 object then we can just return it!
 	if(is_dap4()){
-	    DBG(cerr << __func__ << "() - END (Already DAP4 type) " << endl;);
+        DBG(cerr << __func__ << "() - Already DAP4 type: Just making a copy and adding to container. " << endl;);
+	    container->add_var_nocopy(dest);
+	    DBG(cerr << __func__ << "() - END (Already DAP4 type)" << endl;);
 	    return dest;
 	}
 	// Process the Array's dimensions, making D4 shared dimensions for
@@ -253,10 +255,10 @@ Array::transform_to_dap4(D4Group *root, Constructor */*container*/)
 
 	// Copy the D2 attributes to D4 Attributes
 	dest->attributes()->transform_to_dap4(get_attr_table());
-
 	dest->set_is_dap4(true);
+	container->add_var_nocopy(dest);
     DBG(cerr << __func__ << "() - END (array:" << name() << ")" << endl;);
-	return dest;
+	return 0;
 }
 
 bool Array::is_dap2_grid(){
@@ -323,8 +325,13 @@ Array::transform_to_dap2(AttrTable *){
             // Get the metadata into the Grid
             AttrTable *grid_attrs = attributes()->get_AttrTable(name());
             g->set_attr_table(*grid_attrs); // Copy it into the Grid object.
-            grid_array->set_attr_table(*grid_attrs); // Copy it into the data Array.
+            // grid_array->set_attr_table(*grid_attrs); // Copy it into the data Array.
             delete grid_attrs;
+
+            // Clear the Grid data Array attributes.
+            AttrTable at;
+            at.set_name(name());
+            grid_array->set_attr_table(at);
 
             // Process the Map Arrays.
             D4Maps *d4_maps = this->maps();

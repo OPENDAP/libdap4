@@ -41,15 +41,6 @@ Attributes {
         String original_units "degC";
         String history " At   16:37:23 on 01/11/2005: CMOR altered the data in the following ways: added 2.73150E+02 to yield output units;  Cyclical dimension was output starting at a different lon;";
         tos {
-            String standard_name "sea_surface_temperature";
-            String long_name "Sea Surface Temperature";
-            String units "K";
-            String cell_methods "time: mean (interval: 30 minutes)";
-            Float32 _FillValue 1.00000002e+20;
-            Float32 missing_value 1.00000002e+20;
-            String original_name "sosstsst";
-            String original_units "degC";
-            String history " At   16:37:23 on 01/11/2005: CMOR altered the data in the following ways: added 2.73150E+02 to yield output units;  Cyclical dimension was output starting at a different lon;";
         }
         time {
             String standard_name "time";

@@ -1,5 +1,25 @@
 Attributes {
+    COADSX {
+        String units "degrees_east";
+        String modulo " ";
+        String point_spacing "even";
+    }
+    COADSY {
+        String units "degrees_east";
+        String modulo " ";
+        String point_spacing "even";
+    }
+    TIME {
+        String units "hour since 0000-01-01 00:00:00";
+        String time_origin "1-JAN-0000 00:00:00";
+        String modulo " ";
+    }
     SST {
+        Float32 missing_value -9.999999790e+33;
+        Float32 _FillValue -9.999999790e+33;
+        String long_name "SEA SURFACE TEMPERATURE";
+        String history "From coads_climatology";
+        String units "Deg C";
         SST {
             Float32 missing_value -9.999999790e+33;
             Float32 _FillValue -9.999999790e+33;
@@ -13,7 +33,8 @@ Attributes {
             String modulo " ";
         }
         COADSY {
-            String units "degrees_north";
+            String units "degrees_east";
+            String modulo " ";
             String point_spacing "even";
         }
         COADSX {
@@ -23,6 +44,11 @@ Attributes {
         }
     }
     AIRT {
+        Float32 missing_value -9.999999790e+33;
+        Float32 _FillValue -9.999999790e+33;
+        String long_name "AIR TEMPERATURE";
+        String history "From coads_climatology";
+        String units "DEG C";
         AIRT {
             Float32 missing_value -9.999999790e+33;
             Float32 _FillValue -9.999999790e+33;
@@ -36,7 +62,8 @@ Attributes {
             String modulo " ";
         }
         COADSY {
-            String units "degrees_north";
+            String units "degrees_east";
+            String modulo " ";
             String point_spacing "even";
         }
         COADSX {
@@ -46,6 +73,11 @@ Attributes {
         }
     }
     UWND {
+        Float32 missing_value -9.999999790e+33;
+        Float32 _FillValue -9.999999790e+33;
+        String long_name "ZONAL WIND";
+        String history "From coads_climatology";
+        String units "M/S";
         UWND {
             Float32 missing_value -9.999999790e+33;
             Float32 _FillValue -9.999999790e+33;
@@ -59,7 +91,8 @@ Attributes {
             String modulo " ";
         }
         COADSY {
-            String units "degrees_north";
+            String units "degrees_east";
+            String modulo " ";
             String point_spacing "even";
         }
         COADSX {
@@ -69,6 +102,11 @@ Attributes {
         }
     }
     VWND {
+        Float32 missing_value -9.999999790e+33;
+        Float32 _FillValue -9.999999790e+33;
+        String long_name "MERIDIONAL WIND";
+        String history "From coads_climatology";
+        String units "M/S";
         VWND {
             Float32 missing_value -9.999999790e+33;
             Float32 _FillValue -9.999999790e+33;
@@ -82,7 +120,8 @@ Attributes {
             String modulo " ";
         }
         COADSY {
-            String units "degrees_north";
+            String units "degrees_east";
+            String modulo " ";
             String point_spacing "even";
         }
         COADSX {

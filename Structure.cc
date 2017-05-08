@@ -151,12 +151,10 @@ Structure::ptr_duplicate()
 BaseType *
 Structure::transform_to_dap4(D4Group *root, Constructor *container)
 {
-	// For this class, ptr_duplicate() calls the const ctor which calls
-	// Constructor's const ctor which calls Constructor::m_duplicate().
-	// Here we replicate some of that functionality, but instead call
-	// transform_to_dap4() on the contained variables.
-
-	// Structure *dest = static_cast<Structure*>(ptr_duplicate());
+	// Here we create a new Structure and then use it
+    // as the target container for the transformed versions of
+    // all the member variables by calling Constructor::transform_to_dap4() and
+    // passing our new target Structure in as the target container.
 	Structure *dest = new Structure(name());
 
     // If it's already a DAP4 object then we can just return it!
@@ -164,9 +162,8 @@ Structure::transform_to_dap4(D4Group *root, Constructor *container)
         return dest;
 
 	Constructor::transform_to_dap4(root, dest);
-	dest->set_parent(container);
-
-	return dest;
+	container->add_var_nocopy(dest);
+	return 0;
 }
 
 

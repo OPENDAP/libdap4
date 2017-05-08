@@ -212,17 +212,16 @@ string BaseType::toString()
  * @return A pointer to the transformed variable
  */
 BaseType *
-BaseType::transform_to_dap4(D4Group */*root*/, Constructor */*container*/)
+BaseType::transform_to_dap4(D4Group */*root*/, Constructor *container)
 {
     BaseType *dest = ptr_duplicate();
     // If it's already a DAP4 object then we can just return it!
-    if(is_dap4())
-        return dest;
-
-    // Copy the D2 attributes from 'this' to dest's D4 Attributes
-    dest->attributes()->transform_to_dap4(get_attr_table());
-    dest->set_is_dap4(true);
-    return dest;
+    if(!is_dap4()){
+        dest->attributes()->transform_to_dap4(get_attr_table());
+        dest->set_is_dap4(true);
+    }
+    container->add_var_nocopy(dest);
+    return NULL;
 }
 
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="http://test.opendap.org:8080/opendap/coverage/sresa1b_ncar_ccsm3_0_run1_200001.nc" dapVersion="4.0" dmrVersion="1.0" name="sresa1b_ncar_ccsm3_0_run1_200001.nc">
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="http://localhost:8080/opendap/data/dmr2dds/sresa1b_ncar_ccsm3_0_run1_200001.nc" dapVersion="4.0" dmrVersion="1.0" name="sresa1b_ncar_ccsm3_0_run1_200001.nc">
     <Dimension name="lat" size="128"/>
     <Dimension name="lon" size="256"/>
     <Dimension name="bnds" size="2"/>
@@ -53,46 +53,10 @@
         <Map name="/lat"/>
         <Map name="/lon"/>
     </Float32>
-    <Float32 name="lat">
-        <Dim name="/lat"/>
-        <Attribute name="long_name" type="String">
-            <Value>latitude</Value>
-        </Attribute>
-        <Attribute name="units" type="String">
-            <Value>degrees_north</Value>
-        </Attribute>
-        <Attribute name="axis" type="String">
-            <Value>Y</Value>
-        </Attribute>
-        <Attribute name="standard_name" type="String">
-            <Value>latitude</Value>
-        </Attribute>
-        <Attribute name="bounds" type="String">
-            <Value>lat_bnds</Value>
-        </Attribute>
-    </Float32>
     <Float64 name="lat_bnds">
         <Dim name="/lat"/>
         <Dim name="/bnds"/>
     </Float64>
-    <Float32 name="lon">
-        <Dim name="/lon"/>
-        <Attribute name="long_name" type="String">
-            <Value>longitude</Value>
-        </Attribute>
-        <Attribute name="units" type="String">
-            <Value>degrees_east</Value>
-        </Attribute>
-        <Attribute name="axis" type="String">
-            <Value>X</Value>
-        </Attribute>
-        <Attribute name="standard_name" type="String">
-            <Value>longitude</Value>
-        </Attribute>
-        <Attribute name="bounds" type="String">
-            <Value>lon_bnds</Value>
-        </Attribute>
-    </Float32>
     <Float64 name="lon_bnds">
         <Dim name="/lon"/>
         <Dim name="/bnds"/>
@@ -233,27 +197,6 @@
         <Map name="/lat"/>
         <Map name="/lon"/>
     </Float32>
-    <Float64 name="time">
-        <Dim name="/time"/>
-        <Attribute name="calendar" type="String">
-            <Value>noleap</Value>
-        </Attribute>
-        <Attribute name="standard_name" type="String">
-            <Value>time</Value>
-        </Attribute>
-        <Attribute name="axis" type="String">
-            <Value>T</Value>
-        </Attribute>
-        <Attribute name="units" type="String">
-            <Value>days since 0000-1-1</Value>
-        </Attribute>
-        <Attribute name="bounds" type="String">
-            <Value>time_bnds</Value>
-        </Attribute>
-        <Attribute name="long_name" type="String">
-            <Value>time</Value>
-        </Attribute>
-    </Float64>
     <Float64 name="time_bnds">
         <Dim name="/time"/>
         <Dim name="/bnds"/>

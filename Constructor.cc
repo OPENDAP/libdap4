@@ -140,19 +140,33 @@ BaseType *
 Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
 {
     for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-    	BaseType *new_var = (*i)->transform_to_dap4(root, dest);
-    	if (new_var) {	// Might be a Grid; see the comment in BaseType::transform_to_dap4()
-    		new_var->set_parent(dest);
-    		dest->add_var_nocopy(new_var);
-    	}
+        BaseType *d4_var = dest->var((*i)->name());
+        // Don't add duplicate variables. We have to make this check
+        // because some of the child variables may add arrays
+        // to the root object. For example, this happens in
+        // Grid with the Map Arrays - ndp - 05/08/17
+        if(!d4_var){
+            /*
+            BaseType *new_var = (*i)->transform_to_dap4(root, dest);
+            if (new_var) {	// Might be a Grid; see the comment in BaseType::transform_to_dap4()
+                new_var->set_parent(dest);
+                dest->add_var_nocopy(new_var);
+            }
+            */
+            DBG(cerr << __func__ << "() - Transforming variable: '" <<
+                (*i)->name() << "'" << endl; );
+            (*i)->transform_to_dap4(root /*group*/, dest /*container*/);
+        }
+        else {
+            DBG(cerr << __func__ << "() - Skipping variable: " <<
+                d4_var->type_name() << " " << d4_var->name() << " because a variable with" <<
+                " this name already exists in the root group." << endl; );
+        }
     }
-    // If it's already dap4 we don't have to do more.
-    if(is_dap4())
-        return dest;
-    // Otherwise we gotta go get the attributes
-	dest->attributes()->transform_to_dap4(get_attr_table());
+    dest->attributes()->transform_to_dap4(get_attr_table());
     dest->set_is_dap4(true);
-	return dest;
+
+	return 0;
 }
 
 
