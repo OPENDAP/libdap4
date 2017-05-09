@@ -151,18 +151,21 @@ Structure::ptr_duplicate()
 BaseType *
 Structure::transform_to_dap4(D4Group *root, Constructor *container)
 {
+    DBG(cerr << __func__ <<"() -  BEGIN" << endl;);
 	// Here we create a new Structure and then use it
     // as the target container for the transformed versions of
     // all the member variables by calling Constructor::transform_to_dap4() and
     // passing our new target Structure in as the target container.
 	Structure *dest = new Structure(name());
-
-    // If it's already a DAP4 object then we can just return it!
-    if(is_dap4())
-        return dest;
-
+    DBG(cerr << __func__ <<"() -  Calling Constructor::transform_to_dap4("<<
+        "'" << root->name() << "':" << (void*)root << ","
+        "'" << dest->name() << "':" << (void*)dest << ")"
+        << endl; );
 	Constructor::transform_to_dap4(root, dest);
 	container->add_var_nocopy(dest);
+	DBG(cerr << __func__ <<"() -  Added new Structure '" << dest->name() << "' (" << (void*)dest <<
+	    ") to the container '" << container->name() <<"'" << endl;);
+    DBG(cerr << __func__ <<"() -  END"<< endl;);
 	return 0;
 }
 

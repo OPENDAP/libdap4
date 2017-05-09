@@ -120,12 +120,10 @@ void TestStructure::output_values(std::ostream &out)
 BaseType *
 TestStructure::transform_to_dap4(D4Group *root, Constructor *container)
 {
-	Structure *dest = new TestStructure(name(), dataset());
-
+    TestStructure *dest = new TestStructure(name(), dataset());
 	Constructor::transform_to_dap4(root, dest);
-	dest->set_parent(container);
-
-	return dest;
+	container->add_var_nocopy(dest);
+	return 0;
 }
 
 // For this `Test' class, run the read mfunc for each of variables which

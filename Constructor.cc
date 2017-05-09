@@ -32,7 +32,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include <string>
 #include <sstream>
@@ -50,6 +50,7 @@
 #include "XMLWriter.h"
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
+#include "D4Group.h"
 
 #include "D4Attributes.h"
 
@@ -139,6 +140,12 @@ Constructor::operator=(const Constructor &rhs)
 BaseType *
 Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
 {
+    DBG(cerr << __func__ << "() - BEGIN (name:"<< name() <<
+        ")(type:"<< type_name()<<
+        ")(root:'"<< root->name()<<"':"<<(void*)root <<
+        ")(dest:'"<< dest->name()<<"':"<< (void *) dest<< ")"
+        << endl;);
+
     for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
         BaseType *d4_var = dest->var((*i)->name());
         // Don't add duplicate variables. We have to make this check
@@ -165,6 +172,7 @@ Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
     }
     dest->attributes()->transform_to_dap4(get_attr_table());
     dest->set_is_dap4(true);
+    DBG(cerr << __func__ << "() - END (name:"<< name() << ")(type:"<< type_name()<< ")" << endl;);
 
 	return 0;
 }

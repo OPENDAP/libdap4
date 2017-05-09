@@ -227,6 +227,7 @@ void DMR::build_using_dds(DDS &dds)
     set_name(dds.get_dataset_name());
     set_filename(dds.filename());
 
+    D4Group *root_grp = root();
     for (DDS::Vars_iter i = dds.var_begin(), e = dds.var_end(); i != e; ++i) {
         BaseType *d4_var = root()->var((*i)->name());
         // Don't add duplicate variables. We have to make this check
@@ -235,10 +236,12 @@ void DMR::build_using_dds(DDS &dds)
         // Grid with the Map Arrays - ndp - 05/08/17
         if(!d4_var){
             // no variable of this name is in the root group at this point. Add it.
-            DBG(cerr << __func__ << "() - Transforming top level variable: '" <<
-                (*i)->name() << "'" << endl; );
-
-            (*i)->transform_to_dap4(root() /*group*/, root() /*container*/);
+            DBG(cerr << __func__ << "() - Transforming top level variable: " <<
+                " (" << (*i)->type_name() << ":'" << (*i)->name() << "':"<<(void *)(*i) <<
+                ") (root:"<< root_grp << ")"<< endl; );
+            (*i)->transform_to_dap4(root_grp, root_grp);
+            DBG(cerr << __func__ << "() - top level variable: '" <<
+                (*i)->name() << "' (type:" << (*i)->type_name() << ") Transformed"<< endl; );
         }
         else {
             DBG(cerr << __func__ << "() - Skipping variable: " <<

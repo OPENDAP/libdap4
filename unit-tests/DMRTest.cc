@@ -158,6 +158,7 @@ public:
     CPPUNIT_TEST(test_dmr_from_dds_3);
     CPPUNIT_TEST(test_dmr_from_dds_4);
     CPPUNIT_TEST(test_dmr_from_dds_5);
+    CPPUNIT_TEST(test_dmr_from_dds_6);
 
     CPPUNIT_TEST(test_dmr_from_dds_with_attr_1);
     CPPUNIT_TEST(test_dmr_from_dds_with_attr_2);
@@ -197,7 +198,13 @@ public:
 
     void test_dmr_from_dds_5() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
-    	test_template("coads_climatology.nc.dds", "coads_climatology.nc.dmr");
+        test_template("coads_climatology.nc.dds", "coads_climatology.nc.dmr");
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+
+    void test_dmr_from_dds_6() {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        test_template("structure_1.dds", "structure_1.dds.dmr");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
