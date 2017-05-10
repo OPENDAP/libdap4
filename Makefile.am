@@ -106,16 +106,21 @@ pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 CLEANFILES = *.log *.output *.gcda *.gcno $(BISON_SRC) $(FLEX_SRC) \
 	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
+HTML_DOCS=html
+DOXYGEN_CONF=doxy.conf
+
+# This target only builds the documents, it does not move them to
+# github. Use the 'gh-docs' target below for that.
 .PHONY: docs
-docs: doxy.conf
-	doxygen doxy.conf
-	(cd docs && tar -czf html.tar.gz html)
+docs: ${DOXYGEN_CONF}
+	doxygen ${DOXYGEN_CONF}
 
-# Not needed. jhrg 1/4/16
-# doxy.conf: doxy.conf.in config.status
-# 	./config.status --file=doxy.conf
+# GitHub.io docs 
+.PHONY: gh-docs 
+gh-docs:
+	./build-gh-docs.sh
 
-# cccc computes metrics like Lines of code and McCabe. It'a available
+# cccc computes metrics like Lines of code and McCabe. It's available
 # on the web...
 .PHONY: cccc
 cccc:
