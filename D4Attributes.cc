@@ -43,65 +43,65 @@ namespace libdap {
 string D4AttributeTypeToString(D4AttributeType at)
 {
     switch(at) {
-        case attr_null_c:
-            return "null";
+    case attr_null_c:
+        return "null";
 
-        case attr_byte_c:
-            return "Byte";
+    case attr_byte_c:
+        return "Byte";
 
-        case attr_int16_c:
-            return "Int16";
+    case attr_int16_c:
+        return "Int16";
 
-        case attr_uint16_c:
-            return "UInt16";
+    case attr_uint16_c:
+        return "UInt16";
 
-        case attr_int32_c:
-            return "Int32";
+    case attr_int32_c:
+        return "Int32";
 
-        case attr_uint32_c:
-            return "UInt32";
+    case attr_uint32_c:
+        return "UInt32";
 
-        case attr_float32_c:
-            return "Float32";
+    case attr_float32_c:
+        return "Float32";
 
-        case attr_float64_c:
-            return "Float64";
+    case attr_float64_c:
+        return "Float64";
 
-        case attr_str_c:
-            return "String";
+    case attr_str_c:
+        return "String";
 
-        case attr_url_c:
-            return "Url";
+    case attr_url_c:
+        return "Url";
 
         // Added for DAP4
-        case attr_int8_c:
-            return "Int8";
+    case attr_int8_c:
+        return "Int8";
 
-        case attr_uint8_c:
-            return "UInt8";
+    case attr_uint8_c:
+        return "UInt8";
 
-        case attr_int64_c:
-            return "Int64";
+    case attr_int64_c:
+        return "Int64";
 
-        case attr_uint64_c:
-            return "UInt64";
+    case attr_uint64_c:
+        return "UInt64";
 
-        case attr_enum_c:
-            return "Enum";
+    case attr_enum_c:
+        return "Enum";
 
-        case attr_opaque_c:
-            return "Opaque";
+    case attr_opaque_c:
+        return "Opaque";
 
         // These are specific to attributes while the other types are
         // also supported by the variables. jhrg 4/17/13
-        case attr_container_c:
-            return "Container";
+    case attr_container_c:
+        return "Container";
 
-        case attr_otherxml_c:
-            return "OtherXML";
+    case attr_otherxml_c:
+        return "OtherXML";
 
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Unsupported attribute type");
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unsupported attribute type");
     }
 }
 
@@ -185,92 +185,169 @@ D4Attribute::attributes()
 
 /** @brief copy attributes from DAP2 to DAP4
  *
- * Given a DAP2 AttrTable, copy all of its attributes into a DAP4 D4Attributes
- * object.
+ * Given a DAP2 AttrTable, copy all of its attributes into
+ * this DAP4 D4Attributes object as D4Attribute object instances.
+ *
  *
  * @param at Read the DAP2 attributes from here.
  */
 void
 D4Attributes::transform_to_dap4(AttrTable &at)
 {
-	// for every attribute in at, copy it to this.
-	for (AttrTable::Attr_iter i = at.attr_begin(), e = at.attr_end(); i != e; ++i) {
-		string name = at.get_name(i);
-		AttrType type = at.get_attr_type(i);
+    // for every attribute in at, copy it to this.
+    for (AttrTable::Attr_iter i = at.attr_begin(), e = at.attr_end(); i != e; ++i) {
+        string name = at.get_name(i);
+        AttrType type = at.get_attr_type(i);
 
-		switch (type) {
-		case Attr_container: {
-			D4Attribute *a = new D4Attribute(name, attr_container_c);
-			D4Attributes *attributes = a->attributes(); // allocates a new object
-			attributes->transform_to_dap4(*at.get_attr_table(i));
-			add_attribute_nocopy(a);
-			break;
-		}
-		case Attr_byte: {
-			D4Attribute *a = new D4Attribute(name, attr_byte_c);
-			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute_nocopy(a);
-			break;
-		}
-		case Attr_int16: {
-			D4Attribute *a = new D4Attribute(name, attr_int16_c);
-			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute_nocopy(a);
-			break;
-		}
-		case Attr_uint16: {
-			D4Attribute *a = new D4Attribute(name, attr_uint16_c);
-			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute_nocopy(a);
-			break;
-		}
-		case Attr_int32: {
-			D4Attribute *a = new D4Attribute(name, attr_int32_c);
-			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute_nocopy(a);
-			break;
-		}
-		case Attr_uint32: {
-			D4Attribute *a = new D4Attribute(name, attr_uint32_c);
-			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute_nocopy(a);
-			break;
-		}
-		case Attr_float32: {
-			D4Attribute *a = new D4Attribute(name, attr_float32_c);
-			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute_nocopy(a);
-			break;
-		}
-		case Attr_float64: {
-			D4Attribute *a = new D4Attribute(name, attr_float64_c);
-			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute_nocopy(a);
-			break;
-		}
-		case Attr_string: {
-			D4Attribute *a = new D4Attribute(name, attr_str_c);
-			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute_nocopy(a);
-			break;
-		}
-		case Attr_url: {
-			D4Attribute *a = new D4Attribute(name, attr_url_c);
-			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute_nocopy(a);
-			break;
-		}
-		case Attr_other_xml: {
-			D4Attribute *a = new D4Attribute(name, attr_otherxml_c);
-			a->add_value_vector(*at.get_attr_vector(i));
-			add_attribute_nocopy(a);
-			break;
-		}
-		default:
-			throw InternalErr(__FILE__, __LINE__, "Unknown DAP2 attribute type in D4Attributes::copy_from_dap2()");
-		}
-	}
+        switch (type) {
+        case Attr_container: {
+            D4Attribute *a = new D4Attribute(name, attr_container_c);
+            D4Attributes *attributes = a->attributes(); // allocates a new object
+            attributes->transform_to_dap4(*at.get_attr_table(i));
+            add_attribute_nocopy(a);
+            break;
+        }
+        case Attr_byte: {
+            D4Attribute *a = new D4Attribute(name, attr_byte_c);
+            a->add_value_vector(*at.get_attr_vector(i));
+            add_attribute_nocopy(a);
+            break;
+        }
+        case Attr_int16: {
+            D4Attribute *a = new D4Attribute(name, attr_int16_c);
+            a->add_value_vector(*at.get_attr_vector(i));
+            add_attribute_nocopy(a);
+            break;
+        }
+        case Attr_uint16: {
+            D4Attribute *a = new D4Attribute(name, attr_uint16_c);
+            a->add_value_vector(*at.get_attr_vector(i));
+            add_attribute_nocopy(a);
+            break;
+        }
+        case Attr_int32: {
+            D4Attribute *a = new D4Attribute(name, attr_int32_c);
+            a->add_value_vector(*at.get_attr_vector(i));
+            add_attribute_nocopy(a);
+            break;
+        }
+        case Attr_uint32: {
+            D4Attribute *a = new D4Attribute(name, attr_uint32_c);
+            a->add_value_vector(*at.get_attr_vector(i));
+            add_attribute_nocopy(a);
+            break;
+        }
+        case Attr_float32: {
+            D4Attribute *a = new D4Attribute(name, attr_float32_c);
+            a->add_value_vector(*at.get_attr_vector(i));
+            add_attribute_nocopy(a);
+            break;
+        }
+        case Attr_float64: {
+            D4Attribute *a = new D4Attribute(name, attr_float64_c);
+            a->add_value_vector(*at.get_attr_vector(i));
+            add_attribute_nocopy(a);
+            break;
+        }
+        case Attr_string: {
+            D4Attribute *a = new D4Attribute(name, attr_str_c);
+            a->add_value_vector(*at.get_attr_vector(i));
+            add_attribute_nocopy(a);
+            break;
+        }
+        case Attr_url: {
+            D4Attribute *a = new D4Attribute(name, attr_url_c);
+            a->add_value_vector(*at.get_attr_vector(i));
+            add_attribute_nocopy(a);
+            break;
+        }
+        case Attr_other_xml: {
+            D4Attribute *a = new D4Attribute(name, attr_otherxml_c);
+            a->add_value_vector(*at.get_attr_vector(i));
+            add_attribute_nocopy(a);
+            break;
+        }
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Unknown DAP2 attribute type in D4Attributes::copy_from_dap2()");
+        }
+    }
 }
+
+
+AttrType get_dap2_AttrType(D4AttributeType d4_type){
+    switch (d4_type) {
+    case attr_container_c: { return Attr_container; }
+    case attr_byte_c:      { return Attr_byte; }
+    case attr_int16_c:     { return Attr_int16; }
+    case attr_uint16_c:    { return Attr_uint16; }
+    case attr_int32_c:     { return Attr_int32; }
+    case attr_uint32_c:    { return Attr_uint32; }
+    case attr_float32_c:   { return Attr_float32; }
+    case attr_float64_c:   { return Attr_float64; }
+    case attr_str_c:       { return Attr_string; }
+    case attr_url_c:       { return Attr_url; }
+    case attr_otherxml_c:  { return Attr_other_xml; }
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown DAP4 attribute");
+    }
+}
+
+
+void
+D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs)
+{
+   //  cerr << __func__ << "() - Loading attribute table: '" << d2_attr_table->get_name() << "'  addr: " << (void *)d2_attr_table << endl;
+
+    // for every attribute in at, copy it to this.
+    for ( D4Attributes::D4AttributesIter i = d4_attrs->attribute_begin(), e = d4_attrs->attribute_end(); i != e; ++i) {
+        string name = (*i)->name();
+        D4AttributeType d4_attr_type = (*i)->type();
+        AttrType d2_attr_type = get_dap2_AttrType(d4_attr_type);
+        string d2_attr_type_name = AttrType_to_String(d2_attr_type);
+
+        D4Attribute::D4AttributeIter vitr =(*i)->value_begin();
+        D4Attribute::D4AttributeIter end =(*i)->value_end();
+
+        vector<string> values;
+        for(;vitr!=end; vitr++){
+            values.push_back((*vitr));
+        }
+
+        switch (d4_attr_type) {
+        case attr_container_c: {
+            // Attr_container
+            AttrTable *child_attr_table = new AttrTable();
+            child_attr_table->set_name(name);
+            // cerr << __func__ << "() - Created child attribute table: " << name << " addr: " << (void *)child_attr_table << endl;
+            load_AttrTable(child_attr_table,(*i)->attributes());
+            d2_attr_table->append_container(child_attr_table,name);
+            break;
+        }
+        default:{
+            // cerr << __func__ << "() - "<< name << " has " << values.size() << " value(s). d2_attr_type_name: " << d2_attr_type_name << endl;
+            d2_attr_table->append_attr(name,d2_attr_type_name, &values);
+            break;
+        }
+        }
+    }
+}
+
+
+/** @brief copy attributes from DAP4 to DAP2
+ *
+ * Given a DAP4 AttrTable, copy all of its attributes into a DAP4 D4Attributes
+ * object.
+ *
+ * @param at Read the DAP2 attributes from here.
+ */
+AttrTable *D4Attributes::get_AttrTable(const string name)
+{
+    AttrTable *my_pretty_pony = new AttrTable();
+    load_AttrTable(my_pretty_pony, this);
+    my_pretty_pony->set_name(name);
+    return my_pretty_pony;
+}
+
 
 D4Attribute *
 D4Attributes::find_depth_first(const string &name, D4AttributesIter i)
@@ -342,35 +419,35 @@ D4Attribute::print_dap4(XMLWriter &xml) const
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for type");
 
     switch (type()) {
-        case attr_container_c:
-            if (!d_attributes)
-                throw InternalErr(__FILE__, __LINE__, "Null Attribute container");
-            d_attributes->print_dap4(xml);
-            break;
+    case attr_container_c:
+        if (!d_attributes)
+            throw InternalErr(__FILE__, __LINE__, "Null Attribute container");
+        d_attributes->print_dap4(xml);
+        break;
 
-        case attr_otherxml_c:
-            if (num_values() != 1)
-                throw Error("OtherXML attributes cannot be vector-valued.");
-            if (xmlTextWriterWriteRaw(xml.get_writer(), (const xmlChar*) value(0).c_str()) < 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write OtherXML value");
-            break;
+    case attr_otherxml_c:
+        if (num_values() != 1)
+            throw Error("OtherXML attributes cannot be vector-valued.");
+        if (xmlTextWriterWriteRaw(xml.get_writer(), (const xmlChar*) value(0).c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write OtherXML value");
+        break;
 
-        default: {
-            // Assume only valid types make it into instances
-            D4AttributeCIter i = d_values.begin();//value_begin();
-            while (i != d_values.end()) {
-                if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Value") < 0)
-                    throw InternalErr(__FILE__, __LINE__, "Could not write value element");
+    default: {
+        // Assume only valid types make it into instances
+        D4AttributeCIter i = d_values.begin();//value_begin();
+        while (i != d_values.end()) {
+            if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Value") < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write value element");
 
-                if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) (*i++).c_str()) < 0)
-                    throw InternalErr(__FILE__, __LINE__, "Could not write attribute value");
+            if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) (*i++).c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute value");
 
-                if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-                    throw InternalErr(__FILE__, __LINE__, "Could not end value element");
-            }
-
-            break;
+            if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not end value element");
         }
+
+        break;
+    }
     }
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)

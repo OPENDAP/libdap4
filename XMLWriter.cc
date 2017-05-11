@@ -36,6 +36,7 @@
 #include "XMLWriter.h"
 #include "InternalErr.h"
 
+// TODO - Bite the bullet and make the encoding UTF-8 as required by dap4. This will break a lot of tests but the baselines could be amended using  a bash script and sed.
 const char *ENCODING = "ISO-8859-1";
 const int XML_BUF_SIZE = 2000000;
 

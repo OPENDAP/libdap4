@@ -178,6 +178,8 @@ private:
     friend class ArrayTest;
     friend class D4Group;
 
+    bool is_dap2_grid();
+
 protected:
     void _duplicate(const Array &a);
 
@@ -211,7 +213,8 @@ public:
     Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate();
 
-    virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
+    virtual void transform_to_dap4(D4Group *root, Constructor *container);
+    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
 
     void add_var(BaseType *v, Part p = nil);
     void add_var_nocopy(BaseType *v, Part p = nil);
@@ -282,6 +285,7 @@ public:
                             bool constrained = false);
 
     virtual bool check_semantics(string &msg, bool all = false);
+
 
     virtual void dump(ostream &strm) const ;
 };

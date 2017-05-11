@@ -1,0 +1,12 @@
+Dataset {
+    Byte a[dim1 = 5];
+    Char a1[dim1 = 5];
+    Int8 b[dim1 = 5];
+    UInt8 c[dim1 = 5][dim2 = 3];
+    Int16 d[dim1 = 5];
+    UInt16 e[10];
+    Int32 f[dim1 = 5];
+    UInt32 g[dim1 = 5];
+    Float32 j[dim1 = 5];
+    Float64 k[dim1 = 5];
+} DMR_2.1;

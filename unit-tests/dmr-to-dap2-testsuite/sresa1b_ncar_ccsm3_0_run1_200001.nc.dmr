@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="http://localhost:8080/opendap/data/dmr2dds/sresa1b_ncar_ccsm3_0_run1_200001.nc" dapVersion="4.0" dmrVersion="1.0" name="sresa1b_ncar_ccsm3_0_run1_200001.nc">
+    <Dimension name="lat" size="128"/>
+    <Dimension name="lon" size="256"/>
+    <Dimension name="bnds" size="2"/>
+    <Dimension name="plev" size="17"/>
+    <Dimension name="time" size="1"/>
+    <Float32 name="lat">
+        <Dim name="/lat"/>
+        <Attribute name="long_name" type="String">
+            <Value>latitude</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>degrees_north</Value>
+        </Attribute>
+        <Attribute name="axis" type="String">
+            <Value>Y</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>latitude</Value>
+        </Attribute>
+        <Attribute name="bounds" type="String">
+            <Value>lat_bnds</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="lon">
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>longitude</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>degrees_east</Value>
+        </Attribute>
+        <Attribute name="axis" type="String">
+            <Value>X</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>longitude</Value>
+        </Attribute>
+        <Attribute name="bounds" type="String">
+            <Value>lon_bnds</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="area">
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Surface area</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>meter2</Value>
+        </Attribute>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float32>
+    <Float64 name="lat_bnds">
+        <Dim name="/lat"/>
+        <Dim name="/bnds"/>
+    </Float64>
+    <Float64 name="lon_bnds">
+        <Dim name="/lon"/>
+        <Dim name="/bnds"/>
+    </Float64>
+    <Int32 name="msk_rgn">
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Mask region</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>bool</Value>
+        </Attribute>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Int32>
+    <Float64 name="plev">
+        <Dim name="/plev"/>
+        <Attribute name="long_name" type="String">
+            <Value>pressure</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>Pa</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>air_pressure</Value>
+        </Attribute>
+        <Attribute name="positive" type="String">
+            <Value>down</Value>
+        </Attribute>
+        <Attribute name="axis" type="String">
+            <Value>Z</Value>
+        </Attribute>
+    </Float64>
+    <Float64 name="time">
+        <Dim name="/time"/>
+        <Attribute name="calendar" type="String">
+            <Value>noleap</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>time</Value>
+        </Attribute>
+        <Attribute name="axis" type="String">
+            <Value>T</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>days since 0000-1-1</Value>
+        </Attribute>
+        <Attribute name="bounds" type="String">
+            <Value>time_bnds</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>time</Value>
+        </Attribute>
+    </Float64>
+    <Float32 name="pr">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="comment" type="String">
+            <Value>Created using NCL code CCSM_atmm_2cf.ncl on\012 machine eagle163s</Value>
+        </Attribute>
+        <Attribute name="missing_value" type="Float32">
+            <Value>1.00000002e+20</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float32">
+            <Value>1.00000002e+20</Value>
+        </Attribute>
+        <Attribute name="cell_methods" type="String">
+            <Value>time: mean (interval: 1 month)</Value>
+        </Attribute>
+        <Attribute name="history" type="String">
+            <Value>(PRECC+PRECL)*r[h2o]</Value>
+        </Attribute>
+        <Attribute name="original_units" type="String">
+            <Value>m-1 s-1</Value>
+        </Attribute>
+        <Attribute name="original_name" type="String">
+            <Value>PRECC, PRECL</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>precipitation_flux</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>kg m-2 s-1</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>precipitation_flux</Value>
+        </Attribute>
+        <Attribute name="cell_method" type="String">
+            <Value>time: mean</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float32>
+    <Float32 name="tas">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="comment" type="String">
+            <Value>Created using NCL code CCSM_atmm_2cf.ncl on\012 machine eagle163s</Value>
+        </Attribute>
+        <Attribute name="missing_value" type="Float32">
+            <Value>1.00000002e+20</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float32">
+            <Value>1.00000002e+20</Value>
+        </Attribute>
+        <Attribute name="cell_methods" type="String">
+            <Value>time: mean (interval: 1 month)</Value>
+        </Attribute>
+        <Attribute name="history" type="String">
+            <Value>Added height coordinate</Value>
+        </Attribute>
+        <Attribute name="coordinates" type="String">
+            <Value>height</Value>
+        </Attribute>
+        <Attribute name="original_units" type="String">
+            <Value>K</Value>
+        </Attribute>
+        <Attribute name="original_name" type="String">
+            <Value>TREFHT</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>air_temperature</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>K</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>air_temperature</Value>
+        </Attribute>
+        <Attribute name="cell_method" type="String">
+            <Value>time: mean</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float32>
+    <Float64 name="time_bnds">
+        <Dim name="/time"/>
+        <Dim name="/bnds"/>
+    </Float64>
+    <Float32 name="ua">
+        <Dim name="/time"/>
+        <Dim name="/plev"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="comment" type="String">
+            <Value>Created using NCL code CCSM_atmm_2cf.ncl on\012 machine eagle163s</Value>
+        </Attribute>
+        <Attribute name="missing_value" type="Float32">
+            <Value>1.00000002e+20</Value>
+        </Attribute>
+        <Attribute name="cell_methods" type="String">
+            <Value>time: mean (interval: 1 month)</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>eastward_wind</Value>
+        </Attribute>
+        <Attribute name="history" type="String">
+            <Value>Interpolated U with NCL 'vinth2p_ecmwf'</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>m s-1</Value>
+        </Attribute>
+        <Attribute name="original_units" type="String">
+            <Value>m s-1</Value>
+        </Attribute>
+        <Attribute name="original_name" type="String">
+            <Value>U</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>eastward_wind</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float32">
+            <Value>1.00000002e+20</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/plev"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float32>
+    <Attribute name="NC_GLOBAL" type="Container">
+        <Attribute name="CVS_Id" type="String">
+            <Value>$Id$</Value>
+        </Attribute>
+        <Attribute name="creation_date" type="String">
+            <Value></Value>
+        </Attribute>
+        <Attribute name="prg_ID" type="String">
+            <Value>Source file unknown Version unknown Date unknown</Value>
+        </Attribute>
+        <Attribute name="cmd_ln" type="String">
+            <Value>bds -x 256 -y 128 -m 23 -o /data/zender/data/dst_T85.nc</Value>
+        </Attribute>
+        <Attribute name="history" type="String">
+            <Value>Tue Oct 25 15:08:51 2005: ncks -O -x -v va -m sresa1b_ncar_ccsm3_0_run1_200001.nc sresa1b_ncar_ccsm3_0_run1_200001.nc\012Tue Oct 25 15:07:21 2005: ncks -d time,0 sresa1b_ncar_ccsm3_0_run1_200001_201912.nc sresa1b_ncar_ccsm3_0_run1_200001.nc\012Tue Oct 25 13:29:43 2005: ncks -d time,0,239 sresa1b_ncar_ccsm3_0_run1_200001_209912.nc /var/www/html/tmp/sresa1b_ncar_ccsm3_0_run1_200001_201912.nc\012Thu Oct 20 10:47:50 2005: ncks -A -v va /data/brownmc/sresa1b/atm/mo/va/ncar_ccsm3_0/run1/sresa1b_ncar_ccsm3_0_run1_va_200001_209912.nc /data/brownmc/sresa1b/atm/mo/tas/ncar_ccsm3_0/run1/sresa1b_ncar_ccsm3_0_run1_200001_209912.nc\012Wed Oct 19 14:55:04 2005: ncks -F -d time,01,1200 /data/brownmc/sresa1b/atm/mo/va/ncar_ccsm3_0/run1/sresa1b_ncar_ccsm3_0_run1_va_200001_209912.nc /data/brownmc/sresa1b/atm/mo/va/ncar_ccsm3_0/run1/sresa1b_ncar_ccsm3_0_run1_va_200001_209912.nc\012Wed Oct 19 14:53:28 2005: ncrcat /data/brownmc/sresa1b/atm/mo/va/ncar_ccsm3_0/run1/foo_05_1200.nc /data/brownmc/sresa1b/atm/mo/va/ncar_ccsm3_0/run1/foo_1192_1196.nc /data/brownmc/sresa1b/atm/mo/va/ncar_ccsm3_0/run1/sresa1b_ncar_ccsm3_0_run1_va_200001_209912.nc\012Wed Oct 19 14:50:38 2005: ncks -F -d time,05,1200 /data/brownmc/sresa1b/atm/mo/va/ncar_ccsm3_0/run1/va_A1.SRESA1B_1.CCSM.atmm.2000-01_cat_2099-12.nc /data/brownmc/sresa1b/atm/mo/va/ncar_ccsm3_0/run1/foo_05_1200.nc\012Wed Oct 19 14:49:45 2005: ncrcat /data/brownmc/sresa1b/atm/mo/va/ncar_ccsm3_0/run1/va_A1.SRESA1B_1.CCSM.atmm.2000-01_cat_2079-12.nc /data/brownmc/sresa1b/atm/mo/va/ncar_ccsm3_0/run1/va_A1.SRESA1B_1.CCSM.atmm.2080-01_cat_2099-12.nc /data/brownmc/sresa1b/atm/mo/va/ncar_ccsm3_0/run1/va_A1.SRESA1B_1.CCSM.atmm.2000-01_cat_2099-12.nc\012Created from CCSM3 case b30.040a\012 by wgstrand@ucar.edu\012 on Wed Nov 17 14:12:57 EST 2004\012 \012 For all data, added IPCC requested metadata</Value>
+        </Attribute>
+        <Attribute name="table_id" type="String">
+            <Value>Table A1</Value>
+        </Attribute>
+        <Attribute name="title" type="String">
+            <Value>model output prepared for IPCC AR4</Value>
+        </Attribute>
+        <Attribute name="institution" type="String">
+            <Value>NCAR (National Center for Atmospheric \012Research, Boulder, CO, USA)</Value>
+        </Attribute>
+        <Attribute name="source" type="String">
+            <Value>CCSM3.0, version beta19 (2004): \012atmosphere: CAM3.0, T85L26;\012ocean     : POP1.4.3 (modified), gx1v3\012sea ice   : CSIM5.0, T85;\012land      : CLM3.0, gx1v3</Value>
+        </Attribute>
+        <Attribute name="contact" type="String">
+            <Value>ccsm@ucar.edu</Value>
+        </Attribute>
+        <Attribute name="project_id" type="String">
+            <Value>IPCC Fourth Assessment</Value>
+        </Attribute>
+        <Attribute name="Conventions" type="String">
+            <Value>CF-1.0</Value>
+        </Attribute>
+        <Attribute name="references" type="String">
+            <Value>Collins, W.D., et al., 2005:\012 The Community Climate System Model, Version 3\012 Journal of Climate\012 \012 Main website: http://www.ccsm.ucar.edu</Value>
+        </Attribute>
+        <Attribute name="acknowledgment" type="String">
+            <Value> Any use of CCSM data should acknowledge the contribution\012 of the CCSM project and CCSM sponsor agencies with the \012 following citation:\012 'This research uses data provided by the Community Climate\012 System Model project (www.ccsm.ucar.edu), supported by the\012 Directorate for Geosciences of the National Science Foundation\012 and the Office of Biological and Environmental Research of\012 the U.S. Department of Energy.'\012In addition, the words 'Community Climate System Model' and\012 'CCSM' should be included as metadata for webpages referencing\012 work using CCSM data or as keywords provided to journal or book\012publishers of your manuscripts.\012Users of CCSM data accept the responsibility of emailing\012 citations of publications of research using CCSM data to\012 ccsm@ucar.edu.\012Any redistribution of CCSM data must include this data\012 acknowledgement statement.</Value>
+        </Attribute>
+        <Attribute name="realization" type="Int32">
+            <Value>1</Value>
+        </Attribute>
+        <Attribute name="experiment_id" type="String">
+            <Value>720 ppm stabilization experiment (SRESA1B)</Value>
+        </Attribute>
+        <Attribute name="comment" type="String">
+            <Value>This simulation was initiated from year 2000 of \012 CCSM3 model run b30.030a and executed on \012 hardware cheetah.ccs.ornl.gov. The input external forcings are\012ozone forcing    : A1B.ozone.128x64_L18_1991-2100_c040528.nc\012aerosol optics   : AerosolOptics_c040105.nc\012aerosol MMR      : AerosolMass_V_128x256_clim_c031022.nc\012carbon scaling   : carbonscaling_A1B_1990-2100_c040609.nc\012solar forcing    : Fixed at 1366.5 W m-2\012GHGs             : ghg_ipcc_A1B_1870-2100_c040521.nc\012GHG loss rates   : noaamisc.r8.nc\012volcanic forcing : none\012DMS emissions    : DMS_emissions_128x256_clim_c040122.nc\012oxidants         : oxid_128x256_L26_clim_c040112.nc\012SOx emissions    : SOx_emissions_A1B_128x256_L2_1990-2100_c040608.nc\012 Physical constants used for derived data:\012 Lv (latent heat of evaporation): 2.501e6 J kg-1\012 Lf (latent heat of fusion     ): 3.337e5 J kg-1\012 r[h2o] (density of water      ): 1000 kg m-3\012 g2kg   (grams to kilograms    ): 1000 g kg-1\012 \012 Integrations were performed by NCAR and CRIEPI with support\012 and facilities provided by NSF, DOE, MEXT and ESC/JAMSTEC.</Value>
+        </Attribute>
+        <Attribute name="model_name_english" type="String">
+            <Value>NCAR CCSM</Value>
+        </Attribute>
+    </Attribute>
+    <Attribute name="DODS_EXTRA" type="Container">
+        <Attribute name="Unlimited_Dimension" type="String">
+            <Value>time</Value>
+        </Attribute>
+    </Attribute>
+</Dataset>

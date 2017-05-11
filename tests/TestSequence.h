@@ -63,7 +63,7 @@ public:
 
     TestSequence &operator=(const TestSequence &rhs);
     virtual BaseType *ptr_duplicate();
-    BaseType * transform_to_dap4(libdap::D4Group *root, libdap::Constructor *container);
+    virtual void transform_to_dap4(libdap::D4Group *root, libdap::Constructor *container);
 
     virtual bool read();
 

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="data1">
+    <Byte name="b">
+        <Attribute name="long_name" type="String">
+            <Value>byte_b</Value>
+        </Attribute>
+    </Byte>
+    <Int32 name="i">
+        <Attribute name="long_name" type="String">
+            <Value>int32_i</Value>
+        </Attribute>
+        <Attribute name="scale_factor" type="Float32">
+            <Value>1.2</Value>
+        </Attribute>
+        <Attribute name="coefs" type="Int32">
+            <Value>2</Value>
+            <Value>3</Value>
+            <Value>4</Value>
+        </Attribute>
+    </Int32>
+    <Int32 name="j"/>
+</Dataset>

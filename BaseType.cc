@@ -123,9 +123,9 @@ BaseType::m_duplicate(const BaseType &bt)
     @param is_dap4 True if this is a DAP4 variable. Default is False
     @see Type */
 BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
-        : d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false),
-        d_parent(0), d_attributes(0), d_is_dap4(is_dap4),
-        d_in_selection(false), d_is_synthesized(false)
+: d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false),
+  d_parent(0), d_attributes(0), d_is_dap4(is_dap4),
+  d_in_selection(false), d_is_synthesized(false)
 {}
 
 /** The BaseType constructor needs a name, a dataset, and a type.
@@ -141,9 +141,9 @@ BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
     @param is_dap4 True if this is a DAP4 variable.
     @see Type */
 BaseType::BaseType(const string &n, const string &d, const Type &t, bool is_dap4)
-        : d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false),
-        d_parent(0), d_attributes(0), d_is_dap4(is_dap4),
-        d_in_selection(false), d_is_synthesized(false)
+: d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false),
+  d_parent(0), d_attributes(0), d_is_dap4(is_dap4),
+  d_in_selection(false), d_is_synthesized(false)
 {}
 
 /** @brief The BaseType copy constructor. */
@@ -184,14 +184,14 @@ string BaseType::toString()
 {
     ostringstream oss;
     oss << "BaseType (" << this << "):" << endl
-    << "          _name: " << name() << endl
-    << "          _type: " << type_name() << endl
-    << "          _dataset: " << d_dataset << endl
-    << "          _read_p: " << d_is_read << endl
-    << "          _send_p: " << d_is_send << endl
-    << "          _synthesized_p: " << d_is_synthesized << endl
-    << "          d_parent: " << d_parent << endl
-    << "          d_attr: " << hex << &d_attr << dec << endl;
+        << "          _name: " << name() << endl
+        << "          _type: " << type_name() << endl
+        << "          _dataset: " << d_dataset << endl
+        << "          _read_p: " << d_is_read << endl
+        << "          _send_p: " << d_is_send << endl
+        << "          _synthesized_p: " << d_is_synthesized << endl
+        << "          d_parent: " << d_parent << endl
+        << "          d_attr: " << hex << &d_attr << dec << endl;
 
     return oss.str();
 }
@@ -211,18 +211,64 @@ string BaseType::toString()
  *
  * @return A pointer to the transformed variable
  */
-BaseType *
-BaseType::transform_to_dap4(D4Group */*root*/, Constructor */*container*/)
+void
+BaseType::transform_to_dap4(D4Group */*root*/, Constructor *container)
 {
-	BaseType *dest = ptr_duplicate();
-
-	// Copy the D2 attributes from 'this' to dest's D4 Attributes
-	dest->attributes()->transform_to_dap4(get_attr_table());
-
-	dest->set_is_dap4(true);
-
-	return dest;
+    BaseType *dest = ptr_duplicate();
+    // If it's already a DAP4 object then we can just return it!
+    if(!is_dap4()){
+        dest->attributes()->transform_to_dap4(get_attr_table());
+        dest->set_is_dap4(true);
+    }
+    container->add_var_nocopy(dest);
 }
+
+
+/** @brief DAP4 to DAP2 transform
+ *
+ * For the current BaseType, return a DAP2 'copy' of the variable.
+ *
+ * @note For most DAP4 types, in this implementation of DAP2 the corresponding
+ * DAP4 type is the same.
+ * These types have a different representations in DAP2 and DAP4:
+ *  Sequences (which are D4Sequences in the DAP4 implementation),
+ *  - Grids (which are semantically subsumed by coverages in DAP4)
+ *  - Arrays (which use shared dimensions in DAP4)
+ *
+ *  Additionally DAP4 adds the following types:
+ *  - UInt8, Int8, and Char which map to Byte in DAP2.
+ *  - Int64, Unit64 which have no natural representation in DAP2.
+ *  - Opaque Possible Byte stuff[] plus metadata?
+ *  - Enum's can be represented as Int32.
+ *
+ *  - Groups, with the exception of the root group "disappear" into the
+ *    names of their member variables. Specifically the Group name is add as a prefix
+ *    followed by a "/" separator to the names of all of the Group's member groups
+ *    variables.
+ *
+ * @param  The AttrTable pointer parent_attr_table is used by Groups, which disappear
+ * from the DAP2 representation. Their children are returned in the the BAseType vector
+ * their attributes are added to parent_attr_table;
+ * @return A pointer to a vector of BaseType pointers (right?). In most cases this vector
+ * will contain a single pointer but DAP4 types 'disappear' such as Group will return all
+ * of their member variables in the vector. DAP4 types with no representation in DAP2
+ * (ex: UInt64) the will return a NULL pointer and so this must be tested!
+ */
+std::vector<BaseType *> *
+BaseType::transform_to_dap2(AttrTable *)
+{
+    BaseType *dest = this->ptr_duplicate();
+    // convert the d4 attributes to a dap2 attribute table.
+    AttrTable *attrs = this->attributes()->get_AttrTable(name());
+    dest->set_attr_table(*attrs);
+    dest->set_is_dap4(false);
+    // attrs->print(cerr,"",true);
+
+    vector<BaseType *> *result =  new vector<BaseType *>();
+    result->push_back(dest);
+    return result;
+}
+
 
 /** @brief dumps information about this object
  *
@@ -236,7 +282,7 @@ void
 BaseType::dump(ostream &strm) const
 {
     strm << DapIndent::LMarg << "BaseType::dump - ("
-    << (void *)this << ")" << endl ;
+        << (void *)this << ")" << endl ;
     DapIndent::Indent() ;
 
     strm << DapIndent::LMarg << "name: " << name() << endl ;
@@ -276,12 +322,12 @@ BaseType::name() const
 string
 BaseType::FQN() const
 {
-	if (get_parent() == 0)
-		return name();
-	else if (get_parent()->type() == dods_group_c)
-		return get_parent()->FQN() + name();
-	else
-		return get_parent()->FQN() + "." + name();
+    if (get_parent() == 0)
+        return name();
+    else if (get_parent()->type() == dods_group_c)
+        return get_parent()->FQN() + name();
+    else
+        return get_parent()->FQN() + "." + name();
 }
 
 /** @brief Sets the name of the class instance. */
@@ -323,10 +369,10 @@ BaseType::set_type(const Type &t)
 string
 BaseType::type_name() const
 {
-	if (is_dap4())
-		return libdap::D4type_name(d_type);
-	else
-		return libdap::D2type_name(d_type);
+    if (is_dap4())
+        return libdap::D4type_name(d_type);
+    else
+        return libdap::D2type_name(d_type);
 }
 
 /** @brief Returns true if the instance is a numeric, string or URL
@@ -508,7 +554,7 @@ BaseType::send_p()
     and <tt>d_is_read</tt> flags are set to TRUE.
 
     @param state The logical state to set the <tt>send_p</tt> flag.
-*/
+ */
 void
 BaseType::set_send_p(bool state)
 {
@@ -582,31 +628,43 @@ BaseType::set_attributes_nocopy(D4Attributes *attrs)
  * DDS). They could be modified to use the same AttrTable methods but
  * operate on the AttrTable instances in a DDS/BaseType instead of those in
  * a DAS.
-  *
+ *
  * @param at_container Transfer attributes from this container.
  * @return void
  */
 void BaseType::transfer_attributes(AttrTable *at_container) {
-	AttrTable *at = at_container->get_attr_table(name());
+    AttrTable *at = at_container->get_attr_table(name());
 
-	DBG(cerr << "In BaseType::transfer_attributes; processing " << name() << endl);
+    DBG(cerr << "BaseType::"<< __func__ << "() - processing '" << name() << "'  addr: "<< (void *) at << endl);
 
-	if (at) {
-		at->set_is_global_attribute(false);
-		DBG(cerr << "Processing AttrTable: " << at->get_name() << endl);
+    if (at) {
+        at->set_is_global_attribute(false);
+        DBG(cerr << "BaseType::"<< __func__ << "Processing AttrTable: " << at->get_name() << endl);
 
-		AttrTable::Attr_iter at_p = at->attr_begin();
-		while (at_p != at->attr_end()) {
-			DBG(cerr << "About to append " << "attr name, type:" << at->get_name(at_p) << ", " << at->get_type(at_p) << endl);
-
-			if (at->get_attr_type(at_p) == Attr_container)
-				get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)), at->get_name(at_p));
-			else
-				get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
-
-			at_p++;
-		}
-	}
+        AttrTable::Attr_iter at_p = at->attr_begin();
+        while (at_p != at->attr_end()) {
+            DBG(cerr << "BaseType::"<< __func__ << "() - About to append " << "attr name: '" << at->get_name(at_p) << "', type: " << at->get_type(at_p) << endl);
+            if (at->get_attr_type(at_p) == Attr_container){
+                // An attribute container may actually represent a child member variable. When
+                // that's the case we don't want to add the container to the parent type, but
+                // rather let any child of BaseType deal with those containers in the child's
+                // overridden transfer_attributes() method.
+                // We capitalize on the magic of the BaseType API and utilize the var() method
+                // to check for a child variable of the same name and, if one exists, we'll skip
+                // this AttrTable and let a child constructor class like Grid or Constructor
+                // deal with it.
+                BaseType *bt = var(at->get_name(at_p),true);
+                DBG(cerr << "BaseType::"<< __func__ << "() - var: " << (void *) bt << endl);
+                if(bt==0){
+                    get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)), at->get_name(at_p));
+                }
+            }
+            else {
+                get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
+            }
+            at_p++;
+        }
+    }
 }
 
 /** Does this variable appear in either the selection part or as a function
@@ -857,25 +915,25 @@ BaseType::intern_data(/*Crc32 &checksum, DMR &, ConstraintEvaluator &*/)
 bool
 BaseType::serialize(ConstraintEvaluator &, DDS &,  Marshaller &, bool)
 {
-	throw InternalErr(__FILE__, __LINE__, "The DAP2 serialize() method has not been implemented for " + type_name());
+    throw InternalErr(__FILE__, __LINE__, "The DAP2 serialize() method has not been implemented for " + type_name());
 }
 
 bool
 BaseType::deserialize(UnMarshaller &, DDS *, bool)
 {
-	throw InternalErr(__FILE__, __LINE__, "The DAP2 deserialize() method has not been implemented for " + type_name());
+    throw InternalErr(__FILE__, __LINE__, "The DAP2 deserialize() method has not been implemented for " + type_name());
 }
 
 void
 BaseType::serialize(D4StreamMarshaller &, DMR &, /*ConstraintEvaluator &,*/ bool)
 {
-	throw InternalErr(__FILE__, __LINE__, "The DAP4 serialize() method has not been implemented for " + type_name());
+    throw InternalErr(__FILE__, __LINE__, "The DAP4 serialize() method has not been implemented for " + type_name());
 }
 
 void
 BaseType::deserialize(D4StreamUnMarshaller &, DMR &)
 {
-	throw InternalErr(__FILE__, __LINE__, "The DAP4 deserialize() method has not been implemented for " + type_name());
+    throw InternalErr(__FILE__, __LINE__, "The DAP4 deserialize() method has not been implemented for " + type_name());
 }
 
 /** Write the variable's declaration in a C-style syntax. This
@@ -919,10 +977,10 @@ BaseType::deserialize(D4StreamUnMarshaller &, DMR &)
 
     @see DDS
     @see DDS::CE
-*/
+ */
 void
 BaseType::print_decl(FILE *out, string space, bool print_semi,
-                     bool constraint_info, bool constrained)
+    bool constraint_info, bool constrained)
 {
     ostringstream oss;
     print_decl(oss, space, print_semi, constraint_info, constrained);
@@ -970,10 +1028,10 @@ BaseType::print_decl(FILE *out, string space, bool print_semi,
 
     @see DDS
     @see DDS::CE
-*/
+ */
 void
 BaseType::print_decl(ostream &out, string space, bool print_semi,
-                     bool constraint_info, bool constrained)
+    bool constraint_info, bool constrained)
 {
     // if printing the constrained declaration, exit if this variable was not
     // selected.
@@ -990,7 +1048,7 @@ BaseType::print_decl(ostream &out, string space, bool print_semi,
     }
 
     if (print_semi)
-	out << ";\n" ;
+        out << ";\n" ;
 }
 
 /** Prints the value of the variable, with its declaration. This
@@ -1061,8 +1119,8 @@ BaseType::print_xml_writer(XMLWriter &xml, bool constrained)
         throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
 
     if (!name().empty())
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
     if (is_dap4())
         attributes()->print_dap4(xml);
@@ -1125,7 +1183,7 @@ BaseType::print_dap4(XMLWriter &xml, bool constrained)
     semantics of the member variables, too.
 
     @see DDS::check_semantics
-*/
+ */
 bool
 BaseType::check_semantics(string &msg, bool)
 {
@@ -1172,7 +1230,7 @@ BaseType::check_semantics(string &msg, bool)
     <tt>LESS</tt>, <tt>LESS_EQL</tt>, and <tt>REGEXP</tt>.
     @return The boolean value of the comparison.
     @see BaseType::d4_ops(BaseType *, int)
-*/
+ */
 bool
 BaseType::ops(BaseType *, int)
 {
@@ -1221,9 +1279,9 @@ BaseType::d4_ops(BaseType *, int)
 unsigned int
 BaseType::width(bool /* constrained */) const
 {
-	throw InternalErr(__FILE__, __LINE__, "not implemented");
+    throw InternalErr(__FILE__, __LINE__, "not implemented");
 #if 0
-	return width(constrained);
+    return width(constrained);
 #endif
 }
 

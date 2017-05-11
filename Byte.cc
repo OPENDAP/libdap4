@@ -33,6 +33,7 @@
 //
 // jhrg 9/7/94
 
+//#define DODS_DEBUG
 
 #include "config.h"
 
@@ -57,9 +58,11 @@
 #include "UnMarshaller.h"
 
 #include "DMR.h"
+#include "D4Attributes.h"
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
+#include "debug.h"
 #include "util.h"
 #include "parser.h"
 #include "dods-limits.h"
@@ -318,6 +321,52 @@ bool Byte::d4_ops(BaseType *b, int op)
         default:
             throw Error(malformed_expr, "Relational operators only work with scalar types.");
     }
+}
+
+
+
+
+/** @brief DAP4 to DAP2 transform
+ *
+ * Return a DAP2 'copy' of the variable.
+ *
+ * NOTE: This little bit of magic ensures that the DAP4 shenanigans
+ * in which UInt8, Char , and Byte are synonymous is reduced
+ * to the DAP2 simplicity of Byte.
+ *
+ *
+ * @param root The root group that should hold this new variable. Add Group-level
+ * stuff here (e.g., D4Dimensions).
+ * @param container Add the new variable to this container.
+ *
+ * @return A pointer to the transformed variable
+ */
+std::vector<BaseType *> *
+Byte::transform_to_dap2(AttrTable *parent_attr_table)
+{
+    DBG(cerr << __func__ << "() - BEGIN" << endl;);
+    vector<BaseType *> *vec = BaseType::transform_to_dap2(parent_attr_table);
+    if(vec->size()!=1){
+        ostringstream oss;
+        oss << __func__ << "() -  Something Bad Happened. This transform should produce only ";
+        oss << " a single BaseType yet it produced " << vec->size();
+        throw new Error(internal_error,oss.str());
+    }
+
+    BaseType *dest = (*vec)[0];
+    DBG(cerr << __func__ << "() - type():       " << type() << endl;);
+    DBG(cerr << __func__ << "() - dest->type(): " << dest->type() << endl;);
+
+    // This little bit of magic ensures that the DAP4 shenanigans
+    // in which UInt8, Char , and Byte are synonymous is reduced
+    // to the DAP2 simplicity of Byte.
+    if(type()!=dods_byte_c){
+        dest->set_type(dods_byte_c);
+    }
+    DBG (dest->get_attr_table().print(cerr););
+
+    DBG(cerr << __func__ << "() - END" << endl;);
+    return vec;
 }
 
 /** @brief dumps information about this object

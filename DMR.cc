@@ -44,6 +44,7 @@
 #include "D4Group.h"
 #include "BaseType.h"
 #include "Array.h"
+#include "Grid.h"
 #include "DMR.h"
 #include "XMLWriter.h"
 #include "D4BaseTypeFactory.h"
@@ -223,21 +224,137 @@ DMR::operator=(const DMR &rhs)
  */
 void DMR::build_using_dds(DDS &dds)
 {
-	set_name(dds.get_dataset_name());
-	set_filename(dds.filename());
+    set_name(dds.get_dataset_name());
+    set_filename(dds.filename());
 
-	for (DDS::Vars_iter i = dds.var_begin(), e = dds.var_end(); i != e; ++i) {
-		BaseType *new_var = (*i)->transform_to_dap4(root() /*group*/, root() /*container*/);
-		// If the variable being transformed is a Grid,
-		// then Grid::transform_to_dap4() will add all the arrays to the
-		// container (root() in this case) and return null, indicating that
-		// this code does not need to do anything to add the transformed variable.
-		if (new_var) root()->add_var_nocopy(new_var);
-	}
+    D4Group *root_grp = root();
+    for (DDS::Vars_iter i = dds.var_begin(), e = dds.var_end(); i != e; ++i) {
+        BaseType *d4_var = root()->var((*i)->name());
+        // Don't add duplicate variables. We have to make this check
+        // because some of the child variables may add arrays
+        // to the root object. For example, this happens in
+        // Grid with the Map Arrays - ndp - 05/08/17
+        if(!d4_var){
+            // no variable of this name is in the root group at this point. Add it.
+            DBG(cerr << __func__ << "() - Transforming top level variable: " <<
+                " (" << (*i)->type_name() << ":'" << (*i)->name() << "':"<<(void *)(*i) <<
+                ") (root:"<< root_grp << ")"<< endl; );
+            (*i)->transform_to_dap4(root_grp, root_grp);
+            DBG(cerr << __func__ << "() - top level variable: '" <<
+                (*i)->name() << "' (type:" << (*i)->type_name() << ") Transformed"<< endl; );
+        }
+        else {
+            DBG(cerr << __func__ << "() - Skipping variable: " <<
+                d4_var->type_name() << " " << d4_var->name() << " because a variable with" <<
+                " this name already exists in the root group." << endl; );
+        }
+    }
 
-	// Now copy the global attributes
-	root()->attributes()->transform_to_dap4(dds.get_attr_table());
+    // Now copy the global attributes
+    root()->attributes()->transform_to_dap4(dds.get_attr_table());
 }
+#if 1
+/**
+ * If we have a DMR that includes Attributes, use it to build the DDS. This
+ * will copy all of the variables in the DMR into the DDS using
+ * BaseType::transform_to_dap2(), so the actual types added can be
+ * controlled by code that specializes the various type classes.
+ *
+ * @param dds Read variables and Attributes from this DDS
+ */
+DDS *DMR::getDDS(DMR &dmr)
+{
+    DBG( cerr << __func__ << "() - BEGIN" << endl;);
+    D4Group *root = dmr.root();
+
+    BaseTypeFactory *btf = new BaseTypeFactory();
+    DDS *dds = new DDS(btf,dmr.name());
+    dds->filename(dmr.filename());
+    AttrTable *dds_at = &(dds->get_attr_table());
+
+    // Now copy the global attributes
+    // D4Attributes::load_AttrTable(dds_at,root->attributes());
+
+    vector<BaseType *> *top_vars = root->transform_to_dap2(dds_at,true);
+
+    vector<BaseType *>::iterator vIter = top_vars->begin();
+    vector<BaseType *>::iterator vEnd = top_vars->end();
+    for( ; vIter!=vEnd ; vIter++){
+        dds->add_var(*vIter);
+    }
+
+#if 0
+    set<string> shared_dim_candidates;
+
+    vector<BaseType *> dropped_vars;
+    for (D4Group::Vars_iter i = root->var_begin(), e = root->var_end(); i != e; ++i)
+    {
+        DBG( cerr << __func__ << "() - Processing top level variable '"<< (*i)->type_name() << " " <<  (*i)->name() << "' to DDS." << endl; );
+        vector<BaseType *> *new_vars = (*i)->transform_to_dap2(&(dds->get_attr_table()));
+        if(new_vars!=0){
+            vector<BaseType*>::iterator vIter = new_vars->begin();
+            vector<BaseType*>::iterator end = new_vars->end();
+            for( ; vIter!=end ; vIter++ ){
+                BaseType *new_var = (*vIter);
+                DBG( cerr << __func__ << "() - Adding variable name: '"<< new_var->name() << "' " <<
+                    "type: " <<  new_var->type() << " " <<
+                    "type_name: " << new_var->type_name() << " to DDS." << endl; );
+                dds->add_var_nocopy(new_var);
+                Grid *grid = dynamic_cast <Grid *>(new_var);
+                if(grid){
+                    Grid::Map_iter m = grid->map_begin();
+                    for( ; m != grid->map_end() ; m++){
+                        shared_dim_candidates.insert((*m)->name());
+                    }
+                }
+                (*vIter) = 0;
+            }
+            delete new_vars;
+        }
+        else {
+            DBG( cerr << __func__ << "Adding variable '"<< (*i)->type_name() << " " <<  (*i)->name() << "' to drop list." << endl; );
+            dropped_vars.push_back((*i));
+        }
+    }
+    AttrTable *dv_table = Constructor::make_dropped_vars_attr_table(&dropped_vars);
+    if(dv_table){
+        DBG( cerr << __func__ << "() - Adding dropped variable AttrTable." << endl;);
+        dds_at->append_container(dv_table,dv_table->get_name());
+    }
+
+    // Get all the child groups.
+    D4Group::groupsIter gIter = root->grp_begin();
+    D4Group::groupsIter gEnd = root->grp_end();
+    for( ; gIter!=gEnd ; gIter++){
+        D4Group *grp = *gIter;
+        DBG( cerr << __func__ << "() - Processing D4Group " << grp->name() << endl;);
+        vector<BaseType *> *d2_vars = grp->transform_to_dap2(dds_at);
+        if(d2_vars){
+            DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variables." << endl;);
+            vector<BaseType *>::iterator vIter = d2_vars->begin();
+            vector<BaseType *>::iterator vEnd = d2_vars->end();
+            for( ; vIter!=vEnd; vIter++){
+                DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variable: " << (*vIter)->name() << endl;);
+                dds->add_var(*vIter);
+            }
+        }
+    }
+#endif
+
+
+    DBG( cerr << __func__ << "() - END" << endl;);
+    return dds;
+}
+
+
+DDS *DMR::getDDS()
+{
+    return DMR::getDDS(*this);
+}
+
+
+
+#endif
 
 D4Group *
 DMR::root()

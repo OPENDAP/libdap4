@@ -1,0 +1,5 @@
+Dataset {
+    Byte b;
+    Int32 i;
+    Int32 j;
+} test.1.dmr;

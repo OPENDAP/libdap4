@@ -207,17 +207,21 @@ Sequence::ptr_duplicate()
  * @param container Load the result into this container
  * @return The new D4Sequence
  */
-BaseType *
+void
 Sequence::transform_to_dap4(D4Group *root, Constructor *container)
 {
-    D4Sequence *dest = new D4Sequence(name());
-
+    D4Sequence *dest;
+    // If it's already a DAP4 object then we can just return it!
+    if(is_dap4()){
+        dest = static_cast<D4Sequence*>(ptr_duplicate());
+        dest->set_length(-1);
+        container->add_var_nocopy(dest);
+        return;
+    }
+    dest = new D4Sequence(name());
     Constructor::transform_to_dap4(root, dest);
-
     dest->set_length(-1);
-    dest->set_parent(container);
-
-    return dest;
+    container->add_var_nocopy(dest);
 }
 
 static inline void delete_bt(BaseType *bt_ptr)

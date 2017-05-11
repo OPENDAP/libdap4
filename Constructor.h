@@ -65,7 +65,7 @@ public:
     virtual ~Constructor();
 
     Constructor &operator=(const Constructor &rhs);
-    BaseType *transform_to_dap4(D4Group *root, Constructor *dest);
+    virtual void transform_to_dap4(D4Group *root, Constructor *dest);
 
     virtual std::string FQN() const;
 
@@ -147,6 +147,9 @@ public:
                            bool print_decl_p = true);
 
     virtual bool check_semantics(string &msg, bool all = false);
+
+    virtual void transfer_attributes(AttrTable *at);
+    static AttrTable *make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars);
 
     virtual void dump(ostream &strm) const ;
 };

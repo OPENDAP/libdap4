@@ -1,0 +1,722 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="http://test.opendap.org:8080/opendap/coverage/cami_0000-09-01_64x128_L26_c030918.nc" dapVersion="4.0" dmrVersion="1.0" name="cami_0000-09-01_64x128_L26_c030918.nc">
+    <Dimension name="lat" size="64"/>
+    <Dimension name="lon" size="128"/>
+    <Dimension name="lev" size="26"/>
+    <Dimension name="ilev" size="27"/>
+    <Dimension name="time" size="1"/>
+    <Float64 name="lat">
+        <Dim name="/lat"/>
+        <Attribute name="long_name" type="String">
+            <Value>latitude</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>degrees_north</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>9.999999616903162e+35</Value>
+        </Attribute>
+    </Float64>
+    <Float64 name="lon">
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>longitude</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>degrees_east</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>9.999999616903162e+35</Value>
+        </Attribute>
+    </Float64>
+    <Float64 name="lev">
+        <Dim name="/lev"/>
+        <Attribute name="long_name" type="String">
+            <Value>hybrid level at midpoints (1000*(A+B))</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>level</Value>
+        </Attribute>
+        <Attribute name="positive" type="String">
+            <Value>down</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>atmosphere_hybrid_sigma_pressure_coordinate</Value>
+        </Attribute>
+        <Attribute name="formula_terms" type="String">
+            <Value>a: hyam b: hybm p0: P0 ps: PS</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>9.999999616903162e+35</Value>
+        </Attribute>
+    </Float64>
+    <Float64 name="ilev">
+        <Dim name="/ilev"/>
+        <Attribute name="long_name" type="String">
+            <Value>hybrid level at interfaces (1000*(A+B))</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>level</Value>
+        </Attribute>
+        <Attribute name="positive" type="String">
+            <Value>down</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>atmosphere_hybrid_sigma_pressure_coordinate</Value>
+        </Attribute>
+        <Attribute name="formula_terms" type="String">
+            <Value>a: hyai b: hybi p0: P0 ps: PS</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>9.999999616903162e+35</Value>
+        </Attribute>
+    </Float64>
+    <Float64 name="time">
+        <Dim name="/time"/>
+        <Attribute name="long_name" type="String">
+            <Value>time</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>days since 0000-08-29 00:00:00</Value>
+        </Attribute>
+        <Attribute name="calendar" type="String">
+            <Value>noleap</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>9.999999616903162e+35</Value>
+        </Attribute>
+    </Float64>
+    <Float64 name="hyai">
+        <Dim name="/ilev"/>
+        <Attribute name="long_name" type="String">
+            <Value>hybrid A coefficient at layer interfaces</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>9.999999616903162e+35</Value>
+        </Attribute>
+        <Map name="/ilev"/>
+    </Float64>
+    <Float64 name="hybi">
+        <Dim name="/ilev"/>
+        <Attribute name="long_name" type="String">
+            <Value>hybrid B coefficient at layer interfaces</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>9.999999616903162e+35</Value>
+        </Attribute>
+        <Map name="/ilev"/>
+    </Float64>
+    <Float64 name="hyam">
+        <Dim name="/lev"/>
+        <Attribute name="long_name" type="String">
+            <Value>hybrid A coefficient at layer midpoints</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>9.999999616903162e+35</Value>
+        </Attribute>
+        <Map name="/lev"/>
+    </Float64>
+    <Float64 name="hybm">
+        <Dim name="/lev"/>
+        <Attribute name="long_name" type="String">
+            <Value>hybrid B coefficient at layer midpoints</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>9.999999616903162e+35</Value>
+        </Attribute>
+        <Map name="/lev"/>
+    </Float64>
+    <Float64 name="gw">
+        <Dim name="/lat"/>
+        <Attribute name="long_name" type="String">
+            <Value>gauss weights</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>9.999999616903162e+35</Value>
+        </Attribute>
+        <Map name="/lat"/>
+    </Float64>
+    <Float64 name="P0">
+        <Attribute name="long_name" type="String">
+            <Value>reference pressure</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>Pa</Value>
+        </Attribute>
+    </Float64>
+    <String name="date_written">
+        <Dim name="/time"/>
+        <Attribute name="string_length" type="Int32">
+            <Value>8</Value>
+        </Attribute>
+    </String>
+    <String name="time_written">
+        <Dim name="/time"/>
+        <Attribute name="string_length" type="Int32">
+            <Value>8</Value>
+        </Attribute>
+    </String>
+    <Int32 name="ntrm">
+        <Attribute name="long_name" type="String">
+            <Value>spectral truncation parameter M</Value>
+        </Attribute>
+    </Int32>
+    <Int32 name="ntrn">
+        <Attribute name="long_name" type="String">
+            <Value>spectral truncation parameter N</Value>
+        </Attribute>
+    </Int32>
+    <Int32 name="ntrk">
+        <Attribute name="long_name" type="String">
+            <Value>spectral truncation parameter K</Value>
+        </Attribute>
+    </Int32>
+    <Int32 name="ndbase">
+        <Attribute name="long_name" type="String">
+            <Value>base day</Value>
+        </Attribute>
+    </Int32>
+    <Int32 name="nsbase">
+        <Attribute name="long_name" type="String">
+            <Value>seconds of base day</Value>
+        </Attribute>
+    </Int32>
+    <Int32 name="nbdate">
+        <Attribute name="long_name" type="String">
+            <Value>base date (YYYYMMDD)</Value>
+        </Attribute>
+    </Int32>
+    <Int32 name="nbsec">
+        <Attribute name="long_name" type="String">
+            <Value>seconds of base date</Value>
+        </Attribute>
+    </Int32>
+    <Int32 name="mdt">
+        <Attribute name="long_name" type="String">
+            <Value>timestep</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>s</Value>
+        </Attribute>
+    </Int32>
+    <Int32 name="ndcur">
+        <Dim name="/time"/>
+        <Attribute name="long_name" type="String">
+            <Value>current day (from base day)</Value>
+        </Attribute>
+        <Map name="/time"/>
+    </Int32>
+    <Int32 name="nscur">
+        <Dim name="/time"/>
+        <Attribute name="long_name" type="String">
+            <Value>current seconds of current day</Value>
+        </Attribute>
+        <Map name="/time"/>
+    </Int32>
+    <Int32 name="date">
+        <Dim name="/time"/>
+        <Attribute name="long_name" type="String">
+            <Value>current date (YYYYMMDD)</Value>
+        </Attribute>
+        <Map name="/time"/>
+    </Int32>
+    <Int32 name="datesec">
+        <Dim name="/time"/>
+        <Attribute name="long_name" type="String">
+            <Value>current seconds of current date</Value>
+        </Attribute>
+        <Map name="/time"/>
+    </Int32>
+    <Int32 name="nsteph">
+        <Dim name="/time"/>
+        <Attribute name="long_name" type="String">
+            <Value>current timestep</Value>
+        </Attribute>
+        <Map name="/time"/>
+    </Int32>
+    <Float64 name="U">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lev"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Zonal wind</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>m/s</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lev"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="V">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lev"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Meridional wind</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>m/s</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lev"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="T">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lev"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Temperature</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>K</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lev"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="Q">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lev"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Specific humidity</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>kg/kg</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lev"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="PS">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Surface pressure</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>Pa</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="PHIS">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>surface geopotential</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>M2/S2</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>1.000000000000000e+36</Value>
+        </Attribute>
+        <Attribute name="from_hires" type="String">
+            <Value>true</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="SGH">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>orography standard deviation</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>M</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>1.000000000000000e+36</Value>
+        </Attribute>
+        <Attribute name="from_hires" type="String">
+            <Value>true</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="LANDM">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>land ocean transition mask: ocean (0), continent (1), transition (0-1)</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>none</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>1.000000000000000e+36</Value>
+        </Attribute>
+        <Attribute name="from_hires" type="String">
+            <Value>true</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="PBLH">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>PBL height</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>m</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="TPERT">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Perturbation temperature (eddies in PBL)</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>K</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="QPERT">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Perturbation specific humidity (eddies in PBL)</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>kg/kg</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="CLOUD">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lev"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Cloud fraction</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>fraction</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lev"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="QCWAT">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lev"/>
+        <Dim name="/lon"/>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lev"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="TCWAT">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lev"/>
+        <Dim name="/lon"/>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lev"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="LCWAT">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lev"/>
+        <Dim name="/lon"/>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lev"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="TSICERAD">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="TS">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Surface temperature</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>K</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="TSICE">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Ice temperature</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>K</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="TS1">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>TS1      subsoil temperature</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>K</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="TS2">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>TS2      subsoil temperature</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>K</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="TS3">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>TS3      subsoil temperature</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>K</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="TS4">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>TS4      subsoil temperature</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>K</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="SNOWHICE">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Water equivalent snow depth</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>m</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="LANDFRAC">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>gridbox land fraction</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>FRAC</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>1.000000000000000e+36</Value>
+        </Attribute>
+        <Attribute name="from_hires" type="String">
+            <Value>true</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="TBOT">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Lowest model level temperature</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>K</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="ICEFRAC">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Fraction of sfc area covered by sea-ice</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>fraction</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="SICTHK">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Sea ice thickness</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>m</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="TSOCN">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="CLDLIQ">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lev"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Grid box averaged liquid condensate amount</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>kg/kg</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lev"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="CLDICE">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lev"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Grid box averaged ice condensate amount</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>kg/kg</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lev"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Float64 name="LANDM_COSLAT">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>land ocean transition mask: ocean (0), continent (1), transition (0-1)</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>none</Value>
+        </Attribute>
+        <Attribute name="_FillValue" type="Float64">
+            <Value>1.000000000000000e+36</Value>
+        </Attribute>
+        <Attribute name="from_hires" type="String">
+            <Value>true</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Float64>
+    <Attribute name="NC_GLOBAL" type="Container">
+        <Attribute name="Conventions" type="String">
+            <Value>CF-1.0</Value>
+        </Attribute>
+        <Attribute name="logname" type="String">
+            <Value>olson</Value>
+        </Attribute>
+        <Attribute name="host" type="String">
+            <Value>bb0001en</Value>
+        </Attribute>
+        <Attribute name="source" type="String">
+            <Value>Interpolated from:/fs/cgd/data0/olson/inputIC/newICeul.cam2.i.0000-09-01-00000.nc::CAM</Value>
+        </Attribute>
+        <Attribute name="case" type="String">
+            <Value>cam2run</Value>
+        </Attribute>
+        <Attribute name="title" type="String">
+            <Value>Interpolated from:/fs/cgd/data0/olson/inputIC/newICeul.cam2.i.0000-09-01-00000.nc::atm ver atm, eul ver v013, case newICeul</Value>
+        </Attribute>
+        <Attribute name="history" type="String">
+            <Value>\01205/07/03 12:15:34 olson:chinookfe:interpic -t SEP1.T42L26.gaussian.template.nc /fs/cgd/data0/olson/inputIC/newICeul.cam2.i.0000-09-01-00000.nc cami_0000-09-01_64x128_L26_c030507.nc\012definesurf -t /fs/cgd/csm/inputdata/atm/cam1/hrtopo/topo.nc cami_0000-09-01_64x128_L26_c030507.nc\012definesurf -t /fs/cgd/csm/inputdata/atm/cam2/hrtopo/topo.nc cami_0000-09-01_64x128_L26_c030507.nc\012definesurf -t /fs/cgd/csm/inputdata/atm/cam2/hrtopo/topo-usgs-10min.nc cami_0000-09-01_64x128_L26_c030507.nc\012definesurf -t /fs/cgd/csm/inputdata/atm/cam2/hrtopo/topo10min.merged_c030506.nc cami_0000-09-01_64x128_L26_c030507.nc\012definesurf -t /fs/cgd/csm/inputdata/atm/cam2/hrtopo/topo10min.merged_c030506.nc -l cami_0000-09-01_64x128_L26_c030624.nc.new</Value>
+        </Attribute>
+        <Attribute name="make_ross" type="String">
+            <Value>true</Value>
+        </Attribute>
+    </Attribute>
+    <Attribute name="DODS_EXTRA" type="Container">
+        <Attribute name="Unlimited_Dimension" type="String">
+            <Value>time</Value>
+        </Attribute>
+    </Attribute>
+</Dataset>

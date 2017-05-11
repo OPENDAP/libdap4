@@ -130,6 +130,9 @@ public:
 
     void transform_to_dap4(AttrTable &at);
 
+    AttrTable *get_AttrTable(const std::string name);
+    static void load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs);
+
     bool empty() const { return d_attrs.empty(); }
 
     void add_attribute(D4Attribute *attr) {

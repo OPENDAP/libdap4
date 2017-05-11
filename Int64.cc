@@ -240,6 +240,29 @@ bool Int64::d4_ops(BaseType *b, int op)
     }
 }
 
+/** @brief DAP4 to DAP2 transform
+ *
+ * Return a DAP2 'copy' of the variable.
+ *
+ * @return A pointer to the transformed variable
+ */
+vector<BaseType *> *
+Int64::transform_to_dap2(AttrTable *)
+{
+#if 0
+    BaseType *dest = this->ptr_duplicate();
+    // convert the d4 attributes to a dap2 attribute table.
+    AttrTable *attrs = this->attributes()->get_AttrTable();
+    attrs->set_name(name());
+    dest->set_attr_table(*attrs);
+    dest->set_is_dap4(false);
+    // attrs->print(cerr,"",true);
+    return dest;
+#endif
+
+    return NULL;
+}
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and information about this

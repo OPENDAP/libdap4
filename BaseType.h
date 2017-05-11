@@ -157,7 +157,8 @@ public:
 
     virtual string toString();
 
-    virtual BaseType *transform_to_dap4(D4Group *root, Constructor *container);
+    virtual void transform_to_dap4(D4Group *root, Constructor *container);
+    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
 
     virtual void dump(ostream &strm) const ;
 

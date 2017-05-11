@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="http://test.opendap.org:8080/opendap/data/nc/sst.mnmean.nc.gz" dapVersion="4.0" dmrVersion="1.0" name="sst.mnmean.nc">
+    <Dimension name="lat" size="89"/>
+    <Dimension name="lon" size="180"/>
+    <Dimension name="time" size="1857"/>
+    <Dimension name="nbnds" size="2"/>
+    <Float32 name="lat">
+        <Dim name="/lat"/>
+        <Attribute name="units" type="String">
+            <Value>degrees_north</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>Latitude</Value>
+        </Attribute>
+        <Attribute name="actual_range" type="Float32">
+            <Value>88.0000000</Value>
+            <Value>-88.0000000</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>latitude_north</Value>
+        </Attribute>
+        <Attribute name="axis" type="String">
+            <Value>y</Value>
+        </Attribute>
+        <Attribute name="coordinate_defines" type="String">
+            <Value>center</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="lon">
+        <Dim name="/lon"/>
+        <Attribute name="units" type="String">
+            <Value>degrees_east</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>Longitude</Value>
+        </Attribute>
+        <Attribute name="actual_range" type="Float32">
+            <Value>0.00000000</Value>
+            <Value>358.000000</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>longitude_east</Value>
+        </Attribute>
+        <Attribute name="axis" type="String">
+            <Value>x</Value>
+        </Attribute>
+        <Attribute name="coordinate_defines" type="String">
+            <Value>center</Value>
+        </Attribute>
+    </Float32>
+    <Float64 name="time">
+        <Dim name="/time"/>
+        <Attribute name="units" type="String">
+            <Value>days since 1800-1-1 00:00:00</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>Time</Value>
+        </Attribute>
+        <Attribute name="actual_range" type="Float64">
+            <Value>19723.00000000000</Value>
+            <Value>76214.00000000000</Value>
+        </Attribute>
+        <Attribute name="delta_t" type="String">
+            <Value>0000-01-00 00:00:00</Value>
+        </Attribute>
+        <Attribute name="avg_period" type="String">
+            <Value>0000-01-00 00:00:00</Value>
+        </Attribute>
+        <Attribute name="prev_avg_period" type="String">
+            <Value>0000-00-07 00:00:00</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>time</Value>
+        </Attribute>
+        <Attribute name="axis" type="String">
+            <Value>t</Value>
+        </Attribute>
+    </Float64>
+    <Float64 name="time_bnds">
+        <Dim name="/time"/>
+        <Dim name="/nbnds"/>
+        <Attribute name="long_name" type="String">
+            <Value>Time Boundaries</Value>
+        </Attribute>
+    </Float64>
+    <Int16 name="sst">
+        <Dim name="/time"/>
+        <Dim name="/lat"/>
+        <Dim name="/lon"/>
+        <Attribute name="long_name" type="String">
+            <Value>Monthly Means of Sea Surface Temperature</Value>
+        </Attribute>
+        <Attribute name="valid_range" type="Float32">
+            <Value>-5.00000000</Value>
+            <Value>40.0000000</Value>
+        </Attribute>
+        <Attribute name="actual_range" type="Float32">
+            <Value>-1.79999995</Value>
+            <Value>34.2399979</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>degC</Value>
+        </Attribute>
+        <Attribute name="add_offset" type="Float32">
+            <Value>0.00000000</Value>
+        </Attribute>
+        <Attribute name="scale_factor" type="Float32">
+            <Value>0.00999999978</Value>
+        </Attribute>
+        <Attribute name="missing_value" type="Int16">
+            <Value>32767</Value>
+        </Attribute>
+        <Attribute name="precision" type="Int16">
+            <Value>2</Value>
+        </Attribute>
+        <Attribute name="least_significant_digit" type="Int16">
+            <Value>1</Value>
+        </Attribute>
+        <Attribute name="var_desc" type="String">
+            <Value>Sea Surface Temperature</Value>
+        </Attribute>
+        <Attribute name="dataset" type="String">
+            <Value>NOAA Extended Reconstructed SST V3</Value>
+        </Attribute>
+        <Attribute name="level_desc" type="String">
+            <Value>Surface</Value>
+        </Attribute>
+        <Attribute name="statistic" type="String">
+            <Value>Mean</Value>
+        </Attribute>
+        <Attribute name="parent_stat" type="String">
+            <Value>Mean</Value>
+        </Attribute>
+        <Map name="/time"/>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+    </Int16>
+    <Attribute name="NC_GLOBAL" type="Container">
+        <Attribute name="title" type="String">
+            <Value>NOAA Extended Reconstructed SST V3</Value>
+        </Attribute>
+        <Attribute name="conventions" type="String">
+            <Value>CF-1.0</Value>
+        </Attribute>
+        <Attribute name="history" type="String">
+            <Value>created 09/2007 by CAS</Value>
+        </Attribute>
+        <Attribute name="comments" type="String">
+            <Value>The extended reconstructed sea surface temperature (ERSST)\012was constructed using the most recently available \012Comprehensive Ocean-Atmosphere Data Set (COADS) SST data \012and improved statistical methods that allow stable \012reconstruction using sparse data.\012Currently, ERSST version 2 (ERSST.v2) and version 3 (ERSST.v3) are available from NCDC.\012 ERSST.v3 is an improved extended reconstruction over version 2.\012 Most of the improvements are justified by testing with simulated data.\012 The major differences are caused by the improved low-frequency (LF) tuning of ERSST.v3 \012which reduces the SST anomaly damping before 1930 using the optimized parameters.\012 Beginning in 1985, ERSST.v3 is also improved by explicitly including\012 bias-adjusted satellite infrared data from AVHRR.</Value>
+        </Attribute>
+        <Attribute name="platform" type="String">
+            <Value>Model</Value>
+        </Attribute>
+        <Attribute name="source" type="String">
+            <Value>NOAA/NESDIS/National Climatic Data Center</Value>
+        </Attribute>
+        <Attribute name="institution" type="String">
+            <Value>NOAA/NESDIS/National Climatic Data Center</Value>
+        </Attribute>
+        <Attribute name="references" type="String">
+            <Value>http://www.ncdc.noaa.gov/oa/climate/research/sst/ersstv3.php\012http://www.cdc.noaa.gov/cdc/data.noaa.ersst.html</Value>
+        </Attribute>
+        <Attribute name="citation" type="String">
+            <Value>Smith, T.M., R.W. Reynolds, Thomas C. Peterson, and Jay Lawrimore 2007: Improvements to NOAA's Historical Merged Land-Ocean Surface Temperature Analysis (1880-2006). In press. Journal of Climate (ERSSTV3).\012Smith, T.M., and R.W. Reynolds, 2003: Extended Reconstruction of Global Sea Surface Temperatures Based on COADS Data (1854-1997). Journal of Climate, 16, 1495-1510. ERSSTV1\012 Smith, T.M., and R.W. Reynolds, 2004: Improved Extended Reconstruction of SST (1854-1997). Journal of Climate, 17, 2466-2477.</Value>
+        </Attribute>
+    </Attribute>
+    <Attribute name="DODS_EXTRA" type="Container">
+        <Attribute name="Unlimited_Dimension" type="String">
+            <Value>time</Value>
+        </Attribute>
+    </Attribute>
+</Dataset>

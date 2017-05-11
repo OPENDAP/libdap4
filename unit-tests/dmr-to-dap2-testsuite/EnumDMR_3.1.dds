@@ -1,0 +1,15 @@
+Dataset {
+    Byte b1;
+    Structure {
+        Byte i8;
+        Byte ui8;
+        Int16 i16;
+        UInt16 ui16;
+        Int32 i32;
+        UInt32 ui32;
+        Float32 f32;
+        Float64 f64;
+        String s;
+        Url u;
+    } s;
+} EnumDMR_3.1;

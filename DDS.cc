@@ -51,7 +51,7 @@
 #include <algorithm>
 #include <functional>
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 //#define DODS_DEBUG2
 
 #include "GNURegex.h"
@@ -739,17 +739,17 @@ DDS::leaf_match(const string &n, BaseType::btp_stack *s)
 
     for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
         BaseType *btp = *i;
-        DBG(cerr << "DDS::leaf_match: Looking for " << n << " in: " << btp->d_name() << endl);
+        DBG(cerr << "DDS::leaf_match: Looking for " << n << " in: " << btp->name() << endl);
         // Look for the d_name in the dataset's top-level
         if (btp->name() == n) {
-            DBG(cerr << "Found " << n << " in: " << btp->d_name() << endl);
+            DBG(cerr << "Found " << n << " in: " << btp->name() << endl);
             return btp;
         }
 
         if (btp->is_constructor_type()) {
             BaseType *found = btp->var(n, false, s);
             if (found) {
-                DBG(cerr << "Found " << n << " in: " << btp->d_name() << endl);
+                DBG(cerr << "Found " << n << " in: " << btp->name() << endl);
                 return found;
             }
         }
@@ -1057,17 +1057,36 @@ DDS::print(ostream &out)
  *
  * @param out Write the DAS here.
  */
+static string four_spaces = "    ";
+void print_var_das(ostream &out, BaseType *bt, string indent=""){
+
+    AttrTable attr_table = bt->get_attr_table();
+    out << indent << add_space_encoding(bt->name()) << " {" << endl;
+    attr_table.print(out, indent+four_spaces);
+    Constructor *cnstrctr = dynamic_cast < Constructor * >(bt);
+    if(cnstrctr) {
+        Constructor::Vars_iter i = cnstrctr->var_begin();
+        Constructor::Vars_iter e = cnstrctr->var_end();
+        for (; i!=e; i++) {
+            print_var_das(out,*i,indent+four_spaces);
+        }
+
+    }
+    out << indent << "}" << endl;
+
+}
+
 void
 DDS::print_das(ostream &out)
 {
-    out << "Attributes {\n" ;
-
-    d_attr.print(out, "    ");
+    string indent("    ");
+    out << "Attributes {" << endl ;
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
-        (*i)->get_attr_table().print(out, "    ");
+        print_var_das(out, *i, four_spaces);
     }
-
-    out << "}\n" ;
+    // Print the global attributes at the end.
+    d_attr.print(out,indent);
+    out << "}" << endl ;
 }
 
 /** @brief Print a constrained DDS to the specified file.
@@ -1076,7 +1095,7 @@ DDS::print_das(ostream &out)
     are marked to be sent after evaluating the constraint
     expression.
 
-    \note This function only works for scalars at the top level.
+    @note This function only works for scalars at the top level.
 
     @returns true.
 */

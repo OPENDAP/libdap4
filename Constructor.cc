@@ -32,7 +32,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include <string>
 #include <sstream>
@@ -50,14 +50,18 @@
 #include "XMLWriter.h"
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
+#include "D4Group.h"
 
 #include "D4Attributes.h"
 
-#include "debug.h"
 #include "escaping.h"
 #include "util.h"
 #include "Error.h"
 #include "InternalErr.h"
+
+
+// #define DODS_DEBUG 1
+#include "debug.h"
 
 using namespace std;
 
@@ -133,24 +137,45 @@ Constructor::operator=(const Constructor &rhs)
 }
 
 // A public method, but just barely...
-BaseType *
+void
 Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
 {
+    DBG(cerr << __func__ << "() - BEGIN (name:"<< name() <<
+        ")(type:"<< type_name()<<
+        ")(root:'"<< root->name()<<"':"<<(void*)root <<
+        ")(dest:'"<< dest->name()<<"':"<< (void *) dest<< ")"
+        << endl;);
+
     for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-    	BaseType *new_var = (*i)->transform_to_dap4(root, dest);
-    	if (new_var) {	// Might be a Grid; see the comment in BaseType::transform_to_dap4()
-    		new_var->set_parent(dest);
-    		dest->add_var_nocopy(new_var);
-    	}
+        BaseType *d4_var = dest->var((*i)->name());
+        // Don't add duplicate variables. We have to make this check
+        // because some of the child variables may add arrays
+        // to the root object. For example, this happens in
+        // Grid with the Map Arrays - ndp - 05/08/17
+        if(!d4_var){
+            /*
+            BaseType *new_var = (*i)->transform_to_dap4(root, dest);
+            if (new_var) {	// Might be a Grid; see the comment in BaseType::transform_to_dap4()
+                new_var->set_parent(dest);
+                dest->add_var_nocopy(new_var);
+            }
+            */
+            DBG(cerr << __func__ << "() - Transforming variable: '" <<
+                (*i)->name() << "'" << endl; );
+            (*i)->transform_to_dap4(root /*group*/, dest /*container*/);
+        }
+        else {
+            DBG(cerr << __func__ << "() - Skipping variable: " <<
+                d4_var->type_name() << " " << d4_var->name() << " because a variable with" <<
+                " this name already exists in the root group." << endl; );
+        }
     }
-
-    // Add attributes
-	dest->attributes()->transform_to_dap4(get_attr_table());
-
+    dest->attributes()->transform_to_dap4(get_attr_table());
     dest->set_is_dap4(true);
-
-	return dest;
+    DBG(cerr << __func__ << "() - END (name:"<< name() << ")(type:"<< type_name()<< ")" << endl;);
 }
+
+
 
 string
 Constructor::FQN() const
@@ -814,6 +839,67 @@ Constructor::set_in_selection(bool state)
 
     BaseType::set_in_selection(state);
 }
+
+
+void Constructor::transfer_attributes(AttrTable *at_container)
+{
+    AttrTable *at = at_container->get_attr_table(name());
+    DBG(cerr << "Constructor::transfer_attributes() - processing " << name() << "'  addr: "<< (void*) at << endl);
+    if (at) {
+        BaseType::transfer_attributes(at_container);
+        for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+            BaseType *bt  = (*i);
+            bt->transfer_attributes(at);
+        }
+
+    }
+}
+
+AttrTable *
+Constructor::make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars) {
+    DBG( cerr << __func__ << "() - BEGIN" << endl;);
+
+    AttrTable *dv_table = NULL;
+    if(!dropped_vars->empty()){
+        dv_table = new AttrTable;
+        dv_table->set_name("dap4:dropped_members");
+        vector<BaseType *>::iterator dvIter = dropped_vars->begin();
+        vector<BaseType *>::iterator dvEnd = dropped_vars->end();
+        unsigned int i = 0;
+        for( ; dvIter!=dvEnd ; dvIter++, i++){
+            BaseType *bt = (*dvIter);
+            AttrTable *bt_attr_table = new AttrTable(bt->get_attr_table());
+            bt_attr_table->set_name(bt->name());
+            string type_name = bt->type_name();
+            if(bt->is_vector_type()){
+                Array *array = dynamic_cast <Array *>(bt);
+                if(array){
+                    type_name = array->prototype()->type_name();
+                    DBG( cerr << __func__ << "() - The variable " << bt->name() << " is an Array of '"<< type_name << "'" << endl;);
+                    Array::Dim_iter d_iter = array->dim_begin();
+                    Array::Dim_iter end = array->dim_end();
+                    for( ; d_iter< end ; d_iter++){
+
+                        ostringstream dim_size;
+                        dim_size << (*d_iter).size;
+                        bt_attr_table->append_attr(
+                            "array_dimensions",
+                            AttrType_to_String(Attr_uint32),
+                            dim_size.str());
+                    }
+                }
+            }
+            bt_attr_table->append_attr("dap4:type","String", type_name);
+            dv_table->append_container(bt_attr_table,bt_attr_table->get_name());
+            // Clear entry now that we're done.
+            (*dvIter) = 0;
+        }
+   }
+    DBG( cerr << __func__ << "() - END " << endl;);
+    return dv_table;
+
+}
+
 
 /** @brief dumps information about this object
  *

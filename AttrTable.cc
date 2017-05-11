@@ -57,7 +57,7 @@ using std::vector;
 namespace libdap {
 
 /** Remove %20 space encoding */
-static string remove_space_encoding(const string &s)
+string remove_space_encoding(const string &s)
 {
     string::size_type pos = s.find("%20");
     if (pos != string::npos) {
@@ -74,7 +74,7 @@ static string remove_space_encoding(const string &s)
 }
 
 /** Add %20 space encoding. */
-static string add_space_encoding(const string &s)
+string add_space_encoding(const string &s)
 {
     string::size_type pos = s.find(" ");
     if (pos != string::npos) {

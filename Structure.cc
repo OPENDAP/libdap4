@@ -148,22 +148,84 @@ Structure::ptr_duplicate()
  * @param container
  * @return The new variable
  */
-BaseType *
+void
 Structure::transform_to_dap4(D4Group *root, Constructor *container)
 {
-	// For this class, ptr_duplicate() calls the const ctor which calls
-	// Constructor's const ctor which calls Constructor::m_duplicate().
-	// Here we replicate some of that functionality, but instead call
-	// transform_to_dap4() on the contained variables.
-
-	// Structure *dest = static_cast<Structure*>(ptr_duplicate());
+    DBG(cerr << __func__ <<"() -  BEGIN" << endl;);
+	// Here we create a new Structure and then use it
+    // as the target container for the transformed versions of
+    // all the member variables by calling Constructor::transform_to_dap4() and
+    // passing our new target Structure in as the target container.
 	Structure *dest = new Structure(name());
-
+    DBG(cerr << __func__ <<"() -  Calling Constructor::transform_to_dap4("<<
+        "'" << root->name() << "':" << (void*)root << ","
+        "'" << dest->name() << "':" << (void*)dest << ")"
+        << endl; );
 	Constructor::transform_to_dap4(root, dest);
-	dest->set_parent(container);
-
-	return dest;
+	container->add_var_nocopy(dest);
+	DBG(cerr << __func__ <<"() -  Added new Structure '" << dest->name() << "' (" << (void*)dest <<
+	    ") to the container '" << container->name() <<"'" << endl;);
+    DBG(cerr << __func__ <<"() -  END"<< endl;);
 }
+
+
+/** @brief DAP4 to DAP2 transform
+ *
+ * Return a DAP2 'copy' of the variable.
+ *
+ * @return A pointer to the transformed variable
+ */
+vector<BaseType *> *
+Structure::transform_to_dap2(AttrTable *)
+{
+    DBG(cerr << " " << __func__ << " BEGIN" << endl);
+    Structure *dest = new Structure(name());
+
+    // convert the Structure's d4 attributes to a dap2 attribute table.
+    AttrTable *attrs = this->attributes()->get_AttrTable(name());
+    dest->set_is_dap4(false);
+
+    vector<BaseType *> dropped_vars;
+    for (Structure::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
+        vector<BaseType *> *new_vars = (*i)->transform_to_dap2(attrs);
+        if (new_vars) {  // Might be un-mappable
+            // It's not so game on..
+            vector<BaseType*>::iterator vIter = new_vars->begin();
+            vector<BaseType*>::iterator end = new_vars->end();
+            for( ; vIter!=end ; vIter++ ){
+                BaseType *new_var = (*vIter);
+                new_var->set_parent(dest);
+                dest->add_var_nocopy(new_var);
+                (*vIter) = NULL;
+            }
+            delete new_vars;
+
+        }
+        else {
+            // Got a NULL, so we are dropping this var.
+            dropped_vars.push_back(*i);
+        }
+    }
+
+    AttrTable *dv_attr_table = make_dropped_vars_attr_table(&dropped_vars);
+    if(dv_attr_table){
+        DBG(cerr << " " << __func__ << "() - Adding "<< dv_attr_table->get_name() << " AttrTable" << endl);
+        attrs->append_container(dv_attr_table,dv_attr_table->get_name());
+    }
+    DBG(attrs->print(cerr,"",true););
+    // Since this does a copy we gotta delete the attrs when done
+    dest->set_attr_table(*attrs);
+    delete attrs;
+
+    vector<BaseType *> *result =  new vector<BaseType *>();
+    result->push_back(dest);
+    DBG(cerr << " " << __func__ << " END" << endl);
+    return result;
+}
+
+
+
+
 
 Structure &
 Structure::operator=(const Structure &rhs)

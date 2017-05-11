@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="coads_climatology.nc">
+    <Dimension name="TIME" size="12"/>
+    <Dimension name="COADSY" size="90"/>
+    <Dimension name="COADSX" size="180"/>
+    <Float64 name="TIME">
+        <Dim name="/TIME"/>
+    </Float64>
+    <Float64 name="COADSY">
+        <Dim name="/COADSY"/>
+    </Float64>
+    <Float64 name="COADSX">
+        <Dim name="/COADSX"/>
+    </Float64>
+    <Float32 name="SST">
+        <Dim name="/TIME"/>
+        <Dim name="/COADSY"/>
+        <Dim name="/COADSX"/>
+        <Map name="/TIME"/>
+        <Map name="/COADSY"/>
+        <Map name="/COADSX"/>
+    </Float32>
+    <Float32 name="AIRT">
+        <Dim name="/TIME"/>
+        <Dim name="/COADSY"/>
+        <Dim name="/COADSX"/>
+        <Map name="/TIME"/>
+        <Map name="/COADSY"/>
+        <Map name="/COADSX"/>
+    </Float32>
+    <Float32 name="UWND">
+        <Dim name="/TIME"/>
+        <Dim name="/COADSY"/>
+        <Dim name="/COADSX"/>
+        <Map name="/TIME"/>
+        <Map name="/COADSY"/>
+        <Map name="/COADSX"/>
+    </Float32>
+    <Float32 name="VWND">
+        <Dim name="/TIME"/>
+        <Dim name="/COADSY"/>
+        <Dim name="/COADSX"/>
+        <Map name="/TIME"/>
+        <Map name="/COADSY"/>
+        <Map name="/COADSX"/>
+    </Float32>
+</Dataset>

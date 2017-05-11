@@ -124,7 +124,9 @@ BaseType *D4BaseTypeFactory::NewVariable(Type t, const string &name) const
 Byte *
 D4BaseTypeFactory::NewByte(const string &n) const
 {
-    return new Byte(n);
+    Byte *b = new Byte(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 // Use the type constants specific to Char and UInt8 so the print reps will
@@ -134,6 +136,7 @@ D4BaseTypeFactory::NewChar(const string &n) const
 {
     Byte *b = new Byte(n);
     b->set_type(dods_char_c);
+    b->set_is_dap4(true);
     return b;
 }
 
@@ -142,63 +145,82 @@ D4BaseTypeFactory::NewUInt8(const string &n) const
 {
     Byte *b = new Byte(n);
     b->set_type(dods_uint8_c);
+    b->set_is_dap4(true);
     return b;
 }
 
 Int8 *
 D4BaseTypeFactory::NewInt8(const string &n) const
 {
-    return new Int8(n);
+    Int8 *b = new Int8(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 Int16 *
 D4BaseTypeFactory::NewInt16(const string &n) const
 {
-    return new Int16(n);
+    Int16 *b = new Int16(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 UInt16 *
 D4BaseTypeFactory::NewUInt16(const string &n) const
 {
-    return new UInt16(n);
+    UInt16 *b = new UInt16(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 Int32 *
 D4BaseTypeFactory::NewInt32(const string &n) const
 {
     DBG(cerr << "Inside DAP4BaseTypeFactory::NewInt32" << endl);
-    return new Int32(n);
+    Int32 *b = new Int32(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 UInt32 *
 D4BaseTypeFactory::NewUInt32(const string &n) const
 {
-    return new UInt32(n);
+    UInt32 *b = new UInt32(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 Int64 *
 D4BaseTypeFactory::NewInt64(const string &n) const
 {
     DBG(cerr << "Inside DAP4BaseTypeFactory::NewInt64" << endl);
-    return new Int64(n);
+    Int64 *b = new Int64(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 UInt64 *
 D4BaseTypeFactory::NewUInt64(const string &n) const
 {
-    return new UInt64(n);
+    UInt64 *b = new UInt64(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 Float32 *
 D4BaseTypeFactory::NewFloat32(const string &n) const
 {
-    return new Float32(n);
+    Float32 *b = new Float32(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 Float64 *
 D4BaseTypeFactory::NewFloat64(const string &n) const
 {
-    return new Float64(n);
+    Float64 *b = new Float64(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 /**
@@ -218,13 +240,17 @@ D4BaseTypeFactory::NewEnum(const string &name, Type type) const
 Str *
 D4BaseTypeFactory::NewStr(const string &n) const
 {
-    return new Str(n);
+    Str *b = new Str(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 Url *
 D4BaseTypeFactory::NewUrl(const string &n) const
 {
-    return new Url(n);
+    Url *b = new Url(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 D4Opaque *
@@ -238,7 +264,9 @@ D4BaseTypeFactory::NewOpaque(const string &n) const
 Url *
 D4BaseTypeFactory::NewURL(const string &n) const
 {
-    return new Url(n);
+    Url *b = new Url(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 Array *
@@ -250,7 +278,9 @@ D4BaseTypeFactory::NewArray(const string &n, BaseType *v) const
 Structure *
 D4BaseTypeFactory::NewStructure(const string &n) const
 {
-    return new Structure(n);
+    Structure *b = new Structure(n);
+    b->set_is_dap4(true);
+    return b;
 }
 
 D4Sequence *
