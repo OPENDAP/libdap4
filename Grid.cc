@@ -142,7 +142,7 @@ Grid::operator=(const Grid &rhs)
 /**
  *
  */
-BaseType *
+void
 Grid::transform_to_dap4(D4Group *root, Constructor *container)
 {
     DBG(cerr << __func__ << "() - BEGIN (gird:"<< name() << ")" << endl;);
@@ -221,8 +221,6 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
 
     }
     DBG(cerr << __func__ << "() - END (grid:" << name() << ")" << endl;);
-
-	return 0;
 }
 
 

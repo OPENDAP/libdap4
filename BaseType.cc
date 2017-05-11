@@ -211,7 +211,7 @@ string BaseType::toString()
  *
  * @return A pointer to the transformed variable
  */
-BaseType *
+void
 BaseType::transform_to_dap4(D4Group */*root*/, Constructor *container)
 {
     BaseType *dest = ptr_duplicate();
@@ -221,7 +221,6 @@ BaseType::transform_to_dap4(D4Group */*root*/, Constructor *container)
         dest->set_is_dap4(true);
     }
     container->add_var_nocopy(dest);
-    return NULL;
 }
 
 

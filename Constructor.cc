@@ -137,7 +137,7 @@ Constructor::operator=(const Constructor &rhs)
 }
 
 // A public method, but just barely...
-BaseType *
+void
 Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
 {
     DBG(cerr << __func__ << "() - BEGIN (name:"<< name() <<
@@ -173,8 +173,6 @@ Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
     dest->attributes()->transform_to_dap4(get_attr_table());
     dest->set_is_dap4(true);
     DBG(cerr << __func__ << "() - END (name:"<< name() << ")(type:"<< type_name()<< ")" << endl;);
-
-	return 0;
 }
 
 

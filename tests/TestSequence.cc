@@ -95,13 +95,12 @@ TestSequence::operator=(const TestSequence &rhs)
     return *this;
 }
 
-BaseType *
+void
 TestSequence::transform_to_dap4(D4Group *root, Constructor *container)
 {
     TestD4Sequence *dest = new TestD4Sequence(name());
     Constructor::transform_to_dap4(root, dest);
     container->add_var_nocopy(dest);
-    return 0;
 }
 
 void TestSequence::output_values(std::ostream &out)

@@ -148,7 +148,7 @@ Structure::ptr_duplicate()
  * @param container
  * @return The new variable
  */
-BaseType *
+void
 Structure::transform_to_dap4(D4Group *root, Constructor *container)
 {
     DBG(cerr << __func__ <<"() -  BEGIN" << endl;);
@@ -166,7 +166,6 @@ Structure::transform_to_dap4(D4Group *root, Constructor *container)
 	DBG(cerr << __func__ <<"() -  Added new Structure '" << dest->name() << "' (" << (void*)dest <<
 	    ") to the container '" << container->name() <<"'" << endl;);
     DBG(cerr << __func__ <<"() -  END"<< endl;);
-	return 0;
 }
 
 

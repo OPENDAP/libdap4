@@ -190,7 +190,7 @@ Array::operator=(const Array &rhs)
     return *this;
 }
 
-BaseType *
+void
 Array::transform_to_dap4(D4Group *root, Constructor *container)
 {
     DBG(cerr << __func__ << "() - BEGIN (array:" << name() << ")" << endl;);
@@ -201,7 +201,6 @@ Array::transform_to_dap4(D4Group *root, Constructor *container)
         DBG(cerr << __func__ << "() - Already DAP4 type: Just making a copy and adding to container. " << endl;);
 	    container->add_var_nocopy(dest);
 	    DBG(cerr << __func__ << "() - END (Already DAP4 type)" << endl;);
-	    return dest;
 	}
 	// Process the Array's dimensions, making D4 shared dimensions for
 	// D2 dimensions that are named. If there is just a size, don't make
@@ -258,7 +257,6 @@ Array::transform_to_dap4(D4Group *root, Constructor *container)
 	dest->set_is_dap4(true);
 	container->add_var_nocopy(dest);
     DBG(cerr << __func__ << "() - END (array:" << name() << ")" << endl;);
-	return 0;
 }
 
 bool Array::is_dap2_grid(){

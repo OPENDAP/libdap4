@@ -65,7 +65,7 @@ public:
     virtual ~Constructor();
 
     Constructor &operator=(const Constructor &rhs);
-    virtual BaseType *transform_to_dap4(D4Group *root, Constructor *dest);
+    virtual void transform_to_dap4(D4Group *root, Constructor *dest);
 
     virtual std::string FQN() const;
 
