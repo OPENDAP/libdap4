@@ -161,13 +161,16 @@ D4Enum::transform_to_dap2(AttrTable *){
         break;
     }
     default:
-        assert(!"illegal type for D4Enum");
-        my_pretty_pony=NULL;
+    {
+        ostringstream oss;
+        oss << __func__ << "() - ERROR! Unknown D4Enum type:"<< d_element_type << " name: " <<  name() << endl;
+        throw InternalErr(__FILE__,__LINE__,oss.str());
+        break;
+    }
     }
 
     DBG( cerr << __func__ << "() - Processing Enum  type:"<<
         my_pretty_pony->type_name() << " name: " << my_pretty_pony->name() << endl;);
-
     /**
      * Grab the attributes!
      */
