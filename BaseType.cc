@@ -40,7 +40,7 @@
 #include <sstream>
 #include <string>
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -657,17 +657,17 @@ void BaseType::transfer_attributes(AttrTable *at_container) {
                 // this AttrTable and let a child constructor class like Grid or Constructor
                 // deal with it.
                 BaseType *bt = var(at->get_name(at_p),true);
-                DBG(cerr << __func__ << "() - Found child var: '"<< bt->type_name()<< " " << bt->name() << " (address:" << (void *) bt << ")" << endl);
                 if(bt==0){
-                    DBG(cerr << __func__ << "() -  Adding container '" << at->get_name(at_p) << endl);
+                    DBG(cerr << __func__ << "() - Adding container '" << at->get_name(at_p) << endl);
                     get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)), at->get_name(at_p));
                 }
                 else {
+                    DBG(cerr << __func__ << "() - Found child var: '"<< bt->type_name()<< " " << bt->name() << " (address:" << (void *) bt << ")" << endl);
                     DBG(cerr << __func__ << "() -  Skipping container '" << at->get_name(at_p) << endl);
                 }
             }
             else {
-                DBG(cerr << __func__ << "() -  Adding Attribute '" << at->get_name(at_p) << endl);
+                DBG(cerr << __func__ << "() - Adding Attribute '" << at->get_name(at_p) << endl);
                 get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
             }
             at_p++;

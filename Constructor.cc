@@ -32,7 +32,7 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include <string>
 #include <sstream>

@@ -436,25 +436,21 @@ BaseType *Vector::var(const string &n, bool exact, btp_stack *s)
     string name = www2id(n);
     DBG2(cerr << "Vector::var: Looking for " << name << endl);
 
+    if (name == "" || d_proto->name() == name) {
+        if (s)
+            s->push(this);
+        return d_proto;
+    }
     // If this is a Vector of constructor types, look for 'name' recursively.
     // Make sure to check for the case where name is the default (the empty
     // string). 9/1/98 jhrg
     if (d_proto->is_constructor_type()) {
-        if (name == "" || d_proto->name() == name) {
-            if (s)
-                s->push(this);
-            return d_proto;
-        }
-        else {
             BaseType * result = d_proto->var(name, exact, s);
-            if (result && s)
-                s->push(this);
-            return result;
-        }
+        if (result && s)
+            s->push(this);
+        return result;
     }
-    else {
-        return d_proto;
-    }
+    return NULL;
 }
 
 /** This version of var(...) searches for <i>name</i> and returns a
