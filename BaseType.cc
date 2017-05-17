@@ -633,17 +633,20 @@ BaseType::set_attributes_nocopy(D4Attributes *attrs)
  * @return void
  */
 void BaseType::transfer_attributes(AttrTable *at_container) {
-    AttrTable *at = at_container->get_attr_table(name());
 
-    DBG(cerr << "BaseType::"<< __func__ << "() - processing '" << name() << "'  addr: "<< (void *) at << endl);
+    DBG(cerr << __func__ << "() -  BEGIN name:'" << name() << "'" << endl);
+
+    AttrTable *at = at_container->get_attr_table(name());
+    DBG(cerr << __func__ << "() - at: "<< (void *) at << endl);
+
 
     if (at) {
         at->set_is_global_attribute(false);
-        DBG(cerr << "BaseType::"<< __func__ << "Processing AttrTable: " << at->get_name() << endl);
+        DBG(cerr << __func__ << "() - Processing AttrTable: " << at->get_name() << endl);
 
         AttrTable::Attr_iter at_p = at->attr_begin();
         while (at_p != at->attr_end()) {
-            DBG(cerr << "BaseType::"<< __func__ << "() - About to append " << "attr name: '" << at->get_name(at_p) << "', type: " << at->get_type(at_p) << endl);
+            DBG(cerr << __func__ << "() -  Attribute '" << at->get_name(at_p) << "' is type: " << at->get_type(at_p) << endl);
             if (at->get_attr_type(at_p) == Attr_container){
                 // An attribute container may actually represent a child member variable. When
                 // that's the case we don't want to add the container to the parent type, but
@@ -654,16 +657,25 @@ void BaseType::transfer_attributes(AttrTable *at_container) {
                 // this AttrTable and let a child constructor class like Grid or Constructor
                 // deal with it.
                 BaseType *bt = var(at->get_name(at_p),true);
-                DBG(cerr << "BaseType::"<< __func__ << "() - var: " << (void *) bt << endl);
                 if(bt==0){
+                    DBG(cerr << __func__ << "() - Adding container '" << at->get_name(at_p) << endl);
                     get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)), at->get_name(at_p));
+                }
+                else {
+                    DBG(cerr << __func__ << "() - Found child var: '"<< bt->type_name()<< " " << bt->name() << " (address:" << (void *) bt << ")" << endl);
+                    DBG(cerr << __func__ << "() -  Skipping container '" << at->get_name(at_p) << endl);
                 }
             }
             else {
+                DBG(cerr << __func__ << "() - Adding Attribute '" << at->get_name(at_p) << endl);
                 get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
             }
             at_p++;
         }
+    }
+    else {
+        DBG(cerr << __func__ << "() - Unable to locate AttrTable '" << name() << "'  SKIPPING" << endl);
+
     }
 }
 

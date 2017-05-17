@@ -145,7 +145,11 @@ Grid::operator=(const Grid &rhs)
 void
 Grid::transform_to_dap4(D4Group *root, Constructor *container)
 {
-    DBG(cerr << __func__ << "() - BEGIN (gird:"<< name() << ")" << endl;);
+    DBG(cerr << __func__ << "() - BEGIN (name:"<< name() <<
+        ")(type:"<< type_name()<<
+        ")(root:'"<< root->name()<<"':"<<(void*)root <<
+        ")(container:'"<< container->name()<<"':"<< (void *) container<< ")"
+        << endl;);
 
     vector<Array*> d4_map_arrays;
 
@@ -177,20 +181,20 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
                 the_map_array = static_cast<Array*>(container->var((*i)->name()));
                 DBG(cerr << __func__ << "() - Transformed array '"<< the_map_array->name() <<
                     "' to DAP4 Array (" << (void *) the_map_array << ") added to container: '"<<
-                    container.name() <<"'" << endl;);
+                    container->name() <<"'" << endl;);
             }
             else {
                 the_map_array = root_map_array;
                 DBG(cerr << __func__ << "() - Located Map Array '" << the_map_array->name() << "' (" <<
                     (void *) the_map_array << ") present in the root group ("<<root->name()<< ":"<<(void*)root <<
-                    "). Let's fix that..." << endl;);
+                    ")"<< endl;);
             }
         }
         else {
             the_map_array = container_map_array;
             DBG(cerr << __func__ << "() - Located Map Array '" << the_map_array->name() << "' (" <<
                 (void *) the_map_array << ") present in the current DAP4 container ("<<container->name( )<< ":"<<
-                (void*)container<< "). Let's fix that..." << endl;);
+                (void*)container<< ")" << endl;);
         }
         // We'll use these (below) to make D4Map objects for the coverage
         d4_map_arrays.push_back(the_map_array);
@@ -203,6 +207,13 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
     Array *coverage = static_cast<Array*>(btp);
     DBG(cerr << __func__ << "() - Transformed and added DAP4 coverage Array '"<< coverage->name() <<
         "' to parent container: '" << container->name() << "'" << endl;);
+
+    coverage->attributes()->transform_to_dap4(get_attr_table());
+
+    DBG(cerr << __func__ << "() - " << "Coverage Array '"<< coverage->name() << "' attributes: " << endl;
+        XMLWriter xmlw;
+        coverage->get_attr_table().print_dap4(xmlw);
+        cerr << xmlw.get_doc() << endl;);
 
     // Add the D4Maps
     vector<Array*>::iterator d4aItr=d4_map_arrays.begin();
@@ -591,15 +602,33 @@ Grid::components(bool constrained)
 
 void Grid::transfer_attributes(AttrTable *at_container)
 {
-	AttrTable *at = at_container->get_attr_table(name());
+    DBG( cerr << __func__ << "() - BEGIN "<< type_name() << " " << name() << " (at_container:"<< at_container->get_name() << ":"<<(void*)at_container<< ")" << endl;);
 
+    // At should be the attribute table for the Grid
+	AttrTable *at = at_container->get_attr_table(name());
 	if (at) {
+	    DBG( cerr << __func__ << "() - Found AttrTable ("<< at->get_name() << ":" << (void*)at<< ")" << endl;);
 		at->set_is_global_attribute(false);
 
-		array_var()->transfer_attributes(at);
+		// We don't monkey with the data array attributes because it usually just makes
+		// a mess. but:
+		// TODO We should come back and decide if we want to but configuration
+		// controls on this or do something smarter like check for duplicate values
+		// before merging the Array metadata into the Grid metadata
+		// SO - We don't copy the attributes like we used to:
+		//
+		//    array_var()->transfer_attributes(at);
+		//
+		// And then to seal the deal we have to
+		// Mark them as not "global" so they don't get copied.
+		AttrTable *dvat = at->get_attr_table(array_var()->name());
+		if(dvat){
+		    dvat->set_is_global_attribute(false);
+		}
 
 		Map_iter map = map_begin();
 		while (map != map_end()) {
+	        DBG( cerr << __func__ << "() - Processing Map Array ("<< (*map)->name() << ":" << (void*)(*map)<< ")" << endl;);
 			(*map)->transfer_attributes(at);
 			map++;
 		}
@@ -610,7 +639,13 @@ void Grid::transfer_attributes(AttrTable *at_container)
 		AttrTable::Attr_iter at_p = at->attr_begin();
 		while (at_p != at->attr_end()) {
 			if (at->is_global_attribute(at_p)) {
-				if (at->get_attr_type(at_p) == Attr_container)
+	            DBG( cerr << __func__ << "() - " <<
+	                "Adding unclaimed Attribute ("<<
+	                at->get_type(at_p)<< ":" << at->get_name(at_p) << ":" << (void*)(*map)<<
+	                ") from AttrTable (" << at->get_name() << ":" << (void*)at << ")" <<
+	                " to the variable " << type_name() << " " << name() << endl;);
+
+	            if (at->get_attr_type(at_p) == Attr_container)
 					get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)), at->get_name(at_p));
 				else
 					get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
@@ -619,6 +654,10 @@ void Grid::transfer_attributes(AttrTable *at_container)
 			at_p++;
 		}
 	}
+	else {
+        DBG( cerr << __func__ << "() - No AttrTable named '"<< name() << "' was found in at_container ("<<at_container->get_name()<<":" << (void*)at<< ")" << endl;);
+	}
+    DBG( cerr << __func__ << "() - END "<< type_name() << " " << name() << " (at_container:"<< at_container->get_name() << ":"<<(void*)at_container<< ")" << endl;);
 }
 
 // When projected (using whatever the current constraint provides in the way
