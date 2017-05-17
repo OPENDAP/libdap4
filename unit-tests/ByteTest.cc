@@ -37,7 +37,16 @@
 
 #include "Byte.h"
 
+#include "GetOpt.h" // Added jhrg
+
 #include "testFile.h"
+
+/// Added jhrg
+static bool debug = false;
+
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false);
+/// jhrg
 
 using namespace CppUnit;
 using namespace std;
@@ -126,8 +135,11 @@ int main(int argc, char *argv[])
 
         case 'h': {     // help - show test names
             cerr << "Usage: ByteTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::ByteTest::suite()->getTests();
-            unsigned int prefix_len = libdap::ByteTest::suite()->getName().append("::").length();
+            // Since the ByteTest class is not in the namespace 'libdap' using the ns
+            // prefix is a compiler error. Somce of the tests do put the code in a ns
+            // and then you will need to use the match prefix. jhrg
+            const std::vector<Test*> &tests = /*libdap:: jhrg*/ByteTest::suite()->getTests();
+            unsigned int prefix_len = /*libdap:: jhrg*/ByteTest::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
                 cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
@@ -151,7 +163,7 @@ int main(int argc, char *argv[])
     else {
         for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::ByteTest::suite()->getName().append("::").append(argv[i]);
+            test = /*libdap:: jhrg*/ByteTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
