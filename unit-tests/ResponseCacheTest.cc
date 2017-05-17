@@ -61,28 +61,30 @@ namespace libdap {
 
 class ResponseCacheTest: public TestFixture {
 private:
-	TestTypeFactory ttf;
-	DDS *test_05_dds;
-	//DDS test_06_dds;
-	DDXParser dp;
-	ConstraintEvaluator eval;
-	ResponseBuilder rb;
+    TestTypeFactory ttf;
+    DDS *test_05_dds;
+    //DDS test_06_dds;
+    DDXParser dp;
+    ConstraintEvaluator eval;
+    ResponseBuilder rb;
 
     string d_response_cache;
     ResponseCache *cache;
 
 public:
-    ResponseCacheTest() : test_05_dds(0), /*test_06_dds(&ttf), */dp(&ttf),
-		d_response_cache(string(TEST_SRC_DIR) + "/response_cache") {
+    ResponseCacheTest() :
+        test_05_dds(0), /*test_06_dds(&ttf), */dp(&ttf), d_response_cache(string(TEST_SRC_DIR) + "/response_cache")
+    {
     }
 
-    ~ResponseCacheTest() {
+    ~ResponseCacheTest()
+    {
     }
 
-    void clean_cache(const string &directory, const string &prefix) {
+    void clean_cache(const string &directory, const string &prefix)
+    {
         DIR *dip = opendir(directory.c_str());
-        if (!dip)
-            throw InternalErr(__FILE__, __LINE__, "Unable to open cache directory " + directory);
+        if (!dip) throw InternalErr(__FILE__, __LINE__, "Unable to open cache directory " + directory);
 
         struct dirent *dit;
         // go through the cache directory and collect all of the files that
@@ -90,35 +92,39 @@ public:
         while ((dit = readdir(dip)) != NULL) {
             string dirEntry = dit->d_name;
             if (dirEntry.compare(0, prefix.length(), prefix) == 0) {
-            	unlink(string(directory + "/" + dit->d_name).c_str());
+                unlink(string(directory + "/" + dit->d_name).c_str());
             }
         }
 
         closedir(dip);
     }
 
-    void setUp() {
-    	string cid;
-    	test_05_dds = new DDS(&ttf);
-    	dp.intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.05.ddx", test_05_dds, cid);
-    	// cid == http://dods.coas.oregonstate.edu:8080/dods/dts/test.01.blob
-    	DBG(cerr << "DDS Name: " << test_05_dds->get_dataset_name() << endl);
-    	DBG(cerr << "Intern CID: " << cid << endl);
+    void setUp()
+    {
+        string cid;
+        test_05_dds = new DDS(&ttf);
+        dp.intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.05.ddx", test_05_dds, cid);
+        // cid == http://dods.coas.oregonstate.edu:8080/dods/dts/test.01.blob
+        DBG(cerr << "DDS Name: " << test_05_dds->get_dataset_name() << endl);
+        DBG(cerr << "Intern CID: " << cid << endl);
     }
 
-    void tearDown() {
-		clean_cache(d_response_cache, "rc");
-		delete test_05_dds;
+    void tearDown()
+    {
+        clean_cache(d_response_cache, "rc");
+        delete test_05_dds;
     }
 
-    bool re_match(Regex &r, const string &s) {
+    bool re_match(Regex &r, const string &s)
+    {
         DBG(cerr << "s.length(): " << s.length() << endl);
         int pos = r.match(s.c_str(), s.length());
         DBG(cerr << "r.match(s): " << pos << endl);
-        return pos > 0 && static_cast<unsigned> (pos) == s.length();
+        return pos > 0 && static_cast<unsigned>(pos) == s.length();
     }
 
-    bool re_match_binary(Regex &r, const string &s) {
+    bool re_match_binary(Regex &r, const string &s)
+    {
         DBG(cerr << "s.length(): " << s.length() << endl);
         int pos = r.match(s.c_str(), s.length());
         DBG(cerr << "r.match(s): " << pos << endl);
@@ -127,226 +133,246 @@ public:
 
     // The directory 'never' does not exist; the cache won't be initialized,
     // so is_available() should be false
-    void ctor_test_1() {
+    void ctor_test_1()
+    {
 
-    	cache = new ResponseCache(string(TEST_SRC_DIR) + "/never", "rc", 1000);
-    	CPPUNIT_ASSERT(!cache->is_available());
+        cache = new ResponseCache(string(TEST_SRC_DIR) + "/never", "rc", 1000);
+        CPPUNIT_ASSERT(!cache->is_available());
     }
 
     // The directory 'response_cache' should exist so is_available() should be
     // true.
-    void ctor_test_2() {
-    	//cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
-    	cache = new ResponseCache(d_response_cache, "rc", 1000);
-    	CPPUNIT_ASSERT(cache->is_available());
+    void ctor_test_2()
+    {
+        //cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
+        cache = new ResponseCache(d_response_cache, "rc", 1000);
+        CPPUNIT_ASSERT(cache->is_available());
     }
 
     // Because setup() and teardown() clean out the cache directory, there should
     // never be a cached item; calling read_cached_dataset() should return a
     // valid DDS with data and store a copy in the cache.
-	void cache_a_response()
-	{
-		//cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
-		cache = new ResponseCache(d_response_cache, "rc", 1000);
-		string token;
-		try {
-			// TODO Could stat the cache file to make sure it's not already there.
-			DDS *cache_dds = cache->read_cached_dataset(*test_05_dds, "", &rb, &eval, token);
-			cache->unlock_and_close(token);
+    void cache_a_response()
+    {
+        //cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
+        cache = new ResponseCache(d_response_cache, "rc", 1000);
+        string token;
+        try {
+            // TODO Could stat the cache file to make sure it's not already there.
+            DDS *cache_dds = cache->read_cached_dataset(*test_05_dds, "", &rb, &eval, token);
+            cache->unlock_and_close(token);
 
-			DBG(cerr << "Cached response token: " << token << endl);
-			CPPUNIT_ASSERT(cache_dds);
-			CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#");
-			// TODO Stat the cache file to check it's size
-			delete cache_dds;
-		}
-		catch (Error &e) {
-			CPPUNIT_FAIL(e.get_error_message());
-		}
+            DBG(cerr << "Cached response token: " << token << endl);
+            CPPUNIT_ASSERT(cache_dds);
+            CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#");
+            // TODO Stat the cache file to check it's size
+            delete cache_dds;
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
     }
 
-	// The first call reads values into the DDS, stores a copy in the cache and
-	// returns the DDS. The second call reads the value from the cache.
-	void cache_and_read_a_response()
-	{
-		//cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
-		cache = new ResponseCache(d_response_cache, "rc", 1000);
-		string token;
-		try {
-			DDS *cache_dds = cache->read_cached_dataset(*test_05_dds, "", &rb, &eval, token);
-			cache->unlock_and_close(token);
+    // The first call reads values into the DDS, stores a copy in the cache and
+    // returns the DDS. The second call reads the value from the cache.
+    void cache_and_read_a_response()
+    {
+        //cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
+        cache = new ResponseCache(d_response_cache, "rc", 1000);
+        string token;
+        try {
+            DDS *cache_dds = cache->read_cached_dataset(*test_05_dds, "", &rb, &eval, token);
+            cache->unlock_and_close(token);
 
-			DBG(cerr << "Cached response token: " << token << endl);
-			CPPUNIT_ASSERT(cache_dds);
-			CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#");
-			delete cache_dds; cache_dds = 0;
+            DBG(cerr << "Cached response token: " << token << endl);
+            CPPUNIT_ASSERT(cache_dds);
+            CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#");
+            delete cache_dds;
+            cache_dds = 0;
 
-			// DDS *get_cached_dap2_data_ddx(const string &cache_file_name, BaseTypeFactory *factory, const string &dataset)
-			// Force read from the cache file
-			cache_dds = cache->get_cached_dap2_data_ddx(token, &ttf, "test.05");
-			// The code cannot unlock the file because get_cached_dap2_data_ddx()
-			// does not lock the cached item.
-			//cache->unlock_and_close(token);
+            // DDS *get_cached_dap2_data_ddx(const string &cache_file_name, BaseTypeFactory *factory, const string &dataset)
+            // Force read from the cache file
+            cache_dds = cache->get_cached_dap2_data_ddx(token, &ttf, "test.05");
+            // The code cannot unlock the file because get_cached_dap2_data_ddx()
+            // does not lock the cached item.
+            //cache->unlock_and_close(token);
 
-			CPPUNIT_ASSERT(cache_dds);
-			CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#");
-			// There are nine variables in test.05.ddx
-			CPPUNIT_ASSERT(cache_dds->var_end() - cache_dds->var_begin() == 9);
+            CPPUNIT_ASSERT(cache_dds);
+            CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#");
+            // There are nine variables in test.05.ddx
+            CPPUNIT_ASSERT(cache_dds->var_end() - cache_dds->var_begin() == 9);
 
-			ostringstream oss;
-			DDS::Vars_iter i = cache_dds->var_begin();
-			while (i != cache_dds->var_end()) {
-				DBG(cerr << "Variable " << (*i)->name() << endl);
-				// this will incrementally add thr string rep of values to 'oss'
-				(*i)->print_val(oss, "", false /*print declaration */);
-				DBG(cerr << "Value " << oss.str() << endl);
-				++i;
-			}
+            ostringstream oss;
+            DDS::Vars_iter i = cache_dds->var_begin();
+            while (i != cache_dds->var_end()) {
+                DBG(cerr << "Variable " << (*i)->name() << endl);
+                // this will incrementally add thr string rep of values to 'oss'
+                (*i)->print_val(oss, "", false /*print declaration */);
+                DBG(cerr << "Value " << oss.str() << endl);
+                ++i;
+            }
 
-			// In this regex the value of <number> in the DAP2 Str variable (Silly test string: <number>)
-			// is a any single digit. The *Test classes implement a counter and return strings where
-			// <number> is 1, 2, ..., and running several of the tests here in a row will get a range of
-			// values for <number>.
-			Regex regex("2551234567894026531840320006400099.99999.999\"Silly test string: [0-9]\"\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
-			CPPUNIT_ASSERT(re_match(regex, oss.str()));
-			delete cache_dds; cache_dds = 0;
-		}
-		catch (Error &e) {
-			CPPUNIT_FAIL(e.get_error_message());
-		}
+            // In this regex the value of <number> in the DAP2 Str variable (Silly test string: <number>)
+            // is a any single digit. The *Test classes implement a counter and return strings where
+            // <number> is 1, 2, ..., and running several of the tests here in a row will get a range of
+            // values for <number>.
+            Regex regex(
+                "2551234567894026531840320006400099.99999.999\"Silly test string: [0-9]\"\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
+            CPPUNIT_ASSERT(re_match(regex, oss.str()));
+            delete cache_dds;
+            cache_dds = 0;
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
     }
 
-	// The first call reads values into the DDS, stores a copy in the cache and
-	// returns the DDS. The second call reads the value from the cache.
-	void cache_and_read_a_response2()
-	{
-		//cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
-		cache = new ResponseCache(d_response_cache, "rc", 1000);
-		string token;
-		try {
-			// This loads a DDS in the cache and returns it.
-			DDS *cache_dds = cache->read_cached_dataset(*test_05_dds, "", &rb, &eval, token);
-			cache->unlock_and_close(token);
+    // The first call reads values into the DDS, stores a copy in the cache and
+    // returns the DDS. The second call reads the value from the cache.
+    void cache_and_read_a_response2()
+    {
+        //cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
+        cache = new ResponseCache(d_response_cache, "rc", 1000);
+        string token;
+        try {
+            // This loads a DDS in the cache and returns it.
+            DDS *cache_dds = cache->read_cached_dataset(*test_05_dds, "", &rb, &eval, token);
+            cache->unlock_and_close(token);
 
-			DBG(cerr << "Cached response token: " << token << endl);
-			CPPUNIT_ASSERT(cache_dds);
-			CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#");
-			delete cache_dds; cache_dds = 0;
+            DBG(cerr << "Cached response token: " << token << endl);
+            CPPUNIT_ASSERT(cache_dds);
+            CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#");
+            delete cache_dds;
+            cache_dds = 0;
 
-			// This reads the dataset from the cache, but unlike the previous test,
-			// does so using the public interface.
-			cache_dds = cache->read_cached_dataset(*test_05_dds, "", &rb, &eval, token);
-			cache->unlock_and_close(token);
+            // This reads the dataset from the cache, but unlike the previous test,
+            // does so using the public interface.
+            cache_dds = cache->read_cached_dataset(*test_05_dds, "", &rb, &eval, token);
+            cache->unlock_and_close(token);
 
-			CPPUNIT_ASSERT(cache_dds);
-			CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#");
-			// There are nine variables in test.05.ddx
-			CPPUNIT_ASSERT(cache_dds->var_end() - cache_dds->var_begin() == 9);
+            CPPUNIT_ASSERT(cache_dds);
+            CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#");
+            // There are nine variables in test.05.ddx
+            CPPUNIT_ASSERT(cache_dds->var_end() - cache_dds->var_begin() == 9);
 
-			ostringstream oss;
-			DDS::Vars_iter i = cache_dds->var_begin();
-			while (i != cache_dds->var_end()) {
-				DBG(cerr << "Variable " << (*i)->name() << endl);
-				// this will incrementally add the string rep of values to 'oss'
-				(*i)->print_val(oss, "", false /*print declaration */);
-				DBG(cerr << "Value " << oss.str() << endl);
-				++i;
-			}
+            ostringstream oss;
+            DDS::Vars_iter i = cache_dds->var_begin();
+            while (i != cache_dds->var_end()) {
+                DBG(cerr << "Variable " << (*i)->name() << endl);
+                // this will incrementally add the string rep of values to 'oss'
+                (*i)->print_val(oss, "", false /*print declaration */);
+                DBG(cerr << "Value " << oss.str() << endl);
+                ++i;
+            }
 
-			Regex regex("2551234567894026531840320006400099.99999.999\"Silly test string: [0-9]\"\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
-			CPPUNIT_ASSERT(re_match(regex, oss.str()));
-			delete cache_dds; cache_dds = 0;
-		}
-		catch (Error &e) {
-			CPPUNIT_FAIL(e.get_error_message());
-		}
+            Regex regex(
+                "2551234567894026531840320006400099.99999.999\"Silly test string: [0-9]\"\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
+            CPPUNIT_ASSERT(re_match(regex, oss.str()));
+            delete cache_dds;
+            cache_dds = 0;
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
     }
 
-	// Test caching a response where a CE is applied to the DDS. The CE here is 'b,u'
-	void cache_and_read_a_response3()
-	{
-		//cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
-		cache = new ResponseCache(d_response_cache, "rc", 1000);
-		string token;
-		try {
-			// This loads a DDS in the cache and returns it.
-			DDS *cache_dds = cache->read_cached_dataset(*test_05_dds, "b,u", &rb, &eval, token);
-			cache->unlock_and_close(token);
+    // Test caching a response where a CE is applied to the DDS. The CE here is 'b,u'
+    void cache_and_read_a_response3()
+    {
+        //cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
+        cache = new ResponseCache(d_response_cache, "rc", 1000);
+        string token;
+        try {
+            // This loads a DDS in the cache and returns it.
+            DDS *cache_dds = cache->read_cached_dataset(*test_05_dds, "b,u", &rb, &eval, token);
+            cache->unlock_and_close(token);
 
-			DBG(cerr << "Cached response token: " << token << endl);
-			CPPUNIT_ASSERT(cache_dds);
-			CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#b#u");
-			ostringstream oss;
-			DDS::Vars_iter i = cache_dds->var_begin();
-			while (i != cache_dds->var_end()) {
-				DBG(cerr << "Variable " << (*i)->name() << endl);
-				if ((*i)->send_p()) {
-					(*i)->print_val(oss, "", false /*print declaration */);
-					DBG(cerr << "Value " << oss.str() << endl);
-				}
-				++i;
-			}
+            DBG(cerr << "Cached response token: " << token << endl);
+            CPPUNIT_ASSERT(cache_dds);
+            CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#b#u");
+            ostringstream oss;
+            DDS::Vars_iter i = cache_dds->var_begin();
+            while (i != cache_dds->var_end()) {
+                DBG(cerr << "Variable " << (*i)->name() << endl);
+                if ((*i)->send_p()) {
+                    (*i)->print_val(oss, "", false /*print declaration */);
+                    DBG(cerr << "Value " << oss.str() << endl);
+                }
+                ++i;
+            }
 
-			CPPUNIT_ASSERT(oss.str() == "255\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
-			delete cache_dds; cache_dds = 0;
-			oss.str("");
+            CPPUNIT_ASSERT(oss.str() == "255\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
+            delete cache_dds;
+            cache_dds = 0;
+            oss.str("");
 
-			cache_dds = cache->read_cached_dataset(*test_05_dds, "b,u", &rb, &eval, token);
-			cache->unlock_and_close(token);
+            cache_dds = cache->read_cached_dataset(*test_05_dds, "b,u", &rb, &eval, token);
+            cache->unlock_and_close(token);
 
-			CPPUNIT_ASSERT(cache_dds);
-			CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#b#u");
-			// There are nine variables in test.05.ddx but two in the CE used here and
-			// the response cached was constrained.
-			CPPUNIT_ASSERT(cache_dds->var_end() - cache_dds->var_begin() == 2);
+            CPPUNIT_ASSERT(cache_dds);
+            CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#b#u");
+            // There are nine variables in test.05.ddx but two in the CE used here and
+            // the response cached was constrained.
+            CPPUNIT_ASSERT(cache_dds->var_end() - cache_dds->var_begin() == 2);
 
-			i = cache_dds->var_begin();
-			while (i != cache_dds->var_end()) {
-				DBG(cerr << "Variable " << (*i)->name() << endl);
-				if ((*i)->send_p()) {
-					(*i)->print_val(oss, "", false /*print declaration */);
-					DBG(cerr << "Value " << oss.str() << endl);
-				}
-				++i;
-			}
+            i = cache_dds->var_begin();
+            while (i != cache_dds->var_end()) {
+                DBG(cerr << "Variable " << (*i)->name() << endl);
+                if ((*i)->send_p()) {
+                    (*i)->print_val(oss, "", false /*print declaration */);
+                    DBG(cerr << "Value " << oss.str() << endl);
+                }
+                ++i;
+            }
 
-			CPPUNIT_ASSERT(oss.str() == "255\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
-			delete cache_dds; cache_dds = 0;
-		}
-		catch (Error &e) {
-			CPPUNIT_FAIL(e.get_error_message());
-		}
+            CPPUNIT_ASSERT(oss.str() == "255\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
+            delete cache_dds;
+            cache_dds = 0;
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
 
     }
-    CPPUNIT_TEST_SUITE( ResponseCacheTest );
+    CPPUNIT_TEST_SUITE (ResponseCacheTest);
 
-    CPPUNIT_TEST(ctor_test_1);
-    CPPUNIT_TEST(ctor_test_2);
-    CPPUNIT_TEST(cache_a_response);
-    CPPUNIT_TEST(cache_and_read_a_response);
-    CPPUNIT_TEST(cache_and_read_a_response2);
-    CPPUNIT_TEST(cache_and_read_a_response3);
+    CPPUNIT_TEST (ctor_test_1);
+    CPPUNIT_TEST (ctor_test_2);
+    CPPUNIT_TEST (cache_a_response);
+    CPPUNIT_TEST (cache_and_read_a_response);
+    CPPUNIT_TEST (cache_and_read_a_response2);
+    CPPUNIT_TEST (cache_and_read_a_response3);
 
     CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ResponseCacheTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (ResponseCacheTest);
 }
 
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "d");
+int main(int argc, char*argv[])
+{
+    GetOpt getopt(argc, argv, "dh");
     char option_char;
     while ((option_char = getopt()) != EOF)
         switch (option_char) {
         case 'd':
             debug = 1;  // debug is a static global
             break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: ResponseCacheTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = libdap::ResponseCacheTest::suite()->getTests();
+            unsigned int prefix_len = libdap::ResponseCacheTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
         default:
             break;
         }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -356,9 +382,9 @@ int main(int argc, char*argv[]) {
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("libdap::ResponseCacheTest::") + argv[i++];
-
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = libdap::ResponseCacheTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

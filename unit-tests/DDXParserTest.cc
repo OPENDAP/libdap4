@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -50,79 +49,89 @@ static bool debug = false;
 
 namespace libdap {
 
-class DDXParserTest : public TestFixture {
+class DDXParserTest: public TestFixture {
 private:
     BaseTypeFactory *factory;
     DDXParser *ddx_parser;
     DDS *dds;
 
 public:
-    DDXParserTest() {}
-    ~DDXParserTest() {}
+    DDXParserTest()
+    {
+    }
+    ~DDXParserTest()
+    {
+    }
 
-    void setUp() {
+    void setUp()
+    {
         factory = new BaseTypeFactory;
         ddx_parser = new DDXParser(factory);
         dds = new DDS(factory);
     }
 
-    void tearDown() {
-        delete ddx_parser; ddx_parser = 0;
-        delete factory; factory = 0;
-        delete dds; dds = 0;
+    void tearDown()
+    {
+        delete ddx_parser;
+        ddx_parser = 0;
+        delete factory;
+        factory = 0;
+        delete dds;
+        dds = 0;
     }
 
-    CPPUNIT_TEST_SUITE( DDXParserTest );
+    CPPUNIT_TEST_SUITE (DDXParserTest);
 
-	CPPUNIT_TEST(other_xml_parse_test1);
-	CPPUNIT_TEST(other_xml_parse_test2);
-	CPPUNIT_TEST(other_xml_parse_test3);
-	CPPUNIT_TEST(dap_version_test);
-	CPPUNIT_TEST(no_blob_version_32_test);
-	CPPUNIT_TEST(blob_in_version_32_test);
-	CPPUNIT_TEST(parsing_ddx_from_dataddx_test);
-	CPPUNIT_TEST(top_level_attribute_test);
-	CPPUNIT_TEST(top_level_attribute_container_test);
-	CPPUNIT_TEST(top_level_simple_types_test);
-	CPPUNIT_TEST(top_level_simple_types_with_attributes_test);
-	CPPUNIT_TEST(simple_arrays_test);
-	CPPUNIT_TEST(simple_arrays_multi_dim_test);
-	CPPUNIT_TEST(simple_arrays_attributes_test);
-	CPPUNIT_TEST(structure_test);
-	CPPUNIT_TEST(sequence_test);
-	CPPUNIT_TEST(grid_test);
-	CPPUNIT_TEST(intern_stream_test);
-	CPPUNIT_TEST(intern_ddx_from_dataddx_test);
-	// FILE I/O tests
-	CPPUNIT_TEST(top_level_simple_types_test_file_stream);
-	CPPUNIT_TEST(structure_test_file_ptr);
+    CPPUNIT_TEST (other_xml_parse_test1);
+    CPPUNIT_TEST (other_xml_parse_test2);
+    CPPUNIT_TEST (other_xml_parse_test3);
+    CPPUNIT_TEST (dap_version_test);
+    CPPUNIT_TEST (no_blob_version_32_test);
+    CPPUNIT_TEST (blob_in_version_32_test);
+    CPPUNIT_TEST (parsing_ddx_from_dataddx_test);
+    CPPUNIT_TEST (top_level_attribute_test);
+    CPPUNIT_TEST (top_level_attribute_container_test);
+    CPPUNIT_TEST (top_level_simple_types_test);
+    CPPUNIT_TEST (top_level_simple_types_with_attributes_test);
+    CPPUNIT_TEST (simple_arrays_test);
+    CPPUNIT_TEST (simple_arrays_multi_dim_test);
+    CPPUNIT_TEST (simple_arrays_attributes_test);
+    CPPUNIT_TEST (structure_test);
+    CPPUNIT_TEST (sequence_test);
+    CPPUNIT_TEST (grid_test);
+    CPPUNIT_TEST (intern_stream_test);
+    CPPUNIT_TEST (intern_ddx_from_dataddx_test);
+    // FILE I/O tests
+    CPPUNIT_TEST (top_level_simple_types_test_file_stream);
+    CPPUNIT_TEST (structure_test_file_ptr);
 
 #if 0
-	// All of these fail; maybe because on OSX 10.9 something about
-	// libxml2 is odd. Investigate. jhrg 2/4/14
-	// FIXME
+    // All of these fail; maybe because on OSX 10.9 something about
+    // libxml2 is odd. Investigate. jhrg 2/4/14
+    // FIXME
 
-	// C++ Stream I/O tests
-	CPPUNIT_TEST(top_level_simple_types_test_cpp_stream);
-	CPPUNIT_TEST(structure_test_cpp_stream);
-	CPPUNIT_TEST(sequence_test_cpp_stream);
-	CPPUNIT_TEST(grid_test_cpp_stream);
+    // C++ Stream I/O tests
+    CPPUNIT_TEST(top_level_simple_types_test_cpp_stream);
+    CPPUNIT_TEST(structure_test_cpp_stream);
+    CPPUNIT_TEST(sequence_test_cpp_stream);
+    CPPUNIT_TEST(grid_test_cpp_stream);
 #endif
     // Error tests
-    CPPUNIT_TEST(unknown_tag_test);
-    CPPUNIT_TEST(bad_nesting_test);
-    CPPUNIT_TEST(unknown_end_tag_test);
-    CPPUNIT_TEST(variable_in_attribtue_container_test);
-    CPPUNIT_TEST(simple_type_missing_attribute_test);
-    CPPUNIT_TEST(array_missing_dimension_test);
-    CPPUNIT_TEST(array_missing_dimension_stream_read_test);
+    CPPUNIT_TEST (unknown_tag_test);
+    CPPUNIT_TEST (bad_nesting_test);
+    CPPUNIT_TEST (unknown_end_tag_test);
+    CPPUNIT_TEST (variable_in_attribtue_container_test);
+    CPPUNIT_TEST (simple_type_missing_attribute_test);
+    CPPUNIT_TEST (array_missing_dimension_test);
+    CPPUNIT_TEST (array_missing_dimension_stream_read_test);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void other_xml_parse_test1() {
+    void other_xml_parse_test1()
+    {
         try {
             string cid;
-            ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.1.other_xml.ddx", dds, cid);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.1.other_xml.ddx", dds, cid);
             DBG(dds->print_xml(cout, false, "    "));
             CPPUNIT_ASSERT(dds->get_dataset_name() == "200803061600_HFRadar_USEGC_6km_rtv_SIO.nc");
             CPPUNIT_ASSERT(dds->get_dap_major() == 3);
@@ -134,10 +143,11 @@ public:
         }
     }
 
-    void other_xml_parse_test2() {
+    void other_xml_parse_test2()
+    {
         try {
             string cid;
-            ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.2.other_xml.ddx", dds, cid);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.2.other_xml.ddx", dds, cid);
             DBG(dds->print_xml(cout, false, "    "));
             CPPUNIT_ASSERT(dds->get_dataset_name() == "200803061600_HFRadar_USEGC_6km_rtv_SIO.nc");
             CPPUNIT_ASSERT(dds->get_dap_major() == 3);
@@ -149,10 +159,11 @@ public:
         }
     }
 
-    void other_xml_parse_test3() {
+    void other_xml_parse_test3()
+    {
         try {
             string cid;
-            ddx_parser->intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.3.other_xml.ddx", dds, cid);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.3.other_xml.ddx", dds, cid);
             DBG(dds->print_xml(cout, false, "    "));
             CPPUNIT_ASSERT(dds->get_dataset_name() == "200803061600_HFRadar_USEGC_6km_rtv_SIO.nc");
             CPPUNIT_ASSERT(dds->get_dap_major() == 3);
@@ -164,12 +175,12 @@ public:
         }
     }
 
-    void dap_version_test() {
+    void dap_version_test()
+    {
         FILE *in;
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.00.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.00.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
             CPPUNIT_ASSERT(dds->get_dap_major() == 3);
             CPPUNIT_ASSERT(dds->get_dap_minor() == 2);
@@ -199,14 +210,12 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.0c.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.0c.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
             CPPUNIT_ASSERT(dds->get_dap_major() == 3);
             CPPUNIT_ASSERT(dds->get_dap_minor() == 2);
 
-            DBG(dds->print_xml(cout, false))
-            ;
+            DBG(dds->print_xml(cout, false));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
@@ -218,12 +227,10 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.0d.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.0d.ddx", dds, blob);
             CPPUNIT_FAIL("Parsing test.0d.ddx should fail since it's a DAP 3.2 doc with a dataBLOB tag.");
 
-            DBG(dds->print_xml(cout, false))
-            ;
+            DBG(dds->print_xml(cout, false));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
@@ -235,8 +242,7 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/DDX_from_dataddx.xml", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/DDX_from_dataddx.xml", dds, blob);
             CPPUNIT_ASSERT(true);
             DBG(dds->print_xml(cout, false));
         }
@@ -250,12 +256,10 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.01.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.01.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
 
-            DBG(dds->print_xml(cout, false))
-            ;
+            DBG(dds->print_xml(cout, false));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
@@ -267,11 +271,9 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.02.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.02.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
-            DBG(dds->print_xml(cout, false))
-            ;
+            DBG(dds->print_xml(cout, false));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
@@ -284,11 +286,9 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.03.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.03.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
-            DBG(dds->print_xml(cout, false))
-            ;
+            DBG(dds->print_xml(cout, false));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
@@ -300,8 +300,7 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.04.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.04.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
             DBG(dds->print_xml(cout, false));
         }
@@ -321,7 +320,7 @@ public:
         try {
             string blob;
             ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.05.ddx", dds, blob);
+                + "/ddx-testsuite/test.05.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
             DBG(dds->print_xml(cout, false))
             ;
@@ -332,72 +331,70 @@ public:
         }
     }
 #else
-	void top_level_simple_types_test_file_stream()
-	{
-		FILE *in;
-		try {
-			string blob;
-			in = fopen(((string) TEST_SRC_DIR + "/ddx-testsuite/test.04.ddx").c_str(), "r");
-			ddx_parser->intern_stream(in, dds, blob);
-			fclose(in);
-			CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
-			DBG(dds->print_xml(cout, false));
-		}
-		catch (DDXParseFailed &e) {
-			fclose(in);
-			DBG(cerr << endl << "DDXParseFailed: " << e.get_error_message() << endl);
-			CPPUNIT_FAIL("test.04.ddx failed.");
-		}
-		catch (Error &e) {
-			fclose(in);
-			DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-			CPPUNIT_FAIL("test.04.ddx failed.");
-		}
-	}
+    void top_level_simple_types_test_file_stream()
+    {
+        FILE *in;
+        try {
+            string blob;
+            in = fopen(((string) TEST_SRC_DIR + "/ddx-testsuite/test.04.ddx").c_str(), "r");
+            ddx_parser->intern_stream(in, dds, blob);
+            fclose(in);
+            CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
+            DBG(dds->print_xml(cout, false));
+        }
+        catch (DDXParseFailed &e) {
+            fclose(in);
+            DBG(cerr << endl << "DDXParseFailed: " << e.get_error_message() << endl);
+            CPPUNIT_FAIL("test.04.ddx failed.");
+        }
+        catch (Error &e) {
+            fclose(in);
+            DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_FAIL("test.04.ddx failed.");
+        }
+    }
 
-	void top_level_simple_types_test_cpp_stream()
-	{
-		try {
-			string blob;
-			ifstream in(((string) TEST_SRC_DIR + "/ddx-testsuite/test.04.ddx").c_str());
-			ddx_parser->intern_stream(in, dds, blob);
-			DBG(dds->print_xml(cout, false));
-			CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
-		}
-		catch (DDXParseFailed &e) {
-			DBG(cerr << endl << "DDXParseFailed: " << e.get_error_message() << endl);
-			CPPUNIT_FAIL("test.04.ddx failed.");
-		}
-		catch (Error &e) {
-			DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-			CPPUNIT_FAIL("test.04.ddx failed.");
-		}
-	}
+    void top_level_simple_types_test_cpp_stream()
+    {
+        try {
+            string blob;
+            ifstream in(((string) TEST_SRC_DIR + "/ddx-testsuite/test.04.ddx").c_str());
+            ddx_parser->intern_stream(in, dds, blob);
+            DBG(dds->print_xml(cout, false));
+            CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
+        }
+        catch (DDXParseFailed &e) {
+            DBG(cerr << endl << "DDXParseFailed: " << e.get_error_message() << endl);
+            CPPUNIT_FAIL("test.04.ddx failed.");
+        }
+        catch (Error &e) {
+            DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_FAIL("test.04.ddx failed.");
+        }
+    }
 
-	void top_level_simple_types_with_attributes_test()
-	{
-		try {
-			string blob;
-			ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.05.ddx", dds, blob);
-			CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
-			DBG(dds->print_xml(cout, false));
-		}
-		catch (DDXParseFailed &e) {
-			DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-			CPPUNIT_FAIL("test.05.ddx failed.");
-		}
-	}
+    void top_level_simple_types_with_attributes_test()
+    {
+        try {
+            string blob;
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.05.ddx", dds, blob);
+            CPPUNIT_ASSERT(dds->get_dataset_name() == "SimpleTypes");
+            DBG(dds->print_xml(cout, false));
+        }
+        catch (DDXParseFailed &e) {
+            DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_FAIL("test.05.ddx failed.");
+        }
+    }
 #endif
 
     void simple_arrays_test()
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.06.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.06.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "OneDimensionalSimpleArrays");
-            DBG(dds->print_xml(cout, false))
-            ;
+            DBG(dds->print_xml(cout, false));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
@@ -409,11 +406,9 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.07.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.07.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "MultiDimensionalSimpleArrays");
-            DBG(dds->print_xml(cout, false))
-            ;
+            DBG(dds->print_xml(cout, false));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
@@ -425,11 +420,9 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.08.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.08.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-            DBG(dds->print_xml(cout, false))
-            ;
+            DBG(dds->print_xml(cout, false));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
@@ -441,11 +434,9 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.09.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.09.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-            DBG(dds->print_xml(cout, false))
-            ;
+            DBG(dds->print_xml(cout, false));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
@@ -457,11 +448,9 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.0a.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.0a.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-            DBG(dds->print_xml(cout, false))
-            ;
+            DBG(dds->print_xml(cout, false));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
@@ -471,61 +460,59 @@ public:
 
     void structure_test_file_ptr()
     {
-	FILE *in;
-	try {
-	    string blob;
-	    in = fopen((string(TEST_SRC_DIR) + "/ddx-testsuite/test.09.ddx").c_str(), "r");
-	    ddx_parser->intern_stream(in, dds, blob);
-	    fclose(in);
-	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-	    DBG(dds->print_xml(cout, false));
-	}
-	catch (DDXParseFailed &e) {
-	    fclose(in);
-	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_FAIL("test.09.ddx failed.");
-	}
+        FILE *in;
+        try {
+            string blob;
+            in = fopen((string(TEST_SRC_DIR) + "/ddx-testsuite/test.09.ddx").c_str(), "r");
+            ddx_parser->intern_stream(in, dds, blob);
+            fclose(in);
+            CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
+            DBG(dds->print_xml(cout, false));
+        }
+        catch (DDXParseFailed &e) {
+            fclose(in);
+            DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_FAIL("test.09.ddx failed.");
+        }
     }
 
     void structure_test_cpp_stream()
     {
-	try {
-	    string blob;
-	    ifstream input((string(TEST_SRC_DIR) + "/ddx-testsuite/test.09.ddx").c_str());
-	    ddx_parser->intern_stream(input, dds, blob);
-	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-	    DBG(dds->print_xml(cout, false));
-	}
-	catch (DDXParseFailed &e) {
-	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_FAIL("test.09.ddx failed.");
-	}
+        try {
+            string blob;
+            ifstream input((string(TEST_SRC_DIR) + "/ddx-testsuite/test.09.ddx").c_str());
+            ddx_parser->intern_stream(input, dds, blob);
+            CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
+            DBG(dds->print_xml(cout, false));
+        }
+        catch (DDXParseFailed &e) {
+            DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_FAIL("test.09.ddx failed.");
+        }
     }
 
     void sequence_test_cpp_stream()
     {
-	try {
-	    string blob;
-	    ifstream input((string(TEST_SRC_DIR) + "/ddx-testsuite/test.0a.ddx").c_str());
-	    ddx_parser->intern_stream(input, dds, blob);
-	    CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-	    DBG(dds->print_xml(cout, false));
-	}
-	catch (DDXParseFailed &e) {
-	    DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-	    CPPUNIT_FAIL("test.0a.ddx failed.");
-	}
+        try {
+            string blob;
+            ifstream input((string(TEST_SRC_DIR) + "/ddx-testsuite/test.0a.ddx").c_str());
+            ddx_parser->intern_stream(input, dds, blob);
+            CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
+            DBG(dds->print_xml(cout, false));
+        }
+        catch (DDXParseFailed &e) {
+            DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_FAIL("test.0a.ddx failed.");
+        }
     }
 
     void grid_test()
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.0b.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.0b.ddx", dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-            DBG(dds->print_xml(cout, false))
-            ;
+            DBG(dds->print_xml(cout, false));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
@@ -533,32 +520,30 @@ public:
         }
     }
 
-	void grid_test_cpp_stream()
-	{
-		try {
-			string blob;
-			ifstream input((string(TEST_SRC_DIR) + "/ddx-testsuite/test.0b.ddx").c_str());
-			ddx_parser->intern_stream(input, dds, blob);
-			CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-			DBG(dds->print_xml(cout, false));
-		}
-		catch (DDXParseFailed &e) {
-			DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
-			CPPUNIT_FAIL("test.0b.ddx failed.");
-		}
-	}
+    void grid_test_cpp_stream()
+    {
+        try {
+            string blob;
+            ifstream input((string(TEST_SRC_DIR) + "/ddx-testsuite/test.0b.ddx").c_str());
+            ddx_parser->intern_stream(input, dds, blob);
+            CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
+            DBG(dds->print_xml(cout, false));
+        }
+        catch (DDXParseFailed &e) {
+            DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
+            CPPUNIT_FAIL("test.0b.ddx failed.");
+        }
+    }
 
     void intern_stream_test()
     {
         try {
-            string file_name = (string) TEST_SRC_DIR
-                    + "/ddx-testsuite/test.0b.ddx";
+            string file_name = (string) TEST_SRC_DIR + "/ddx-testsuite/test.0b.ddx";
             FILE *in = fopen(file_name.c_str(), "r");
             string blob;
             ddx_parser->intern_stream(in, dds, blob);
             CPPUNIT_ASSERT(dds->get_dataset_name() == "testdata");
-            DBG(dds->print_xml(cout, false))
-            ;
+            DBG(dds->print_xml(cout, false));
         }
         catch (DDXParseFailed &e) {
             DBG(cerr << endl << "Error: " << e.get_error_message() << endl);
@@ -572,13 +557,11 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/error.01.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/error.01.ddx", dds, blob);
             CPPUNIT_FAIL("error.01.ddx should fail!");
         }
         catch (DDXParseFailed &e) {
-            DBG(cerr << "Error: " << e.get_error_message() << endl)
-	            ;
+            DBG(cerr << "Error: " << e.get_error_message() << endl);
         }
     }
 
@@ -586,13 +569,11 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/error.02.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/error.02.ddx", dds, blob);
             CPPUNIT_FAIL("error.02.ddx should fail!");
         }
         catch (DDXParseFailed &e) {
-            DBG(cerr << "Error: " << e.get_error_message() << endl)
-	            ;
+            DBG(cerr << "Error: " << e.get_error_message() << endl);
         }
     }
 
@@ -600,13 +581,11 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/error.03.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/error.03.ddx", dds, blob);
             CPPUNIT_FAIL("error.03.ddx should fail!");
         }
         catch (DDXParseFailed &e) {
-            DBG(cerr << "Error: " << e.get_error_message() << endl)
-	            ;
+            DBG(cerr << "Error: " << e.get_error_message() << endl);
         }
     }
 
@@ -614,13 +593,11 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/error.04.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/error.04.ddx", dds, blob);
             CPPUNIT_FAIL("error.04.ddx should fail!");
         }
         catch (DDXParseFailed &e) {
-            DBG(cerr << "Error: " << e.get_error_message() << endl)
-	            ;
+            DBG(cerr << "Error: " << e.get_error_message() << endl);
         }
     }
 
@@ -628,13 +605,11 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/error.05.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/error.05.ddx", dds, blob);
             CPPUNIT_FAIL("error.05.ddx should fail!");
         }
         catch (DDXParseFailed &e) {
-            DBG(cerr << "Error: " << e.get_error_message() << endl)
-	            ;
+            DBG(cerr << "Error: " << e.get_error_message() << endl);
         }
     }
 
@@ -642,37 +617,32 @@ public:
     {
         try {
             string blob;
-            ddx_parser->intern((string) TEST_SRC_DIR
-                    + "/ddx-testsuite/error.06.ddx", dds, blob);
+            ddx_parser->intern((string) TEST_SRC_DIR + "/ddx-testsuite/error.06.ddx", dds, blob);
             CPPUNIT_FAIL("error.06.ddx should fail!");
         }
         catch (DDXParseFailed &e) {
-            DBG(cerr << "Error: " << e.get_error_message() << endl)
-	            ;
+            DBG(cerr << "Error: " << e.get_error_message() << endl);
         }
     }
 
     void array_missing_dimension_stream_read_test()
     {
         try {
-            string file_name = (string) TEST_SRC_DIR
-                    + "/ddx-testsuite/error.05.ddx";
+            string file_name = (string) TEST_SRC_DIR + "/ddx-testsuite/error.05.ddx";
             FILE *in = fopen(file_name.c_str(), "r");
             string blob;
             ddx_parser->intern_stream(in, dds, blob);
             CPPUNIT_FAIL("error.05.ddx should fail!");
         }
         catch (DDXParseFailed &e) {
-            DBG(cerr << "Error: " << e.get_error_message() << endl)
-	            ;
+            DBG(cerr << "Error: " << e.get_error_message() << endl);
         }
     }
 
     void intern_ddx_from_dataddx_test()
     {
         try {
-            string file_name = (string) TEST_SRC_DIR
-                    + "/ddx-testsuite/dataddx_without_top_headers.dap";
+            string file_name = (string) TEST_SRC_DIR + "/ddx-testsuite/dataddx_without_top_headers.dap";
             FILE *in = fopen(file_name.c_str(), "r");
 
             // First read the initial set of 'part' headers for the DDX
@@ -692,22 +662,32 @@ public:
 
 }
 
-CPPUNIT_TEST_SUITE_REGISTRATION( DDXParserTest );
+CPPUNIT_TEST_SUITE_REGISTRATION (DDXParserTest);
 
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "d");
+int main(int argc, char*argv[])
+{
+    GetOpt getopt(argc, argv, "dh");
     int option_char;
     while ((option_char = getopt()) != -1)
-	switch (option_char) {
-	  case 'd':
-	    debug = 1;  // debug is a static global
-	    break;
-	  default:
-	    break;
-	}
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: DDXParserTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = libdap::DDXParserTest::suite()->getTests();
+            unsigned int prefix_len = libdap::DDXParserTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -717,9 +697,9 @@ int main(int argc, char*argv[]) {
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("libdap::DDXParserTest::") + argv[i++];
-            DBG(cerr << "test: " << test << endl);
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = libdap::DDXParserTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
