@@ -536,12 +536,14 @@ bool TestArray::read()
 
     case dods_opaque_c:
     case dods_structure_c:
+        cerr << __func__ << " array_len: " << array_len << endl;
         for (unsigned i = 0; i < array_len; ++i) {
             // Copy the prototype and read a value into it
             BaseType *elem = var()->ptr_duplicate();
+            cerr << __func__ << " elem: " << elem << " [" << i << "]" << endl;
             elem->read();
             // Load the new value into this object's array
-            set_vec(i, elem);
+            set_vec_nocopy(i, elem);   // Use set_vec_nocopy() TODO (and below)
         }
         set_read_p(true);
         break;

@@ -38,7 +38,7 @@
 #include <cstring>
 #include <cassert>
 
-//#define DODS_DEBUG 1
+#define DODS_DEBUG 1
 
 #include <sstream>
 #include <vector>
@@ -441,15 +441,17 @@ BaseType *Vector::var(const string &n, bool exact, btp_stack *s)
             s->push(this);
         return d_proto;
     }
+
     // If this is a Vector of constructor types, look for 'name' recursively.
     // Make sure to check for the case where name is the default (the empty
     // string). 9/1/98 jhrg
     if (d_proto->is_constructor_type()) {
-            BaseType * result = d_proto->var(name, exact, s);
+        BaseType *result = d_proto->var(name, exact, s);
         if (result && s)
             s->push(this);
         return result;
     }
+
     return NULL;
 }
 
@@ -834,7 +836,11 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
             break;
 
         case dods_array_c:
-            // TODO
+            // Added jhrg 5/18/17
+            // This replaces a comment that was simply 'TO DO'
+            throw InternalErr(__FILE__, __LINE__, "Array of array!");
+            break;
+
         case dods_structure_c:
         case dods_sequence_c:
         case dods_grid_c:
@@ -955,7 +961,7 @@ void Vector::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*
 }
 
 void
-Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter /*= false*/)
+Vector::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter /*= false*/)
 {
     if (!read_p())
         read(); // read() throws Error and InternalErr
@@ -965,7 +971,7 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*
 #endif
     int64_t num = length();	// The constrained length in elements
 
-    DBG(cerr << __PRETTY_FUNCTION__ << ", num: " << num << endl);
+    DBG(cerr << __func__ << ", num: " << num << endl);
 
     // Added in case we're trying to serialize a zero-length array. jhrg 1/27/16
     if (num == 0)
@@ -1020,8 +1026,10 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*
         case dods_sequence_c:
             assert(d_compound_buf.capacity() >= 0);
 
-            for (int64_t i = 0; i < num; ++i)
-                d_compound_buf[i]->serialize(m, dmr, /*eval,*/ filter);
+            for (int64_t i = 0; i < num; ++i) {
+                DBG(cerr << __func__ << "d_compound_buf[" << i << "] " << d_compound_buf[i] << endl);
+                d_compound_buf[i]->serialize(m, dmr, filter);
+            }
 
             break;
 
