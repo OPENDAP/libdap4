@@ -578,8 +578,9 @@ void Vector::vec_resize(int l)
     if (m_is_cardinal_type())
         throw InternalErr(__FILE__, __LINE__, "Vector::vec_resize() is applicable to compound types only");
 
-    d_compound_buf.resize((l > 0) ? l : 0, 0); // Fill with NULLs
-    d_capacity = l; // capacity in terms of number of elements.
+    // Use resize() since other parts of the code use operator[].
+    d_compound_buf.resize((l > 0) ? l : 0); // Fill with NULLs
+    d_capacity = d_compound_buf.capacity(); // capacity in terms of number of elements.
 }
 
 /** @brief read data into a variable for later use
@@ -1359,10 +1360,15 @@ void Vector::set_vec_nocopy(unsigned int i, BaseType * val)
     if (val->type() != d_proto->type())
         throw InternalErr(__FILE__, __LINE__, "invalid data: type of incoming object does not match *this* vector type.");
 
-    if (i >= d_compound_buf.capacity())
+    // This doesn't seem to work. FIXME jhrg 5/18/17
+    if (i >= d_compound_buf.capacity()) {
+        DBG(cerr << __func__ << " enlarging d_compound_buf by 10" << endl);
         vec_resize(i + 10);
+    }
 
     d_compound_buf[i] = val;
+
+    DBG(cerr << __func__ << " d_compound_buf[" << i << "] " << d_compound_buf[i] << endl);
 }
 
 /**
