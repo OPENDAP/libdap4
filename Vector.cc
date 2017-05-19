@@ -38,7 +38,7 @@
 #include <cstring>
 #include <cassert>
 
-#define DODS_DEBUG 1
+//#define DODS_DEBUG 1
 
 #include <sstream>
 #include <vector>
@@ -578,9 +578,11 @@ void Vector::vec_resize(int l)
     if (m_is_cardinal_type())
         throw InternalErr(__FILE__, __LINE__, "Vector::vec_resize() is applicable to compound types only");
 
-    // Use resize() since other parts of the code use operator[].
-    d_compound_buf.resize((l > 0) ? l : 0); // Fill with NULLs
-    d_capacity = d_compound_buf.capacity(); // capacity in terms of number of elements.
+    // Use resize() since other parts of the code use operator[]. Note that size() should
+    // be used when resize() is used. Using capacity() creates problems as noted in the
+    // comment in set_vec_nocopy(). jhrg 5/19/17
+    d_compound_buf.resize(l, 0); // Fill with NULLs
+    d_capacity = d_compound_buf.size(); // size in terms of number of elements.
 }
 
 /** @brief read data into a variable for later use
@@ -1341,12 +1343,17 @@ void Vector::set_vec(unsigned int i, BaseType * val)
 	Vector::set_vec_nocopy(i, val->ptr_duplicate());
 }
 
-/** @brief Sets element <i>i</i> to value <i>val</i>.
-
- @note This method does not copy \e val; this class will free the instance
- when the variable is deleted or when clear_local_data() is called.
-
- @see Vector::set_vec() */
+/**
+ * @brief Sets element <i>i</i> to value <i>val</i>.
+ * Set the ith element to val. Extend the vector if needed.
+ *
+ * @note It is best to call vec_resize() first and allocate enough elements
+ * before calling this method.
+ *
+ * @note This method does not copy \e val; this class will free the instance
+ * when the variable is deleted or when clear_local_data() is called.
+ * @see Vector::set_vec()
+ * */
 void Vector::set_vec_nocopy(unsigned int i, BaseType * val)
 {
     // Jose Garcia
@@ -1360,15 +1367,19 @@ void Vector::set_vec_nocopy(unsigned int i, BaseType * val)
     if (val->type() != d_proto->type())
         throw InternalErr(__FILE__, __LINE__, "invalid data: type of incoming object does not match *this* vector type.");
 
-    // This doesn't seem to work. FIXME jhrg 5/18/17
-    if (i >= d_compound_buf.capacity()) {
-        DBG(cerr << __func__ << " enlarging d_compound_buf by 10" << endl);
-        vec_resize(i + 10);
+    // This code originally used capacity() instead of size(), but that was an error.
+    // Use capacity() when using reserve() and size() when using resize(). Mixing
+    // capacity() with resize() leaves holes in the data, where (pointer) values are
+    // filled with nulls during successive calls to resize(). The resize() heuristic
+    // remembers previous calls on a given vector<> and allocates larger than requested
+    // blocks of memory on successive calls, which has the strange affect of erasing
+    // values already in the vector in the parts just added.
+    // jhrg 5/18/17
+    if (i >= d_compound_buf.size()) {
+        vec_resize(d_compound_buf.size() + 100);
     }
 
     d_compound_buf[i] = val;
-
-    DBG(cerr << __func__ << " d_compound_buf[" << i << "] " << d_compound_buf[i] << endl);
 }
 
 /**

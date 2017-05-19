@@ -47,7 +47,7 @@
 #include <process.h>
 #endif
 
-#define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include "util.h"
 #include "debug.h"
@@ -536,13 +536,10 @@ bool TestArray::read()
 
     case dods_opaque_c:
     case dods_structure_c:
-        DBG(cerr << __func__ << " array_len: " << array_len << endl);
-        // Hyrax-400: uncomment this 'fixes' the bug, but why? jhrg 5/18/17
-        // vec_resize(array_len);
+        vec_resize(array_len);
         for (unsigned i = 0; i < array_len; ++i) {
             // Copy the prototype and read a value into it
             BaseType *elem = var()->ptr_duplicate();
-            DBG(cerr << __func__ << " elem: " << elem << " [" << i << "]" << endl);
             elem->read();
             // Load the new value into this object's array
             set_vec_nocopy(i, elem);   // Use set_vec_nocopy() TODO (and below)
@@ -554,10 +551,10 @@ bool TestArray::read()
         // No sequence arrays in DAP2
         if (!is_dap4()) throw InternalErr(__FILE__, __LINE__, "Bad data type");
 
+        vec_resize(array_len);
         for (unsigned i = 0; i < array_len; ++i) {
-            // BaseType *elem = var()->ptr_duplicate();
             // Load the new BaseType (a D4Sequence) into the array element
-            set_vec_nocopy(i, /*elem*/ var()->ptr_duplicate());
+            set_vec_nocopy(i, var()->ptr_duplicate());
         }
 
         break;
