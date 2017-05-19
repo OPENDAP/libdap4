@@ -28,8 +28,13 @@
 
 #include "parser.h"
 
+#include "GetOpt.h"
+
 using namespace CppUnit;
 using namespace libdap;
+using namespace std;
+
+static bool debug = false;
 
 class parserUtilTest: public TestFixture {
 private:
@@ -151,8 +156,8 @@ int main(int argc, char*argv[])
             break;
         case 'h': {     // help - show test names
             cerr << "Usage: parserUtilTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::parserUtilTest::suite()->getTests();
-            unsigned int prefix_len = libdap::parserUtilTest::suite()->getName().append("::").length();
+            const std::vector<Test*> &tests = parserUtilTest::suite()->getTests();
+            unsigned int prefix_len = parserUtilTest::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
                 cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
@@ -174,13 +179,11 @@ int main(int argc, char*argv[])
     }
     else {
         for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::parserUtilTest::suite()->getName().append("::").append(argv[i]);
+            if (debug) cerr << "Running " << argv[i] << std::endl;
+            test = parserUtilTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
-
-    xmlMemoryDump();
 
     return wasSuccessful ? 0 : 1;
 }

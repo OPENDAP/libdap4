@@ -14,9 +14,13 @@
 #include "DAS.h"
 
 #include "testFile.h"
+#include "GetOpt.h"
 
 using namespace std;
 using namespace libdap;
+using namespace CppUnit;
+
+static bool debug = false;
 
 string dprint =
     "\
@@ -172,8 +176,8 @@ int main(int argc, char*argv[])
             break;
         case 'h': {     // help - show test names
             cerr << "Usage: dasT has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::dasT::suite()->getTests();
-            unsigned int prefix_len = libdap::dasT::suite()->getName().append("::").length();
+            const std::vector<Test*> &tests = dasT::suite()->getTests();
+            unsigned int prefix_len = dasT::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
                 cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
@@ -196,7 +200,7 @@ int main(int argc, char*argv[])
     else {
         for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::dasT::suite()->getName().append("::").append(argv[i]);
+            test = dasT::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

@@ -36,9 +36,13 @@
 #include "debug.h"
 
 #include "testFile.h"
+#include "GetOpt.h"
 
+using namespace CppUnit;
 using namespace std;
 using namespace libdap;
+
+static bool debug = false;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 // timeouts.
@@ -601,8 +605,8 @@ int main(int argc, char*argv[])
             break;
         case 'h': {     // help - show test names
             cerr << "Usage: ddsT has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::ddsT::suite()->getTests();
-            unsigned int prefix_len = libdap::ddsT::suite()->getName().append("::").length();
+            const std::vector<Test*> &tests = ddsT::suite()->getTests();
+            unsigned int prefix_len = ddsT::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
                 cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
@@ -625,7 +629,7 @@ int main(int argc, char*argv[])
     else {
         for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::ddsT::suite()->getName().append("::").append(argv[i]);
+            test = ddsT::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

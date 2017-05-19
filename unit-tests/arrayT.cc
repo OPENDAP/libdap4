@@ -13,16 +13,23 @@
 #include "util.h"
 #include "debug.h"
 
+#include "GetOpt.h"
+
 using std::cerr;
 using std::endl;
+
+using namespace CppUnit;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 // timeouts.
 
+static bool debug = false;
+
 class arrayT: public CppUnit::TestFixture {
 
-    CPPUNIT_TEST_SUITE (arrayT);
-    CPPUNIT_TEST (arrayT_test);CPPUNIT_TEST_SUITE_END( );
+CPPUNIT_TEST_SUITE (arrayT);
+    CPPUNIT_TEST(arrayT_test);CPPUNIT_TEST_SUITE_END( )
+    ;
 
 private:
     /* TEST PRIVATE DATA */
@@ -51,8 +58,8 @@ public:
 
         try {
             int w = ar.width(true);
-            DBG(cerr << "w = " << w << endl); DBG(cerr << "(int)bt->width() " << (int)bt->width() << endl); DBG(cerr << "L " << l << endl);
-            CPPUNIT_ASSERT(w == (l * (int) bt->width()));
+            DBG(cerr << "w = " << w << endl);DBG(cerr << "(int)bt->width() " << (int)bt->width() << endl);DBG(cerr << "L " << l << endl);
+            CPPUNIT_ASSERT(w == (l * (int ) bt->width()));
         }
         catch (InternalErr &e) {
             CPPUNIT_FAIL("Unable to retrieve width");
@@ -65,7 +72,7 @@ public:
 
         try {
             int w = ar.width();
-            CPPUNIT_ASSERT(w == (l * (int) bt->width()));
+            CPPUNIT_ASSERT(w == (l * (int ) bt->width()));
         }
         catch (InternalErr &e) {
             CPPUNIT_FAIL("Unable to retrieve width");
@@ -78,7 +85,7 @@ public:
 
         try {
             int w = ar.width();
-            CPPUNIT_ASSERT(w == (l * (int) bt->width()));
+            CPPUNIT_ASSERT(w == (l * (int ) bt->width()));
         }
         catch (InternalErr &e) {
             CPPUNIT_FAIL("Unable to retrieve width");
@@ -91,7 +98,7 @@ public:
 
         try {
             int w = ar.width();
-            CPPUNIT_ASSERT(w == (l * (int) bt->width()));
+            CPPUNIT_ASSERT(w == (l * (int ) bt->width()));
         }
         catch (InternalErr &e) {
             CPPUNIT_FAIL("Unable to retrieve width");
@@ -156,13 +163,11 @@ public:
 
         cout << ar << endl;
 
-        /* ar.print_val( stdout ) ; */
-
         delete bt;
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (arrayT);
+CPPUNIT_TEST_SUITE_REGISTRATION(arrayT);
 
 int main(int argc, char *argv[])
 {
@@ -177,8 +182,8 @@ int main(int argc, char *argv[])
 
         case 'h': {     // help - show test names
             cerr << "Usage: arrayT has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::arrayT::suite()->getTests();
-            unsigned int prefix_len = libdap::arrayT::suite()->getName().append("::").length();
+            const std::vector<Test*> &tests = arrayT::suite()->getTests();
+            unsigned int prefix_len = arrayT::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
                 cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
@@ -202,7 +207,7 @@ int main(int argc, char *argv[])
     else {
         for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::arrayT::suite()->getName().append("::").append(argv[i]);
+            test = arrayT::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

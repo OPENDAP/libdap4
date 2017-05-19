@@ -40,6 +40,8 @@
 #include "ServerFunction.h"
 #include "ServerFunctionsList.h"
 
+using namespace CppUnit;
+
 static bool debug = false;
 
 #undef DBG

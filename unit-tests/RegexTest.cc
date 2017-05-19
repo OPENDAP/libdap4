@@ -31,9 +31,12 @@
 #include "GNURegex.h"
 #include "Error.h"
 #include "debug.h"
+#include "GetOpt.h"
 
 using namespace CppUnit;
 using namespace libdap;
+
+static bool debug = false;
 
 class RegexTest: public TestFixture {
 private:
@@ -157,8 +160,8 @@ int main(int argc, char*argv[])
             break;
         case 'h': {     // help - show test names
             cerr << "Usage: RegexTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::RegexTest::suite()->getTests();
-            unsigned int prefix_len = libdap::RegexTest::suite()->getName().append("::").length();
+            const std::vector<Test*> &tests = RegexTest::suite()->getTests();
+            unsigned int prefix_len = RegexTest::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
                 cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
@@ -181,12 +184,10 @@ int main(int argc, char*argv[])
     else {
         for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::RegexTest::suite()->getName().append("::").append(argv[i]);
+            test = RegexTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
-
-    xmlMemoryDump();
 
     return wasSuccessful ? 0 : 1;
 }

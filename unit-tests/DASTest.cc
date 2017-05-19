@@ -31,9 +31,12 @@
 #include "DAS.h"
 #include "debug.h"
 #include <test_config.h>
+#include "GetOpt.h"
 
 using namespace CppUnit;
 using namespace libdap;
+
+static bool debug = false;
 
 class DASTest: public TestFixture {
 private:
@@ -105,8 +108,8 @@ int main(int argc, char*argv[])
             break;
         case 'h': {     // help - show test names
             cerr << "Usage: DASTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::DASTest::suite()->getTests();
-            unsigned int prefix_len = libdap::DASTest::suite()->getName().append("::").length();
+            const std::vector<Test*> &tests = DASTest::suite()->getTests();
+            unsigned int prefix_len = DASTest::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
                 cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
@@ -129,7 +132,7 @@ int main(int argc, char*argv[])
     else {
         for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::DASTest::suite()->getName().append("::").append(argv[i]);
+            test = DASTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

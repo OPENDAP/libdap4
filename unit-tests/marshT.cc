@@ -40,6 +40,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::ofstream;
+using namespace CppUnit;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeouts.
 
@@ -412,8 +413,8 @@ int main(int argc, char *argv[])
             break;
         case 'h': {     // help - show test names
             cerr << "Usage: marshT has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::marshT::suite()->getTests();
-            unsigned int prefix_len = libdap::marshT::suite()->getName().append("::").length();
+            const std::vector<Test*> &tests = marshT::suite()->getTests();
+            unsigned int prefix_len = marshT::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
                 cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
@@ -436,7 +437,7 @@ int main(int argc, char *argv[])
     else {
         for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::marshT::suite()->getName().append("::").append(argv[i]);
+            test = marshT::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

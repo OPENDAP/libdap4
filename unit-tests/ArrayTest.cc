@@ -37,9 +37,12 @@
 #include "Structure.h"
 
 #include "debug.h"
+#include "GetOpt.h"
 
 using namespace CppUnit;
 using namespace std;
+
+static bool debug = false;
 
 namespace libdap {
 
@@ -275,7 +278,7 @@ int main(int argc, char *argv[])
     else {
         for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::arrayT::suite()->getName().append("::").append(argv[i]);
+            test = libdap::ArrayTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

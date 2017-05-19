@@ -38,7 +38,7 @@
 #include <string>
 #include <sstream>
 
-//#define DODS_DEBUG
+#include "GetOpt.h"
 
 #include "GNURegex.h"
 
@@ -50,6 +50,8 @@
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
+
+static bool debug = false;
 
 class cgiUtilTest: public TestFixture {
 private:
@@ -230,8 +232,8 @@ int main(int argc, char*argv[])
             break;
         case 'h': {     // help - show test names
             cerr << "Usage: cgiUtilTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::cgiUtilTest::suite()->getTests();
-            unsigned int prefix_len = libdap::cgiUtilTest::suite()->getName().append("::").length();
+            const std::vector<Test*> &tests = cgiUtilTest::suite()->getTests();
+            unsigned int prefix_len = cgiUtilTest::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
                 cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
@@ -254,12 +256,10 @@ int main(int argc, char*argv[])
     else {
         for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::cgiUtilTest::suite()->getName().append("::").append(argv[i]);
+            test = cgiUtilTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
-
-    xmlMemoryDump();
 
     return wasSuccessful ? 0 : 1;
 }

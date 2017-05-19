@@ -8,21 +8,25 @@
 #include <iostream>
 #include <vector>
 #include "AttrTable.h"
-//#include "Pix.h"
+#include "GetOpt.h"
 
 using std::cerr;
 using std::endl;
 using std::vector;
 
+using namespace CppUnit;
 using namespace libdap;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 // timeouts.
 
+static bool debug = false;
+
 class attrTableT: public CppUnit::TestFixture {
 
-    CPPUNIT_TEST_SUITE (attrTableT);
-    CPPUNIT_TEST (attrTableT_test);CPPUNIT_TEST_SUITE_END( );
+CPPUNIT_TEST_SUITE (attrTableT);
+    CPPUNIT_TEST(attrTableT_test);CPPUNIT_TEST_SUITE_END( )
+    ;
 
 private:
     /* TEST PRIVATE DATA */
@@ -275,7 +279,7 @@ public:
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (attrTableT);
+CPPUNIT_TEST_SUITE_REGISTRATION(attrTableT);
 
 /* NOTHING NEEDS TO BE CHANGED BELOW HERE */
 
@@ -292,8 +296,8 @@ int main(int argc, char *argv[])
 
         case 'h': {     // help - show test names
             cerr << "Usage: attrTableT has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::attrTableT::suite()->getTests();
-            unsigned int prefix_len = libdap::attrTableT::suite()->getName().append("::").length();
+            const std::vector<Test*> &tests = attrTableT::suite()->getTests();
+            unsigned int prefix_len = attrTableT::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
                 cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
@@ -317,7 +321,7 @@ int main(int argc, char *argv[])
     else {
         for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::attrTableT::suite()->getName().append("::").append(argv[i]);
+            test = attrTableT::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

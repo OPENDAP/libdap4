@@ -321,8 +321,8 @@ int main(int argc, char*argv[])
             break;
         case 'h': {     // help - show test names
             cerr << "Usage: D4AsyncDocTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::D4AsyncDocTest::suite()->getTests();
-            unsigned int prefix_len = libdap::D4AsyncDocTest::suite()->getName().append("::").length();
+            const std::vector<Test*> &tests = D4AsyncDocTest::suite()->getTests();
+            unsigned int prefix_len = D4AsyncDocTest::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
                 cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
@@ -346,7 +346,7 @@ int main(int argc, char*argv[])
     else {
         for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::D4AsyncDocTest::suite()->getName().append("::").append(argv[i]);
+            test = D4AsyncDocTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
