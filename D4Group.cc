@@ -518,7 +518,7 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,
 
     groupsIter g = d_groups.begin();
     while (g != d_groups.end())
-        (*g++)->serialize(m, dmr, /*eval,*/ filter);
+        (*g++)->serialize(m, dmr, filter);
 
     // Specialize how the top-level variables in any Group are sent; include
     // a checksum for them. A subset operation might make an interior set of
@@ -533,7 +533,7 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,
 			m.reset_checksum();
 
 	        DBG(cerr << "Serializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
-			(*i)->serialize(m, dmr, /*eval,*/ filter);
+			(*i)->serialize(m, dmr, filter);
 
 			DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
 			m.put_checksum();

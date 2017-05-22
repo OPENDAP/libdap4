@@ -536,12 +536,13 @@ bool TestArray::read()
 
     case dods_opaque_c:
     case dods_structure_c:
+        vec_resize(array_len);
         for (unsigned i = 0; i < array_len; ++i) {
             // Copy the prototype and read a value into it
             BaseType *elem = var()->ptr_duplicate();
             elem->read();
             // Load the new value into this object's array
-            set_vec(i, elem);
+            set_vec_nocopy(i, elem);   // Use set_vec_nocopy() TODO (and below)
         }
         set_read_p(true);
         break;
@@ -550,12 +551,10 @@ bool TestArray::read()
         // No sequence arrays in DAP2
         if (!is_dap4()) throw InternalErr(__FILE__, __LINE__, "Bad data type");
 
+        vec_resize(array_len);
         for (unsigned i = 0; i < array_len; ++i) {
-            // Copy the prototype and read a value into it
-            BaseType *elem = var()->ptr_duplicate();
-            //elem->read();
-            // Load the new value into this object's array
-            set_vec(i, elem);
+            // Load the new BaseType (a D4Sequence) into the array element
+            set_vec_nocopy(i, var()->ptr_duplicate());
         }
 
         break;
