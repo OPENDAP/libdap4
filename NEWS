@@ -1,3 +1,14 @@
+News for version 3.19.0
+
+Bug fixes in memory usage for Vector types.
+
+Refactored transform_to_dap4() methods and associated API
+
+Implmented transform_to_dap2() method.
+
+Refactored test harnesses so that running individual 
+tests is now a viable option.
+
 News for version 3.18.3
 
 Bug fix for DAP4 data transmissions.
