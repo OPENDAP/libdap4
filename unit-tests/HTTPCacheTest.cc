@@ -102,7 +102,8 @@ private:
 protected:
 
 public:
-    HTTPCacheTest() : hc(0), http_conn(0)
+    HTTPCacheTest() :
+        hc(0), http_conn(0)
     {
         putenv((char*) "DODS_CONF=./cache-testsuite/dodsrc");
         http_conn = new HTTPConnect(RCReader::instance());
@@ -111,7 +112,7 @@ public:
         hash_value = 656;
         localhost_url = "http://test.opendap.org/test-304.html";
         index_file_line =
-                "http://test.opendap.org/test-304.html cache-testsuite/dods_cache/656/dodsKbcD0h \"3f62c-157-139c2680\" 1121283146 -1 343 0 656 1 7351 1121360379 3723 0";
+            "http://test.opendap.org/test-304.html cache-testsuite/dods_cache/656/dodsKbcD0h \"3f62c-157-139c2680\" 1121283146 -1 343 0 656 1 7351 1121360379 3723 0";
 
         expired = "http://test.opendap.org/cgi-bin/expires.sh";
 
@@ -156,43 +157,43 @@ public:
         DBG2(cerr << "exiting tearDown" << endl);
     }
 
-    CPPUNIT_TEST_SUITE(HTTPCacheTest);
+    CPPUNIT_TEST_SUITE (HTTPCacheTest);
 
-    CPPUNIT_TEST(constructor_test);
-    CPPUNIT_TEST(cache_index_read_test);
-    CPPUNIT_TEST(cache_index_parse_line_test);
-    CPPUNIT_TEST(get_entry_from_cache_table_test);
-    CPPUNIT_TEST(cache_index_write_test);
-    CPPUNIT_TEST(create_cache_root_test);
-    CPPUNIT_TEST(set_cache_root_test);
-    CPPUNIT_TEST(get_single_user_lock_test);
+    CPPUNIT_TEST (constructor_test);
+    CPPUNIT_TEST (cache_index_read_test);
+    CPPUNIT_TEST (cache_index_parse_line_test);
+    CPPUNIT_TEST (get_entry_from_cache_table_test);
+    CPPUNIT_TEST (cache_index_write_test);
+    CPPUNIT_TEST (create_cache_root_test);
+    CPPUNIT_TEST (set_cache_root_test);
+    CPPUNIT_TEST (get_single_user_lock_test);
 
-    CPPUNIT_TEST(release_single_user_lock_test);
-    CPPUNIT_TEST(create_hash_directory_test);
-    CPPUNIT_TEST(create_location_test);
-    CPPUNIT_TEST(parse_headers_test);
+    CPPUNIT_TEST (release_single_user_lock_test);
+    CPPUNIT_TEST (create_hash_directory_test);
+    CPPUNIT_TEST (create_location_test);
+    CPPUNIT_TEST (parse_headers_test);
 
-    CPPUNIT_TEST(calculate_time_test);
-    CPPUNIT_TEST(write_metadata_test);
-    CPPUNIT_TEST(cache_response_test);
+    CPPUNIT_TEST (calculate_time_test);
+    CPPUNIT_TEST (write_metadata_test);
+    CPPUNIT_TEST (cache_response_test);
 #if 0
     // This test does not seem to work in New Zealand - maybe because
     // of the dateline??? jhrg 1/31/13
     CPPUNIT_TEST(is_url_valid_test);
 #endif
-    CPPUNIT_TEST(get_cached_response_test);
+    CPPUNIT_TEST (get_cached_response_test);
 
-    CPPUNIT_TEST(perform_garbage_collection_test);
-    CPPUNIT_TEST(purge_cache_and_release_cached_response_test);
-    CPPUNIT_TEST(get_conditional_response_headers_test);
-    CPPUNIT_TEST(update_response_test);
-    CPPUNIT_TEST(cache_gc_test);
+    CPPUNIT_TEST (perform_garbage_collection_test);
+    CPPUNIT_TEST (purge_cache_and_release_cached_response_test);
+    CPPUNIT_TEST (get_conditional_response_headers_test);
+    CPPUNIT_TEST (update_response_test);
+    CPPUNIT_TEST (cache_gc_test);
 
     // Make this the last test because when distcheck is run, running
     // it before other tests will break them.
-    CPPUNIT_TEST(instance_test);
+    CPPUNIT_TEST (instance_test);
 
-    CPPUNIT_TEST_SUITE_END()  ;
+    CPPUNIT_TEST_SUITE_END();
 
     void constructor_test()
     {
@@ -273,7 +274,7 @@ public:
         try {
             HTTPCache * hc_3 = new HTTPCache("cache-testsuite/dods_cache/", true);
             hc_3->d_http_cache_table->add_entry_to_cache_table(
-                    hc->d_http_cache_table->cache_index_parse_line(index_file_line.c_str()));
+                hc->d_http_cache_table->cache_index_parse_line(index_file_line.c_str()));
 
             hc_3->d_http_cache_table->d_cache_index = hc->d_cache_root + "test_index";
             hc_3->d_http_cache_table->cache_index_write();
@@ -499,7 +500,7 @@ public:
         // headers and cached_headers should match, except for the values.
         vector<string>::iterator i, j;
         for (i = cached_headers.begin(), j = headers->begin(); i != cached_headers.end() && j != headers->end();
-                ++i, ++j) {
+            ++i, ++j) {
             string ch = (*i).substr(0, (*i).find(": "));
             // Skip over headers that won't be cached. jhrg 7/4/05
             while (is_hop_by_hop_header(*j))
@@ -528,8 +529,7 @@ public:
             int cn = fread(&cb, 1, 1, cached_body);
             int n = fread(&b, 1, 1, rs->get_stream());
             CPPUNIT_ASSERT(cn == n);
-            if (cn == 1)
-                CPPUNIT_ASSERT(cb == b);
+            if (cn == 1) CPPUNIT_ASSERT(cb == b);
         }
         CPPUNIT_ASSERT(feof(rs->get_stream()) && feof(cached_body));
 
@@ -564,7 +564,7 @@ public:
             gc->d_http_cache_table->cache_index_write();
 
             CPPUNIT_ASSERT(
-                    !gc->is_url_in_cache(expired) && "This may fail if sleep is not long enough before gc above");
+                !gc->is_url_in_cache(expired) && "This may fail if sleep is not long enough before gc above");
         }
         catch (Error &e) {
             cerr << "Exception: " << e.get_error_message() << endl;
@@ -865,31 +865,40 @@ public:
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(HTTPCacheTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (HTTPCacheTest);
 
 } // namespace libdap
 
 int main(int argc, char*argv[])
 {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "d");
+    GetOpt getopt(argc, argv, "dh");
     int option_char;
 
     while ((option_char = getopt()) != -1)
         switch (option_char) {
-            case 'd':
-                debug = 1;  // debug is a static global
-                break;
-            default:
-                break;
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: HTTPCacheTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = libdap::HTTPCacheTest::suite()->getTests();
+            unsigned int prefix_len = libdap::HTTPCacheTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
+        default:
+            break;
         }
 
     // Run cleanup here, so that the first run works (since this code now
     // sets up the tests).
     // This gives valgrind fits...
     system("cd cache-testsuite && ./cleanup.sh");
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -899,9 +908,9 @@ int main(int argc, char*argv[])
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("libdap::HTTPCacheTest::") + argv[i++];
-
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = libdap::HTTPCacheTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

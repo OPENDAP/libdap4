@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -56,8 +55,8 @@ int test_variable_sleep_interval;
 
 //  Note: MS VC++ won't tolerate the embedded newlines in strings, hence the \n
 //  is explicit.
-static const char *s_as_string = \
-        "BaseType \\(0x.*\\):\n\
+static const char *s_as_string =
+    "BaseType \\(0x.*\\):\n\
           _name: s\n\
           _type: Sequence\n\
           _dataset: \n\
@@ -97,19 +96,23 @@ BaseType \\(0x.*\\):\n\
 
 static Regex s_regex(s_as_string);
 
-namespace libdap
-{
+namespace libdap {
 
-class SequenceTest : public TestFixture {
+class SequenceTest: public TestFixture {
 private:
     DDS *dds;
     TestSequence *s, *ss, *ps, *sss, *ts, *tts;
 
 public:
-    SequenceTest() {}
-    ~SequenceTest() {}
+    SequenceTest()
+    {
+    }
+    ~SequenceTest()
+    {
+    }
 
-    void setUp() {
+    void setUp()
+    {
         // Set up a simple sequence. Used to test ctor, assigment, et cetera.
         s = new TestSequence("s");
         s->add_var_nocopy(new TestInt32("i1"));
@@ -150,22 +153,24 @@ public:
         dds->add_var_nocopy(sss);
     }
 
-    void tearDown() {
-        delete dds; dds = 0;
+    void tearDown()
+    {
+        delete dds;
+        dds = 0;
     }
 
-    bool re_match(Regex &r, const char *s) {
+    bool re_match(Regex &r, const char *s)
+    {
         int match_position = r.match(s, strlen(s));
-        DBG(cerr << "match position: " << match_position
-                << " string length: " << (int)strlen(s) << endl);
-        return match_position == (int)strlen(s);
+        DBG(cerr << "match position: " << match_position << " string length: " << (int )strlen(s) << endl);
+        return match_position == (int) strlen(s);
     }
 
-    CPPUNIT_TEST_SUITE( SequenceTest );
+    CPPUNIT_TEST_SUITE (SequenceTest);
 
-    CPPUNIT_TEST(ctor_test);
-    CPPUNIT_TEST(assignment);
-    CPPUNIT_TEST(copy_ctor);
+    CPPUNIT_TEST (ctor_test);
+    CPPUNIT_TEST (assignment);
+    CPPUNIT_TEST (copy_ctor);
 #if 0
     CPPUNIT_TEST(test_set_leaf_sequence);
     CPPUNIT_TEST(test_set_leaf_sequence2);
@@ -345,14 +350,14 @@ public:
 
     void test_set_leaf_sequence2() {
         // Three level sequence
-        sss->set_send_p(true);          // set send_p for whole seq
+        sss->set_send_p(true);// set send_p for whole seq
         // Now the lowest sequence is not longer to be sent. The middle sequence
         // is the lowest with fields to be sent and so should be the leaf.
         Sequence::Vars_iter i = sss->var_begin();
         Sequence *inner = dynamic_cast<Sequence*>(*++i);
         i = inner->var_begin();
         inner = dynamic_cast<Sequence*>(*++i);
-        inner->set_send_p(false);       // now clear send_p for the inner most seq
+        inner->set_send_p(false);// now clear send_p for the inner most seq
         sss->set_leaf_sequence(1);
 
         CPPUNIT_ASSERT(!sss->is_leaf_sequence());
@@ -396,41 +401,54 @@ public:
     }
 #endif
 
-    void assignment() {
+    void assignment()
+    {
         Sequence ts2 = *s;
         DBG(cerr << "ts2: " << ts2.toString() << endl);
         CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
     }
 
-    void ctor_test() {
-		DBG(cerr << "s: " << s->toString() << endl);
-		CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
-	}
+    void ctor_test()
+    {
+        DBG(cerr << "s: " << s->toString() << endl);
+        CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
+    }
 
-    void copy_ctor() {
+    void copy_ctor()
+    {
         Sequence s2 = *s;
         CPPUNIT_ASSERT(re_match(s_regex, s2.toString().c_str()));
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(SequenceTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (SequenceTest);
 
 }
 
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "d");
+int main(int argc, char*argv[])
+{
+    GetOpt getopt(argc, argv, "dh");
     int option_char;
     while ((option_char = getopt()) != -1)
         switch (option_char) {
         case 'd':
             debug = 1;  // debug is a static global
             break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: SequenceTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = libdap::SequenceTest::suite()->getTests();
+            unsigned int prefix_len = libdap::SequenceTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
         default:
             break;
         }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -440,9 +458,9 @@ int main(int argc, char*argv[]) {
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("libdap::SequenceTest::") + argv[i++];
-
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = libdap::SequenceTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

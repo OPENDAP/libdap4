@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -66,18 +65,23 @@ const static string s_txt = "TestD4Sequence_s.txt";
 const static string one_clause_txt = "TestD4Sequence_one_clause.txt";
 const static string two_clause_txt = "TestD4Sequence_two_clause.txt";
 
-namespace libdap
-{
+namespace libdap {
 
-class D4SequenceTest : public TestFixture {
+class D4SequenceTest: public TestFixture {
 private:
     TestD4Sequence *s;
 
 public:
-    D4SequenceTest() : s(0) {}
-    ~D4SequenceTest() {}
+    D4SequenceTest() :
+        s(0)
+    {
+    }
+    ~D4SequenceTest()
+    {
+    }
 
-    void setUp() {
+    void setUp()
+    {
         // Set up a simple sequence. Used to test ctor, assigment, et cetera.
         s = new TestD4Sequence("s");
         s->add_var_nocopy(new TestInt32("i32"));
@@ -88,11 +92,14 @@ public:
         s->set_length(7);
     }
 
-    void tearDown() {
-        delete s; s = 0;
+    void tearDown()
+    {
+        delete s;
+        s = 0;
     }
 
-    void ctor_test() {
+    void ctor_test()
+    {
         s->intern_data();
         CPPUNIT_ASSERT(s->length() == 7);
 
@@ -105,7 +112,8 @@ public:
         CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + s_txt));
     }
 
-    void assignment_test() {
+    void assignment_test()
+    {
         TestD4Sequence ts = *s;
         ts.intern_data();
         CPPUNIT_ASSERT(ts.length() == 7);
@@ -117,7 +125,8 @@ public:
         //CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + s_txt));
     }
 
-    void copy_ctor_test() {
+    void copy_ctor_test()
+    {
         auto_ptr<TestD4Sequence> ts(new TestD4Sequence(*s));
         ts->intern_data();
 
@@ -130,9 +139,10 @@ public:
         //CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + s_txt));
     }
 
-    void one_clause_test() {
+    void one_clause_test()
+    {
         D4RValue *arg1 = new D4RValue(s->var("i32"));
-        D4RValue *arg2 = new D4RValue((long long)1024);
+        D4RValue *arg2 = new D4RValue((long long) 1024);
         s->clauses().add_clause(new D4FilterClause(D4FilterClause::equal, arg1, arg2));
 
         s->intern_data();
@@ -148,14 +158,14 @@ public:
         CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + one_clause_txt));
     }
 
-
-    void two_clause_test() {
+    void two_clause_test()
+    {
         D4RValue *arg1 = new D4RValue(s->var("i32"));
-        D4RValue *arg2 = new D4RValue((long long)1024);
+        D4RValue *arg2 = new D4RValue((long long) 1024);
         s->clauses().add_clause(new D4FilterClause(D4FilterClause::greater_equal, arg1, arg2));
 
         D4RValue *arg1_2 = new D4RValue(s->var("i32"));
-        D4RValue *arg2_2 = new D4RValue((long long)1048576);
+        D4RValue *arg2_2 = new D4RValue((long long) 1048576);
         s->clauses().add_clause(new D4FilterClause(D4FilterClause::less_equal, arg1_2, arg2_2));
 
         s->intern_data();
@@ -172,13 +182,14 @@ public:
         CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + two_clause_txt));
     }
 
-    void two_variable_test() {
+    void two_variable_test()
+    {
         D4RValue *arg1 = new D4RValue(s->var("i32"));
-        D4RValue *arg2 = new D4RValue((long long)1024);
+        D4RValue *arg2 = new D4RValue((long long) 1024);
         s->clauses().add_clause(new D4FilterClause(D4FilterClause::greater_equal, arg1, arg2));
 
         D4RValue *arg1_2 = new D4RValue(s->var("f32"));
-        D4RValue *arg2_2 = new D4RValue((long long)0.0);
+        D4RValue *arg2_2 = new D4RValue((long long) 0.0);
         s->clauses().add_clause(new D4FilterClause(D4FilterClause::less, arg1_2, arg2_2));
 
         s->intern_data();
@@ -195,37 +206,47 @@ public:
         CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + one_clause_txt));
     }
 
-    CPPUNIT_TEST_SUITE( D4SequenceTest );
+    CPPUNIT_TEST_SUITE (D4SequenceTest);
 
-    CPPUNIT_TEST(ctor_test);
-    CPPUNIT_TEST(assignment_test);
-    CPPUNIT_TEST(copy_ctor_test);
+    CPPUNIT_TEST (ctor_test);
+    CPPUNIT_TEST (assignment_test);
+    CPPUNIT_TEST (copy_ctor_test);
 
-    CPPUNIT_TEST(one_clause_test);
-    CPPUNIT_TEST(two_clause_test);
-    CPPUNIT_TEST(two_variable_test);
+    CPPUNIT_TEST (one_clause_test);
+    CPPUNIT_TEST (two_clause_test);
+    CPPUNIT_TEST (two_variable_test);
 
     CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(D4SequenceTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (D4SequenceTest);
 
 }
 
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "d");
+int main(int argc, char*argv[])
+{
+    GetOpt getopt(argc, argv, "dh");
     int option_char;
     while ((option_char = getopt()) != -1)
         switch (option_char) {
         case 'd':
             debug = 1;  // debug is a static global
             break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: D4SequenceTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = libdap::D4SequenceTest::suite()->getTests();
+            unsigned int prefix_len = libdap::D4SequenceTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
         default:
             break;
         }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -235,9 +256,9 @@ int main(int argc, char*argv[]) {
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("libdap::D4SequenceTest::") + argv[i++];
-
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = libdap::D4SequenceTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -59,21 +58,27 @@ static char dods_conf_ev[1024] = "";
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
 
-namespace libdap
-{
+namespace libdap {
 
-class RCReaderTest : public TestFixture {
+class RCReaderTest: public TestFixture {
 private:
     RCReader *rcr;
 
 protected:
 
 public:
-    RCReaderTest() : rcr(RCReader::instance()) {}
+    RCReaderTest() :
+        rcr(RCReader::instance())
+    {
+    }
 
-    void setUp () {}
+    void setUp()
+    {
+    }
 
-    void tearDown() {}
+    void tearDown()
+    {
+    }
 
     /** Put values in an environment variable. This should be used only
      * for the env var 'DODS_CONF' and should never pass in values longer
@@ -83,45 +88,51 @@ public:
      * so any value passed in from the heap that might be freed or from the
      * stack that could be popped will cause a memory access error.
      */
-    void my_putenv(const string &value) {
-        strncpy(dods_conf_ev, value.c_str(), 1024);;
+    void my_putenv(const string &value)
+    {
+        strncpy(dods_conf_ev, value.c_str(), 1024);
+        ;
         putenv(dods_conf_ev);
     }
 
-    CPPUNIT_TEST_SUITE(RCReaderTest);
+    CPPUNIT_TEST_SUITE (RCReaderTest);
 
-    CPPUNIT_TEST(check_env_var_test1);
-    CPPUNIT_TEST(check_env_var_test2);
-    CPPUNIT_TEST(check_env_var_test3);
-    CPPUNIT_TEST(check_env_var_test4);
-    CPPUNIT_TEST(check_env_var_test5);
-    CPPUNIT_TEST(instance_test1);
-    CPPUNIT_TEST(instance_test2);
-    CPPUNIT_TEST(proxy_test1);
-    CPPUNIT_TEST(proxy_test2);
-    CPPUNIT_TEST(proxy_test3);
-    CPPUNIT_TEST(proxy_test4);
-    CPPUNIT_TEST(proxy_test5);
-    CPPUNIT_TEST(validate_ssl_test);
+    CPPUNIT_TEST (check_env_var_test1);
+    CPPUNIT_TEST (check_env_var_test2);
+    CPPUNIT_TEST (check_env_var_test3);
+    CPPUNIT_TEST (check_env_var_test4);
+    CPPUNIT_TEST (check_env_var_test5);
+    CPPUNIT_TEST (instance_test1);
+    CPPUNIT_TEST (instance_test2);
+    CPPUNIT_TEST (proxy_test1);
+    CPPUNIT_TEST (proxy_test2);
+    CPPUNIT_TEST (proxy_test3);
+    CPPUNIT_TEST (proxy_test4);
+    CPPUNIT_TEST (proxy_test5);
+    CPPUNIT_TEST (validate_ssl_test);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void check_env_var_test1() {
+    void check_env_var_test1()
+    {
         my_putenv("DODS_CONF=");
         CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == "");
     }
 
-    void check_env_var_test2() {
+    void check_env_var_test2()
+    {
         my_putenv("DODS_CONF=Nothing_sensible");
         CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == "");
     }
 
-    void check_env_var_test3() {
+    void check_env_var_test3()
+    {
         my_putenv("DODS_CONF=/etc/passwd");
         CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == "/etc/passwd");
     }
 
-    void check_env_var_test4() {
+    void check_env_var_test4()
+    {
         // Set DODS_CONF to the CWD plus .dodsrc, create file called .dodsrc
         // in the CWD and test to see if check_env_var finds it.
         char cwd[1024];
@@ -137,7 +148,8 @@ public:
         remove(rc.c_str());
     }
 
-    void check_env_var_test5() {
+    void check_env_var_test5()
+    {
         // In this test we *don't* create the file, just set DODS_CONF to the
         // directory and see if check_env_var() makes the RC file.
         char cwd[1024];
@@ -149,28 +161,27 @@ public:
         string rc = string(cwd) + string("/.dodsrc");
         CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == rc);
         struct stat stat_info;
-        CPPUNIT_ASSERT(stat(rc.c_str(), &stat_info) == 0 &&
-                S_ISREG(stat_info.st_mode));
+        CPPUNIT_ASSERT(stat(rc.c_str(), &stat_info) == 0 && S_ISREG(stat_info.st_mode));
         remove(rc.c_str());
     }
 
-    void instance_test1() {
+    void instance_test1()
+    {
         // This test assumes that HOME *is* defined. We should find the
         // .dodsrc there. If it's not there, we should create one there.
         my_putenv("DODS_CONF=");
         string home = getenv("HOME");
-        if (*home.rbegin() != '/')
-            home += "/";
+        if (*home.rbegin() != '/') home += "/";
         RCReader::delete_instance();
         RCReader::initialize_instance();
         RCReader *reader = RCReader::instance();
         CPPUNIT_ASSERT(reader->d_rc_file_path == home + string(".dodsrc"));
         DBG(cerr << "Cache root: " << reader->get_dods_cache_root() << endl);
-        CPPUNIT_ASSERT(reader->get_dods_cache_root()
-                == home + string(".dods_cache/"));
+        CPPUNIT_ASSERT(reader->get_dods_cache_root() == home + string(".dods_cache/"));
     }
 
-    void instance_test2() {
+    void instance_test2()
+    {
         // Set DODS_CONF to create a .dodsrc in the CWD, then check to make
         // sure that .dodsrc has the correct cache root.
         char cwd[1024];
@@ -187,17 +198,16 @@ public:
         RCReader::initialize_instance();
         RCReader *reader = RCReader::instance();
         DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
-        CPPUNIT_ASSERT(reader->d_rc_file_path
-                == string(cwd) + string("/.dodsrc"));
+        CPPUNIT_ASSERT(reader->d_rc_file_path == string(cwd) + string("/.dodsrc"));
         DBG(cerr << "Cache root: " << reader->get_dods_cache_root() << endl);
-        CPPUNIT_ASSERT(reader->get_dods_cache_root()
-                == string(cwd) + string("/.dods_cache/"));
+        CPPUNIT_ASSERT(reader->get_dods_cache_root() == string(cwd) + string("/.dods_cache/"));
 
     }
 
     // Read the proxy info from rcreader-testsuite/test1.rc
-    void proxy_test1() {
-        string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test1.rc" ;
+    void proxy_test1()
+    {
+        string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test1.rc";
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
 
@@ -205,8 +215,7 @@ public:
         RCReader::initialize_instance();
         RCReader *reader = RCReader::instance();
         DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
-        CPPUNIT_ASSERT(reader->d_rc_file_path
-                == (string)TEST_SRC_DIR + "/rcreader-testsuite/test1.rc");
+        CPPUNIT_ASSERT(reader->d_rc_file_path == (string) TEST_SRC_DIR + "/rcreader-testsuite/test1.rc");
         CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
 
         string proxy = reader->get_proxy_server_host_url();
@@ -221,8 +230,9 @@ public:
         CPPUNIT_ASSERT(reader->get_no_proxy_for_host() == "local.org");
     }
 
-    void proxy_test2() {
-        string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test2.rc" ;
+    void proxy_test2()
+    {
+        string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test2.rc";
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
 
@@ -230,8 +240,7 @@ public:
         RCReader::initialize_instance();
         RCReader *reader = RCReader::instance();
         DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
-        CPPUNIT_ASSERT(reader->d_rc_file_path
-                == (string)TEST_SRC_DIR + "/rcreader-testsuite/test2.rc");
+        CPPUNIT_ASSERT(reader->d_rc_file_path == (string) TEST_SRC_DIR + "/rcreader-testsuite/test2.rc");
         CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
 
         string proxy = reader->get_proxy_server_host_url();
@@ -243,8 +252,9 @@ public:
         CPPUNIT_ASSERT(reader->get_proxy_server_userpw() == "");
     }
 
-    void proxy_test3() {
-        string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test3.rc" ;
+    void proxy_test3()
+    {
+        string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test3.rc";
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
 
@@ -253,14 +263,15 @@ public:
             RCReader::initialize_instance();
             CPPUNIT_ASSERT(!"initialize_instance() should throw Error.");
         }
-        catch(Error &e) {
+        catch (Error &e) {
             DBG(cerr << e.get_error_message() << endl);
             CPPUNIT_ASSERT(e.get_error_message() != "");
         }
     }
 
-    void proxy_test4() {
-        string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test4.rc" ;
+    void proxy_test4()
+    {
+        string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test4.rc";
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
 
@@ -269,8 +280,7 @@ public:
             RCReader::initialize_instance();
             RCReader *reader = RCReader::instance();
             DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
-            CPPUNIT_ASSERT(reader->d_rc_file_path
-                    == (string)TEST_SRC_DIR + "/rcreader-testsuite/test4.rc");
+            CPPUNIT_ASSERT(reader->d_rc_file_path == (string) TEST_SRC_DIR + "/rcreader-testsuite/test4.rc");
             CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
 
             string proxy = reader->get_proxy_server_host_url();
@@ -281,14 +291,15 @@ public:
             CPPUNIT_ASSERT(reader->get_proxy_server_port() == 3128);
             CPPUNIT_ASSERT(reader->get_proxy_server_userpw() == "jimg:test");
         }
-        catch(Error &e) {
+        catch (Error &e) {
             DBG(cerr << e.get_error_message() << endl);
             CPPUNIT_ASSERT(e.get_error_message() != "");
         }
     }
 
-    void proxy_test5() {
-        string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test5.rc" ;
+    void proxy_test5()
+    {
+        string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test5.rc";
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
 
@@ -297,8 +308,7 @@ public:
             RCReader::initialize_instance();
             RCReader *reader = RCReader::instance();
             DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
-            CPPUNIT_ASSERT(reader->d_rc_file_path
-                    == (string)TEST_SRC_DIR + "/rcreader-testsuite/test5.rc");
+            CPPUNIT_ASSERT(reader->d_rc_file_path == (string) TEST_SRC_DIR + "/rcreader-testsuite/test5.rc");
             string proxy = reader->get_proxy_server_host_url();
             DBG(cerr << "get_proxy_server_host_url(): " << proxy << endl);
             CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
@@ -309,17 +319,17 @@ public:
             CPPUNIT_ASSERT(reader->get_proxy_server_port() == 3128);
             CPPUNIT_ASSERT(reader->get_proxy_server_userpw() == "jimg:test");
         }
-        catch(Error &e) {
+        catch (Error &e) {
             DBG(cerr << e.get_error_message() << endl);
             CPPUNIT_ASSERT(e.get_error_message() != "");
         }
     }
-
 
     // This simple test checks to see that the VALIDATE_SSL parameter is 
     // read correctly.
-    void validate_ssl_test() {
-        string rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_1" ;
+    void validate_ssl_test()
+    {
+        string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_1";
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
 
@@ -336,7 +346,7 @@ public:
         // string object) because the code casts away the const-ness of the
         // char* returned by c_str() and putenv does odd stuff with it. There's
         // nothing good about using env vars...
-        rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_2" ;
+        rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_2";
         DBG(cerr << "rc: " << rc << endl);
 
         my_putenv(rc);
@@ -344,14 +354,12 @@ public:
         RCReader::delete_instance();
         RCReader::initialize_instance();
         reader = RCReader::instance();
-        DBG(cerr << "reader->check_env_var(\"DODS_CONF\"): " 
-                << reader->check_env_var("DODS_CONF") << endl);
-        DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl()
-                << endl);
+        DBG(cerr << "reader->check_env_var(\"DODS_CONF\"): " << reader->check_env_var("DODS_CONF") << endl);
+        DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl() << endl);
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 1);
 
         // Param cleared in file 
-        rc = (string)"DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodsrc_ssl_3" ;
+        rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodsrc_ssl_3";
         DBG(cerr << "rc: " << rc << endl);
 
         my_putenv(rc);
@@ -359,31 +367,40 @@ public:
         RCReader::delete_instance();
         RCReader::initialize_instance();
         reader = RCReader::instance();
-        DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl()
-                << endl);
+        DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl() << endl);
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 0);
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(RCReaderTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (RCReaderTest);
 
 } // namespace libdap
 
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "d");
+int main(int argc, char*argv[])
+{
+    GetOpt getopt(argc, argv, "dh");
     int option_char;
 
     while ((option_char = getopt()) != -1)
         switch (option_char) {
-            case 'd':
-                debug = 1;  // debug is a static global
-                break;
-            default:
-                break;
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: RCReaderTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = libdap::RCReaderTest::suite()->getTests();
+            unsigned int prefix_len = libdap::RCReaderTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
         }
+        default:
+            break;
+        }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -393,9 +410,9 @@ int main(int argc, char*argv[]) {
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("libdap::RCReaderTest::") + argv[i++];
-
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = libdap::RCReaderTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

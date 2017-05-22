@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -61,7 +60,7 @@ static bool parser_debug = false;
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
 
-class D4ParserSax2Test : public TestFixture {
+class D4ParserSax2Test: public TestFixture {
 private:
     D4ParserSax2 *parser;
     DMR *dmr;
@@ -69,17 +68,24 @@ private:
     XMLWriter *xml;
 
 public:
-    D4ParserSax2Test() : parser(0), dmr(0), btf(0), xml(0) {}
-    ~D4ParserSax2Test() {}
+    D4ParserSax2Test() :
+        parser(0), dmr(0), btf(0), xml(0)
+    {
+    }
+    ~D4ParserSax2Test()
+    {
+    }
 
-    void setUp() {
+    void setUp()
+    {
         parser = new D4ParserSax2();
         btf = new D4BaseTypeFactory;
         dmr = new DMR(btf);
         xml = new XMLWriter("    ");
     }
 
-    void tearDown() {
+    void tearDown()
+    {
         delete parser;
         delete dmr;
         delete btf;
@@ -91,8 +97,7 @@ public:
         try {
             string name = string(TEST_SRC_DIR) + src;
             ifstream ifile(name.c_str(), ifstream::in);
-            if (!ifile)
-                throw InternalErr(__FILE__, __LINE__, "Could not open file: " + src);
+            if (!ifile) throw InternalErr(__FILE__, __LINE__, "Could not open file: " + src);
 
             parser->intern(ifile, dmr, parser_debug);
 
@@ -296,54 +301,52 @@ public:
         CPPUNIT_ASSERT((*m)->parent() == b1);
     }
 
-    CPPUNIT_TEST_SUITE( D4ParserSax2Test );
+    CPPUNIT_TEST_SUITE (D4ParserSax2Test);
 
-    CPPUNIT_TEST(test_empty_dmr);
-    CPPUNIT_TEST(test_dimension_def);
-    CPPUNIT_TEST(test_attribute_def);
-    CPPUNIT_TEST(test_nested_attribute_def);
-    CPPUNIT_TEST(test_enum_def);
-    CPPUNIT_TEST(test_enum_def2);
-    CPPUNIT_TEST(test_simple_var_def);
-    CPPUNIT_TEST(test_simple_var_with_attributes_def);
-    CPPUNIT_TEST(test_array_var_def);
-    CPPUNIT_TEST(test_array_var_def2);
-    CPPUNIT_TEST(test_array_var_def3);
-    CPPUNIT_TEST(test_array_var_def4);
-    CPPUNIT_TEST(test_all_simple_var_def);
-    CPPUNIT_TEST(test_opaque_var_def);
+    CPPUNIT_TEST (test_empty_dmr);
+    CPPUNIT_TEST (test_dimension_def);
+    CPPUNIT_TEST (test_attribute_def);
+    CPPUNIT_TEST (test_nested_attribute_def);
+    CPPUNIT_TEST (test_enum_def);
+    CPPUNIT_TEST (test_enum_def2);
+    CPPUNIT_TEST (test_simple_var_def);
+    CPPUNIT_TEST (test_simple_var_with_attributes_def);
+    CPPUNIT_TEST (test_array_var_def);
+    CPPUNIT_TEST (test_array_var_def2);
+    CPPUNIT_TEST (test_array_var_def3);
+    CPPUNIT_TEST (test_array_var_def4);
+    CPPUNIT_TEST (test_all_simple_var_def);
+    CPPUNIT_TEST (test_opaque_var_def);
 
-    CPPUNIT_TEST(test_structure_def);
-    CPPUNIT_TEST(test_structure_with_attributes_def);
-    CPPUNIT_TEST(test_group_def);
-    CPPUNIT_TEST(test_group_with_attributes_def);
-    CPPUNIT_TEST(test_group_with_enums_def);
+    CPPUNIT_TEST (test_structure_def);
+    CPPUNIT_TEST (test_structure_with_attributes_def);
+    CPPUNIT_TEST (test_group_def);
+    CPPUNIT_TEST (test_group_with_attributes_def);
+    CPPUNIT_TEST (test_group_with_enums_def);
 
-    CPPUNIT_TEST(test_empty_dmr_string_version);
-    CPPUNIT_TEST(test_attribute_def_string_version);
-    CPPUNIT_TEST(test_group_with_attributes_def_string_version);
-    CPPUNIT_TEST(test_structure_with_attributes_def_string_version);
-    CPPUNIT_TEST(test_array_var_def4_string_version);
+    CPPUNIT_TEST (test_empty_dmr_string_version);
+    CPPUNIT_TEST (test_attribute_def_string_version);
+    CPPUNIT_TEST (test_group_with_attributes_def_string_version);
+    CPPUNIT_TEST (test_structure_with_attributes_def_string_version);
+    CPPUNIT_TEST (test_array_var_def4_string_version);
 
-    CPPUNIT_TEST(test_array_1);
-    CPPUNIT_TEST(test_array_2);
-    CPPUNIT_TEST(test_array_3);
-    CPPUNIT_TEST(test_array_4);
-    CPPUNIT_TEST(test_array_5);
-    CPPUNIT_TEST(test_array_6);
+    CPPUNIT_TEST (test_array_1);
+    CPPUNIT_TEST (test_array_2);
+    CPPUNIT_TEST (test_array_3);
+    CPPUNIT_TEST (test_array_4);
+    CPPUNIT_TEST (test_array_5);
+    CPPUNIT_TEST (test_array_6);
 
-    CPPUNIT_TEST(test_map_1);
+    CPPUNIT_TEST (test_map_1);
 
     CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( D4ParserSax2Test );
+CPPUNIT_TEST_SUITE_REGISTRATION (D4ParserSax2Test);
 
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "dp");
+int main(int argc, char*argv[])
+{
+    GetOpt getopt(argc, argv, "dph");
     int option_char;
 
     while ((option_char = getopt()) != -1)
@@ -352,11 +355,23 @@ int main(int argc, char*argv[]) {
             debug = 1;  // debug is a static global
             break;
         case 'p':
-        	parser_debug = true;
-        	break;
+            parser_debug = true;
+            break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: D4ParserSax2Test has the following tests:" << endl;
+            const std::vector<Test*> &tests = D4ParserSax2Test::suite()->getTests();
+            unsigned int prefix_len = D4ParserSax2Test::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
         default:
             break;
         }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -366,9 +381,9 @@ int main(int argc, char*argv[]) {
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("D4ParserSax2Test::") + argv[i++];
-            DBG(cerr << "test: " << test << endl);
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = D4ParserSax2Test::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

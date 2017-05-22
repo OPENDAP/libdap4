@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -54,164 +53,201 @@ using namespace std;
 
 int test_variable_sleep_interval = 0;
 
-class KeywordsTest:public TestFixture
-{
+class KeywordsTest: public TestFixture {
 private:
     Keywords *k;
 public:
     KeywordsTest()
-    {}
+    {
+    }
 
     ~KeywordsTest()
-    {}
+    {
+    }
 
     void setUp()
     {
-	k = new Keywords();
+        k = new Keywords();
     }
 
     void tearDown()
     {
-        delete k; k = 0;
+        delete k;
+        k = 0;
     }
 
-    CPPUNIT_TEST_SUITE( KeywordsTest );
+    CPPUNIT_TEST_SUITE (KeywordsTest);
 
-    CPPUNIT_TEST(no_keywords_test_1);
-    CPPUNIT_TEST(no_keywords_test_2);
+    CPPUNIT_TEST (no_keywords_test_1);
+    CPPUNIT_TEST (no_keywords_test_2);
 
-    CPPUNIT_TEST(one_keyword_test_1);
-    CPPUNIT_TEST(one_keyword_test_2);
+    CPPUNIT_TEST (one_keyword_test_1);
+    CPPUNIT_TEST (one_keyword_test_2);
 
-    CPPUNIT_TEST(two_keyword_test_1);
-    CPPUNIT_TEST(two_keyword_test_2);
+    CPPUNIT_TEST (two_keyword_test_1);
+    CPPUNIT_TEST (two_keyword_test_2);
 
-    CPPUNIT_TEST(bad_keyword_test_1);
-    CPPUNIT_TEST(bad_keyword_test_2);
-    CPPUNIT_TEST(bad_keyword_test_3);
-    CPPUNIT_TEST(bad_keyword_test_4);
+    CPPUNIT_TEST (bad_keyword_test_1);
+    CPPUNIT_TEST (bad_keyword_test_2);
+    CPPUNIT_TEST (bad_keyword_test_3);
+    CPPUNIT_TEST (bad_keyword_test_4);
 
     CPPUNIT_TEST_SUITE_END();
 
     void no_keywords_test_1()
     {
-	string ce = k->parse_keywords("");
-	CPPUNIT_ASSERT(!k->has_keyword("dap"));
-	CPPUNIT_ASSERT(ce == "");
-	CPPUNIT_ASSERT(k->get_keywords().size() == 0);
+        string ce = k->parse_keywords("");
+        CPPUNIT_ASSERT(!k->has_keyword("dap"));
+        CPPUNIT_ASSERT(ce == "");
+        CPPUNIT_ASSERT(k->get_keywords().size() == 0);
     }
 
     void no_keywords_test_2()
     {
-	string ce = k->parse_keywords("u,v");
-	CPPUNIT_ASSERT(!k->has_keyword("dap"));
-	CPPUNIT_ASSERT(ce == "u,v");
-	CPPUNIT_ASSERT(k->get_keywords().size() == 0);
+        string ce = k->parse_keywords("u,v");
+        CPPUNIT_ASSERT(!k->has_keyword("dap"));
+        CPPUNIT_ASSERT(ce == "u,v");
+        CPPUNIT_ASSERT(k->get_keywords().size() == 0);
     }
 
     void one_keyword_test_1()
     {
-	CPPUNIT_ASSERT(k->is_known_keyword("dap"));
+        CPPUNIT_ASSERT(k->is_known_keyword("dap"));
 
-	string ce = k->parse_keywords("dap(2)");
-	CPPUNIT_ASSERT(ce == "");
-	CPPUNIT_ASSERT(k->has_keyword("dap"));
-	CPPUNIT_ASSERT(k->get_keyword_value("dap") == "2");
-	CPPUNIT_ASSERT(k->get_keywords().size() == 1);
+        string ce = k->parse_keywords("dap(2)");
+        CPPUNIT_ASSERT(ce == "");
+        CPPUNIT_ASSERT(k->has_keyword("dap"));
+        CPPUNIT_ASSERT(k->get_keyword_value("dap") == "2");
+        CPPUNIT_ASSERT(k->get_keywords().size() == 1);
     }
 
     void one_keyword_test_2()
     {
-	string ce = k->parse_keywords("dap(2),u,v&v<7");
-	CPPUNIT_ASSERT(ce == "u,v&v<7");
-	CPPUNIT_ASSERT(k->has_keyword("dap"));
-	CPPUNIT_ASSERT(k->get_keyword_value("dap") == "2");
-	CPPUNIT_ASSERT(k->get_keywords().size() == 1);
+        string ce = k->parse_keywords("dap(2),u,v&v<7");
+        CPPUNIT_ASSERT(ce == "u,v&v<7");
+        CPPUNIT_ASSERT(k->has_keyword("dap"));
+        CPPUNIT_ASSERT(k->get_keyword_value("dap") == "2");
+        CPPUNIT_ASSERT(k->get_keywords().size() == 1);
     }
 
     void two_keyword_test_1()
     {
-	string ce = k->parse_keywords("dap(2),dap(3.2)");
-	CPPUNIT_ASSERT(ce == "");
-	CPPUNIT_ASSERT(k->has_keyword("dap"));
-	CPPUNIT_ASSERT(k->get_keyword_value("dap") == "3.2");
-	CPPUNIT_ASSERT(k->get_keywords().size() == 1);
+        string ce = k->parse_keywords("dap(2),dap(3.2)");
+        CPPUNIT_ASSERT(ce == "");
+        CPPUNIT_ASSERT(k->has_keyword("dap"));
+        CPPUNIT_ASSERT(k->get_keyword_value("dap") == "3.2");
+        CPPUNIT_ASSERT(k->get_keywords().size() == 1);
 
-	CPPUNIT_ASSERT(k->is_known_keyword("dap"));
+        CPPUNIT_ASSERT(k->is_known_keyword("dap"));
     }
 
     void two_keyword_test_2()
     {
-	string ce = k->parse_keywords("dap(2),dap(3.2),u,v&v<7");
-	CPPUNIT_ASSERT(ce == "u,v&v<7");
-	CPPUNIT_ASSERT(k->has_keyword("dap"));
-	CPPUNIT_ASSERT(k->get_keyword_value("dap") == "3.2");
-	CPPUNIT_ASSERT(k->get_keywords().size() == 1);
+        string ce = k->parse_keywords("dap(2),dap(3.2),u,v&v<7");
+        CPPUNIT_ASSERT(ce == "u,v&v<7");
+        CPPUNIT_ASSERT(k->has_keyword("dap"));
+        CPPUNIT_ASSERT(k->get_keyword_value("dap") == "3.2");
+        CPPUNIT_ASSERT(k->get_keywords().size() == 1);
     }
 
     void bad_keyword_test_1()
     {
-	try {
-	    string ce = k->parse_keywords("dap7");
-	    // Even though this is pretty obviously wrong, we soldier on because
-	    // The keyword processing code has no way of knowing what will be
-	    // valid variable names.
-	    CPPUNIT_ASSERT(ce == "dap7");
-	}
-	catch (Error &e) {
-	    CPPUNIT_FAIL("Should not get here");
-	}
+        try {
+            string ce = k->parse_keywords("dap7");
+            // Even though this is pretty obviously wrong, we soldier on because
+            // The keyword processing code has no way of knowing what will be
+            // valid variable names.
+            CPPUNIT_ASSERT(ce == "dap7");
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL("Should not get here");
+        }
     }
     void bad_keyword_test_2()
     {
-	try {
-	    string ce = k->parse_keywords("dap(7");
-	    // Even though this is pretty obviously wrong, we soldier on because
-	    // The keyword processing code has no way of knowing what will be
-	    // valid variable names.
-	    CPPUNIT_ASSERT(ce == "dap(7");
-	}
-	catch (Error &e) {
-	    CPPUNIT_FAIL("Should not get here");
-	}
+        try {
+            string ce = k->parse_keywords("dap(7");
+            // Even though this is pretty obviously wrong, we soldier on because
+            // The keyword processing code has no way of knowing what will be
+            // valid variable names.
+            CPPUNIT_ASSERT(ce == "dap(7");
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL("Should not get here");
+        }
     }
     void bad_keyword_test_3()
     {
-	try {
-	    string ce = k->parse_keywords("dap7)");
-	    // Even though this is pretty obviously wrong, we soldier on because
-	    // The keyword processing code has no way of knowing what will be
-	    // valid variable names.
-	    CPPUNIT_ASSERT(ce == "dap7)");
-	}
-	catch (Error &e) {
-	    CPPUNIT_FAIL("Should not get here");
-	}
+        try {
+            string ce = k->parse_keywords("dap7)");
+            // Even though this is pretty obviously wrong, we soldier on because
+            // The keyword processing code has no way of knowing what will be
+            // valid variable names.
+            CPPUNIT_ASSERT(ce == "dap7)");
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL("Should not get here");
+        }
     }
     void bad_keyword_test_4()
     {
-	try {
-	    string ce = k->parse_keywords("dap(7)");
-	    // Even though this is pretty obviously wrong, we soldier on because
-	    // The keyword processing code has no way of knowing what will be
-	    // valid variable names.
-	    CPPUNIT_FAIL("Should throw - bad value to keyword/function");
-	}
-	catch (Error &e) {
-	    CPPUNIT_ASSERT("Should throw - bad value to keyword/function");
-	}
+        try {
+            string ce = k->parse_keywords("dap(7)");
+            // Even though this is pretty obviously wrong, we soldier on because
+            // The keyword processing code has no way of knowing what will be
+            // valid variable names.
+            CPPUNIT_FAIL("Should throw - bad value to keyword/function");
+        }
+        catch (Error &e) {
+            CPPUNIT_ASSERT("Should throw - bad value to keyword/function");
+        }
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(KeywordsTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (KeywordsTest);
 
-int
-main( int, char** )
+int main(int argc, char*argv[])
 {
-    CppUnit::TextTestRunner runner;
-    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+    GetOpt getopt(argc, argv, "dh");
+    int option_char;
 
-    bool wasSuccessful = runner.run( "", false ) ;
+    while ((option_char = getopt()) != -1)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: KeywordsTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = libdap::KeywordsTest::suite()->getTests();
+            unsigned int prefix_len = libdap::KeywordsTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = libdap::KeywordsTest::suite()->getName().append("::").append(argv[i]);
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
+
+    xmlMemoryDump();
 
     return wasSuccessful ? 0 : 1;
 }

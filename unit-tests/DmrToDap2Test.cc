@@ -76,21 +76,26 @@ class DmrToDap2Test: public TestFixture {
 private:
 
 public:
-    DmrToDap2Test() {
+    DmrToDap2Test()
+    {
     }
-    ~DmrToDap2Test() {
-    }
-
-    void setUp() {
-    }
-
-    void tearDown() {
+    ~DmrToDap2Test()
+    {
     }
 
-    bool re_match(Regex &r, const string &s) {
+    void setUp()
+    {
+    }
+
+    void tearDown()
+    {
+    }
+
+    bool re_match(Regex &r, const string &s)
+    {
         int match = r.match(s.c_str(), s.length());
         DBG(cerr << "Match: " << match << " should be: " << s.length() << endl);
-        return match == static_cast<int> (s.length());
+        return match == static_cast<int>(s.length());
     }
 
     /**
@@ -101,31 +106,33 @@ public:
      * @param attr
      * @return A pointer to the new DMR; caller must delete
      */
-    DMR *build_dmr(const string &dmr_file) {
+    DMR *build_dmr(const string &dmr_file)
+    {
         DBG(cerr << __func__ << "() - BEGIN" << endl);
         DBG(cerr << __func__ << "() - dmr_file: " << dmr_file << endl);
 
-		try {
-			DMR *dmr =  new DMR();
-		    dmr->set_filename(dmr_file);
-		    dmr->set_name(name_path(dmr_file));
-		    D4BaseTypeFactory BaseFactory;   // Use the factory for this handler's types
-		    dmr->set_factory(&BaseFactory);
-		    D4ParserSax2 parser;
-		    ifstream in(dmr_file.c_str(), ios::in);
-		    parser.intern(in, dmr, mo_debug);
-		    dmr->set_factory(0);
-	        DBG(cerr << __func__ << "() - END" << endl);
-			return dmr;
-		}
-    	catch (Error &e) {
-    		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
-    	}
+        try {
+            DMR *dmr = new DMR();
+            dmr->set_filename(dmr_file);
+            dmr->set_name(name_path(dmr_file));
+            D4BaseTypeFactory BaseFactory;   // Use the factory for this handler's types
+            dmr->set_factory(&BaseFactory);
+            D4ParserSax2 parser;
+            ifstream in(dmr_file.c_str(), ios::in);
+            parser.intern(in, dmr, mo_debug);
+            dmr->set_factory(0);
+            DBG(cerr << __func__ << "() - END" << endl);
+            return dmr;
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
+        }
 
-    	return 0;
+        return 0;
     }
 
-    void test_template(const string &test_base_name) {
+    void test_template(const string &test_base_name)
+    {
 
         string prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
 
@@ -133,34 +140,38 @@ public:
         string dds_file = prefix + test_base_name + ".dds";
         string das_file = prefix + test_base_name + ".das";
 
-        DBG(cerr << __func__ << "() - BEGIN (test_base: "<< test_base_name << ")" << endl);
+        DBG(cerr << __func__ << "() - BEGIN (test_base: " << test_base_name << ")" << endl);
         DMR *dmr = 0;
         try {
 
             dmr = build_dmr(dmr_file);
-            CPPUNIT_ASSERT(dmr!=0);
+            CPPUNIT_ASSERT(dmr != 0);
             XMLWriter xml;
             dmr->print_dap4(xml);
             string result_dmr(xml.get_doc());
             string baseline_dmr = readTestBaseline(dmr_file);
 
-            DBG(cerr << "BASELINE DMR("<< baseline_dmr.size() << " chars): " << dmr_file << endl << baseline_dmr << endl);
-            DBG(cerr << "RESULT DMR("<< result_dmr.size() << " chars): " << endl << result_dmr << endl);
+            DBG(
+                cerr << "BASELINE DMR(" << baseline_dmr.size() << " chars): " << dmr_file << endl << baseline_dmr
+                    << endl);
+            DBG(cerr << "RESULT DMR(" << result_dmr.size() << " chars): " << endl << result_dmr << endl);
             CPPUNIT_ASSERT(result_dmr == baseline_dmr);
 
-            DDS *dds =  dmr->getDDS();
+            DDS *dds = dmr->getDDS();
             std::ostringstream result_dds;
             dds->print(result_dds);
             string baseline_dds = readTestBaseline(dds_file);
-            DBG(cerr << "BASELINE DDS("<< baseline_dds.size() << " chars): " << dds_file << endl << baseline_dds << endl);
-            DBG(cerr << "RESULT DDS("<< result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
+            DBG(
+                cerr << "BASELINE DDS(" << baseline_dds.size() << " chars): " << dds_file << endl << baseline_dds
+                    << endl);
+            DBG(cerr << "RESULT DDS(" << result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
             CPPUNIT_ASSERT(result_dds.str() == baseline_dds);
 
             std::ostringstream result_das;
             dds->print_das(result_das);
             string source_das = readTestBaseline(das_file);
-            DBG(cerr << "BASELINE DAS("<< source_das.size() << " chars): " << das_file << endl << source_das << endl);
-            DBG(cerr << "RESULT DAS("<< result_das.str().size() << " chars): " << endl << result_das.str() << endl);
+            DBG(cerr << "BASELINE DAS(" << source_das.size() << " chars): " << das_file << endl << source_das << endl);
+            DBG(cerr << "RESULT DAS(" << result_das.str().size() << " chars): " << endl << result_das.str() << endl);
             CPPUNIT_ASSERT(result_das.str() == source_das);
 
             delete dmr;
@@ -173,227 +184,250 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-
     // Test a DDS with simple scalar types and no attributes
-    void dmr_to_dap2_01() {
+    void dmr_to_dap2_01()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("test.1");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
     // Test a DDS with simple scalar types and no attributes
-    void basic_dmr_to_dap2_0_0() {
+    void basic_dmr_to_dap2_0_0()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("DMR_0.0");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void basic_dmr_to_dap2_0_1() {
+    void basic_dmr_to_dap2_0_1()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("DMR_0.1");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void basic_dmr_to_dap2_1_0() {
+    void basic_dmr_to_dap2_1_0()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("DMR_1.0");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-
-    void basic_dmr_to_dap2_2_0() {
+    void basic_dmr_to_dap2_2_0()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("DMR_2.0");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void basic_dmr_to_dap2_2_1() {
+    void basic_dmr_to_dap2_2_1()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("DMR_2.1");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void basic_dmr_to_dap2_2_2() {
+    void basic_dmr_to_dap2_2_2()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("DMR_2.2");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void basic_dmr_to_dap2_2_3() {
+    void basic_dmr_to_dap2_2_3()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("DMR_2.3");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void basic_dmr_to_dap2_2_4() {
+    void basic_dmr_to_dap2_2_4()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("DMR_2.4");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void basic_dmr_to_dap2_2_5() {
+    void basic_dmr_to_dap2_2_5()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("DMR_2.5");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void basic_dmr_to_dap2_3_0() {
+    void basic_dmr_to_dap2_3_0()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("DMR_3.0");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-
-    void enum_dmr_to_dap2_0_0() {
+    void enum_dmr_to_dap2_0_0()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_0.0");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void enum_dmr_to_dap2_0_1() {
+    void enum_dmr_to_dap2_0_1()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_0.1");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void enum_dmr_to_dap2_1_0() {
+    void enum_dmr_to_dap2_1_0()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_1.0");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void enum_dmr_to_dap2_1_1() {
+    void enum_dmr_to_dap2_1_1()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_1.1");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void enum_dmr_to_dap2_1_2() {
+    void enum_dmr_to_dap2_1_2()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_1.2");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void enum_dmr_to_dap2_1_3() {
+    void enum_dmr_to_dap2_1_3()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_1.3");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void enum_dmr_to_dap2_1_4() {
+    void enum_dmr_to_dap2_1_4()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_1.4");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void enum_dmr_to_dap2_1_5() {
+    void enum_dmr_to_dap2_1_5()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_1.5");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void enum_dmr_to_dap2_2_0() {
+    void enum_dmr_to_dap2_2_0()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_2.0");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void enum_dmr_to_dap2_2_1() {
+    void enum_dmr_to_dap2_2_1()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_2.1");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void enum_dmr_to_dap2_3_0() {
+    void enum_dmr_to_dap2_3_0()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_3.0");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void enum_dmr_to_dap2_3_1() {
+    void enum_dmr_to_dap2_3_1()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_3.1");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void enum_dmr_to_dap2_4_0() {
+    void enum_dmr_to_dap2_4_0()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_4.0");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void enum_dmr_to_dap2_4_1() {
+    void enum_dmr_to_dap2_4_1()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_4.1");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void enum_dmr_to_dap2_4_2() {
+    void enum_dmr_to_dap2_4_2()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("EnumDMR_4.2");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void dmr_to_grid_01() {
+    void dmr_to_grid_01()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("coads_climatology.nc");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void dmr_to_grid_02() {
+    void dmr_to_grid_02()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("sst.mnmean.nc.gz");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void dmr_to_grid_03() {
+    void dmr_to_grid_03()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("sresa1b_ncar_ccsm3_0_run1_200001.nc");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void dmr_to_grid_04() {
+    void dmr_to_grid_04()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("tos_O1_2001-2002.nc");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void dmr_to_grid_05() {
+    void dmr_to_grid_05()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_template("cami_0000-09-01_64x128_L26_c030918.nc");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-
-
-    CPPUNIT_TEST_SUITE( DmrToDap2Test );
-
+    CPPUNIT_TEST_SUITE (DmrToDap2Test);
 
 #if 1 // good (as in should be working) tests
-    CPPUNIT_TEST(dmr_to_dap2_01);
-    CPPUNIT_TEST(basic_dmr_to_dap2_0_0);
-    CPPUNIT_TEST(basic_dmr_to_dap2_0_1);
-    CPPUNIT_TEST(basic_dmr_to_dap2_2_0);
-    CPPUNIT_TEST(basic_dmr_to_dap2_2_1);
-    CPPUNIT_TEST(basic_dmr_to_dap2_2_2);
-    CPPUNIT_TEST(basic_dmr_to_dap2_2_4);
-    CPPUNIT_TEST(basic_dmr_to_dap2_2_3);
-    CPPUNIT_TEST(basic_dmr_to_dap2_2_5); // Drops Variables
+    CPPUNIT_TEST (dmr_to_dap2_01);
+    CPPUNIT_TEST (basic_dmr_to_dap2_0_0);
+    CPPUNIT_TEST (basic_dmr_to_dap2_0_1);
+    CPPUNIT_TEST (basic_dmr_to_dap2_2_0);
+    CPPUNIT_TEST (basic_dmr_to_dap2_2_1);
+    CPPUNIT_TEST (basic_dmr_to_dap2_2_2);
+    CPPUNIT_TEST (basic_dmr_to_dap2_2_4);
+    CPPUNIT_TEST (basic_dmr_to_dap2_2_3);
+    CPPUNIT_TEST (basic_dmr_to_dap2_2_5); // Drops Variables
 
-    CPPUNIT_TEST(enum_dmr_to_dap2_0_0);
-    CPPUNIT_TEST(enum_dmr_to_dap2_0_1);
-    CPPUNIT_TEST(enum_dmr_to_dap2_1_0);
-    CPPUNIT_TEST(enum_dmr_to_dap2_1_1);
-    CPPUNIT_TEST(enum_dmr_to_dap2_1_2);
-    CPPUNIT_TEST(enum_dmr_to_dap2_1_3);
-    CPPUNIT_TEST(enum_dmr_to_dap2_1_4);
-    CPPUNIT_TEST(enum_dmr_to_dap2_2_0); // Drops Variables
-    CPPUNIT_TEST(enum_dmr_to_dap2_2_1); // Drops Variables
-    CPPUNIT_TEST(enum_dmr_to_dap2_3_0); // Drops Variables
-    CPPUNIT_TEST(enum_dmr_to_dap2_3_1); // Drops Variables
+    CPPUNIT_TEST (enum_dmr_to_dap2_0_0);
+    CPPUNIT_TEST (enum_dmr_to_dap2_0_1);
+    CPPUNIT_TEST (enum_dmr_to_dap2_1_0);
+    CPPUNIT_TEST (enum_dmr_to_dap2_1_1);
+    CPPUNIT_TEST (enum_dmr_to_dap2_1_2);
+    CPPUNIT_TEST (enum_dmr_to_dap2_1_3);
+    CPPUNIT_TEST (enum_dmr_to_dap2_1_4);
+    CPPUNIT_TEST (enum_dmr_to_dap2_2_0); // Drops Variables
+    CPPUNIT_TEST (enum_dmr_to_dap2_2_1); // Drops Variables
+    CPPUNIT_TEST (enum_dmr_to_dap2_3_0); // Drops Variables
+    CPPUNIT_TEST (enum_dmr_to_dap2_3_1); // Drops Variables
 
-    CPPUNIT_TEST(enum_dmr_to_dap2_4_0); // Drops Groups
-    CPPUNIT_TEST(enum_dmr_to_dap2_4_1); // Drops Groups
-    CPPUNIT_TEST(enum_dmr_to_dap2_4_1);
-    CPPUNIT_TEST(enum_dmr_to_dap2_4_2);
+    CPPUNIT_TEST (enum_dmr_to_dap2_4_0); // Drops Groups
+    CPPUNIT_TEST (enum_dmr_to_dap2_4_1); // Drops Groups
+    CPPUNIT_TEST (enum_dmr_to_dap2_4_1);
+    CPPUNIT_TEST (enum_dmr_to_dap2_4_2);
 
-    CPPUNIT_TEST(dmr_to_grid_01);
-    CPPUNIT_TEST(dmr_to_grid_02);
-    CPPUNIT_TEST(dmr_to_grid_03);
-    CPPUNIT_TEST(dmr_to_grid_04);
-    CPPUNIT_TEST(dmr_to_grid_05);
+    CPPUNIT_TEST (dmr_to_grid_01);
+    CPPUNIT_TEST (dmr_to_grid_02);
+    CPPUNIT_TEST (dmr_to_grid_03);
+    CPPUNIT_TEST (dmr_to_grid_04);
+    CPPUNIT_TEST (dmr_to_grid_05);
 
 #endif
-
-
 
 #if 0 // bad tests, here then is the woodshed of Testville.
 
@@ -401,42 +435,39 @@ public:
 
 #endif
 
-
     CPPUNIT_TEST_SUITE_END();
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(DmrToDap2Test);
+CPPUNIT_TEST_SUITE_REGISTRATION (DmrToDap2Test);
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "dh");
+    GetOpt getopt(argc, argv, "dDh");
     int option_char;
 
     while ((option_char = getopt()) != -1)
         switch (option_char) {
-            case 'd':
-                debug = 1;  // debug is a static global
-                break;
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
 
-            case 'D':
-                mo_debug = 1;  // debug is a static global
-                break;
+        case 'D':
+            mo_debug = 1;  // debug is a static global
+            break;
 
-            case 'h': {     // help - show test names
-                cerr << "Usage: DmrToDap2Test has the following tests:" << endl;
-                const std::vector<Test*> &tests = DmrToDap2Test::suite()->getTests();
-                unsigned int prefix_len = DmrToDap2Test::suite()->getName().append("::").length();
-                for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                    cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-                }
-                return 1;
-                break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: DmrToDap2Test has the following tests:" << endl;
+            const std::vector<Test*> &tests = DmrToDap2Test::suite()->getTests();
+            unsigned int prefix_len = DmrToDap2Test::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
+            break;
+        }
 
-            default:
-                break;
+        default:
+            break;
         }
 
     CppUnit::TextTestRunner runner;
@@ -450,7 +481,7 @@ main(int argc, char *argv[])
         wasSuccessful = runner.run("");
     }
     else {
-        for ( ; i < argc; ++i) {
+        for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
             test = DmrToDap2Test::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);

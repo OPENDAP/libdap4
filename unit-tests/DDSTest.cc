@@ -73,29 +73,38 @@ private:
     DDS *dds_dap4;
 
 public:
-    DDSTest() : dds1(0), dds2(0), dds_dap4(0) {
+    DDSTest() :
+        dds1(0), dds2(0), dds_dap4(0)
+    {
     }
-    ~DDSTest() {
+    ~DDSTest()
+    {
     }
 
-    void setUp() {
+    void setUp()
+    {
         dds1 = new DDS(&factory, "test1");
         dds2 = new DDS(&factory, "test2");
 
         dds_dap4 = new DDS(&factory, "test2", "4.0");
     }
 
-    void tearDown() {
-        delete dds1; dds1 = 0;
-        delete dds2; dds2 = 0;
+    void tearDown()
+    {
+        delete dds1;
+        dds1 = 0;
+        delete dds2;
+        dds2 = 0;
 
-        delete dds_dap4; dds_dap4 = 0;
+        delete dds_dap4;
+        dds_dap4 = 0;
     }
 
-    bool re_match(Regex &r, const string &s) {
+    bool re_match(Regex &r, const string &s)
+    {
         int match = r.match(s.c_str(), s.length());
         DBG(cerr << "Match: " << match << " should be: " << s.length() << endl);
-        return match == static_cast<int> (s.length());
+        return match == static_cast<int>(s.length());
     }
 
     // The tests commented exercise features no longer supported
@@ -103,40 +112,41 @@ public:
     // to work with transfer_attributes() - if a handler builds a malformed
     // DAS, it will need to specialize the BaseType::transfer_attributes()
     // method.
-    CPPUNIT_TEST_SUITE( DDSTest );
-		CPPUNIT_TEST(transfer_attributes_test_1);
-        CPPUNIT_TEST(transfer_attributes_test_2);
+    CPPUNIT_TEST_SUITE (DDSTest);
+    CPPUNIT_TEST (transfer_attributes_test_1);
+    CPPUNIT_TEST (transfer_attributes_test_2);
 
-        CPPUNIT_TEST(symbol_name_test);
+    CPPUNIT_TEST (symbol_name_test);
 
-        // These test both transfer_attributes() and print_xml()
-        CPPUNIT_TEST(print_xml_test);
+    // These test both transfer_attributes() and print_xml()
+    CPPUNIT_TEST (print_xml_test);
 
-        CPPUNIT_TEST(print_xml_test2);
-        CPPUNIT_TEST(print_xml_test3);
+    CPPUNIT_TEST (print_xml_test2);
+    CPPUNIT_TEST (print_xml_test3);
 
-        // The X_1 tests look at the proper merging of hdf4's _dim_n attributes.
-        // But that functionality was moved from libdap to the hdf4 handler.
-        // CPPUNIT_TEST(print_xml_test3_1);
+    // The X_1 tests look at the proper merging of hdf4's _dim_n attributes.
+    // But that functionality was moved from libdap to the hdf4 handler.
+    // CPPUNIT_TEST(print_xml_test3_1);
 
-        CPPUNIT_TEST(print_xml_test4);
-        CPPUNIT_TEST(print_xml_test5);
-        // CPPUNIT_TEST(print_xml_test5_1);
-        CPPUNIT_TEST(print_xml_test6);
-        // CPPUNIT_TEST(print_xml_test6_1);
-        CPPUNIT_TEST(print_dmr_test);
+    CPPUNIT_TEST (print_xml_test4);
+    CPPUNIT_TEST (print_xml_test5);
+    // CPPUNIT_TEST(print_xml_test5_1);
+    CPPUNIT_TEST (print_xml_test6);
+    // CPPUNIT_TEST(print_xml_test6_1);
+    CPPUNIT_TEST (print_dmr_test);
 
-        CPPUNIT_TEST(get_response_size_test);
-        CPPUNIT_TEST(get_response_size_test_c);
-        CPPUNIT_TEST(get_response_size_test_c2);
-        CPPUNIT_TEST(get_response_size_test_c3);
+    CPPUNIT_TEST (get_response_size_test);
+    CPPUNIT_TEST (get_response_size_test_c);
+    CPPUNIT_TEST (get_response_size_test_c2);
+    CPPUNIT_TEST (get_response_size_test_c3);
 
-        // see comment in code below. jhrg 2/4/14 CPPUNIT_TEST(get_response_size_test_seq);
-        CPPUNIT_TEST(get_response_size_test_seq_c);
+    // see comment in code below. jhrg 2/4/14 CPPUNIT_TEST(get_response_size_test_seq);
+    CPPUNIT_TEST (get_response_size_test_seq_c);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void transfer_attributes_test_1() {
+    void transfer_attributes_test_1()
+    {
         try {
             dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
             DAS das;
@@ -149,13 +159,15 @@ public:
             AttrTable::Attr_iter i = at.attr_begin();
             CPPUNIT_ASSERT(i != at.attr_end() && at.get_name(i) == "NC_GLOBAL");
             CPPUNIT_ASSERT(i != at.attr_end() && at.get_name(++i) == "DODS_EXTRA");
-        } catch (Error &e) {
+        }
+        catch (Error &e) {
             cout << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error thrown!");
         }
     }
 
-    void transfer_attributes_test_2() {
+    void transfer_attributes_test_2()
+    {
         try {
             dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
             DAS das;
@@ -168,13 +180,15 @@ public:
             AttrTable::Attr_iter i = at.attr_begin();
             CPPUNIT_ASSERT(i != at.attr_end() && at.get_name(i) == "HDF_GLOBAL");
             CPPUNIT_ASSERT(i != at.attr_end() && at.get_name(++i) == "CoreMetadata");
-        } catch (Error &e) {
+        }
+        catch (Error &e) {
             cout << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error thrown!");
         }
     }
 
-    void symbol_name_test() {
+    void symbol_name_test()
+    {
         try {
             // read a DDS.
             dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.18");
@@ -186,13 +200,15 @@ public:
             CPPUNIT_ASSERT(dds2->var("huh.Image#data"));
             CPPUNIT_ASSERT(dds2->var("c d"));
             CPPUNIT_ASSERT(dds2->var("c%20d"));
-        } catch (Error &e) {
+        }
+        catch (Error &e) {
             cerr << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught unexpected Error object");
         }
     }
 
-    void print_xml_test() {
+    void print_xml_test()
+    {
         try {
             dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b");
             ostringstream oss;
@@ -210,7 +226,8 @@ public:
         }
     }
 
-    void print_xml_test2() {
+    void print_xml_test2()
+    {
         dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19c");
         DAS das;
         das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.das");
@@ -227,7 +244,8 @@ public:
         CPPUNIT_ASSERT(baseline == oss.str());
     }
 
-    void print_xml_test3() {
+    void print_xml_test3()
+    {
         dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19d");
         DAS das;
         das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.das");
@@ -246,7 +264,8 @@ public:
 
     // This tests the HDF4 <var>_dim_n attribute. support for that was
     // moved to the handler itself.
-    void print_xml_test3_1() {
+    void print_xml_test3_1()
+    {
         dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19d");
         DAS das;
         das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19d1.das");
@@ -263,14 +282,15 @@ public:
         CPPUNIT_ASSERT(baseline == oss.str());
     }
 
-    void print_xml_test4() {
+    void print_xml_test4()
+    {
         dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19e");
         DAS das;
         das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.das");
 
         dds2->transfer_attributes(&das);
 
-        DBG( dds2->var("c%20d")->get_attr_table().print(stderr) );
+        DBG(dds2->var("c%20d")->get_attr_table().print(stderr));
 
         ostringstream oss;
         dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
@@ -294,7 +314,8 @@ public:
 
         try {
             dds2->transfer_attributes(&das);
-        } catch (Error &e) {
+        }
+        catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error exception");
         }
@@ -315,14 +336,16 @@ public:
 
     // Tests flat DAS into a DDS; no longer supported by libdap; specialize
     // handlers if they make these malformed DAS objects
-    void print_xml_test5_1() {
+    void print_xml_test5_1()
+    {
         dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19f");
         DAS das;
         das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19f1.das");
 
         try {
             dds2->transfer_attributes(&das);
-        } catch (Error &e) {
+        }
+        catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error exception");
         }
@@ -339,7 +362,8 @@ public:
         CPPUNIT_ASSERT(baseline == oss.str());
     }
 
-    void print_xml_test6() {
+    void print_xml_test6()
+    {
         dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b");
         DAS das;
         das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.das");
@@ -358,14 +382,16 @@ public:
 
     // Tests flat DAS into a DDS; no longer supported by libdap; specialize
     // handlers if they make these malformed DAS objects
-    void print_xml_test6_1() {
+    void print_xml_test6_1()
+    {
         dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19g");
         DAS das;
         das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19g.das");
 
         try {
             dds2->transfer_attributes(&das);
-        } catch (Error &e) {
+        }
+        catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error exception");
         }
@@ -410,7 +436,8 @@ public:
         }
     }
 
-    void get_response_size_test() {
+    void get_response_size_test()
+    {
         dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
         CPPUNIT_ASSERT(dds1->get_request_size(false) == 230400);
         DBG(cerr << "3B42.980909.5.HDF response size: " << dds1->get_request_size(false) << endl);
@@ -420,7 +447,8 @@ public:
         DBG(cerr << "coads_climatology.nc response size: " << dds2->get_request_size(false) << endl);
     }
 
-    void get_response_size_test_c() {
+    void get_response_size_test_c()
+    {
         ConstraintEvaluator eval;
 
         dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
@@ -436,7 +464,8 @@ public:
         CPPUNIT_ASSERT(dds2->get_request_size(false) == 3119424);
     }
 
-    void get_response_size_test_c2() {
+    void get_response_size_test_c2()
+    {
         ConstraintEvaluator eval;
         dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
         eval.parse_constraint("SST[0:5][0:44][0:89]", *dds2);
@@ -444,7 +473,8 @@ public:
         CPPUNIT_ASSERT(dds2->get_request_size(true) == 98328);
     }
 
-    void get_response_size_test_c3() {
+    void get_response_size_test_c3()
+    {
         ConstraintEvaluator eval;
         dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
         eval.parse_constraint("SST[0][0:44][0:89]", *dds2);
@@ -468,7 +498,8 @@ public:
     }
 #endif
 
-    void get_response_size_test_seq_c() {
+    void get_response_size_test_seq_c()
+    {
         ConstraintEvaluator eval;
         dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
         eval.parse_constraint("NSCAT%20Rev%2020.NSCAT%20L2.Low_Wind_Speed_Flag", *dds2);
@@ -479,7 +510,7 @@ public:
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(DDSTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (DDSTest);
 
 } // namespace libdap
 
@@ -536,6 +567,7 @@ int main(int argc, char*argv[]) {
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     GetOpt getopt(argc, argv, "d");
+>>>>>>> master
     int option_char;
 
     while ((option_char = getopt()) != -1)
@@ -543,9 +575,21 @@ int main(int argc, char*argv[]) {
         case 'd':
             debug = 1;  // debug is a static global
             break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: DDSTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = libdap::DDSTest::suite()->getTests();
+            unsigned int prefix_len = libdap::DDSTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
         default:
             break;
         }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -555,9 +599,9 @@ int main(int argc, char*argv[]) {
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("libdap::DDSTest::") + argv[i++];
-            DBG(cerr << "test: " << test << endl);
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = libdap::DDSTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
