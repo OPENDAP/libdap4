@@ -526,7 +526,7 @@ int main(int argc, char *argv[])
             break;
 
         case 'h': {     // help - show test names
-            cerr << "Usage: DMRTest has the following tests:" << endl;
+            cerr << "Usage: DDSTest has the following tests:" << endl;
             const std::vector<Test*> &tests = libdap::DDSTest::suite()->getTests();
             unsigned int prefix_len = libdap::DDSTest::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
