@@ -54,7 +54,6 @@
 #include "GetOpt.h"
 #include "util.h"
 #include "debug.h"
-#include "GetOpt.h"
 
 #include "testFile.h"
 #include "test_config.h"
@@ -158,24 +157,25 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    CPPUNIT_TEST_SUITE (DMRTest);
+CPPUNIT_TEST_SUITE (DMRTest);
 
-    CPPUNIT_TEST (test_dmr_from_dds_1);
-    CPPUNIT_TEST (test_dmr_from_dds_2);
-    CPPUNIT_TEST (test_dmr_from_dds_3);
-    CPPUNIT_TEST (test_dmr_from_dds_4);
-    CPPUNIT_TEST (test_dmr_from_dds_5);
-    CPPUNIT_TEST (test_dmr_from_dds_6);
+    CPPUNIT_TEST(test_dmr_from_dds_1);
+    CPPUNIT_TEST(test_dmr_from_dds_2);
+    CPPUNIT_TEST(test_dmr_from_dds_3);
+    CPPUNIT_TEST(test_dmr_from_dds_4);
+    CPPUNIT_TEST(test_dmr_from_dds_5);
+    CPPUNIT_TEST(test_dmr_from_dds_6);
 
-    CPPUNIT_TEST (test_dmr_from_dds_with_attr_1);
-    CPPUNIT_TEST (test_dmr_from_dds_with_attr_2);
+    CPPUNIT_TEST(test_dmr_from_dds_with_attr_1);
+    CPPUNIT_TEST(test_dmr_from_dds_with_attr_2);
 
-    CPPUNIT_TEST (test_copy_ctor);
-    CPPUNIT_TEST (test_copy_ctor_2);
-    CPPUNIT_TEST (test_copy_ctor_3);
-    CPPUNIT_TEST (test_copy_ctor_4);
+    CPPUNIT_TEST(test_copy_ctor);
+    CPPUNIT_TEST(test_copy_ctor_2);
+    CPPUNIT_TEST(test_copy_ctor_3);
+    CPPUNIT_TEST(test_copy_ctor_4);
 
-    CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE_END()
+    ;
 
     // Test a DDS with simple scalar types and no attributes
     void test_dmr_from_dds_1()
@@ -341,7 +341,7 @@ public:
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (DMRTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(DMRTest);
 
 int main(int argc, char *argv[])
 {

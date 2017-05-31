@@ -50,7 +50,6 @@
 #include "GetOpt.h"
 #include "util.h"
 #include "debug.h"
-#include "GetOpt.h"
 
 #include "testFile.h"
 #include "test_config.h"
@@ -112,38 +111,39 @@ public:
     // to work with transfer_attributes() - if a handler builds a malformed
     // DAS, it will need to specialize the BaseType::transfer_attributes()
     // method.
-    CPPUNIT_TEST_SUITE (DDSTest);
-    CPPUNIT_TEST (transfer_attributes_test_1);
-    CPPUNIT_TEST (transfer_attributes_test_2);
+CPPUNIT_TEST_SUITE (DDSTest);
+    CPPUNIT_TEST(transfer_attributes_test_1);
+    CPPUNIT_TEST(transfer_attributes_test_2);
 
-    CPPUNIT_TEST (symbol_name_test);
+    CPPUNIT_TEST(symbol_name_test);
 
     // These test both transfer_attributes() and print_xml()
-    CPPUNIT_TEST (print_xml_test);
+    CPPUNIT_TEST(print_xml_test);
 
-    CPPUNIT_TEST (print_xml_test2);
-    CPPUNIT_TEST (print_xml_test3);
+    CPPUNIT_TEST(print_xml_test2);
+    CPPUNIT_TEST(print_xml_test3);
 
     // The X_1 tests look at the proper merging of hdf4's _dim_n attributes.
     // But that functionality was moved from libdap to the hdf4 handler.
     // CPPUNIT_TEST(print_xml_test3_1);
 
-    CPPUNIT_TEST (print_xml_test4);
-    CPPUNIT_TEST (print_xml_test5);
+    CPPUNIT_TEST(print_xml_test4);
+    CPPUNIT_TEST(print_xml_test5);
     // CPPUNIT_TEST(print_xml_test5_1);
-    CPPUNIT_TEST (print_xml_test6);
+    CPPUNIT_TEST(print_xml_test6);
     // CPPUNIT_TEST(print_xml_test6_1);
-    CPPUNIT_TEST (print_dmr_test);
+    CPPUNIT_TEST(print_dmr_test);
 
-    CPPUNIT_TEST (get_response_size_test);
-    CPPUNIT_TEST (get_response_size_test_c);
-    CPPUNIT_TEST (get_response_size_test_c2);
-    CPPUNIT_TEST (get_response_size_test_c3);
+    CPPUNIT_TEST(get_response_size_test);
+    CPPUNIT_TEST(get_response_size_test_c);
+    CPPUNIT_TEST(get_response_size_test_c2);
+    CPPUNIT_TEST(get_response_size_test_c3);
 
     // see comment in code below. jhrg 2/4/14 CPPUNIT_TEST(get_response_size_test_seq);
-    CPPUNIT_TEST (get_response_size_test_seq_c);
+    CPPUNIT_TEST(get_response_size_test_seq_c);
 
-    CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE_END()
+    ;
 
     void transfer_attributes_test_1()
     {
@@ -302,7 +302,8 @@ public:
         CPPUNIT_ASSERT(baseline == oss.str());
     }
 
-    void print_xml_test5() {
+    void print_xml_test5()
+    {
         string dds_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f");
         dds2->parse(dds_file);
         DAS das;
@@ -310,7 +311,6 @@ public:
         das.parse(das_file);
         string baseline_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.xml");
         string baseline = readTestBaseline(baseline_file);
-
 
         try {
             dds2->transfer_attributes(&das);
@@ -510,64 +510,13 @@ public:
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (DDSTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(DDSTest);
 
 } // namespace libdap
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-            case 'd':
-                debug = 1;  // debug is a static global
-                break;
-
-            case 'h': {     // help - show test names
-                cerr << "Usage: DMRTest has the following tests:" << endl;
-                const std::vector<Test*> &tests = libdap::DDSTest::suite()->getTests();
-                unsigned int prefix_len = libdap::DDSTest::suite()->getName().append("::").length();
-                for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                    cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-                }
-                return 1;
-                break;
-            }
-
-            default:
-                break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for ( ; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::DDSTest::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
-}
-#if 0
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "d");
->>>>>>> master
     int option_char;
 
     while ((option_char = getopt()) != -1)
@@ -575,15 +524,18 @@ int main(int argc, char*argv[]) {
         case 'd':
             debug = 1;  // debug is a static global
             break;
+
         case 'h': {     // help - show test names
-            cerr << "Usage: DDSTest has the following tests:" << endl;
+            cerr << "Usage: DMRTest has the following tests:" << endl;
             const std::vector<Test*> &tests = libdap::DDSTest::suite()->getTests();
             unsigned int prefix_len = libdap::DDSTest::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
                 cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
+            return 1;
             break;
         }
+
         default:
             break;
         }
@@ -606,9 +558,6 @@ int main(int argc, char*argv[]) {
         }
     }
 
-    xmlMemoryDump();
-
     return wasSuccessful ? 0 : 1;
 }
-#endif
 

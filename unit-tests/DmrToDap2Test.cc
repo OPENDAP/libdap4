@@ -55,7 +55,6 @@
 #include "util.h"
 #include "mime_util.h"
 #include "debug.h"
-#include "GetOpt.h"
 
 #include "testFile.h"
 #include "test_config.h"
@@ -391,41 +390,41 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    CPPUNIT_TEST_SUITE (DmrToDap2Test);
+CPPUNIT_TEST_SUITE (DmrToDap2Test);
 
 #if 1 // good (as in should be working) tests
-    CPPUNIT_TEST (dmr_to_dap2_01);
-    CPPUNIT_TEST (basic_dmr_to_dap2_0_0);
-    CPPUNIT_TEST (basic_dmr_to_dap2_0_1);
-    CPPUNIT_TEST (basic_dmr_to_dap2_2_0);
-    CPPUNIT_TEST (basic_dmr_to_dap2_2_1);
-    CPPUNIT_TEST (basic_dmr_to_dap2_2_2);
-    CPPUNIT_TEST (basic_dmr_to_dap2_2_4);
-    CPPUNIT_TEST (basic_dmr_to_dap2_2_3);
-    CPPUNIT_TEST (basic_dmr_to_dap2_2_5); // Drops Variables
+    CPPUNIT_TEST(dmr_to_dap2_01);
+    CPPUNIT_TEST(basic_dmr_to_dap2_0_0);
+    CPPUNIT_TEST(basic_dmr_to_dap2_0_1);
+    CPPUNIT_TEST(basic_dmr_to_dap2_2_0);
+    CPPUNIT_TEST(basic_dmr_to_dap2_2_1);
+    CPPUNIT_TEST(basic_dmr_to_dap2_2_2);
+    CPPUNIT_TEST(basic_dmr_to_dap2_2_4);
+    CPPUNIT_TEST(basic_dmr_to_dap2_2_3);
+    CPPUNIT_TEST(basic_dmr_to_dap2_2_5); // Drops Variables
 
-    CPPUNIT_TEST (enum_dmr_to_dap2_0_0);
-    CPPUNIT_TEST (enum_dmr_to_dap2_0_1);
-    CPPUNIT_TEST (enum_dmr_to_dap2_1_0);
-    CPPUNIT_TEST (enum_dmr_to_dap2_1_1);
-    CPPUNIT_TEST (enum_dmr_to_dap2_1_2);
-    CPPUNIT_TEST (enum_dmr_to_dap2_1_3);
-    CPPUNIT_TEST (enum_dmr_to_dap2_1_4);
-    CPPUNIT_TEST (enum_dmr_to_dap2_2_0); // Drops Variables
-    CPPUNIT_TEST (enum_dmr_to_dap2_2_1); // Drops Variables
-    CPPUNIT_TEST (enum_dmr_to_dap2_3_0); // Drops Variables
-    CPPUNIT_TEST (enum_dmr_to_dap2_3_1); // Drops Variables
+    CPPUNIT_TEST(enum_dmr_to_dap2_0_0);
+    CPPUNIT_TEST(enum_dmr_to_dap2_0_1);
+    CPPUNIT_TEST(enum_dmr_to_dap2_1_0);
+    CPPUNIT_TEST(enum_dmr_to_dap2_1_1);
+    CPPUNIT_TEST(enum_dmr_to_dap2_1_2);
+    CPPUNIT_TEST(enum_dmr_to_dap2_1_3);
+    CPPUNIT_TEST(enum_dmr_to_dap2_1_4);
+    CPPUNIT_TEST(enum_dmr_to_dap2_2_0); // Drops Variables
+    CPPUNIT_TEST(enum_dmr_to_dap2_2_1); // Drops Variables
+    CPPUNIT_TEST(enum_dmr_to_dap2_3_0); // Drops Variables
+    CPPUNIT_TEST(enum_dmr_to_dap2_3_1); // Drops Variables
 
-    CPPUNIT_TEST (enum_dmr_to_dap2_4_0); // Drops Groups
-    CPPUNIT_TEST (enum_dmr_to_dap2_4_1); // Drops Groups
-    CPPUNIT_TEST (enum_dmr_to_dap2_4_1);
-    CPPUNIT_TEST (enum_dmr_to_dap2_4_2);
+    CPPUNIT_TEST(enum_dmr_to_dap2_4_0); // Drops Groups
+    CPPUNIT_TEST(enum_dmr_to_dap2_4_1); // Drops Groups
+    CPPUNIT_TEST(enum_dmr_to_dap2_4_1);
+    CPPUNIT_TEST(enum_dmr_to_dap2_4_2);
 
-    CPPUNIT_TEST (dmr_to_grid_01);
-    CPPUNIT_TEST (dmr_to_grid_02);
-    CPPUNIT_TEST (dmr_to_grid_03);
-    CPPUNIT_TEST (dmr_to_grid_04);
-    CPPUNIT_TEST (dmr_to_grid_05);
+    CPPUNIT_TEST(dmr_to_grid_01);
+    CPPUNIT_TEST(dmr_to_grid_02);
+    CPPUNIT_TEST(dmr_to_grid_03);
+    CPPUNIT_TEST(dmr_to_grid_04);
+    CPPUNIT_TEST(dmr_to_grid_05);
 
 #endif
 
@@ -435,11 +434,12 @@ public:
 
 #endif
 
-    CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE_END()
+    ;
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (DmrToDap2Test);
+CPPUNIT_TEST_SUITE_REGISTRATION(DmrToDap2Test);
 
 int main(int argc, char *argv[])
 {
