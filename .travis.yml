@@ -70,7 +70,7 @@ before_script:
   - export prefix=$HOME/OPENDAP/build
   - export PATH=$prefix/bin:/usr/local/bin:$PATH
   - autoreconf --force --install --verbose
-  - ./configure --prefix=$prefix
+  - ./configure --disable-dependency-tracking --prefix=$prefix
 
 # Code coverage is not working on link.
 # debug on AWS and then test --enable-coverage --enable-developer
