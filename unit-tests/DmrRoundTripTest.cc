@@ -139,8 +139,8 @@ public:
         return 0;
     }
 
-    void test_roundtrip_template(const string &dds_file, const string &dmr_baseline, const string &das_file = "",
-        bool expected_fail = false)
+    void test_roundtrip_template(const string &dds_file, const string &dmr_baseline, const string &das_file = "")
+       // bool expected_fail = false)
     {
         DBG(cerr << __func__ << "() - BEGIN" << endl);
 
@@ -198,6 +198,7 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
+#if 0
     void i_am_broken(string name)
     {
         cerr << endl;
@@ -205,6 +206,7 @@ public:
         cerr << "  THE CRUCIAL TEST: '" << name << "' IS BROKEN AND HAS BEEN DISABLED." << endl;
         cerr << "  Please enable the test '" << name << "', fix it, and check it in." << endl;
     }
+#endif
 
     void test_dds_to_dmr_to_dds_1()
     {
@@ -250,16 +252,20 @@ public:
     void test_grid_rt_02()
     {
         DBG(cerr << endl << __func__ << "() - BEGIN: " << "Testing Grid->D4Array->Grid with 'correct' DAS." << endl);
+#if 0
         i_am_broken(__func__);
-//        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr", "coads_climatology.nc.correct.das");
+#endif
+        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr", "coads_climatology.nc.correct.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
     void test_grid_rt_03()
     {
         DBG(cerr << endl << __func__ << "() - BEGIN: " << "Testing Grid->D4Array->Grid with flat DAS." << endl);
+#if 0
         i_am_broken(__func__);
-//        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr", "coads_climatology.nc.flat.das");
+#endif
+        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr", "coads_climatology.nc.flat.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
@@ -271,8 +277,8 @@ public:
     CPPUNIT_TEST (test_dds_to_dmr_to_dds_4);
     CPPUNIT_TEST (test_dds_to_dmr_to_dds_5);
     CPPUNIT_TEST (test_grid_rt_01);
-    CPPUNIT_TEST (test_grid_rt_02);
-    CPPUNIT_TEST (test_grid_rt_03);
+    CPPUNIT_TEST_FAIL (test_grid_rt_02);
+    CPPUNIT_TEST_FAIL (test_grid_rt_03);
 
     CPPUNIT_TEST_SUITE_END();
 

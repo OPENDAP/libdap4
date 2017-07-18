@@ -125,7 +125,7 @@ public:
     {
         D4Enum e("third", dods_int32_c);
         e.set_value(-65535);
-        CPPUNIT_ASSERT(e.d_buf == -65535);
+        CPPUNIT_ASSERT((dods_int32)e.d_buf == -65535);
     }
 
     void test_value()
