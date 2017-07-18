@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -64,16 +63,17 @@ const static string path = string(TEST_SRC_DIR) + "/D4-marshaller/little-endian"
 
 using namespace std;
 using namespace libdap;
+using namespace CppUnit;
 
 class D4UnMarshallerTest: public CppUnit::TestFixture {
 
-    CPPUNIT_TEST_SUITE( D4UnMarshallerTest );
+    CPPUNIT_TEST_SUITE (D4UnMarshallerTest);
 
-    CPPUNIT_TEST(test_scalars);
-    CPPUNIT_TEST(test_real_scalars);
-    CPPUNIT_TEST(test_str);
-    CPPUNIT_TEST(test_opaque);
-    CPPUNIT_TEST(test_vector);
+    CPPUNIT_TEST (test_scalars);
+    CPPUNIT_TEST (test_real_scalars);
+    CPPUNIT_TEST (test_str);
+    CPPUNIT_TEST (test_opaque);
+    CPPUNIT_TEST (test_vector);
 
     CPPUNIT_TEST_SUITE_END( );
 
@@ -97,13 +97,16 @@ class D4UnMarshallerTest: public CppUnit::TestFixture {
     }
 
 public:
-    D4UnMarshallerTest() {
+    D4UnMarshallerTest()
+    {
     }
 
-    void setUp() {
+    void setUp()
+    {
     }
 
-    void tearDown() {
+    void tearDown()
+    {
     }
 
     void test_scalars()
@@ -113,13 +116,13 @@ public:
 
         // computes checksums and writes data
         try {
-	    string file = path + "/test_scalars_1_bin.dat";
-	    DBG(cerr << "file: " << file << endl);
-	    in.open(file.c_str(), fstream::binary | fstream::in);
+            string file = path + "/test_scalars_1_bin.dat";
+            DBG(cerr << "file: " << file << endl);
+            in.open(file.c_str(), fstream::binary | fstream::in);
 
-	    // Don't use is_host_big_endian() because these tests should
-	    // never 'twiddle bytes' They are always testing little to little
-	    // of big to big
+            // Don't use is_host_big_endian() because these tests should
+            // never 'twiddle bytes' They are always testing little to little
+            // of big to big
             D4StreamUnMarshaller dsm(in, 0 /*is_host_big_endian()*/);
 
             dods_byte b;
@@ -190,7 +193,7 @@ public:
 
         // computes checksums and writes data
         try {
-	    string file = path + "/test_scalars_2_bin.dat";
+            string file = path + "/test_scalars_2_bin.dat";
             in.open(file.c_str(), fstream::binary | fstream::in);
             D4StreamUnMarshaller dsm(in, 0);
 
@@ -218,13 +221,14 @@ public:
         }
     }
 
-    void test_str() {
+    void test_str()
+    {
         fstream in;
         in.exceptions(ostream::failbit | ostream::badbit);
 
         // computes checksums and writes data
         try {
-	    string file = path + "/test_scalars_3_bin.dat";
+            string file = path + "/test_scalars_3_bin.dat";
             in.open(file.c_str(), fstream::binary | fstream::in);
             D4StreamUnMarshaller dsm(in, 0);
 
@@ -252,13 +256,14 @@ public:
         }
     }
 
-    void test_opaque() {
+    void test_opaque()
+    {
         fstream in;
         in.exceptions(ostream::failbit | ostream::badbit);
 
         // computes checksums and writes data
         try {
-	    string file = path + "/test_opaque_1_bin.dat";
+            string file = path + "/test_opaque_1_bin.dat";
             in.open(file.c_str(), fstream::binary | fstream::in);
             D4StreamUnMarshaller dsm(in, 0);
 
@@ -284,13 +289,14 @@ public:
         }
     }
 
-    void test_vector() {
+    void test_vector()
+    {
         fstream in;
         in.exceptions(ostream::failbit | ostream::badbit);
 
         // computes checksums and writes data
         try {
-	    string file = path + "/test_vector_1_bin.dat";
+            string file = path + "/test_vector_1_bin.dat";
             in.open(file.c_str(), fstream::binary | fstream::in);
             D4StreamUnMarshaller dsm(in, 0);
 
@@ -313,14 +319,13 @@ public:
             vector<dods_float64> buf3(32768);
             dsm.get_vector_float64(reinterpret_cast<char*>(&buf3[0]), 32768);
             for (int i = 0; i < 32768; ++i) {
-                if (buf3[i] != i % (1 << 9))
-                    cerr << "buf3[" << i << "]: " << buf3[i] << endl;
+                if (buf3[i] != i % (1 << 9)) cerr << "buf3[" << i << "]: " << buf3[i] << endl;
                 CPPUNIT_ASSERT(buf3[i] == i % (1 << 9));
             }
             ck = dsm.get_checksum_str();
             DBG(cerr << "ck: " << ck << endl);
             CPPUNIT_ASSERT(ck == "aafc2a91" || ck == "7bdf9931");
-       }
+        }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught an exception.");
@@ -333,14 +338,11 @@ public:
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( D4UnMarshallerTest ) ;
+CPPUNIT_TEST_SUITE_REGISTRATION (D4UnMarshallerTest);
 
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-    runner.setOutputter(CppUnit::CompilerOutputter::defaultOutputter(&runner.result(), std::cerr));
-
-    GetOpt getopt(argc, argv, "d");
+int main(int argc, char*argv[])
+{
+    GetOpt getopt(argc, argv, "dh");
     int option_char;
 
     while ((option_char = getopt()) != -1)
@@ -348,9 +350,21 @@ int main(int argc, char*argv[]) {
         case 'd':
             debug = true;  // debug is a static global
             break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: D4UnMarshallerTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = D4UnMarshallerTest::suite()->getTests();
+            unsigned int prefix_len = D4UnMarshallerTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
         default:
             break;
         }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -360,9 +374,9 @@ int main(int argc, char*argv[]) {
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("D4UnMarshallerTest::") + argv[i++];
-
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = D4UnMarshallerTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

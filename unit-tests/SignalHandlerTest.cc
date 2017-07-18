@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -47,31 +46,37 @@ static bool debug = false;
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
 
-namespace libdap
-{
+namespace libdap {
 
 /** Test Handler. This is used with the SignalHandlerTest unit tests. */
-class TestHandler : public EventHandler
-{
+class TestHandler: public EventHandler {
 public:
     int flag;
 
-    TestHandler() : flag(0) {}
+    TestHandler() :
+        flag(0)
+    {
+    }
 
-    virtual void handle_signal(int signum) {
+    virtual void handle_signal(int signum)
+    {
         DBG(cerr << "signal number " << signum << " received" << endl);
         flag = 1;
     }
 };
 
-class SignalHandlerTest : public TestFixture {
+class SignalHandlerTest: public TestFixture {
 private:
     SignalHandler *sh;
     TestHandler *th;
 
 public:
-    SignalHandlerTest() {}
-    ~SignalHandlerTest() {}
+    SignalHandlerTest()
+    {
+    }
+    ~SignalHandlerTest()
+    {
+    }
 
     void setUp()
     {
@@ -115,24 +120,22 @@ public:
         CPPUNIT_ASSERT(th->flag == 1);
     }
 
-    CPPUNIT_TEST_SUITE( SignalHandlerTest );
+    CPPUNIT_TEST_SUITE (SignalHandlerTest);
 
-    CPPUNIT_TEST(register_handler_test);
-    CPPUNIT_TEST(remove_handler_test);
-    CPPUNIT_TEST(alarm_test);
+    CPPUNIT_TEST (register_handler_test);
+    CPPUNIT_TEST (remove_handler_test);
+    CPPUNIT_TEST (alarm_test);
 
     CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(SignalHandlerTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (SignalHandlerTest);
 
 }
 
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "d");
+int main(int argc, char*argv[])
+{
+    GetOpt getopt(argc, argv, "dh");
     int option_char;
 
     while ((option_char = getopt()) != -1)
@@ -140,9 +143,21 @@ int main(int argc, char*argv[]) {
         case 'd':
             debug = 1;  // debug is a static global
             break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: SignalHandlerTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = libdap::SignalHandlerTest::suite()->getTests();
+            unsigned int prefix_len = libdap::SignalHandlerTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
         default:
             break;
         }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -152,9 +167,9 @@ int main(int argc, char*argv[]) {
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("libdap::SignalHandlerTest::") + argv[i++];
-            DBG(cerr << "Running " << test << endl);
+        for ( ; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = libdap::SignalHandlerTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }

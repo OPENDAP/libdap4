@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -32,65 +31,111 @@
 #include "DAS.h"
 #include "debug.h"
 #include <test_config.h>
+#include "GetOpt.h"
 
 using namespace CppUnit;
 using namespace libdap;
+
+static bool debug = false;
 
 class DASTest: public TestFixture {
 private:
     DAS *das, *das2;
 
 public:
-    DASTest() {}
-    ~DASTest() {}
-
-    void setUp() {
-	das = new DAS();
-	das2 = new DAS();
+    DASTest()
+    {
+    }
+    ~DASTest()
+    {
     }
 
-    void tearDown() {
-	delete das; das = 0;
-	delete das2; das2 = 0;
+    void setUp()
+    {
+        das = new DAS();
+        das2 = new DAS();
     }
 
-    CPPUNIT_TEST_SUITE( DASTest );
+    void tearDown()
+    {
+        delete das;
+        das = 0;
+        delete das2;
+        das2 = 0;
+    }
 
-    CPPUNIT_TEST(error_values_test);
-    CPPUNIT_TEST(symbol_name_test);
+    CPPUNIT_TEST_SUITE (DASTest);
+
+    CPPUNIT_TEST (error_values_test);
+    CPPUNIT_TEST (symbol_name_test);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void error_values_test() {
-	try {
-	    das->parse((string)TEST_SRC_DIR + "/das-testsuite/bad_value_test.1");
-	    DBG2(das->print(stderr));
-	}
-	catch (Error &e) {
+    void error_values_test()
+    {
+        try {
+            das->parse((string) TEST_SRC_DIR + "/das-testsuite/bad_value_test.1");
+            DBG2(das->print(stderr));
+        }
+        catch (Error &e) {
             cerr << e.get_error_message() << endl;
-	    CPPUNIT_ASSERT(!"Caught an unexpected Error object.");
-	}
+            CPPUNIT_ASSERT(!"Caught an unexpected Error object.");
+        }
     }
 
-    void symbol_name_test() {
-	das->parse((string)TEST_SRC_DIR + "/das-testsuite/test.34");
-	CPPUNIT_ASSERT(das->get_table("var1")->get_attr("y#z", 0) == "15");
+    void symbol_name_test()
+    {
+        das->parse((string) TEST_SRC_DIR + "/das-testsuite/test.34");
+        CPPUNIT_ASSERT(das->get_table("var1")->get_attr("y#z", 0) == "15");
 
-	string s = das->get_table("var1.component1.inner component")->get_attr("tag");
+        string s = das->get_table("var1.component1.inner component")->get_attr("tag");
         CPPUNIT_ASSERT(s == "xyz123");
     }
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(DASTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (DASTest);
 
-int
-main( int, char** )
+int main(int argc, char*argv[])
 {
-    CppUnit::TextTestRunner runner;
-    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+    GetOpt getopt(argc, argv, "dh");
+    int option_char;
 
-    bool wasSuccessful = runner.run( "", false ) ;
+    while ((option_char = getopt()) != -1)
+        switch (option_char) {
+        case 'd':
+            debug = true;  // debug is a static global
+            break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: DASTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = DASTest::suite()->getTests();
+            unsigned int prefix_len = DASTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = DASTest::suite()->getName().append("::").append(argv[i]);
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }

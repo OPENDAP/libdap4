@@ -36,6 +36,7 @@
 
 #include "testFile.h"
 #include "test_config.h"
+#include "GetOpt.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -54,13 +55,16 @@ private:
     D4Attribute a, a2, a3, a4, a5, c, c2;
 
 public:
-    D4AttributesTest() {
+    D4AttributesTest()
+    {
     }
 
-    ~D4AttributesTest() {
+    ~D4AttributesTest()
+    {
     }
 
-    void setUp() {
+    void setUp()
+    {
         attrs = new D4Attributes;
         xml = new XMLWriter;
 
@@ -78,7 +82,10 @@ public:
 
         a3.set_name("color");
         a3.set_type(attr_str_c);
-        vector<string> colors; colors.push_back("red"); colors.push_back("blue");  colors.push_back("green");
+        vector<string> colors;
+        colors.push_back("red");
+        colors.push_back("blue");
+        colors.push_back("green");
         a3.add_value_vector(colors);
 
         a4 = a2;
@@ -93,14 +100,16 @@ public:
         c2.attributes()->add_attribute(&c);
     }
 
-    void tearDown() {
+    void tearDown()
+    {
         delete xml;
         delete attrs;
     }
 
     // An empty D4Dimensions object prints nothing; the XMLWriter class adds
     // a xml doc preface.
-    void test_print_empty() {
+    void test_print_empty()
+    {
         attrs->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_empty.xml");
@@ -108,7 +117,8 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_single_attribute() {
+    void test_print_single_attribute()
+    {
         a.print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_values_1.xml");
@@ -117,7 +127,8 @@ public:
 
     }
 
-    void test_print_1() {
+    void test_print_1()
+    {
         attrs->add_attribute(&a);
 
         attrs->print_dap4(*xml);
@@ -127,8 +138,8 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-
-    void test_print_2() {
+    void test_print_2()
+    {
         attrs->add_attribute(&a);
         attrs->add_attribute(&a2);
 
@@ -139,7 +150,8 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_3() {
+    void test_print_3()
+    {
         attrs->add_attribute(&a);
         attrs->add_attribute(&a2);
         attrs->add_attribute(&c);
@@ -152,7 +164,8 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_assignment() {
+    void test_print_assignment()
+    {
         attrs->add_attribute(&a);
         attrs->add_attribute(&a2);
 
@@ -165,7 +178,8 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_assignment_2() {
+    void test_print_assignment_2()
+    {
         attrs->add_attribute(&a);
         attrs->add_attribute(&a2);
         attrs->add_attribute(&c);
@@ -180,7 +194,8 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_copy_ctor() {
+    void test_print_copy_ctor()
+    {
         attrs->add_attribute(&a);
         attrs->add_attribute(&a2);
 
@@ -193,7 +208,8 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_find() {
+    void test_find()
+    {
         attrs->add_attribute(&a);
         attrs->add_attribute(&a2);
         attrs->add_attribute(&c);
@@ -218,7 +234,8 @@ public:
         CPPUNIT_ASSERT(baseline == find_result);
     }
 
-    void test_get() {
+    void test_get()
+    {
         attrs->add_attribute(&a);
         attrs->add_attribute(&a2);
         attrs->add_attribute(&c);
@@ -243,7 +260,8 @@ public:
         CPPUNIT_ASSERT(baseline == get_result);
     }
 
-    void test_get2() {
+    void test_get2()
+    {
         attrs->add_attribute(&a);
         attrs->add_attribute(&a2);
         attrs->add_attribute(&c);
@@ -275,33 +293,68 @@ public:
         CPPUNIT_ASSERT(baseline == get_result);
     }
 
-    CPPUNIT_TEST_SUITE( D4AttributesTest );
+    CPPUNIT_TEST_SUITE (D4AttributesTest);
 
-        CPPUNIT_TEST(test_print_empty);
-        CPPUNIT_TEST(test_print_single_attribute);
-        CPPUNIT_TEST(test_print_1);
-        CPPUNIT_TEST(test_print_2);
-        CPPUNIT_TEST(test_print_3);
+    CPPUNIT_TEST (test_print_empty);
+    CPPUNIT_TEST (test_print_single_attribute);
+    CPPUNIT_TEST (test_print_1);
+    CPPUNIT_TEST (test_print_2);
+    CPPUNIT_TEST (test_print_3);
 
-        CPPUNIT_TEST(test_print_assignment);
-        CPPUNIT_TEST(test_print_assignment_2);
+    CPPUNIT_TEST (test_print_assignment);
+    CPPUNIT_TEST (test_print_assignment_2);
 
-        CPPUNIT_TEST(test_print_copy_ctor);
+    CPPUNIT_TEST (test_print_copy_ctor);
 
-        CPPUNIT_TEST(test_find);
-        CPPUNIT_TEST(test_get);
-        CPPUNIT_TEST(test_get2);
+    CPPUNIT_TEST (test_find);
+    CPPUNIT_TEST (test_get);
+    CPPUNIT_TEST (test_get2);
 
-        CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(D4AttributesTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (D4AttributesTest);
 
-int main(int, char**) {
+int main(int argc, char*argv[])
+{
+    GetOpt getopt(argc, argv, "dh");
+    int option_char;
+    while ((option_char = getopt()) != -1)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: D4AttributesTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = D4AttributesTest::suite()->getTests();
+            unsigned int prefix_len = D4AttributesTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
+
+        default:
+            break;
+        }
+
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run("", false);
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = D4AttributesTest::suite()->getName().append("::").append(argv[i]);
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }

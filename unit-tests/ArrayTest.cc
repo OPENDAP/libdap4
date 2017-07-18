@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -22,7 +21,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -38,51 +37,57 @@
 #include "Structure.h"
 
 #include "debug.h"
+#include "GetOpt.h"
 
 using namespace CppUnit;
 using namespace std;
 
-namespace libdap
-{
+static bool debug = false;
 
-class ArrayTest : public TestFixture {
+namespace libdap {
+
+class ArrayTest: public TestFixture {
 private:
     Array *d_cardinal, *d_string, *d_structure;
     Int16 *d_int16;
     Str *d_str;
     Structure *d_struct;
-    
+
     string svalues[4];
 public:
-    ArrayTest() {
+    ArrayTest()
+    {
         svalues[0] = "0 String";
         svalues[1] = "1 String";
         svalues[2] = "2 String";
         svalues[3] = "3 String";
     }
-    
-    ~ArrayTest() {}
 
-    void setUp() {
+    ~ArrayTest()
+    {
+    }
+
+    void setUp()
+    {
         d_int16 = new Int16("Int16");
         DBG(cerr << "d_int16: " << d_int16 << endl);
         d_cardinal = new Array("Array_of_Int16", d_int16);
         d_cardinal->append_dim(4, "dimension");
-        dods_int16 buffer[4] = {0, 1, 2, 3};
+        dods_int16 buffer[4] = { 0, 1, 2, 3 };
         d_cardinal->val2buf(buffer);
 #ifdef DODS_DEBUG
         for (int i = 0; i < 4; ++i)
-            cerr << "buffer[" << i << "]: " << buffer[i] << endl;
+        cerr << "buffer[" << i << "]: " << buffer[i] << endl;
 #endif
 
         d_str = new Str("Str");
         d_string = new Array("Array_of_String", d_str);
         d_string->append_dim(4, "dimension");
-        string sbuffer[4] = {"0 String", "1 String", "2 String", "3 String"};
+        string sbuffer[4] = { "0 String", "1 String", "2 String", "3 String" };
         d_string->val2buf(sbuffer);
 #ifdef DODS_DEBUG
         for (int i = 0; i < 4; ++i)
-            cerr << "sbuffer[" << i << "]: " << sbuffer[i] << endl;
+        cerr << "sbuffer[" << i << "]: " << sbuffer[i] << endl;
 #endif
 
         d_struct = new Structure("Structure");
@@ -91,44 +96,54 @@ public:
         d_structure->append_dim(4, "dimension");
         ostringstream oss;
         for (int i = 0; i < 4; ++i) {
-            oss.str(""); oss << "field" << i;
+            oss.str("");
+            oss << "field" << i;
             Int16 *n = new Int16(oss.str());
             DBG(cerr << "n " << i << ": " << n << endl);
-            oss.str(""); oss << "element" << i;
+            oss.str("");
+            oss << "element" << i;
             Structure *s = new Structure(oss.str());
             s->add_var(n);
             d_structure->set_vec(i, s);
-            delete n; n = 0;
-            delete s; s = 0;
+            delete n;
+            n = 0;
+            delete s;
+            s = 0;
         }
 
-        delete d_int16; d_int16 = 0;
-        delete d_str; d_str = 0;
-        delete d_struct; d_struct = 0;        
-   } 
+        delete d_int16;
+        d_int16 = 0;
+        delete d_str;
+        d_str = 0;
+        delete d_struct;
+        d_struct = 0;
+    }
 
-    void tearDown() {
+    void tearDown()
+    {
         delete d_cardinal;
         delete d_string;
         delete d_structure;
     }
 
-    bool re_match(Regex &r, const char *s) {
+    bool re_match(Regex &r, const char *s)
+    {
         int match_position = r.match(s, strlen(s));
-        DBG(cerr << "match position: " << match_position 
-                 << " string length: " << (int)strlen(s) << endl);
-        return match_position == (int)strlen(s);
+        DBG(cerr << "match position: " << match_position
+            << " string length: " << (int)strlen(s) << endl);
+        return match_position == (int) strlen(s);
     }
 
-    CPPUNIT_TEST_SUITE( ArrayTest );
+    CPPUNIT_TEST_SUITE (ArrayTest);
 
-    CPPUNIT_TEST(duplicate_cardinal_test);
-    CPPUNIT_TEST(duplicate_string_test);
-    CPPUNIT_TEST(duplicate_structure_test);
+    CPPUNIT_TEST (duplicate_cardinal_test);
+    CPPUNIT_TEST (duplicate_string_test);
+    CPPUNIT_TEST (duplicate_structure_test);
 
     CPPUNIT_TEST_SUITE_END();
-    
-    void duplicate_structure_test() {
+
+    void duplicate_structure_test()
+    {
         Array::Dim_iter i = d_structure->dim_begin();
         CPPUNIT_ASSERT(d_structure->dimension_size(i) == 4);
 #ifdef DODS_DEBUG
@@ -136,7 +151,7 @@ public:
             Structure *s = dynamic_cast<Structure*>(d_structure->var(i));
             DBG(cerr << "s: " << s << endl);
             if (s)
-                s->print_decl(cerr);
+            s->print_decl(cerr);
         }
 #endif
 
@@ -151,82 +166,122 @@ public:
             Structure *src = dynamic_cast<Structure*>(d_structure->var(i));
             Structure *dest = dynamic_cast<Structure*>(a->var(i));
             CPPUNIT_ASSERT(src != dest);
-            
+
             // However, for the deep copy to be correct, the two arrays must
             // have equivalent elements. We know there's only one field...
-            CPPUNIT_ASSERT(src->type() == dods_structure_c 
-                           && dest->type() == dods_structure_c);
+            CPPUNIT_ASSERT(src->type() == dods_structure_c && dest->type() == dods_structure_c);
             Constructor::Vars_iter s = src->var_begin();
             Constructor::Vars_iter d = dest->var_begin();
-            CPPUNIT_ASSERT((*s)->type() == dods_int16_c 
-                           && (*d)->type() == dods_int16_c);
+            CPPUNIT_ASSERT((*s)->type() == dods_int16_c && (*d)->type() == dods_int16_c);
             CPPUNIT_ASSERT((*s)->name() == (*d)->name());
         }
-        delete a; a = 0;
+        delete a;
+        a = 0;
     }
-    
-    void duplicate_string_test() {
+
+    void duplicate_string_test()
+    {
         Array::Dim_iter i = d_string->dim_begin();
         CPPUNIT_ASSERT(d_string->dimension_size(i) == 4);
         string *s = new string[4];
-        d_string->buf2val((void**)&s);
+        d_string->buf2val((void**) &s);
         for (int i = 0; i < 4; ++i) {
-            CPPUNIT_ASSERT(s[i] == svalues[i] );
+            CPPUNIT_ASSERT(s[i] == svalues[i]);
             DBG(cerr << "s[" << i << "]: " << s[i] << endl);
         }
-        
+
         Array a = *d_string;
         i = a.dim_begin();
         CPPUNIT_ASSERT(a.dimension_size(i) == 4);
-        
+
         string *s2 = new string[4];
-        d_string->buf2val((void**)&s2);
+        d_string->buf2val((void**) &s2);
         for (int i = 0; i < 4; ++i) {
             CPPUNIT_ASSERT(s2[i] == svalues[i]);
             DBG(cerr << "s2[" << i << "]: " << s2[i] << endl);
         }
-        
-        delete[] s; s = 0;
-        delete[] s2; s2 = 0;
+
+        delete[] s;
+        s = 0;
+        delete[] s2;
+        s2 = 0;
     }
-    
-    void duplicate_cardinal_test() {
+
+    void duplicate_cardinal_test()
+    {
         Array::Dim_iter i = d_cardinal->dim_begin();
         CPPUNIT_ASSERT(d_cardinal->dimension_size(i) == 4);
         dods_int16 *b = new dods_int16[4];
-        d_cardinal->buf2val((void**)&b);
+        d_cardinal->buf2val((void**) &b);
         for (int i = 0; i < 4; ++i) {
             CPPUNIT_ASSERT(b[i] == i);
             DBG(cerr << "b[" << i << "]: " << b[i] << endl);
         }
-        delete[] b; b = 0;
-        
+        delete[] b;
+        b = 0;
+
         Array a = *d_cardinal;
         i = a.dim_begin();
         CPPUNIT_ASSERT(a.dimension_size(i) == 4);
-        
+
         dods_int16 *b2 = new dods_int16[4];
-        d_cardinal->buf2val((void**)&b2);
+        d_cardinal->buf2val((void**) &b2);
         for (int i = 0; i < 4; ++i) {
             CPPUNIT_ASSERT(b2[i] == i);
             DBG(cerr << "b2[" << i << "]: " << b2[i] << endl);
         }
-        delete[] b2; b2 = 0;
+        delete[] b2;
+        b2 = 0;
     }
-    
+
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ArrayTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (ArrayTest);
 
 } // namespace libdap
 
-int 
-main( int, char** )
+int main(int argc, char *argv[])
 {
-    CppUnit::TextTestRunner runner;
-    runner.addTest( CppUnit::TestFactoryRegistry::getRegistry().makeTest() );
+    GetOpt getopt(argc, argv, "dh");
+    int option_char;
 
-    bool wasSuccessful = runner.run( "", false ) ;
+    while ((option_char = getopt()) != -1)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+
+        case 'h': {     // help - show test names
+            cerr << "Usage: ArrayTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = libdap::ArrayTest::suite()->getTests();
+            unsigned int prefix_len = libdap::ArrayTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
+
+        default:
+            break;
+        }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
+
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = libdap::ArrayTest::suite()->getName().append("::").append(argv[i]);
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }

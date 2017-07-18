@@ -37,9 +37,13 @@
 #include "testFile.h"
 #include "test_config.h"
 
+#include "GetOpt.h"
+
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
+
+static bool debug = false;
 
 class D4EnumDefsTest: public TestFixture {
 private:
@@ -49,13 +53,16 @@ private:
     D4EnumDef e, e2;
 
 public:
-    D4EnumDefsTest() {
+    D4EnumDefsTest()
+    {
     }
 
-    ~D4EnumDefsTest() {
+    ~D4EnumDefsTest()
+    {
     }
 
-    void setUp() {
+    void setUp()
+    {
         d = new D4EnumDefs;
         xml = new XMLWriter;
 
@@ -70,23 +77,25 @@ public:
         e2.add_value("ice", 10000);
     }
 
-    void tearDown() {
+    void tearDown()
+    {
         delete xml;
         delete d;
     }
 
     // An empty D4Dimensions object prints nothing; the XMLWriter class adds
     // a xml doc preface.
-    void test_print_empty() {
+    void test_print_empty()
+    {
         d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_empty.xml");
-        DBG(cerr << "test_print_empty: doc: " << doc << endl);
-        DBG(cerr << "test_print_empty: baseline: " << baseline << endl);
+        DBG(cerr << "test_print_empty: doc: " << doc << endl);DBG(cerr << "test_print_empty: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_enum_values_only() {
+    void test_print_enum_values_only()
+    {
         D4EnumDef e;
         e.add_value("red", 1);
         e.add_value("blue", 2);
@@ -94,37 +103,36 @@ public:
         e.print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_values_1.xml");
-        DBG(cerr << "test_print_enum_values_only: doc: " << doc << endl);
-        DBG(cerr << "test_print_enum_values_only: baseline: " << baseline << endl);
+        DBG(cerr << "test_print_enum_values_only: doc: " << doc << endl);DBG(cerr << "test_print_enum_values_only: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
 
     }
 
-    void test_print_1() {
+    void test_print_1()
+    {
         d->add_enum(&e);
 
         d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_1.xml");
-        DBG(cerr << "test_print_1: doc: " << doc << endl);
-        DBG(cerr << "test_print_1: baseline: " << baseline << endl);
+        DBG(cerr << "test_print_1: doc: " << doc << endl);DBG(cerr << "test_print_1: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-
-    void test_print_2() {
+    void test_print_2()
+    {
         d->add_enum(&e);
         d->add_enum(&e2);
 
         d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_2.xml");
-        DBG(cerr << "test_print_2: doc: " << doc << endl);
-        DBG(cerr << "test_print_2: baseline: " << baseline << endl);
+        DBG(cerr << "test_print_2: doc: " << doc << endl);DBG(cerr << "test_print_2: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_insert_enum() {
+    void test_print_insert_enum()
+    {
         d->add_enum(&e);
 
         // "second' winds up before 'first'
@@ -134,12 +142,12 @@ public:
         d->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_3.xml");
-        DBG(cerr << "test_print_insert_enum: doc: " << doc << endl);
-        DBG(cerr << "test_print_insert_enum: baseline: " << baseline << endl);
+        DBG(cerr << "test_print_insert_enum: doc: " << doc << endl);DBG(cerr << "test_print_insert_enum: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_assignment() {
+    void test_print_assignment()
+    {
         d->add_enum(&e);
         d->add_enum(&e2);
 
@@ -148,12 +156,12 @@ public:
         lhs.print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_2.xml");
-        DBG(cerr << "test_print_assignment: doc: " << doc << endl);
-        DBG(cerr << "test_print_assignment: baseline: " << baseline << endl);
+        DBG(cerr << "test_print_assignment: doc: " << doc << endl);DBG(cerr << "test_print_assignment: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_copy_ctor() {
+    void test_print_copy_ctor()
+    {
         d->add_enum(&e);
         d->add_enum(&e2);
 
@@ -162,32 +170,66 @@ public:
         lhs.print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4EnumDefs_2.xml");
-        DBG(cerr << "test_print_copy_ctor: doc: " << doc << endl);
-        DBG(cerr << "test_print_copy_ctor: baseline: " << baseline << endl);
+        DBG(cerr << "test_print_copy_ctor: doc: " << doc << endl);DBG(cerr << "test_print_copy_ctor: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    CPPUNIT_TEST_SUITE( D4EnumDefsTest );
+    CPPUNIT_TEST_SUITE (D4EnumDefsTest);
 
-        CPPUNIT_TEST(test_print_empty);
-        CPPUNIT_TEST(test_print_enum_values_only);
-        CPPUNIT_TEST(test_print_1);
-        CPPUNIT_TEST(test_print_2);
+    CPPUNIT_TEST (test_print_empty);
+    CPPUNIT_TEST (test_print_enum_values_only);
+    CPPUNIT_TEST (test_print_1);
+    CPPUNIT_TEST (test_print_2);
 
-        CPPUNIT_TEST(test_print_insert_enum);
-        CPPUNIT_TEST(test_print_assignment);
-        CPPUNIT_TEST(test_print_copy_ctor);
+    CPPUNIT_TEST (test_print_insert_enum);
+    CPPUNIT_TEST (test_print_assignment);
+    CPPUNIT_TEST (test_print_copy_ctor);
 
-        CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(D4EnumDefsTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (D4EnumDefsTest);
 
-int main(int, char**) {
+int main(int argc, char*argv[])
+{
+    GetOpt getopt(argc, argv, "dh");
+    int option_char;
+
+    while ((option_char = getopt()) != -1)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: D4EnumDefsTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = D4EnumDefsTest::suite()->getTests();
+            unsigned int prefix_len = D4EnumDefsTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run("", false);
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = D4EnumDefsTest::suite()->getName().append("::").append(argv[i]);
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
 
     return wasSuccessful ? 0 : 1;
 }

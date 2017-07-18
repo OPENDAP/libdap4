@@ -70,26 +70,30 @@ using namespace libdap;
 
 static string THE_TESTS_DIR("/dmr-rt-testsuite/");
 
-
 class DmrRoundTripTest: public TestFixture {
 private:
 
 public:
-    DmrRoundTripTest() {
+    DmrRoundTripTest()
+    {
     }
-    ~DmrRoundTripTest() {
-    }
-
-    void setUp() {
-    }
-
-    void tearDown() {
+    ~DmrRoundTripTest()
+    {
     }
 
-    bool re_match(Regex &r, const string &s) {
+    void setUp()
+    {
+    }
+
+    void tearDown()
+    {
+    }
+
+    bool re_match(Regex &r, const string &s)
+    {
         int match = r.match(s.c_str(), s.length());
         DBG(cerr << "Match: " << match << " should be: " << s.length() << endl);
-        return match == static_cast<int> (s.length());
+        return match == static_cast<int>(s.length());
     }
 
     /**
@@ -100,45 +104,45 @@ public:
      * @param attr
      * @return A pointer to the new DMR; caller must delete
      */
-    DMR *build_dmr(const string &dds_file, const string &das_file = "") {
+    DMR *build_dmr(const string &dds_file, const string &das_file = "")
+    {
         DBG(cerr << __func__ << "() - BEGIN" << endl);
         DBG(cerr << __func__ << "() - dds_file: " << dds_file << endl);
         DBG(cerr << __func__ << "() - das_file: " << das_file << endl);
 
-		try {
-			string prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
+        try {
+            string prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
 
-			BaseTypeFactory factory;
-			DDS dds(&factory, dds_file);
-			dds.parse(prefix + dds_file);
-			DBG(cerr << "SOURCE DDS: " << prefix + dds_file << endl; dds.print(cerr));
+            BaseTypeFactory factory;
+            DDS dds(&factory, dds_file);
+            dds.parse(prefix + dds_file);
+            DBG(cerr << "SOURCE DDS: " << prefix + dds_file << endl; dds.print(cerr));
 
-			if (!das_file.empty()) {
-				DAS das;
-				das.parse(prefix + das_file);
-				dds.transfer_attributes(&das);
+            if (!das_file.empty()) {
+                DAS das;
+                das.parse(prefix + das_file);
+                dds.transfer_attributes(&das);
                 DBG(cerr << "SOURCE DAS: " << prefix + das_file << endl; das.print(cerr));
 
                 DBG(cerr << "dds.print_das(): " << endl; dds.print_das(cerr));
                 // DBG(cerr << "dds.print_xml(): " << endl; dds.print_xml(cerr,false,"blob_foo"));
-			}
+            }
 
-			D4BaseTypeFactory d4_factory;
-	        DBG(cerr << __func__ << "() - END" << endl);
-			return new DMR(&d4_factory, dds);
-		}
-    	catch (Error &e) {
-    		CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
-    	}
+            D4BaseTypeFactory d4_factory;
+            DBG(cerr << __func__ << "() - END" << endl);
+            return new DMR(&d4_factory, dds);
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
+        }
 
-    	return 0;
+        return 0;
     }
 
-
-    void test_roundtrip_template(const string &dds_file, const string &dmr_baseline, const string &das_file = "", bool expected_fail=false) {
+    void test_roundtrip_template(const string &dds_file, const string &dmr_baseline, const string &das_file = "",
+        bool expected_fail = false)
+    {
         DBG(cerr << __func__ << "() - BEGIN" << endl);
-
-
 
         DMR *dmr = 0;
         try {
@@ -150,29 +154,37 @@ public:
             string prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
             string result_dmr(xml.get_doc());
             string baseline_dmr = readTestBaseline(prefix + dmr_baseline);
-            DBG(cerr << "BASELINE DMR("<< baseline_dmr.size() << " chars): " << prefix + dmr_baseline << endl << baseline_dmr << endl);
-            DBG(cerr << "RESULT DMR("<< result_dmr.size() << " chars): " << endl << result_dmr << endl);
+            DBG(
+                cerr << "BASELINE DMR(" << baseline_dmr.size() << " chars): " << prefix + dmr_baseline << endl
+                    << baseline_dmr << endl);
+            DBG(cerr << "RESULT DMR(" << result_dmr.size() << " chars): " << endl << result_dmr << endl);
 
             CPPUNIT_ASSERT(result_dmr == baseline_dmr);
 
-            DDS *dds =  dmr->getDDS();
+            DDS *dds = dmr->getDDS();
             std::ostringstream result_dds;
             dds->print(result_dds);
 
             string source_dds = readTestBaseline(prefix + dds_file);
-            DBG(cerr << "SOURCE DDS("<< source_dds.size() << " chars): " << prefix + dds_file <<  endl << source_dds << endl);
+            DBG(
+                cerr << "SOURCE DDS(" << source_dds.size() << " chars): " << prefix + dds_file << endl << source_dds
+                    << endl);
 
-            DBG(cerr << "RESULT DDS("<< result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
+            DBG(cerr << "RESULT DDS(" << result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
             CPPUNIT_ASSERT(result_dds.str() == source_dds);
 
-            if(!das_file.empty()){
+            if (!das_file.empty()) {
                 std::ostringstream result_das;
                 dds->print_das(result_das);
 
                 string source_das = readTestBaseline(prefix + das_file);
-                DBG(cerr << "SOURCE DAS("<< source_das.size() << " chars): " << prefix + das_file << endl << source_das << endl);
+                DBG(
+                    cerr << "SOURCE DAS(" << source_das.size() << " chars): " << prefix + das_file << endl << source_das
+                        << endl);
 
-                DBG(cerr << "RESULT DAS("<< result_das.str().size() << " chars): " << endl << result_das.str() << endl);
+                DBG(
+                    cerr << "RESULT DAS(" << result_das.str().size() << " chars): " << endl << result_das.str()
+                        << endl);
                 CPPUNIT_ASSERT(result_das.str() == source_das);
 
             }
@@ -186,109 +198,112 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void i_am_broken(string name ){
+    void i_am_broken(string name)
+    {
         cerr << endl;
-        cerr << "###################################################################"<< endl;
+        cerr << "###################################################################" << endl;
         cerr << "  THE CRUCIAL TEST: '" << name << "' IS BROKEN AND HAS BEEN DISABLED." << endl;
-        cerr << "  Please enable the test '"<< name << "', fix it, and check it in." << endl;
+        cerr << "  Please enable the test '" << name << "', fix it, and check it in." << endl;
     }
 
-    void test_dds_to_dmr_to_dds_1() {
+    void test_dds_to_dmr_to_dds_1()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("attr_test_00.dds", "attr_test_00.dmr", "attr_test_00.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void test_dds_to_dmr_to_dds_2() {
+    void test_dds_to_dmr_to_dds_2()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("test.1", "test.1.full.dmr", "test.1.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void test_dds_to_dmr_to_dds_3() {
+    void test_dds_to_dmr_to_dds_3()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("fnoc1.nc.dds", "fnoc1.nc.dmr.xml", "fnoc1.nc.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void test_dds_to_dmr_to_dds_4() {
+    void test_dds_to_dmr_to_dds_4()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
-        test_roundtrip_template("3B42.980909.5.HDF.dds", "3B42.980909.5.HDF.full.dmr","3B42.980909.5.HDF.das");
+        test_roundtrip_template("3B42.980909.5.HDF.dds", "3B42.980909.5.HDF.full.dmr", "3B42.980909.5.HDF.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void test_dds_to_dmr_to_dds_5() {
+    void test_dds_to_dmr_to_dds_5()
+    {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
-        test_roundtrip_template("S2000415.HDF.dds", "S2000415.HDF.full.dmr","S2000415.HDF.das");
+        test_roundtrip_template("S2000415.HDF.dds", "S2000415.HDF.full.dmr", "S2000415.HDF.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void test_grid_rt_01() {
-        DBG(cerr << endl << __func__ << "() - BEGIN: " <<
-            "Testing simple Grid->D4Array->Grid with 'correct' DAS." << endl);
- //       i_am_broken(__func__);
+    void test_grid_rt_01()
+    {
+        DBG(
+            cerr << endl << __func__ << "() - BEGIN: " << "Testing simple Grid->D4Array->Grid with 'correct' DAS."
+                << endl);
+        //       i_am_broken(__func__);
         test_roundtrip_template("attr_test_01.dds", "attr_test_01.dmr", "attr_test_01.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void test_grid_rt_02() {
-        DBG(cerr << endl << __func__ << "() - BEGIN: " <<
-            "Testing Grid->D4Array->Grid with 'correct' DAS." << endl);
+    void test_grid_rt_02()
+    {
+        DBG(cerr << endl << __func__ << "() - BEGIN: " << "Testing Grid->D4Array->Grid with 'correct' DAS." << endl);
         i_am_broken(__func__);
 //        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr", "coads_climatology.nc.correct.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void test_grid_rt_03() {
-        DBG(cerr << endl << __func__ << "() - BEGIN: " <<
-            "Testing Grid->D4Array->Grid with flat DAS." << endl);
+    void test_grid_rt_03()
+    {
+        DBG(cerr << endl << __func__ << "() - BEGIN: " << "Testing Grid->D4Array->Grid with flat DAS." << endl);
         i_am_broken(__func__);
 //        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr", "coads_climatology.nc.flat.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
+    CPPUNIT_TEST_SUITE (DmrRoundTripTest);
 
-
-    CPPUNIT_TEST_SUITE( DmrRoundTripTest );
-
-    CPPUNIT_TEST(test_dds_to_dmr_to_dds_1);
-    CPPUNIT_TEST(test_dds_to_dmr_to_dds_2);
-    CPPUNIT_TEST(test_dds_to_dmr_to_dds_3);
-    CPPUNIT_TEST(test_dds_to_dmr_to_dds_4);
-    CPPUNIT_TEST(test_dds_to_dmr_to_dds_5);
-    CPPUNIT_TEST(test_grid_rt_01);
-    CPPUNIT_TEST(test_grid_rt_02);
-    CPPUNIT_TEST(test_grid_rt_03);
+    CPPUNIT_TEST (test_dds_to_dmr_to_dds_1);
+    CPPUNIT_TEST (test_dds_to_dmr_to_dds_2);
+    CPPUNIT_TEST (test_dds_to_dmr_to_dds_3);
+    CPPUNIT_TEST (test_dds_to_dmr_to_dds_4);
+    CPPUNIT_TEST (test_dds_to_dmr_to_dds_5);
+    CPPUNIT_TEST (test_grid_rt_01);
+    CPPUNIT_TEST (test_grid_rt_02);
+    CPPUNIT_TEST (test_grid_rt_03);
 
     CPPUNIT_TEST_SUITE_END();
 
 };
 
+CPPUNIT_TEST_SUITE_REGISTRATION (DmrRoundTripTest);
 
-CPPUNIT_TEST_SUITE_REGISTRATION(DmrRoundTripTest);
-
-
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     GetOpt getopt(argc, argv, "dh");
     int option_char;
 
     while ((option_char = getopt()) != -1)
         switch (option_char) {
-            case 'd':
-                debug = 1;  // debug is a static global
-                break;
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
 
-            case 'h': {     // help - show test names
-                cerr << "Usage: DmrRoundTripTest has the following tests:" << endl;
-                const std::vector<Test*> &tests = DmrRoundTripTest::suite()->getTests();
-                unsigned int prefix_len = DmrRoundTripTest::suite()->getName().append("::").length();
-                for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                    cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-                }
-                return 1;
-                break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: DmrRoundTripTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = DmrRoundTripTest::suite()->getTests();
+            unsigned int prefix_len = DmrRoundTripTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
+            return 1;
+            break;
+        }
 
-            default:
-                break;
+        default:
+            break;
         }
 
     CppUnit::TextTestRunner runner;
@@ -302,7 +317,7 @@ main(int argc, char *argv[])
         wasSuccessful = runner.run("");
     }
     else {
-        for ( ; i < argc; ++i) {
+        for (; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
             test = DmrRoundTripTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
@@ -311,5 +326,4 @@ main(int argc, char *argv[])
 
     return wasSuccessful ? 0 : 1;
 }
-
 

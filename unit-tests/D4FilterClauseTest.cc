@@ -67,8 +67,8 @@ using namespace std;
 namespace libdap {
 
 class D4FilterClauseTest: public TestFixture {
-	// Build a DMR and build several D4RValue objects that reference its variables.
-	// Then build several D4RValue objects that hold constants
+    // Build a DMR and build several D4RValue objects that reference its variables.
+    // Then build several D4RValue objects that hold constants
 
 private:
     Byte *byte;
@@ -79,12 +79,16 @@ private:
     DMR dmr;
 
 public:
-	D4FilterClauseTest(): byte(0), f32(0), str(0), url(0) {
+    D4FilterClauseTest() :
+        byte(0), f32(0), str(0), url(0)
+    {
     }
-    ~D4FilterClauseTest() {
+    ~D4FilterClauseTest()
+    {
     }
 
-    void setUp() {
+    void setUp()
+    {
         byte = new Byte("byte");
         byte->set_value(17);
 
@@ -98,87 +102,91 @@ public:
         url->set_value("https://github.com/opendap");
     }
 
-    void tearDown() {
+    void tearDown()
+    {
         delete byte;
         delete str;
     }
 
     // FilterClauseList tests further down...
 
-    void Byte_and_long_long_test() {
+    void Byte_and_long_long_test()
+    {
         D4RValue *arg1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg2 = new D4RValue((long long)21);
+        D4RValue *arg2 = new D4RValue((long long) 21);
 
         auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
         CPPUNIT_ASSERT(less->value(dmr));
 
         D4RValue *arg2_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg2_2 = new D4RValue((long long)21);
+        D4RValue *arg2_2 = new D4RValue((long long) 21);
 
         auto_ptr<D4FilterClause> greater(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
         CPPUNIT_ASSERT(!greater->value(dmr));
 
         D4RValue *arg3_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg3_2 = new D4RValue((long long)21);
+        D4RValue *arg3_2 = new D4RValue((long long) 21);
 
         auto_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
         CPPUNIT_ASSERT(!equal->value(dmr));
 
         D4RValue *arg4_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg4_2 = new D4RValue((long long)21);
+        D4RValue *arg4_2 = new D4RValue((long long) 21);
 
         auto_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
         CPPUNIT_ASSERT(not_equal->value(dmr));
     }
 
     // This version uses the D4FilterClause::value() and not value(DMR&) method
-    void Byte_and_long_long_test_2() {
+    void Byte_and_long_long_test_2()
+    {
         D4RValue *arg1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg2 = new D4RValue((long long)21);
+        D4RValue *arg2 = new D4RValue((long long) 21);
 
         auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
         CPPUNIT_ASSERT(less->value());
 
         D4RValue *arg2_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg2_2 = new D4RValue((long long)21);
+        D4RValue *arg2_2 = new D4RValue((long long) 21);
 
         auto_ptr<D4FilterClause> greater(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
         CPPUNIT_ASSERT(!greater->value());
 
         D4RValue *arg3_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg3_2 = new D4RValue((long long)21);
+        D4RValue *arg3_2 = new D4RValue((long long) 21);
 
         auto_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
         CPPUNIT_ASSERT(!equal->value());
 
         D4RValue *arg4_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg4_2 = new D4RValue((long long)21);
+        D4RValue *arg4_2 = new D4RValue((long long) 21);
 
         auto_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
         CPPUNIT_ASSERT(not_equal->value());
     }
 
-    void Byte_and_double_test() {
+    void Byte_and_double_test()
+    {
         D4RValue *arg1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg2 = new D4RValue((double)21.0);
+        D4RValue *arg2 = new D4RValue((double) 21.0);
 
         auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
         CPPUNIT_ASSERT(less->value(dmr));
 
         D4RValue *arg2_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg2_2 = new D4RValue((double)21);
+        D4RValue *arg2_2 = new D4RValue((double) 21);
 
         auto_ptr<D4FilterClause> greater(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
         CPPUNIT_ASSERT(!greater->value(dmr));
 
         D4RValue *arg3_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg3_2 = new D4RValue((double)21);
+        D4RValue *arg3_2 = new D4RValue((double) 21);
 
         auto_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
         CPPUNIT_ASSERT(!equal->value(dmr));
 
         D4RValue *arg4_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg4_2 = new D4RValue((double)21);
+        D4RValue *arg4_2 = new D4RValue((double) 21);
 
         auto_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
         CPPUNIT_ASSERT(not_equal->value(dmr));
@@ -187,18 +195,20 @@ public:
     /** @defgroup type_conv Tests for type promotion
      * @{
      */
-    void Byte_and_int_test() {
+    void Byte_and_int_test()
+    {
         D4RValue *arg1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg2 = new D4RValue((unsigned long long)(21));
+        D4RValue *arg2 = new D4RValue((unsigned long long) (21));
 
         auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
         CPPUNIT_ASSERT(less->value());
 
     }
 
-    void Byte_and_float_test() {
+    void Byte_and_float_test()
+    {
         D4RValue *arg1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg2 = new D4RValue((float)21.0);
+        D4RValue *arg2 = new D4RValue((float) 21.0);
 
         auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
         CPPUNIT_ASSERT(less->value());
@@ -207,7 +217,8 @@ public:
     /** @} */
 
     // this uses a mix of value() and value(dmr), just for cover both cases
-    void Str_and_str_test() {
+    void Str_and_str_test()
+    {
         D4RValue *arg1 = new D4RValue(str);
         D4RValue *arg2 = new D4RValue(string("Tesla"));
 
@@ -233,7 +244,8 @@ public:
         CPPUNIT_ASSERT(not_equal->value(dmr));
     }
 
-    void Str_and_match_test() {
+    void Str_and_match_test()
+    {
         D4RValue *arg1 = new D4RValue(str);
         D4RValue *arg2 = new D4RValue(string("E.*n"));
 
@@ -338,7 +350,8 @@ public:
     }
 
     // test Url and Float32
-    void grab_bag_test() {
+    void grab_bag_test()
+    {
         D4RValue *arg2_1 = new D4RValue(f32);
         D4RValue *arg2_2 = new D4RValue(17.0);
 
@@ -364,7 +377,8 @@ public:
         CPPUNIT_ASSERT(match->value(dmr));
     }
 
-    void float_test() {
+    void float_test()
+    {
         D4RValue *arg2_1 = new D4RValue(f32);
         D4RValue *arg2_2 = new D4RValue(3.1415);
 
@@ -372,7 +386,8 @@ public:
         CPPUNIT_ASSERT(clause->value());
     }
 
-    void float_test_2() {
+    void float_test_2()
+    {
         D4RValue *arg2_1 = new D4RValue(f32);
         D4RValue *arg2_2 = new D4RValue(3.1415);
 
@@ -380,7 +395,8 @@ public:
         CPPUNIT_ASSERT(clause->value());
     }
 
-    void float_test_3() {
+    void float_test_3()
+    {
         D4RValue *arg2_1 = new D4RValue(f32);
         D4RValue *arg2_2 = new D4RValue(3.1415);
 
@@ -388,23 +404,24 @@ public:
         CPPUNIT_ASSERT(clause->value());
     }
 
-    void int_test() {
+    void int_test()
+    {
         auto_ptr<Int8> i8(new Int8(""));
         i8->set_value(17);
         D4RValue *arg2_1 = new D4RValue(i8.get());
-        D4RValue *arg2_2 = new D4RValue((long long)17);
+        D4RValue *arg2_2 = new D4RValue((long long) 17);
 
         auto_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::equal, arg2_1, arg2_2));
         CPPUNIT_ASSERT(clause->value());
     }
 
-
-    void true_clauses_test() {
+    void true_clauses_test()
+    {
         // Testing this as a pointer since that's how it will be stored in D4Sequence
         auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg1_2 = new D4RValue((double)21.0);
+        D4RValue *arg1_2 = new D4RValue((double) 21.0);
         clauses->add_clause(new D4FilterClause(D4FilterClause::less, arg1_1, arg1_2));
 
         D4RValue *arg2_1 = new D4RValue(f32);       // holds pi
@@ -425,7 +442,8 @@ public:
     }
 
     // This should return true
-    void no_clauses_test() {
+    void no_clauses_test()
+    {
         auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         CPPUNIT_ASSERT(clauses->size() == 0);
@@ -433,11 +451,12 @@ public:
         CPPUNIT_ASSERT(clauses->value());
     }
 
-    void false_clauses_test() {
+    void false_clauses_test()
+    {
         auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg1_2 = new D4RValue((double)21.0);
+        D4RValue *arg1_2 = new D4RValue((double) 21.0);
         clauses->add_clause(new D4FilterClause(D4FilterClause::less, arg1_1, arg1_2));
 
         // This clause will fail
@@ -458,11 +477,12 @@ public:
         CPPUNIT_ASSERT(clauses->value() == false);
     }
 
-    void evaluation_order_test() {
+    void evaluation_order_test()
+    {
         auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg1_2 = new D4RValue((double)21.0);
+        D4RValue *arg1_2 = new D4RValue((double) 21.0);
         clauses->add_clause(new D4FilterClause(D4FilterClause::less, arg1_1, arg1_2));
 
         // This clause will fail and we should not get to the next clause, which will
@@ -491,11 +511,12 @@ public:
         }
     }
 
-    void evaluation_order_test_2() {
+    void evaluation_order_test_2()
+    {
         auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
-        D4RValue *arg1_2 = new D4RValue((double)21.0);
+        D4RValue *arg1_2 = new D4RValue((double) 21.0);
         clauses->add_clause(new D4FilterClause(D4FilterClause::less, arg1_1, arg1_2));
 
         // This clause will *pass* and we *should* get to the next clause, which will
@@ -524,48 +545,46 @@ public:
         }
     }
 
-    CPPUNIT_TEST_SUITE( D4FilterClauseTest );
+    CPPUNIT_TEST_SUITE (D4FilterClauseTest);
 
-    CPPUNIT_TEST(Byte_and_long_long_test);
-    CPPUNIT_TEST(Byte_and_long_long_test_2);
-    CPPUNIT_TEST(Byte_and_double_test);
+    CPPUNIT_TEST (Byte_and_long_long_test);
+    CPPUNIT_TEST (Byte_and_long_long_test_2);
+    CPPUNIT_TEST (Byte_and_double_test);
     // These float --> double, etc.
-    CPPUNIT_TEST(Byte_and_int_test);
-    CPPUNIT_TEST(Byte_and_float_test);
+    CPPUNIT_TEST (Byte_and_int_test);
+    CPPUNIT_TEST (Byte_and_float_test);
 
-    CPPUNIT_TEST(Str_and_str_test);
-    CPPUNIT_TEST(Str_and_match_test);
-    CPPUNIT_TEST(Str_and_number_error_test);
-    CPPUNIT_TEST(Byte_and_string_error_test);
-    CPPUNIT_TEST(Structure_and_string_error_test);
-    CPPUNIT_TEST(Byte_and_Structure_error_test);
-    CPPUNIT_TEST(Str_and_Structure_error_test);
+    CPPUNIT_TEST (Str_and_str_test);
+    CPPUNIT_TEST (Str_and_match_test);
+    CPPUNIT_TEST (Str_and_number_error_test);
+    CPPUNIT_TEST (Byte_and_string_error_test);
+    CPPUNIT_TEST (Structure_and_string_error_test);
+    CPPUNIT_TEST (Byte_and_Structure_error_test);
+    CPPUNIT_TEST (Str_and_Structure_error_test);
 
-    CPPUNIT_TEST(grab_bag_test);
-    CPPUNIT_TEST(float_test);
-    CPPUNIT_TEST(float_test_2);
-    CPPUNIT_TEST(float_test_3);
-    CPPUNIT_TEST(int_test);
+    CPPUNIT_TEST (grab_bag_test);
+    CPPUNIT_TEST (float_test);
+    CPPUNIT_TEST (float_test_2);
+    CPPUNIT_TEST (float_test_3);
+    CPPUNIT_TEST (int_test);
 
     // FilterClauseList tests
-    CPPUNIT_TEST(true_clauses_test);
-    CPPUNIT_TEST(no_clauses_test);
-    CPPUNIT_TEST(false_clauses_test);
-    CPPUNIT_TEST(evaluation_order_test);
-    CPPUNIT_TEST(evaluation_order_test_2);
+    CPPUNIT_TEST (true_clauses_test);
+    CPPUNIT_TEST (no_clauses_test);
+    CPPUNIT_TEST (false_clauses_test);
+    CPPUNIT_TEST (evaluation_order_test);
+    CPPUNIT_TEST (evaluation_order_test_2);
 
     CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(D4FilterClauseTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (D4FilterClauseTest);
 
 } // namepsace libdap
 
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "d");
+int main(int argc, char*argv[])
+{
+    GetOpt getopt(argc, argv, "dh");
     int option_char;
 
     while ((option_char = getopt()) != EOF)
@@ -573,9 +592,21 @@ int main(int argc, char*argv[]) {
         case 'd':
             debug = 1;  // debug is a static global
             break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: D4FilterClauseTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = libdap::D4FilterClauseTest::suite()->getTests();
+            unsigned int prefix_len = libdap::D4FilterClauseTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
         default:
             break;
         }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -585,14 +616,12 @@ int main(int argc, char*argv[]) {
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("libdap::D4FilterClauseTest::") + argv[i++];
-            DBG(cerr << "test: " << test << endl);
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = libdap::D4FilterClauseTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
-
-    // xmlMemoryDump();
 
     return wasSuccessful ? 0 : 1;
 }

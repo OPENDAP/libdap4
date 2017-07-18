@@ -36,6 +36,7 @@
 
 #include <cstring>
 #include <string>
+#include "GetOpt.h"
 
 using std::cerr;
 using std::endl;
@@ -43,6 +44,8 @@ using std::string;
 
 using namespace CppUnit;
 using namespace libdap;
+
+static bool debug = false;
 
 class generalUtilTest: public TestFixture {
 private:
@@ -63,25 +66,25 @@ public:
     {
     }
 
-CPPUNIT_TEST_SUITE(generalUtilTest);
+    CPPUNIT_TEST_SUITE (generalUtilTest);
 
-    CPPUNIT_TEST(octal_to_hex_test);
-    CPPUNIT_TEST(prune_spaces_test);
-    CPPUNIT_TEST(path_to_filename_test);
-    CPPUNIT_TEST(hexstring_test);
-    CPPUNIT_TEST(unhexstring_test);
-    CPPUNIT_TEST(id2www_test);
-    CPPUNIT_TEST(www2id_test);
-    CPPUNIT_TEST(ce_string_parse_test);
-    CPPUNIT_TEST(escattr_test);
-    CPPUNIT_TEST(unescattr_test);
-    CPPUNIT_TEST(munge_error_message_test);
-    CPPUNIT_TEST(id2xml_test);
-    CPPUNIT_TEST(xml2id_test);
+    CPPUNIT_TEST (octal_to_hex_test);
+    CPPUNIT_TEST (prune_spaces_test);
+    CPPUNIT_TEST (path_to_filename_test);
+    CPPUNIT_TEST (hexstring_test);
+    CPPUNIT_TEST (unhexstring_test);
+    CPPUNIT_TEST (id2www_test);
+    CPPUNIT_TEST (www2id_test);
+    CPPUNIT_TEST (ce_string_parse_test);
+    CPPUNIT_TEST (escattr_test);
+    CPPUNIT_TEST (unescattr_test);
+    CPPUNIT_TEST (munge_error_message_test);
+    CPPUNIT_TEST (id2xml_test);
+    CPPUNIT_TEST (xml2id_test);
 
-    CPPUNIT_TEST(glob_test_1);
-    CPPUNIT_TEST(glob_test_2);
-    CPPUNIT_TEST(glob_test_3);
+    CPPUNIT_TEST (glob_test_1);
+    CPPUNIT_TEST (glob_test_2);
+    CPPUNIT_TEST (glob_test_3);
 
     CPPUNIT_TEST_SUITE_END()
     ;
@@ -132,11 +135,11 @@ CPPUNIT_TEST_SUITE(generalUtilTest);
 
         string test_server_ce_spaces = "http://test.opendap.org/file.txt? u,v";
         DBG(cerr << "Test Server CE Spaces: "
-                << prune_spaces(test_server_ce_spaces) << endl);
+            << prune_spaces(test_server_ce_spaces) << endl);
         CPPUNIT_ASSERT(prune_spaces(test_server_ce_spaces) == test_server_ce);
 
         string hdf_two_var =
-                "http://test.opendap.org/dap/data/hdf/S3096277.HDF.Z?Avg_Wind_Speed[0:5][0],RMS_Wind_Speed[0:5][0]";
+            "http://test.opendap.org/dap/data/hdf/S3096277.HDF.Z?Avg_Wind_Speed[0:5][0],RMS_Wind_Speed[0:5][0]";
         CPPUNIT_ASSERT(prune_spaces(hdf_two_var) == hdf_two_var);
     }
 
@@ -265,7 +268,7 @@ CPPUNIT_TEST_SUITE(generalUtilTest);
         DBG(cerr << "XXX" << unescattr("\\\"attr") << "XXX" << endl);
         CPPUNIT_ASSERT(unescattr("\\\"attr") == "\"attr");
 
-        char A_200_177[4] = { (char)128, 127, 'A', '\0' };
+        char A_200_177[4] = { (char) 128, 127, 'A', '\0' };
         DBG(cerr << "XXX" << unescattr("\\200\\177A") << "XXX" << endl);
         CPPUNIT_ASSERT(unescattr("\\200\\177A") == string(A_200_177));
 
@@ -307,7 +310,7 @@ CPPUNIT_TEST_SUITE(generalUtilTest);
         if (_putenv("TMPDIR=C:\\") == 0) {
             DBG(cerr << "TMPDIR: " << getenv("TMPDIR") << endl);
             CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"),
-                            "C:\\DODSXXXXXX") == 0);
+                    "C:\\DODSXXXXXX") == 0);
         }
         else
         cerr << "Did not test setting TMPDIR; no test" << endl;
@@ -315,7 +318,7 @@ CPPUNIT_TEST_SUITE(generalUtilTest);
         if (setenv("TMPDIR", "/tmp", 1) == 0) {
             DBG(cerr << "TMPDIR: " << getenv("TMPDIR") << endl);
             CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"),
-                            "/tmp/DODSXXXXXX") == 0);
+                    "/tmp/DODSXXXXXX") == 0);
         }
         else
         cerr << "Did not test setting TMPDIR; no test" << endl;
@@ -326,7 +329,7 @@ CPPUNIT_TEST_SUITE(generalUtilTest);
         tmplt.append("/"); tmplt.append("DODSXXXXXX");
         putenv("TMPDIR=");
         CPPUNIT_ASSERT(strcmp(get_tempfile_template("DODSXXXXXX"),
-                        tmplt.c_str()) == 0);
+                tmplt.c_str()) == 0);
 #endif
     }
 #endif
@@ -365,14 +368,50 @@ CPPUNIT_TEST_SUITE(generalUtilTest);
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(generalUtilTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (generalUtilTest);
 
-int main(int, char**)
+int main(int argc, char*argv[])
 {
+    GetOpt getopt(argc, argv, "dh");
+    int option_char;
+
+    while ((option_char = getopt()) != -1)
+        switch (option_char) {
+        case 'd':
+            debug = 1;  // debug is a static global
+            break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: generalUtilTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = generalUtilTest::suite()->getTests();
+            unsigned int prefix_len = generalUtilTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
-    bool wasSuccessful = runner.run("", false);
+    bool wasSuccessful = true;
+    string test = "";
+    int i = getopt.optind;
+    if (i == argc) {
+        // run them all
+        wasSuccessful = runner.run("");
+    }
+    else {
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = generalUtilTest::suite()->getName().append("::").append(argv[i]);
+            wasSuccessful = wasSuccessful && runner.run(test);
+        }
+    }
+
+    xmlMemoryDump();
 
     return wasSuccessful ? 0 : 1;
 }

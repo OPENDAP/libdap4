@@ -441,15 +441,17 @@ BaseType *Vector::var(const string &n, bool exact, btp_stack *s)
             s->push(this);
         return d_proto;
     }
+
     // If this is a Vector of constructor types, look for 'name' recursively.
     // Make sure to check for the case where name is the default (the empty
     // string). 9/1/98 jhrg
     if (d_proto->is_constructor_type()) {
-            BaseType * result = d_proto->var(name, exact, s);
+        BaseType *result = d_proto->var(name, exact, s);
         if (result && s)
             s->push(this);
         return result;
     }
+
     return NULL;
 }
 
@@ -576,8 +578,11 @@ void Vector::vec_resize(int l)
     if (m_is_cardinal_type())
         throw InternalErr(__FILE__, __LINE__, "Vector::vec_resize() is applicable to compound types only");
 
-    d_compound_buf.resize((l > 0) ? l : 0, 0); // Fill with NULLs
-    d_capacity = l; // capacity in terms of number of elements.
+    // Use resize() since other parts of the code use operator[]. Note that size() should
+    // be used when resize() is used. Using capacity() creates problems as noted in the
+    // comment in set_vec_nocopy(). jhrg 5/19/17
+    d_compound_buf.resize(l, 0); // Fill with NULLs
+    d_capacity = d_compound_buf.size(); // size in terms of number of elements.
 }
 
 /** @brief read data into a variable for later use
@@ -834,7 +839,11 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
             break;
 
         case dods_array_c:
-            // TODO
+            // Added jhrg 5/18/17
+            // This replaces a comment that was simply 'TO DO'
+            throw InternalErr(__FILE__, __LINE__, "Array of array!");
+            break;
+
         case dods_structure_c:
         case dods_sequence_c:
         case dods_grid_c:
@@ -955,7 +964,7 @@ void Vector::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*
 }
 
 void
-Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter /*= false*/)
+Vector::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter /*= false*/)
 {
     if (!read_p())
         read(); // read() throws Error and InternalErr
@@ -965,7 +974,7 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*
 #endif
     int64_t num = length();	// The constrained length in elements
 
-    DBG(cerr << __PRETTY_FUNCTION__ << ", num: " << num << endl);
+    DBG(cerr << __func__ << ", num: " << num << endl);
 
     // Added in case we're trying to serialize a zero-length array. jhrg 1/27/16
     if (num == 0)
@@ -1020,8 +1029,10 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*
         case dods_sequence_c:
             assert(d_compound_buf.capacity() >= 0);
 
-            for (int64_t i = 0; i < num; ++i)
-                d_compound_buf[i]->serialize(m, dmr, /*eval,*/ filter);
+            for (int64_t i = 0; i < num; ++i) {
+                DBG(cerr << __func__ << "d_compound_buf[" << i << "] " << d_compound_buf[i] << endl);
+                d_compound_buf[i]->serialize(m, dmr, filter);
+            }
 
             break;
 
@@ -1332,12 +1343,17 @@ void Vector::set_vec(unsigned int i, BaseType * val)
 	Vector::set_vec_nocopy(i, val->ptr_duplicate());
 }
 
-/** @brief Sets element <i>i</i> to value <i>val</i>.
-
- @note This method does not copy \e val; this class will free the instance
- when the variable is deleted or when clear_local_data() is called.
-
- @see Vector::set_vec() */
+/**
+ * @brief Sets element <i>i</i> to value <i>val</i>.
+ * Set the ith element to val. Extend the vector if needed.
+ *
+ * @note It is best to call vec_resize() first and allocate enough elements
+ * before calling this method.
+ *
+ * @note This method does not copy \e val; this class will free the instance
+ * when the variable is deleted or when clear_local_data() is called.
+ * @see Vector::set_vec()
+ * */
 void Vector::set_vec_nocopy(unsigned int i, BaseType * val)
 {
     // Jose Garcia
@@ -1351,8 +1367,17 @@ void Vector::set_vec_nocopy(unsigned int i, BaseType * val)
     if (val->type() != d_proto->type())
         throw InternalErr(__FILE__, __LINE__, "invalid data: type of incoming object does not match *this* vector type.");
 
-    if (i >= d_compound_buf.capacity())
-        vec_resize(i + 10);
+    // This code originally used capacity() instead of size(), but that was an error.
+    // Use capacity() when using reserve() and size() when using resize(). Mixing
+    // capacity() with resize() leaves holes in the data, where (pointer) values are
+    // filled with nulls during successive calls to resize(). The resize() heuristic
+    // remembers previous calls on a given vector<> and allocates larger than requested
+    // blocks of memory on successive calls, which has the strange affect of erasing
+    // values already in the vector in the parts just added.
+    // jhrg 5/18/17
+    if (i >= d_compound_buf.size()) {
+        vec_resize(d_compound_buf.size() + 100);
+    }
 
     d_compound_buf[i] = val;
 }

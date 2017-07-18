@@ -40,18 +40,17 @@
 #include "ServerFunction.h"
 #include "ServerFunctionsList.h"
 
+using namespace CppUnit;
+
 static bool debug = false;
 
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
 
-
 void sflut(int, libdap::BaseType *[], libdap::DDS &, libdap::BaseType **btpp)
 {
-    string info = string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-            + "<function name=\"ugr4\" version=\"0.1\">\n"
-            + "ServeFunctionsList Unit Test.\n" + "usage: sflut()"
-            + "\n"+"</function>";
+    string info = string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") + "<function name=\"ugr4\" version=\"0.1\">\n"
+        + "ServeFunctionsList Unit Test.\n" + "usage: sflut()" + "\n" + "</function>";
 
     libdap::Str *response = new libdap::Str("info");
     response->set_value(info);
@@ -60,9 +59,10 @@ void sflut(int, libdap::BaseType *[], libdap::DDS &, libdap::BaseType **btpp)
 
 }
 
-class SFLUT : public libdap::ServerFunction {
-public :
-    SFLUT() {
+class SFLUT: public libdap::ServerFunction {
+public:
+    SFLUT()
+    {
         setName("sflut");
         setDescriptionString("This is a unit test to test the ServerFunctionList class.");
         setUsageString("sflut()");
@@ -74,64 +74,71 @@ public :
     }
 };
 
-
 namespace libdap {
 class ServerFunctionsListUnitTest: public CppUnit::TestFixture {
 
 public:
 
     // Called once before everything gets tested
-    ServerFunctionsListUnitTest() {
+    ServerFunctionsListUnitTest()
+    {
         //    DBG(cerr << " BindTest - Constructor" << endl);
 
     }
 
     // Called at the end of the test
-    ~ServerFunctionsListUnitTest() {
-       //    DBG(cerr << " BindTest - Destructor" << endl);
+    ~ServerFunctionsListUnitTest()
+    {
+        //    DBG(cerr << " BindTest - Destructor" << endl);
     }
 
     // Called before each test
-    void setup() {
+    void setup()
+    {
         //    DBG(cerr << " BindTest - setup()" << endl);
     }
 
     // Called after each test
-    void tearDown() {
+    void tearDown()
+    {
         //    DBG(cerr << " tearDown()" << endl);
     }
 
-    CPPUNIT_TEST_SUITE( libdap::ServerFunctionsListUnitTest );
+    CPPUNIT_TEST_SUITE (libdap::ServerFunctionsListUnitTest);
 
-    CPPUNIT_TEST(sflut_test);
+    CPPUNIT_TEST (sflut_test);
     //CPPUNIT_TEST(always_pass);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void printFunctionNames(){
+    void printFunctionNames()
+    {
         vector<string> *names = new vector<string>();
         printFunctionNames(names);
         delete names;
     }
 
-
-    void printFunctionNames(vector<string> *names){
-        DBG(cerr << "Server_Function_List_Unit_Test::printFunctionNames() - ServerFunctionList::getFunctionNames(): " << endl);
-        if(names->empty()){
+    void printFunctionNames(vector<string> *names)
+    {
+        DBG(
+            cerr << "Server_Function_List_Unit_Test::printFunctionNames() - ServerFunctionList::getFunctionNames(): "
+                << endl);
+        if (names->empty()) {
             DBG(cerr << "     Function list is empty." << endl);
             return;
         }
 
-        for(size_t i=0; i<names->size() ;i++){
-            DBG(cerr <<  "   name["<< i << "]: "<< (*names)[i] << endl);
+        for (size_t i = 0; i < names->size(); i++) {
+            DBG(cerr << "   name[" << i << "]: " << (*names)[i] << endl);
         }
     }
-    void always_pass(){
+    void always_pass()
+    {
         CPPUNIT_ASSERT(true);
     }
 
-
-    void sflut_test(){
+    void sflut_test()
+    {
         DBG(cerr << endl);
 
         SFLUT *ssf = new SFLUT();
@@ -141,8 +148,7 @@ public:
         libdap::ServerFunctionsList::TheList()->getFunctionNames(&names);
         printFunctionNames(&names);
 
-        CPPUNIT_ASSERT(names.size()==0);
-
+        CPPUNIT_ASSERT(names.size() == 0);
 
         DBG(cerr << "ServerFunctionsListUnitTest::sflut_test() - Adding function(): " << ssf->getName() << endl);
         libdap::ServerFunctionsList::TheList()->add_function(ssf);
@@ -150,7 +156,7 @@ public:
         names.clear();
         libdap::ServerFunctionsList::TheList()->getFunctionNames(&names);
         printFunctionNames(&names);
-        CPPUNIT_ASSERT(names.size()==1);
+        CPPUNIT_ASSERT(names.size() == 1);
 
 #if 0
         DBG(cerr << "ServerFunctionsListUnitTest::sflut_test() - Deleting the List." << endl);
@@ -175,23 +181,32 @@ public:
 
 // BindTest
 
-CPPUNIT_TEST_SUITE_REGISTRATION(libdap::ServerFunctionsListUnitTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (libdap::ServerFunctionsListUnitTest);
 
-
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "d");
+int main(int argc, char*argv[])
+{
+    GetOpt getopt(argc, argv, "dh");
     int option_char;
     while ((option_char = getopt()) != -1)
         switch (option_char) {
         case 'd':
             debug = 1;  // debug is a static global
             break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: ServerFunctionsListUnitTest has the following tests:" << endl;
+            const std::vector<Test*> &tests = libdap::ServerFunctionsListUnitTest::suite()->getTests();
+            unsigned int prefix_len = libdap::ServerFunctionsListUnitTest::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            }
+            break;
+        }
         default:
             break;
         }
+
+    CppUnit::TextTestRunner runner;
+    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
@@ -201,9 +216,9 @@ int main(int argc, char*argv[]) {
         wasSuccessful = runner.run("");
     }
     else {
-        while (i < argc) {
-            test = string("libdap::ServerFunctionsListUnitTest::") + argv[i++];
-
+        for (; i < argc; ++i) {
+            if (debug) cerr << "Running " << argv[i] << endl;
+            test = libdap::ServerFunctionsListUnitTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
