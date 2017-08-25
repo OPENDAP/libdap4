@@ -54,7 +54,6 @@
 #include "GetOpt.h"
 #include "util.h"
 #include "debug.h"
-#include "GetOpt.h"
 
 #include "testFile.h"
 #include "test_config.h"
@@ -269,22 +268,28 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    CPPUNIT_TEST_SUITE (DmrRoundTripTest);
+CPPUNIT_TEST_SUITE (DmrRoundTripTest);
 
-    CPPUNIT_TEST (test_dds_to_dmr_to_dds_1);
-    CPPUNIT_TEST (test_dds_to_dmr_to_dds_2);
-    CPPUNIT_TEST (test_dds_to_dmr_to_dds_3);
-    CPPUNIT_TEST (test_dds_to_dmr_to_dds_4);
-    CPPUNIT_TEST (test_dds_to_dmr_to_dds_5);
-    CPPUNIT_TEST (test_grid_rt_01);
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_1);
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_2);
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_3);
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_4);
+    CPPUNIT_TEST(test_dds_to_dmr_to_dds_5);
+    CPPUNIT_TEST(test_grid_rt_01);
+#if 0
+    CPPUNIT_TEST(test_grid_rt_02);
+    CPPUNIT_TEST(test_grid_rt_03);
+#else
     CPPUNIT_TEST_FAIL (test_grid_rt_02);
     CPPUNIT_TEST_FAIL (test_grid_rt_03);
+#endif
 
-    CPPUNIT_TEST_SUITE_END();
+    CPPUNIT_TEST_SUITE_END()
+    ;
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (DmrRoundTripTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(DmrRoundTripTest);
 
 int main(int argc, char *argv[])
 {
