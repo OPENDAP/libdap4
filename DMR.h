@@ -129,8 +129,6 @@ public:
     /** get/set the dataset's 'filename.' The filename is a string that can
      * be used to access the dataset's actual data store (it's usually a
      * pathname to a file, but it might be a database key.
-     *
-     * @todo Move this to Group?
      */
     //@{
     string filename() const { return d_filename; }
