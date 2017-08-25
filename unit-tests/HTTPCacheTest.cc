@@ -809,6 +809,7 @@ public:
         try {
             auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
 #if 0
+            // This broke Fedora ppc64le system with XFS system
             CPPUNIT_ASSERT(pc->d_http_cache_table->d_block_size == 4096);
 #endif
             // Change the size parameters so that we can run some tests
