@@ -1,5 +1,5 @@
 # DO NOT EDIT! GENERATED AUTOMATICALLY!
-# Copyright (C) 2002-2015 Free Software Foundation, Inc.
+# Copyright (C) 2002-2017 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,48 +37,72 @@ AC_DEFUN([gl_EARLY],
   m4_pattern_allow([^gl_ES$])dnl a valid locale name
   m4_pattern_allow([^gl_LIBOBJS$])dnl a variable
   m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
+
+  # Pre-early section.
+  AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   AC_REQUIRE([gl_PROG_AR_RANLIB])
+
   AC_REQUIRE([AM_PROG_CC_C_O])
   # Code from module absolute-header:
   # Code from module alloca-opt:
   # Code from module btowc:
+  # Code from module builtin-expect:
   # Code from module byteswap:
   # Code from module configmake:
+  # Code from module dosname:
   # Code from module extensions:
-  AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   # Code from module extern-inline:
+  # Code from module fcntl-h:
+  # Code from module filename:
   # Code from module gettext-h:
+  # Code from module gettimeofday:
+  # Code from module hard-locale:
   # Code from module havelib:
   # Code from module include_next:
+  # Code from module intprops:
   # Code from module langinfo:
+  # Code from module largefile:
+  AC_REQUIRE([AC_SYS_LARGEFILE])
+  # Code from module limits-h:
   # Code from module localcharset:
   # Code from module locale:
   # Code from module localeconv:
+  # Code from module localtime-buffer:
   # Code from module lock:
+  # Code from module lstat:
+  # Code from module malloca:
   # Code from module mbrtowc:
   # Code from module mbsinit:
   # Code from module mbtowc:
+  # Code from module mkstemps:
   # Code from module multiarch:
   # Code from module nl_langinfo:
+  # Code from module pathmax:
   # Code from module regex:
   # Code from module snippet/_Noreturn:
   # Code from module snippet/arg-nonnull:
   # Code from module snippet/c++defs:
   # Code from module snippet/warn-on-use:
   # Code from module ssize_t:
+  # Code from module stat:
   # Code from module stdbool:
   # Code from module stddef:
   # Code from module stdint:
   # Code from module stdlib:
   # Code from module streq:
+  # Code from module sys_stat:
+  # Code from module sys_time:
   # Code from module sys_types:
+  # Code from module tempname:
   # Code from module threadlib:
   gl_THREADLIB_EARLY
+  # Code from module time:
   # Code from module unistd:
   # Code from module verify:
   # Code from module wchar:
   # Code from module wcrtomb:
   # Code from module wctype-h:
+  # Code from module xalloc-oversized:
 ])
 
 # This macro should be invoked from ./configure.ac, in the section
@@ -102,12 +126,23 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_BTOWC
   fi
   gl_WCHAR_MODULE_INDICATOR([btowc])
+  gl___BUILTIN_EXPECT
   gl_BYTESWAP
   gl_CONFIGMAKE_PREP
   AC_REQUIRE([gl_EXTERN_INLINE])
+  gl_FCNTL_H
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
+  gl_FUNC_GETTIMEOFDAY
+  if test $HAVE_GETTIMEOFDAY = 0 || test $REPLACE_GETTIMEOFDAY = 1; then
+    AC_LIBOBJ([gettimeofday])
+    gl_PREREQ_GETTIMEOFDAY
+  fi
+  gl_SYS_TIME_MODULE_INDICATOR([gettimeofday])
+  gl_HARD_LOCALE
   gl_LANGINFO_H
+  AC_REQUIRE([gl_LARGEFILE])
+  gl_LIMITS_H
   gl_LOCALCHARSET
   LOCALCHARSET_TESTS_ENVIRONMENT="CHARSETALIASDIR=\"\$(abs_top_builddir)/$gl_source_base\""
   AC_SUBST([LOCALCHARSET_TESTS_ENVIRONMENT])
@@ -118,8 +153,17 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_LOCALECONV
   fi
   gl_LOCALE_MODULE_INDICATOR([localeconv])
+  AC_REQUIRE([gl_LOCALTIME_BUFFER_DEFAULTS])
+  AC_LIBOBJ([localtime-buffer])
   gl_LOCK
   gl_MODULE_INDICATOR([lock])
+  gl_FUNC_LSTAT
+  if test $REPLACE_LSTAT = 1; then
+    AC_LIBOBJ([lstat])
+    gl_PREREQ_LSTAT
+  fi
+  gl_SYS_STAT_MODULE_INDICATOR([lstat])
+  gl_MALLOCA
   gl_FUNC_MBRTOWC
   if test $HAVE_MBRTOWC = 0 || test $REPLACE_MBRTOWC = 1; then
     AC_LIBOBJ([mbrtowc])
@@ -138,25 +182,49 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_MBTOWC
   fi
   gl_STDLIB_MODULE_INDICATOR([mbtowc])
+  gl_FUNC_MKSTEMPS
+  if test $HAVE_MKSTEMPS = 0; then
+    AC_LIBOBJ([mkstemps])
+  fi
+  gl_MODULE_INDICATOR([mkstemps])
+  gl_STDLIB_MODULE_INDICATOR([mkstemps])
   gl_MULTIARCH
   gl_FUNC_NL_LANGINFO
   if test $HAVE_NL_LANGINFO = 0 || test $REPLACE_NL_LANGINFO = 1; then
     AC_LIBOBJ([nl_langinfo])
   fi
   gl_LANGINFO_MODULE_INDICATOR([nl_langinfo])
+  gl_PATHMAX
   gl_REGEX
   if test $ac_use_included_regex = yes; then
     AC_LIBOBJ([regex])
     gl_PREREQ_REGEX
   fi
   gt_TYPE_SSIZE_T
+  gl_FUNC_STAT
+  if test $REPLACE_STAT = 1; then
+    AC_LIBOBJ([stat])
+    case "$host_os" in
+      mingw*)
+        AC_LIBOBJ([stat-w32])
+        ;;
+    esac
+    gl_PREREQ_STAT
+  fi
+  gl_SYS_STAT_MODULE_INDICATOR([stat])
   AM_STDBOOL_H
   gl_STDDEF_H
   gl_STDINT_H
   gl_STDLIB_H
+  gl_HEADER_SYS_STAT_H
+  AC_PROG_MKDIR_P
+  gl_HEADER_SYS_TIME_H
+  AC_PROG_MKDIR_P
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
+  gl_FUNC_GEN_TEMPNAME
   gl_THREADLIB
+  gl_HEADER_TIME_H
   gl_UNISTD_H
   gl_WCHAR_H
   gl_FUNC_WCRTOMB
@@ -303,28 +371,43 @@ AC_DEFUN([gltests_LIBSOURCES], [
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
   build-aux/config.rpath
-  build-aux/snippet/_Noreturn.h
-  build-aux/snippet/arg-nonnull.h
-  build-aux/snippet/c++defs.h
-  build-aux/snippet/warn-on-use.h
+  lib/_Noreturn.h
   lib/alloca.in.h
+  lib/arg-nonnull.h
   lib/btowc.c
   lib/byteswap.in.h
+  lib/c++defs.h
   lib/config.charset
+  lib/dosname.h
+  lib/fcntl.in.h
+  lib/filename.h
   lib/gettext.h
+  lib/gettimeofday.c
   lib/glthread/lock.c
   lib/glthread/lock.h
   lib/glthread/threadlib.c
+  lib/hard-locale.c
+  lib/hard-locale.h
+  lib/intprops.h
   lib/langinfo.in.h
+  lib/limits.in.h
   lib/localcharset.c
   lib/localcharset.h
   lib/locale.in.h
   lib/localeconv.c
+  lib/localtime-buffer.c
+  lib/localtime-buffer.h
+  lib/lstat.c
+  lib/malloca.c
+  lib/malloca.h
+  lib/malloca.valgrind
   lib/mbrtowc.c
   lib/mbsinit.c
   lib/mbtowc-impl.h
   lib/mbtowc.c
+  lib/mkstemps.c
   lib/nl_langinfo.c
+  lib/pathmax.h
   lib/ref-add.sin
   lib/ref-del.sin
   lib/regcomp.c
@@ -333,23 +416,34 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/regex_internal.c
   lib/regex_internal.h
   lib/regexec.c
+  lib/stat-w32.c
+  lib/stat-w32.h
+  lib/stat.c
   lib/stdbool.in.h
   lib/stddef.in.h
   lib/stdint.in.h
   lib/stdlib.in.h
   lib/streq.h
+  lib/sys_stat.in.h
+  lib/sys_time.in.h
   lib/sys_types.in.h
+  lib/tempname.c
+  lib/tempname.h
+  lib/time.in.h
   lib/unistd.c
   lib/unistd.in.h
   lib/verify.h
+  lib/warn-on-use.h
   lib/wchar.in.h
   lib/wcrtomb.c
   lib/wctype-h.c
   lib/wctype.in.h
+  lib/xalloc-oversized.h
   m4/00gnulib.m4
   m4/absolute-header.m4
   m4/alloca.m4
   m4/btowc.m4
+  m4/builtin-expect.m4
   m4/byteswap.m4
   m4/codeset.m4
   m4/configmake.m4
@@ -357,36 +451,53 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/extensions.m4
   m4/extern-inline.m4
   m4/fcntl-o.m4
+  m4/fcntl_h.m4
+  m4/gettimeofday.m4
   m4/glibc21.m4
   m4/gnulib-common.m4
+  m4/hard-locale.m4
   m4/include_next.m4
   m4/langinfo_h.m4
+  m4/largefile.m4
   m4/lib-ld.m4
   m4/lib-link.m4
   m4/lib-prefix.m4
+  m4/limits-h.m4
   m4/localcharset.m4
   m4/locale-fr.m4
   m4/locale-ja.m4
   m4/locale-zh.m4
   m4/locale_h.m4
   m4/localeconv.m4
+  m4/localtime-buffer.m4
   m4/lock.m4
   m4/longlong.m4
+  m4/lstat.m4
+  m4/malloca.m4
   m4/mbrtowc.m4
   m4/mbsinit.m4
   m4/mbstate_t.m4
   m4/mbtowc.m4
+  m4/mkstemps.m4
   m4/multiarch.m4
   m4/nl_langinfo.m4
   m4/off_t.m4
+  m4/pathmax.m4
+  m4/pthread_rwlock_rdlock.m4
   m4/regex.m4
   m4/ssize_t.m4
+  m4/stat.m4
   m4/stdbool.m4
   m4/stddef_h.m4
   m4/stdint.m4
   m4/stdlib_h.m4
+  m4/sys_socket_h.m4
+  m4/sys_stat_h.m4
+  m4/sys_time_h.m4
   m4/sys_types_h.m4
+  m4/tempname.m4
   m4/threadlib.m4
+  m4/time_h.m4
   m4/unistd_h.m4
   m4/warn-on-use.m4
   m4/wchar_h.m4

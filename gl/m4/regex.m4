@@ -1,6 +1,6 @@
-# serial 65
+# serial 67
 
-# Copyright (C) 1996-2001, 2003-2015 Free Software Foundation, Inc.
+# Copyright (C) 1996-2001, 2003-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -13,6 +13,7 @@ AC_PREREQ([2.50])
 
 AC_DEFUN([gl_REGEX],
 [
+  AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
   AC_ARG_WITH([included-regex],
     [AS_HELP_STRING([--without-included-regex],
                     [don't compile regex; this is the default on systems
@@ -93,6 +94,7 @@ AC_DEFUN([gl_REGEX],
                                       0, sizeof data - 1, &regs)
                            != -1)
                     result |= 1;
+                  regfree (&regex);
                 }
 
                 {
@@ -124,6 +126,7 @@ AC_DEFUN([gl_REGEX],
                       if (i != 0 && i != 21)
                         result |= 1;
                     }
+                  regfree (&regex);
                 }
 
                 if (! setlocale (LC_ALL, "C"))
@@ -224,13 +227,19 @@ AC_DEFUN([gl_REGEX],
 
             return result;
           ]])],
-       [gl_cv_func_re_compile_pattern_working=yes],
-       [gl_cv_func_re_compile_pattern_working=no],
-       dnl When crosscompiling, assume it is not working.
-       [gl_cv_func_re_compile_pattern_working=no])])
-    case $gl_cv_func_re_compile_pattern_working in #(
-    yes) ac_use_included_regex=no;; #(
-    no) ac_use_included_regex=yes;;
+        [gl_cv_func_re_compile_pattern_working=yes],
+        [gl_cv_func_re_compile_pattern_working=no],
+        [case "$host_os" in
+                   # Guess no on native Windows.
+           mingw*) gl_cv_func_re_compile_pattern_working="guessing no" ;;
+                   # Otherwise, assume it is not working.
+           *)      gl_cv_func_re_compile_pattern_working="guessing no" ;;
+         esac
+        ])
+      ])
+    case "$gl_cv_func_re_compile_pattern_working" in #(
+      *yes) ac_use_included_regex=no;; #(
+      *no) ac_use_included_regex=yes;;
     esac
     ;;
   *) AC_MSG_ERROR([Invalid value for --with-included-regex: $with_included_regex])
