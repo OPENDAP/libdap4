@@ -1,5 +1,5 @@
 /* Convert multibyte character to wide character.
-   Copyright (C) 1999-2002, 2005-2015 Free Software Foundation, Inc.
+   Copyright (C) 1999-2002, 2005-2017 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2008.
 
    This program is free software: you can redistribute it and/or modify
@@ -20,6 +20,11 @@
 /* Specification.  */
 #include <wchar.h>
 
+#if C_LOCALE_MAYBE_EILSEQ
+# include "hard-locale.h"
+# include <locale.h>
+#endif
+
 #if GNULIB_defined_mbstate_t
 /* Implement mbrtowc() on top of mbtowc().  */
 
@@ -30,6 +35,13 @@
 # include "streq.h"
 # include "verify.h"
 
+#ifndef FALLTHROUGH
+# if __GNUC__ < 7
+#  define FALLTHROUGH ((void) 0)
+# else
+#  define FALLTHROUGH __attribute__ ((__fallthrough__))
+# endif
+#endif
 
 verify (sizeof (mbstate_t) >= 4);
 
@@ -69,10 +81,10 @@ mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
         break;
       case 3:
         buf[2] = pstate[3];
-        /*FALLTHROUGH*/
+        FALLTHROUGH;
       case 2:
         buf[1] = pstate[2];
-        /*FALLTHROUGH*/
+        FALLTHROUGH;
       case 1:
         buf[0] = pstate[1];
         p = buf;
@@ -328,6 +340,9 @@ mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
 size_t
 rpl_mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
 {
+  size_t ret;
+  wchar_t wc;
+
 # if MBRTOWC_NULL_ARG2_BUG || MBRTOWC_RETVAL_BUG || MBRTOWC_EMPTY_INPUT_BUG
   if (s == NULL)
     {
@@ -341,6 +356,9 @@ rpl_mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
   if (n == 0)
     return (size_t) -2;
 # endif
+
+  if (! pwc)
+    pwc = &wc;
 
 # if MBRTOWC_RETVAL_BUG
   {
@@ -357,8 +375,7 @@ rpl_mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
         size_t count = 0;
         for (; n > 0; s++, n--)
           {
-            wchar_t wc;
-            size_t ret = mbrtowc (&wc, s, 1, ps);
+            ret = mbrtowc (&wc, s, 1, ps);
 
             if (ret == (size_t)(-1))
               return (size_t)(-1);
@@ -366,8 +383,7 @@ rpl_mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
             if (ret != (size_t)(-2))
               {
                 /* The multibyte character has been completed.  */
-                if (pwc != NULL)
-                  *pwc = wc;
+                *pwc = wc;
                 return (wc == 0 ? 0 : count);
               }
           }
@@ -376,32 +392,23 @@ rpl_mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
   }
 # endif
 
+  ret = mbrtowc (pwc, s, n, ps);
+
 # if MBRTOWC_NUL_RETVAL_BUG
-  {
-    wchar_t wc;
-    size_t ret = mbrtowc (&wc, s, n, ps);
-
-    if (ret != (size_t)(-1) && ret != (size_t)(-2))
-      {
-        if (pwc != NULL)
-          *pwc = wc;
-        if (wc == 0)
-          ret = 0;
-      }
-    return ret;
-  }
-# else
-  {
-#   if MBRTOWC_NULL_ARG1_BUG
-    wchar_t dummy;
-
-    if (pwc == NULL)
-      pwc = &dummy;
-#   endif
-
-    return mbrtowc (pwc, s, n, ps);
-  }
+  if (ret < (size_t) -2 && !*pwc)
+    return 0;
 # endif
+
+# if C_LOCALE_MAYBE_EILSEQ
+  if ((size_t) -2 <= ret && n != 0 && ! hard_locale (LC_CTYPE))
+    {
+      unsigned char uc = *s;
+      *pwc = uc;
+      return 1;
+    }
+# endif
+
+  return ret;
 }
 
 #endif

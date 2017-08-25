@@ -1,13 +1,13 @@
 dnl A placeholder for ISO C99 <wchar.h>, for platforms that have issues.
 
-dnl Copyright (C) 2007-2015 Free Software Foundation, Inc.
+dnl Copyright (C) 2007-2017 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
 dnl Written by Eric Blake.
 
-# wchar_h.m4 serial 39
+# wchar_h.m4 serial 42
 
 AC_DEFUN([gl_WCHAR_H],
 [
@@ -35,6 +35,8 @@ AC_DEFUN([gl_WCHAR_H],
   fi
   AC_SUBST([HAVE_WINT_T])
 
+  AC_REQUIRE([gl_TYPE_WINT_T_PREREQ])
+
   dnl Check for declarations of anything we want to poison if the
   dnl corresponding gnulib module is not in use.
   gl_WARN_ON_USE_PREPARE([[
@@ -53,7 +55,7 @@ AC_DEFUN([gl_WCHAR_H],
      wcsrtombs wcsnrtombs wcwidth wmemchr wmemcmp wmemcpy wmemmove wmemset
      wcslen wcsnlen wcscpy wcpcpy wcsncpy wcpncpy wcscat wcsncat wcscmp
      wcsncmp wcscasecmp wcsncasecmp wcscoll wcsxfrm wcsdup wcschr wcsrchr
-     wcscspn wcsspn wcspbrk wcsstr wcstok wcswidth
+     wcscspn wcsspn wcspbrk wcsstr wcstok wcswidth wcsftime
     ])
 ])
 
@@ -81,8 +83,14 @@ AC_DEFUN([gl_WCHAR_H_INLINE_OK],
 extern int zero (void);
 int main () { return zero(); }
 ]])])
+     dnl Do not rename the object file from conftest.$ac_objext to
+     dnl conftest1.$ac_objext, as this will cause the link to fail on
+     dnl z/OS when using the XPLINK object format (due to duplicate
+     dnl CSECT names). Instead, temporarily redefine $ac_compile so
+     dnl that the object file has the latter name from the start.
+     save_ac_compile="$ac_compile"
+     ac_compile=`echo "$save_ac_compile" | sed s/conftest/conftest1/`
      if AC_TRY_EVAL([ac_compile]); then
-       mv conftest.$ac_objext conftest1.$ac_objext
        AC_LANG_CONFTEST([
          AC_LANG_SOURCE([[#define wcstod renamed_wcstod
 /* Tru64 with Desktop Toolkit C has a bug: <stdio.h> must be included before
@@ -95,8 +103,9 @@ int main () { return zero(); }
 #include <wchar.h>
 int zero (void) { return 0; }
 ]])])
+       dnl See note above about renaming object files.
+       ac_compile=`echo "$save_ac_compile" | sed s/conftest/conftest2/`
        if AC_TRY_EVAL([ac_compile]); then
-         mv conftest.$ac_objext conftest2.$ac_objext
          if $CC -o conftest$ac_exeext $CFLAGS $LDFLAGS conftest1.$ac_objext conftest2.$ac_objext $LIBS >&AS_MESSAGE_LOG_FD 2>&1; then
            :
          else
@@ -104,6 +113,7 @@ int zero (void) { return 0; }
          fi
        fi
      fi
+     ac_compile="$save_ac_compile"
      rm -f conftest1.$ac_objext conftest2.$ac_objext conftest$ac_exeext
     ])
   if test $gl_cv_header_wchar_h_correct_inline = no; then
@@ -169,6 +179,7 @@ AC_DEFUN([gl_WCHAR_H_DEFAULTS],
   GNULIB_WCSSTR=0;      AC_SUBST([GNULIB_WCSSTR])
   GNULIB_WCSTOK=0;      AC_SUBST([GNULIB_WCSTOK])
   GNULIB_WCSWIDTH=0;    AC_SUBST([GNULIB_WCSWIDTH])
+  GNULIB_WCSFTIME=0;    AC_SUBST([GNULIB_WCSFTIME])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_BTOWC=1;         AC_SUBST([HAVE_BTOWC])
   HAVE_MBSINIT=1;       AC_SUBST([HAVE_MBSINIT])
@@ -207,6 +218,7 @@ AC_DEFUN([gl_WCHAR_H_DEFAULTS],
   HAVE_WCSSTR=1;        AC_SUBST([HAVE_WCSSTR])
   HAVE_WCSTOK=1;        AC_SUBST([HAVE_WCSTOK])
   HAVE_WCSWIDTH=1;      AC_SUBST([HAVE_WCSWIDTH])
+  HAVE_WCSFTIME=1;      AC_SUBST([HAVE_WCSFTIME])
   HAVE_DECL_WCTOB=1;    AC_SUBST([HAVE_DECL_WCTOB])
   HAVE_DECL_WCWIDTH=1;  AC_SUBST([HAVE_DECL_WCWIDTH])
   REPLACE_MBSTATE_T=0;  AC_SUBST([REPLACE_MBSTATE_T])
@@ -222,4 +234,5 @@ AC_DEFUN([gl_WCHAR_H_DEFAULTS],
   REPLACE_WCSNRTOMBS=0; AC_SUBST([REPLACE_WCSNRTOMBS])
   REPLACE_WCWIDTH=0;    AC_SUBST([REPLACE_WCWIDTH])
   REPLACE_WCSWIDTH=0;   AC_SUBST([REPLACE_WCSWIDTH])
+  REPLACE_WCSFTIME=0;   AC_SUBST([REPLACE_WCSFTIME])
 ])

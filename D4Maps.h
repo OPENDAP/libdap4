@@ -47,7 +47,7 @@ class XMLWriter;
  * In this implementation of the D4Map, each Map has a name and two weak
  * pointers, one to the Array that holds the domain values and one to the
  * Array that uses the Map. Note that while Maps can be shared by Arrays,
- * each Array has it's own collection f these D4Map objects. This makes
+ * each Array has it's own collection of these D4Map objects. This makes
  * processing constraints possible (because it is possible to write
  * different constraints for two arrays that share Maps).
  */
