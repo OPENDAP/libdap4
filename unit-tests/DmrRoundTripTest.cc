@@ -276,11 +276,10 @@ CPPUNIT_TEST_SUITE (DmrRoundTripTest);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_4);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_5);
     CPPUNIT_TEST(test_grid_rt_01);
+#if 0
     CPPUNIT_TEST(test_grid_rt_02);
     CPPUNIT_TEST(test_grid_rt_03);
-#if 0
-    // This was on the master branch and conflictered with the code on
-    // the hyrax390 branch. jhrg 8/25/17
+#else
     CPPUNIT_TEST_FAIL (test_grid_rt_02);
     CPPUNIT_TEST_FAIL (test_grid_rt_03);
 #endif
