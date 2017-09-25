@@ -1,3 +1,11 @@
+News for version 3.19.1
+
+Portability issues: Updated gnulib and mkstemps fixed as per user
+reports. Removed a test for block_size in HTTPCacheTest that failed on
+Fedora ppc64le system with XFS system
+
+Branches/tickets merged: hyrax390 (CppUnit test improvements)
+
 News for version 3.19.0
 
 Bug fixes in memory usage for Vector types.
