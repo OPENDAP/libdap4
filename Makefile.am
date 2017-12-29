@@ -60,9 +60,10 @@ libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
 libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la d4_ce/libd4_ce_parser.la \
 d4_function/libd4_function_parser.la libparsers.la
 
-if DAP4_DEFINED
-    libdap_la_LIBADD += -lcrypto 
-endif
+# FIXME use configure to sort this out - no longer needed on OSX. jhrg 12/6/17
+# if DAP4_DEFINED
+#    libdap_la_LIBADD += -lcrypto 
+# endif
 
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)

@@ -312,6 +312,25 @@ D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s)
     return index(get_uint64(i.c_str()), s, 0, true, false /*empty*/, "");
 }
 
+/**
+ * Given starting and stopping bounds in terms of a natural axes (i.e., a
+ * DAP4 Shared Dimension), compute the index values that match/enclose those
+ * values.
+ *
+ * @note This code assumes that the Map/Dimension is monotonic. It searches
+ * for values form both ends, so non-monotonic Map/Dimensions may include
+ * values outside the range.
+ *
+ * @param i The initial value
+ * @param s The stopping/final value
+ * @return The D4ConstraintEvaluator::index object that circumscribes the range
+ */
+D4ConstraintEvaluator::index
+D4ConstraintEvaluator::make_index_using_natural_axes(const std::string &i, const std::string &s)
+{
+
+}
+
 static string
 expr_msg(const std::string &op, const std::string &arg1, const std::string &arg2)
 {

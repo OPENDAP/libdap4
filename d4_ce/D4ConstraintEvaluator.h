@@ -48,19 +48,22 @@ class D4ConstraintEvaluator {
 		// start and stride are simple numbers; stop is either the stopping index or
 		// if rest is true, is ignored and the subset runs to the end of the dimension
 		unsigned long long start, stride, stop;
+
 		// true if the slice indicates it does not contain a specific 'stop' value but
 		// goes to the end, whatever that value is.
 		bool rest;
+
 		// An empty slice ([]) means either the entire dimension or apply the shared
 		// dimension slice, depending on whether the corresponding shared dimension has
 		// been sliced.
 		bool empty;
+
 		// When a slice is applied to an Array with Maps, we need to know the name of
 		// each dimension. These names are then used to apply the slice to each of the
 		// Maps (Maps may have fewer dimensions than the Array, but the idea that a
 		// Map is a simple vector doesn't hold for DAP4, so the mapping between a slice's
 		// indexes and the set of Maps can be complex - use the names to make sure
-		// all cases are covered. The value of this field may be empty.
+		// all cases are covered). The value of this field may be empty.
 		std::string dim_name;
 
 		// Added because the parser code needs it. Our code does not use this. jhrg 11/26/13
@@ -78,6 +81,9 @@ class D4ConstraintEvaluator {
 
 	index make_index(const std::string &i, const std::string &s);
 	index make_index(const std::string &i, unsigned long long s);
+
+	index make_index_using_natural_axes(const std::string &is);
+	index make_index_using_natural_axes(const std::string &i, const std::string &s);
 
 	bool d_trace_scanning;
 	bool d_trace_parsing;

@@ -115,7 +115,10 @@ namespace libdap {
     LBRACKET "["
     RBRACKET "]"
     COLON ":"
-
+    
+    L_PAREN "("
+    R_PAREN ")"
+    
     LBRACE "{"
     RBRACE "}"
 
@@ -314,6 +317,18 @@ index   : "[" "]" { $$ = driver.make_index(); }
 | "[" WORD ":" WORD ":" WORD "]" { $$ = driver.make_index($2, $4, $6); }
 | "[" WORD ":" "]" { $$ = driver.make_index($2, 1); }
 | "[" WORD ":" WORD ":" "]" { $$ = driver.make_index($2, $4); }
+
+// New rules added to support projection using natural axes (e.g., lat and lon values
+// and not index values. Maybe add 'stride' later? jhrg 12/24/17
+| "[" "(" WORD ")" "]" { $$ = driver.make_index_using_natural_axes($3); }
+| "[" "(" WORD ")" ":" "(" WORD ")" "]" { $$ = driver.make_index_using_natural_axes($3, $7); }
+// | "[" "(" WORD ")" ":" "]" { $$ = driver.make_index_using_natural_axes($3, -1); }
+
+// With indexes, the array starts at zero always, but with natural axes, it starts
+// at an arbitrary value. We explicitly enable 'from the beginning to WORD' with 
+// this rule. Maybe add 'stride' later? jhrg 12/24/17 
+// | "[" ":" "(" WORD ")" "]" { $$ = driver.make_index_using_natural_axes(-1, $4); }
+
 ;
         
 fields : "{" clauses "}" { $$ = $2; }
