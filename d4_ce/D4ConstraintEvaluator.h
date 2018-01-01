@@ -68,6 +68,7 @@ class D4ConstraintEvaluator {
 
 		// Added because the parser code needs it. Our code does not use this. jhrg 11/26/13
 		index(): start(0), stride(0), stop(0), rest(false), empty(false), dim_name("") {}
+
 		index(unsigned long long i, unsigned long long s, unsigned long long e, bool r, bool em, const std::string &n)
 			: start(i), stride(s), stop(e), rest(r), empty(em), dim_name(n) {}
 	};
@@ -82,8 +83,8 @@ class D4ConstraintEvaluator {
 	index make_index(const std::string &i, const std::string &s);
 	index make_index(const std::string &i, unsigned long long s);
 
-	index make_index_using_natural_axes(const std::string &is);
-	index make_index_using_natural_axes(const std::string &i, const std::string &s);
+	index make_index_using_natural_axes(const std::string &start, const std::string &stride, const std::string &stop);
+    index make_index_using_natural_axes(const std::string &start, const int stride, const std::string &stop);
 
 	bool d_trace_scanning;
 	bool d_trace_parsing;

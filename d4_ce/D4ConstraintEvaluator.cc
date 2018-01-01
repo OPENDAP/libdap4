@@ -321,12 +321,19 @@ D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s)
  * for values form both ends, so non-monotonic Map/Dimensions may include
  * values outside the range.
  *
- * @param i The initial value
- * @param s The stopping/final value
+ * @param start The initial value
+ * @param stride Skip this many elements to get the next value
+ * @param stop The stopping/final value
  * @return The D4ConstraintEvaluator::index object that circumscribes the range
  */
 D4ConstraintEvaluator::index
-D4ConstraintEvaluator::make_index_using_natural_axes(const std::string &i, const std::string &s)
+D4ConstraintEvaluator::make_index_using_natural_axes(const std::string &start, const int stride, const std::string &stop)
+{
+
+}
+
+D4ConstraintEvaluator::index
+D4ConstraintEvaluator::make_index_using_natural_axes(const std::string &start, const std::string &stride, const std::string &stop)
 {
 
 }
