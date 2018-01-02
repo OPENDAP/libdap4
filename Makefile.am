@@ -61,7 +61,7 @@ libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la d4_ce/libd4_ce_pars
 d4_function/libd4_function_parser.la libparsers.la
 
 if DAP4_DEFINED
-    libdap_la_LIBADD += -lcrypto 
+    libdap_la_LIBADD += $(CRYPTO_LIBS)
 endif
 
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
