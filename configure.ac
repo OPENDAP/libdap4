@@ -303,6 +303,11 @@ AC_CHECK_LIB([uuid], [uuid_generate],
 	[UUID_LIBS=""])
 AC_SUBST([UUID_LIBS])
 
+AC_CHECK_LIB([crypto], [OpenSSL_add_all_algorithms], 
+	[CRYPTO_LIBS="-lcrypto"],
+	[CRYPTO_LIBS=""])
+AC_SUBST([CRYPTO_LIBS])
+
 AM_PATH_CPPUNIT(1.12.0,
 	[AM_CONDITIONAL([CPPUNIT], [true])],
 	[
@@ -336,7 +341,7 @@ AS_IF([test x$enable_dap4 = xyes], [
 
 AC_ARG_ENABLE([developer],
 	[AS_HELP_STRING([--enable-developer],
-				    [Build a debug (-g3 -O0) version of this code and include assert() calls in the code (default is no)])],
+		    [Build a debug (-g3 -O0) version of this code and include assert() calls in the code (default is no)])],
     [build_developer=${enableval}],
     [build_developer=no])
 
