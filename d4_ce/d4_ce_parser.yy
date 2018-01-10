@@ -321,7 +321,8 @@ index   : "[" "]" { $$ = driver.make_index(); }
 // New rules added to support projection using natural axes (e.g., lat and lon values
 // and not index values. Maybe add 'stride' later? jhrg 12/24/17
 | "[" "(" WORD ")" "]" { $$ = driver.make_index_using_natural_axes($3); }
-| "[" "(" WORD ")" ":" "(" WORD ")" "]" { $$ = driver.make_index_using_natural_axes($3, $7); }
+| "[" "(" WORD ")" ":" "(" WORD ")" "]" { $$ = driver.make_index_using_natural_axes($3, 1, $7); }
+| "[" "(" WORD ")" ":" "(" WORD ")" ":" "(" WORD ")" "]" { $$ = driver.make_index_using_natural_axes($3, $7, $11); }
 // | "[" "(" WORD ")" ":" "]" { $$ = driver.make_index_using_natural_axes($3, -1); }
 
 // With indexes, the array starts at zero always, but with natural axes, it starts

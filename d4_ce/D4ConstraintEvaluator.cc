@@ -284,7 +284,7 @@ D4ConstraintEvaluator::slice_dimension(const std::string &id, const index &i)
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index(const std::string &i)
 {
-	unsigned long long v = get_int64(i.c_str());
+	unsigned long long v = get_int64(i.c_str());    // get_int64() throws on error
 	return index(v, 1, v, false, false /*empty*/, "");
 }
 
@@ -322,13 +322,26 @@ D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s)
  * values outside the range.
  *
  * @param i The initial value
- * @param s The stopping/final value
+ * @param s The stride value - this must be an integer
+ * @param e The stopping/final value
  * @return The D4ConstraintEvaluator::index object that circumscribes the range
  */
 D4ConstraintEvaluator::index
-D4ConstraintEvaluator::make_index_using_natural_axes(const std::string &i, const std::string &s)
+D4ConstraintEvaluator::make_index_using_natural_axes(const std::string &i, const std::string &s, const std::string &e)
 {
+    return index(i, s, e, false /*rest*/, false /*empty*/, "" /*name*/);
+}
 
+D4ConstraintEvaluator::index
+D4ConstraintEvaluator::make_index_using_natural_axes(const std::string &i)
+{
+    return index(i, 1, i, false /*rest*/, false /*empty*/, "" /*name*/);
+}
+
+D4ConstraintEvaluator::index
+D4ConstraintEvaluator::make_index_using_natural_axes(const std::string &i, const std::string &e)
+{
+    return index(i, 1, e, false /*rest*/, false /*empty*/, "" /*name*/);
 }
 
 static string

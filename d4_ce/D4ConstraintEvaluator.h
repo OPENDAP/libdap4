@@ -49,6 +49,15 @@ class D4ConstraintEvaluator {
 		// if rest is true, is ignored and the subset runs to the end of the dimension
 		unsigned long long start, stride, stop;
 
+		// Natural axes projection values; these are filled in when the [(45.0):(60.0)].
+		// Because these can be real numbers or quoted strings, et c., they are stored
+		// as strings. The type of the matching Map/Dimension will be used to convert the
+		// value so it can be used for subsetting. NB: 'stride' is always an integer.
+		std::string n_start, n_stop;
+
+		// True if we are parsing a natural axes projection expression.
+		bool natural_axes;
+
 		// true if the slice indicates it does not contain a specific 'stop' value but
 		// goes to the end, whatever that value is.
 		bool rest;
@@ -67,23 +76,32 @@ class D4ConstraintEvaluator {
 		std::string dim_name;
 
 		// Added because the parser code needs it. Our code does not use this. jhrg 11/26/13
-		index(): start(0), stride(0), stop(0), rest(false), empty(false), dim_name("") {}
+		index(): start(0), stride(0), stop(0), n_start(""), n_stop(""),
+		        natural_axes(false), rest(false), empty(false), dim_name("") {}
+
 		index(unsigned long long i, unsigned long long s, unsigned long long e, bool r, bool em, const std::string &n)
-			: start(i), stride(s), stop(e), rest(r), empty(em), dim_name(n) {}
+			: start(i), stride(s), stop(e), n_start(""), n_stop(""), natural_axes(false),
+			  rest(r), empty(em), dim_name(n) {}
+
+        index(const std::string &i, const std::string &s, const std::string &e, bool r, bool em, const std::string &n)
+            : start(0), stride(0), stop(0), n_start(i), n_stop(e), natural_axes(true),
+              rest(r), empty(em), dim_name(n) {}
 	};
 
 	index make_index() { return index(0, 1, 0, true /*rest*/, true /*empty*/, ""); }
 
-	index make_index(const std::string &is);
+	index make_index(const std::string &i);
 
+	// initial, stride and end
 	index make_index(const std::string &i, const std::string &s, const std::string &e);
 	index make_index(const std::string &i, unsigned long long s, const std::string &e);
 
 	index make_index(const std::string &i, const std::string &s);
 	index make_index(const std::string &i, unsigned long long s);
 
-	index make_index_using_natural_axes(const std::string &is);
-	index make_index_using_natural_axes(const std::string &i, const std::string &s);
+	index make_index_using_natural_axes(const std::string &i);
+	index make_index_using_natural_axes(const std::string &i, const std::string &e);
+	index make_index_using_natural_axes(const std::string &i, const std::string &s, const std::string &e);
 
 	bool d_trace_scanning;
 	bool d_trace_parsing;
