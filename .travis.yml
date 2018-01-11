@@ -3,7 +3,7 @@
 # Initial Travic-CI control file. 6.5.15 jhrg
 # Updated many times... finally using docker (containers). 7.14.15 jhrg
 
-dist: trusty
+# dist: trusty
 
 # Use the docker container-based build systems
 sudo: false
@@ -16,7 +16,7 @@ language: cpp
 
 compiler:
   - gcc
-  - clang
+  # - clang
 
 # whitelist; assume tags for releases use the familiar dot notation
 # Building a tag will trigger a deployment; see the 'deploy' section
