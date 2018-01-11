@@ -3,6 +3,8 @@
 # Initial Travic-CI control file. 6.5.15 jhrg
 # Updated many times... finally using docker (containers). 7.14.15 jhrg
 
+dist: trusty
+
 # Use the docker container-based build systems
 sudo: false
 
@@ -23,6 +25,7 @@ branches:
   only:
     - master
     - coverity_scan
+    - travis
     - /^*-[0-9]+\.[0-9]+\.[0-9]+/
 
 # This may solve the coverity issue where a push to the coverity_scan
@@ -79,9 +82,12 @@ before_script:
 # considered failure. Note that each line of 'script' is run, regardless
 # of exit status (in the preceding sections, execution stops on the
 # first error).
-#
-script:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install && make distcheck -j7; fi
+
+jobs:
+	include:
+		- stage: build
+		  script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install; fi
+		  script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make distcheck -j7; fi
 
 # Add ./get_code_cov.sh when linux code coverage builds
 
