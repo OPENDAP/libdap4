@@ -16,7 +16,7 @@ language: cpp
 
 compiler:
   - gcc
-  # - clang
+  - clang
 
 # whitelist; assume tags for releases use the familiar dot notation
 # Building a tag will trigger a deployment; see the 'deploy' section
@@ -82,14 +82,15 @@ before_script:
 # of exit status (in the preceding sections, execution stops on the
 # first error).
 
-jobs:
-  include:
-    - stage: build
-    - script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install; fi
-    - script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make distcheck -j7; fi
+# jobs:
+#   include:
+#     - stage: build
+#     - script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install; fi
+#     - script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make distcheck -j7; fi
 
 script:
-
+  - script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install; fi
+  
 # Add ./get_code_cov.sh when linux code coverage builds
 
 # Add this once coverage builds and the gcov script works.
