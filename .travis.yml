@@ -42,7 +42,6 @@ addons:
   coverity_scan:
     project:
       name: "OPENDAP/libdap4"
-      description: "Build submitted via Travis CI"
     notification_email: jgallagher@opendap.org
     build_command: "make -j7"
     branch_pattern: coverity_scan
@@ -84,10 +83,10 @@ before_script:
 # first error).
 
 jobs:
-	include:
-		- stage: build
-		  script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install; fi
-		  script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make distcheck -j7; fi
+  include:
+    - stage: build
+      script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install; fi
+      script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make distcheck -j7; fi
 
 # Add ./get_code_cov.sh when linux code coverage builds
 
