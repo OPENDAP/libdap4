@@ -88,6 +88,8 @@ jobs:
     - script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install; fi
     - script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make distcheck -j7; fi
 
+script:
+
 # Add ./get_code_cov.sh when linux code coverage builds
 
 # Add this once coverage builds and the gcov script works.
