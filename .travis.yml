@@ -14,9 +14,7 @@ cache:
 
 language: cpp
 
-compiler:
-  - gcc
-  - clang
+compiler: gcc
 
 # whitelist; assume tags for releases use the familiar dot notation
 # Building a tag will trigger a deployment; see the 'deploy' section
