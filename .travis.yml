@@ -60,7 +60,7 @@ addons:
 # run your build
 install:
   - bash ./install_libdap_source_deps.sh
-  - export PATH=$HOME/bison/bin:$PATH
+  - export PATH=$HOME/bison/bin:/usr/local/bin:$PATH
 
 # Use this to prepare your build for testing e.g. copy database
 # configurations, environment variables, etc.
@@ -70,7 +70,7 @@ install:
 #  Added code coverage. jhrg 2/16/17
 before_script:
   - export prefix=$HOME/OPENDAP/build
-  - export PATH=$prefix/bin:/usr/local/bin:$PATH
+  - export PATH=$prefix/bin:$PATH
   - autoreconf --force --install --verbose
   - ./configure --disable-dependency-tracking --prefix=$prefix
 
@@ -84,8 +84,8 @@ before_script:
 
 jobs:
   include:
-    script: if test "${COVERITY_SCAN_BRANCH}" -ne 1; then make -j7 && make check -j7; fi
-    script: if test "${COVERITY_SCAN_BRANCH}" -ne 1; then make distcheck -j7; fi
+    - script: if test "${COVERITY_SCAN_BRANCH}" -ne 1; then make -j7 && make check -j7; fi
+    - script: if test "${COVERITY_SCAN_BRANCH}" -ne 1; then make distcheck -j7; fi
 
 # script: if test "${COVERITY_SCAN_BRANCH}" -ne 1; then make -j7 && make check -j7; fi
   
