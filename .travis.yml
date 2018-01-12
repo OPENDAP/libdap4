@@ -83,8 +83,8 @@ before_script:
 jobs:
   include:
     stage: build
-    script: if test "${COVERITY_SCAN_BRNACH}" -ne 1; then make -j7 && make check -j7; fi
-    script: if test "${COVERITY_SCAN_BRANCH}" -ne 1; then make distcheck -j7; fi
+    - script: if test "${COVERITY_SCAN_BRNACH}" -ne 1; then make -j7 && make check -j7; fi
+    - script: if test "${COVERITY_SCAN_BRANCH}" -ne 1; then make distcheck -j7; fi
 
 # script: if test "${COVERITY_SCAN_BRANCH}" -ne 1; then make -j7 && make check -j7; fi
   
