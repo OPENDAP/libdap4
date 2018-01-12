@@ -88,8 +88,7 @@ before_script:
 #     - script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install; fi
 #     - script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make distcheck -j7; fi
 
-script:
-  - script: if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install; fi
+script: if test "${COVERITY_SCAN_BRANCH}" -ne 1; then make -j7 && make check -j7; fi
   
 # Add ./get_code_cov.sh when linux code coverage builds
 
