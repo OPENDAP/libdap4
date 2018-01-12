@@ -49,6 +49,7 @@ addons:
       - uuid-dev
       - libcurl4-openssl-dev
       - libcppunit-dev
+      - sshpass
     
 # Use this to prepare the system to install prerequisites or
 # dependencies
