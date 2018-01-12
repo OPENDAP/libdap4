@@ -37,6 +37,7 @@ matrix:
     - env: COVERITY_SCAN_BRANCH=1
 
 addons:
+  ssh_known_hosts: www.opendap.org
   coverity_scan:
     project:
       name: "OPENDAP/libdap4"
@@ -100,7 +101,10 @@ jobs:
 
 # after_failure:
 
-# after_script:
+after_script:
+  - LOG_FILE_TGZ=libdap-autotest-${TRAVIS_BUILD_NUMBER}-logs.tar.gz
+  - tar -czf /tmp/${LOG_FILE_TGZ} `find . -name timing -prune -o -name '*.log' -print`
+  - sshpass -p ${TRAVIS_AT_OO} scp /tmp/${LOG_FILE_TGZ} travis@www.opendap.org:tmp/${LOG_FILE_TGZ}
 
 # Figure out how to do this for incremental builds. This version works
 # only for tagged pushes.
@@ -120,3 +124,5 @@ env:
    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
    # via the "travis encrypt" command using the project repo's public key
    - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
+   - secure: "vkX4VPBhAOF+ABoLtMMQoX5kbXF7oHOCu/8DP3jq1PEXo17oJjuF5/luKj09uIMqrxGdOGEOrD7DZ01Z9B5p6ntEbVqjfqLLqsCCt6QOAW622ukvW/N9pXmLjuriwKW5D9ail2ZcdJjk+6ctoKgArchgwP9g5sP+IAf88DdB6kE="
+   
