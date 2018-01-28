@@ -326,6 +326,10 @@ D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s)
  * @param e The stopping/final value
  * @return The D4ConstraintEvaluator::index object that circumscribes the range
  */
+#if 0
+
+// Add these back in later
+
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index_using_natural_axes(const std::string &i, const std::string &s, const std::string &e)
 {
@@ -337,6 +341,7 @@ D4ConstraintEvaluator::make_index_using_natural_axes(const std::string &i)
 {
     return index(i, 1, i, false /*rest*/, false /*empty*/, "" /*name*/);
 }
+#endif
 
 D4ConstraintEvaluator::index
 D4ConstraintEvaluator::make_index_using_natural_axes(const std::string &i, const std::string &e)

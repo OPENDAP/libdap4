@@ -84,8 +84,8 @@ class D4ConstraintEvaluator {
 			: start(i), stride(s), stop(e), n_start(""), n_stop(""), natural_axes(false),
 			  rest(r), empty(em), dim_name(n) {}
 
-        index(const std::string &i, const std::string &s, const std::string &e, bool r, bool em, const std::string &n)
-            : start(0), stride(0), stop(0), n_start(i), n_stop(e), natural_axes(true),
+        index(const std::string &i, unsigned long long s, const std::string &e, bool r, bool em, const std::string &n)
+            : start(0), stride(s), stop(0), n_start(i), n_stop(e), natural_axes(true),
               rest(r), empty(em), dim_name(n) {}
 	};
 
@@ -100,9 +100,9 @@ class D4ConstraintEvaluator {
 	index make_index(const std::string &i, const std::string &s);
 	index make_index(const std::string &i, unsigned long long s);
 
-	index make_index_using_natural_axes(const std::string &i);
+	//index make_index_using_natural_axes(const std::string &i); FIXME Add these back in later
 	index make_index_using_natural_axes(const std::string &i, const std::string &e);
-	index make_index_using_natural_axes(const std::string &i, const std::string &s, const std::string &e);
+	//index make_index_using_natural_axes(const std::string &i, const std::string &s, const std::string &e);
 
 	bool d_trace_scanning;
 	bool d_trace_parsing;

@@ -89,6 +89,8 @@ typedef libdap::D4CEParser::token token;
    of a WORD.
    jhrg 4/29/16 */
    
+FLOAT   [+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)
+
 WORD    [-+a-zA-Z0-9_%*\\!~@][-+a-zA-Z0-9_%*\\#]* 
 
 %{
@@ -106,6 +108,8 @@ loc->step();
 "["     return token::LBRACKET;
 "]"     return token::RBRACKET;
 ":"     return token::COLON;
+"("     return token::L_PAREN;
+")"     return token::R_PAREN;
 ","		return token::COMMA;
 ";"		return token::SEMICOLON;
 "|"     return token::PIPE;
@@ -129,6 +133,8 @@ loc->step();
 [ \t]+  /* ignore these */
 
 [\r\n]+ /* ignore these */
+
+{FLOAT}  { yylval->build<std::string>(yytext); return token::FLOAT; }
 
 {WORD}  { yylval->build<std::string>(yytext); return token::WORD; }
 
