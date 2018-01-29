@@ -94,11 +94,11 @@ namespace libdap {
 }
 
 // The strings used in the token definitions are used for error messages
-%token <std::string> FLOAT "float"
+%token <std::string> NUMBER "Number"
 
-%token <std::string> WORD "word"
+%token <std::string> WORD "Word"
 
-%token <std::string> STRING "string"
+%token <std::string> STRING "String"
 
 // %type is used to set the return type of non-terminals; %token sets the
 // return type for terminals.
@@ -315,16 +315,16 @@ indexes : index
 // Note that the index values are scanned as WORDs but the web escaping is
 // not supported as it is for identifiers. jhrg 10/20/16
 index   : "[" "]" { $$ = driver.make_index(); }
-| "[" WORD "]" { $$ = driver.make_index($2); }
-| "[" WORD ":" WORD "]" { $$ = driver.make_index($2, 1, $4); }
-| "[" WORD ":" WORD ":" WORD "]" { $$ = driver.make_index($2, $4, $6); }
-| "[" WORD ":" "]" { $$ = driver.make_index($2, 1); }
-| "[" WORD ":" WORD ":" "]" { $$ = driver.make_index($2, $4); }
+| "[" NUMBER "]" { $$ = driver.make_index($2); }
+| "[" NUMBER ":" NUMBER "]" { $$ = driver.make_index($2, 1, $4); }
+| "[" NUMBER ":" NUMBER ":" NUMBER "]" { $$ = driver.make_index($2, $4, $6); }
+| "[" NUMBER ":" "]" { $$ = driver.make_index($2, 1); }
+| "[" NUMBER ":" NUMBER ":" "]" { $$ = driver.make_index($2, $4); }
 
 // New rules added to support projection using natural axes (e.g., lat and lon values
 // and not index values. Maybe add 'stride' later? jhrg 12/24/17
 //| "[" "(" FLOAT ")" "]" { $$ = driver.make_index_using_natural_axes($3); }
-| "[" "(" FLOAT ")" ":" "(" FLOAT ")" "]" { $$ = driver.make_index_using_natural_axes($3, $7); }
+| "[" "(" NUMBER ")" ":" "(" NUMBER ")" "]" { $$ = driver.make_index_using_natural_axes($3, $7); }
 //| "[" "(" FLOAT ")" ":" "(" FLOAT ")" ":" "(" FLOAT ")" "]" { $$ = driver.make_index_using_natural_axes($3, $7, $11); }
 // | "[" "(" WORD ")" ":" "]" { $$ = driver.make_index_using_natural_axes($3, -1); }
 
