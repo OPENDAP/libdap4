@@ -32,7 +32,7 @@ doxygen $DOXYGEN_CONF
 
 git checkout -q gh-pages
 
-git add ${HTML_DOCS}
+git add --force ${HTML_DOCS}
 git commit -m "Added new docs"
 git push -q
 
