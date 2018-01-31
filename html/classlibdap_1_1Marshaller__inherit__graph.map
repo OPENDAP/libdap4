@@ -1,6 +1,0 @@
-<map id="libdap::Marshaller" name="libdap::Marshaller">
-<area shape="rect" id="node3" href="$classlibdap_1_1D4StreamMarshaller.html" title="Marshaller that knows how to marshal/serialize dap data objects to a C++ iostream using DAP4&#39;s receiv..." alt="" coords="5,417,192,641"/>
-<area shape="rect" id="node4" href="$classlibdap_1_1XDRFileMarshaller.html" title="marshaller that knows how to marshall/serialize dap data objects to a file using XDR ..." alt="" coords="217,417,394,641"/>
-<area shape="rect" id="node5" href="$classlibdap_1_1XDRStreamMarshaller.html" title="Marshaller that knows how serialize dap data objects to a C++ iostream using XDR. ..." alt="" coords="418,417,617,641"/>
-<area shape="rect" id="node2" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects " alt="" coords="250,5,361,97"/>
-</map>
