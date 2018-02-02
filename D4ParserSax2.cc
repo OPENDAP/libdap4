@@ -206,7 +206,7 @@ bool D4ParserSax2::process_dimension_def(const char *name, const xmlChar **attrs
         dim_def()->set_size(xml_attrs["size"].value);
     }
     catch (Error &e) {
-        dmr_error(this, e.get_error_message().c_str());
+        dmr_error(this, "%s", e.get_error_message().c_str());
         return false;
     }
 
