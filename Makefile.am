@@ -21,8 +21,15 @@ endif
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align 
 TEST_COV_FLAGS = -g3 -ftest-coverage -fprofile-arcs
 
+# Build using the Address sanitizer (gcc 4.8+ and clang 3.3+).
+# See: https://github.com/google/sanitizers/wiki/AddressSanitizer
+# jhrg 2/6/18
+ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+else
+AM_CXXFLAGS += -g -O2
 endif
 
 SUBDIRS = gl d4_ce d4_function . unit-tests tests 

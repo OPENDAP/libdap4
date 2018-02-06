@@ -14,8 +14,12 @@ endif
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
+ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+else
+AM_CXXFLAGS += -g -O2
 endif
 
 check_PROGRAMS = das-test dds-test expr-test 
