@@ -733,13 +733,13 @@ name:           SCAN_WORD
 ;
 
 array_indices:  array_index
-                {
-		    $$ = make_array_indices($1);
-		}
+                { 
+                    $$ = make_array_indices($1);
+                }
                 | array_indices array_index
                 {
-		    $$ = append_array_index($1, $2);
-		}
+                    $$ = append_array_index($1, $2);
+                }
 ;
 
 /*
