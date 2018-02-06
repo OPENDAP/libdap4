@@ -10,7 +10,6 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests $(CURL_CFLAGS) $(XML2_CFLAGS)
 AM_LDADD = $(XML2_LIBS)
 AM_CXXFLAGS = 
-# CXXFLAGS =
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
@@ -31,8 +30,12 @@ TESTS_ENVIRONMENT=valgrind --quiet --trace-children=yes --error-exitcode=1 \
 # Might also drop --dsymutil=yes because it can take a long time to run.
 endif
 
+ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+else
+AM_CXXFLAGS += -g -O2
 endif
 
 # This determines what gets built by make check

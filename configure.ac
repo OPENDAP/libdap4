@@ -75,6 +75,12 @@ AC_SUBST(SERVERLIB_REVISION)
 SERVERLIB_VERSION="$SERVERLIB_CURRENT:$SERVERLIB_REVISION:$SERVERLIB_AGE"
 AC_SUBST(SERVERLIB_VERSION)
 
+dnl Suppress the default values automake supplies for these. You can still
+dnl set them on the command line, however. (e.g., ./configure ... CXXFLAGS="-g -o3").
+dnl jhrg 2/6/18
+: ${CFLAGS=""}
+: ${CXXFLAGS=""}
+
 dnl Checks for programs.
 AC_PROG_AWK
 AC_PROG_CXX
