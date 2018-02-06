@@ -24,7 +24,9 @@ TEST_COV_FLAGS = -g3 -ftest-coverage -fprofile-arcs
 # Build using the Address sanitizer (gcc 4.8+ and clang 3.3+).
 # See: https://github.com/google/sanitizers/wiki/AddressSanitizer
 # jhrg 2/6/18
+if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+endif
 
 if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)

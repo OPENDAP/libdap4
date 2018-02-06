@@ -30,7 +30,9 @@ TESTS_ENVIRONMENT=valgrind --quiet --trace-children=yes --error-exitcode=1 \
 # Might also drop --dsymutil=yes because it can take a long time to run.
 endif
 
+if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+endif
 
 if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)

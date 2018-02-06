@@ -14,7 +14,9 @@ endif
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
+if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+endif
 
 if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
@@ -43,7 +45,7 @@ check_SCRIPTS = $(DASTESTSUITE) $(DDSTESTSUITE) $(EXPRTESTSUITE) \
 lib_LIBRARIES = libtest-types.a
 
 libtest_types_a_SOURCES = $(TESTSRCS) $(TEST_HDR)
-libtest_types_a_CXXFLAGS = -fPIC
+libtest_types_a_CXXFLAGS = $(AM_CXXFLAGS) -fPIC
 
 testheadersdir = $(pkgincludedir)/test
 testheaders_HEADERS = $(TEST_HDR)

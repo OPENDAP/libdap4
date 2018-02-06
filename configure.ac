@@ -345,9 +345,12 @@ AS_IF([test x$enable_dap4 = xyes], [
     AM_CONDITIONAL([DAP4_DEFINED], [false])
 ])
 
+AX_CHECK_COMPILE_FLAG([-fsanitize=address], [AM_CONDITIONAL([USE_ASAN], [true])],
+    [AM_CONDITIONAL([USE_ASAN], [false])])
+
 AC_ARG_ENABLE([developer],
-	[AS_HELP_STRING([--enable-developer],
-		    [Build a debug (-g3 -O0) version of this code and include assert() calls in the code (default is no)])],
+    [AS_HELP_STRING([--enable-developer],
+		    [Build for debug (-g3 -O0); include assert() calls (default: no)])],
     [build_developer=${enableval}],
     [build_developer=no])
 
