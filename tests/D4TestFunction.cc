@@ -135,7 +135,7 @@ function_scale_dap4(D4RValueList *args, DMR &dmr)
     // Check for 2 arguments
     DBG(cerr << "args.size() = " << args.size() << endl);
     if (args->size() != 2)
-        throw Error(malformed_expr,"Wrong number of arguments to scale().");
+        throw Error(malformed_expr, "Wrong number of arguments to scale().");
 
     // DAP4 function porting information: in place of 'argv[n]' use args->get_rvalue(n)->value(dmr)
     // where 'n' is between 0 and args.size()-1. The line below is the DAP4 equivalent of 'argv[1].'
@@ -148,17 +148,22 @@ function_scale_dap4(D4RValueList *args, DMR &dmr)
     double *data;
     BaseType *arg0 = args->get_rvalue(0)->value(dmr); // DAP4 function porting: ... 'argv[0]'
     if (arg0->is_vector_type()) {
-        TestArray &source = static_cast<TestArray&>(*arg0);
-        source.read();
+        Array *source = dynamic_cast<Array*>(arg0);
+        if (!source)
+            throw Error(malformed_expr, string("Expected an Array as an argument, but got '"
+                + arg0->type_name()) + "' instead.");
 
-        data = extract_double_array(&source);
-        int length = source.length();
+        if (!source->read_p())
+            source->read();
+
+        data = extract_double_array(source);
+        int length = source->length();
         for (int i = 0; i < length; ++i)
             data[i] = data[i] * m;
 
-        Array *result = new TestArray(source);
+        Array *result = new Array(*source);
 
-        result->add_var_nocopy(new TestFloat64(source.name()));
+        result->add_var_nocopy(new Float64(source->name()));
         result->set_value(data, length);
 
         delete[] data; // set_value copies.
