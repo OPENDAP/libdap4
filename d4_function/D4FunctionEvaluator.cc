@@ -28,6 +28,8 @@
 #include <string>
 #include <sstream>
 #include <iterator>
+#include <list>
+#include <algorithm>
 
 //#define DODS_DEBUG
 
@@ -145,14 +147,18 @@ void D4FunctionEvaluator::eval(DMR *function_result)
     // for its dimensions in 'dataset' (by name) and add a pointer to those to the
     // set. Then copy all the stuff in the set into the root group of 'function_
     // result.'
-    set<D4Dimension*> dim_set;
+    list<D4Dimension*> dim_set;
 
     for (Constructor::Vars_iter i = root->var_begin(), ie = root->var_end(); i != ie; ++i) {
         if ((*i)->is_vector_type()) {
             Array *a = static_cast<Array*>(*i);
             for (Array::Dim_iter d = a->dim_begin(), de = a->dim_end(); d != de; ++d) {
-                if (a->dimension_D4dim(d)) {
-                    dim_set.insert(a->dimension_D4dim(d));
+                // Only add Dimensions that are not already present; share dims are not repeated. jhrg 2/7/18
+                D4Dimension *d4_dim = a->dimension_D4dim(d);
+                if (d4_dim) {
+                    bool found = (std::find(dim_set.begin(), dim_set.end(), d4_dim) != dim_set.end());
+                    if (!found)
+                        dim_set.push_back(a->dimension_D4dim(d));
                 }
             }
         }
@@ -161,19 +167,19 @@ void D4FunctionEvaluator::eval(DMR *function_result)
     // Copy the D4Dimensions and EnumDefs because this all goes in a new DMR - we don't
     // want to share those across DMRs because the DMRs delete those (so sharing htem
     // across DMRs would lead to dangling pointers.
-    for (set<D4Dimension*>::iterator i = dim_set.begin(), e = dim_set.end(); i != e; ++i) {
+    for (list<D4Dimension*>::iterator i = dim_set.begin(), e = dim_set.end(); i != e; ++i) {
         root->dims()->add_dim(*i);
     }
 
     // Now lets do the enumerations....
-    set<D4EnumDef*> enum_def_set;
+    list<D4EnumDef*> enum_def_set;
     for (Constructor::Vars_iter i = root->var_begin(), ie = root->var_end(); i != ie; ++i) {
         if ((*i)->type() == dods_enum_c) {
-            enum_def_set.insert(static_cast<D4Enum*>(*i)->enumeration());
+            enum_def_set.push_back(static_cast<D4Enum*>(*i)->enumeration());
         }
     }
 
-    for (set<D4EnumDef*>::iterator i = enum_def_set.begin(), e = enum_def_set.end(); i != e; ++i) {
+    for (list<D4EnumDef*>::iterator i = enum_def_set.begin(), e = enum_def_set.end(); i != e; ++i) {
         root->enum_defs()->add_enum(*i);
     }
 }
