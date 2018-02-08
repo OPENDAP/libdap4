@@ -28,7 +28,9 @@ endif
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
+if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+endif
 
 if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
@@ -48,7 +50,7 @@ libd4_ce_parser_la_SOURCES = lex.d4_ce.cc d4_ce_parser.tab.cc	\
 	d4_ce_parser.tab.hh stack.hh location.hh position.hh \
 	D4ConstraintEvaluator.cc  D4ConstraintEvaluator.h D4CEScanner.h   
 
-libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
+libd4_ce_parser_la_CXXFLAGS = $(AM_CPPFLAGS) $(AM_CXXFLAGS)
 
 EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll
 

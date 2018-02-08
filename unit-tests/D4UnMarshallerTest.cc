@@ -277,7 +277,7 @@ public:
             DBG(cerr << "ck: " << ck << endl);
             CPPUNIT_ASSERT(ck == "199ad7f5");
 
-            delete buf2;
+            delete[] buf2;
         }
         catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
