@@ -52,6 +52,7 @@ addons:
     
 # Use this to prepare the system to install prerequisites or
 # dependencies
+
 # before_install:
 
 # Use this to install any prerequisites or dependencies necessary to
@@ -62,18 +63,11 @@ install:
 
 # Use this to prepare your build for testing e.g. copy database
 # configurations, environment variables, etc.
-#
-# I set prefix and PATH even though it's not really needed.
-#
-#  Added code coverage. jhrg 2/16/17
 before_script:
   - export prefix=$HOME/OPENDAP/build
   - export PATH=$prefix/bin:/usr/local/bin:$PATH
   - autoreconf --force --install --verbose
-  - ./configure --disable-dependency-tracking --prefix=$prefix
-
-# Code coverage is not working on link.
-# debug on AWS and then test --enable-coverage --enable-developer
+  - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
 
 # All commands must exit with code 0 on success. Anything else is
 # considered failure. Note that each line of 'script' is run, regardless
@@ -83,11 +77,7 @@ before_script:
 script:
   - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install && make distcheck -j7; fi
 
-# Add ./get_code_cov.sh when linux code coverage builds
-
-# Add this once coverage builds and the gcov script works.
 # after_success:
-#  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then bash <(curl -s https://codecov.io/bash)
 
 # after_failure:
 
