@@ -163,8 +163,8 @@ AC_SUBST([ac_word_order])
 DODS_CHECK_SIZES
 
 AC_ARG_ENABLE([runtime-endian-check],
-    AC_HELP_STRING([--enable-runtime-endian-check], [Enable runtime tests for big- or little-endian byte order (default is NO)])
-)
+    [AC_HELP_STRING([--enable-runtime-endian-check], 
+                    [Enable runtime tests for big- or little-endian byte order (default is NO)])])
 
 AS_IF([test "x$enable_runtime_endian_check" = "xyes"], [
     dnl Do the stuff needed for enabling the feature
@@ -345,16 +345,21 @@ AS_IF([test x$enable_dap4 = xyes], [
     AM_CONDITIONAL([DAP4_DEFINED], [false])
 ])
 
-AX_CHECK_COMPILE_FLAG([-fsanitize=address], [AM_CONDITIONAL([USE_ASAN], [true])],
-    [AM_CONDITIONAL([USE_ASAN], [false])])
+AX_CHECK_COMPILE_FLAG([-fsanitize=address], [has_asan=yes], [has_asan=no])
+
+AC_ARG_ENABLE([asan], 
+    [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
+
+AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
+      [AC_MSG_NOTICE([Building Address Sanitizer version])
+       AM_CONDITIONAL([USE_ASAN], [true])],
+      [AC_MSG_NOTICE([Not building Address Sanitizer version])
+       AM_CONDITIONAL([USE_ASAN], [false])])
 
 AC_ARG_ENABLE([developer],
-    [AS_HELP_STRING([--enable-developer],
-		    [Build for debug (-g3 -O0); include assert() calls (default: no)])],
-    [build_developer=${enableval}],
-    [build_developer=no])
+    [AS_HELP_STRING([--enable-developer], [Build for debug (-g3 -O0); include assert() calls (default: no)])])
 
-AS_IF([test x$build_developer = xyes],
+AS_IF([test x$enable_developer = xyes],
       [AC_MSG_NOTICE([Building developer version])
        AM_CONDITIONAL([BUILD_DEVELOPER], [true])],
       [AC_MSG_NOTICE([Not building developer version])
