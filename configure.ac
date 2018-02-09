@@ -182,7 +182,7 @@ gl_MODULES(regex btyeswap)
 
 gl_INIT
 
-AC_ARG_WITH(curl,[  --with-curl=PFX   Prefix where curl/libcurl is installed (optional). This will override pkgconfig, etc.],
+AC_ARG_WITH([curl], [AC_HELP_STRING([--with-curl=pfx], [curl/libcurl prefix; overrides other tests including pkgconfig])],
             with_curl_prefix="$withval", with_curl_prefix="")
 
 dnl I wrote these checks because we need the *-config scripts to build, so 
