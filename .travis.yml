@@ -6,15 +6,9 @@
 # Use the docker container-based build systems
 sudo: false
 
-cache:
-  directories:
-  - $HOME/bison
-
 language: cpp
 
-compiler:
-  - gcc
-  - clang
+compiler: gcc
 
 # whitelist; assume tags for releases use the familiar dot notation
 # Building a tag will trigger a deployment; see the 'deploy' section
@@ -23,6 +17,7 @@ branches:
   only:
     - master
     - coverity_scan
+    - travis
     - /^*-[0-9]+\.[0-9]+\.[0-9]+/
 
 # This may solve the coverity issue where a push to the coverity_scan
@@ -30,10 +25,12 @@ branches:
 # ...not sure and it's hard to test since we get only one run/day,
 # but running the scan twice breaks the build because we're allowed
 # only one run/day.
-matrix:
-  exclude:
-    - compiler: clang
-    - env: COVERITY_SCAN_BRANCH=1
+#
+# No longer needed since I removed the clang build
+#matrix:
+#  exclude:
+#    - compiler: clang
+#    - env: COVERITY_SCAN_BRANCH=1
 
 addons:
   coverity_scan:
@@ -53,13 +50,18 @@ addons:
 # Use this to prepare the system to install prerequisites or
 # dependencies
 
-# before_install:
+before_install:
+- ./ecr_credentials.sh
 
 # Use this to install any prerequisites or dependencies necessary to
 # run your build
 install:
-  - bash ./install_libdap_source_deps.sh
-  - export PATH=$HOME/bison/bin:$PATH
+- aws s3 sync s3://opendap.travis.build/ $HOME/OPENDAP
+- tar -xzf $HOME/OPENDAP/hyrax-dependencies-build.tar.gz
+- ls -lR $HOME/OPENDAP/
+  
+#  - bash ./install_libdap_source_deps.sh
+#  - export PATH=$HOME/bison/bin:$PATH
 
 # Use this to prepare your build for testing e.g. copy database
 # configurations, environment variables, etc.
@@ -98,6 +100,9 @@ script:
     
 env:
   global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   # via the "travis encrypt" command using the project repo's public key
-   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
+  # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
+  - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
+  # AWS_ACCESS_KEY_ID for the user 'travis'
+  - secure: "Azd20M0X367Glf6YnQXRLXJXGrKkJwKK6X7hKRvNZ1oSPkTLmW1JlUKpsjmstz+oJxZHATMP64fymTkxRmyHU7bNktBkiI3i6k1cFXRPGEhrf2Uftnve/Zy2TEJ6ucnEpYmw5+LyZgAZVNLzFnUrE2FUbzG8I1yO2KYr00nvof4="
+  # AWS_SECRET_ACCESS_KEY_ID
+  - secure: "IAV+PAYMLWy+mzna/AWc2+TDocs/XtfIOuZOAZelnfyHuPvPDGXbloRbkPDwqPDqeC+CYOw10ZOhUPGEclAijf60KNsfrK6yQwUqfzxvY2qhZENGRG75Sf531D57J2Bm3Codw+yQ35SOHdhrkpjsZPBc/s4hTMpjDzZ6XRBCHcU="
