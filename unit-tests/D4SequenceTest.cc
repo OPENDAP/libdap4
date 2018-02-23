@@ -107,9 +107,9 @@ public:
         s->output_values(oss);
 
         DBG(cerr << "s: " << oss.str() << endl);
-        DBG(cerr << "Baseline: " << readTestBaseline(prefix + s_txt) << endl);
+        DBG(cerr << "Baseline: " << read_test_baseline(prefix + s_txt) << endl);
 
-        CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + s_txt));
+        CPPUNIT_ASSERT(oss.str() == read_test_baseline(prefix + s_txt));
     }
 
     void assignment_test()
@@ -155,7 +155,7 @@ public:
         DBG(cerr << "one_clause_test, s: " << oss.str() << endl);
         CPPUNIT_ASSERT(s->length() == 1);
 
-        CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + one_clause_txt));
+        CPPUNIT_ASSERT(oss.str() == read_test_baseline(prefix + one_clause_txt));
     }
 
     void two_clause_test()
@@ -179,7 +179,7 @@ public:
 
         CPPUNIT_ASSERT(s->length() == 3);
 
-        CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + two_clause_txt));
+        CPPUNIT_ASSERT(oss.str() == read_test_baseline(prefix + two_clause_txt));
     }
 
     void two_variable_test()
@@ -203,7 +203,7 @@ public:
 
         CPPUNIT_ASSERT(s->length() == 1);
         // ...just happens to be hte same baseline file at one_clause_test()
-        CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + one_clause_txt));
+        CPPUNIT_ASSERT(oss.str() == read_test_baseline(prefix + one_clause_txt));
     }
 
     CPPUNIT_TEST_SUITE (D4SequenceTest);
