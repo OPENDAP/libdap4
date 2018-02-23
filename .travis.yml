@@ -35,16 +35,18 @@ addons:
     - libcppunit-dev
     
 before_install:
+- sudo apt-get update -qq
 - pip install --user awscli
 - ./ecr_credentials.sh
 
+# hyrax-dependencies-build.tar.gz includes the build directory
 install:
-- aws s3 sync s3://opendap.travis.build/ $HOME/OPENDAP
+- aws s3 sync s3://opendap.travis.build/ $HOME/OPENDAP/
 - tar -xzvf $HOME/OPENDAP/hyrax-dependencies-build.tar.gz
 
 before_script:
 - autoreconf --force --install --verbose
-- ./configure --disable-dependency-tracking --prefix=$prefix/build --enable-developer --enable-asan
+- ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
 
 jobs:
   include:
@@ -54,9 +56,9 @@ jobs:
     script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make distcheck -j7; fi
 
 before_deploy:
-- tar --exclude 'build/deps*' -czvf libdap-build.tar.gz build
-- mkdir travis_binary
-- mv libdap-build.tar.gz travis_binary
+- mkdir $prefix/package
+- tar --exclude 'build/deps*' -czvf $prefix/package/hyrax-dependencies-build.tar.gz $prefix
+- ls -l $prefix/package
 
 deploy:
   provider: s3
@@ -64,7 +66,7 @@ deploy:
   secret_access_key: $AWS_SECRET_ACCESS_KEY
   bucket: opendap.travis.build
   skip_cleanup: true
-  local_dir: travis_binary
+  local_dir: $prefix/package
   on:
     branch:
     - master
@@ -72,7 +74,8 @@ deploy:
 
 env:
   global:
-  - PATH=$HOME/OPENDAP/build/bin:$PATH
+  - prefix=$HOME/OPENDAP/build
+  - PATH=$prefix/bin:$PATH
   # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
   # AWS_ACCESS_KEY_ID for the user 'travis'
