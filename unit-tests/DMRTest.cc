@@ -147,7 +147,7 @@ public:
             DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
 
             string prefix = string(TEST_SRC_DIR) + "/dmr-testsuite/";
-            CPPUNIT_ASSERT(string(xml.get_doc()) == readTestBaseline(prefix + dmr_baseline));
+            CPPUNIT_ASSERT(string(xml.get_doc()) == read_test_baseline(prefix + dmr_baseline));
             delete dmr;
         }
         catch (Error &e) {

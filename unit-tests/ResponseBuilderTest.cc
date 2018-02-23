@@ -256,7 +256,7 @@ public:
     void send_das_test()
     {
         try {
-            string baseline = readTestBaseline((string) TEST_SRC_DIR + "/server-testsuite/send_das_baseline.txt");
+            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/server-testsuite/send_das_baseline.txt");
             DBG(cerr << "---- start baseline ----" << endl << baseline << "---- end baseline ----" << endl);
             Regex r1(baseline.c_str());
 
@@ -275,7 +275,7 @@ public:
     void send_dds_test()
     {
         try {
-            string baseline = readTestBaseline((string) TEST_SRC_DIR + "/server-testsuite/send_dds_baseline.txt");
+            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/server-testsuite/send_dds_baseline.txt");
             DBG(cerr << "---- start baseline ----" << endl << baseline << "---- end baseline ----" << endl);
             Regex r1(baseline.c_str());
 
@@ -295,7 +295,7 @@ public:
 
     void send_ddx_test()
     {
-        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/ddx-testsuite/response_builder_send_ddx_test.xml");
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/ddx-testsuite/response_builder_send_ddx_test.xml");
         Regex r1(baseline.c_str());
         ConstraintEvaluator ce;
 
@@ -351,7 +351,7 @@ public:
         DBG(cerr << "invoke_server_side_function_test():" << endl);
 
         try {
-            string baseline = readTestBaseline(
+            string baseline = read_test_baseline(
                 (string) TEST_SRC_DIR + "/server-testsuite/simple_function_baseline.txt");
             Regex r1(baseline.c_str());
 

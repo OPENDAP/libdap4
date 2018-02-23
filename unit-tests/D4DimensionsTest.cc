@@ -83,7 +83,7 @@ public:
     {
         d->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_empty.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_empty.xml");
         DBG(cerr << "test_print_empty: doc: " << doc << endl);
         DBG(cerr << "test_print_empty: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -95,7 +95,7 @@ public:
 
         d->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_1.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_1.xml");
         DBG(cerr << "test_print_1: doc: " << doc << endl);
         DBG(cerr << "test_print_1: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -108,7 +108,7 @@ public:
 
         d->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_2.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_2.xml");
         DBG(cerr << "test_print_2: doc: " << doc << endl);
         DBG(cerr << "test_print_2: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -159,7 +159,7 @@ public:
 
         d->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_3.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_3.xml");
         DBG(cerr << "test_print_varying: doc: " << doc << endl);
         DBG(cerr << "test_print_varying: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -177,7 +177,7 @@ public:
 
         d->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_4.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_4.xml");
         DBG(cerr << "test_print_insert_dim: doc: " << doc << endl);
         DBG(cerr << "test_print_insert_dim: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -193,7 +193,7 @@ public:
 
         lhs.print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_3.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_3.xml");
         DBG(cerr << "test_print_assignment: doc: " << doc << endl);
         DBG(cerr << "test_print_assignment: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -209,7 +209,7 @@ public:
 
         lhs.print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_3.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Dimensions_3.xml");
         DBG(cerr << "test_print_copy_ctor: doc: " << doc << endl);
         DBG(cerr << "test_print_copy_ctor: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);

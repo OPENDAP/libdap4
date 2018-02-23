@@ -180,7 +180,7 @@ public:
 
         e.print_dap4(xml);
         string doc = xml.get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Enum_1.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Enum_1.xml");
         DBG(cerr << "test_print: doc: " << doc << endl);
         DBG(cerr << "test_print: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -198,7 +198,7 @@ public:
 
         e.print_val(oss, "", true);
         string doc = oss.str();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Enum_2.txt");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Enum_2.txt");
         DBG(cerr << "test_print: doc: " << doc << endl);
         DBG(cerr << "test_print: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);

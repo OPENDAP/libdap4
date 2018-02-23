@@ -129,7 +129,7 @@ public:
     {
         root->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_empty.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_empty.xml");
         DBG(cerr << "test_print_empty: doc: " << doc << endl);
         DBG(cerr << "test_print_empty: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -139,7 +139,7 @@ public:
     {
         named->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_empty.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_empty.xml");
         DBG(cerr << "test_print_named_empty: doc: " << doc << endl);
         DBG(cerr << "test_print_named_empty: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -151,7 +151,7 @@ public:
 
         root->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_with_scalars.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_with_scalars.xml");
         DBG(cerr << "test_print_with_vars: doc: " << doc << endl);
         DBG(cerr << "test_print_with_vars: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -164,7 +164,7 @@ public:
         named->print_dap4(*xml);
 
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_with_scalars.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_with_scalars.xml");
         DBG(cerr << "test_print_named_with_vars: doc: " << doc << endl);
         DBG(cerr << "test_print_named_with_vars: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -177,7 +177,7 @@ public:
 
         root->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_with_scalars_and_stuff.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_with_scalars_and_stuff.xml");
         DBG(cerr << "test_print_with_vars_and_stuff: doc: " << doc << endl);
         DBG(cerr << "test_print_with_vars_and_stuff: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -190,7 +190,7 @@ public:
 
         named->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_with_scalars_and_stuff.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_with_scalars_and_stuff.xml");
         DBG(cerr << "test_print_named_with_vars_and_stuff: doc: " << doc << endl);
         DBG(cerr << "test_print_named_with_vars_and_stuff: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -241,7 +241,7 @@ public:
 
         root->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
         DBG(cerr << "test_print_with_vars_and_stuff: doc: " << doc << endl);
         DBG(cerr << "test_print_with_vars_and_stuff: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -261,7 +261,7 @@ public:
 
         lhs.print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
         DBG(cerr << "test_print_copy_ctor: doc: " << doc << endl);
         DBG(cerr << "test_print_copy_ctor: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -281,7 +281,7 @@ public:
 
         lhs.print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
         DBG(cerr << "test_print_assignment: doc: " << doc << endl);
         DBG(cerr << "test_print_assignment: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
