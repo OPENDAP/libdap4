@@ -60,9 +60,13 @@ before_script:
 jobs:
   include:
   - stage: build
-    script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make -j7 && make check -j7 && make install; fi
+    script:
+    - export OPENDAP_MAIN_BUILD=yes
+    - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make -j7 && make check -j7 && make install; fi
   - stage: build
-    script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make distcheck -j7; fi
+    script: 
+    - export OPENDAP_MAIN_BUILD=no
+    - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make distcheck -j7; fi
 
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/package
@@ -80,4 +84,5 @@ deploy:
     branch:
     - master
     - travis
+    condition: "$OPENDAP_MAIN_BUILD = yes"
 
