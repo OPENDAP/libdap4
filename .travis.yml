@@ -49,7 +49,7 @@ before_install:
 
 # hyrax-dependencies-build.tar.gz includes/makes the build directory
 install:
-- aws s3 sync s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
+- aws s3 sync s3://opendap.travis.build/ $TRAVIS_BUILD_DIR
 - tar -C $TRAVIS_BUILD_DIR -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
 
 before_script:
