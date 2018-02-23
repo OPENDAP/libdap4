@@ -57,15 +57,15 @@ before_script:
 
 jobs:
   include:
-    - stage: build
-      script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make -j7 && make check -j7; fi
-    - stage: build
-      script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make distcheck -j7; fi
+  - stage: build
+    script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make -j7 && make check -j7; fi
+  - stage: build
+    script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make distcheck -j7; fi
 
 env:
   global:
-  prefix=$HOME/OPENDAP
-  PATH=$prefix/build/bin:$prefix/bin:/usr/local/bin:$PATH
+  - prefix=$HOME/OPENDAP
+  - PATH=$prefix/build/bin:$prefix/bin:/usr/local/bin:$PATH
   # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
   # AWS_ACCESS_KEY_ID for the user 'travis'
