@@ -43,7 +43,7 @@
 using std::cerr;
 using std::string;
 using std::endl;
-#define FILE_N_LINE cerr << __FILE__ << ": " << __LINE__ << ":"
+#define FILE_N_LINE std::cerr << __FILE__ << ":" << __LINE__ << ": "
 
 #else
 
@@ -52,7 +52,7 @@ using std::endl;
 #endif /* cplusplus */
 
 #ifdef DODS_DEBUG
-#define DBG(x) FILE_N_LINE; x
+#define DBG(x) FILE_N_LINE, x
 #define DBGN(x) x
 #else
 #define DBG(x) /* x */
@@ -62,13 +62,13 @@ using std::endl;
 /** The purpose of DODS_DEBUG1 is to look at only a handful of the DBG()
     macros by changing them to DBG1() macros and defining DODS_DEBUG1. */
 #ifdef DODS_DEBUG1
-#define DBG1(x) FILE_N_LINE; x
+#define DBG1(x) FILE_N_LINE, x
 #else
 #define DBG1(x) /* x */
 #endif
 
 #ifdef DODS_DEBUG2
-#define DBG2(x) FILE_N_LINE; x
+#define DBG2(x) FILE_N_LINE, x
 #define DBG2N(x) x
 #else
 #define DBG2(x) /* x */

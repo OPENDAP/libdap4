@@ -3,6 +3,8 @@
 # Initial Travic-CI control file. 6.5.15 jhrg
 # Updated many times... finally using docker (containers). 7.14.15 jhrg
 
+dist: trusty
+
 # Use the docker container-based build systems
 sudo: false
 
@@ -10,9 +12,6 @@ language: cpp
 
 compiler: gcc
 
-# whitelist; assume tags for releases use the familiar dot notation
-# Building a tag will trigger a deployment; see the 'deploy' section
-# down below
 branches:
   only:
   - master
@@ -20,12 +19,11 @@ branches:
   - travis
   - /^*-[0-9]+\.[0-9]+\.[0-9]+/
 
-
 addons:
+  ssh_known_hosts: www.opendap.org
   coverity_scan:
     project:
       name: "OPENDAP/libdap4"
-      description: "Build submitted via Travis CI"
     notification_email: jgallagher@opendap.org
     build_command: "make -j7"
     branch_pattern: coverity_scan
@@ -36,24 +34,14 @@ addons:
     - libcurl4-openssl-dev
     - libcppunit-dev
     
-# Use this to prepare the system to install prerequisites or
-# dependencies
-
 before_install:
 - ./ecr_credentials.sh
 
-# Use this to install any prerequisites or dependencies necessary to
-# run your build
 install:
 - aws s3 sync s3://opendap.travis.build/ $HOME/OPENDAP
 - tar -xzf $HOME/OPENDAP/hyrax-dependencies-build.tar.gz
 - ls -lR $HOME/OPENDAP/
-  
-#  - bash ./install_libdap_source_deps.sh
-#  - export PATH=$HOME/bison/bin:$PATH
 
-# Use this to prepare your build for testing e.g. copy database
-# configurations, environment variables, etc.
 before_script:
 - export prefix=$HOME/OPENDAP/build
 - export PATH=$prefix/bin:/usr/local/bin:$PATH
@@ -64,29 +52,17 @@ before_script:
 # considered failure. Note that each line of 'script' is run, regardless
 # of exit status (in the preceding sections, execution stops on the
 # first error).
-#
-script:
-- if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install && make distcheck -j7; fi
 
-# after_success:
+# script:
+# - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install && make distcheck -j7; fi
 
-# after_failure:
+jobs:
+  include:
+    - stage: build
+      script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make -j7 && make check -j7; fi
+    - stage: build
+      script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make distcheck -j7; fi
 
-# after_script:
-
-# Figure out how to do this for incremental builds. This version works
-# only for tagged pushes.
-# deploy:
-#   provider: releases
-#   skip_cleanup: true
-#   api_key:
-#     secure: r4QZiJ+Pp9VPZYeL7s7jW1XMIgnceymGUqDS083AoqylSYsZOElqv2PCOrXSLAo1l0xgGwDaDFCy0HPEVCJzM7b/rNEOkQFQ6lUCuKQy4Jy3kNDpxLZdg8qk65ZkHxlUAwnbJ0HPF8sri6gXLO/7ytz4tYnVuVsMPl3qXG25I9o=
-#   file: libdap_*.deb
-#   on:
-#     repo: OPENDAP/libdap4
-#     condition: $CC = gcc
-#     tags: true
-    
 env:
   global:
   # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
@@ -95,3 +71,5 @@ env:
   - secure: "Azd20M0X367Glf6YnQXRLXJXGrKkJwKK6X7hKRvNZ1oSPkTLmW1JlUKpsjmstz+oJxZHATMP64fymTkxRmyHU7bNktBkiI3i6k1cFXRPGEhrf2Uftnve/Zy2TEJ6ucnEpYmw5+LyZgAZVNLzFnUrE2FUbzG8I1yO2KYr00nvof4="
   # AWS_SECRET_ACCESS_KEY_ID
   - secure: "IAV+PAYMLWy+mzna/AWc2+TDocs/XtfIOuZOAZelnfyHuPvPDGXbloRbkPDwqPDqeC+CYOw10ZOhUPGEclAijf60KNsfrK6yQwUqfzxvY2qhZENGRG75Sf531D57J2Bm3Codw+yQ35SOHdhrkpjsZPBc/s4hTMpjDzZ6XRBCHcU="
+  - secure: "vkX4VPBhAOF+ABoLtMMQoX5kbXF7oHOCu/8DP3jq1PEXo17oJjuF5/luKj09uIMqrxGdOGEOrD7DZ01Z9B5p6ntEbVqjfqLLqsCCt6QOAW622ukvW/N9pXmLjuriwKW5D9ail2ZcdJjk+6ctoKgArchgwP9g5sP+IAf88DdB6kE="
+
