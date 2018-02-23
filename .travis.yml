@@ -53,6 +53,18 @@ jobs:
   - stage: build
     script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make distcheck -j7; fi
 
+before_deploy:
+- tar --exclude 'build/deps*' -xzf libdap-build.tar.gz build
+- mkdir travis_binary
+- mv libdap-build.tar.gz travis_binary
+deploy:
+  provider: s3
+  access_key_id: $AWS_ACCESS_KEY_ID
+  secret_access_key: $AWS_SECRET_ACCESS_KEY
+  bucket: opendap.travis.build
+  skip_cleanup: true
+  local_dir: travis_binary
+
 env:
   global:
   - PATH=$HOME/OPENDAP/build/bin:$PATH
