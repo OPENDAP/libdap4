@@ -4,7 +4,6 @@
 
 dist: trusty
 
-# Use the docker container-based build systems
 sudo: false
 
 language: cpp
@@ -34,7 +33,7 @@ addons:
     
 env:
   global:
-  - prefix=$TRAVIS_BUILD_DIR/build
+  - prefix=$TRAVIS_BUILD_DIR/install
   - PATH=$prefix/bin:$PATH
   # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
@@ -50,24 +49,25 @@ before_install:
 
 # hyrax-dependencies-build.tar.gz includes/makes the build directory
 install:
-- aws s3 sync s3://opendap.travis.build/ $TRAVIS_BUILD_DIR
-- tar -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
+- aws s3 sync s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
+- tar -C $TRAVIS_BUILD_DIR -xzvf hyrax-dependencies-build.tar.gz
 
 before_script:
+- printenv
 - autoreconf --force --install --verbose
 - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
 
 jobs:
   include:
   - stage: build
-    script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make -j7 && make check -j7; fi
+    script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make -j7 && make check -j7 && make install; fi
   - stage: build
     script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make distcheck -j7; fi
 
 before_deploy:
-- mkdir $prefix/package
-- tar --exclude 'build/deps*' -czvf $prefix/package/hyrax-dependencies-build.tar.gz $prefix
-- ls -l $prefix/package
+- mkdir $TRAVIS_BUILD_DIR/package
+- tar -C $TRAVIS_BUILD_DIR -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install
+- ls -l $HOME/package
 
 deploy:
   provider: s3
@@ -75,7 +75,7 @@ deploy:
   secret_access_key: $AWS_SECRET_ACCESS_KEY
   bucket: opendap.travis.build
   skip_cleanup: true
-  local_dir: $prefix/package
+  local_dir: $TRAVIS_BUILD_DIR/package
   on:
     branch:
     - master
