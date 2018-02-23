@@ -65,6 +65,10 @@ deploy:
   bucket: opendap.travis.build
   skip_cleanup: true
   local_dir: travis_binary
+  on:
+    branch:
+    - master
+    - travis
 
 env:
   global:
