@@ -40,7 +40,7 @@ before_install:
 
 install:
 - aws s3 sync s3://opendap.travis.build/ $HOME/OPENDAP
-- tar -xzf $HOME/OPENDAP/hyrax-dependencies-build.tar.gz
+- tar -xzvf $HOME/OPENDAP/hyrax-dependencies-build.tar.gz
 
 before_script:
 - autoreconf --force --install --verbose
@@ -54,9 +54,10 @@ jobs:
     script: if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make distcheck -j7; fi
 
 before_deploy:
-- tar --exclude 'build/deps*' -xzf libdap-build.tar.gz build
+- tar --exclude 'build/deps*' -czvf libdap-build.tar.gz build
 - mkdir travis_binary
 - mv libdap-build.tar.gz travis_binary
+
 deploy:
   provider: s3
   access_key_id: $AWS_ACCESS_KEY_ID
