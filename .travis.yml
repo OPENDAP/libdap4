@@ -39,21 +39,12 @@ before_install:
 - ./ecr_credentials.sh
 
 install:
-- aws s3 sync s3://opendap.travis.build/ $prefix
-- tar -xzf $prefix/hyrax-dependencies-build.tar.gz
-- ls -lR $prefix
+- aws s3 sync s3://opendap.travis.build/ $HOME/OPENDAP
+- tar -xzf $HOME/OPENDAP/hyrax-dependencies-build.tar.gz
 
 before_script:
 - autoreconf --force --install --verbose
 - ./configure --disable-dependency-tracking --prefix=$prefix/build --enable-developer --enable-asan
-
-# All commands must exit with code 0 on success. Anything else is
-# considered failure. Note that each line of 'script' is run, regardless
-# of exit status (in the preceding sections, execution stops on the
-# first error).
-
-# script:
-# - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install && make distcheck -j7; fi
 
 jobs:
   include:
@@ -64,8 +55,7 @@ jobs:
 
 env:
   global:
-  - prefix=$HOME/OPENDAP
-  - PATH=$prefix/build/bin:$prefix/bin:/usr/local/bin:$PATH
+  - PATH=$HOME/OPENDAP/build/bin:$PATH
   # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
   # AWS_ACCESS_KEY_ID for the user 'travis'
