@@ -67,7 +67,7 @@ jobs:
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/package
 - tar -C $TRAVIS_BUILD_DIR -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install
-- ls -l $HOME/package
+- ls -l $TRAVIS_BUILD_DIR/package
 
 deploy:
   provider: s3
