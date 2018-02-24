@@ -66,12 +66,12 @@ jobs:
     script:
     - export LIBDAP_MAIN_BUILD=yes
     - ./configure --disable-dependency-tracking --prefix=$prefix
-    - make -j7 && make check -j7 && make install; fi
+    - make -j7 && make check -j7 && make install
   - stage: build
     script: 
     - export LIBDAP_MAIN_BUILD=no
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
-    - make distcheck -j7; fi
+    - make distcheck -j7
 
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/package
