@@ -49,29 +49,34 @@ before_install:
 
 # hyrax-dependencies-build.tar.gz includes/makes the build directory
 install:
-- aws s3 sync s3://opendap.travis.build/ $HOME
-- tar -C $HOME -xzvf $HOME/hyrax-dependencies-build.tar.gz
+- aws s3 sync s3://opendap.travis.build/ $TRAVIS_BUILD_DIR
+- tar -C $TRAVIS_BUILD_DIR -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
 
 before_script:
 - printenv
 - autoreconf --force --install --verbose
-- ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
 
+# The coverity_scan branch is built by the addon
 jobs:
+  stages:
+  - name: build
+    if:  branch != coverity_scan
   include:
   - stage: build
     script:
-    - export OPENDAP_MAIN_BUILD=yes
-    - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make -j7 && make check -j7 && make install; fi
+    - export LIBDAP_MAIN_BUILD=yes
+    - ./configure --disable-dependency-tracking --prefix=$prefix
+    - make -j7 && make check -j7 && make install; fi
   - stage: build
     script: 
-    - export OPENDAP_MAIN_BUILD=no
-    - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make distcheck -j7; fi
+    - export LIBDAP_MAIN_BUILD=no
+    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
+    - make distcheck -j7; fi
 
 before_deploy:
-- mkdir $HOME/package
-- tar -C $HOME -czvf $HOME/package/libdap-build.tar.gz --exclude 'install/deps*' install
-- ls -l $HOME/package
+- mkdir $TRAVIS_BUILD_DIR/package
+- tar -C $TRAVIS_BUILD_DIR -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install
+- ls -l $TRAVIS_BUILD_DIR/package
 
 deploy:
   provider: s3
@@ -79,10 +84,10 @@ deploy:
   secret_access_key: $AWS_SECRET_ACCESS_KEY
   bucket: opendap.travis.build
   skip_cleanup: true
-  local_dir: $HOME/package
+  local_dir: $TRAVIS_BUILD_DIR/package
   on:
     branch:
     - master
     - travis
-    condition: "$OPENDAP_MAIN_BUILD = yes"
+    condition: "$LIBDAP_MAIN_BUILD = yes"
 
