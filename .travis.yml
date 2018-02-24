@@ -33,8 +33,9 @@ addons:
     
 env:
   global:
-  - prefix=$HOME/install
+  - prefix=$HOME/OPENDAP/install
   - PATH=$prefix/bin:$PATH
+  - TESTSUITEFLAGS=-j7  
   # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
   # AWS_ACCESS_KEY_ID for the user 'travis'
@@ -49,8 +50,8 @@ before_install:
 
 # hyrax-dependencies-build.tar.gz includes/makes the build directory
 install:
-- aws s3 sync s3://opendap.travis.build/ $TRAVIS_BUILD_DIR
-- tar -C $TRAVIS_BUILD_DIR -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
+- aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
+- tar -C $HOME/OPENDAP -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz 
 
 before_script:
 - printenv
