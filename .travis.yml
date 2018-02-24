@@ -33,7 +33,7 @@ addons:
     
 env:
   global:
-  - prefix=$TRAVIS_BUILD_DIR/install
+  - prefix=$HOME/install
   - PATH=$prefix/bin:$PATH
   # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
@@ -49,8 +49,8 @@ before_install:
 
 # hyrax-dependencies-build.tar.gz includes/makes the build directory
 install:
-- aws s3 sync s3://opendap.travis.build/ $TRAVIS_BUILD_DIR
-- tar -C $TRAVIS_BUILD_DIR -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
+- aws s3 sync s3://opendap.travis.build/ $HOME
+- tar -C $HOME -xzvf $HOME/hyrax-dependencies-build.tar.gz
 
 before_script:
 - printenv
@@ -69,9 +69,9 @@ jobs:
     - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make distcheck -j7; fi
 
 before_deploy:
-- mkdir $TRAVIS_BUILD_DIR/package
-- tar -C $TRAVIS_BUILD_DIR -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install
-- ls -l $TRAVIS_BUILD_DIR/package
+- mkdir $HOME/package
+- tar -C $HOME -czvf $HOME/package/libdap-build.tar.gz --exclude 'install/deps*' install
+- ls -l $HOME/package
 
 deploy:
   provider: s3
@@ -79,7 +79,7 @@ deploy:
   secret_access_key: $AWS_SECRET_ACCESS_KEY
   bucket: opendap.travis.build
   skip_cleanup: true
-  local_dir: $TRAVIS_BUILD_DIR/package
+  local_dir: $HOME/package
   on:
     branch:
     - master
