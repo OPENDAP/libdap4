@@ -1,6 +1,11 @@
-
+#
+# The libdap build
+#
 # Initial Travic-CI control file. 6.5.15 jhrg
 # Updated many times... finally using docker (containers). 7.14.15 jhrg
+#
+# Modified to push the result of a successful build up to an AWS S3
+# bucket. jhrg 2.24.18
 
 dist: trusty
 
@@ -33,6 +38,7 @@ addons:
     
 env:
   global:
+  # NB: This value of $prefix must be shared between the hyrax-deps, libdap and bes builds.
   - prefix=$HOME/install
   - PATH=$prefix/bin:$PATH
   - TESTSUITEFLAGS=-j7  
