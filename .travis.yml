@@ -1,6 +1,11 @@
-
+#
+# The libdap build
+#
 # Initial Travic-CI control file. 6.5.15 jhrg
 # Updated many times... finally using docker (containers). 7.14.15 jhrg
+#
+# Modified to push the result of a successful build up to an AWS S3
+# bucket. jhrg 2.24.18
 
 dist: trusty
 
@@ -33,8 +38,10 @@ addons:
     
 env:
   global:
-  - prefix=$TRAVIS_BUILD_DIR/install
+  # NB: This value of $prefix must be shared between the hyrax-deps, libdap and bes builds.
+  - prefix=$HOME/install
   - PATH=$prefix/bin:$PATH
+  - TESTSUITEFLAGS=-j7  
   # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
   # AWS_ACCESS_KEY_ID for the user 'travis'
@@ -49,28 +56,33 @@ before_install:
 
 # hyrax-dependencies-build.tar.gz includes/makes the build directory
 install:
-- aws s3 sync s3://opendap.travis.build/ $TRAVIS_BUILD_DIR
-- tar -C $TRAVIS_BUILD_DIR -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
+- aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
+- tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz 
 
 before_script:
 - printenv
 - autoreconf --force --install --verbose
-- ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
 
+# The coverity_scan branch is built by the addon
 jobs:
+  stages:
+  - name: build
+    if:  branch != coverity_scan
   include:
   - stage: build
     script:
-    - export OPENDAP_MAIN_BUILD=yes
-    - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make -j7 && make check -j7 && make install; fi
+    - export LIBDAP_MAIN_BUILD=yes
+    - ./configure --disable-dependency-tracking --prefix=$prefix
+    - make -j7 && make check -j7 && make install
   - stage: build
     script: 
-    - export OPENDAP_MAIN_BUILD=no
-    - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make distcheck -j7; fi
+    - export LIBDAP_MAIN_BUILD=no
+    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
+    - make distcheck -j7
 
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/package
-- tar -C $TRAVIS_BUILD_DIR -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install
+- tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install
 - ls -l $TRAVIS_BUILD_DIR/package
 
 deploy:
@@ -84,5 +96,5 @@ deploy:
     branch:
     - master
     - travis
-    condition: "$OPENDAP_MAIN_BUILD = yes"
+    condition: "$LIBDAP_MAIN_BUILD = yes"
 
