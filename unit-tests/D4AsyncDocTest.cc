@@ -92,7 +92,7 @@ public:
         string doc = xml->get_doc();
         DBG(cerr << "[test_async_required - candidate doc]" << endl << doc << endl);
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRequired.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRequired.xml");
         DBG(cerr << "[test_async_required - baseline doc]" << endl << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
 
@@ -115,7 +115,7 @@ public:
         string doc = xml->get_doc();
         DBG(cerr << "[test_async_required - candidate doc]" << endl << doc << endl);
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRequired_StyleRef.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRequired_StyleRef.xml");
         DBG(cerr << "[test_async_required - baseline doc]" << endl << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
 
@@ -139,7 +139,7 @@ public:
         string doc = xml->get_doc();
         DBG(cerr << "[test_async_accepted - candidate doc]" << endl << doc << endl);
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncAccepted.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncAccepted.xml");
         DBG(cerr << "[test_async_accepted - baseline doc]" << endl << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
         DBG(cerr << endl << " ---- test_async_accepted - END" << endl);
@@ -161,7 +161,7 @@ public:
         string doc = xml->get_doc();
         DBG(cerr << "[test_async_accepted - candidate doc]" << endl << doc << endl);
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncAccepted_StyleRef.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncAccepted_StyleRef.xml");
         DBG(cerr << "[test_async_accepted - baseline doc]" << endl << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
         DBG(cerr << endl << " ---- test_async_accepted - END" << endl);
@@ -181,7 +181,7 @@ public:
         string doc = xml->get_doc();
         DBG(cerr << "[test_async_pending - candidate doc]" << endl << doc << endl);
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncPending.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncPending.xml");
         DBG(cerr << "[test_async_pending - baseline doc]" << endl << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
         DBG(cerr << endl << " ---- test_async_pending - END" << endl);
@@ -202,7 +202,7 @@ public:
         string doc = xml->get_doc();
         DBG(cerr << "[test_async_pending - candidate doc]" << endl << doc << endl);
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncPending_StyleRef.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncPending_StyleRef.xml");
         DBG(cerr << "[test_async_pending - baseline doc]" << endl << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
         DBG(cerr << endl << " ---- test_async_pending - END" << endl);
@@ -222,7 +222,7 @@ public:
         string doc = xml->get_doc();
         DBG(cerr << "[test_async_ResponseGone - candidate doc]" << endl << doc << endl);
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncGone.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncGone.xml");
         DBG(cerr << "[test_async_ResponseGone - baseline doc]" << endl << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
         DBG(cerr << endl << " ---- test_async_ResponseGone - END" << endl);
@@ -243,7 +243,7 @@ public:
         string doc = xml->get_doc();
         DBG(cerr << "[test_async_ResponseGone - candidate doc]" << endl << doc << endl);
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncGone_StyleRef.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncGone_StyleRef.xml");
         DBG(cerr << "[test_async_ResponseGone - baseline doc]" << endl << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
         DBG(cerr << endl << " ---- test_async_ResponseGone - END" << endl);
@@ -263,7 +263,7 @@ public:
         string doc = xml->get_doc();
         DBG(cerr << "[test_async_ResponseRejected - candidate doc]" << endl << doc << endl);
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRejected.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRejected.xml");
         DBG(cerr << "[test_async_ResponseRejected - baseline doc]" << endl << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
 
@@ -285,7 +285,7 @@ public:
         string doc = xml->get_doc();
         DBG(cerr << "[test_async_ResponseRejected - candidate doc]" << endl << doc << endl);
 
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRejected_StyleRef.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4AsyncRejected_StyleRef.xml");
         DBG(cerr << "[test_async_ResponseRejected - baseline doc]" << endl << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
 

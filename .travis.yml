@@ -1,103 +1,100 @@
-# -*- shell-script -*-
+#
+# The libdap build
 #
 # Initial Travic-CI control file. 6.5.15 jhrg
 # Updated many times... finally using docker (containers). 7.14.15 jhrg
+#
+# Modified to push the result of a successful build up to an AWS S3
+# bucket. jhrg 2.24.18
 
-# Use the docker container-based build systems
+dist: trusty
+
 sudo: false
-
-cache:
-  directories:
-  - $HOME/bison
 
 language: cpp
 
-compiler:
-  - gcc
-  - clang
+compiler: gcc
 
-# whitelist; assume tags for releases use the familiar dot notation
-# Building a tag will trigger a deployment; see the 'deploy' section
-# down below
 branches:
   only:
-    - master
-    - coverity_scan
-    - /^*-[0-9]+\.[0-9]+\.[0-9]+/
-
-# This may solve the coverity issue where a push to the coverity_scan
-# branch runs the scanner twice (once for each of our compilers).
-# ...not sure and it's hard to test since we get only one run/day,
-# but running the scan twice breaks the build because we're allowed
-# only one run/day.
-matrix:
-  exclude:
-    - compiler: clang
-    - env: COVERITY_SCAN_BRANCH=1
+  - master
+  - coverity_scan
+  - travis
 
 addons:
+  ssh_known_hosts: www.opendap.org
   coverity_scan:
     project:
       name: "OPENDAP/libdap4"
-      description: "Build submitted via Travis CI"
     notification_email: jgallagher@opendap.org
     build_command: "make -j7"
     branch_pattern: coverity_scan
   apt:
     packages:
-      - libxml2-dev
-      - uuid-dev
-      - libcurl4-openssl-dev
-      - libcppunit-dev
-    
-# Use this to prepare the system to install prerequisites or
-# dependencies
-
-# before_install:
-
-# Use this to install any prerequisites or dependencies necessary to
-# run your build
-install:
-  - bash ./install_libdap_source_deps.sh
-  - export PATH=$HOME/bison/bin:$PATH
-
-# Use this to prepare your build for testing e.g. copy database
-# configurations, environment variables, etc.
-before_script:
-  - export prefix=$HOME/OPENDAP/build
-  - export PATH=$prefix/bin:/usr/local/bin:$PATH
-  - autoreconf --force --install --verbose
-  - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
-
-# All commands must exit with code 0 on success. Anything else is
-# considered failure. Note that each line of 'script' is run, regardless
-# of exit status (in the preceding sections, execution stops on the
-# first error).
-#
-script:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make -j7 && make check -j7 && make install && make distcheck -j7; fi
-
-# after_success:
-
-# after_failure:
-
-# after_script:
-
-# Figure out how to do this for incremental builds. This version works
-# only for tagged pushes.
-# deploy:
-#   provider: releases
-#   skip_cleanup: true
-#   api_key:
-#     secure: r4QZiJ+Pp9VPZYeL7s7jW1XMIgnceymGUqDS083AoqylSYsZOElqv2PCOrXSLAo1l0xgGwDaDFCy0HPEVCJzM7b/rNEOkQFQ6lUCuKQy4Jy3kNDpxLZdg8qk65ZkHxlUAwnbJ0HPF8sri6gXLO/7ytz4tYnVuVsMPl3qXG25I9o=
-#   file: libdap_*.deb
-#   on:
-#     repo: OPENDAP/libdap4
-#     condition: $CC = gcc
-#     tags: true
+    - libxml2-dev
+    - uuid-dev
+    - libcurl4-openssl-dev
+    - libcppunit-dev
     
 env:
   global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   # via the "travis encrypt" command using the project repo's public key
-   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
+  # NB: This value of $prefix must be shared between the hyrax-deps, libdap and bes builds.
+  - prefix=$HOME/install
+  - PATH=$prefix/bin:$PATH
+  - TESTSUITEFLAGS=-j7  
+  # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
+  - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
+  # AWS_ACCESS_KEY_ID for the user 'travis'
+  - secure: "Azd20M0X367Glf6YnQXRLXJXGrKkJwKK6X7hKRvNZ1oSPkTLmW1JlUKpsjmstz+oJxZHATMP64fymTkxRmyHU7bNktBkiI3i6k1cFXRPGEhrf2Uftnve/Zy2TEJ6ucnEpYmw5+LyZgAZVNLzFnUrE2FUbzG8I1yO2KYr00nvof4="
+  # AWS_SECRET_ACCESS_KEY
+  - secure: "lL7WaRHysuAKGLhMBbMyCk8yvRn4mmZeF+W7t4duh7/1DrGiPZ9kQwkfM54r5hLXPeKqqMyDjJs5kATlBgzg68dnwSaLFsbe3TqI9Zj258PgUf1+EYaK+vP9O9brHUUrmtqj6uFGtrP1Dqj2S8AUuTvrYtvSr7vGGitv4++n3AY="
+
+before_install:
+- sudo apt-get update -qq
+- pip install --user awscli
+- ./ecr_credentials.sh
+
+# hyrax-dependencies-build.tar.gz includes/makes the build directory
+install:
+- aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
+- tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz 
+
+before_script:
+- printenv
+- autoreconf --force --install --verbose
+
+# The coverity_scan branch is built by the addon
+jobs:
+  stages:
+  - name: build
+    if:  branch != coverity_scan
+  include:
+  - stage: build
+    script:
+    - export LIBDAP_MAIN_BUILD=yes
+    - ./configure --disable-dependency-tracking --prefix=$prefix
+    - make -j7 && make check -j7 && make install
+  - stage: build
+    script: 
+    - export LIBDAP_MAIN_BUILD=no
+    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
+    - make distcheck -j7
+
+before_deploy:
+- mkdir $TRAVIS_BUILD_DIR/package
+- tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install
+- ls -l $TRAVIS_BUILD_DIR/package
+
+deploy:
+  provider: s3
+  access_key_id: $AWS_ACCESS_KEY_ID
+  secret_access_key: $AWS_SECRET_ACCESS_KEY
+  bucket: opendap.travis.build
+  skip_cleanup: true
+  local_dir: $TRAVIS_BUILD_DIR/package
+  on:
+    branch:
+    - master
+    - travis
+    condition: "$LIBDAP_MAIN_BUILD = yes"
+

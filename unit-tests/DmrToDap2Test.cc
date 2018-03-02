@@ -148,7 +148,7 @@ public:
             XMLWriter xml;
             dmr->print_dap4(xml);
             string result_dmr(xml.get_doc());
-            string baseline_dmr = readTestBaseline(dmr_file);
+            string baseline_dmr = read_test_baseline(dmr_file);
 
             DBG(
                 cerr << "BASELINE DMR(" << baseline_dmr.size() << " chars): " << dmr_file << endl << baseline_dmr
@@ -159,7 +159,7 @@ public:
             DDS *dds = dmr->getDDS();
             std::ostringstream result_dds;
             dds->print(result_dds);
-            string baseline_dds = readTestBaseline(dds_file);
+            string baseline_dds = read_test_baseline(dds_file);
             DBG(
                 cerr << "BASELINE DDS(" << baseline_dds.size() << " chars): " << dds_file << endl << baseline_dds
                     << endl);
@@ -168,7 +168,7 @@ public:
 
             std::ostringstream result_das;
             dds->print_das(result_das);
-            string source_das = readTestBaseline(das_file);
+            string source_das = read_test_baseline(das_file);
             DBG(cerr << "BASELINE DAS(" << source_das.size() << " chars): " << das_file << endl << source_das << endl);
             DBG(cerr << "RESULT DAS(" << result_das.str().size() << " chars): " << endl << result_das.str() << endl);
             CPPUNIT_ASSERT(result_das.str() == source_das);

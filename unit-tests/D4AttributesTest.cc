@@ -112,7 +112,7 @@ public:
     {
         attrs->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_empty.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_empty.xml");
         DBG(cerr << "D4Attributes: " << doc << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
@@ -121,7 +121,7 @@ public:
     {
         a.print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_values_1.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_values_1.xml");
         DBG(cerr << "D4Attributes: " << doc << endl);
         CPPUNIT_ASSERT(doc == baseline);
 
@@ -133,7 +133,7 @@ public:
 
         attrs->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_1.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_1.xml");
         DBG(cerr << "D4Attributes: " << doc << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
@@ -145,7 +145,7 @@ public:
 
         attrs->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_2.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_2.xml");
         DBG(cerr << "D4Attributes: " << doc << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
@@ -159,7 +159,7 @@ public:
 
         attrs->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_3.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_3.xml");
         DBG(cerr << "D4Attributes: " << doc << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
@@ -173,7 +173,7 @@ public:
 
         lhs.print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_assignment.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_assignment.xml");
         DBG(cerr << "D4Attributes: " << doc << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
@@ -189,7 +189,7 @@ public:
 
         lhs.print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_assignment_2.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_assignment_2.xml");
         DBG(cerr << "D4Attributes: " << doc << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }
@@ -203,7 +203,7 @@ public:
 
         lhs.print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_copy_ctor.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Attributes_copy_ctor.xml");
         DBG(cerr << "D4Attributes: " << doc << endl);
         CPPUNIT_ASSERT(doc == baseline);
     }

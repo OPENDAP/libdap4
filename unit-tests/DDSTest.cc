@@ -215,7 +215,7 @@ CPPUNIT_TEST_SUITE (DDSTest);
             dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
             DBG2(cerr << "Printed DDX: " << oss.str() << endl);
 
-            string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.xml");
+            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.xml");
             DBG2(cerr << "The baseline: " << baseline << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
@@ -239,7 +239,7 @@ CPPUNIT_TEST_SUITE (DDSTest);
 
         DBG2(cerr << oss.str() << endl);
 
-        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.xml");
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -257,7 +257,7 @@ CPPUNIT_TEST_SUITE (DDSTest);
 
         DBG2(cerr << oss.str() << endl);
 
-        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.xml");
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -277,7 +277,7 @@ CPPUNIT_TEST_SUITE (DDSTest);
 
         DBG2(cerr << oss.str() << endl);
 
-        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d1.xml");
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d1.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -297,7 +297,7 @@ CPPUNIT_TEST_SUITE (DDSTest);
 
         DBG(cerr << oss.str() << endl);
 
-        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.xml");
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -310,7 +310,7 @@ CPPUNIT_TEST_SUITE (DDSTest);
         string das_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.das");
         das.parse(das_file);
         string baseline_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.xml");
-        string baseline = readTestBaseline(baseline_file);
+        string baseline = read_test_baseline(baseline_file);
 
         try {
             dds2->transfer_attributes(&das);
@@ -357,7 +357,7 @@ CPPUNIT_TEST_SUITE (DDSTest);
 
         DBG(cerr << oss.str() << endl);
 
-        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19f1.xml");
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19f1.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -375,7 +375,7 @@ CPPUNIT_TEST_SUITE (DDSTest);
 
         DBG(cerr << oss.str() << endl);
 
-        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b6.xml");
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b6.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -403,7 +403,7 @@ CPPUNIT_TEST_SUITE (DDSTest);
 
         DBG(cerr << oss.str() << endl);
 
-        string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19g.xml");
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19g.xml");
         DBG2(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -424,7 +424,7 @@ CPPUNIT_TEST_SUITE (DDSTest);
             ostringstream oss;
             dds_dap4->print_dmr(oss, false);
 
-            string baseline = readTestBaseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dmr.xml");
+            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dmr.xml");
 
             DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
             DBG(cerr << "DMR: -->" << oss.str() << "<--" << endl);

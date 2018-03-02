@@ -152,7 +152,7 @@ public:
 
             string prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
             string result_dmr(xml.get_doc());
-            string baseline_dmr = readTestBaseline(prefix + dmr_baseline);
+            string baseline_dmr = read_test_baseline(prefix + dmr_baseline);
             DBG(
                 cerr << "BASELINE DMR(" << baseline_dmr.size() << " chars): " << prefix + dmr_baseline << endl
                     << baseline_dmr << endl);
@@ -164,7 +164,7 @@ public:
             std::ostringstream result_dds;
             dds->print(result_dds);
 
-            string source_dds = readTestBaseline(prefix + dds_file);
+            string source_dds = read_test_baseline(prefix + dds_file);
             DBG(
                 cerr << "SOURCE DDS(" << source_dds.size() << " chars): " << prefix + dds_file << endl << source_dds
                     << endl);
@@ -176,7 +176,7 @@ public:
                 std::ostringstream result_das;
                 dds->print_das(result_das);
 
-                string source_das = readTestBaseline(prefix + das_file);
+                string source_das = read_test_baseline(prefix + das_file);
                 DBG(
                     cerr << "SOURCE DAS(" << source_das.size() << " chars): " << prefix + das_file << endl << source_das
                         << endl);

@@ -105,7 +105,7 @@ public:
 
             dmr->print_dap4(*xml, false);
             string doc = xml->get_doc();
-            string baseline = readTestBaseline(string(TEST_SRC_DIR) + bl);
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) + bl);
             DBG(cerr << "DMR: " << doc << endl);
             CPPUNIT_ASSERT(doc == baseline);
         }
@@ -117,14 +117,14 @@ public:
     void compare_dmr_round_trip_string_version(const string &src, const string &bl)
     {
         try {
-            string document = readTestBaseline(string(TEST_SRC_DIR) + src);
+            string document = read_test_baseline(string(TEST_SRC_DIR) + src);
             DBG(cerr << "Parsing: " << document << endl);
 
             parser->intern(document, dmr, parser_debug);
 
             dmr->print_dap4(*xml, false);
             string doc = xml->get_doc();
-            string baseline = readTestBaseline(string(TEST_SRC_DIR) + bl);
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) + bl);
             DBG(cerr << "DMR: " << doc << endl);
             CPPUNIT_ASSERT(doc == baseline);
         }
