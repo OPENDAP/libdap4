@@ -56,6 +56,7 @@
 #include "parser.h"
 #include "escaping.h"
 #include "debug.h"
+#include "DapIndent.h"
 
 using std::cerr;
 using std::endl;

@@ -70,8 +70,6 @@
 #include "XMLWriter.h"
 #endif
 
-using std::cout;
-
 namespace libdap
 {
 

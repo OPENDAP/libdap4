@@ -34,6 +34,7 @@
 
 #include "util.h"
 #include "debug.h"
+#include "DapIndent.h"
 
 namespace libdap {
 

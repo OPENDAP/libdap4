@@ -38,11 +38,6 @@
 
 #include <iostream>
 
-using std::ostream ;
-using std::endl ;
-
-#include "DapIndent.h"
-
 namespace libdap
 {
 
@@ -66,7 +61,7 @@ public:
      *
      * @param strm C++ i/o stream to dump the object to
      */
-    virtual void dump(ostream &strm) const = 0 ;
+    virtual void dump(std::ostream &strm) const = 0 ;
 } ;
 
 } // namespace libdap
@@ -80,8 +75,8 @@ public:
  * @param strm C++ i/o stream to dump the object to
  * @param obj The DapObj to dump
  */
-inline ostream &
-operator<<(ostream &strm, const libdap::DapObj &obj)
+inline std::ostream &
+operator<<(std::ostream &strm, const libdap::DapObj &obj)
 {
     obj.dump(strm) ;
     return strm ;

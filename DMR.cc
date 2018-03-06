@@ -53,6 +53,7 @@
 #include "DDS.h"	// Included so DMRs can be built using a DDS for 'legacy' handlers
 
 #include "debug.h"
+#include "DapIndent.h"
 
 /**
  * DapXmlNamespaces

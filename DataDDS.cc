@@ -41,6 +41,7 @@
 
 #include "DataDDS.h"
 #include "debug.h"
+#include "DapIndent.h"
 
 using namespace std;
 
