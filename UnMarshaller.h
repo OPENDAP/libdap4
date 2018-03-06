@@ -76,7 +76,7 @@ public:
     virtual void		get_vector( char **val, unsigned int &num,
 					    int width, Vector &vec ) = 0 ;
 
-    virtual void		dump(ostream &strm) const = 0 ;
+    virtual void		dump(std::ostream &strm) const = 0 ;
 } ;
 
 } // namespace libdap

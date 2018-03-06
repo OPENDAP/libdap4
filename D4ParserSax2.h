@@ -279,6 +279,7 @@ public:
     }
 
     void intern(istream &f, DMR *dest_dmr, bool debug = false);
+    // Deprecated - this does not read from a file, it parses text in the string 'document'
     void intern(const string &document, DMR *dest_dmr, bool debug = false);
     void intern(const char *buffer, int size, DMR *dest_dmr, bool debug = false);
 

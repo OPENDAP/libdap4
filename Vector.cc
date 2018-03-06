@@ -64,6 +64,7 @@
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
+#include "DapIndent.h"
 
 #undef CLEAR_LOCAL_DATA
 

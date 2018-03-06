@@ -52,7 +52,7 @@
 #include <functional>
 
 // #define DODS_DEBUG
-//#define DODS_DEBUG2
+// #define DODS_DEBUG2
 
 #include "GNURegex.h"
 
@@ -65,6 +65,7 @@
 #include "parser.h"
 #include "debug.h"
 #include "util.h"
+#include "DapIndent.h"
 
 #include "Byte.h"
 #include "Int16.h"

@@ -50,6 +50,7 @@
 
 #include "util.h"
 #include "InternalErr.h"
+#include "DapIndent.h"
 
 namespace libdap {
 

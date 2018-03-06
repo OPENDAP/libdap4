@@ -56,6 +56,8 @@
 #include "D4Maps.h"
 #include "D4Attributes.h"
 
+#include "DapIndent.h"
+
 using namespace std;
 
 namespace libdap {

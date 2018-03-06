@@ -66,6 +66,7 @@
 
 #include "util.h"
 #include "escaping.h"
+#include "DapIndent.h"
 
 #include "debug.h"
 

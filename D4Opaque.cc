@@ -39,6 +39,7 @@
 #include "crc.h"
 
 #include "debug.h"
+#include "DapIndent.h"
 
 #undef CLEAR_LOCAL_DATA
 

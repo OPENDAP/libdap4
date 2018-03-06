@@ -67,7 +67,7 @@
 #include "dods-limits.h"
 #include "debug.h"
 #include "InternalErr.h"
-
+#include "DapIndent.h"
 
 using std::cerr;
 using std::endl;

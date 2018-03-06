@@ -57,6 +57,7 @@
 #include "debug.h"
 #include "InternalErr.h"
 #include "escaping.h"
+#include "DapIndent.h"
 
 using namespace std;
 

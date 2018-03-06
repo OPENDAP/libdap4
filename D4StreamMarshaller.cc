@@ -51,6 +51,7 @@
 #include "util.h"
 #endif
 
+#include "DapIndent.h"
 #include "debug.h"
 
 using namespace std;

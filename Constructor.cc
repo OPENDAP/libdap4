@@ -58,7 +58,7 @@
 #include "util.h"
 #include "Error.h"
 #include "InternalErr.h"
-
+#include "DapIndent.h"
 
 // #define DODS_DEBUG 1
 #include "debug.h"
