@@ -34,8 +34,21 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include <string.h>
 
+#include "crc.h"
 #include "Byte.h"
+#include "Int8.h"
+#include "Int16.h"
+#include "UInt16.h"
+#include "Int32.h"
+#include "UInt32.h"
+#include "Float32.h"
+#include "Float64.h"
+#include "Str.h"
+#include "Url.h"
+#include "Array.h"
+#include "ce_expr.tab.hh"
 
 #include "GetOpt.h" // Added jhrg
 
@@ -58,6 +71,8 @@ private:
     Byte *tb2;
     Byte *tb3;
     Byte *tb4;
+    Byte *tb5;
+    char a[1024];    
 
 public:
     ByteTest()
@@ -73,6 +88,7 @@ public:
         tb2 = new Byte("tb2 name with spaces");
         tb3 = new Byte("tb3 %");
         tb4 = new Byte("tb4 #");
+        tb5 = new Byte("a", "b");
     }
 
     void tearDown()
@@ -85,14 +101,134 @@ public:
         tb3 = 0;
         delete tb4;
         tb4 = 0;
+        delete tb5;
+        tb5 = 0;
     }
 
-    CPPUNIT_TEST_SUITE (ByteTest);
+    CPPUNIT_TEST_SUITE(ByteTest);
 
-    CPPUNIT_TEST (name_mangling_test);
-    CPPUNIT_TEST (decl_mangling_test);
+    CPPUNIT_TEST(cons_test);
+    CPPUNIT_TEST(equals_test);
+    CPPUNIT_TEST(checksum_test);
+    CPPUNIT_TEST(val2buf_test);
+    CPPUNIT_TEST(buf2val_test);
+    CPPUNIT_TEST(dump_test);
+    CPPUNIT_TEST(print_test);
+    CPPUNIT_TEST(type_compare_test);
+    CPPUNIT_TEST(name_mangling_test);
+    CPPUNIT_TEST(decl_mangling_test);
+    CPPUNIT_TEST(basetype_test);
 
     CPPUNIT_TEST_SUITE_END();
+
+    void cons_test()
+    {
+        CPPUNIT_ASSERT(tb5->value() == 0 && tb5->dataset() == "b" && tb5->name() == "a" &&
+                       tb5->type() == dods_byte_c);
+        CPPUNIT_ASSERT(tb2->value() == 0);
+    }
+
+    void equals_test()
+    {
+        Byte b3 = Byte("a", "b");
+        Byte b4 = Byte("e");
+        
+        CPPUNIT_ASSERT(b3.set_value(42) && b3.value() == 42);
+        b4 = b3;
+        CPPUNIT_ASSERT(b3.value() == 42);
+        b4 = b4;
+        CPPUNIT_ASSERT(b4.value() == 42);
+    }
+
+    void checksum_test()
+    {
+        Crc32 cs;
+        tb5->compute_checksum(cs);
+    }
+
+    void val2buf_test()
+    {
+        char i = 3;
+        tb3->val2buf(&i, true);
+        CPPUNIT_ASSERT(tb3->value() == 3);        
+        CPPUNIT_ASSERT_THROW(tb3->val2buf(NULL, true), InternalErr);
+    }
+
+    void buf2val_test()
+    {
+        char i = 42;
+        void *v = &i;
+        void *v2 = NULL;
+        CPPUNIT_ASSERT(tb1->set_value(6));
+        CPPUNIT_ASSERT(tb1->buf2val(&v) == 1 && i == 6);
+        CPPUNIT_ASSERT_THROW(tb1->buf2val(NULL), InternalErr);
+        CPPUNIT_ASSERT(tb1->buf2val(&v2) == 1 && *(int *)v2 == 6);
+    }
+
+    void dump_test()
+    {
+        ofstream ofs("ByteTest_dump.output", ios::trunc);
+        tb1->set_value(21);
+        tb1->dump(ofs);
+        ofs.close();
+        ifstream ifs("ByteTest_dump.output");
+        while(!ifs.eof())
+            ifs >> a;
+        ifs.close();
+        CPPUNIT_ASSERT(a[0] == 21);
+    }
+
+    void print_test()
+    {
+        FILE *fp;
+        CPPUNIT_ASSERT(fp = fopen("ByteTest.output", "w"));
+        tb1->set_value(22);
+        tb1->print_val(fp, " ", true);
+        fclose(fp);
+        ifstream ifs("ByteTest.output");
+        while(!ifs.eof())
+            ifs >> a;
+        ifs.close();
+        CPPUNIT_ASSERT(!strcmp(a, "22;"));
+    }
+
+    void type_compare_test()
+    {
+        Byte b1 = Byte("a");
+        Int8 i8 = Int8("a");
+        Int16 i16 = Int16("a");
+        UInt16 ui16 = UInt16("a");
+        Int32 i32 = Int32("a", "b");
+        UInt32 ui32 = UInt32("a", "b");
+        Float32 f32 = Float32("a");
+        Float64 f64 = Float64("a");
+        Url url = Url("a");
+        Str str = Str("a");
+        Array array = Array("a", &i16, true);
+        
+        b1.set_value(42);
+        i8.set_value(42);
+        i16.set_value(42);
+        ui16.set_value(42);
+        i32.set_value(42);
+        ui32.set_value(42);
+        f32.set_value(42);
+        f64.set_value(42);
+        CPPUNIT_ASSERT(b1.value() == 42);
+        CPPUNIT_ASSERT(b1.ops(&b1, SCAN_EQUAL));
+        CPPUNIT_ASSERT(b1.d4_ops(&b1, SCAN_EQUAL));
+        CPPUNIT_ASSERT(b1.d4_ops(&i8, SCAN_EQUAL));
+        CPPUNIT_ASSERT(b1.d4_ops(&i16, SCAN_EQUAL));
+        CPPUNIT_ASSERT(b1.d4_ops(&ui16, SCAN_EQUAL));
+        CPPUNIT_ASSERT(b1.d4_ops(&i32, SCAN_EQUAL));
+        CPPUNIT_ASSERT(b1.d4_ops(&ui32, SCAN_EQUAL));
+        CPPUNIT_ASSERT(b1.d4_ops(&f32, SCAN_EQUAL));
+        CPPUNIT_ASSERT(b1.d4_ops(&f64, SCAN_EQUAL));
+
+        CPPUNIT_ASSERT_THROW(b1.d4_ops(&url, SCAN_EQUAL), Error);
+        CPPUNIT_ASSERT_THROW(b1.d4_ops(&str, SCAN_EQUAL), Error);
+        CPPUNIT_ASSERT_THROW(b1.d4_ops(&array, SCAN_EQUAL), Error);
+    }    
 
     void name_mangling_test()
     {
@@ -116,6 +252,13 @@ public:
 
         tb4->print_decl(sof, "", false);
         CPPUNIT_ASSERT(sof.str().find("Byte tb4%20%23") != string::npos);
+    }
+
+    void basetype_test()
+    {
+        BaseType *bt = static_cast<BaseType*>(tb1);
+        bt->width(false);        
+//        CPPUNIT_ASSERT_THROW(bt->width(false), InternalErr);        
     }
 
 };

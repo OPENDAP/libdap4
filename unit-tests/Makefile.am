@@ -55,7 +55,7 @@ chunked-io D4-marshaller D4-type-testsuite
 EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in \
 valgrind_suppressions.txt
 
-CLEANFILES = testout .dodsrc  *.gcda *.gcno *.gcov *.trs *.log *.file D4-xml.tar.gz
+CLEANFILES = testout .dodsrc  *.gcda *.gcno *.gcov *.trs *.log *.file D4-xml.tar.gz *.output
 
 DISTCLEANFILES = test_config.h *.strm *.file tmp.txt
 
@@ -74,7 +74,8 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	RegexTest ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest \
 	DDSTest	DDXParserTest  generalUtilTest HTTPConnectTest parserUtilTest \
 	RCReaderTest SequenceTest SignalHandlerTest  MarshallerTest \
-	HTTPCacheTest ServerFunctionsListUnitTest
+	HTTPCacheTest ServerFunctionsListUnitTest Int8Test Int16Test UInt16Test \
+	Int32Test UInt32Test Int64Test UInt64Test Float32Test Float64Test 
 
 if DAP4_DEFINED
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
@@ -120,6 +121,33 @@ DASTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DDSTest_SOURCES = DDSTest.cc $(TEST_SRC)
 DDSTest_LDADD = ../libdap.la $(AM_LDADD)
+
+Int8Test_SOURCES = Int8Test.cc $(TEST_SRC)
+Int8Test_LDADD = ../libdap.la $(AM_LDADD)
+
+Int16Test_SOURCES = Int16Test.cc $(TEST_SRC)
+Int16Test_LDADD = ../libdap.la $(AM_LDADD)
+
+UInt16Test_SOURCES = UInt16Test.cc $(TEST_SRC)
+UInt16Test_LDADD = ../libdap.la $(AM_LDADD)
+
+Int32Test_SOURCES = Int32Test.cc $(TEST_SRC)
+Int32Test_LDADD = ../libdap.la $(AM_LDADD)
+
+UInt32Test_SOURCES = UInt32Test.cc $(TEST_SRC)
+UInt32Test_LDADD = ../libdap.la $(AM_LDADD)
+
+Int64Test_SOURCES = Int64Test.cc $(TEST_SRC)
+Int64Test_LDADD = ../libdap.la $(AM_LDADD)
+
+UInt64Test_SOURCES = UInt64Test.cc $(TEST_SRC)
+UInt64Test_LDADD = ../libdap.la $(AM_LDADD)
+
+Float32Test_SOURCES = Float32Test.cc $(TEST_SRC)
+Float32Test_LDADD = ../libdap.la $(AM_LDADD)
+
+Float64Test_SOURCES = Float64Test.cc $(TEST_SRC)
+Float64Test_LDADD = ../libdap.la $(AM_LDADD)
 
 DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
