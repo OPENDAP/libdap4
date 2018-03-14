@@ -75,7 +75,8 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	DDSTest	DDXParserTest  generalUtilTest HTTPConnectTest parserUtilTest \
 	RCReaderTest SequenceTest SignalHandlerTest  MarshallerTest \
 	HTTPCacheTest ServerFunctionsListUnitTest Int8Test Int16Test UInt16Test \
-	Int32Test UInt32Test Int64Test UInt64Test Float32Test Float64Test 
+	Int32Test UInt32Test Int64Test UInt64Test Float32Test Float64Test \
+	D4BaseTypeFactoryTest
 
 if DAP4_DEFINED
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
@@ -148,6 +149,9 @@ Float32Test_LDADD = ../libdap.la $(AM_LDADD)
 
 Float64Test_SOURCES = Float64Test.cc $(TEST_SRC)
 Float64Test_LDADD = ../libdap.la $(AM_LDADD)
+
+D4BaseTypeFactoryTest_SOURCES = D4BaseTypeFactoryTest.cc $(TEST_SRC)
+D4BaseTypeFactoryTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)

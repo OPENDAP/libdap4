@@ -3,7 +3,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Copyright (c) 2002,2003,2013 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -121,6 +121,36 @@ public:
         D4Attribute *attr = new D4Attribute("test", StringToD4AttributeType("Int16"));
         attr->add_value("1");
         g->attributes()->add_attribute_nocopy(attr);
+    }
+
+    void test_cons()
+    {
+        D4Group g1 = D4Group("a", "b");
+        CPPUNIT_ASSERT(g1.name() == "a" && g1.dataset() == "b");
+    }
+
+    void test_equals()
+    {
+        D4Group g1 = D4Group("a", "b");
+        D4Group g2 = D4Group("c", "d");
+        g2 = g1;
+        CPPUNIT_ASSERT(g2.name() == "a" && g2.dataset() == "b");
+        g2 = g2;
+        CPPUNIT_ASSERT(g2.name() == "a" && g2.dataset() == "b");
+    }
+
+    void test_errors()
+    {
+        D4Group g1 = D4Group("a", "b");
+        CPPUNIT_ASSERT_THROW(g1.find_dim("/"), InternalErr);
+        CPPUNIT_ASSERT_THROW(g1.find_enum_def("/"), InternalErr);
+        CPPUNIT_ASSERT_THROW(g1.find_var("/"), InternalErr);
+    }
+
+    void test_size()
+    {
+        D4Group g1 = D4Group("a", "b");
+        CPPUNIT_ASSERT(g1.request_size(true) == 0);
     }
 
     // An empty D4Group object prints nothing; the XMLWriter class adds
@@ -339,6 +369,11 @@ public:
 
     CPPUNIT_TEST_SUITE (D4GroupTest);
 
+    CPPUNIT_TEST (test_equals);
+    CPPUNIT_TEST (test_cons);
+    CPPUNIT_TEST (test_errors);
+    CPPUNIT_TEST (test_size);
+    
     CPPUNIT_TEST (test_print_empty);
 
     CPPUNIT_TEST (test_print_named_empty);

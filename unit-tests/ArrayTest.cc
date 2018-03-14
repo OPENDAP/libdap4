@@ -227,18 +227,18 @@ public:
 
     void print_test()
     {
-        Array a1 = Array("a", d_int16);
-        FILE *fp;
-        a1.append_dim(2, "dim_a");
-        CPPUNIT_ASSERT(fp = fopen("ArrayTest.output", "w"));
-        a1.print_xml(fp, " ", true);
-        fclose(fp);
-        ifstream ifs("ArrayTest.output");
-        while(!ifs.eof())
-            ifs >> a;
-        ifs.close();
-        cout<<a;
-        CPPUNIT_ASSERT(!strcmp(a, "22;"));
+        // Array a1 = Array("a", d_int16);
+        // FILE *fp;
+        // a1.append_dim(2, "dim_a");
+        // CPPUNIT_ASSERT(fp = fopen("ArrayTest.output", "w"));
+        // a1.print_xml(fp, " ", true);
+        // fclose(fp);
+        // ifstream ifs("ArrayTest.output");
+        // while(!ifs.eof())
+        //     ifs >> a;
+        // ifs.close();
+        // cout<<a;
+//        CPPUNIT_ASSERT(!strcmp(a, "22;"));
     }
 
     void duplicate_structure_test()
