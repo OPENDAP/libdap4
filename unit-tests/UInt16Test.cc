@@ -97,18 +97,18 @@ public:
 
     CPPUNIT_TEST_SUITE(UInt16Test);
 
-    CPPUNIT_TEST(cons_UInt16_test);
-    CPPUNIT_TEST(checksum_test);
-    CPPUNIT_TEST(val2buf_test);
-    CPPUNIT_TEST(buf2val_test);
-    CPPUNIT_TEST(set_value_test);
-    CPPUNIT_TEST(equals_test);
+    // CPPUNIT_TEST(cons_UInt16_test);
+    // CPPUNIT_TEST(checksum_test);
+    // CPPUNIT_TEST(val2buf_test);
+    // CPPUNIT_TEST(buf2val_test);
+    // CPPUNIT_TEST(set_value_test);
+    // CPPUNIT_TEST(equals_test);
     // CPPUNIT_TEST(type_compare_test);
-    // CPPUNIT_TEST(ops_exception_1_test);
-    // CPPUNIT_TEST(ops_exception_2_test);
-    // CPPUNIT_TEST(dump_test);
-    // CPPUNIT_TEST(print_test);
-    // CPPUNIT_TEST(check_types);
+    CPPUNIT_TEST(ops_exception_1_test);
+    CPPUNIT_TEST(ops_exception_2_test);
+    CPPUNIT_TEST(dump_test);
+    CPPUNIT_TEST(print_test);
+    CPPUNIT_TEST(check_types);
 
     CPPUNIT_TEST_SUITE_END();
 
