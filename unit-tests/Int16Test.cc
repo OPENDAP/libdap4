@@ -31,7 +31,6 @@
 #include <sstream>
 #include <string.h>
 
-#include "crc.h"
 #include "Byte.h"
 #include "Int8.h"
 #include "Int16.h"
@@ -48,6 +47,7 @@
 #include "Structure.h"
 #include "Sequence.h"
 #include "Grid.h"
+#include "crc.h"
 
 #include "DDS.h"
 
