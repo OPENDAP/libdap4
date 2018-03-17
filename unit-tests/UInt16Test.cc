@@ -97,9 +97,9 @@ public:
 
     CPPUNIT_TEST_SUITE(UInt16Test);
 
-    // CPPUNIT_TEST(cons_UInt16_test);
-    // CPPUNIT_TEST(checksum_test);
-    // CPPUNIT_TEST(val2buf_test);
+    CPPUNIT_TEST(cons_UInt16_test);
+    CPPUNIT_TEST(checksum_test);
+    CPPUNIT_TEST(val2buf_test);
     // CPPUNIT_TEST(buf2val_test);
     // CPPUNIT_TEST(set_value_test);
     // CPPUNIT_TEST(equals_test);
