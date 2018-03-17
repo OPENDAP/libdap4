@@ -142,6 +142,10 @@ public:
     CPPUNIT_TEST (erase_test);
     CPPUNIT_TEST (names_with_spaces_test);
 #endif
+    CPPUNIT_TEST (is_global_att_test);
+    CPPUNIT_TEST (add_container_alias_test);
+    CPPUNIT_TEST (attr_alias_test);
+    CPPUNIT_TEST (attr_alias_2_test);
     CPPUNIT_TEST (containers_with_spaces_test);
 #if 1
     CPPUNIT_TEST (get_attr_iter_test);
@@ -306,6 +310,31 @@ String longer%20name \"second test\";";
         t = 0;
     }
 
+    void is_global_att_test()
+    {
+        for (AttrTable::Attr_iter iter = at1->attr_begin(); iter != at1->attr_end(); iter++) {
+            at1->set_is_global_attribute(iter, true);
+            CPPUNIT_ASSERT(at1->is_global_attribute(iter));
+        }
+    }
+
+    void add_container_alias_test()
+    {
+        CPPUNIT_ASSERT_THROW(at1->add_container_alias("a", at1), Error);
+    }
+
+    void attr_alias_test()
+    {
+        at1->attr_alias("alias", at1, "a");
+        CPPUNIT_ASSERT(at1->get_type("alias") == "Container");
+    }
+
+    void attr_alias_2_test()
+    {
+        at1->attr_alias("alias", "a");
+        CPPUNIT_ASSERT(at1->get_type("alias") == "Container");
+    }
+
     void containers_with_spaces_test()
     {
         AttrTable *top = new AttrTable;
@@ -313,6 +342,7 @@ String longer%20name \"second test\";";
             AttrTable *cont = top->append_container("Data Field");
             cont->append_attr("long name", "String", "first");
             cont->add_value_alias(top, "an alias", "long name");
+            CPPUNIT_ASSERT_THROW(cont->add_value_alias(top, "an alias", "long name"), Error);
         }
         catch (Error &e) {
             cerr << e.get_error_message() << endl;

@@ -72,6 +72,7 @@ namespace libdap {
 
 class D4BaseTypeFactoryTest: public TestFixture {
 private:
+    D4BaseTypeFactory d4btf;
     
 public:
     D4BaseTypeFactoryTest()
@@ -83,6 +84,7 @@ public:
 
     void setUp()
     {
+        d4btf = D4BaseTypeFactory();
     }
 
     void tearDown()
@@ -91,12 +93,86 @@ public:
 
     CPPUNIT_TEST_SUITE(D4BaseTypeFactoryTest);
 
-    CPPUNIT_TEST(cons_test);
+    CPPUNIT_TEST(new_variables_test);
+    CPPUNIT_TEST(new_url_test);
+    CPPUNIT_TEST(error_test);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void cons_test()
+    void new_variables_test()
     {
+        BaseType *bt;
+        
+        bt = d4btf.NewVariable(dods_byte_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<Byte*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_char_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<Byte*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_uint8_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<Byte*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_int8_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<Int8*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_int16_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<Int16*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_uint16_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<UInt16*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_int32_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<Int32*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_uint32_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<UInt32*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_int64_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<Int64*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_uint64_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<UInt64*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_enum_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && bt->is_dap4());
+        // CPPUNIT_ASSERT(dynamic_cast<D4Enum*>(bt));
+        delete bt;
+        bt = d4btf.NewVariable(dods_str_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<Str*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_url_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<Url*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_opaque_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && bt->is_dap4());
+        // CPPUNIT_ASSERT(dynamic_cast<D4Opaque*>(bt));
+        delete bt;
+        bt = d4btf.NewVariable(dods_structure_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<Structure*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_sequence_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && bt->is_dap4());
+        // CPPUNIT_ASSERT(dynamic_cast<D4Sequence*>(bt));
+        delete bt;
+        bt = d4btf.NewVariable(dods_array_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && dynamic_cast<Array*>(bt) && bt->is_dap4());
+        delete bt;
+        bt = d4btf.NewVariable(dods_group_c, "a");
+        CPPUNIT_ASSERT(bt->name() == "a" && bt->is_dap4());
+        // CPPUNIT_ASSERT(dynamic_cast<D4Group*>(bt));
+        delete bt;
+    }
+
+    void new_url_test()
+    {
+        Url *up = d4btf.NewUrl("a");
+        CPPUNIT_ASSERT(up->name() == "a" && dynamic_cast<Url*>(up) && up->is_dap4());
+        delete up;
+    }
+    
+    void error_test()
+    {
+        CPPUNIT_ASSERT_THROW(d4btf.NewVariable(dods_grid_c, "a"), InternalErr);
     }
 };
 

@@ -31,6 +31,7 @@
 #include "D4Group.h"
 #include "D4Attributes.h"
 
+#include "crc.h"
 #include "Byte.h"
 #include "Int64.h"
 #include "Structure.h"
@@ -139,12 +140,60 @@ public:
         CPPUNIT_ASSERT(g2.name() == "a" && g2.dataset() == "b");
     }
 
+    void test_is_linear()
+    {
+        D4Group g1 = D4Group("a", "b");        
+        CPPUNIT_ASSERT(!g1.is_linear());
+    }
+
     void test_errors()
     {
         D4Group g1 = D4Group("a", "b");
+        Crc32 cs;
+        Constructor *c = &g1;
         CPPUNIT_ASSERT_THROW(g1.find_dim("/"), InternalErr);
         CPPUNIT_ASSERT_THROW(g1.find_enum_def("/"), InternalErr);
         CPPUNIT_ASSERT_THROW(g1.find_var("/"), InternalErr);
+        CPPUNIT_ASSERT_THROW(g1.add_var(0), InternalErr);
+        CPPUNIT_ASSERT_THROW(c->compute_checksum(cs), InternalErr);
+    }
+
+    void test_riter()
+    {
+        load_group_with_scalars(root);
+        int count = 0;
+        for (Constructor::Vars_riter r = root->var_rbegin(); r != root->var_rend(); r++) {
+            CPPUNIT_ASSERT((count == 0 && (*r)->name() == "i64") || (count == 1 && (*r)->name() == "b"));
+            count++;
+        }
+    }
+    
+    void test_get_iter()
+    {
+        load_group_with_scalars(root);
+        int count = 0;
+        for (Constructor::Vars_iter r = root->get_vars_iter(0); r != root->var_end(); r++) {
+            CPPUNIT_ASSERT((count == 0 && (*r)->name() == "b") || (count == 1 && (*r)->name() == "i64"));
+            count++;
+        }
+    }
+
+    void test_get_var_index()
+    {
+        load_group_with_scalars(root);
+        BaseType *bt = root->get_var_index(0);
+        CPPUNIT_ASSERT(bt->name() == "b");
+        bt = root->get_var_index(1);
+        CPPUNIT_ASSERT(bt->name() == "i64");
+    }
+
+    void test_delete_var()
+    {
+        load_group_with_scalars(root);
+        Constructor::Vars_iter r = root->get_vars_iter(0);        
+        root->del_var(r);
+        BaseType *bt = root->get_var_index(0);
+        CPPUNIT_ASSERT(bt->name() == "i64");        
     }
 
     void test_size()
@@ -371,8 +420,13 @@ public:
 
     CPPUNIT_TEST (test_equals);
     CPPUNIT_TEST (test_cons);
+    CPPUNIT_TEST (test_is_linear);
     CPPUNIT_TEST (test_errors);
     CPPUNIT_TEST (test_size);
+    CPPUNIT_TEST (test_riter);
+    CPPUNIT_TEST (test_get_iter);
+    CPPUNIT_TEST (test_get_var_index);
+    CPPUNIT_TEST (test_delete_var);
     
     CPPUNIT_TEST (test_print_empty);
 

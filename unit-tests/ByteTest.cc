@@ -257,7 +257,13 @@ public:
     void basetype_test()
     {
         BaseType *bt = static_cast<BaseType*>(tb1);
-        bt->width(false);        
+        bt->width(false);
+        CPPUNIT_ASSERT(!bt->synthesized_p());
+        bt->set_synthesized_p(true);
+        CPPUNIT_ASSERT(bt->synthesized_p());
+        CPPUNIT_ASSERT_THROW(bt->add_var(bt), InternalErr);
+        CPPUNIT_ASSERT_THROW(bt->add_var_nocopy(bt), InternalErr);
+        CPPUNIT_ASSERT_THROW(bt->ops(bt, SCAN_EQUAL), InternalErr);
 //        CPPUNIT_ASSERT_THROW(bt->width(false), InternalErr);        
     }
 

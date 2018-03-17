@@ -3,7 +3,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Copyright (c) 2002,2003,2013 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -104,6 +104,56 @@ public:
     {
         delete xml;
         delete attrs;
+    }
+
+    void test_type_to_string()
+    {
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_null_c) == "null");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_byte_c) == "Byte");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_int16_c) == "Int16");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_uint16_c) == "UInt16");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_int32_c) == "Int32");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_uint32_c) == "UInt32");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_float32_c) == "Float32");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_float64_c) == "Float64");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_str_c) == "String");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_url_c) == "Url");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_int8_c) == "Int8");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_uint8_c) == "UInt8");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_int64_c) == "Int64");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_uint64_c) == "UInt64");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_enum_c) == "Enum");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_opaque_c) == "Opaque");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_container_c) == "Container");
+        CPPUNIT_ASSERT(D4AttributeTypeToString(attr_otherxml_c) == "OtherXML");
+    }
+
+    void test_string_to_type()
+    {
+        CPPUNIT_ASSERT(StringToD4AttributeType("null") == attr_null_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("Byte") == attr_byte_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("Int16") == attr_int16_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("UInt16") == attr_uint16_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("Int32") == attr_int32_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("UInt32") == attr_uint32_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("Float32") == attr_float32_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("Float64") == attr_float64_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("String") == attr_str_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("Url") == attr_url_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("Int8") == attr_int8_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("UInt8") == attr_uint8_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("Int64") == attr_int64_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("UInt64") == attr_uint64_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("Enum") == attr_enum_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("Opaque") == attr_opaque_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("Container") == attr_container_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("OtherXML") == attr_otherxml_c);
+        CPPUNIT_ASSERT(StringToD4AttributeType("Punk") == attr_null_c);
+    }
+
+    void test_attr_type()
+    {
+        //attrs->get_dap2_AttrType(attr_null_c);
     }
 
     // An empty D4Dimensions object prints nothing; the XMLWriter class adds
@@ -295,6 +345,8 @@ public:
 
     CPPUNIT_TEST_SUITE (D4AttributesTest);
 
+    CPPUNIT_TEST (test_type_to_string);
+    
     CPPUNIT_TEST (test_print_empty);
     CPPUNIT_TEST (test_print_single_attribute);
     CPPUNIT_TEST (test_print_1);
