@@ -141,7 +141,7 @@ public:
         CPPUNIT_ASSERT(i2->set_value(0));
         CPPUNIT_ASSERT(i2->buf2val(&v) == 2 && i == 0);
         CPPUNIT_ASSERT_THROW(i2->buf2val(NULL), InternalErr);
-        // CPPUNIT_ASSERT(i2->buf2val(&v2) == 2 && *(int *)v2 == 0);
+        CPPUNIT_ASSERT(i2->buf2val(&v2) == 2 && *(unsigned short *)v2 == 0);
     }
 
     void set_value_test()
