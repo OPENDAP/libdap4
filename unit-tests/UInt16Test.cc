@@ -139,7 +139,7 @@ public:
         void *v = &i;
         void *v2 = NULL;
         CPPUNIT_ASSERT(i2->set_value(0));
-        // CPPUNIT_ASSERT(i2->buf2val(&v) == 2 && i == 0);
+        CPPUNIT_ASSERT(i2->buf2val(&v) == 2 && i == 0);
         // CPPUNIT_ASSERT_THROW(i2->buf2val(NULL), InternalErr);
         // CPPUNIT_ASSERT(i2->buf2val(&v2) == 2 && *(int *)v2 == 0);
     }
