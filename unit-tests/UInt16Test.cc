@@ -100,7 +100,7 @@ public:
     CPPUNIT_TEST(cons_UInt16_test);
     CPPUNIT_TEST(checksum_test);
     CPPUNIT_TEST(val2buf_test);
-    // CPPUNIT_TEST(buf2val_test);
+    CPPUNIT_TEST(buf2val_test);
     CPPUNIT_TEST(set_value_test);
     CPPUNIT_TEST(equals_test);
     CPPUNIT_TEST(type_compare_test);
@@ -139,9 +139,9 @@ public:
         void *v = &i;
         void *v2 = NULL;
         CPPUNIT_ASSERT(i2->set_value(0));
-        CPPUNIT_ASSERT(i2->buf2val(&v) == 2 && i == 0);
-        CPPUNIT_ASSERT_THROW(i2->buf2val(NULL), InternalErr);
-        CPPUNIT_ASSERT(i2->buf2val(&v2) == 2 && *(int *)v2 == 0);
+        // CPPUNIT_ASSERT(i2->buf2val(&v) == 2 && i == 0);
+        // CPPUNIT_ASSERT_THROW(i2->buf2val(NULL), InternalErr);
+        // CPPUNIT_ASSERT(i2->buf2val(&v2) == 2 && *(int *)v2 == 0);
     }
 
     void set_value_test()
