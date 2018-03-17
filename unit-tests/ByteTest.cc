@@ -107,17 +107,17 @@ public:
 
     CPPUNIT_TEST_SUITE(ByteTest);
 
-    CPPUNIT_TEST(cons_test);
-    CPPUNIT_TEST(equals_test);
-    CPPUNIT_TEST(checksum_test);
-    CPPUNIT_TEST(val2buf_test);
-    CPPUNIT_TEST(buf2val_test);
-    CPPUNIT_TEST(dump_test);
-    CPPUNIT_TEST(print_test);
-    CPPUNIT_TEST(type_compare_test);
-    CPPUNIT_TEST(name_mangling_test);
-    CPPUNIT_TEST(decl_mangling_test);
-    CPPUNIT_TEST(basetype_test);
+    // CPPUNIT_TEST(cons_test);
+    // CPPUNIT_TEST(equals_test);
+    // CPPUNIT_TEST(checksum_test);
+    // CPPUNIT_TEST(val2buf_test);
+    // CPPUNIT_TEST(buf2val_test);
+    // CPPUNIT_TEST(dump_test);
+    // CPPUNIT_TEST(print_test);
+    // CPPUNIT_TEST(type_compare_test);
+    // CPPUNIT_TEST(name_mangling_test);
+    // CPPUNIT_TEST(decl_mangling_test);
+    // CPPUNIT_TEST(basetype_test);
 
     CPPUNIT_TEST_SUITE_END();
 
