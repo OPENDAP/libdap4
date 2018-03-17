@@ -36,7 +36,6 @@
 #endif
 #include <string.h>
 
-#include "crc.h"
 #include "Byte.h"
 #include "Int8.h"
 #include "Int16.h"
@@ -49,6 +48,7 @@
 #include "Url.h"
 #include "Array.h"
 #include "ce_expr.tab.hh"
+#include "crc.h"
 
 #include "GetOpt.h" // Added jhrg
 
