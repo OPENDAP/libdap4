@@ -186,7 +186,7 @@ int main(int argc, char*argv[])
         }
         default:
             break;
-    }
+        }
 
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
