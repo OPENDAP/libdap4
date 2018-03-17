@@ -172,21 +172,21 @@ int main(int argc, char*argv[])
 
     while ((option_char = getopt()) != -1)
         switch (option_char) {
-            case 'd':
-                debug = true;  // debug is a static global
-                break;
-            case 'h': {     // help - show test names
-                cerr << "Usage: dasT has the following tests:" << endl;
-                const std::vector<Test*> &tests = dasT::suite()->getTests();
-                unsigned int prefix_len = dasT::suite()->getName().append("::").length();
-                for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                    cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-                }
-                break;
+        case 'd':
+            debug = true;  // debug is a static global
+            break;
+        case 'h': {     // help - show test names
+            cerr << "Usage: dasT has the following tests:" << endl;
+            const std::vector<Test*> &tests = dasT::suite()->getTests();
+            unsigned int prefix_len = dasT::suite()->getName().append("::").length();
+            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
             }
-            default:
-                break;
+            break;
         }
+        default:
+            break;
+    }
 
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
