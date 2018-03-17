@@ -111,7 +111,7 @@ public:
     CPPUNIT_TEST(equals_test);
     CPPUNIT_TEST(checksum_test);
     CPPUNIT_TEST(val2buf_test);
-    // CPPUNIT_TEST(buf2val_test);
+    CPPUNIT_TEST(buf2val_test);
     CPPUNIT_TEST(dump_test);
     CPPUNIT_TEST(print_test);
     CPPUNIT_TEST(type_compare_test);
@@ -162,7 +162,7 @@ public:
         CPPUNIT_ASSERT(tb1->set_value(6));
         CPPUNIT_ASSERT(tb1->buf2val(&v) == 1 && i == 6);
         CPPUNIT_ASSERT_THROW(tb1->buf2val(NULL), InternalErr);
-        CPPUNIT_ASSERT(tb1->buf2val(&v2) == 1 && *(int *)v2 == 6);
+        CPPUNIT_ASSERT(tb1->buf2val(&v2) == 1 && *(signed char *)v2 == 6);
     }
 
     void dump_test()
