@@ -34,6 +34,12 @@ else
 AM_CXXFLAGS += -g -O2
 endif
 
+AM_LDFLAGS =
+if ENABLE_COVERAGE
+AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
+AM_LDFLAGS += -lgcov --coverage -pg
+endif
+
 SUBDIRS = gl d4_ce d4_function . unit-tests tests 
 DIST_SUBDIRS = gl d4_ce d4_function unit-tests tests
 
@@ -228,13 +234,10 @@ pkg: pkg-main
 # branched and -f reports on all functions. The -l -o options summarize on a
 # per-file basis. 3/27/98 jhrg
 collect-coverage-data:
-	(cd test-coverage; \
-         cov_dat="coverage-data-`date +%m.%d.%y`"; \
-         touch $$cov_dat; \
-         for f in $(ALLSRCS); do \
-            echo "\n*** Coverage data for $$f ***\n" >> $$cov_dat; \
-            gcov -l -o ../ $$f >> $$cov_dat; \
-         done)
+	-mkdir code_coverage
+	cd code_coverage
+	gcovr -r . --html --html-details -o coverage.html
+	mv *.html code_coverage
 
 #############################################################################
 # Library sources
