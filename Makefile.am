@@ -34,7 +34,13 @@ else
 AM_CXXFLAGS += -g -O2
 endif
 
-SUBDIRS = gl d4_ce d4_function . unit-tests tests 
+AM_LDFLAGS =
+if ENABLE_COVERAGE
+AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
+AM_LDFLAGS += -lgcov --coverage -pg
+endif
+
+SUBDIRS = gl d4_ce d4_function . tests unit-tests 
 DIST_SUBDIRS = gl d4_ce d4_function unit-tests tests
 
 noinst_LTLIBRARIES = libparsers.la

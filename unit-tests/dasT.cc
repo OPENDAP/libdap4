@@ -1,4 +1,3 @@
-// -*- mode: c++; c-basic-offset:4 -*-
 #include <cppunit/TestFixture.h>
 #include <cppunit/TestAssert.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -171,12 +170,12 @@ int main(int argc, char*argv[])
     int option_char;
 
     while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = true;  // debug is a static global
-            break;
-        case 'h': {     // help - show test names
-            cerr << "Usage: dasT has the following tests:" << endl;
+	switch (option_char) {
+	case 'd':
+	    debug = true;  // debug is a static global
+	    break;
+	case 'h': {     // help - show test names
+	    cerr << "Usage: dasT has the following tests:" << endl;
             const std::vector<Test*> &tests = dasT::suite()->getTests();
             unsigned int prefix_len = dasT::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
@@ -187,10 +186,10 @@ int main(int argc, char*argv[])
         default:
             break;
         }
-
+    
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
+    
     bool wasSuccessful = true;
     string test = "";
     int i = getopt.optind;
@@ -205,6 +204,6 @@ int main(int argc, char*argv[])
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
-
+    
     return wasSuccessful ? 0 : 1;
 }
