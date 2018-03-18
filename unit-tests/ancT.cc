@@ -42,7 +42,7 @@
 #include "GetOpt.h"
 
 #include "Ancillary.h"
-
+#include "DDS.h"
 #include "debug.h"
 #include <test_config.h>
 
@@ -51,6 +51,7 @@ using namespace std;
 using namespace libdap;
 
 static bool debug = false;
+
 
 class ancT: public TestFixture {
 private:
@@ -77,6 +78,7 @@ public:
 
     CPPUNIT_TEST (find_ancillary_file_test);
     CPPUNIT_TEST (find_group_ancillary_file_test);
+    CPPUNIT_TEST (read_ancillary_das_file_test);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -127,12 +129,13 @@ public:
             Ancillary::find_group_ancillary_file((string) TEST_SRC_DIR + "/cgi-util-tests/group.hdf", ".htm") == "");
     }
 
-    void read_ancillary_file_test()
+    void read_ancillary_das_file_test()
     {
         DAS das;
         string dir = "";
         string file = "";
         Ancillary::read_ancillary_das(das, (string) TEST_SRC_DIR + "/das-testsuite/test.1.das", dir, file);
+        CPPUNIT_ASSERT(das.get_size() == 1);
     }
 
 };

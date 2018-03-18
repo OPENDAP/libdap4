@@ -169,10 +169,14 @@ public:
         ConstraintEvaluator eval;
         TestTypeFactory ttf;
         DataDDS dds(&ttf, "dds");
-
+            
         try {
             DBG(cerr << "serializing using XDRFileMarshaller" << endl);
 
+            BaseType *bt = static_cast<BaseType*>(b);
+            FILE *f = fopen("test.file", "w");
+            CPPUNIT_ASSERT_THROW(bt->BaseType::serialize(eval, dds, fm, false), InternalErr);
+            fclose(f);
             b->serialize(eval, dds, fm, false);
             i16->serialize(eval, dds, fm, false);
             i32->serialize(eval, dds, fm, false);

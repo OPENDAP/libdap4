@@ -36,6 +36,7 @@
 #endif
 #include <string.h>
 
+#include "BaseType.h"
 #include "Byte.h"
 #include "Int8.h"
 #include "Int16.h"
@@ -49,6 +50,7 @@
 #include "Array.h"
 #include "ce_expr.tab.hh"
 #include "crc.h"
+#include "D4Attributes.h"
 
 #include "GetOpt.h" // Added jhrg
 
@@ -113,11 +115,18 @@ public:
     CPPUNIT_TEST(val2buf_test);
     CPPUNIT_TEST(buf2val_test);
     CPPUNIT_TEST(dump_test);
+    CPPUNIT_TEST(dump_2_test);
     CPPUNIT_TEST(print_test);
     CPPUNIT_TEST(type_compare_test);
     CPPUNIT_TEST(name_mangling_test);
     CPPUNIT_TEST(decl_mangling_test);
     CPPUNIT_TEST(basetype_test);
+    CPPUNIT_TEST(basetype_print_val_test);
+    CPPUNIT_TEST(basetype_print_xml_test);
+    CPPUNIT_TEST(basetype_print_xml_2_test);
+    CPPUNIT_TEST(basetype_FQN_test);
+    CPPUNIT_TEST(basetype_print_decl_test);
+    CPPUNIT_TEST(set_attributes_test);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -174,6 +183,26 @@ public:
         ifstream ifs("ByteTest_dump.output");
         while(!ifs.eof())
             ifs >> a;
+        ifs.close();
+        CPPUNIT_ASSERT(a[0] == 21);
+    }
+
+    void dump_2_test()
+    {
+        D4Attribute att;
+        D4Attributes attrs;        
+        ofstream ofs("ByteTest_dump_2.output", ios::trunc);
+        att.set_name("Waldo");
+        att.set_type(attr_byte_c);
+        att.add_value("1");
+        attrs.add_attribute(&att);
+        tb1->set_attributes(&attrs);
+        tb1->set_value(21);
+        tb1->dump(ofs);
+        ofs.close();
+        ifstream ifs("ByteTest_dump_2.output");
+        while(!ifs.eof())
+             ifs >> a;
         ifs.close();
         CPPUNIT_ASSERT(a[0] == 21);
     }
@@ -257,16 +286,97 @@ public:
     void basetype_test()
     {
         BaseType *bt = static_cast<BaseType*>(tb1);
-        bt->width(false);
+        BaseType::btp_stack bs;
+        BaseType::btp_stack &bsr = bs;
+        CPPUNIT_ASSERT_THROW(bt->BaseType::width(false), InternalErr);
+        CPPUNIT_ASSERT_THROW(bt->BaseType::ops(bt, SCAN_EQUAL), InternalErr);
         CPPUNIT_ASSERT(!bt->synthesized_p());
         bt->set_synthesized_p(true);
         CPPUNIT_ASSERT(bt->synthesized_p());
         CPPUNIT_ASSERT_THROW(bt->add_var(bt), InternalErr);
         CPPUNIT_ASSERT_THROW(bt->add_var_nocopy(bt), InternalErr);
         CPPUNIT_ASSERT_THROW(bt->ops(bt, SCAN_EQUAL), InternalErr);
-//        CPPUNIT_ASSERT_THROW(bt->width(false), InternalErr);        
+        CPPUNIT_ASSERT(bt->BaseType::var("", bsr) == 0);
     }
 
+    void basetype_print_val_test()
+    {
+        BaseType *bt = static_cast<BaseType*>(tb1);
+        FILE *fp;
+        CPPUNIT_ASSERT(fp = fopen("ByteTest_BaseType_print.output", "w"));
+        bt->BaseType::print_val(fp, "", true);
+        fclose(fp);
+        ifstream ifs("ByteTest_BaseType_print.output");
+        while(!ifs.eof())
+            ifs >> a;
+        ifs.close();
+        CPPUNIT_ASSERT(!strcmp(a, "0;"));        
+    }
+    
+    void basetype_print_xml_test()
+    {
+        BaseType *bt = static_cast<BaseType*>(tb1);
+        FILE *fp;
+        CPPUNIT_ASSERT(fp = fopen("ByteTest_BaseType_print_xml.output", "w"));
+        bt->BaseType::print_xml(fp, "", true);
+        fclose(fp);
+        ifstream ifs("ByteTest_BaseType_print_xml.output");
+        while(!ifs.eof())
+            ifs >> a;
+        ifs.close();
+        CPPUNIT_ASSERT(!strcmp(a, "encoding=\"ISO-8859-1\"?>"));        
+    }
+
+    void basetype_print_xml_2_test()
+    {
+        BaseType *bt = static_cast<BaseType*>(tb1);
+        ofstream ofs("ByteTest_xml_2.output", ios::trunc);
+        bt->BaseType::print_xml(ofs, "", true);
+        ofs.close();
+        ifstream ifs("ByteTest_xml_2.output");
+        while(!ifs.eof())
+            ifs >> a;
+        ifs.close();
+        CPPUNIT_ASSERT(!strcmp(a, "encoding=\"ISO-8859-1\"?>"));
+    }
+
+    void basetype_FQN_test()
+    {
+        CPPUNIT_ASSERT(tb1->FQN() == "tb1");
+    }
+
+    void basetype_print_decl_test()
+    {
+        BaseType *bt = static_cast<BaseType*>(tb1);        
+        FILE *fp;
+        CPPUNIT_ASSERT(fp = fopen("ByteTest_BaseType_print_decl.output", "w"));
+        bt->BaseType::print_decl(fp, "", true, true, true);        
+        fclose(fp);        
+        ifstream ifs("ByteTest_BaseType_print_decl.output");
+        while(!ifs.eof())
+            ifs >> a;
+        ifs.close();
+        CPPUNIT_ASSERT(!strcmp(a, ""));
+    }
+
+    void set_attributes_test()
+    {
+        D4Attributes attrs;
+        D4Attribute a;
+
+        a.set_name("first");
+        a.set_type(attr_byte_c);
+        a.add_value("1");
+        a.add_value("2");
+        attrs.add_attribute(&a);
+        
+        BaseType *bt = static_cast<BaseType*>(tb1);        
+        bt->set_attributes(&attrs);
+        D4Attributes *a2 = bt->attributes();
+        CPPUNIT_ASSERT(a2->find("first")->name() == "first");
+    }
+
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION (ByteTest);

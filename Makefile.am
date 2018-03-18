@@ -19,7 +19,6 @@ endif
 # or ./configure --enable-developer --disable-shared
 # the --disable-shared is not required, but it seems to help with debuggers.
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align 
-TEST_COV_FLAGS = -g3 -ftest-coverage -fprofile-arcs
 
 # Build using the Address sanitizer (gcc 4.8+ and clang 3.3+).
 # See: https://github.com/google/sanitizers/wiki/AddressSanitizer
@@ -38,10 +37,15 @@ AM_LDFLAGS =
 if ENABLE_COVERAGE
 AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
 AM_LDFLAGS += -lgcov --coverage -pg
+# Generage HTML pages with code coverage.
+collect-coverage-data:
+	-mkdir code_coverage
+	gcovr -r . --html --html-details -o coverage.html
+	mv *.html code_coverage
 endif
 
 SUBDIRS = gl d4_ce d4_function . tests unit-tests 
-DIST_SUBDIRS = gl d4_ce d4_function unit-tests tests
+DIST_SUBDIRS = gl d4_ce d4_function tests unit-tests 
 
 noinst_LTLIBRARIES = libparsers.la
 
@@ -228,19 +232,6 @@ pkg-dmg: pkg-main
 	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
 
 pkg: pkg-main 
-
-# Note that the gcov options -f and -b are useful but sometimes make looking
-# at the results of coverage analysis a little taxing. -b reports on all
-# branched and -f reports on all functions. The -l -o options summarize on a
-# per-file basis. 3/27/98 jhrg
-collect-coverage-data:
-	(cd test-coverage; \
-         cov_dat="coverage-data-`date +%m.%d.%y`"; \
-         touch $$cov_dat; \
-         for f in $(ALLSRCS); do \
-            echo "\n*** Coverage data for $$f ***\n" >> $$cov_dat; \
-            gcov -l -o ../ $$f >> $$cov_dat; \
-         done)
 
 #############################################################################
 # Library sources
