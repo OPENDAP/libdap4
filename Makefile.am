@@ -235,7 +235,6 @@ pkg: pkg-main
 # per-file basis. 3/27/98 jhrg
 collect-coverage-data:
 	-mkdir code_coverage
-	cd code_coverage
 	gcovr -r . --html --html-details -o coverage.html
 	mv *.html code_coverage
 
