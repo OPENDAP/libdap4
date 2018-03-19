@@ -297,6 +297,10 @@ public:
         CPPUNIT_ASSERT_THROW(bt->add_var_nocopy(bt), InternalErr);
         CPPUNIT_ASSERT_THROW(bt->ops(bt, SCAN_EQUAL), InternalErr);
         CPPUNIT_ASSERT(bt->BaseType::var("", bsr) == 0);
+        CPPUNIT_ASSERT(bt->BaseType::length() == 1);
+        bt->BaseType::set_length(1);
+        bt->BaseType::clear_local_data();        
+        CPPUNIT_ASSERT(!tb1->read_p());
     }
 
     void basetype_print_val_test()

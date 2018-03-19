@@ -226,8 +226,8 @@ DAS::add_table( const string &name, AttrTable *at )
 
 /** @brief Reads a DAS from the named file.
 
-    Read attributes from a file. Returns false if unable to open
-    the file, otherwise returns the result of the mfunc parse. */
+    Read attributes from a file. Throws Error if unable to open
+    the file, otherwise parses the file. */
 void
 DAS::parse(string fname)
 {
