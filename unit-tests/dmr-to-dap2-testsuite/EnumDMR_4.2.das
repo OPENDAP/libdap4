@@ -6,8 +6,6 @@ Attributes {
             Byte blue 3;
         }
     }
-    b1 {
-    }
     /g1/e {
         d4:enum_def {
             Byte red 1;

@@ -7,8 +7,6 @@ Attributes {
         String bounds "lon_bnds";
         String original_units "degrees_east";
     }
-    lon_bnds {
-    }
     lat {
         String standard_name "latitude";
         String long_name "latitude";
@@ -16,8 +14,6 @@ Attributes {
         String axis "Y";
         String bounds "lat_bnds";
         String original_units "degrees_north";
-    }
-    lat_bnds {
     }
     time {
         String standard_name "time";
@@ -27,8 +23,6 @@ Attributes {
         String calendar "360_day";
         String bounds "time_bnds";
         String original_units "seconds since 2001-1-1";
-    }
-    time_bnds {
     }
     tos {
         String standard_name "sea_surface_temperature";
@@ -40,8 +34,6 @@ Attributes {
         String original_name "sosstsst";
         String original_units "degC";
         String history " At   16:37:23 on 01/11/2005: CMOR altered the data in the following ways: added 2.73150E+02 to yield output units;  Cyclical dimension was output starting at a different lon;";
-        tos {
-        }
         time {
             String standard_name "time";
             String long_name "time";

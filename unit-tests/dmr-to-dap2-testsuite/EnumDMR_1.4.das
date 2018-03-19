@@ -1,4 +1,2 @@
 Attributes {
-    b1 {
-    }
 }

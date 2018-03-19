@@ -20,8 +20,6 @@ Attributes {
         String long_name "SEA SURFACE TEMPERATURE";
         String history "From coads_climatology";
         String units "Deg C";
-        SST {
-        }
         TIME {
             String units "hour since 0000-01-01 00:00:00";
             String time_origin "1-JAN-0000 00:00:00";
@@ -44,8 +42,6 @@ Attributes {
         String long_name "AIR TEMPERATURE";
         String history "From coads_climatology";
         String units "DEG C";
-        AIRT {
-        }
         TIME {
             String units "hour since 0000-01-01 00:00:00";
             String time_origin "1-JAN-0000 00:00:00";
@@ -68,8 +64,6 @@ Attributes {
         String long_name "ZONAL WIND";
         String history "From coads_climatology";
         String units "M/S";
-        UWND {
-        }
         TIME {
             String units "hour since 0000-01-01 00:00:00";
             String time_origin "1-JAN-0000 00:00:00";
@@ -92,8 +86,6 @@ Attributes {
         String long_name "MERIDIONAL WIND";
         String history "From coads_climatology";
         String units "M/S";
-        VWND {
-        }
         TIME {
             String units "hour since 0000-01-01 00:00:00";
             String time_origin "1-JAN-0000 00:00:00";

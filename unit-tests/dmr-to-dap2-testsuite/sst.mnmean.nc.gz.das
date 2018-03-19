@@ -43,8 +43,6 @@ Attributes {
         String level_desc "Surface";
         String statistic "Mean";
         String parent_stat "Mean";
-        sst {
-        }
         time {
             String units "days since 1800-1-1 00:00:00";
             String long_name "Time";

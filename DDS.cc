@@ -1050,6 +1050,50 @@ DDS::print(ostream &out)
 }
 
 /**
+ * Does this AttrTable have descendants that are scalar or vector attributes?
+ *
+ * @param a The AttrTable
+ * @return true if the table contains a scalar- or vector-valued attribute,
+ * otherwise false.
+ */
+static bool
+has_dap2_attributes(AttrTable &a)
+{
+    for (AttrTable::Attr_iter i = a.attr_begin(), e = a.attr_end(); i != e; ++i) {
+        if (a.get_attr_type(i) != Attr_container)
+            return true;
+        else
+            return has_dap2_attributes(*a.get_attr_table(i));
+    }
+
+    return false;
+}
+
+/**
+ * Does this variable, or any of its descendants, have attributes?
+ *
+ * @param btp The variable
+ * @return True if any of the variable's descendants have attributes,
+ * otherwise false.
+ */
+static bool
+has_dap2_attributes(BaseType *btp)
+{
+    if (btp->get_attr_table().get_size() && has_dap2_attributes(btp->get_attr_table())) {
+        return true;
+    }
+
+    Constructor *cons = dynamic_cast<Constructor *>(btp);
+    if (cons) {
+        for (Constructor::Vars_iter i = cons->var_begin(), e = cons->var_end(); i != e; i++) {
+            if (has_dap2_attributes(*i)) return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * Print the DAP2 DAS object using attribute information recorded
  * this DDS object.
  *
@@ -1059,31 +1103,46 @@ DDS::print(ostream &out)
  * @param out Write the DAS here.
  */
 static string four_spaces = "    ";
-void print_var_das(ostream &out, BaseType *bt, string indent=""){
+void print_var_das(ostream &out, BaseType *bt, string indent = "")
+{
 
     AttrTable attr_table = bt->get_attr_table();
     out << indent << add_space_encoding(bt->name()) << " {" << endl;
-    attr_table.print(out, indent+four_spaces);
-    Constructor *cnstrctr = dynamic_cast < Constructor * >(bt);
-    if(cnstrctr) {
+    attr_table.print(out, indent + four_spaces);
+    Constructor *cnstrctr = dynamic_cast<Constructor *>(bt);
+    if (cnstrctr) {
         Constructor::Vars_iter i = cnstrctr->var_begin();
         Constructor::Vars_iter e = cnstrctr->var_end();
-        for (; i!=e; i++) {
-            print_var_das(out,*i,indent+four_spaces);
+        for (; i != e; i++) {
+            // Only call print_var_das() if there really are attributes.
+            // This is made complicated because while there might be none
+            // for a particular var (*i), that var might be a ctor and its
+            // descendant might have an attribute. jhrg 3/18/18
+            if (has_dap2_attributes(*i))
+                print_var_das(out, *i, indent + four_spaces);
         }
 
     }
-    out << indent << "}" << endl;
 
+    out << indent << "}" << endl;
 }
 
+/**
+ * @brief write the DAS response given the attribute information in the DDS
+ *
+ * This method provides the same DAS response as DAS::print(), but does so
+ * using the AttrTables bound to the variables in this DDS object.
+ *
+ * @param out Write the DAS response to this stream
+ */
 void
 DDS::print_das(ostream &out)
 {
     string indent("    ");
     out << "Attributes {" << endl ;
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
-        print_var_das(out, *i, four_spaces);
+        if (has_dap2_attributes(*i))
+            print_var_das(out, *i, four_spaces);
     }
     // Print the global attributes at the end.
     d_attr.print(out,indent);

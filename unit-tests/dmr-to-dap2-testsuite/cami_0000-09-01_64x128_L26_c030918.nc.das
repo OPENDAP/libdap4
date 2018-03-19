@@ -34,8 +34,6 @@ Attributes {
     hyai {
         String long_name "hybrid A coefficient at layer interfaces";
         Float64 _FillValue 9.999999616903162e+35;
-        hyai {
-        }
         ilev {
             String long_name "hybrid level at interfaces (1000*(A+B))";
             String units "level";
@@ -48,8 +46,6 @@ Attributes {
     hybi {
         String long_name "hybrid B coefficient at layer interfaces";
         Float64 _FillValue 9.999999616903162e+35;
-        hybi {
-        }
         ilev {
             String long_name "hybrid level at interfaces (1000*(A+B))";
             String units "level";
@@ -62,8 +58,6 @@ Attributes {
     hyam {
         String long_name "hybrid A coefficient at layer midpoints";
         Float64 _FillValue 9.999999616903162e+35;
-        hyam {
-        }
         lev {
             String long_name "hybrid level at midpoints (1000*(A+B))";
             String units "level";
@@ -76,8 +70,6 @@ Attributes {
     hybm {
         String long_name "hybrid B coefficient at layer midpoints";
         Float64 _FillValue 9.999999616903162e+35;
-        hybm {
-        }
         lev {
             String long_name "hybrid level at midpoints (1000*(A+B))";
             String units "level";
@@ -90,8 +82,6 @@ Attributes {
     gw {
         String long_name "gauss weights";
         Float64 _FillValue 9.999999616903162e+35;
-        gw {
-        }
         lat {
             String long_name "latitude";
             String units "degrees_north";
@@ -135,8 +125,6 @@ Attributes {
     }
     ndcur {
         String long_name "current day (from base day)";
-        ndcur {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -146,8 +134,6 @@ Attributes {
     }
     nscur {
         String long_name "current seconds of current day";
-        nscur {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -157,8 +143,6 @@ Attributes {
     }
     date {
         String long_name "current date (YYYYMMDD)";
-        date {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -168,8 +152,6 @@ Attributes {
     }
     datesec {
         String long_name "current seconds of current date";
-        datesec {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -179,8 +161,6 @@ Attributes {
     }
     nsteph {
         String long_name "current timestep";
-        nsteph {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -191,8 +171,6 @@ Attributes {
     U {
         String long_name "Zonal wind";
         String units "m/s";
-        U {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -221,8 +199,6 @@ Attributes {
     V {
         String long_name "Meridional wind";
         String units "m/s";
-        V {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -251,8 +227,6 @@ Attributes {
     T {
         String long_name "Temperature";
         String units "K";
-        T {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -281,8 +255,6 @@ Attributes {
     Q {
         String long_name "Specific humidity";
         String units "kg/kg";
-        Q {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -311,8 +283,6 @@ Attributes {
     PS {
         String long_name "Surface pressure";
         String units "Pa";
-        PS {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -335,8 +305,6 @@ Attributes {
         String units "M2/S2";
         Float64 _FillValue 1.000000000000000e+36;
         String from_hires "true";
-        PHIS {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -359,8 +327,6 @@ Attributes {
         String units "M";
         Float64 _FillValue 1.000000000000000e+36;
         String from_hires "true";
-        SGH {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -383,8 +349,6 @@ Attributes {
         String units "none";
         Float64 _FillValue 1.000000000000000e+36;
         String from_hires "true";
-        LANDM {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -405,8 +369,6 @@ Attributes {
     PBLH {
         String long_name "PBL height";
         String units "m";
-        PBLH {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -427,8 +389,6 @@ Attributes {
     TPERT {
         String long_name "Perturbation temperature (eddies in PBL)";
         String units "K";
-        TPERT {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -449,8 +409,6 @@ Attributes {
     QPERT {
         String long_name "Perturbation specific humidity (eddies in PBL)";
         String units "kg/kg";
-        QPERT {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -471,8 +429,6 @@ Attributes {
     CLOUD {
         String long_name "Cloud fraction";
         String units "fraction";
-        CLOUD {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -499,8 +455,6 @@ Attributes {
         }
     }
     QCWAT {
-        QCWAT {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -527,8 +481,6 @@ Attributes {
         }
     }
     TCWAT {
-        TCWAT {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -555,8 +507,6 @@ Attributes {
         }
     }
     LCWAT {
-        LCWAT {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -583,8 +533,6 @@ Attributes {
         }
     }
     TSICERAD {
-        TSICERAD {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -605,8 +553,6 @@ Attributes {
     TS {
         String long_name "Surface temperature";
         String units "K";
-        TS {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -627,8 +573,6 @@ Attributes {
     TSICE {
         String long_name "Ice temperature";
         String units "K";
-        TSICE {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -649,8 +593,6 @@ Attributes {
     TS1 {
         String long_name "TS1      subsoil temperature";
         String units "K";
-        TS1 {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -671,8 +613,6 @@ Attributes {
     TS2 {
         String long_name "TS2      subsoil temperature";
         String units "K";
-        TS2 {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -693,8 +633,6 @@ Attributes {
     TS3 {
         String long_name "TS3      subsoil temperature";
         String units "K";
-        TS3 {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -715,8 +653,6 @@ Attributes {
     TS4 {
         String long_name "TS4      subsoil temperature";
         String units "K";
-        TS4 {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -737,8 +673,6 @@ Attributes {
     SNOWHICE {
         String long_name "Water equivalent snow depth";
         String units "m";
-        SNOWHICE {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -761,8 +695,6 @@ Attributes {
         String units "FRAC";
         Float64 _FillValue 1.000000000000000e+36;
         String from_hires "true";
-        LANDFRAC {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -783,8 +715,6 @@ Attributes {
     TBOT {
         String long_name "Lowest model level temperature";
         String units "K";
-        TBOT {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -805,8 +735,6 @@ Attributes {
     ICEFRAC {
         String long_name "Fraction of sfc area covered by sea-ice";
         String units "fraction";
-        ICEFRAC {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -827,8 +755,6 @@ Attributes {
     SICTHK {
         String long_name "Sea ice thickness";
         String units "m";
-        SICTHK {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -847,8 +773,6 @@ Attributes {
         }
     }
     TSOCN {
-        TSOCN {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -869,8 +793,6 @@ Attributes {
     CLDLIQ {
         String long_name "Grid box averaged liquid condensate amount";
         String units "kg/kg";
-        CLDLIQ {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -899,8 +821,6 @@ Attributes {
     CLDICE {
         String long_name "Grid box averaged ice condensate amount";
         String units "kg/kg";
-        CLDICE {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";
@@ -931,8 +851,6 @@ Attributes {
         String units "none";
         Float64 _FillValue 1.000000000000000e+36;
         String from_hires "true";
-        LANDM_COSLAT {
-        }
         time {
             String long_name "time";
             String units "days since 0000-08-29 00:00:00";

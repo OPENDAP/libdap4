@@ -17,7 +17,6 @@
             </Float32>
         </Structure>
     </Structure>
-    <Attribute name="HDF_GLOBAL" type="Container"/>
     <Attribute name="CoreMetadata" type="Container">
         <Attribute name="OrbitNumber" type="Container">
             <Attribute name="Value" type="Int32">

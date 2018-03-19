@@ -288,26 +288,6 @@ Attributes {
             Int32 calibrated_nt 21;
             Byte valid_range 0, 4;
         }
-        SwathIndex {
-            begin {
-                begin__0 {
-                }
-            }
-        }
-        NSCAT%20L2 {
-            Mean_Time {
-                Mean_Time__0 {
-                }
-            }
-            Low_Wind_Speed_Flag {
-                Low_Wind_Speed_Flag__0 {
-                }
-            }
-            High_Wind_Speed_Flag {
-                High_Wind_Speed_Flag__0 {
-                }
-            }
-        }
     }
     HDF_GLOBAL {
         String Producer_Agency "NASA\\000";

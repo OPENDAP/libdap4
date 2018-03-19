@@ -1,14 +1,4 @@
 Attributes {
-    DATA_GRANULE {
-        PlanetaryGrid {
-            percipitate {
-            }
-            relError {
-            }
-        }
-    }
-    HDF_GLOBAL {
-    }
     CoreMetadata {
         OrbitNumber {
             Int32 Value -9999;
