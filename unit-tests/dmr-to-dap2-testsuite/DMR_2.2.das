@@ -1,6 +1,2 @@
 Attributes {
-    a {
-    }
-    b {
-    }
 }

@@ -1050,16 +1050,38 @@ DDS::print(ostream &out)
 }
 
 /**
+ * Does this AttrTable have descendants that are scalar or vector attributes?
+ *
+ * @param a The AttrTable
+ * @return true if the table contains a scalar- or vector-valued attribute,
+ * otherwise false.
+ */
+static bool
+has_dap2_attributes(AttrTable &a)
+{
+    for (AttrTable::Attr_iter i = a.attr_begin(), e = a.attr_end(); i != e; ++i) {
+        if (a.get_attr_type(i) != Attr_container)
+            return true;
+        else
+            return has_dap2_attributes(*a.get_attr_table(i));
+    }
+
+    return false;
+}
+
+/**
  * Does this variable, or any of its descendants, have attributes?
  *
  * @param btp The variable
  * @return True if any of the variable's descendants have attributes,
- * false otherwise.
+ * otherwise false.
  */
 static bool
 has_dap2_attributes(BaseType *btp)
 {
-    if (btp->get_attr_table().get_size()) return true;
+    if (btp->get_attr_table().get_size() && has_dap2_attributes(btp->get_attr_table())) {
+        return true;
+    }
 
     Constructor *cons = dynamic_cast<Constructor *>(btp);
     if (cons) {
@@ -1105,13 +1127,22 @@ void print_var_das(ostream &out, BaseType *bt, string indent = "")
     out << indent << "}" << endl;
 }
 
+/**
+ * @brief write the DAS response given the attribute information in the DDS
+ *
+ * This method provides the same DAS response as DAS::print(), but does so
+ * using the AttrTables bound to the variables in this DDS object.
+ *
+ * @param out Write the DAS response to this stream
+ */
 void
 DDS::print_das(ostream &out)
 {
     string indent("    ");
     out << "Attributes {" << endl ;
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
-        print_var_das(out, *i, four_spaces);
+        if (has_dap2_attributes(*i))
+            print_var_das(out, *i, four_spaces);
     }
     // Print the global attributes at the end.
     d_attr.print(out,indent);

@@ -1,6 +1,4 @@
 Attributes {
-    HDF_GLOBAL {
-    }
     CoreMetadata {
         OrbitNumber {
             Int32 Value -9999;

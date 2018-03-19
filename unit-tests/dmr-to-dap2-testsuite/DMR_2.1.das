@@ -1,24 +1,4 @@
 Attributes {
-    a {
-    }
-    a1 {
-    }
-    b {
-    }
-    c {
-    }
-    d {
-    }
-    e {
-    }
-    f {
-    }
-    g {
-    }
-    j {
-    }
-    k {
-    }
     dap4:dropped_members {
         h {
             UInt32 array_dimensions 5;

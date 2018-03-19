@@ -16,8 +16,6 @@ Attributes {
     area {
         String long_name "Surface area";
         String units "meter2";
-        area {
-        }
         lat {
             String long_name "latitude";
             String units "degrees_north";
@@ -33,15 +31,9 @@ Attributes {
             String bounds "lon_bnds";
         }
     }
-    lat_bnds {
-    }
-    lon_bnds {
-    }
     msk_rgn {
         String long_name "Mask region";
         String units "bool";
-        msk_rgn {
-        }
         lat {
             String long_name "latitude";
             String units "degrees_north";
@@ -84,8 +76,6 @@ Attributes {
         String units "kg m-2 s-1";
         String long_name "precipitation_flux";
         String cell_method "time: mean";
-        pr {
-        }
         time {
             String calendar "noleap";
             String standard_name "time";
@@ -122,8 +112,6 @@ Attributes {
         String units "K";
         String long_name "air_temperature";
         String cell_method "time: mean";
-        tas {
-        }
         time {
             String calendar "noleap";
             String standard_name "time";
@@ -147,8 +135,6 @@ Attributes {
             String bounds "lon_bnds";
         }
     }
-    time_bnds {
-    }
     ua {
         String comment "Created using NCL code CCSM_atmm_2cf.ncl on\012 machine eagle163s";
         Float32 missing_value 1.00000002e+20;
@@ -160,8 +146,6 @@ Attributes {
         String original_name "U";
         String standard_name "eastward_wind";
         Float32 _FillValue 1.00000002e+20;
-        ua {
-        }
         time {
             String calendar "noleap";
             String standard_name "time";
