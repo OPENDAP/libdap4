@@ -164,38 +164,41 @@ public:
         s = 0;
     }
 
+    void data_dds_dump_test()
+    {
+        TestTypeFactory ttf;
+        DataDDS dds(&ttf, "CaptainKirk");
+        ostringstream sof;        
+        dds.dump(sof);
+        CPPUNIT_ASSERT(sof.str().find("d_name: CaptainKirk") != string::npos);        
+    }
+
     void marshT_test_write(Marshaller &fm)
     {
         ConstraintEvaluator eval;
         TestTypeFactory ttf;
         DataDDS dds(&ttf, "dds");
             
-        try {
-            DBG(cerr << "serializing using XDRFileMarshaller" << endl);
-
-            BaseType *bt = static_cast<BaseType*>(b);
-            FILE *f = fopen("test.file", "w");
-            CPPUNIT_ASSERT_THROW(bt->BaseType::serialize(eval, dds, fm, false), InternalErr);
-            fclose(f);
-            b->serialize(eval, dds, fm, false);
-            i16->serialize(eval, dds, fm, false);
-            i32->serialize(eval, dds, fm, false);
-            ui16->serialize(eval, dds, fm, false);
-            ui32->serialize(eval, dds, fm, false);
-            f32->serialize(eval, dds, fm, false);
-            f64->serialize(eval, dds, fm, false);
-            str->serialize(eval, dds, fm, false);
-            url->serialize(eval, dds, fm, false);
-            s->serialize(eval, dds, fm, false);
-            arr->serialize(eval, dds, fm, false);
-            seq->serialize(eval, dds, fm, false);
-
-            DBG(cerr << "done serializing using XDRFileMarshaller" << endl);
-        }
-        catch (Error &e) {
-            string err = "failed:" + e.get_error_message();
-            CPPUNIT_FAIL(err.c_str());
-        }
+        DBG(cerr << "serializing using XDRFileMarshaller" << endl);
+        
+        BaseType *bt = static_cast<BaseType*>(b);
+        FILE *f = fopen("test.file", "w");
+        CPPUNIT_ASSERT_THROW(bt->BaseType::serialize(eval, dds, fm, false), InternalErr);
+        fclose(f);
+        b->serialize(eval, dds, fm, false);
+        i16->serialize(eval, dds, fm, false);
+        i32->serialize(eval, dds, fm, false);
+        ui16->serialize(eval, dds, fm, false);
+        ui32->serialize(eval, dds, fm, false);
+        f32->serialize(eval, dds, fm, false);
+        f64->serialize(eval, dds, fm, false);
+        str->serialize(eval, dds, fm, false);
+        url->serialize(eval, dds, fm, false);
+        s->serialize(eval, dds, fm, false);
+        arr->serialize(eval, dds, fm, false);
+        seq->serialize(eval, dds, fm, false);
+        
+        DBG(cerr << "done serializing using XDRFileMarshaller" << endl);
     }
 
     // This test depends on the file written by the .._write_file() test,
@@ -394,6 +397,7 @@ public:
 
     CPPUNIT_TEST_SUITE (marshT);
 
+    CPPUNIT_TEST (data_dds_dump_test);
     CPPUNIT_TEST (marshT_test_write_file);
     CPPUNIT_TEST (marshT_test_read_file);
     CPPUNIT_TEST (marshT_test_write_stream);

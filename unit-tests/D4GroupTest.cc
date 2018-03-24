@@ -416,6 +416,14 @@ public:
         CPPUNIT_ASSERT(btp && btp->FQN() == "/child/p.c.b");
     }
 
+    void test_find_var_2()
+    {
+        // grp1 = new D4Group("Joey");
+        // grp1->dims()->add_dim_nocopy(new D4Dimension("lat", 1024));        
+        // grp1->add_var_nocopy(new Byte("byte_var"));
+        
+    }        
+
     CPPUNIT_TEST_SUITE (D4GroupTest);
 
     CPPUNIT_TEST (test_equals);
@@ -448,6 +456,7 @@ public:
     CPPUNIT_TEST (test_fqn_2);
     CPPUNIT_TEST (test_fqn_3);
     CPPUNIT_TEST (test_fqn_4);
+    CPPUNIT_TEST (test_find_var_2);
 
     CPPUNIT_TEST_SUITE_END();
 };

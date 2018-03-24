@@ -190,10 +190,10 @@ public:
         int fp;
         string file = (string)TEST_SRC_DIR + "/dds-testsuite/test.1.das";
         fp = open(file.c_str(), O_RDONLY);
+        CPPUNIT_ASSERT_THROW(d.parse(-1), InternalErr);
         d.parse(fp);
         close(fp);
         CPPUNIT_ASSERT(d.get_size() == 2);
-        CPPUNIT_ASSERT_THROW(d.parse(-1), InternalErr);
     }
 
     void das_dump_test()
@@ -217,11 +217,12 @@ public:
     {
         DAS das;
         das.container_name("c1");
-        //cout<<das.container();
-        //das.erase();
-        //cout<<das.container();
-        //        cout<<das.container_name();
-        //        CPPUNIT_ASSERT(strm.str().find("current container: c1") != string::npos);
+        AttrTable *v1 = new AttrTable;
+        das.add_table("v1", v1);
+        v1->append_attr("v1a1", "String", "v1a1val");
+        CPPUNIT_ASSERT(das.get_size() == 1);
+        das.erase();
+        CPPUNIT_ASSERT(das.get_size() == 0);
     }
 
 };

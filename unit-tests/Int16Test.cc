@@ -201,6 +201,7 @@ public:
         CPPUNIT_ASSERT_THROW(i16.d4_ops(&url, SCAN_EQUAL), Error);
         CPPUNIT_ASSERT_THROW(i16.d4_ops(&str, SCAN_EQUAL), Error);
         CPPUNIT_ASSERT_THROW(i16.d4_ops(&array, SCAN_EQUAL), Error);
+        CPPUNIT_ASSERT_THROW(i16.ops(0, SCAN_EQUAL), Error);
     }    
 
     void ops_exception_1_test()

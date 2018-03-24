@@ -37,6 +37,7 @@
 #include "GetOpt.h"
 
 #include "testFile.h"
+#include "dods-limits.h"
 #include "test_config.h"
 
 static bool debug = false;
@@ -128,6 +129,110 @@ public:
         CPPUNIT_ASSERT((dods_int32)e.d_buf == -65535);
     }
 
+    void test_set_value_all()
+    {
+        D4Enum b("b", dods_byte_c);
+        b.set_value(100);
+        CPPUNIT_ASSERT((dods_byte)b.d_buf == 100);
+        CPPUNIT_ASSERT_THROW(b.set_value((dods_int64)DODS_UCHAR_MAX + 1), Error);
+        CPPUNIT_ASSERT_THROW(b.set_value(-100), Error);
+        dods_byte uchar = 42, uchar_in;
+        void *uchar_inp = &uchar_in;
+        b.val2buf(&uchar, true);        
+        CPPUNIT_ASSERT((dods_byte)b.d_buf == uchar);
+        b.buf2val(&uchar_inp);
+        CPPUNIT_ASSERT(uchar_in == uchar);
+
+        D4Enum i8("i8", dods_int8_c);
+        i8.set_value(100);
+        CPPUNIT_ASSERT((dods_int8)i8.d_buf == 100);
+        CPPUNIT_ASSERT_THROW(i8.set_value((dods_int64)DODS_SCHAR_MAX + 1), Error);
+        CPPUNIT_ASSERT_THROW(i8.set_value((dods_int64)DODS_SCHAR_MIN - 1), Error);
+        dods_int8 int8 = -43, int8_in;
+        void *int8_inp = &int8_in;
+        i8.val2buf(&int8, true);        
+        CPPUNIT_ASSERT((dods_int8)i8.d_buf == int8);
+        i8.buf2val(&int8_inp);
+        CPPUNIT_ASSERT(int8_in == int8);
+
+        D4Enum i16("i16", dods_int16_c);
+        i16.set_value(100);        
+        CPPUNIT_ASSERT((dods_int16)i16.d_buf == 100);
+        CPPUNIT_ASSERT_THROW(i16.set_value((dods_int64)DODS_SHRT_MAX + 1), Error);
+        CPPUNIT_ASSERT_THROW(i16.set_value((dods_int64)DODS_SHRT_MIN - 1), Error);
+        dods_int16 int16 = -44, int16_in;
+        void *int16_inp = &int16_in;
+        i16.val2buf(&int16, true);        
+        CPPUNIT_ASSERT((dods_int16)i16.d_buf == int16);
+        i16.buf2val(&int16_inp);
+        CPPUNIT_ASSERT(int16_in == int16);
+
+        D4Enum ui16("ui16", dods_uint16_c);
+        ui16.set_value(100);        
+        CPPUNIT_ASSERT((dods_uint16)ui16.d_buf == 100);
+        CPPUNIT_ASSERT_THROW(ui16.set_value((dods_int64)DODS_USHRT_MAX + 1), Error);
+        CPPUNIT_ASSERT_THROW(ui16.set_value((dods_int64)-1), Error);
+        dods_uint16 uint16 = 45, uint16_in;
+        void *uint16_inp = &uint16_in;
+        ui16.val2buf(&uint16, true);        
+        CPPUNIT_ASSERT((dods_uint16)ui16.d_buf == uint16);
+        ui16.buf2val(&uint16_inp);
+        CPPUNIT_ASSERT(uint16_in == uint16);
+
+        D4Enum i32("i32", dods_int32_c);
+        i32.set_value(100);        
+        CPPUNIT_ASSERT((dods_int32)i32.d_buf == 100);
+        CPPUNIT_ASSERT_THROW(i32.set_value((dods_int64)DODS_INT_MAX + 1), Error);
+        CPPUNIT_ASSERT_THROW(i32.set_value((dods_int64)DODS_INT_MIN - 1), Error);
+        dods_int32 int32 = -46, int32_in;
+        void *int32_inp = &int32_in;
+        i32.val2buf(&int32, true);        
+        CPPUNIT_ASSERT((dods_int32)i32.d_buf == int32);
+        i32.buf2val(&int32_inp);
+        CPPUNIT_ASSERT(int32_in == int32);
+
+        D4Enum ui32("ui32", dods_uint32_c);
+        ui32.set_value(100);        
+        CPPUNIT_ASSERT((dods_uint32)ui32.d_buf == 100);
+        CPPUNIT_ASSERT_THROW(ui32.set_value((dods_int64)DODS_UINT_MAX + 1), Error);
+        CPPUNIT_ASSERT_THROW(ui32.set_value((dods_int64)-1), Error);
+        dods_uint32 uint32 = 47, uint32_in;
+        void *uint32_inp = &uint32_in;
+        ui32.val2buf(&uint32, true);        
+        CPPUNIT_ASSERT((dods_uint32)ui32.d_buf == uint32);
+        ui32.buf2val(&uint32_inp);
+        CPPUNIT_ASSERT(uint32_in == uint32);
+
+        D4Enum i64("i64", dods_int64_c);
+        i64.set_value(100);        
+        CPPUNIT_ASSERT((dods_int64)i64.d_buf == 100);
+        dods_int64 int64 = -48, int64_in;
+        void *int64_inp = &int64_in;
+        i64.val2buf(&int64, true);        
+        CPPUNIT_ASSERT((dods_int64)i64.d_buf == int64);
+        i64.buf2val(&int64_inp);
+        CPPUNIT_ASSERT(int64_in == int64);
+
+        D4Enum ui64("ui64", dods_uint64_c);
+        ui64.set_value(100);        
+        CPPUNIT_ASSERT((dods_uint64)ui64.d_buf == 100);
+        dods_uint64 uint64 = 49, uint64_in;
+        void *uint64_inp = &uint64_in;
+        ui64.val2buf(&uint64, true);        
+        CPPUNIT_ASSERT((dods_uint64)ui64.d_buf == uint64);
+        ui64.buf2val(&uint64_inp);
+        CPPUNIT_ASSERT(uint64_in == uint64);
+    }
+
+    void test_ctor()
+    {
+        D4Enum ui64("ui64", "dataset", dods_uint64_c);
+        CPPUNIT_ASSERT(ui64.dataset() == "dataset");
+        CPPUNIT_ASSERT_THROW(ui64.set_is_signed(dods_float32_c), InternalErr);
+        CPPUNIT_ASSERT_THROW(ui64.val2buf(0, true), InternalErr);
+        CPPUNIT_ASSERT_THROW(ui64.buf2val(0), InternalErr);
+    }
+
     void test_value()
     {
         D4Enum e("second", dods_byte_c);
@@ -186,6 +291,21 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
+    void test_print_2()
+    {
+        D4Enum e("test", dods_int32_c);
+        D4EnumDef enum_def("Colors", dods_int32_c);
+
+        e.set_enumeration(&enum_def);
+        e.set_value(200);
+
+        ostringstream oss;
+
+        e.print_val(oss, "", true);
+        CPPUNIT_ASSERT(oss.str().find("Enum test = 200;") != string::npos);
+
+    }
+
     void test_print_val()
     {
         D4Enum e("test", dods_byte_c);
@@ -204,6 +324,19 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
+    void test_dump()
+    {
+        D4Enum e("spock", dods_byte_c);
+        D4EnumDef enum_def("Colors", dods_byte_c);
+
+        e.set_enumeration(&enum_def);
+        e.set_value(200);
+
+        ostringstream sof;        
+        e.dump(sof);
+        CPPUNIT_ASSERT(sof.str().find("name: spock") != string::npos);
+    }
+
     CPPUNIT_TEST_SUITE (D4EnumTest);
 
     CPPUNIT_TEST (test_first_ctor);
@@ -218,7 +351,9 @@ public:
     CPPUNIT_TEST (test_set_value);
     CPPUNIT_TEST (test_set_value2);
     CPPUNIT_TEST (test_set_value3);
+    CPPUNIT_TEST (test_set_value_all);
 
+    CPPUNIT_TEST (test_ctor);
     CPPUNIT_TEST (test_value);
     CPPUNIT_TEST (test_value2);
 
@@ -226,7 +361,9 @@ public:
     CPPUNIT_TEST (test_assignment);
 
     CPPUNIT_TEST (test_print);
+    CPPUNIT_TEST (test_print_2);
     CPPUNIT_TEST (test_print_val);
+    CPPUNIT_TEST (test_dump);
 
     CPPUNIT_TEST_SUITE_END();
 };

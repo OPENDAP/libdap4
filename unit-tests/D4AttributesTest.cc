@@ -214,6 +214,21 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
+    void test_dump()
+    {
+        attrs->add_attribute(&c2);
+        ostringstream sof;        
+        attrs->dump(sof);
+        CPPUNIT_ASSERT(sof.str().find("<Attribute name=\"container_2\" type=\"Container\">") != string::npos);
+    }
+
+    void test_2_dump()
+    {
+        ostringstream sof;        
+        a.dump(sof);
+        CPPUNIT_ASSERT(sof.str().find("<Attribute name=\"first\" type=\"Byte\">") != string::npos);
+    }
+
     void test_print_assignment()
     {
         attrs->add_attribute(&a);
@@ -352,6 +367,8 @@ public:
     CPPUNIT_TEST (test_print_1);
     CPPUNIT_TEST (test_print_2);
     CPPUNIT_TEST (test_print_3);
+    CPPUNIT_TEST (test_dump);
+    CPPUNIT_TEST (test_2_dump);
 
     CPPUNIT_TEST (test_print_assignment);
     CPPUNIT_TEST (test_print_assignment_2);

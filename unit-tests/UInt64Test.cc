@@ -204,6 +204,7 @@ public:
         CPPUNIT_ASSERT(!ui64.d4_ops(&url, SCAN_EQUAL));
         CPPUNIT_ASSERT(!ui64.d4_ops(&str, SCAN_EQUAL));
         CPPUNIT_ASSERT(!ui64.d4_ops(&array, SCAN_EQUAL));
+        CPPUNIT_ASSERT_THROW(ui64.ops(0, SCAN_EQUAL), Error);
     }    
 
     void ops_exception_1_test()

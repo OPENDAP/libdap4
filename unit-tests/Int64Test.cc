@@ -107,7 +107,6 @@ public:
     CPPUNIT_TEST(ops_exception_1_test);
     CPPUNIT_TEST(ops_exception_2_test);
     CPPUNIT_TEST(dump_test);
-    // CPPUNIT_TEST(print_test);
     CPPUNIT_TEST(check_types);
 
     CPPUNIT_TEST_SUITE_END();
@@ -201,6 +200,7 @@ public:
         CPPUNIT_ASSERT_THROW(i64.d4_ops(&url, SCAN_EQUAL), Error);
         CPPUNIT_ASSERT_THROW(i64.d4_ops(&str, SCAN_EQUAL), Error);
         CPPUNIT_ASSERT_THROW(i64.d4_ops(&array, SCAN_EQUAL), Error);
+        CPPUNIT_ASSERT_THROW(i64.ops(0, SCAN_EQUAL), Error);
     }    
 
     void ops_exception_1_test()
@@ -231,20 +231,6 @@ public:
         ifs.close();
         CPPUNIT_ASSERT(!strcmp(a, "21"));
     }
-
-    // void print_test()
-    // {
-    //     FILE *fp;
-    //     CPPUNIT_ASSERT(fp = fopen("Int64Test.output", "w"));
-    //     i1->set_value(22);
-    //     i1->print_val(fp, " ", true);
-    //     fclose(fp);
-    //     ifstream ifs("Int64Test.output");
-    //     while(!ifs.eof())
-    //         ifs >> a;
-    //     ifs.close();
-    //     CPPUNIT_ASSERT(!strcmp(a, "22;"));
-    // }
 
     void check_types()
     {

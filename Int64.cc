@@ -199,7 +199,7 @@ Int64::ops(BaseType *b, int op)
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
 
     // Get the second arg's value.
-    if (!b->read_p() && !b->read())
+    if (!b || !(b->read_p() || b->read())) 
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
 
     return d4_ops(b, op);
