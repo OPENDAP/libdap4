@@ -8,6 +8,10 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string.h>
+#include <sys/stat.h> 
+#include <fcntl.h>
+#include <unistd.h>
 
 // #define DODS_DEBUG
 
@@ -37,6 +41,7 @@
 
 #include "testFile.h"
 #include "GetOpt.h"
+#include <test_config.h>
 
 using namespace CppUnit;
 using namespace std;
@@ -96,13 +101,18 @@ Dataset {\n\
 
 class ddsT: public CppUnit::TestFixture {
 
-    CPPUNIT_TEST_SUITE (ddsT);
-    CPPUNIT_TEST (ddsT_test);
-    CPPUNIT_TEST (ddsT_containers);CPPUNIT_TEST_SUITE_END( );
+    CPPUNIT_TEST_SUITE(ddsT);
+    CPPUNIT_TEST(ddsT_test);
+    CPPUNIT_TEST(ddsT_containers);
+    CPPUNIT_TEST(major_minor_test);
+    CPPUNIT_TEST(parse_test);
+    CPPUNIT_TEST(parse_2_test);
+    CPPUNIT_TEST_SUITE_END();
 
 private:
     /* TEST PRIVATE DATA */
     TestTypeFactory *factory;
+    char a[1024];    
 
 public:
     void setUp()
@@ -143,6 +153,7 @@ public:
 
         try {
             BaseType *bt = factory->NewInt16("var1");
+            CPPUNIT_ASSERT_THROW(dds.add_var_nocopy(0), InternalErr);
             dds.add_var(bt);
             delete bt;
             bt = factory->NewInt16("var2");
@@ -185,6 +196,14 @@ public:
             CPPUNIT_FAIL("failed to add a var");
         }
 
+        DDS dds2(dds);
+        CPPUNIT_ASSERT(dds2.num_var() == 8);
+        DDS dds3(factory, "TestDDS3");
+        dds3 = dds2;
+        CPPUNIT_ASSERT(dds3.num_var() == 8);
+        dds3 = dds3;
+        CPPUNIT_ASSERT(dds3.num_var() == 8);
+        
         int nv = dds.num_var();
         CPPUNIT_ASSERT(nv == 8);
 
@@ -212,7 +231,7 @@ public:
         else if (dvsc == dds.var_end() && vsc != vs.end()) {
             CPPUNIT_FAIL("Too few vars");
         }
-
+        
         for (vsc = vs.begin(); vsc != vs.end(); vsc++) {
             if (*vsc == "var2") {
                 vs_iter &vsi = (vs_iter &) vsc;
@@ -221,6 +240,15 @@ public:
             }
         }
 
+        int count = 0;
+        for (DDS::Vars_riter rv = dds.var_rbegin(); rv != dds.var_rend(); rv++) 
+            count++;
+        CPPUNIT_ASSERT(count == 8);
+        DDS::Vars_iter vi = dds.get_vars_iter(4);
+        CPPUNIT_ASSERT((*vi)->name() == "var5");
+        BaseType *v5 = dds.get_var_index(4);
+        CPPUNIT_ASSERT(v5->name() == "var5");
+        
         dvsc = dds.var_begin();
         vsc = vs.begin();
         for (; dvsc != dds.var_end() && vsc != vs.end(); dvsc++, vsc++) {
@@ -359,6 +387,48 @@ public:
             CPPUNIT_ASSERT(sof.str().find(cprint) != string::npos);
         }
 
+        {
+            FILE *fp;
+            fp = fopen("ddsT_print.output", "w");
+            dds.print(fp);
+            fclose(fp);
+            ifstream ifs("ddsT_print.output");
+            while(!ifs.eof())
+                ifs >> a;
+            ifs.close();
+            CPPUNIT_ASSERT(!strcmp(a, "Test%20Data%20Set;"));
+        }
+        
+        {
+            FILE *fp;
+            fp = fopen("ddsT_print_constrained.output", "w");
+            dds.print_constrained(fp);
+            fclose(fp);
+            ifstream ifs("ddsT_print_constrained.output");
+            while(!ifs.eof())
+                ifs >> a;
+            ifs.close();
+            CPPUNIT_ASSERT(!strcmp(a, "Test%20Data%20Set;"));
+        }
+        
+        {
+            ostringstream sof;
+            dds.print_xml(sof, true, "ss");
+            CPPUNIT_ASSERT(sof.str().find("<Dataset name=\"Test Data Set\"") != string::npos);
+        }
+
+        {
+            FILE *fp;
+            fp = fopen("ddsT_print_xml.output", "w");
+            dds.print_xml(fp, true, " ");
+            fclose(fp);
+            ifstream ifs("ddsT_print_xml.output");
+            while(!ifs.eof())
+                ifs >> a;
+            ifs.close();
+            CPPUNIT_ASSERT(!strcmp(a, "</Dataset>"));
+        }
+        
         {
             ostringstream sof;
             dds.print_constrained(sof);
@@ -584,8 +654,62 @@ public:
         // print the dds and make sure it looks good.
         ostringstream sstrm;
         dds.print(sstrm);
-        cout << sstrm.str() << endl;
+        //cout << sstrm.str() << endl;
         CPPUNIT_ASSERT(sstrm.str() == containerprint);
+    }
+
+    void major_minor_test()
+    {
+        DDS dds(factory, "TestDDS");
+        dds.set_dap_major(3);
+        dds.set_dap_minor(4);
+        CPPUNIT_ASSERT(dds.get_dap_version() == "3.4");
+
+        // DDS does not protect against negatives, in spite of what
+        // the code comments say. This has been entered as HYRAX issue
+        // 650.
+        // dds.set_dap_major(-3);
+        // dds.set_dap_minor(-4);
+        // cout<<dds.get_dap_version();
+        // CPPUNIT_ASSERT(dds.get_dap_version() == "3.4");
+
+        CPPUNIT_ASSERT_THROW(dds.set_dap_version("-1.1"), InternalErr);
+        CPPUNIT_ASSERT_THROW(dds.set_dap_version("1m1"), InternalErr);
+        CPPUNIT_ASSERT_THROW(dds.set_dap_version("1.-1"), InternalErr);
+        CPPUNIT_ASSERT_THROW(dds.set_dap_version("5.0"), InternalErr);
+
+        dds.set_dap_version(2.0);
+        CPPUNIT_ASSERT(dds.get_dap_version() == "2.0");
+    }
+
+    void parse_test()
+    {
+        DDS dds(factory, "TestDDS");
+        string file = (string)TEST_SRC_DIR + "/dds-testsuite/test.1";        
+        CPPUNIT_ASSERT_THROW(dds.parse("not_a_file"), Error);
+        dds.parse(file);
+        CPPUNIT_ASSERT(dds.get_dataset_name() == "data1");
+        dds.set_timeout(2);
+#if USE_LOCAL_TIMEOUT_SCHEME
+        CPPUNIT_ASSERT(dds.get_timeout() == 2);
+#else
+        CPPUNIT_ASSERT(dds.get_timeout() == 0);
+#endif
+    }
+
+    void parse_2_test()
+    {
+        DDS dds(factory, "TestDDS");
+        string file = (string)TEST_SRC_DIR + "/dds-testsuite/test.1";
+        ostringstream strm;        
+        int fp = open(file.c_str(), O_RDONLY);
+        CPPUNIT_ASSERT_THROW(dds.parse(-1), InternalErr);
+        CPPUNIT_ASSERT_THROW(dds.parse((FILE *)0), InternalErr);
+        dds.parse(fp);
+        close(fp);
+        CPPUNIT_ASSERT(dds.get_dataset_name() == "data1");
+        dds.dump(strm);
+        CPPUNIT_ASSERT(strm.str().find("d_name: data1") != string::npos);
     }
 };
 

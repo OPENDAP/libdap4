@@ -246,7 +246,7 @@ void D4Enum::m_check_value(int64_t v) const
 		// If 'v' can never be bigger than ULLONG_MAX
 		break;
 
-		case dods_int8_c:
+        case dods_int8_c:
 		if (v > DODS_SCHAR_MAX || v < DODS_SCHAR_MIN) {
 			ostringstream oss;
 			oss << "The value " << v << " will not fit in an unsigned byte. (" << __func__ << ")";

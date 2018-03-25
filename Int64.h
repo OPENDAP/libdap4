@@ -48,7 +48,7 @@ class UnMarshaller;
 
 class Int64: public BaseType
 {
-	virtual unsigned int val2buf(void *val, bool)  {
+    virtual unsigned int val2buf(void *val, bool)  {
     	set_value(*reinterpret_cast<dods_int64*>(val));
     	return sizeof(dods_int64);
     }

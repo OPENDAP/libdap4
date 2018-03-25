@@ -8,6 +8,9 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <sys/stat.h> 
+#include <fcntl.h>
+#include <unistd.h>
 
 // #define DODS_DEBUG
 
@@ -15,6 +18,9 @@
 
 #include "testFile.h"
 #include "GetOpt.h"
+#include "InternalErr.h"
+#include "Error.h"
+#include <test_config.h>
 
 using namespace std;
 using namespace libdap;
@@ -55,8 +61,14 @@ Attributes {\n\
 
 class dasT: public CppUnit::TestFixture {
 
-    CPPUNIT_TEST_SUITE (dasT);
-    CPPUNIT_TEST (dasT_test);CPPUNIT_TEST_SUITE_END( );
+    CPPUNIT_TEST_SUITE(dasT);
+    CPPUNIT_TEST(dasT_test);
+    CPPUNIT_TEST(das_file_test);
+    CPPUNIT_TEST(das_file_2_test);
+    CPPUNIT_TEST(das_dump_test);
+    CPPUNIT_TEST(das_dump_2_test);
+    CPPUNIT_TEST(das_erase_test);
+    CPPUNIT_TEST_SUITE_END();
 
 private:
     /* TEST PRIVATE DATA */
@@ -154,10 +166,65 @@ public:
         // print to stream and compare results
         ostringstream strm;
         das.print(strm);
-        cout << strm.str() << endl;
-        cout << dprint << endl;
+        //cout << strm.str() << endl;
+        //cout << dprint << endl;
         CPPUNIT_ASSERT(strm.str() == dprint);
     }
+
+    void das_file_test()
+    {
+        DAS d;
+        FILE *fp;
+        string file = (string)TEST_SRC_DIR + "/dds-testsuite/test.1.das";
+        fp = fopen(file.c_str(), "r");
+        d.parse(fp);
+        fclose(fp);
+        CPPUNIT_ASSERT(d.get_size() == 2);
+        CPPUNIT_ASSERT_THROW(d.parse((FILE *)0), InternalErr);
+        CPPUNIT_ASSERT_THROW(d.parse(""), Error);
+    }
+
+    void das_file_2_test()
+    {
+        DAS d;
+        int fp;
+        string file = (string)TEST_SRC_DIR + "/dds-testsuite/test.1.das";
+        fp = open(file.c_str(), O_RDONLY);
+        CPPUNIT_ASSERT_THROW(d.parse(-1), InternalErr);
+        d.parse(fp);
+        close(fp);
+        CPPUNIT_ASSERT(d.get_size() == 2);
+    }
+
+    void das_dump_test()
+    {
+        DAS das;
+        ostringstream strm;        
+        das.container_name("c1");
+        das.dump(strm);
+        CPPUNIT_ASSERT(strm.str().find("current container: c1") != string::npos);
+    }
+
+    void das_dump_2_test()
+    {
+        DAS das;
+        ostringstream strm;        
+        das.dump(strm);
+        CPPUNIT_ASSERT(strm.str().find("current container: NONE") != string::npos);
+    }
+
+    void das_erase_test()
+    {
+        DAS das;
+        das.container_name("c1");
+        AttrTable *v1 = new AttrTable;
+        das.add_table("v1", v1);
+        v1->append_attr("v1a1", "String", "v1a1val");
+        CPPUNIT_ASSERT(das.get_size() == 1);
+        das.erase();
+        CPPUNIT_ASSERT(das.get_size() == 0);
+    }
+
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION (dasT);
@@ -170,12 +237,12 @@ int main(int argc, char*argv[])
     int option_char;
 
     while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = true;  // debug is a static global
-            break;
-        case 'h': {     // help - show test names
-            cerr << "Usage: dasT has the following tests:" << endl;
+	switch (option_char) {
+	case 'd':
+	    debug = true;  // debug is a static global
+	    break;
+	case 'h': {     // help - show test names
+	    cerr << "Usage: dasT has the following tests:" << endl;
             const std::vector<Test*> &tests = dasT::suite()->getTests();
             unsigned int prefix_len = dasT::suite()->getName().append("::").length();
             for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
@@ -186,10 +253,10 @@ int main(int argc, char*argv[])
         default:
             break;
         }
-
+    
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
+    
     bool wasSuccessful = true;
     string test = "";
     int i = getopt.optind;
@@ -204,6 +271,6 @@ int main(int argc, char*argv[])
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
-
+    
     return wasSuccessful ? 0 : 1;
 }

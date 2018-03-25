@@ -43,6 +43,12 @@ EXTRA_DIST += m4/gnulib-cache.m4
 AM_CPPFLAGS =
 AM_CFLAGS =
 
+AM_LDFLAGS =
+if ENABLE_COVERAGE
+AM_CPPFLAGS += -fprofile-arcs -ftest-coverage -pg
+AM_LDFLAGS += -lgcov --coverage -pg
+endif
+
 noinst_LTLIBRARIES += libgnu.la
 
 libgnu_la_SOURCES =

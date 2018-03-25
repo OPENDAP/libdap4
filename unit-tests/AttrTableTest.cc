@@ -68,6 +68,7 @@ class AttrTableTest: public TestFixture {
 private:
     AttrTable *at1;
     AttrTable *cont_a, *cont_b, *cont_c, *cont_ba, *cont_ca, *cont_caa;
+    char a[1024];    
 
 public:
     AttrTableTest()
@@ -130,7 +131,6 @@ public:
     }
 
     CPPUNIT_TEST_SUITE (AttrTableTest);
-#if 1
 
     CPPUNIT_TEST (clone_test);
     CPPUNIT_TEST (find_container_test);
@@ -141,16 +141,16 @@ public:
     CPPUNIT_TEST (assignment);
     CPPUNIT_TEST (erase_test);
     CPPUNIT_TEST (names_with_spaces_test);
-#endif
+    CPPUNIT_TEST (is_global_att_test);
+    CPPUNIT_TEST (add_container_alias_test);
+    CPPUNIT_TEST (attr_alias_test);
+    CPPUNIT_TEST (attr_alias_2_test);
     CPPUNIT_TEST (containers_with_spaces_test);
-#if 1
     CPPUNIT_TEST (get_attr_iter_test);
     CPPUNIT_TEST (del_attr_table_test);
     CPPUNIT_TEST (append_attr_vector_test);
-#endif
-#if 0
-    CPPUNIT_TEST(print_xml_test);
-#endif
+    CPPUNIT_TEST (print_xml_test);
+    CPPUNIT_TEST (print_simple_test);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -306,6 +306,31 @@ String longer%20name \"second test\";";
         t = 0;
     }
 
+    void is_global_att_test()
+    {
+        for (AttrTable::Attr_iter iter = at1->attr_begin(); iter != at1->attr_end(); iter++) {
+            at1->set_is_global_attribute(iter, true);
+            CPPUNIT_ASSERT(at1->is_global_attribute(iter));
+        }
+    }
+
+    void add_container_alias_test()
+    {
+        CPPUNIT_ASSERT_THROW(at1->add_container_alias("a", at1), Error);
+    }
+
+    void attr_alias_test()
+    {
+        at1->attr_alias("alias", at1, "a");
+        CPPUNIT_ASSERT(at1->get_type("alias") == "Container");
+    }
+
+    void attr_alias_2_test()
+    {
+        at1->attr_alias("alias", "a");
+        CPPUNIT_ASSERT(at1->get_type("alias") == "Container");
+    }
+
     void containers_with_spaces_test()
     {
         AttrTable *top = new AttrTable;
@@ -313,6 +338,7 @@ String longer%20name \"second test\";";
             AttrTable *cont = top->append_container("Data Field");
             cont->append_attr("long name", "String", "first");
             cont->add_value_alias(top, "an alias", "long name");
+            CPPUNIT_ASSERT_THROW(cont->add_value_alias(top, "an alias", "long name"), Error);
         }
         catch (Error &e) {
             cerr << e.get_error_message() << endl;
@@ -425,8 +451,25 @@ String longer%20name \"second test\";";
 
     void print_xml_test()
     {
-        at1->print_xml(stdout);
+        ostringstream sof;
+        at1->print_xml(sof);
+        CPPUNIT_ASSERT(sof.str().find("<Attribute name=\"a\" type=\"Container\">") != string::npos);
     }
+
+    void print_simple_test()
+    {
+        FILE *fp;
+        fp = fopen("AttrTableTest_print_simple.output", "w");
+        AttrTable::Attr_iter i = at1->simple_find("a");
+        at1->simple_print(fp, "", i, false);
+        fclose(fp);
+        ifstream ifs("AttrTableTest_print_simple.output");
+        stringstream buf;
+        buf<<ifs.rdbuf();
+        CPPUNIT_ASSERT(buf.str().find("String type \"cars\";") != string::npos);        
+        ifs.close();
+    }
+    
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION (AttrTableTest);

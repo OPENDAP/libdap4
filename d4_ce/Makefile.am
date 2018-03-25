@@ -38,6 +38,12 @@ else
 AM_CXXFLAGS += -g -O2
 endif
 
+AM_LDFLAGS =
+if ENABLE_COVERAGE
+AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
+AM_LDFLAGS += -lgcov --coverage -pg
+endif
+
 noinst_LTLIBRARIES = libd4_ce_parser.la
 pkginclude_HEADERS = D4ConstraintEvaluator.h
 

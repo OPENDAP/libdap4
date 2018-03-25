@@ -3,7 +3,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2005 OPeNDAP, Inc.
+// Copyright (c) 2005,2018 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -35,6 +35,7 @@
 #include "Int16.h"
 #include "Str.h"
 #include "Structure.h"
+#include "D4Dimensions.h"
 
 #include "debug.h"
 #include "GetOpt.h"
@@ -54,6 +55,8 @@ private:
     Structure *d_struct;
 
     string svalues[4];
+    char a[1024];
+    
 public:
     ArrayTest()
     {
@@ -136,11 +139,107 @@ public:
 
     CPPUNIT_TEST_SUITE (ArrayTest);
 
+    CPPUNIT_TEST (cons_test);
+    CPPUNIT_TEST (equals_test);
+    CPPUNIT_TEST (prepend_dim_test);
+    CPPUNIT_TEST (prepend_dim_2_test);
+    CPPUNIT_TEST (clear_dims_test);
+    CPPUNIT_TEST (error_handling_test);
+    CPPUNIT_TEST (error_handling_2_test);
+    CPPUNIT_TEST (print_test);
     CPPUNIT_TEST (duplicate_cardinal_test);
     CPPUNIT_TEST (duplicate_string_test);
     CPPUNIT_TEST (duplicate_structure_test);
 
     CPPUNIT_TEST_SUITE_END();
+
+    void cons_test()
+    {
+        Array a1 = Array("a", "b", d_int16, true);
+        CPPUNIT_ASSERT(a1.name() == "a");
+    }
+
+    void equals_test()
+    {
+        Array a1 = Array("a", d_int16);
+        a1 = *d_cardinal;
+        Array::Dim_iter i = a1.dim_begin();        
+        CPPUNIT_ASSERT(a1.dimension_size(i) == 4);
+        a1 = a1;
+        i = a1.dim_begin();        
+        CPPUNIT_ASSERT(a1.dimension_size(i) == 4);
+    }
+
+    void prepend_dim_test()
+    {
+        Array a1 = Array("a", d_int16);
+        Array::Dim_iter i = a1.dim_begin();
+        CPPUNIT_ASSERT(a1.dimension_size(i) == 0);
+        a1.prepend_dim(2, "dim_a");
+        i = a1.dim_begin();
+        CPPUNIT_ASSERT(a1.dimension_size(i) == 2);
+        a1.prepend_dim(3, "dim_b");
+    }
+
+    void prepend_dim_2_test()
+    {
+        Array a1 = Array("a", d_int16);
+        string expected_name[2] = {"dim_b", "dim_a"};
+        int j = 0;
+        D4Dimensions *dims = new D4Dimensions();
+        D4Dimension *d = new D4Dimension("dim_b", 2, dims);
+        a1.prepend_dim(2, "dim_a");
+        a1.prepend_dim(d);
+        for (Array::Dim_iter i = a1.dim_begin(); i != a1.dim_end(); i++, j++) {
+            CPPUNIT_ASSERT(a1.dimension_name(i) == expected_name[j]);
+        }
+    }
+
+    void clear_dims_test()
+    {
+        Array a1 = Array("a", d_int16);
+        a1.prepend_dim(2, "dim_a");
+        a1.prepend_dim(3, "dim_b");
+        a1.clear_all_dims();
+        Array::Dim_iter i = a1.dim_begin();
+        CPPUNIT_ASSERT(a1.dimension_size(i) == 0);
+    }
+
+    void error_handling_test()
+    {
+        Array a1 = Array("a", d_int16);
+        Array::Dim_iter i = a1.dim_begin();
+        string msg;
+        CPPUNIT_ASSERT_THROW(a1.dimension_name(i), InternalErr);
+        CPPUNIT_ASSERT(!a1.check_semantics(msg));
+    }
+
+    void error_handling_2_test()
+    {
+        Array a1 = Array("a", d_int16);
+        a1.append_dim(2, "dim_a");
+        Array::Dim_iter i = a1.dim_begin();
+        CPPUNIT_ASSERT(a1.dimension_size(i) == 2);
+        CPPUNIT_ASSERT_THROW(a1.add_constraint(i, 2, 1, 1), Error);
+        CPPUNIT_ASSERT_THROW(a1.add_constraint(i, 0, 1, 2), Error);
+        CPPUNIT_ASSERT_THROW(a1.add_constraint(i, 0, 3, 1), Error);
+    }
+
+    void print_test()
+    {
+        // Array a1 = Array("a", d_int16);
+        // FILE *fp;
+        // a1.append_dim(2, "dim_a");
+        // CPPUNIT_ASSERT(fp = fopen("ArrayTest.output", "w"));
+        // a1.print_xml(fp, " ", true);
+        // fclose(fp);
+        // ifstream ifs("ArrayTest.output");
+        // while(!ifs.eof())
+        //     ifs >> a;
+        // ifs.close();
+        // cout<<a;
+//        CPPUNIT_ASSERT(!strcmp(a, "22;"));
+    }
 
     void duplicate_structure_test()
     {
