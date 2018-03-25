@@ -75,13 +75,14 @@ public:
         delete bt;
         bt = 0;
 
-        // TODO Check Does this leak the Int16
-        Array *abt = factory->NewArray("name_array", factory->NewInt16("array_int"));
+        Int16 *i16 = factory->NewInt16("array_int");
+        Array *abt = factory->NewArray("name_array", i16);
         abt->append_dim(4, "dim1");
         abt->append_dim(3, "dim2");
         abt->append_dim(2, "dim3");
         s.add_var(abt);
         delete abt;
+        delete i16;
         abt = 0;
 
         bt = 0;

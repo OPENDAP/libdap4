@@ -106,6 +106,8 @@ public:
     {
         delete byte;
         delete str;
+        delete f32;
+        delete url;
     }
 
     // FilterClauseList tests further down...
