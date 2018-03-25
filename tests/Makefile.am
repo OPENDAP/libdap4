@@ -13,6 +13,9 @@ endif
 
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align
 
+# If valgrind is present, add valgrind targets.
+@VALGRIND_CHECK_RULES@
+
 if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 endif
