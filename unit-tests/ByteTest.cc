@@ -167,11 +167,11 @@ public:
     {
         char i = 42;
         void *v = &i;
-        void *v2 = NULL;
+        signed char *v2 = NULL;
         CPPUNIT_ASSERT(tb1->set_value(6));
         CPPUNIT_ASSERT(tb1->buf2val(&v) == 1 && i == 6);
         CPPUNIT_ASSERT_THROW(tb1->buf2val(NULL), InternalErr);
-        CPPUNIT_ASSERT(tb1->buf2val(&v2) == 1 && *(signed char *)v2 == 6);
+        CPPUNIT_ASSERT(tb1->buf2val((void **)&v2) == 1 && *v2 == 6);
     }
 
     void dump_test()
