@@ -73,33 +73,32 @@ void D4Enum::m_duplicate(const D4Enum &src)
     d_enum_def = src.d_enum_def;
 #if 0
     // The enum_def is a weak pointer managed by D4Group. We just copy it
-    // and do not delete it. jhrg 1019/15
+    // and do not delete it. jhrg 10/19/15
     d_enum_def = src.d_enum_def == 0 ? 0 : new D4EnumDef(*(src.d_enum_def));
 #endif
     d_is_signed = src.d_is_signed;
 }
 
-
 /**
+ * @breif Convert an Enum to a DAP2 int type
  *
+ * Build a DAP2 integer type that matches the D4Enum's internal type and then
+ * add an attribute table to that new variable that holds the D4Enum's symbolic
+ * name and value mapping.
  *
- *
- *
- *
- *
+ * @param attr AttrTable pointer, ignored by this method.
  */
-std::vector<BaseType *> *
-D4Enum::transform_to_dap2(AttrTable *){
+vector<BaseType *> *
+D4Enum::transform_to_dap2(AttrTable *)
+{
     BaseType *my_pretty_pony;
 
     DBG(cerr << __func__ << "() - BEGIN" << endl;);
 
-
     switch (d_element_type) {
     case dods_byte_c:
     case dods_int8_c:
-    case dods_uint8_c:
-    {
+    case dods_uint8_c: {
         Byte *var = new Byte(name());
         dods_byte val;
         this->value(&val);
@@ -107,8 +106,7 @@ D4Enum::transform_to_dap2(AttrTable *){
         my_pretty_pony = var;
         break;
     }
-    case dods_uint16_c:
-    {
+    case dods_uint16_c: {
         UInt16 *var = new UInt16(name());
         dods_uint16 val;
         this->value(&val);
@@ -116,8 +114,7 @@ D4Enum::transform_to_dap2(AttrTable *){
         my_pretty_pony = var;
         break;
     }
-    case dods_uint32_c:
-    {
+    case dods_uint32_c: {
         UInt32 *var = new UInt32(name());
         dods_uint32 val;
         this->value(&val);
@@ -125,8 +122,7 @@ D4Enum::transform_to_dap2(AttrTable *){
         my_pretty_pony = var;
         break;
     }
-    case dods_uint64_c:
-    {
+    case dods_uint64_c: {
         UInt64 *var = new UInt64(name());
         dods_uint64 val;
         this->value(&val);
@@ -134,8 +130,7 @@ D4Enum::transform_to_dap2(AttrTable *){
         my_pretty_pony = var;
         break;
     }
-    case dods_int16_c:
-    {
+    case dods_int16_c: {
         Int16 *var = new Int16(name());
         dods_int16 val;
         this->value(&val);
@@ -143,8 +138,7 @@ D4Enum::transform_to_dap2(AttrTable *){
         my_pretty_pony = var;
         break;
     }
-    case dods_int32_c:
-    {
+    case dods_int32_c: {
         Int32 *var = new Int32(name());
         dods_int32 val;
         this->value(&val);
@@ -152,8 +146,7 @@ D4Enum::transform_to_dap2(AttrTable *){
         my_pretty_pony = var;
         break;
     }
-    case dods_int64_c:
-    {
+    case dods_int64_c: {
         Int64 *var = new Int64(name());
         dods_int64 val;
         this->value(&val);
@@ -161,55 +154,48 @@ D4Enum::transform_to_dap2(AttrTable *){
         my_pretty_pony = var;
         break;
     }
-    default:
-    {
+    default: {
         ostringstream oss;
-        oss << __func__ << "() - ERROR! Unknown D4Enum type:"<< d_element_type << " name: " <<  name() << endl;
-        throw InternalErr(__FILE__,__LINE__,oss.str());
-        break;
+        oss << "Unknown D4Enum type:" << d_element_type << ", name: " << name() << endl;
+        throw InternalErr(__FILE__, __LINE__, oss.str());
     }
     }
 
     DBG( cerr << __func__ << "() - Processing Enum  type:"<<
         my_pretty_pony->type_name() << " name: " << my_pretty_pony->name() << endl;);
-    /**
-     * Grab the attributes!
-     */
+
+    //Grab the attributes!
     AttrTable d2_attrs = *(this->attributes()->get_AttrTable(name()));
     my_pretty_pony->set_attr_table(d2_attrs);
 
-    // cerr << "D4Enum::transform_to_dap2() - my_pretty_pony attrs: "<< endl;
-    // my_pretty_pony->get_attr_table().print(cerr);
-
-    /**
-     * Now we make the Enum label, and the enum's definition
-     * into DAP2 attributes for our returned item.
-     */
+    // make the Enum label, and the enum's definition into DAP2 attributes for our returned item.
     long long my_value;
     this->value(&my_value);
+
     DBG(cerr << __func__ << "() - value: "<< my_value << endl;);
 
-    string my_label="";
+    string my_label = "";
     AttrTable *enum_def = new AttrTable();
     enum_def->set_name("d4:enum_def");
 
     D4EnumDef::D4EnumValueIter dIter = d_enum_def->value_begin();
     D4EnumDef::D4EnumValueIter dEnd = d_enum_def->value_end();
-    while( dIter!=dEnd){
-        long long a_value =  (*dIter).value;
-        string a_label =  (*dIter).label;
+    while (dIter != dEnd) {
+        long long a_value = (*dIter).value;
+        string a_label = (*dIter).label;
         ostringstream oss;
         oss << a_value;
         DBG(cerr << __func__ << "() - a_value: "<< a_value << endl;);
-        enum_def->append_attr(a_label,my_pretty_pony->type_name(),oss.str());
-        if(a_value == my_value){
+        enum_def->append_attr(a_label, my_pretty_pony->type_name(), oss.str());
+        if (a_value == my_value) {
             my_label = (*dIter).label;
         }
         dIter++;
     }
-    if(!my_label.empty())
-        my_pretty_pony->get_attr_table().append_attr("d4:enum_label","String",my_label);
-    my_pretty_pony->get_attr_table().append_container(enum_def,enum_def->get_name());
+
+    if (!my_label.empty()) my_pretty_pony->get_attr_table().append_attr("d4:enum_label", "String", my_label);
+
+    my_pretty_pony->get_attr_table().append_container(enum_def, enum_def->get_name());
 
     vector<BaseType *> *result = new vector<BaseType *>();
     result->push_back(my_pretty_pony);
@@ -381,11 +367,14 @@ D4Enum::set_is_signed(Type t)
 		break;
 
 	default:
-		assert(!"illegal type for D4Enum");
+#if 0
+	    // I removed this because it hinders testing and is no better
+	    // than throwing an exception. jhrg 3/29/18
+	    assert(!"illegal type for D4Enum");
+#endif
 		throw InternalErr(__FILE__, __LINE__, "Illegal type");
 	}
 }
-
 
 /**
  * @brief Serialize a D4Enum
