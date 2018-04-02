@@ -368,6 +368,10 @@ AS_IF([test x$enable_developer = xyes],
 
 DODS_GCOV_VALGRIND
 
+# Find valgrind, if available, and add targets for it.
+AX_VALGRIND_DFLT([sgcheck], [off])
+AX_VALGRIND_CHECK
+
 dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
 
 AH_TOP([#ifndef _config_h

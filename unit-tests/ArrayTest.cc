@@ -193,6 +193,8 @@ public:
         for (Array::Dim_iter i = a1.dim_begin(); i != a1.dim_end(); i++, j++) {
             CPPUNIT_ASSERT(a1.dimension_name(i) == expected_name[j]);
         }
+        delete dims;
+        delete d;
     }
 
     void clear_dims_test()

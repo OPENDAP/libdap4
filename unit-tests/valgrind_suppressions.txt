@@ -88,3 +88,85 @@
    obj:*
    obj:*
 }
+
+{
+   <bash1>
+   Memcheck:Free
+   fun:free
+   obj:/bin/bash
+   fun:run_unwind_frame
+   fun:parse_and_execute
+   fun:command_substitute
+   obj:/bin/bash
+   obj:/bin/bash
+   fun:expand_word_unsplit
+   fun:execute_command_internal
+   fun:execute_command
+   fun:execute_command_internal
+   fun:execute_command
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Free
+   fun:free
+   obj:/bin/bash
+   fun:run_unwind_frame
+   fun:parse_and_execute
+   fun:command_substitute
+   obj:/bin/bash
+   obj:/bin/bash
+   fun:expand_string_assignment
+   obj:/bin/bash
+   obj:/bin/bash
+   obj:/bin/bash
+   obj:/bin/bash
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Free
+   fun:free
+   obj:/bin/bash
+   fun:run_unwind_frame
+   fun:parse_and_execute
+   fun:command_substitute
+   obj:/bin/bash
+   obj:/bin/bash
+   fun:expand_string_assignment
+   obj:/bin/bash
+   obj:/bin/bash
+   obj:/bin/bash
+   obj:/bin/bash
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Free
+   fun:free
+   obj:/bin/bash
+   fun:run_unwind_frame
+   fun:parse_and_execute
+   fun:command_substitute
+   obj:/bin/bash
+   obj:/bin/bash
+   fun:expand_string_assignment
+   obj:/bin/bash
+   obj:/bin/bash
+   obj:/bin/bash
+   obj:/bin/bash
+}
+
+{
+   <bash_invalid_free>
+   Memcheck:Free
+   fun:free
+   obj:/bin/bash
+   fun:run_unwind_frame
+   fun:parse_and_execute
+   fun:command_substitute
+   obj:/bin/bash
+   obj:/bin/bash
+   fun:expand_string_assignment
+   obj:/bin/bash
+   obj:/bin/bash
+   obj:/bin/bash
+   obj:/bin/bash
+}

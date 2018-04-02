@@ -142,6 +142,7 @@ public:
         CPPUNIT_ASSERT(i2->buf2val(&v) == 2 && i == 0);
         CPPUNIT_ASSERT_THROW(i2->buf2val(NULL), InternalErr);
         CPPUNIT_ASSERT(i2->buf2val((void **)&v2) == 2 && *v2 == 0);
+        delete v2;
     }
 
     void set_value_test()
