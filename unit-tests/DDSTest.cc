@@ -149,6 +149,7 @@ public:
     CPPUNIT_TEST(get_das_test_2);
     CPPUNIT_TEST(get_das_test_3);
     CPPUNIT_TEST(get_das_test_4);
+    CPPUNIT_TEST(get_das_test_5);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -626,6 +627,34 @@ public:
         }
     }
 
+    // Test the case where there are no global attributes
+    void get_das_test_5()
+    {
+        try {
+            D4BaseTypeFactory d4_factory;
+            DMR dmr(&d4_factory);
+            D4ParserSax2 parser;
+
+            ifstream ifs((string(TEST_SRC_DIR) + "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105-S230545-E003816.010538.V03B.h5.dmrpp.dmr").c_str());
+
+            parser.intern(ifs, &dmr);
+
+            auto_ptr<DDS> dds(dmr.getDDS());
+            auto_ptr<DAS> das(dds->get_das());
+
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) +  "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105-S230545-E003816.010538.V03B.h5.dmrpp.dmr.baseline");
+            ostringstream oss;
+            das->print(oss);
+
+            DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
+            DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
+
+            CPPUNIT_ASSERT(baseline == oss.str());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
+    }
 
 };
 

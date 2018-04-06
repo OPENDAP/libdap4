@@ -117,7 +117,10 @@ const string c_dap_40_n_sl = c_dap40_namespace + " " + c_default_dap40_schema_lo
  * ############################################################################################
  */
 
-
+/// Name given to a container for orphaned top-level attributes.
+/// These can show up when a DAS is built from a DMR because DAP4
+/// supports attributes at the top level that are not in any container.
+const string TOP_LEVEL_ATTRS_CONTAINER_NAME = "DAP4_GLOBAL";
 
 using namespace std;
 
@@ -1180,6 +1183,10 @@ void DDS::get_das(DAS *das)
             das->add_table((*i)->name(), new AttrTable((*i)->get_attr_table()));
         }
     }
+
+    // Used in the rare case we have global attributes not in a table.
+    auto_ptr<AttrTable> global(new AttrTable);
+
     for (AttrTable::Attr_iter i = d_attr.attr_begin(); i != d_attr.attr_end(); ++i) {
         // This _should_ not happen, but it's possible given the API and if the DDS
         // was built from a DMR, it might happen. (That a global attribute might not
@@ -1187,6 +1194,17 @@ void DDS::get_das(DAS *das)
         if (d_attr.get_attr_table(i)) {
             das->add_table(d_attr.get_name(i), new AttrTable(*(d_attr.get_attr_table(i))));
         }
+        else {
+            // This (i) must be a top level attribute outside a container. This can
+            // happen when the DDS is derived from a DMR. jhrg 4/6/18
+            global->append_attr(d_attr.get_name(i), d_attr.get_type(i), d_attr.get_attr_vector(i));
+        }
+    }
+
+    // if any attributes were added to 'global,' add it to the DAS and take control of the pointer.
+    if (global->get_size() > 0) {
+        das->add_table(TOP_LEVEL_ATTRS_CONTAINER_NAME, global.get());  // What if this name is not unique?
+        global.release();
     }
 }
 
