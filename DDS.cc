@@ -1149,6 +1149,39 @@ DDS::print_das(ostream &out)
     out << "}" << endl ;
 }
 
+/**
+ * Returns a new DAS that contains all of the Dataset attributes. This includes all Variable
+ * attributes as well as Global attributes.
+ */
+DAS *
+DDS::get_das()
+{
+    DAS *das = new DAS();
+    get_das(das);
+    return das;
+}
+
+/**
+ * Populates the passed DAS with all of the Dataset (Global and Variable) attributes.
+ */
+void
+DDS::get_das(DAS *das)
+{
+    for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
+        BaseType *var = (*i);
+        if (has_dap2_attributes(*i)){
+            AttrTable at = var->get_attr_table();
+            AttrTable *new_at = new AttrTable(at);
+            das->add_table(var->name(),new_at);
+        }
+    }
+    for(AttrTable::Attr_iter i = d_attr.attr_begin(); i!=d_attr.attr_end() ; ++i){
+        AttrTable *at = d_attr.get_attr_table(i);
+        AttrTable *new_at = new AttrTable(*at);
+        das->add_table(d_attr.get_name(i), new_at);
+    }
+}
+
 /** @brief Print a constrained DDS to the specified file.
 
     Print those parts (variables) of the DDS structure to OS that

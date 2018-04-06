@@ -371,6 +371,8 @@ public:
     void print_dmr(ostream &out, bool constrained);
 
     void print_das(ostream &out);
+    DAS *get_das();
+    void get_das(DAS *das);
 
     void mark_all(bool state);
     bool mark(const string &name, bool state);
