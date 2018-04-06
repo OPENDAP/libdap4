@@ -137,11 +137,12 @@ public:
     {
         int i = 42;
         void *v = &i;
-        void *v2 = NULL;
+        float *v2 = NULL;
         CPPUNIT_ASSERT(i2->set_value(0));
         CPPUNIT_ASSERT(i2->buf2val(&v) == 4 && i == 0);
         CPPUNIT_ASSERT_THROW(i2->buf2val(NULL), InternalErr);
-        CPPUNIT_ASSERT(i2->buf2val(&v2) == 4 && *(int *)v2 == 0);
+        CPPUNIT_ASSERT(i2->buf2val((void **)&v2) == 4 && *v2 == 0);
+        delete v2;
     }
 
     void set_value_test()

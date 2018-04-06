@@ -127,7 +127,7 @@ public:
 
     void val2buf_test()
     {
-        int i = 42;
+        unsigned short i = 42;
         i2->val2buf(&i, true);
         CPPUNIT_ASSERT(i2->value() == 42);        
         CPPUNIT_ASSERT_THROW(i2->val2buf(NULL, true), InternalErr);
@@ -135,13 +135,14 @@ public:
 
     void buf2val_test()
     {
-        int i = 42;
+        unsigned short i = 42;
         void *v = &i;
         unsigned short *v2 = NULL;
         CPPUNIT_ASSERT(i2->set_value(0));
         CPPUNIT_ASSERT(i2->buf2val(&v) == 2 && i == 0);
         CPPUNIT_ASSERT_THROW(i2->buf2val(NULL), InternalErr);
         CPPUNIT_ASSERT(i2->buf2val((void **)&v2) == 2 && *v2 == 0);
+        delete v2;
     }
 
     void set_value_test()

@@ -22,13 +22,17 @@ endif
 
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -Wcast-align
 
-if USE_VALGRIND
-TESTS_ENVIRONMENT=valgrind --quiet --trace-children=yes --error-exitcode=1 \
---leak-check=yes --dsymutil=yes --suppressions=valgrind_suppressions.txt
+# if USE_VALGRIND
+# TESTS_ENVIRONMENT=valgrind --quiet --trace-children=yes --error-exitcode=1 \
+# --leak-check=yes --dsymutil=yes --suppressions=valgrind_suppressions.txt
 
-# skip using --log-file="valgrind-%p.log" because it always generates files
-# Might also drop --dsymutil=yes because it can take a long time to run.
-endif
+# # skip using --log-file="valgrind-%p.log" because it always generates files
+# # Might also drop --dsymutil=yes because it can take a long time to run.
+# endif
+
+# If valgrind is present, add valgrind targets.
+@VALGRIND_CHECK_RULES@
+VALGRIND_SUPPRESSIONS_FILES = valgrind_suppressions.txt
 
 if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer

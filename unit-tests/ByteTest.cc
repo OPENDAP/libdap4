@@ -91,6 +91,7 @@ public:
         tb3 = new Byte("tb3 %");
         tb4 = new Byte("tb4 #");
         tb5 = new Byte("a", "b");
+        a[0] = 0;
     }
 
     void tearDown()
@@ -171,7 +172,8 @@ public:
         CPPUNIT_ASSERT(tb1->set_value(6));
         CPPUNIT_ASSERT(tb1->buf2val(&v) == 1 && i == 6);
         CPPUNIT_ASSERT_THROW(tb1->buf2val(NULL), InternalErr);
-        CPPUNIT_ASSERT(tb1->buf2val((void **)&v2) == 1 && *v2 == 6);
+        CPPUNIT_ASSERT(tb1->buf2val((void **)&v2) == 1 && *(signed char *)v2 == 6);
+        delete v2;
     }
 
     void dump_test()

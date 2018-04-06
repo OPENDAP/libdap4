@@ -18,21 +18,4 @@ AS_IF([test x$coverage = xyes],
             [ AC_MSG_ERROR([Can only enable coverage when using gcc.]) ]) ],
     AM_CONDITIONAL(ENABLE_COVERAGE, false))
                
-# Support for running test cases using valgrind:
-               
-use_valgrind=no
-AC_ARG_ENABLE(valgrind,
-    [AS_HELP_STRING([--enable-valgrind], 
-    	            [Use valgrind when running unit tests. (default is no)])],
-    [use_valgrind=$enableval],
-    [use_valgrind=no])
-               
-AS_IF([test x$use_valgrind = xyes ],
-      [ AC_CHECK_PROG(HAVE_VALGRIND, valgrind, yes, no)
-        AS_IF([test x$HAVE_VALGRIND = xyes ],
-	          [AC_MSG_NOTICE([Using valgrind with unit tests.])],
-	          [AC_MSG_ERROR([Valgrind not found in PATH.])])])
-
-AM_CONDITIONAL(USE_VALGRIND, [test x$use_valgrind = xyes])
-
 ])
