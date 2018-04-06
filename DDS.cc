@@ -1150,8 +1150,13 @@ DDS::print_das(ostream &out)
 }
 
 /**
+ * @brief Get a DAS object
+ *
  * Returns a new DAS that contains all of the Dataset attributes. This includes all Variable
- * attributes as well as Global attributes.
+ * attributes as well as Global attributes. The caller is responsible for deleting the
+ * returned object.
+ *
+ * @return A newly allocated DAS object
  */
 DAS *
 DDS::get_das()
@@ -1162,23 +1167,26 @@ DDS::get_das()
 }
 
 /**
- * Populates the passed DAS with all of the Dataset (Global and Variable) attributes.
+ * @brief Fill in a DAS object
+ *
+ * Populates a DAS with all of the Dataset (Global and Variable) attributes.
+ *
+ * @param das Add attributes to this DAS object
  */
-void
-DDS::get_das(DAS *das)
+void DDS::get_das(DAS *das)
 {
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
-        BaseType *var = (*i);
-        if (has_dap2_attributes(*i)){
-            AttrTable at = var->get_attr_table();
-            AttrTable *new_at = new AttrTable(at);
-            das->add_table(var->name(),new_at);
+        if (has_dap2_attributes(*i)) {
+            das->add_table((*i)->name(), new AttrTable((*i)->get_attr_table()));
         }
     }
-    for(AttrTable::Attr_iter i = d_attr.attr_begin(); i!=d_attr.attr_end() ; ++i){
-        AttrTable *at = d_attr.get_attr_table(i);
-        AttrTable *new_at = new AttrTable(*at);
-        das->add_table(d_attr.get_name(i), new_at);
+    for (AttrTable::Attr_iter i = d_attr.attr_begin(); i != d_attr.attr_end(); ++i) {
+        // This _should_ not happen, but it's possible given the API and if the DDS
+        // was built from a DMR, it might happen. (That a global attribute might not
+        // be a container).
+        if (d_attr.get_attr_table(i)) {
+            das->add_table(d_attr.get_name(i), new AttrTable(*(d_attr.get_attr_table(i))));
+        }
     }
 }
 

@@ -347,7 +347,7 @@ public:
     void timeout_off();
     void set_timeout(int t);
     int get_timeout();
-    //@}
+    ///@}
 
     // These parse the DAP2 curly-brace document and make a C++ object.
     void parse(string fname);
