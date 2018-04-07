@@ -52,6 +52,7 @@
 #include <sstream>
 #include <algorithm>
 #include <functional>
+#include <memory>
 
 // #define DODS_DEBUG
 // #define DODS_DEBUG2
@@ -1215,7 +1216,6 @@ void DDS::get_das(DAS *das)
             das->add_table((*i)->name(), new AttrTable((*i)->get_attr_table()));
         }
     }
-
     // Used in the rare case we have global attributes not in a table.
     auto_ptr<AttrTable> global(new AttrTable);
 
