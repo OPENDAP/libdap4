@@ -35,6 +35,7 @@
 
 #include <cstdio>
 #include <cmath>
+#include <climits>
 
 #include <sys/types.h>
 
@@ -1185,12 +1186,14 @@ get_unique_top_level_global_container_name(DAS *das)
         return TOP_LEVEL_ATTRS_CONTAINER_NAME;
 
     // ... but the default name might already be used
-    int i = 0;
+    unsigned int i = 0;
     string name;
     ostringstream oss;
     while (table) {
         oss.str(""); // reset to empty for the next suffix
         oss << "_" << ++i;
+        if (!(i < UINT_MAX))
+            throw InternalErr(__FILE__, __LINE__, "Cannot add top-level attributes to the DAS");
         name = TOP_LEVEL_ATTRS_CONTAINER_NAME + oss.str();
         table = das->get_table(name);
     }
