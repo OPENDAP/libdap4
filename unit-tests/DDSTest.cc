@@ -150,6 +150,7 @@ public:
     CPPUNIT_TEST(get_das_test_3);
     CPPUNIT_TEST(get_das_test_4);
     CPPUNIT_TEST(get_das_test_5);
+    CPPUNIT_TEST(get_das_test_6);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -627,7 +628,7 @@ public:
         }
     }
 
-    // Test the case where there are no global attributes
+    // Test the case where there are orphaned global attributes (one w/o an enclosing container).
     void get_das_test_5()
     {
         try {
@@ -643,6 +644,34 @@ public:
             auto_ptr<DAS> das(dds->get_das());
 
             string baseline = read_test_baseline(string(TEST_SRC_DIR) +  "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105-S230545-E003816.010538.V03B.h5.dmrpp.dmr.baseline");
+            ostringstream oss;
+            das->print(oss);
+
+            DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
+            DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
+
+            CPPUNIT_ASSERT(baseline == oss.str());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
+    }
+
+    // Test the code that tests for a unique top-level attribute container name for orphaned TL attributes.
+    void get_das_test_6() {
+        try {
+            D4BaseTypeFactory d4_factory;
+            DMR dmr(&d4_factory);
+            D4ParserSax2 parser;
+
+            ifstream ifs((string(TEST_SRC_DIR) + "/dmr-to-dap2-testsuite/hacked.dmrpp.dmr").c_str());
+
+            parser.intern(ifs, &dmr);
+
+            auto_ptr<DDS> dds(dmr.getDDS());
+            auto_ptr<DAS> das(dds->get_das());
+
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) +  "/dmr-to-dap2-testsuite/hacked.dmrpp.dmr.baseline");
             ostringstream oss;
             das->print(oss);
 
