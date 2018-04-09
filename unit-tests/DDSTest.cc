@@ -45,6 +45,9 @@
 #include "Grid.h"
 
 #include "DDS.h"
+#include "DMR.h"
+#include "D4ParserSax2.h"
+#include "D4BaseTypeFactory.h"
 
 #include "GNURegex.h"
 #include "GetOpt.h"
@@ -111,7 +114,7 @@ public:
     // to work with transfer_attributes() - if a handler builds a malformed
     // DAS, it will need to specialize the BaseType::transfer_attributes()
     // method.
-CPPUNIT_TEST_SUITE (DDSTest);
+    CPPUNIT_TEST_SUITE (DDSTest);
     CPPUNIT_TEST(transfer_attributes_test_1);
     CPPUNIT_TEST(transfer_attributes_test_2);
 
@@ -142,8 +145,14 @@ CPPUNIT_TEST_SUITE (DDSTest);
     // see comment in code below. jhrg 2/4/14 CPPUNIT_TEST(get_response_size_test_seq);
     CPPUNIT_TEST(get_response_size_test_seq_c);
 
-    CPPUNIT_TEST_SUITE_END()
-    ;
+    CPPUNIT_TEST(get_das_test_1);
+    CPPUNIT_TEST(get_das_test_2);
+    CPPUNIT_TEST(get_das_test_3);
+    CPPUNIT_TEST(get_das_test_4);
+    CPPUNIT_TEST(get_das_test_5);
+    CPPUNIT_TEST(get_das_test_6);
+
+    CPPUNIT_TEST_SUITE_END();
 
     void transfer_attributes_test_1()
     {
@@ -506,6 +515,174 @@ CPPUNIT_TEST_SUITE (DDSTest);
         DBG(cerr << "S2000415.HDF response size: " << dds2->get_request_size(true) << endl);
         DBG(dds2->print_constrained(cerr));
         CPPUNIT_ASSERT(dds2->get_request_size(true) == 4);
+    }
+
+    // Build a DDS with attributes, then check that get_das() returns the correct thing
+    void get_das_test_1() {
+        try {
+            BaseTypeFactory btf;
+            DDS dds(&btf);
+            dds.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+            DAS das;
+            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+            dds.transfer_attributes(&das);
+
+            auto_ptr<DAS> new_das(dds.get_das());
+
+            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+            ostringstream oss;
+            new_das->print(oss);
+
+            DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
+            DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
+
+            CPPUNIT_ASSERT(baseline == oss.str());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
+    }
+
+    // Build a DMR, then check that get_das() returns the correct thing. Note that the
+    // order of the attr tables is not exactly the same because the DMR treats Grids
+    // differently. In the DMR, DAP2 Grid maps become shared dimensions and those are
+    // output last. In a DAP2 DDS, they (maps) are added as 'extra' variables are written
+    // first. Thus the attribute containers for maps/shared dims are either first or last
+    // for DAP2 or DAP4, resp.
+    void get_das_test_2() {
+        try {
+            D4BaseTypeFactory d4_factory;
+            DMR dmr(&d4_factory);
+            D4ParserSax2 parser;
+
+            ifstream ifs((string(TEST_SRC_DIR) + "/dmr-testsuite/coads_climatology.nc.full.dmr").c_str());
+
+            parser.intern(ifs, &dmr);
+
+            auto_ptr<DDS> dds(dmr.getDDS());
+            auto_ptr<DAS> das(dds->get_das());
+
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/dmr-testsuite/coads_climatology.nc.full.dmr.das");
+            ostringstream oss;
+            das->print(oss);
+
+            DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
+            DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
+
+            CPPUNIT_ASSERT(baseline == oss.str());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
+    }
+
+    // Test the case whee there are no attribtues for variables
+    void get_das_test_3() {
+        try {
+            BaseTypeFactory btf;
+            DDS dds(&btf);
+            dds.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+            DAS das;
+            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_var");
+            dds.transfer_attributes(&das);
+
+            auto_ptr<DAS> new_das(dds.get_das());
+
+            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_var");
+            ostringstream oss;
+            new_das->print(oss);
+
+            DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
+            DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
+
+            CPPUNIT_ASSERT(baseline == oss.str());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
+    }
+
+    // Test the case where there are no global attributes
+    void get_das_test_4() {
+        try {
+            BaseTypeFactory btf;
+            DDS dds(&btf);
+            dds.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+            DAS das;
+            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_global");
+            dds.transfer_attributes(&das);
+
+            auto_ptr<DAS> new_das(dds.get_das());
+
+            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_global");
+            ostringstream oss;
+            new_das->print(oss);
+
+            DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
+            DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
+
+            CPPUNIT_ASSERT(baseline == oss.str());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
+    }
+
+    // Test the case where there are orphaned global attributes (one w/o an enclosing container).
+    void get_das_test_5()
+    {
+        try {
+            D4BaseTypeFactory d4_factory;
+            DMR dmr(&d4_factory);
+            D4ParserSax2 parser;
+
+            ifstream ifs((string(TEST_SRC_DIR) + "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105-S230545-E003816.010538.V03B.h5.dmrpp.dmr").c_str());
+
+            parser.intern(ifs, &dmr);
+
+            auto_ptr<DDS> dds(dmr.getDDS());
+            auto_ptr<DAS> das(dds->get_das());
+
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) +  "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105-S230545-E003816.010538.V03B.h5.dmrpp.dmr.baseline");
+            ostringstream oss;
+            das->print(oss);
+
+            DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
+            DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
+
+            CPPUNIT_ASSERT(baseline == oss.str());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
+    }
+
+    // Test the code that tests for a unique top-level attribute container name for orphaned TL attributes.
+    void get_das_test_6() {
+        try {
+            D4BaseTypeFactory d4_factory;
+            DMR dmr(&d4_factory);
+            D4ParserSax2 parser;
+
+            ifstream ifs((string(TEST_SRC_DIR) + "/dmr-to-dap2-testsuite/hacked.dmrpp.dmr").c_str());
+
+            parser.intern(ifs, &dmr);
+
+            auto_ptr<DDS> dds(dmr.getDDS());
+            auto_ptr<DAS> das(dds->get_das());
+
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) +  "/dmr-to-dap2-testsuite/hacked.dmrpp.dmr.baseline");
+            ostringstream oss;
+            das->print(oss);
+
+            DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
+            DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
+
+            CPPUNIT_ASSERT(baseline == oss.str());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL(e.get_error_message());
+        }
     }
 
 };

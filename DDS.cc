@@ -35,6 +35,8 @@
 
 #include <cstdio>
 #include <cmath>
+#include <climits>
+
 #include <sys/types.h>
 
 #ifdef WIN32
@@ -50,6 +52,7 @@
 #include <sstream>
 #include <algorithm>
 #include <functional>
+#include <memory>
 
 // #define DODS_DEBUG
 // #define DODS_DEBUG2
@@ -117,7 +120,10 @@ const string c_dap_40_n_sl = c_dap40_namespace + " " + c_default_dap40_schema_lo
  * ############################################################################################
  */
 
-
+/// Name given to a container for orphaned top-level attributes.
+/// These can show up when a DAS is built from a DMR because DAP4
+/// supports attributes at the top level that are not in any container.
+const string TOP_LEVEL_ATTRS_CONTAINER_NAME = "DAP4_GLOBAL";
 
 using namespace std;
 
@@ -1147,6 +1153,89 @@ DDS::print_das(ostream &out)
     // Print the global attributes at the end.
     d_attr.print(out,indent);
     out << "}" << endl ;
+}
+
+/**
+ * @brief Get a DAS object
+ *
+ * Returns a new DAS that contains all of the Dataset attributes. This includes all Variable
+ * attributes as well as Global attributes. The caller is responsible for deleting the
+ * returned object.
+ *
+ * @return A newly allocated DAS object
+ */
+DAS *
+DDS::get_das()
+{
+    DAS *das = new DAS();
+    get_das(das);
+    return das;
+}
+
+/**
+ * Get a suitable name for new container for top-level attributes
+ * @param das Look in this DAS to find an unused name
+ * @return The name
+ */
+static string
+get_unique_top_level_global_container_name(DAS *das)
+{
+    // It's virtually certain that the TOP_LEVE... name will be unique. If so,
+    // return the name. The code tests for a table to see if the name _should not_ be used.
+    AttrTable *table = das->get_table(TOP_LEVEL_ATTRS_CONTAINER_NAME);
+    if (!table)
+        return TOP_LEVEL_ATTRS_CONTAINER_NAME;
+
+    // ... but the default name might already be used
+    unsigned int i = 0;
+    string name;
+    ostringstream oss;
+    while (table) {
+        oss.str(""); // reset to empty for the next suffix
+        oss << "_" << ++i;
+        if (!(i < UINT_MAX))
+            throw InternalErr(__FILE__, __LINE__, "Cannot add top-level attributes to the DAS");
+        name = TOP_LEVEL_ATTRS_CONTAINER_NAME + oss.str();
+        table = das->get_table(name);
+    }
+
+    return name;
+}
+
+/**
+ * @brief Fill in a DAS object
+ *
+ * Populates a DAS with all of the Dataset (Global and Variable) attributes.
+ *
+ * @param das Add attributes to this DAS object
+ */
+void DDS::get_das(DAS *das)
+{
+    for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
+        if (has_dap2_attributes(*i)) {
+            das->add_table((*i)->name(), new AttrTable((*i)->get_attr_table()));
+        }
+    }
+    // Used in the rare case we have global attributes not in a table.
+    auto_ptr<AttrTable> global(new AttrTable);
+
+    for (AttrTable::Attr_iter i = d_attr.attr_begin(); i != d_attr.attr_end(); ++i) {
+        // It's possible, given the API and if the DDS was built from a DMR, that a
+        // global attribute might not be a container; check for that.
+        if (d_attr.get_attr_table(i)) {
+            das->add_table(d_attr.get_name(i), new AttrTable(*(d_attr.get_attr_table(i))));
+        }
+        else {
+            // This must be a top level attribute outside a container.  jhrg 4/6/18
+            global->append_attr(d_attr.get_name(i), d_attr.get_type(i), d_attr.get_attr_vector(i));
+        }
+    }
+
+    // if any attributes were added to 'global,' add it to the DAS and take control of the pointer.
+    if (global->get_size() > 0) {
+        das->add_table(get_unique_top_level_global_container_name(das), global.get());  // What if this name is not unique?
+        global.release();
+    }
 }
 
 /** @brief Print a constrained DDS to the specified file.
