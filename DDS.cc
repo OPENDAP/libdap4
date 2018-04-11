@@ -63,7 +63,9 @@
 #include "Clause.h"
 #include "Error.h"
 #include "InternalErr.h"
+#if 0
 #include "Keywords2.h"
+#endif
 
 #include "parser.h"
 #include "debug.h"
@@ -192,7 +194,9 @@ DDS::duplicate(const DDS &dds)
 
     d_timeout = dds.d_timeout;
 
+#if 0
     d_keywords = dds.d_keywords; // value copy; Keywords contains no pointers
+#endif
 
     d_max_response_size = dds.d_max_response_size;
 }
@@ -212,7 +216,7 @@ DDS::duplicate(const DDS &dds)
 DDS::DDS(BaseTypeFactory *factory, const string &name)
         : d_factory(factory), d_name(name), d_container_name(""), d_container(0),
           d_request_xml_base(""),
-          d_timeout(0), d_keywords(), d_max_response_size(0)
+          d_timeout(0), /*d_keywords(),*/ d_max_response_size(0)
 {
     DBG(cerr << "Building a DDS for the default version (2.0)" << endl);
 
@@ -239,7 +243,7 @@ DDS::DDS(BaseTypeFactory *factory, const string &name)
 DDS::DDS(BaseTypeFactory *factory, const string &name, const string &version)
         : d_factory(factory), d_name(name), d_container_name(""), d_container(0),
           d_request_xml_base(""),
-          d_timeout(0), d_keywords(), d_max_response_size(0)
+          d_timeout(0), /*d_keywords(),*/ d_max_response_size(0)
 {
     DBG(cerr << "Building a DDS for version: " << version << endl);
 
@@ -1216,6 +1220,7 @@ void DDS::get_das(DAS *das)
             das->add_table((*i)->name(), new AttrTable((*i)->get_attr_table()));
         }
     }
+
     // Used in the rare case we have global attributes not in a table.
     auto_ptr<AttrTable> global(new AttrTable);
 
