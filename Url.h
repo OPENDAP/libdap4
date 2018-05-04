@@ -63,11 +63,13 @@ const unsigned int max_url_len = 255;
 class Url: public Str
 {
 
+#if 0
 private:
-    string _buf;
+string _buf;
 
-    // This enables methods of Str to access _buf in this class.
-    friend class Str;
+// This enables methods of Str to access _buf in this class.
+friend class Str;
+#endif
 
 public:
     Url(const string &n);
