@@ -90,7 +90,7 @@ dnl Call this gnulib macro right after a working C Compiler is found
 gl_EARLY
 
 dnl echo "CC = $CC"
-AS_IF([test x$CC = xgcc],
+AS_IF([test "x$CC" = xgcc],
       [AM_CONDITIONAL([COMPILER_IS_GCC],[true])],
       [AM_CONDITIONAL([COMPILER_IS_GCC],[false])])
 
