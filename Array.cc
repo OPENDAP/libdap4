@@ -325,12 +325,13 @@ Array::transform_to_dap2(AttrTable *){
             AttrTable *grid_attrs = attributes()->get_AttrTable(name());
             grid_array->set_attr_table(*grid_attrs); // Copy it into the Grid object.
             // grid_array->set_attr_table(*grid_attrs); // Copy it into the data Array.
-            delete grid_attrs;
 
             // Clear the Grid attributes.
-            AttrTable at;
-            at.set_name(name());
-            g->set_attr_table(at);
+            //AttrTable at;
+            //at.set_name(name());
+            g->set_attr_table(*grid_attrs);
+
+            delete grid_attrs;
 
             // Process the Map Arrays.
             D4Maps *d4_maps = this->maps();
