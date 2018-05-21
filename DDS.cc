@@ -1209,13 +1209,29 @@ get_unique_top_level_global_container_name(DAS *das)
  *
  * @param das Add attributes to this DAS object
  */
+void fillConstructorAttrTable(AttrTable *at, BaseType *bt){
+    Constructor *cons = dynamic_cast<Constructor *>(bt);
+    if (cons) {
+        for (Constructor::Vars_iter i = cons->var_begin(), e = cons->var_end(); i != e; i++) {
+            if (has_dap2_attributes(*i)) {
+                AttrTable *childAttrT =  new AttrTable((*i)->get_attr_table());
+                fillConstructorAttrTable(childAttrT, *i);
+                at->append_container(childAttrT,(*i)->name());
+            }
+        }
+    }
+}
+
 void DDS::get_das(DAS *das)
 {
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
         if (has_dap2_attributes(*i)) {
-            das->add_table((*i)->name(), new AttrTable((*i)->get_attr_table()));
+            AttrTable *childAttrT =  new AttrTable((*i)->get_attr_table());
+            fillConstructorAttrTable(childAttrT, *i);
+            das->add_table((*i)->name(), childAttrT);
         }
     }
+
     // Used in the rare case we have global attributes not in a table.
     auto_ptr<AttrTable> global(new AttrTable);
 
