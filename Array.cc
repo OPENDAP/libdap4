@@ -321,16 +321,16 @@ Array::transform_to_dap2(AttrTable *){
             Array *grid_array = (Array *) this->ptr_duplicate();
             g->set_array(grid_array);
 
-            // Get the metadata into the Grid
+            // Get the metadata into the Grid Array
             AttrTable *grid_attrs = attributes()->get_AttrTable(name());
-            g->set_attr_table(*grid_attrs); // Copy it into the Grid object.
+            grid_array->set_attr_table(*grid_attrs); // Copy it into the Grid object.
             // grid_array->set_attr_table(*grid_attrs); // Copy it into the data Array.
             delete grid_attrs;
 
-            // Clear the Grid data Array attributes.
+            // Clear the Grid attributes.
             AttrTable at;
             at.set_name(name());
-            grid_array->set_attr_table(at);
+            g->set_attr_table(at);
 
             // Process the Map Arrays.
             D4Maps *d4_maps = this->maps();
