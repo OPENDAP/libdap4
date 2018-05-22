@@ -1227,8 +1227,8 @@ get_unique_top_level_global_container_name(DAS *das)
 /**
  * @brief Recursive helper function for Building DAS entries for
  * Constructor types.
- * @param at Attribute table to add Constructor content to
- * @parame bt A point to a BaseType which may turn out to be an
+ * @param at Add Constructor content to this Attribute table
+ * @param bt A pointer to a BaseType which may be an
  * instance of Constructor.
  */
 void fillConstructorAttrTable(AttrTable *at, BaseType *bt){
