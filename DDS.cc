@@ -1091,11 +1091,16 @@ has_dap2_attributes(BaseType *btp)
 
     Constructor *cons = dynamic_cast<Constructor *>(btp);
     if (cons) {
-        for (Constructor::Vars_iter i = cons->var_begin(), e = cons->var_end(); i != e; i++) {
-            if (has_dap2_attributes(*i)) return true;
+        Grid* grid = dynamic_cast<Grid*>(btp);
+        if(grid){
+            return has_dap2_attributes(grid->get_array());
+        }
+        else {
+            for (Constructor::Vars_iter i = cons->var_begin(), e = cons->var_end(); i != e; i++) {
+                if (has_dap2_attributes(*i)) return true;
+            }
         }
     }
-
     return false;
 }
 
