@@ -622,6 +622,8 @@ void Grid::transfer_attributes(AttrTable *at_container)
 		// If the line is added back, some of the DMR round trip tests fail
 		// and the dapreader behavior is changed - tests that build responses
 		// from .dods and .das files fail when they include Grids. jhrg 5/23/18
+		//
+		// See also HYARX-766
 		array_var()->transfer_attributes(at);
 #endif
 
