@@ -1109,25 +1109,47 @@ has_dap2_attributes(BaseType *btp)
  * @param out Write the DAS here.
  */
 static string four_spaces = "    ";
-void print_var_das(ostream &out, BaseType *bt, string indent = "")
-{
+void print_var_das(ostream &out, BaseType *bt, string indent = "") {
+
+    if (!has_dap2_attributes(bt))
+        return;
 
     AttrTable attr_table = bt->get_attr_table();
     out << indent << add_space_encoding(bt->name()) << " {" << endl;
-    attr_table.print(out, indent + four_spaces);
+
     Constructor *cnstrctr = dynamic_cast<Constructor *>(bt);
     if (cnstrctr) {
-        Constructor::Vars_iter i = cnstrctr->var_begin();
-        Constructor::Vars_iter e = cnstrctr->var_end();
-        for (; i != e; i++) {
-            // Only call print_var_das() if there really are attributes.
-            // This is made complicated because while there might be none
-            // for a particular var (*i), that var might be a ctor and its
-            // descendant might have an attribute. jhrg 3/18/18
-            if (has_dap2_attributes(*i))
-                print_var_das(out, *i, indent + four_spaces);
-        }
+        Grid *grid = dynamic_cast<Grid *>(bt);
+        if (grid) {
+            Array *gridArray = grid->get_array();
+            AttrTable arrayAT = gridArray->get_attr_table();
 
+            if (has_dap2_attributes(gridArray))
+                gridArray->get_attr_table().print(out, indent + four_spaces);
+
+            for (Grid::Map_iter mIter = grid->map_begin();
+                    mIter != grid->map_end(); ++mIter) {
+                BaseType *currentMap = *mIter;
+                if (has_dap2_attributes(currentMap))
+                    print_var_das(out, currentMap, indent + four_spaces);
+            }
+        }
+        else {
+            attr_table.print(out, indent + four_spaces);
+            Constructor::Vars_iter i = cnstrctr->var_begin();
+            Constructor::Vars_iter e = cnstrctr->var_end();
+            for (; i != e; i++) {
+                // Only call print_var_das() if there really are attributes.
+                // This is made complicated because while there might be none
+                // for a particular var (*i), that var might be a ctor and its
+                // descendant might have an attribute. jhrg 3/18/18
+                if (has_dap2_attributes(*i))
+                    print_var_das(out, *i, indent + four_spaces);
+            }
+        }
+    }
+    else {
+        attr_table.print(out, indent + four_spaces);
     }
 
     out << indent << "}" << endl;
@@ -1203,19 +1225,56 @@ get_unique_top_level_global_container_name(DAS *das)
 }
 
 /**
- * @brief Fill in a DAS object
- *
- * Populates a DAS with all of the Dataset (Global and Variable) attributes.
- *
- * @param das Add attributes to this DAS object
+ * @brief Recursive helper function for Building DAS entries for
+ * Constructor types.
+ * @param at Add Constructor content to this Attribute table
+ * @param bt A pointer to a BaseType which may be an
+ * instance of Constructor.
  */
+void fillConstructorAttrTable(AttrTable *at, BaseType *bt){
+    Constructor *cons = dynamic_cast<Constructor *>(bt);
+    if (cons) {
+        Grid *grid = dynamic_cast<Grid *>(bt);
+        if(grid){
+            Array *gridArray = grid->get_array();
+            AttrTable arrayAT = gridArray->get_attr_table();
+
+            for( AttrTable::Attr_iter atIter = arrayAT.attr_begin(); atIter!=arrayAT.attr_end(); ++atIter){
+                AttrType type = arrayAT.get_attr_type(atIter);
+                string childName = arrayAT.get_name(atIter);
+                if (type == Attr_container){
+                    at->append_container( new AttrTable(*arrayAT.get_attr_table(atIter)), childName);
+                }
+                else {
+                    vector<string>* pAttrTokens = arrayAT.get_attr_vector(atIter);
+                    // append_attr makes a copy of the vector, so we don't have to do so here.
+                    at->append_attr(childName, AttrType_to_String(type), pAttrTokens);
+                }
+            }
+
+        }
+        else {
+            for (Constructor::Vars_iter i = cons->var_begin(), e = cons->var_end(); i != e; i++) {
+                if (has_dap2_attributes(*i)) {
+                    AttrTable *childAttrT =  new AttrTable((*i)->get_attr_table());
+                    fillConstructorAttrTable(childAttrT, *i);
+                    at->append_container(childAttrT,(*i)->name());
+                }
+            }
+        }
+    }
+}
+
 void DDS::get_das(DAS *das)
 {
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
         if (has_dap2_attributes(*i)) {
-            das->add_table((*i)->name(), new AttrTable((*i)->get_attr_table()));
+            AttrTable *childAttrT =  new AttrTable((*i)->get_attr_table());
+            fillConstructorAttrTable(childAttrT, *i);
+            das->add_table((*i)->name(), childAttrT);
         }
     }
+
     // Used in the rare case we have global attributes not in a table.
     auto_ptr<AttrTable> global(new AttrTable);
 
