@@ -16,38 +16,10 @@ Attributes {
     area {
         String long_name "Surface area";
         String units "meter2";
-        lat {
-            String long_name "latitude";
-            String units "degrees_north";
-            String axis "Y";
-            String standard_name "latitude";
-            String bounds "lat_bnds";
-        }
-        lon {
-            String long_name "longitude";
-            String units "degrees_east";
-            String axis "X";
-            String standard_name "longitude";
-            String bounds "lon_bnds";
-        }
     }
     msk_rgn {
         String long_name "Mask region";
         String units "bool";
-        lat {
-            String long_name "latitude";
-            String units "degrees_north";
-            String axis "Y";
-            String standard_name "latitude";
-            String bounds "lat_bnds";
-        }
-        lon {
-            String long_name "longitude";
-            String units "degrees_east";
-            String axis "X";
-            String standard_name "longitude";
-            String bounds "lon_bnds";
-        }
     }
     plev {
         String long_name "pressure";
@@ -76,28 +48,6 @@ Attributes {
         String units "kg m-2 s-1";
         String long_name "precipitation_flux";
         String cell_method "time: mean";
-        time {
-            String calendar "noleap";
-            String standard_name "time";
-            String axis "T";
-            String units "days since 0000-1-1";
-            String bounds "time_bnds";
-            String long_name "time";
-        }
-        lat {
-            String long_name "latitude";
-            String units "degrees_north";
-            String axis "Y";
-            String standard_name "latitude";
-            String bounds "lat_bnds";
-        }
-        lon {
-            String long_name "longitude";
-            String units "degrees_east";
-            String axis "X";
-            String standard_name "longitude";
-            String bounds "lon_bnds";
-        }
     }
     tas {
         String comment "Created using NCL code CCSM_atmm_2cf.ncl on\012 machine eagle163s";
@@ -112,28 +62,6 @@ Attributes {
         String units "K";
         String long_name "air_temperature";
         String cell_method "time: mean";
-        time {
-            String calendar "noleap";
-            String standard_name "time";
-            String axis "T";
-            String units "days since 0000-1-1";
-            String bounds "time_bnds";
-            String long_name "time";
-        }
-        lat {
-            String long_name "latitude";
-            String units "degrees_north";
-            String axis "Y";
-            String standard_name "latitude";
-            String bounds "lat_bnds";
-        }
-        lon {
-            String long_name "longitude";
-            String units "degrees_east";
-            String axis "X";
-            String standard_name "longitude";
-            String bounds "lon_bnds";
-        }
     }
     ua {
         String comment "Created using NCL code CCSM_atmm_2cf.ncl on\012 machine eagle163s";
@@ -146,35 +74,6 @@ Attributes {
         String original_name "U";
         String standard_name "eastward_wind";
         Float32 _FillValue 1.00000002e+20;
-        time {
-            String calendar "noleap";
-            String standard_name "time";
-            String axis "T";
-            String units "days since 0000-1-1";
-            String bounds "time_bnds";
-            String long_name "time";
-        }
-        plev {
-            String long_name "pressure";
-            String units "Pa";
-            String standard_name "air_pressure";
-            String positive "down";
-            String axis "Z";
-        }
-        lat {
-            String long_name "latitude";
-            String units "degrees_north";
-            String axis "Y";
-            String standard_name "latitude";
-            String bounds "lat_bnds";
-        }
-        lon {
-            String long_name "longitude";
-            String units "degrees_east";
-            String axis "X";
-            String standard_name "longitude";
-            String bounds "lon_bnds";
-        }
     }
     NC_GLOBAL {
         String CVS_Id "$Id$";

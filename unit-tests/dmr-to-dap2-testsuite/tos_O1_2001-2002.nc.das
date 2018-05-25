@@ -34,31 +34,6 @@ Attributes {
         String original_name "sosstsst";
         String original_units "degC";
         String history " At   16:37:23 on 01/11/2005: CMOR altered the data in the following ways: added 2.73150E+02 to yield output units;  Cyclical dimension was output starting at a different lon;";
-        time {
-            String standard_name "time";
-            String long_name "time";
-            String units "days since 2001-1-1";
-            String axis "T";
-            String calendar "360_day";
-            String bounds "time_bnds";
-            String original_units "seconds since 2001-1-1";
-        }
-        lat {
-            String standard_name "latitude";
-            String long_name "latitude";
-            String units "degrees_north";
-            String axis "Y";
-            String bounds "lat_bnds";
-            String original_units "degrees_north";
-        }
-        lon {
-            String standard_name "longitude";
-            String long_name "longitude";
-            String units "degrees_east";
-            String axis "X";
-            String bounds "lon_bnds";
-            String original_units "degrees_east";
-        }
     }
     NC_GLOBAL {
         String title "IPSL  model output prepared for IPCC Fourth Assessment SRES A2 experiment";
