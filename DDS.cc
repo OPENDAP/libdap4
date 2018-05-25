@@ -1131,13 +1131,16 @@ void print_var_das(ostream &out, BaseType *bt, string indent = "") {
 
             if (has_dap2_attributes(gridArray))
                 gridArray->get_attr_table().print(out, indent + four_spaces);
-
+#if 0
+            // I dropped this because we don't want the MAP vectors showing up in the DAS
+            // as children of a Grid (aka flatten the Grid bro) - ndp 5/25/18
             for (Grid::Map_iter mIter = grid->map_begin();
                     mIter != grid->map_end(); ++mIter) {
                 BaseType *currentMap = *mIter;
                 if (has_dap2_attributes(currentMap))
                     print_var_das(out, currentMap, indent + four_spaces);
             }
+#endif
         }
         else {
             attr_table.print(out, indent + four_spaces);
