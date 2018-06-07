@@ -1178,15 +1178,21 @@ void print_var_das(ostream &out, BaseType *bt, string indent = "") {
 void
 DDS::print_das(ostream &out)
 {
+#if 0
     string indent("    ");
-    out << "Attributes {" << endl ;
+    out << "Attributes {" << endl;
     for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
         if (has_dap2_attributes(*i))
-            print_var_das(out, *i, four_spaces);
+        print_var_das(out, *i, four_spaces);
     }
     // Print the global attributes at the end.
     d_attr.print(out,indent);
-    out << "}" << endl ;
+    out << "}" << endl;
+#endif
+
+    auto_ptr<DAS> das(get_das());
+
+    das->print(out);
 }
 
 /**
