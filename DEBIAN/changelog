@@ -1,5 +1,0 @@
-libdap4 (3.14.0-1) trusty; urgency=low
- * First version of debian package
-
--- JameS Gallagher <jgallagher@opendap.org> Thu 7 Jun 2018 15:20:00 -0400
-

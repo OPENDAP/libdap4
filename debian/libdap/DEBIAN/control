@@ -1,0 +1,15 @@
+Package: libdap
+Version: 3.19.1-1
+Architecture: amd64
+Maintainer: Kodi Neumiller <kneumiller@mtech.edu>
+Installed-Size: 7743
+Depends: libc6 (>= 2.14), libcurl3 (>= 7.16.2), libgcc1 (>= 1:3.0), libstdc++6 (>= 5.2), libuuid1 (>= 2.16), libxml2 (>= 2.7.4)
+Section: misc
+Priority: optional
+Description: libdap
+ The libdap library contains an implementation of DAP2 and DAP4. This
+ package contains the library, dap-config, getdap and getdap4. The
+ script dap-config simplifies using the library in other projects. The
+ getdap and getdap4 utilities are a simple command-line tool to read
+ from DAP2 and DAP4 servers and are built using the library to
+ demonstrates simple uses of it.

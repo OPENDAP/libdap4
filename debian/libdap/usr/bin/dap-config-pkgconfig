@@ -1,0 +1,86 @@
+#! /bin/sh
+#
+# Borrowed the idea for this script (and some code) from libcurl.
+#
+
+usage()
+{
+    cat <<EOF
+Usage: dap-config [OPTION]
+
+Available values for OPTION include:
+
+  --help      	display this help message and exit
+  --cc        	C compiler
+  --cxx       	C++ compiler
+  --cflags    	pre-processor and compiler flags
+  --libs      	library linking information for libdap (both clients and servers)
+  --server-libs libraries for servers
+  --client-libs libraries for clients
+  --prefix    	OPeNDAP install prefix
+  --version   	Library version
+EOF
+
+    exit $1
+}
+
+if test $# -eq 0; then
+    usage 1
+fi
+
+while test $# -gt 0; do
+    case "$1" in
+    # this deals with options in the style
+    # --option=value and extracts the value part
+    # [not currently used]
+    -*=*) value=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+    *) value= ;;
+    esac
+
+    case "$1" in
+    --help)
+	usage 0
+	;;
+
+    --cc)
+	pkg-config --variable ccompiler libdap
+	;;
+
+    --cxx)
+	pkg-config --variable cppcompiler libdap
+	;;
+
+    --cflags)
+	pkg-config --cflags libdap
+	;;
+
+    --libs)
+       	pkg-config --libs libdapclient libdapserver
+       	;;
+
+    --server-libs)
+       	pkg-config --libs libdapserver
+       	;;
+
+    --client-libs)
+       	pkg-config --libs libdapclient
+       	;;
+
+    --prefix)
+       	pkg-config --variable prefix libdap
+       	;;
+
+    --version)
+	echo "libdap `pkg-config --modversion libdap`"
+	;;
+
+    *)
+        echo "unknown option: $1"
+	usage
+	exit 1
+	;;
+    esac
+    shift
+done
+
+exit 0
