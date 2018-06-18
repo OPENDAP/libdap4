@@ -636,14 +636,14 @@ public:
             DMR dmr(&d4_factory);
             D4ParserSax2 parser;
 
-            ifstream ifs((string(TEST_SRC_DIR) + "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105-S230545-E003816.010538.V03B.h5.dmrpp.dmr").c_str());
+            ifstream ifs((string(TEST_SRC_DIR) + "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105.h5.dmrpp.dmr").c_str());
 
             parser.intern(ifs, &dmr);
 
             auto_ptr<DDS> dds(dmr.getDDS());
             auto_ptr<DAS> das(dds->get_das());
 
-            string baseline = read_test_baseline(string(TEST_SRC_DIR) +  "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105-S230545-E003816.010538.V03B.h5.dmrpp.dmr.baseline");
+            string baseline = read_test_baseline(string(TEST_SRC_DIR) +  "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105.h5.dmrpp.dmr.baseline");
             ostringstream oss;
             das->print(oss);
 

@@ -54,7 +54,8 @@ noinst_HEADERS = test_config.h
 
 DIRS_EXTRA = das-testsuite dds-testsuite ddx-testsuite \
 rcreader-testsuite server-testsuite cgi-util-tests D4-xml \
-chunked-io D4-marshaller D4-type-testsuite
+chunked-io D4-marshaller D4-type-testsuite dmr-testsuite \
+dmr-to-dap2-testsuite dmr-rt-testsuite
 
 EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in \
 valgrind_suppressions.txt
