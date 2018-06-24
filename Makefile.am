@@ -6,7 +6,7 @@ ACLOCAL_AMFLAGS = -I conf -I gl/m4
 aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
-AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
+AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS = 
 
 if COMPILER_IS_GCC
@@ -66,7 +66,7 @@ man_MANS = getdap.1 dap-config.1 getdap4.1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
 libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)  
-libparsers_la_CPPFLAGS = $(XML2_CFLAGS)
+libparsers_la_CPPFLAGS = $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)

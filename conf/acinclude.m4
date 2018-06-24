@@ -558,12 +558,23 @@ AC_DEFUN([DODS_CHECK_SIZES], [dnl
     #
     # Unfortunately, there is little commonality about xdr
 
-    # First, we need to see if the xdr routines are in libc, librpc,
+    # First, we need to see if the xdr routines are in libtirpc, libc, librpc,
     # or librpcsvc or libnsl
     dap_xdrlib=
-    AC_SEARCH_LIBS([xdr_void],[c rpc nsl rpcsvc],[
-      dap_xdrlib=`echo $ac_res|sed -e 's/^-l//'`],[
-      AC_MSG_WARN(Cannot locate library containing xdr functions.)])
+	PKG_PROG_PKG_CONFIG([0.9.0])
+	PKG_CHECK_MODULES([TIRPC], [libtirpc >= 0.2.4],
+		[dap_xdrlib=`echo "${TIRPC_LIBS}" | sed -e 's/^-l//'`
+		AC_SUBST([TIRPC_CFLAGS])
+		AC_SUBST([TIRPC_LIBS])
+		AC_DEFINE([HAVE_LIBTIRPC], [1], [Define to 1 to use libtirpc.])],
+		[dap_xdrlib=""]
+	)
+	AS_IF(
+	[test "$dap_xdrlib" = ""],
+    	[AC_SEARCH_LIBS([xdr_void],[c rpc nsl rpcsvc],[
+    	  dap_xdrlib=`echo $ac_res|sed -e 's/^-l//'`],[
+    	  AC_MSG_WARN(Cannot locate library containing xdr functions.)])])
+
     # Added for autoconf 2.59 which appears to not use/set $ac_res. jhrg
     if test -z "$dap_xdrlib" ; then dap_xdrlib=c; fi
     if test "$dap_xdrlib" = "none required" ; then dap_xdrlib=c; fi
