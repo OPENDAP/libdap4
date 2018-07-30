@@ -245,8 +245,11 @@ void test_parser(const string &name)
 
 void test_class(void)
 {
+#if 0
     BaseTypeFactory *factory = new BaseTypeFactory;
-    DDS table(factory);
+#endif
+    BaseTypeFactory factory;
+    DDS table(&factory);
     table.parse();
 
     if (table.check_semantics())
@@ -264,8 +267,11 @@ void test_class(void)
     DDS table2 = table; // test copy ctor;
     table2.print(cout);
 
+#if 0
     BaseTypeFactory *factory2 = new BaseTypeFactory;
-    DDS table3(factory2);
+#endif
+    BaseTypeFactory factory2;
+    DDS table3(&factory2);
     table3 = table; // test operator=
 
     cout << "Dataset name: " << table.get_dataset_name() << endl;
@@ -298,9 +304,11 @@ void test_class(void)
     for (DDS::Vars_iter p = table.var_begin(); p != table.var_end(); p++)
         (*p)->print_decl(cout, "", true); // print them all w/semicolons
 
+#if 0
     delete factory;
     factory = 0;
     delete factory2;
     factory2 = 0;
+#endif
 }
 
