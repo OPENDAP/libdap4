@@ -46,24 +46,13 @@
 #include "util.h"
 #include "Error.h"
 
-#if 0
-#ifdef DAP4
-#include "D4ParserSax2.h"
-#include "D4BaseTypeFactory.h"
-#endif
-#endif
-
 using namespace libdap;
 
 void test_scanner();
 void test_parser(const string &name);
 void test_class();
-#if 0
-void test_dap4_parser(const string &name);
-#endif
 
 int ddslex();
-// int ddsparse(DDS &);
 
 extern YYSTYPE ddslval;
 extern int ddsdebug;
@@ -71,34 +60,22 @@ static bool print_ddx = false;
 
 const char *prompt = "dds-test: ";
 
-void usage(string name) {
-    cerr << "Usage: " << name << "[s] [pd] [c]" << endl
-            << "s: Test the scanner." << endl
-            << "p: Test the parser; reads from stdin and prints the" << endl
-            << "   internal structure to stdout." << endl
-            << "d: Turn on parser debugging. (only for the hard core.)" << endl
-            << "c: Test the C++ code for manipulating DDS objects." << endl
-            << "   Reads from stdin, parses and writes the modified DDS" << endl
-            << "   to stdout." << endl;
-#if 0
-    fprintf(stderr, "usage: %s %s\n %s\n %s\n %s\n %s\n %s\n %s\n %s\n", name.c_str(), "[s] [pd] [c]",
-            "s: Test the scanner.", "p: Test the parser; reads from stdin and prints the",
-            "   internal structure to stdout.", "d: Turn on parser debugging. (only for the hard core.)",
-            "c: Test the C++ code for manipulating DDS objects.",
-            "   Reads from stdin, parses and writes the modified DDS", "   to stdout.");
-#endif
+void usage(string name)
+{
+    cerr << "Usage: " << name << "[s] [pd] [c]" << endl << "s: Test the scanner." << endl << "p: Test the parser; reads from stdin and prints the"
+        << endl << "   internal structure to stdout." << endl << "d: Turn on parser debugging. (only for the hard core.)" << endl
+        << "c: Test the C++ code for manipulating DDS objects." << endl << "   Reads from stdin, parses and writes the modified DDS" << endl
+        << "   to stdout." << endl;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     GetOpt getopt(argc, argv, "spP:dcx"); // remove fF:
     int option_char;
     int scanner_test = 0, parser_test = 0, class_test = 0;
-#if 0
-    int dap4_parser_test = 0;
-#endif
     string name = "";
-    // process options
 
+    // process options
     while ((option_char = getopt()) != -1)
         switch (option_char) {
         case 'd':
@@ -114,16 +91,6 @@ int main(int argc, char *argv[]) {
             parser_test = 1;
             name = getopt.optarg;
             break;
-#if 0
-        case 'f':
-            dap4_parser_test = 1;
-            break;
-
-        case 'F':
-            dap4_parser_test = 1;
-            name = getopt.optarg;
-            break;
-#endif
         case 'x':
             print_ddx = true;
             break;
@@ -142,24 +109,18 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        if (scanner_test)
-            test_scanner();
+        if (scanner_test) test_scanner();
 
-        if (parser_test)
-            test_parser(name);
-#if 0
-        if (dap4_parser_test)
-            test_dap4_parser(name);
-#endif
-        if (class_test)
-            test_class();
+        if (parser_test) test_parser(name);
+        if (class_test) test_class();
     }
     catch (Error &e) {
         cerr << e.get_error_message() << endl;
     }
 }
 
-void test_scanner(void) {
+void test_scanner(void)
+{
     int tok;
 
     cout << prompt << flush; // first prompt
@@ -243,9 +204,19 @@ void test_scanner(void) {
     }
 }
 
-void test_parser(const string &name) {
+void test_parser(const string &name)
+{
+    // Remove the dynamic allocation (and delete at the end)
+    // Possible because DDS does not manage the storage and the
+    // lifetime of 'table' is limited to this function.
+#if 0
     BaseTypeFactory *factory = new BaseTypeFactory;
     DDS table(factory);
+#endif
+
+    BaseTypeFactory factory;
+    DDS table(&factory);
+
     if (name.empty())
         table.parse();
     else
@@ -266,48 +237,19 @@ void test_parser(const string &name) {
     else
         table.print(cout);
 
+#if 0
     delete factory;
     factory = 0;
+#endif
 }
 
+void test_class(void)
+{
 #if 0
-void test_dap4_parser(const string &name) {
-#ifdef DAP4
-    D4BaseTypeFactory factory;
-
-    DDS table(&factory);
-    D4ParserSax2 parser;
-    if (name.empty()) {
-        parser.intern(cin, &table);
-    }
-    else {
-        fstream in(name.c_str(), ios_base::in);
-        parser.intern(in, &table);
-    }
-
-    if (table.check_semantics())
-        cout << "DAP4 DDS past semantic check" << endl;
-    else
-        cout << "DAP4 DDS failed semantic check" << endl;
-
-    if (table.check_semantics(true))
-        cout << "DAP4 DDS past full semantic check" << endl;
-    else
-        cout << "DAP4 DDS failed full semantic check" << endl;
-
-    if (print_ddx)
-        table.print_xml_writer(cout, false, "");
-    else
-        table.print(cout);
-#else
-    cerr << "DAP4 parsing not supported by this version of libdap" << endl;
-#endif
-}
-#endif
-
-void test_class(void) {
     BaseTypeFactory *factory = new BaseTypeFactory;
-    DDS table(factory);
+#endif
+    BaseTypeFactory factory;
+    DDS table(&factory);
     table.parse();
 
     if (table.check_semantics())
@@ -325,8 +267,11 @@ void test_class(void) {
     DDS table2 = table; // test copy ctor;
     table2.print(cout);
 
+#if 0
     BaseTypeFactory *factory2 = new BaseTypeFactory;
-    DDS table3(factory2);
+#endif
+    BaseTypeFactory factory2;
+    DDS table3(&factory2);
     table3 = table; // test operator=
 
     cout << "Dataset name: " << table.get_dataset_name() << endl;
@@ -359,9 +304,11 @@ void test_class(void) {
     for (DDS::Vars_iter p = table.var_begin(); p != table.var_end(); p++)
         (*p)->print_decl(cout, "", true); // print them all w/semicolons
 
+#if 0
     delete factory;
     factory = 0;
     delete factory2;
     factory2 = 0;
+#endif
 }
 
