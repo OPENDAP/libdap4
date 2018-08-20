@@ -62,8 +62,10 @@
 #include "DapObj.h"
 #endif
 
+#if 0
 #ifndef KEYWORDS_H_
 #include "Keywords2.h"
+#endif
 #endif
 
 #ifndef XMLWRITER_H_
@@ -199,7 +201,9 @@ private:
     int d_timeout;              // alarm time in seconds. If greater than
                                 // zero, raise the alarm signal if more than
                                 // d_timeout seconds are spent reading data.
+#if 0
     Keywords d_keywords;	    // Holds keywords parsed from the CE
+#endif
 
     long d_max_response_size;   // In bytes...
 
@@ -271,7 +275,9 @@ public:
     /// @deprecated
     void set_dap_version(double d);
 
-    Keywords &get_keywords() { return d_keywords; }
+#if 0
+    Keywords &get_keywords() {return d_keywords;}
+#endif
 
     /// Get the URL that will return this DDS/DDX/DataThing
     string get_request_xml_base() const { return d_request_xml_base; }
