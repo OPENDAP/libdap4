@@ -37,6 +37,7 @@ addons:
     - devscripts 
     - build-essential
     - lintian
+    - fakeroot
     
 env:
   global:
