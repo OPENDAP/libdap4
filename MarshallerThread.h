@@ -63,7 +63,7 @@ private:
 
 /**
  * Synchronization for the child thread in the multi-threaded version of
- * the DAP2 and DAP4 (when it gets implement) 'Marshaller' class used to
+ * the DAP2 and DAP4 (when it gets implemented) 'Marshaller' class used to
  * send data. The class declared below (MarshallerThread) manages the
  * child thread.
  *
