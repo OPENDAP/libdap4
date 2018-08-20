@@ -34,6 +34,9 @@ addons:
     - uuid-dev
     - libcurl4-openssl-dev
     - libcppunit-dev
+    - devscripts 
+    - build-essential
+    - lintian
     
 env:
   global:
@@ -72,22 +75,22 @@ jobs:
   include:
   - stage: build
     script:
-    - export LIBDAP_MAIN_BUILD=yes
+    - export LIBDAP_BUILD=main
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make -j7 && make check -j7 && make install
   - stage: build
     script: 
-    - export LIBDAP_MAIN_BUILD=no
+    - export LIBDAP_BUILD=asan
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
     - make -j7 && make check -j7
   - stage: build
     script: 
-    - export LIBDAP_MAIN_BUILD=no
+    - export LIBDAP_BUILD=distcheck
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make distcheck -j7
   - stage: build
     script: 
-    - export LIBDAP_MAIN_BUILD=no
+    - export LIBDAP_BUILD=deb
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make deb -j7
 
@@ -107,5 +110,5 @@ deploy:
     branch:
     - master
     - travis
-    condition: "$LIBDAP_MAIN_BUILD = yes"
+    condition: "$LIBDAP_BUILD = main"
 
