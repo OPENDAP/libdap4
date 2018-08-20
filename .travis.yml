@@ -85,6 +85,11 @@ jobs:
     - export LIBDAP_MAIN_BUILD=no
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make distcheck -j7
+  - stage: build
+    script: 
+    - export LIBDAP_MAIN_BUILD=no
+    - ./configure --disable-dependency-tracking --prefix=$prefix
+    - make deb -j7
 
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/package
