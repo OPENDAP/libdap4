@@ -36,6 +36,7 @@ addons:
     - libcppunit-dev
     - devscripts 
     - build-essential
+    - debhelper
     - lintian
     - fakeroot
     
