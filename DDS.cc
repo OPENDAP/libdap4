@@ -1070,13 +1070,33 @@ static bool
 has_dap2_attributes(AttrTable &a)
 {
     for (AttrTable::Attr_iter i = a.attr_begin(), e = a.attr_end(); i != e; ++i) {
-        if (a.get_attr_type(i) != Attr_container)
+        if (a.get_attr_type(i) != Attr_container) {
             return true;
-        else
-            return has_dap2_attributes(*a.get_attr_table(i));
+        }
+        else if (has_dap2_attributes(*a.get_attr_table(i))) {
+            return true;
+        }
     }
 
     return false;
+
+#if 0
+    vector<AttrTable*> tables;
+
+    for (AttrTable::Attr_iter i = a.attr_begin(), e = a.attr_end(); i != e; ++i) {
+        if (a.get_attr_type(i) != Attr_container)
+        return true;
+        else
+        tables.push_back(a.get_attr_table(i));
+    }
+
+    bool it_does = false;
+    for (vector<AttrTable*>::iterartor i = tables.begin(), e = tables.end(); it_does || i != e; ++i) {
+        it_does = has_dap2_attributes(**i);
+    }
+
+    return it_does;
+#endif
 }
 
 /**
