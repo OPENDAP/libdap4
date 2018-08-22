@@ -115,5 +115,5 @@ deploy:
     branch:
     - master
     - travis
-    condition: "$LIBDAP_BUILD = main", "$LIBDAP_BUILD = deb"
+    condition: "$LIBDAP_BUILD = deb"
 
