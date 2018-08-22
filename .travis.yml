@@ -75,21 +75,21 @@ jobs:
   - name: build
     if:  branch != coverity_scan
   include:
-#  - stage: build
-#    script:
-#    - export LIBDAP_BUILD=main
-#    - ./configure --disable-dependency-tracking --prefix=$prefix
-#    - make -j7 && make check -j7 && make install
-#  - stage: build
-#    script: 
-#    - export LIBDAP_BUILD=asan
-#    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
-#    - make -j7 && make check -j7
-#  - stage: build
-#    script: 
-#    - export LIBDAP_BUILD=distcheck
-#    - ./configure --disable-dependency-tracking --prefix=$prefix
-#    - make distcheck -j7
+  - stage: build
+    script:
+    - export LIBDAP_BUILD=main
+    - ./configure --disable-dependency-tracking --prefix=$prefix
+    - make -j7 && make check -j7 && make install
+  - stage: build
+    script: 
+    - export LIBDAP_BUILD=asan
+    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
+    - make -j7 && make check -j7
+  - stage: build
+    script: 
+    - export LIBDAP_BUILD=distcheck
+    - ./configure --disable-dependency-tracking --prefix=$prefix
+    - make distcheck -j7
   - stage: build
     script: 
     - export LIBDAP_BUILD=deb
@@ -100,7 +100,7 @@ jobs:
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/package
 - mkdir $TRAVIS_BUILD_DIR/debian
-- mv $TRAVIS_BUILD_DIR/libdap_3.19.1-1_amd64.deb $TRAVIS_BUILD_DIR/debian/
+- mv ../libdap_3.19.1-1_amd64.deb $TRAVIS_BUILD_DIR/debian/
 - tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install
 - ls -l $TRAVIS_BUILD_DIR/package
 
