@@ -98,8 +98,7 @@ jobs:
 
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/package
-- mkdir $TRAVIS_BUILD_DIR/debian
-- mv ../libdap_3.19.1-1_amd64.deb $TRAVIS_BUILD_DIR/debian/
+- mv $TRAVIS_BUILD_DIR/libdap_3.19.1-1_amd64.deb $TRAVIS_BUILD_DIR/package/
 - tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install
 - ls -l $TRAVIS_BUILD_DIR/package
 
@@ -109,10 +108,10 @@ deploy:
   secret_access_key: $AWS_SECRET_ACCESS_KEY
   bucket: opendap.travis.build
   skip_cleanup: true
-  local_dir: $TRAVIS_BUILD_DIR/debian
+  local_dir: $TRAVIS_BUILD_DIR/package
   on:
     branch:
     - master
     - travis
-    condition: "$LIBDAP_BUILD = deb"
+    condition: "$LIBDAP_BUILD = main" OR "LIBDAP_BUILD = deb"
 
