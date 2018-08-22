@@ -95,7 +95,6 @@ jobs:
     - export LIBDAP_BUILD=deb
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make deb -j7
-    - ls ../ -l
 
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/package
