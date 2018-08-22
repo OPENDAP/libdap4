@@ -101,7 +101,7 @@ before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/package
 - mv $TRAVIS_BUILD_DIR/../libdap_3.19.1-1_amd64.deb $TRAVIS_BUILD_DIR/package/
 - tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install
-- ls -l $TRAVIS_BUILD_DIR/package
+- pwd
 
 deploy:
   provider: s3
@@ -114,5 +114,5 @@ deploy:
     branch:
     - master
     - travis
-    condition: "$LIBDAP_BUILD = main" OR "$LIBDAP_BUILD = deb"
+    condition: "$LIBDAP_BUILD = deb"
 
