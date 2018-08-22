@@ -20,7 +20,6 @@ branches:
   - master
   - coverity_scan
   - travis
-  - debian
 
 addons:
   coverity_scan:
@@ -96,11 +95,12 @@ jobs:
     - export LIBDAP_BUILD=deb
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make deb -j7
+    - ls -l
 
 before_deploy:
 - mkdir $TRAVIS_BUILD_DIR/package
 - mkdir $TRAVIS_BUILD_DIR/debian
-- mv ../libdap_3.19.1-1_amd64.deb $TRAVIS_BUILD_DIR/debian/
+- mv $TRAVIS_BUILD_DIR/libdap_3.19.1-1_amd64.deb $TRAVIS_BUILD_DIR/debian/
 - tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install
 - ls -l $TRAVIS_BUILD_DIR/package
 
