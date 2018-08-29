@@ -345,7 +345,8 @@ AS_IF([test x$enable_dap4 = xyes], [
     AM_CONDITIONAL([DAP4_DEFINED], [false])
 ])
 
-AX_CHECK_COMPILE_FLAG([-fsanitize=address], [has_asan=yes], [has_asan=no])
+# AS_IF([test m4_version_compare(m4_defn([AC_AUTOCONF_VERSION]),[2.64]) -ge 0],
+#	[AX_CHECK_COMPILE_FLAG([-fsanitize=address], [has_asan=yes], [has_asan=no])])
 
 AC_ARG_ENABLE([asan], 
     [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
@@ -369,8 +370,8 @@ AS_IF([test x$enable_developer = xyes],
 DODS_GCOV_VALGRIND
 
 # Find valgrind, if available, and add targets for it.
-AX_VALGRIND_DFLT([sgcheck], [off])
-AX_VALGRIND_CHECK
+# AX_VALGRIND_DFLT([sgcheck], [off])
+# AX_VALGRIND_CHECK
 
 dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
 

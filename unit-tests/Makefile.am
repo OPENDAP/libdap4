@@ -32,7 +32,7 @@ CXXFLAGS_DEBUG = -g3 -O0 -Wall -Wcast-align
 # endif
 
 # If valgrind is present, add valgrind targets.
-@VALGRIND_CHECK_RULES@
+# @VALGRIND_CHECK_RULES@
 VALGRIND_SUPPRESSIONS_FILES = valgrind_suppressions.txt
 
 if USE_ASAN
