@@ -224,7 +224,11 @@ public:
             dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
             DBG(cerr << "Printed DDX: " << oss.str() << endl);
 
+#if DAP2_DDX
+            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.dap2.xml");
+#else
             string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.xml");
+#endif
             DBG(cerr << "The baseline: " << baseline << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
@@ -248,7 +252,11 @@ public:
 
         DBG(cerr << oss.str() << endl);
 
+#if DAP2_DDX
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.dap2.xml");
+#else
         string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.xml");
+#endif
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -266,7 +274,12 @@ public:
 
         DBG(cerr << oss.str() << endl);
 
+#if DAP2_DDX
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.dap2.xml");
+#else
         string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.xml");
+#endif
+
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -306,7 +319,11 @@ public:
 
         DBG(cerr << oss.str() << endl);
 
+#if DAP2_DDX
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.dap2.xml");
+#else
         string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.xml");
+#endif
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
@@ -318,7 +335,12 @@ public:
         DAS das;
         string das_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.das");
         das.parse(das_file);
+
+#if DAP2_DDX
+        string baseline_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.dap2.xml");
+#else
         string baseline_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.xml");
+#endif
         string baseline = read_test_baseline(baseline_file);
 
         try {
@@ -384,7 +406,12 @@ public:
 
         DBG(cerr << oss.str() << endl);
 
+#if DAP2_DDX
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b6.dap2.xml");
+#else
         string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b6.xml");
+#endif
+
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
