@@ -88,9 +88,6 @@
 
 #include "escaping.h"
 
-#define DAP2_DDX 1
-#undef DAP3_2_DDX
-
 /**
  * DapXmlNamespaces
  *
