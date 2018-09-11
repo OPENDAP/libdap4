@@ -88,6 +88,9 @@
 
 #include "escaping.h"
 
+#define DAP2_DDX 1
+#undef DAP3_2_DDX
+
 /**
  * DapXmlNamespaces
  *
@@ -1513,6 +1516,20 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
     }
 #endif
 
+#if DAP2_DDX
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dataset") < 0)
+    throw InternalErr(__FILE__, __LINE__, "Could not write Dataset element");
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
+    throw InternalErr(__FILE__, __LINE__, "Could not write attribute for d_name");
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xsi", (const xmlChar*)"http://www.w3.org/2001/XMLSchema-instance") < 0)
+    throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
+
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*)c_dap20_namespace.c_str()) < 0)
+    throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
+
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xsi:schemaLocation", (const xmlChar*)c_dap_20_n_sl.c_str()) < 0)
+    throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:schemaLocation");
+#elif DAP3_2_DDX
     // This is the 'DAP 3.2' DDX response - now the only response libdap will return.
     // jhrg 9/10/18
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dataset") < 0)
@@ -1546,6 +1563,9 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xml:base", (const xmlChar*)get_request_xml_base().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xml:base");
     }
+#else
+#error Must define DAP2_DDX or DAP3_2_DDX
+#endif
 
     // Print the global attributes
     d_attr.print_xml_writer(xml);
@@ -1590,6 +1610,14 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
     }
 #endif
 
+#if DAP2_DDX
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "dataBLOB") < 0)
+    throw InternalErr(__FILE__, __LINE__, "Could not write dataBLOB element");
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "href", (const xmlChar*) "") < 0)
+    throw InternalErr(__FILE__, __LINE__, "Could not write attribute for d_name");
+    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+    throw InternalErr(__FILE__, __LINE__, "Could not end dataBLOB element");
+#elif DAP3_2_DDX
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "blob") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write blob element");
     string cid = "cid:" + blob;
@@ -1600,6 +1628,9 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end Dataset element");
+#else
+#error Must define DAP2_DDX or DAP3_2_DDX
+#endif
 
     out << xml.get_doc();// << ends;// << endl;
 }
