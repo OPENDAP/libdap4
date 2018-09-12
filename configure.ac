@@ -22,11 +22,10 @@ AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and version comb
 AC_SUBST(DVR)
 
 dnl Use one of these two blocks to build a DAP2 or DAP 3.2 DDX
-AC_DEFINE(DAP2_DDX, 1, [Build the DAP 2 version of the DDX])
-AC_SUBST(DAP2_DDX)
-dnl
-dnl AC_DEFINE(DAP3_2_DDX, 1, [Build the DAP 3.2 version of the DDX])
-dnl AC_SUBST(DAP3_2_DDX)
+dnl AC_DEFINE(DAP2_DDX, 1, [Build the DAP 2 version of the DDX])
+dnl AC_SUBST(DAP2_DDX)
+AC_DEFINE(DAP3_2_DDX, 1, [Build the DAP 3.2 version of the DDX])
+AC_SUBST(DAP3_2_DDX)
 
 
 PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
