@@ -1,5 +1,12 @@
+libdap (3.20.0-1) unstable; urgency=medium
+
+  * Bug fixes and community input for the DAP2 and DAP4 reference implementations.
+
+ -- James Gallagher <jgallagher@opendap.org>  Thu, 13 Sep 2018 23:16:00 +0000
+
 libdap (3.19.1-1) UNRELEASED; urgency=medium
 
   * Initial release.
 
  -- Kodi Neumiller <kneumiller@mtech.edu>  Mon, 11 Jun 2018 20:47:26 +0000
+ 
