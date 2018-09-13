@@ -1,5 +1,11 @@
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
+Updated for version 3.20.0
+
+We now have a Debian package for libdap.
+
+Bug fixes; See the ChangeLog and NEWS files.
+
 Updated for version 3.19.1
 
 Bug fixes; See the ChangeLog and NEWS files.

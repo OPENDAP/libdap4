@@ -1,3 +1,562 @@
+2018-09-13  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'centos6-build-fixes'
+
+2018-09-12  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #74 from OPENDAP/ddx-fix-2
+	DDX fix 2
+
+	Now the code builds DAP3.2 DDX reposnes by default.
+
+2018-09-10  James Gallagher  <jgallagher@opendap.org>
+
+	Baselines for DAP2 DDXs (*.dap2.xml)
+	The DAP 3.2 baselines end in .xml.
+
+	Merge branch 'ddx-fix-2' of https://github.com/opendap/libdap4 into ddx-fix-2
+
+	The configure script now sets DAP2 or DAP3.2 DDX reposes.
+	DAP2 DDX's in this commit. Tests are switched automatically.
+
+	The configure script now sets DAP2 or DAP3.2 DDX reposes.
+	Tests are switched automatically.
+
+	This is the alternative DDX fix - compile-time choice of DAP2 or 3.2 DDX
+	With DAP2 DDX, all but a handful of BES tests pass, with DAP3.2, many
+	more tests fail.
+
+	Merge pull request #73 from OPENDAP/ddx-3.2-only
+	The DDS::print_xml and print_xml_writer now only return a '3.2' DDX
+
+	The DDS::print_xml and print_xml_writer now only return a '3.2' DDX
+	There is an issue in the BES where, for unknown reasons, a DAP2 or
+	DAP3.2 DDX will be returned. The DDX response should only be '3.2'.
+	Since there is no used for DAP2 DDX, I've removed it. This doesn't
+	address the underlying problem, however (why the version number in
+	the DDS object do not match those set by the BES's client).
+
+2018-08-29  James Gallagher  <jgallagher@opendap.org>
+
+	centos6 edits
+
+2018-08-22  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed commands in the before_deploy section of the travis yaml
+
+	try moving two packages to S3
+
+2018-08-22  Kodi Neumiller  <kodi@Udays-MacBook-Pro.local>
+
+	Added || in the condition section.
+
+	Took out = main
+
+	Fixed the directory to send the .deb file.
+
+2018-08-22  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Merge pull request #71 from OPENDAP/debian
+	Debian. Should move the created deb package to s3.
+
+2018-08-22  James Gallagher  <jgallagher@opendap.org>
+
+	Fix for DDS::has_dap2_attributes
+
+2018-08-22  Kodi Neumiller  <kodi@Udays-MacBook-Pro.local>
+
+	Took out the ls ../ -l after make deb -j7.
+
+	Uncommented the different jobs. Also made it so that the deb
+	package is grabbed from the directory above.
+
+	Looking at a directory above the current one.
+
+2018-08-22  James Gallagher  <jgallagher@opendap.org>
+
+	Modified travis for coverity
+	[skip ci]
+
+2018-08-22  Kodi Neumiller  <kodi@Udays-MacBook-Pro.local>
+
+	Added ls -l to see where the debian package is.
+
+	Took out the condition "$LIBDAP_BUILD = main"
+
+	Added the debian branch to the list of branches to be built.
+	Also commented out the other jobs that aren't debian.
+
+2018-08-21  Kodi Neumiller  <kodi@Udays-MacBook-Pro.local>
+
+	Made it so that the debian package is moved to s3.
+
+	Added debhelper package.
+
+2018-08-20  James Gallagher  <jgallagher@opendap.org>
+
+	Added the fakeroot package for debian pkg builds on Travis
+
+	Added devscripts build-essential lintian for debian pkg build
+
+	Modified travis.yml to trigger a debian package build.
+
+	Merge branch 'master' into debian
+
+	Fixed comments in MarshallerThread.h
+	[skip ci]
+
+	Merge branch 'master' into debian
+
+2018-07-30  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #70 from OPENDAP/dds_test_fix
+	DDS test fix
+
+	Made a corresponding change to dds-test:test_class() re: mem leak
+
+	Changed BaseTypeFactory in dds-test:test_parser() fixing a memory leak.
+
+2018-07-25  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #68 from OPENDAP/travis
+	Added a new parallel build for the asan checks
+
+	Added a new parallel build for the asan checks
+
+2018-07-10  Ubuntu  <ubuntu@ip-172-31-6-46.ec2.internal>
+
+	Updated the copyright file. It may need to be looked at to ensure it is formated correctly.
+
+2018-07-06  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #67 from opoplawski/libtirpc
+	Use libtirpc
+
+	Merge pull request #66 from OPENDAP/debian
+	deb packaging
+
+2018-06-24  Orion Poplawski  <orion@cora.nwra.com>
+
+	Use libtirpc
+
+2018-06-19  Ubuntu  <ubuntu@ip-172-31-6-46.ec2.internal>
+
+	The makefile now has an option (make deb) to build the debian package for libdap.
+
+2018-06-18  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #65 from OPENDAP/debian
+	Debian Packaging
+
+2018-06-13  Ubuntu  <ubuntu@ip-172-31-6-46.ec2.internal>
+
+	Deleted generated files.
+
+	Finished adding the appropriate files to build a debian
+	package. The libdap directory was added after the debian
+	package was installed.
+
+2018-06-11  Ubuntu  <ubuntu@ip-172-31-6-46.ec2.internal>
+
+	Edited the Makefile in unit tests so that it included the missing test files.
+
+2018-06-07  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #64 from OPENDAP/print_das_fix
+	Print das fix
+
+	Merge pull request #58 from OPENDAP/keyword-refactor
+	Keyword refactor
+
+2018-05-25  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed the last two tests for the print_das() fix.
+
+	Merge branch 'print_das_fix' of https://github.com/opendap/libdap4 into print_das_fix
+
+	Merge branch 'master' into print_das_fix
+
+2018-05-25  Nathan Potter  <ndp@opendap.org>
+
+	Merge pull request #62 from OPENDAP/hyrax-730
+
+	Fixed DDS::has_dap2_attributes() so that Grids are handled,
+	eliminated printing MAP vectors in Grid from print_var_das()
+
+	Dropped Grid Map arrays from Grid container in DAS (Flatten Grids man)
+
+2018-05-25  James Gallagher  <jgallagher@opendap.org>
+
+	Switched print_das() so that it uses get_das() and then prints. WIP.
+
+2018-05-25  Nathan Potter  <ndp@opendap.org>
+
+	Merge branch 'master' into hyrax-730
+
+2018-05-24  James Gallagher  <jgallagher@opendap.org>
+
+	Switched print_das() so that it uses get_das() and then prints. WIP.
+
+2018-05-23  James Gallagher  <jgallagher@opendap.org>
+
+	Added a note about HYRAX-766: bes/dapreader issue.
+	The proble is due to a change in the DAS objects are printed when they
+	are built using a DDS or DMR.
+	[skip ci]
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Changes to comments and some instrumentation in DmrRoundTripTest.cc
+	No functional/operational changes except some of the instrumentation
+	output in the DmrRoundTripTest unit test.
+
+2018-05-22  Nathan Potter  <ndp@opendap.org>
+
+	Fixed DDS::has_dap2_attributes() so that Grids are handled by
+	evaluating only the GRid Array and ignoring the Maps.
+
+2018-05-21  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #61 from OPENDAP/hyrax-730
+	Hyrax 730
+
+	Update DDS.cc
+
+2018-05-21  Nathan Potter  <ndp@opendap.org>
+
+	Fixed DDS::print_das() so thatv it makes special the Gridness
+
+	Make DDS::get_das() work recursively on Constructor types
+
+2018-05-18  Nathan Potter  <ndp@opendap.org>
+
+	Revert "Adding metadata to Grid and to Grid Array now."
+	This reverts commit b16ede3e866ea55daff0ad28d87bd43f3ff834da.
+
+	Adding metadata to Grid and to Grid Array now.
+
+	Patch to DAP4->DAP2 metadata assignment for Grid type problem.
+
+2018-05-15  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #60 from OPENDAP/url_fix
+	Url fix
+
+	Merge branch 'master' into url_fix
+
+2018-05-07  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #59 from ryandesign/configure-CC
+	Use quotes when testing $CC
+
+2018-05-06  Ryan Schmidt  <git@ryandesign.com>
+
+	Use quotes when testing $CC
+	This avoids the error "test: too many arguments" appearing in the
+	configure output if CC contains multiple words, such as "ccache cc".
+
+2018-05-04  James Gallagher  <jgallagher@opendap.org>
+
+	More old code removed from Url.h
+
+	Removed unused internal storage in Url.h
+
+2018-04-10  James Gallagher  <jgallagher@opendap.org>
+
+	Removed Keywords2 unit test code (to old/)
+
+	Removed keywords from DDS. The class is still in the library
+
+2018-04-09  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #57 from OPENDAP/dmrpp-dap2
+	Dmrpp dap2
+
+2018-04-07  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'dmrpp-dap2' of https://github.com/opendap/libdap4 into dmrpp-dap2
+
+	Protect against infinite loop in get_unique_top_level_global_container_name().
+
+	Added code to ensure a unique top-level table is used but DDS::get_das()
+	When that is needed - when there are top-level attributes in a DMR - make
+	new top-level container for those attributes. This new code makes sure
+	those attributes go in a container with a unique name. The code will fail
+	if there are more than MAX_INT top-level tables.
+
+2018-04-07  Nathan Potter  <ndp@opendap.org>
+
+	sync
+
+2018-04-06  James Gallagher  <jgallagher@opendap.org>
+
+	DDS::get_das(): Added a test and fix for top-level 'value' attributes
+	It's possible to have a DMR or DDS that has top-level attributes that
+	are not in a container. These work in the DMR or DDS object, but not
+	in the DAS (which can only have containers at the top-level). The
+	'orphan' attributes are put in the DAP4_GLOBAL container, since these
+	almost certainly come from DMR objects. We might revisit this name
+	choice...
+
+	Added tests for DDS::get_das() and get_das(DAS *).
+	Also edited the implementaiton just a bit to test for global attributes
+	that are not containers.
+
+2018-04-06  Nathan Potter  <ndp@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Added some (much needed) get_das() methods to DDS
+
+2018-04-02  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #53 from captainkirk99/ck_valgrind
+	change valgrind invocation, also fixed some memory leaks in unit-tests
+
+	Merge branch 'master' into ck_valgrind
+
+2018-03-31  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #56 from captainkirk99/ck_fix_more_2
+	fixed tests
+
+2018-03-31  Ed Hartnett  <37277297+captainkirk99@users.noreply.github.com>
+
+	fixed tests
+
+2018-03-29  James Gallagher  <jgallagher@opendap.org>
+
+	Changed D4Enum::set_is_signed() so it doesn't call abort()
+	This 'fixed' an issue with testing where abort() fails hard and stops
+	the tests right away. The next line throws an exception, which is really
+	good enough and makes it possbile to test the error case. I also fixed
+	up the comments for D4Enum::transform_to_dap2().
+
+2018-03-28  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #55 from captainkirk99/ck_fix_big_endian
+	fixed tests for big-endian
+
+2018-03-28  Ed Hartnett  <37277297+captainkirk99@users.noreply.github.com>
+
+	fixed tests for big-endian
+
+2018-03-25  Ed Hartnett  <37277297+captainkirk99@users.noreply.github.com>
+
+	fixed memory leak in D4FilterClausetest
+
+	added macro file
+
+	change valgrind invocation, also fixed some memory leaks in unit-tests
+
+2018-03-24  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #48 from captainkirk99/ck_tests_1
+	added some tests
+
+2018-03-24  Ed Hartnett  <37277297+captainkirk99@users.noreply.github.com>
+
+	added new tests to .gitignore
+
+	more tests
+
+2018-03-19  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #52 from OPENDAP/print-das-fix
+	Print das fix
+
+	Merge branch 'master' into print-das-fix
+
+	DDS:print_das() fixes and test baseline edits.
+
+2018-03-18  James Gallagher  <jgallagher@opendap.org>
+
+	Changed DDS::print_das() so it's more in line with DAS::print()
+	But, tests fail.
+
+2018-03-18  Ed Hartnett  <37277297+captainkirk99@users.noreply.github.com>
+
+	more tests
+
+	more testing
+
+	fixed problem with code coverage changes
+
+	changing the way test coverage is computed
+
+2018-03-17  Ed Hartnett  <37277297+captainkirk99@users.noreply.github.com>
+
+	fixing inadvertant whitespace changes
+
+	more tests
+
+2018-03-16  James Gallagher  <jgallagher@opendap.org>
+
+	Use curl to read the hyrax-deps build tar ball
+	This should fix the issue with PRs from outside our GitHub space.
+
+2018-03-14  Ed Hartnett  <37277297+captainkirk99@users.noreply.github.com>
+
+	fixed test
+
+	more testing
+
+	merged
+
+2018-03-14  James Gallagher  <jgallagher@opendap.org>
+
+	Removed now unused ecr_credentials.sh script
+	We can just use the AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID
+	environment variables from within travis.
+	[skip ci]
+
+	Modified aws operations to get the hyrax-dependencies - trying to fix the build
+
+2018-03-13  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #49 from OPENDAP/travis
+	Modified aws operations to get the hyrax-dependencies - trying to fix…
+
+	Removed now unused ecr_credentials.sh script
+	We can just use the AWS_SECRET_ACCESS_KEY and AWS_ACCESS_KEY_ID
+	environment variables from within travis.
+	[skip ci]
+
+	Modified aws operations to get the hyrax-dependencies - trying to fix the build
+
+2018-03-12  Ed Hartnett  <37277297+captainkirk99@users.noreply.github.com>
+
+	added some tests
+
+2018-03-06  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #47 from OPENDAP/header-refactor
+	Added #include "DapIndent.h" as I try to remove nested headers
+
+	Added #include "DapIndent.h" as I try to remove nested headers
+
+2018-03-02  Nathan Potter  <ndp@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Added doxygen link to README
+
+2018-02-24  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #46 from OPENDAP/travis
+	Travis: $prefix set to $HOME/install
+
+	added some comments
+
+	testing
+
+	testing
+
+2018-02-23  James Gallagher  <jgallagher@opendap.org>
+
+	testing
+
+2018-02-22  James Gallagher  <jgallagher@opendap.org>
+
+	travis testing
+
+	Merge branch 'travis' of https://github.com/opendap/libdap4 into travis
+
+	Test new travis build
+
+2018-02-09  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Minor tweak to --with-curl
+	The configure.ac script needs more work to simplify it and replace
+	raw shell commands with AS_IF, etc.
+
+2018-02-08  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #44 from OPENDAP/asan
+	Hacked configure so developer and asan are separate and both are used…
+
+	Hacked configure so developer and asan are separate and both are used by travis
+
+	Merge pull request #43 from OPENDAP/asan
+	Asan
+
+2018-02-07  James Gallagher  <jgallagher@opendap.org>
+
+	Repaired d4_function/D4FunctionEvaluator.cc (See HYRAX-247)
+	I used std::set which is supposed to preserve order, but apparently
+	does not with gcc 4.8 and some levels of optimization.
+
+	Found and fixed a memory error in tests/D4TestFunction.cc
+	The $Byte() special form was being used to build an argument to
+	the test function 'scale()' but the code i D4TestFunction assumed
+	the argument was a TestArray instance (when it was/is an Array).
+
+2018-02-06  jgallagher59701  <jgallagher@opendap.org>
+
+	Fixed memory error in D4UnMarshallerTest.
+
+2018-02-06  James Gallagher  <jgallagher@opendap.org>
+
+	Added test for Address Sanitizer option
+
+	Merge pull request #42 from OPENDAP/asan
+	Added Asan (address sanitizer) to the --enable-developer option
+
+	Added Asan (address sanitizer) to the --enable-developer option
+	All the tests pass using this option on OSX.
+
+2018-02-02  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #41 from OPENDAP/hyrax-598
+	Fixed a memory error that could be triggered by passing bad XML to ...
+
+2018-02-02  jgallagher59701  <jgallagher@opendap.org>
+
+	Fixed a memory error that could be triggered by passing bad XML to the DAP4 DMR parser.
+	vsnprintf() could be called with a tainted format string.
+
+2018-01-31  James Gallagher  <jgallagher@opendap.org>
+
+	Removed html dir from the master branch - it's still on the gh-pages branch
+	Use 'make gh-docs' to build the online docs.
+
+2018-01-30  James Gallagher  <jgallagher@opendap.org>
+
+	Updated build-gh-docs.sh to use add --force since 'html' is on gitignore
+
+	Added new docs
+
+2018-01-12  James Gallagher  <jgallagher@opendap.org>
+
+	travis
+
+2018-01-11  James Gallagher  <jgallagher@opendap.org>
+
+	travis
+
+
+2018-01-02  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #38 from OPENDAP/crypto-fix
+	Fixed the libcrypto link error on OSX 10.13
+
+2018-01-01  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed the libcrypto link error on OSX 10.13
+
+2017-09-25  James Gallagher  <jgallagher@opendap.org>
+
+	Source release 3.19.1
+
+2017-08-25  James Gallagher  <jgallagher@opendap.org>
+
+	Added a comment to my HTTPCacheTest change...
+	[skip ci]
+
+	Removed a test for block_size in HTTPCacheTest that failed on
+	Fedora ppc64le system with XFS system
 2017-08-25  James Gallagher  <jgallagher@opendap.org>
 
 	Added a comment to my HTTPCacheTest change...
