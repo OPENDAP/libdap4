@@ -83,7 +83,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/aclocal/*
 
 %changelog
-* Thu Sep 23 3028 James Gallagher <jgallagher@opendap.org> - 3.20.0
+* Thu Sep 23 2018 James Gallagher <jgallagher@opendap.org> - 3.20.0
 
 * Tue May  4 2010 James Gallagher <jgallagher@opendap.org> - 3.10.2
 
