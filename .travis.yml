@@ -9,7 +9,7 @@
 
 dist: trusty
 
-sudo: false
+sudo: required
 
 language: cpp
 
@@ -21,6 +21,9 @@ branches:
   - coverity_scan
   - travis
 
+services:
+  - docker 
+  
 addons:
   coverity_scan:
     project:
@@ -75,6 +78,7 @@ jobs:
   stages:
   - name: build
     if:  branch != coverity_scan
+  - name: package
   include:
   - stage: build
     script:
@@ -91,7 +95,7 @@ jobs:
     - export LIBDAP_BUILD=distcheck
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make distcheck -j7
-  - stage: build
+  - stage: package
     script: 
     - export LIBDAP_BUILD=deb
     - ./configure --disable-dependency-tracking --prefix=$prefix
@@ -113,6 +117,5 @@ deploy:
   on:
     branch:
     - master
-    - travis
     condition: $LIBDAP_BUILD =~ ^deb|main$
 
