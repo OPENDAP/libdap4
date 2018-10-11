@@ -100,6 +100,10 @@ jobs:
     - export LIBDAP_BUILD=deb
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make deb -j7
+  - stage: package
+    script: 
+    - export LIBDAP_BUILD=not_really
+    - docker run centos:centos6 df -h
 
 before_deploy:
 - test -d $TRAVIS_BUILD_DIR/package || mkdir $TRAVIS_BUILD_DIR/package
