@@ -358,6 +358,10 @@ AS_IF([test x$enable_dap4 = xyes], [
 AC_ARG_ENABLE([asan], 
     [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
 
+# AM_CONDITIONAL([ENABLE_COVERAGE], [test x$enable_coverage = xyes])
+# AM_COND_IF([SHELL_WRAPPER],
+#           [AC_CONFIG_FILES([wrapper:wrapper.in])])
+           
 AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
       [AC_MSG_NOTICE([Building Address Sanitizer version])
        AM_CONDITIONAL([USE_ASAN], [true])],
@@ -373,6 +377,14 @@ AS_IF([test x$enable_developer = xyes],
       [AC_MSG_NOTICE([Not building developer version])
        AM_CONDITIONAL([BUILD_DEVELOPER], [false])
        AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])])
+
+AC_ARG_ENABLE([coverage],
+    [AS_HELP_STRING([--enable-coverage], [Build so tests emit coverage data and enable collect-coverage-data target (default: no)])])
+    
+AM_CONDITIONAL([ENABLE_COVERAGE], [test x$enable_coverage = xyes])
+
+AC_CHECK_LIB([gcov], [pthread_kill], [GCOV_LIBS="-lgcov"], [GCOV_LIBS=])
+AC_SUBST([GCOV_LIBS])
 
 DODS_GCOV_VALGRIND
 
