@@ -9,7 +9,7 @@
 
 dist: trusty
 
-sudo: required
+sudo: false
 
 language: cpp
 
@@ -21,8 +21,8 @@ branches:
   - coverity_scan
   - travis
 
-services:
-  - docker 
+# services:
+#  - docker 
   
 addons:
   coverity_scan:
@@ -72,6 +72,7 @@ install:
 before_script:
 - printenv
 - autoreconf --force --install --verbose
+- mkdir -p /home/rpmbuild
 
 # The coverity_scan branch is built by the addon
 jobs:
@@ -93,7 +94,7 @@ jobs:
   - stage: build
     script: 
     - export LIBDAP_BUILD=distcheck
-    - ./configure --disable-dependency-tracking --prefix=$prefix
+    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
     - make distcheck -j7
   - stage: package
     script: 
