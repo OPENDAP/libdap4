@@ -21,9 +21,6 @@ branches:
   - coverity_scan
   - travis
 
-# services:
-#  - docker 
-  
 addons:
   coverity_scan:
     project:
@@ -102,8 +99,8 @@ jobs:
     script: 
     - export LIBDAP_BUILD=centos7
     - mkdir -p $prefix/rpmbuild
-    - docker run --volume $prefix/install:/home/install --volume $prefix/rpmbuild:/home/rpmbuild 
-                 --volume $TRAVIS_BUILD_DIR:/home/libdap4 opendap/centos7_hyrax_builder:latest
+    - docker run --volume $prefix/install:/root/install --volume $prefix/rpmbuild:/root/rpmbuild 
+                 --volume $TRAVIS_BUILD_DIR:/root/libdap4 opendap/centos7_hyrax_builder:latest
                  /home/libdap4/build-rpm.sh
 
 before_deploy:
@@ -123,5 +120,6 @@ deploy:
   on:
     branch:
     - master
+    - travis
     condition: $LIBDAP_BUILD =~ ^deb|main|centos7$
 
