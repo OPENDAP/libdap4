@@ -21,5 +21,7 @@ pwd
 (cd /tmp && curl -s -O https://s3.amazonaws.com/opendap.travis.build/hyrax-dependencies-centos7-static.tar.gz) 
 tar -C $HOME -xzvf /tmp/hyrax-dependencies-centos7-static.tar.gz
 
+ls -lR /home
+
 # This will leave the package in /home/rpmbuild/RPMS/x86_64/*.rpm
-(cd /home/libdap4 && make -j4 all-static-rpm)
+(cd /home/libdap4 && make -j4 rpm)
