@@ -24,4 +24,4 @@ tar -C $HOME -xzvf /tmp/hyrax-dependencies-centos7-static.tar.gz
 ls -lR /home
 
 # This will leave the package in /home/rpmbuild/RPMS/x86_64/*.rpm
-(cd /home/libdap4 && make -j4 rpm)
+(cd /home/libdap4 && ./configure --disable-dependency-tracking --prefix=$prefix && make -j4 rpm)
