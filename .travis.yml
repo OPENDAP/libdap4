@@ -94,7 +94,7 @@ jobs:
     script: 
     - export LIBDAP_BUILD=deb
     - ./configure --disable-dependency-tracking --prefix=$prefix
-    #- make deb -j7
+    - make deb -j7
   - stage: package
     script: 
     - export LIBDAP_BUILD=centos7
@@ -104,11 +104,12 @@ jobs:
                  /root/libdap4/build-rpm.sh
 
 before_deploy:
-- test -d $TRAVIS_BUILD_DIR/package || mkdir $TRAVIS_BUILD_DIR/package
+- mkdir -p $TRAVIS_BUILD_DIR/package
 #- if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install; fi
-#- if test "$LIBDAP_BUILD" = "deb"; then mv $TRAVIS_BUILD_DIR/../libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; fi
-- if test "$LIBDAP_BUILD" = "centos7"; then ls -l $TRAVIS_BUILD_DIR/package; ls -l $prefix/rpmbuild/RPMS/x86_64/* ; mv $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package; fi
-- ls -l $TRAVIS_BUILD_DIR/package
+- if test "$LIBDAP_BUILD" = "deb"; then mv $TRAVIS_BUILD_DIR/../libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; fi
+- ls -ldR $TRAVIS_BUILD_DIR/package
+- if test "$LIBDAP_BUILD" = "centos7"; then ls -l $prefix/rpmbuild/RPMS/x86_64/*; mv $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
+- ls -ldR $TRAVIS_BUILD_DIR/package
 
 deploy:
   provider: s3
