@@ -99,8 +99,8 @@ jobs:
     script: 
     - export LIBDAP_BUILD=centos7
     - mkdir -p $prefix/rpmbuild
-    - docker run --volume $prefix/install:/root/install --volume $prefix/rpmbuild:/root/rpmbuild 
-                 --volume $TRAVIS_BUILD_DIR:/root/libdap4 opendap/centos7_hyrax_builder:latest
+    - docker run --volume $prefix:/root/install --volume $prefix/rpmbuild:/root/rpmbuild 
+                 --volume $TRAVIS_BUILD_DIR:/root/libdap4 opendap/centos7_hyrax_builder:1
                  /root/libdap4/build-rpm.sh
 
 before_deploy:
