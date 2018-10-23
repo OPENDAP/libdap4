@@ -74,6 +74,7 @@ jobs:
   - name: build
     if:  branch != coverity_scan
   - name: package
+    if:  branch != coverity_scan
   include:
   - stage: build
     script:
@@ -99,20 +100,19 @@ jobs:
     script: 
     - export LIBDAP_BUILD=centos7
     - mkdir -p $prefix/rpmbuild
-    - docker run --volume $prefix/install:/root/install --volume $prefix/rpmbuild:/root/rpmbuild 
-                 --volume $TRAVIS_BUILD_DIR:/root/libdap4 opendap/centos7_hyrax_builder:latest
-                 /root/libdap4/build-rpm.sh
+    - docker run --volume $prefix:/root/install --volume $prefix/rpmbuild:/root/rpmbuild 
+                 --volume $TRAVIS_BUILD_DIR:/root/libdap4 opendap/centos7_hyrax_builder /root/libdap4/build-rpm.sh
   - stage: package
     script: 
     - export LIBDAP_BUILD=centos6
     - mkdir -p $prefix/rpmbuild
-    - docker run --volume $prefix/install:/root/install --volume $prefix/rpmbuild:/root/rpmbuild 
-                 --volume $TRAVIS_BUILD_DIR:/root/libdap4 opendap/centos6_hyrax_builder:latest
-                 /root/libdap4/build-rpm.sh
+    - docker run --volume $prefix:/root/install --volume $prefix/rpmbuild:/root/rpmbuild 
+                 --volume $TRAVIS_BUILD_DIR:/root/libdap4 opendap/centos6_hyrax_builder /root/libdap4/build-rpm.sh
 
 before_deploy:
 - mkdir -p $TRAVIS_BUILD_DIR/package
-- if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install; fi
+- if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz 
+                                             --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
 - if test "$LIBDAP_BUILD" = "deb"; then mv $TRAVIS_BUILD_DIR/../libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; fi
 - if test "$LIBDAP_BUILD" = "centos6"; then cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
 - if test "$LIBDAP_BUILD" = "centos7"; then cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
@@ -129,5 +129,5 @@ deploy:
     branch:
     - master
     - travis
-    condition: $LIBDAP_BUILD =~ ^deb|main|centos7$
+    condition: $LIBDAP_BUILD =~ ^main|deb|centos7|centos6$
 
