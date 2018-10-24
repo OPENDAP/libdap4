@@ -100,16 +100,18 @@ jobs:
     script: 
     - export LIBDAP_BUILD=centos7
     - mkdir -p $prefix/rpmbuild
-    - docker run --volume $prefix/rpmbuild:/root/rpmbuild 
-                 --env "os=centos7" opendap/centos7_hyrax_builder:1.1
-                 /root/libdap4/build-rpm.sh
+    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
+                 --env os=centos7 opendap/centos7_hyrax_builder:1.1 /root/travis/build-rpm.sh
   - stage: package
     script: 
     - export LIBDAP_BUILD=centos6
     - mkdir -p $prefix/rpmbuild
-    - docker run --volume $prefix/rpmbuild:/root/rpmbuild 
-                 --env "os=centos6" opendap/centos6_hyrax_builder:1.1
-                 /root/libdap4/build-rpm.sh
+    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
+                 --env os=centos6 opendap/centos6_hyrax_builder:1.1 /root/travis/build-rpm.sh
+
+# docker run -e os=centos6 -v $prefix/centos6/rpmbuild:/root/rpmbuild -v `pwd`:/root/travis 
+# opendap/centos6_hyrax_builder:1.1 /root/travis/build-rpm.sh 
+
 
 before_deploy:
 - mkdir -p $TRAVIS_BUILD_DIR/package
