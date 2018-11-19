@@ -19,6 +19,7 @@ branches:
   only:
   - master
   - coverity_scan
+  - /^version-.*$/
 
 addons:
   coverity_scan:
@@ -131,5 +132,6 @@ deploy:
   on:
     branch:
     - master
+    - /^version-.*$/
     condition: $LIBDAP_BUILD =~ ^main|deb|centos7|centos6$
 
