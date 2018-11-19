@@ -19,7 +19,6 @@ branches:
   only:
   - master
   - coverity_scan
-  - travis
 
 addons:
   coverity_scan:
@@ -132,6 +131,5 @@ deploy:
   on:
     branch:
     - master
-    - travis
     condition: $LIBDAP_BUILD =~ ^main|deb|centos7|centos6$
 
