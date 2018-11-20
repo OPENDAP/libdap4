@@ -224,6 +224,7 @@ public:
     void prepend_dim(int size, const string& name = "");
     void prepend_dim(D4Dimension *dim);
     void clear_all_dims();
+    void rename_dim(const string &oldName = "", const string &newName = "");
 
     virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
     virtual void add_constraint(Dim_iter i, D4Dimension *dim);
