@@ -40,7 +40,6 @@
 #include <algorithm>
 #include <functional>
 #include <sstream>
-#include <algorithm>
 
 #include "Array.h"
 #include "Grid.h"
