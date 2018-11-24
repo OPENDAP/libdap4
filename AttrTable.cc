@@ -1066,17 +1066,6 @@ static void write_string_attribute_for_das(ostream &out, const string &value, co
         out << double_quote << value << double_quote << term;
 }
 
-#if 0
-static void
-write_string_attribute_for_das(FILE *out, const string &value, const string &term)
-{
-    if (is_quoted(value))
-    fprintf(out, "%s%s", value.c_str(), term.c_str());
-    else
-    fprintf(out, "\"%s\"%s", value.c_str(), term.c_str());
-}
-#endif
-
 // Special treatment for XML: Make sure to escape double quotes when XML is
 // printed in a DAS.
 static void write_xml_attribute_for_das(ostream &out, const string &value, const string &term)
@@ -1086,17 +1075,6 @@ static void write_xml_attribute_for_das(ostream &out, const string &value, const
     else
         out << double_quote << escape_double_quotes(value) << double_quote << term;
 }
-
-#if 0
-static void
-write_xml_attribute_for_das(FILE *out, const string &value, const string &term)
-{
-    if (is_quoted(value))
-    fprintf(out, "%s%s", escape_double_quotes(value).c_str(), term.c_str());
-    else
-    fprintf(out, "\"%s\"%s", escape_double_quotes(value).c_str(), term.c_str());
-}
-#endif
 
 /** A simple printer that does nothing fancy with aliases.
  Protected. */
@@ -1174,13 +1152,17 @@ void AttrTable::simple_print(ostream &out, string pad, Attr_iter i, bool derefer
 {
     switch ((*i)->type) {
     case Attr_container:
+        // Added this test to suppress printing empty attribute containers.
+        // jhrg 11/23/18
+        if (get_attr_table(i)->get_size() > 0) {
 #if WWW_ENCODING
-        out << pad << id2www(get_name(i)) << " {\n";
+            out << pad << id2www(get_name(i)) << " {\n";
 #else
-        out << pad << add_space_encoding(get_name(i)) << " {\n";
+            out << pad << add_space_encoding(get_name(i)) << " {\n";
 #endif
-        (*i)->attributes->print(out, pad + "    ", dereference);
-        out << pad << "}\n";
+            (*i)->attributes->print(out, pad + "    ", dereference);
+            out << pad << "}\n";
+        }
         break;
 
     case Attr_string: {
@@ -1245,31 +1227,6 @@ void AttrTable::print(FILE *out, string pad, bool dereference)
     ostringstream oss;
     print(oss, pad, dereference);
     fwrite(oss.str().data(), 1, oss.str().length(), out);
-
-#if 0
-    for (Attr_iter i = attr_map.begin(); i != attr_map.end(); ++i) {
-        if ((*i)->is_alias) {
-            if (dereference) {
-                simple_print(out, pad, i, dereference);
-            }
-            else {
-#if WWW_ENCODING
-                fprintf(out, "%sAlias %s %s;\n",
-                        pad.c_str(),
-                        id2www(get_name(i)).c_str(),
-                        id2www((*i)->aliased_to).c_str());
-#else
-                fprintf(out, "%sAlias %s %s;\n",
-                        pad.c_str(), add_space_encoding(get_name(i)).c_str(), add_space_encoding((*i)->aliased_to).c_str());
-
-#endif
-            }
-        }
-        else {
-            simple_print(out, pad, i, dereference);
-        }
-    }
-#endif
 }
 
 /** Prints an ASCII representation of the attribute table to the
@@ -1315,61 +1272,6 @@ void AttrTable::print_xml(FILE *out, string pad, bool /*constrained*/)
     XMLWriter xml(pad);
     print_xml_writer(xml);
     fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
-
-#if OLD_XML_MOETHODS
-    ostringstream oss;
-    print_xml(oss, pad);
-    fwrite(oss.str().data(), 1, oss.str().length(), out);
-#endif
-
-#if 0
-    // Why this works: AttrTable is really a hacked class that used to
-    // implement a single-level set of attributes. Containers
-    // were added several years later by dropping in the 'entry' structure.
-    // It's not a class in its own right; instead accessors from AttrTable
-    // are used to access information from entry. So... the loop below
-    // actually iterates over the entries of *this* (which is an instance of
-    // AttrTable). A container is an entry whose sole value is an AttrTable
-    // instance. 05/19/03 jhrg
-    for (Attr_iter i = attr_begin(); i != attr_end(); ++i) {
-        if ((*i)->is_alias) {
-            fprintf(out, "%s<Alias name=\"%s\" Attribute=\"%s\"/>\n",
-                    pad.c_str(), id2xml(get_name(i)).c_str(),
-                    (*i)->aliased_to.c_str());
-
-        }
-        else if (is_container(i)) {
-            fprintf(out, "%s<Attribute name=\"%s\" type=\"%s\">\n",
-                    pad.c_str(), id2xml(get_name(i)).c_str(),
-                    get_type(i).c_str());
-
-            get_attr_table(i)->print_xml(out, pad + "    "/*, constrained*/);
-
-            fprintf(out, "%s</Attribute>\n", pad.c_str());
-        }
-        else {
-            fprintf(out, "%s<Attribute name=\"%s\" type=\"%s\">\n",
-                    pad.c_str(), id2xml(get_name(i)).c_str(), get_type(i).c_str());
-
-            string value_pad = pad + "    ";
-            // Special handling for the OtherXML attribute type - don't escape
-            // the XML and don't include the <value> element. Note that there
-            // cannot be an vector of XML things as can be with the other types.
-            if (get_attr_type(i) == Attr_other_xml) {
-                if (get_attr_num(i) != 1)
-                throw Error("OtherXML attributes cannot be vector-valued.");
-                fprintf(out, "%s%s\n", value_pad.c_str(), get_attr(i, 0).c_str());
-            }
-            else {
-                for (unsigned j = 0; j < get_attr_num(i); ++j) {
-                    fprintf(out, "%s<value>%s</value>\n", value_pad.c_str(),
-                            id2xml(get_attr(i, j)).c_str());
-                }
-            }
-            fprintf(out, "%s</Attribute>\n", pad.c_str());
-        }
-    }
-#endif
 }
 
 /**
@@ -1380,42 +1282,6 @@ void AttrTable::print_xml(ostream &out, string pad, bool /*constrained*/)
     XMLWriter xml(pad);
     print_xml_writer(xml);
     out << xml.get_doc();
-
-#if 0
-    for (Attr_iter i = attr_begin(); i != attr_end(); ++i) {
-        if ((*i)->is_alias) {
-            out << pad << "<Alias name=\"" << id2xml(get_name(i))
-            << "\" Attribute=\"" << (*i)->aliased_to << "\"/>\n";
-
-        }
-        else if (is_container(i)) {
-            out << pad << "<Attribute name=\"" << id2xml(get_name(i))
-            << "\" type=\"" << get_type(i) << "\">\n";
-
-            get_attr_table(i)->print_xml(out, pad + "    "/*, constrained*/);
-
-            out << pad << "</Attribute>\n";
-        }
-        else {
-            out << pad << "<Attribute name=\"" << id2xml(get_name(i))
-            << "\" type=\"" << get_type(i) << "\">\n";
-
-            string value_pad = pad + "    ";
-            if (get_attr_type(i) == Attr_other_xml) {
-                if (get_attr_num(i) != 1)
-                throw Error("OtherXML attributes cannot be vector-valued.");
-                out << value_pad << get_attr(i, 0) << "\n";
-            }
-            else {
-                string value_pad = pad + "    ";
-                for (unsigned j = 0; j < get_attr_num(i); ++j) {
-                    out << value_pad << "<value>" << id2xml(get_attr(i, j)) << "</value>\n";
-                }
-            }
-            out << pad << "</Attribute>\n";
-        }
-    }
-#endif
 }
 
 /** Print the attribute table in XML.
