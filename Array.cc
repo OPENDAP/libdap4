@@ -582,10 +582,10 @@ Array::clear_all_dims()
 {
 	_shape.clear();
 }
-/** Resets the dimension constraint information so that the entire
-    array is selected.
 
-    @brief Reset constraint to select entire array.
+/** Renames dimension to a new name
+
+    @brief Renames dimension.
 */
 
 void
@@ -603,6 +603,11 @@ Array::rename_dim(const string &oldName, const string &newName)
     }
 }
 
+/** Resets the dimension constraint information so that the entire
+    array is selected.
+
+    @brief Reset constraint to select entire array.
+*/
 void
 Array::reset_constraint()
 {
