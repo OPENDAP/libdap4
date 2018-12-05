@@ -1,3 +1,29 @@
+2018-11-29  Slav Korolev  <slav.korolev@nasa.gov>
+
+	Corrected comments.
+
+2018-11-28  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #76 from OPENDAP/rename_dim
+	Rename dim
+
+2018-11-20  Slav Korolev  <slav.korolev@nasa.gov>
+
+	HK-247. Removed unneeded include.
+
+	HK-247. Added Array function rename_dim.
+
+2018-11-19  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #75 from OPENDAP/version-3.20.1
+	Version 3.20.1
+
+	Updated debian changelog (which includes the version)
+
+	Modified travis.yml for builds and packages on version-* branches
+
+	Release versions and files updated
+
 2018-10-24  James Gallagher  <jgallagher@opendap.org>
 
 	Merge branch 'travis'
