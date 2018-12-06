@@ -3,6 +3,7 @@ Please find the libdap4 API documentation here: https://opendap.github.io/libdap
 Updated for version 3.20.2
 
 Added libdap::Array::rename_dim()
+DOI For this version: https://doi.org/10.5281/zenodo.2002799
 
 Updated for version 3.20.1
 
