@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.19.1, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.20.2, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["4.0"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
@@ -20,6 +20,13 @@ AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
 AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
 AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and version combined])
 AC_SUBST(DVR)
+
+dnl Use one of these two blocks to build a DAP2 or DAP 3.2 DDX
+dnl AC_DEFINE(DAP2_DDX, 1, [Build the DAP 2 version of the DDX])
+dnl AC_SUBST(DAP2_DDX)
+AC_DEFINE(DAP3_2_DDX, 1, [Build the DAP 3.2 version of the DDX])
+AC_SUBST(DAP3_2_DDX)
+
 
 PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
 PACKAGE_MINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
@@ -45,9 +52,9 @@ dnl increment AGE, set REVISION to 0.
 dnl Interfaces removed or changed (BAD, breaks upward compatibility):
 dnl ==> Increment CURRENT, set AGE and REVISION to 0.
 
-DAPLIB_CURRENT=25
-DAPLIB_AGE=0
-DAPLIB_REVISION=1
+DAPLIB_CURRENT=27
+DAPLIB_AGE=2
+DAPLIB_REVISION=0
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)
 AC_SUBST(DAPLIB_REVISION)
@@ -57,7 +64,7 @@ AC_SUBST(LIBDAP_VERSION)
 
 CLIENTLIB_CURRENT=7
 CLIENTLIB_AGE=1
-CLIENTLIB_REVISION=7
+CLIENTLIB_REVISION=9
 AC_SUBST(CLIENTLIB_CURRENT)
 AC_SUBST(CLIENTLIB_AGE)
 AC_SUBST(CLIENTLIB_REVISION)
@@ -67,7 +74,7 @@ AC_SUBST(CLIENTLIB_VERSION)
 
 SERVERLIB_CURRENT=13
 SERVERLIB_AGE=6
-SERVERLIB_REVISION=7
+SERVERLIB_REVISION=9
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)
 AC_SUBST(SERVERLIB_REVISION)
@@ -345,7 +352,8 @@ AS_IF([test x$enable_dap4 = xyes], [
     AM_CONDITIONAL([DAP4_DEFINED], [false])
 ])
 
-AX_CHECK_COMPILE_FLAG([-fsanitize=address], [has_asan=yes], [has_asan=no])
+# AS_IF([test m4_version_compare(m4_defn([AC_AUTOCONF_VERSION]),[2.64]) -ge 0],
+#	[AX_CHECK_COMPILE_FLAG([-fsanitize=address], [has_asan=yes], [has_asan=no])])
 
 AC_ARG_ENABLE([asan], 
     [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
@@ -369,8 +377,8 @@ AS_IF([test x$enable_developer = xyes],
 DODS_GCOV_VALGRIND
 
 # Find valgrind, if available, and add targets for it.
-AX_VALGRIND_DFLT([sgcheck], [off])
-AX_VALGRIND_CHECK
+# AX_VALGRIND_DFLT([sgcheck], [off])
+# AX_VALGRIND_CHECK
 
 dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
 

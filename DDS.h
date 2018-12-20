@@ -75,6 +75,9 @@
 namespace libdap
 {
 
+bool has_dap2_attributes(BaseType *btp);
+bool has_dap2_attributes(AttrTable &a);
+
 /** The DAP2 Data Descriptor Object (DDS) is a data structure used by
     the DAP2 software to describe datasets and subsets of those
     datasets.  The DDS may be thought of as the declarations for the

@@ -582,12 +582,32 @@ Array::clear_all_dims()
 {
 	_shape.clear();
 }
+
+/** Renames dimension to a new name
+
+    @brief Renames dimension.
+*/
+
+void
+Array::rename_dim(const string &oldName, const string &newName)
+{
+    std::vector<dimension>::iterator i = _shape.begin(), e = _shape.end();
+    while (i != e) {
+        dimension &d = *i ;
+        if(d.name == oldName){
+            DBG(cerr << "Old name = " << d.name << " newName = " << newName << endl);
+            d.name = newName;
+        }
+
+        ++i;
+    }
+}
+
 /** Resets the dimension constraint information so that the entire
     array is selected.
 
     @brief Reset constraint to select entire array.
 */
-
 void
 Array::reset_constraint()
 {

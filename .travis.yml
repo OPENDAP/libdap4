@@ -19,13 +19,14 @@ branches:
   only:
   - master
   - coverity_scan
-  - travis
+  - /^version-.*$/
 
 addons:
   coverity_scan:
     project:
       name: "OPENDAP/libdap4"
     notification_email: jgallagher@opendap.org
+    build_command_prepend: ./configure --disable-dependency-tracking --prefix=$prefix
     build_command: "make -j7"
     branch_pattern: coverity_scan
   apt:
@@ -54,8 +55,6 @@ env:
   - secure: "lL7WaRHysuAKGLhMBbMyCk8yvRn4mmZeF+W7t4duh7/1DrGiPZ9kQwkfM54r5hLXPeKqqMyDjJs5kATlBgzg68dnwSaLFsbe3TqI9Zj258PgUf1+EYaK+vP9O9brHUUrmtqj6uFGtrP1Dqj2S8AUuTvrYtvSr7vGGitv4++n3AY="
 
 before_install:
-# - sudo apt-get update -qq
-# - pip install --user awscli
 
 # hyrax-dependencies-build.tar.gz includes/makes the build directory
 install:
@@ -74,6 +73,8 @@ jobs:
   stages:
   - name: build
     if:  branch != coverity_scan
+  - name: package
+    if:  branch != coverity_scan
   include:
   - stage: build
     script:
@@ -88,19 +89,34 @@ jobs:
   - stage: build
     script: 
     - export LIBDAP_BUILD=distcheck
-    - ./configure --disable-dependency-tracking --prefix=$prefix
+    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
     - make distcheck -j7
-  - stage: build
+  - stage: package
     script: 
     - export LIBDAP_BUILD=deb
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make deb -j7
+  - stage: package
+    script: 
+    - export LIBDAP_BUILD=centos7
+    - mkdir -p $prefix/rpmbuild
+    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
+                 --env os=centos7 opendap/centos7_hyrax_builder:1.1 /root/travis/build-rpm.sh
+  - stage: package
+    script: 
+    - export LIBDAP_BUILD=centos6
+    - mkdir -p $prefix/rpmbuild
+    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
+                 --env os=centos6 opendap/centos6_hyrax_builder:1.1 /root/travis/build-rpm.sh
 
 before_deploy:
-- mkdir $TRAVIS_BUILD_DIR/package
-- mv $TRAVIS_BUILD_DIR/libdap_3.19.1-1_amd64.deb $TRAVIS_BUILD_DIR/package/
-- tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz --exclude 'install/deps*' install
-- ls -l $TRAVIS_BUILD_DIR/package
+- mkdir -p $TRAVIS_BUILD_DIR/package
+- if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz 
+                                             --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
+- if test "$LIBDAP_BUILD" = "deb"; then mv $TRAVIS_BUILD_DIR/../libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; fi
+- if test "$LIBDAP_BUILD" = "centos6"; then cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
+- if test "$LIBDAP_BUILD" = "centos7"; then cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
+- ls -lR $TRAVIS_BUILD_DIR/package
 
 deploy:
   provider: s3
@@ -112,6 +128,6 @@ deploy:
   on:
     branch:
     - master
-    - travis
-    condition: "$LIBDAP_BUILD = main" OR "LIBDAP_BUILD = deb"
+    - /^version-.*$/
+    condition: $LIBDAP_BUILD =~ ^main|deb|centos7|centos6$
 

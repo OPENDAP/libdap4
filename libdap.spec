@@ -1,6 +1,6 @@
 Name: libdap
 Summary: The C++ DAP2/DAP4 library from OPeNDAP
-Version: 3.19.1
+Version: 3.20.2
 Release: 1%{?dist}
 
 License: LGPLv2+
@@ -12,7 +12,6 @@ Requires: curl >= 7.19.0 libxml2 >= 2.7.0
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires: curl-devel >= 7.19.0 libxml2-devel >= 2.7.0
-# BuildRequires: doxygen graphviz
 BuildRequires: pkgconfig
 
 # This package could be relocatable. In that case uncomment the following
@@ -41,13 +40,6 @@ Requires: automake
 This package contains all the files needed to develop applications that
 use libdap.
 
-# %package doc
-# Summary: Documentation of the libdap library
-# Group: Documentation
-
-# %description doc
-# Documentation of the libdap library.
-
 %prep
 %setup -q
 
@@ -55,21 +47,11 @@ use libdap.
 %configure --disable-static --disable-dependency-tracking
 make %{?_smp_mflags}
 
-# make docs
-
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT INSTALL="%{__install} -p"
 rm $RPM_BUILD_ROOT%{_libdir}/*.la
 mv $RPM_BUILD_ROOT%{_bindir}/dap-config-pkgconfig $RPM_BUILD_ROOT%{_bindir}/dap-config
-
-# rm -rf __dist_docs
-# cp -pr docs __dist_docs
-# # those .map and .md5 are of dubious use, remove them
-# rm -f __dist_docs/html/*.map __dist_docs/html/*.md5
-# # use the ChangeLog timestamp to have the same timestamps for the doc files 
-# # for all arches
-# touch -r ChangeLog __dist_docs/html/*
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -100,11 +82,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/libdap/
 %{_datadir}/aclocal/*
 
-# %files doc
-# %defattr(-,root,root,-)
-# %doc __dist_docs/html/
-
 %changelog
+* Thu Sep 23 2018 James Gallagher <jgallagher@opendap.org> - 3.20.0
+
 * Tue May  4 2010 James Gallagher <jgallagher@opendap.org> - 3.10.2
 
 * Mon Sep 13 2010 James Gallagehr <jgallagher@opendap.org> - 3.11.0

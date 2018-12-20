@@ -1,3 +1,29 @@
+News for version 3.20.2
+
+Added libdap::Array::rename_dim() for HK-247 (an issue in the BES)
+
+News for version 3.20.1
+
+Support Continuous Delivery of CentOS 6 and 7 RPMs using Travis CI.
+
+News for version 3.20.0
+
+We now have debian packages for libdap, built using Travis CI
+
+The library now returns only DAP 3.2 DDX responses, ending confusion about
+what exactly the DDX syntax would be.
+
+Using libtirpc (Libtirpc is a port of Suns Transport-Independent RPC library to Linux).
+Thanks to Orion Poplawski.
+
+Use quotes when testing $CC in the configure script.
+This avoids the error "test: too many arguments" appearing in the
+configure output if CC contains multiple words, such as "ccache cc".
+Thanks to Ryan Schmidt.
+
+Testing and coverage analysis.
+Thanks to Ed Hartnett.
+
 News for version 3.19.1
 
 Portability issues: Updated gnulib and mkstemps fixed as per user

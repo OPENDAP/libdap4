@@ -162,7 +162,7 @@ public:
             das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
             dds1->transfer_attributes(&das);
 
-            DBG2(dds1->print_xml(cerr, false, ""));
+            DBG(dds1->print_xml(cerr, false, ""));
 
             AttrTable &at = dds1->get_attr_table();
             AttrTable::Attr_iter i = at.attr_begin();
@@ -183,7 +183,7 @@ public:
             das.parse((string) TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.hacked.HDF.das");
             dds2->transfer_attributes(&das);
 
-            DBG2(dds2->print_xml(cerr, false, ""));
+            DBG(dds2->print_xml(cerr, false, ""));
 
             AttrTable &at = dds2->get_attr_table();
             AttrTable::Attr_iter i = at.attr_begin();
@@ -222,10 +222,14 @@ public:
             dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b");
             ostringstream oss;
             dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
-            DBG2(cerr << "Printed DDX: " << oss.str() << endl);
+            DBG(cerr << "Printed DDX: " << oss.str() << endl);
 
+#if DAP2_DDX
+            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.dap2.xml");
+#else
             string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.xml");
-            DBG2(cerr << "The baseline: " << baseline << endl);
+#endif
+            DBG(cerr << "The baseline: " << baseline << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
         }
@@ -246,10 +250,14 @@ public:
         ostringstream oss;
         dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
 
-        DBG2(cerr << oss.str() << endl);
+        DBG(cerr << oss.str() << endl);
 
+#if DAP2_DDX
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.dap2.xml");
+#else
         string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.xml");
-        DBG2(cerr << baseline << endl);
+#endif
+        DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
 
@@ -264,10 +272,15 @@ public:
         ostringstream oss;
         dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
 
-        DBG2(cerr << oss.str() << endl);
+        DBG(cerr << oss.str() << endl);
 
+#if DAP2_DDX
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.dap2.xml");
+#else
         string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.xml");
-        DBG2(cerr << baseline << endl);
+#endif
+
+        DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
 
@@ -284,10 +297,10 @@ public:
         ostringstream oss;
         dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
 
-        DBG2(cerr << oss.str() << endl);
+        DBG(cerr << oss.str() << endl);
 
         string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d1.xml");
-        DBG2(cerr << baseline << endl);
+        DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
 
@@ -306,8 +319,12 @@ public:
 
         DBG(cerr << oss.str() << endl);
 
+#if DAP2_DDX
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.dap2.xml");
+#else
         string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.xml");
-        DBG2(cerr << baseline << endl);
+#endif
+        DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
 
@@ -318,7 +335,12 @@ public:
         DAS das;
         string das_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.das");
         das.parse(das_file);
+
+#if DAP2_DDX
+        string baseline_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.dap2.xml");
+#else
         string baseline_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.xml");
+#endif
         string baseline = read_test_baseline(baseline_file);
 
         try {
@@ -367,7 +389,7 @@ public:
         DBG(cerr << oss.str() << endl);
 
         string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19f1.xml");
-        DBG2(cerr << baseline << endl);
+        DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
 
@@ -384,8 +406,13 @@ public:
 
         DBG(cerr << oss.str() << endl);
 
+#if DAP2_DDX
+        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b6.dap2.xml");
+#else
         string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b6.xml");
-        DBG2(cerr << baseline << endl);
+#endif
+
+        DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
 
@@ -413,7 +440,7 @@ public:
         DBG(cerr << oss.str() << endl);
 
         string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19g.xml");
-        DBG2(cerr << baseline << endl);
+        DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
     }
 
