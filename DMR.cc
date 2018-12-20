@@ -356,6 +356,12 @@ DDS *DMR::getDDS()
 }
 #endif
 
+/**
+ * Get the root group for this DMR. This accessor allocates the root group
+ * if one does not exist using the factory class bound to this DMR
+ *
+ * @return A pointer to the root group.
+ */
 D4Group *
 DMR::root()
 {
