@@ -94,8 +94,9 @@ jobs:
   - stage: package
     script: 
     - export LIBDAP_BUILD=deb
-    - ./configure --disable-dependency-tracking --prefix=$prefix
-    - make deb -j7
+    - mkdir -p $prefix/debbuild
+    - docker run --volume $prefix/debbuild:/root/debbuild --volume $TRAVIS_BUILD_DIR:/root/travis
+                 --env os=ubuntu14 opendap/ubuntu14_hyrax_builder:1.4 /root/travis/build-deb.sh
   - stage: package
     script: 
     - export LIBDAP_BUILD=centos7
