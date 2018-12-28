@@ -20,7 +20,7 @@ tar -xzvf /tmp/hyrax-dependencies-ubuntu14-static.tar.gz
 # Get a fresh copy of the sources
 git clone https://github.com/opendap/libdap4
 
-cd $HOME/libdap4
+cd $TRAVIS_BUILD_DIR
 
 # build (autoreconf; configure, make)
 autoreconf -fiv
