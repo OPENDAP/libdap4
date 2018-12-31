@@ -30,3 +30,5 @@ autoreconf -fiv
 make deb -j7
 
 echo "pwd = `pwd`"
+ls
+ls ../
