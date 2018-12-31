@@ -94,7 +94,7 @@ jobs:
     - export LIBDAP_BUILD=deb
     - mkdir -p $prefix/debbuild
     - docker run --volume $prefix/debbuild:/root/debbuild --volume $TRAVIS_BUILD_DIR:/root/travis
-                 --env os=ubuntu14 opendap/ubuntu14_hyrax_build:1.4 /root/travis/build-deb.sh
+                 --env os=ubuntu14 TRAVIS_BUILD_DIR=$TRAVIS_BUILD_DIR opendap/ubuntu14_hyrax_build:1.4 /root/travis/build-deb.sh
   - stage: package
     script: 
     - export LIBDAP_BUILD=centos7
