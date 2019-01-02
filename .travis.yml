@@ -71,7 +71,7 @@ before_script:
 jobs:
   stages:
   - name: build
-    if:  branch != debian
+    if:  branch NOT IN (debian)
     #used to be "!= coverity_scan"
   - name: package
     if:  branch != coverity_scan
@@ -95,20 +95,19 @@ jobs:
     script: 
     - export LIBDAP_BUILD=deb
     - mkdir -p $prefix/debbuild
-    - docker run --volume $prefix/debbuild:/root
+    - docker run --volume $prefix/debbuild:/root --volume $TRAVIS_BUILD_DIR:/root/travis
                  --env os=ubuntu14 opendap/ubuntu14_hyrax_build:1.4 /root/travis/build-deb.sh
   - stage: package
     script: 
     - export LIBDAP_BUILD=centos7
     - mkdir -p $prefix/rpmbuild
-    - docker run --volume $prefix/rpmbuild:/root/rpmbuild
+    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
                  --env os=centos7 opendap/centos7_hyrax_builder:1.1 /root/travis/build-rpm.sh
   - stage: package
     script: 
     - export LIBDAP_BUILD=centos6
     - mkdir -p $prefix/rpmbuild
-    # --volume $TRAVIS_BUILD_DIR:/root/travis
-    - docker run --volume $prefix/rpmbuild:/root/rpmbuild
+    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
                  --env os=centos6 opendap/centos6_hyrax_builder:1.1 /root/travis/build-rpm.sh
 
 before_deploy:
