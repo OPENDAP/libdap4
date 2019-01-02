@@ -19,7 +19,8 @@ branches:
   only:
   - master
   - coverity_scan
-  - /^version-.*$/
+  - debian
+  #- /^version-.*$/
 
 addons:
   coverity_scan:
@@ -70,7 +71,8 @@ before_script:
 jobs:
   stages:
   - name: build
-    if:  branch != coverity_scan
+    if:  branch != debian
+    #used to be "!= coverity_scan"
   - name: package
     if:  branch != coverity_scan
   include:
@@ -128,6 +130,7 @@ deploy:
   on:
     branch:
     - master
-    - /^version-.*$/
+    - debian
+    #- /^version-.*$/
     condition: $LIBDAP_BUILD =~ ^main|deb|centos7|centos6$
 
