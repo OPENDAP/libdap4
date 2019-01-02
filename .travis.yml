@@ -19,7 +19,6 @@ branches:
   only:
   - master
   - coverity_scan
-  - /^version-.*$/
 
 addons:
   coverity_scan:
@@ -70,9 +69,10 @@ before_script:
 jobs:
   stages:
   - name: build
-    if:  branch != coverity_scan
+    if:  branch = master
+    #used to be "!= coverity_scan"
   - name: package
-    if:  branch != coverity_scan
+    if:  branch = master
   include:
   - stage: build
     script:
@@ -93,8 +93,9 @@ jobs:
     script: 
     - export LIBDAP_BUILD=deb
     - mkdir -p $prefix/debbuild
-    - docker run --volume $prefix/debbuild:/root/libdap4 --volume $TRAVIS_BUILD_DIR:/root/travis
-                 --env os=ubuntu14 --env travis_build_dir=$TRAVIS_BUILD_DIR opendap/ubuntu14_hyrax_build:1.4 /root/travis/build-deb.sh
+    # $TRAVIS_DUILD_DIR:/root/travis used to make the build-deb.sh script available
+    - docker run --volume $prefix/debbuild:/root --volume $TRAVIS_BUILD_DIR:/root/travis
+                 --env os=ubuntu14 opendap/ubuntu14_hyrax_build:1.4 /root/travis/build-deb.sh
   - stage: package
     script: 
     - export LIBDAP_BUILD=centos7
@@ -112,7 +113,7 @@ before_deploy:
 - mkdir -p $TRAVIS_BUILD_DIR/package
 - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz 
                                              --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
-- if test "$LIBDAP_BUILD" = "deb"; then mv $prefix/libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; fi
+- if test "$LIBDAP_BUILD" = "deb"; then cp $prefix/debbuild/libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; fi
 - if test "$LIBDAP_BUILD" = "centos6"; then cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
 - if test "$LIBDAP_BUILD" = "centos7"; then cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
 - ls -lR $TRAVIS_BUILD_DIR/package
@@ -127,6 +128,5 @@ deploy:
   on:
     branch:
     - master
-    - /^version-.*$/
     condition: $LIBDAP_BUILD =~ ^main|deb|centos7|centos6$
 
