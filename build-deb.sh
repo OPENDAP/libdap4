@@ -28,7 +28,3 @@ autoreconf -fiv
 ./configure --disable-dependency-tracking --prefix=$prefix
 
 make deb -j7
-
-echo "pwd = `pwd`"
-ls
-ls ../

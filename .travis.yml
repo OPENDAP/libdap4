@@ -19,8 +19,6 @@ branches:
   only:
   - master
   - coverity_scan
-  - debian
-  #- /^version-.*$/
 
 addons:
   coverity_scan:
@@ -71,10 +69,10 @@ before_script:
 jobs:
   stages:
   - name: build
-    if:  branch NOT IN (debian)
+    if:  branch = master
     #used to be "!= coverity_scan"
   - name: package
-    if:  branch != coverity_scan
+    if:  branch = master
   include:
   - stage: build
     script:
@@ -95,6 +93,7 @@ jobs:
     script: 
     - export LIBDAP_BUILD=deb
     - mkdir -p $prefix/debbuild
+    # $TRAVIS_DUILD_DIR:/root/travis used to make the build-deb.sh script available
     - docker run --volume $prefix/debbuild:/root --volume $TRAVIS_BUILD_DIR:/root/travis
                  --env os=ubuntu14 opendap/ubuntu14_hyrax_build:1.4 /root/travis/build-deb.sh
   - stage: package
@@ -129,7 +128,5 @@ deploy:
   on:
     branch:
     - master
-    - debian
-    #- /^version-.*$/
     condition: $LIBDAP_BUILD =~ ^main|deb|centos7|centos6$
 
