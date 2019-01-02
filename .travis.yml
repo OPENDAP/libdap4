@@ -112,7 +112,7 @@ before_deploy:
 - mkdir -p $TRAVIS_BUILD_DIR/package
 - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz 
                                              --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
-- if test "$LIBDAP_BUILD" = "deb"; then mv $prefix/debbuild/../libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; fi
+- if test "$LIBDAP_BUILD" = "deb"; then mv $prefix/libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; fi
 - if test "$LIBDAP_BUILD" = "centos6"; then cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
 - if test "$LIBDAP_BUILD" = "centos7"; then cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
 - ls -lR $TRAVIS_BUILD_DIR/package

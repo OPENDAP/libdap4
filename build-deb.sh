@@ -12,7 +12,7 @@ echo "pwd = `pwd`"
 # Get the pre-built dependencies (all static libraries)
 (cd /tmp && curl -s -O https://s3.amazonaws.com/opendap.travis.build/hyrax-dependencies-$os-static.tar.gz)
 
-cd $prefix/debbuild
+cd /home/travis/install
 
 # This dumps the dependencies in $HOME/install/deps/{lib,bin,...}
 tar -xzvf /tmp/hyrax-dependencies-ubuntu14-static.tar.gz
@@ -20,7 +20,7 @@ tar -xzvf /tmp/hyrax-dependencies-ubuntu14-static.tar.gz
 # Get a fresh copy of the sources
 git clone https://github.com/opendap/libdap4
 
-cd $prefix/debbuild/libdap4
+cd /home/travis/install/libdap4
 
 # build (autoreconf; configure, make)
 autoreconf -fiv
