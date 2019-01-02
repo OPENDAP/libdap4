@@ -93,26 +93,27 @@ jobs:
     script: 
     - export LIBDAP_BUILD=deb
     - mkdir -p $prefix/debbuild
-    - docker run --volume $prefix/debbuild:/root/libdap4 --volume $TRAVIS_BUILD_DIR:/root/travis
-                 --env os=ubuntu14 --env travis_build_dir=$TRAVIS_BUILD_DIR opendap/ubuntu14_hyrax_build:1.4 /root/travis/build-deb.sh
+    - docker run --volume $prefix/debbuild:/root
+                 --env os=ubuntu14 opendap/ubuntu14_hyrax_build:1.4 /root/travis/build-deb.sh
   - stage: package
     script: 
     - export LIBDAP_BUILD=centos7
     - mkdir -p $prefix/rpmbuild
-    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
+    - docker run --volume $prefix/rpmbuild:/root/rpmbuild
                  --env os=centos7 opendap/centos7_hyrax_builder:1.1 /root/travis/build-rpm.sh
   - stage: package
     script: 
     - export LIBDAP_BUILD=centos6
     - mkdir -p $prefix/rpmbuild
-    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
+    # --volume $TRAVIS_BUILD_DIR:/root/travis
+    - docker run --volume $prefix/rpmbuild:/root/rpmbuild
                  --env os=centos6 opendap/centos6_hyrax_builder:1.1 /root/travis/build-rpm.sh
 
 before_deploy:
 - mkdir -p $TRAVIS_BUILD_DIR/package
 - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz 
                                              --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
-- if test "$LIBDAP_BUILD" = "deb"; then mv $prefix/debbuild/../libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; fi
+- if test "$LIBDAP_BUILD" = "deb"; then cp $prefix/debbuild/libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; fi
 - if test "$LIBDAP_BUILD" = "centos6"; then cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
 - if test "$LIBDAP_BUILD" = "centos7"; then cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
 - ls -lR $TRAVIS_BUILD_DIR/package
