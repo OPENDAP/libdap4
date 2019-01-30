@@ -72,7 +72,7 @@ protected:
 
  @todo Generalize this so that it can take a FILE * as well and then make
  two classes file_istream and file_ostream that can be initialized with
- either a file descriptor of a FILE pointer.
+ either a file descriptor or a FILE pointer.
  */
 class fdostream: public std::ostream {
 protected:
