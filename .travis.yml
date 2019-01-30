@@ -44,6 +44,7 @@ env:
   - prefix=$HOME/install
   - PATH=$prefix/bin:$PATH
   - TESTSUITEFLAGS=-j7  
+  # - CURL_OPTIONS="--connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 40 --silent --show-error"
   # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
   # AWS_ACCESS_KEY_ID for the user 'travis'
@@ -55,7 +56,10 @@ before_install:
 
 # hyrax-dependencies-build.tar.gz includes/makes the build directory
 install:
-- (cd $TRAVIS_BUILD_DIR && curl -s -O https://s3.amazonaws.com/opendap.travis.build/hyrax-dependencies-build.tar.gz) 
+- pip install --user awscli
+- aws s3 ls s3://opendap.travis.build/
+- aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
+# - (cd $TRAVIS_BUILD_DIR && curl $CURL_OPTIONS -O https://s3.amazonaws.com/opendap.travis.build/hyrax-dependencies-build.tar.gz) 
 - tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz 
 
 # - aws s3 ls s3://opendap.travis.build/
