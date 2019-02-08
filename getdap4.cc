@@ -118,7 +118,7 @@ bool read_data(FILE * fp)
     // Changed from a loop that used getc() to one that uses fread(). getc()
     // worked fine for transfers of text information, but *not* for binary
     // transfers. fread() will handle both.
-    char c;
+    char c = 0;
     while (fp && !feof(fp) && fread(&c, 1, 1, fp))
         printf("%c", c);        // stick with stdio
 
@@ -246,7 +246,6 @@ int main(int argc, char *argv[])
         default:
             usage(argv[0]);
             exit(1);
-            break;
         }
 
     try {
@@ -409,7 +408,7 @@ int main(int argc, char *argv[])
     }
     catch (Error &e) {
 
-    	if(e.get_error_code() == malformed_expr || e.get_error_code() == malformed_expr){
+    	if(e.get_error_code() == malformed_expr){
         	cerr << e.get_error_message() << endl;
         	usage(argv[0]);
     	}

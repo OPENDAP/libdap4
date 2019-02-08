@@ -71,7 +71,7 @@ static const char *err_messages[] = {
 
 /** Specializations of Error should use this to set the error code and
     message. */
-Error::Error() : _error_code(undefined_error), _error_message("")
+Error::Error() : exception(), _error_code(undefined_error), _error_message("")
 {}
 
 /** Create an instance with a specific code and message string. This ctor
@@ -84,7 +84,7 @@ Error::Error() : _error_code(undefined_error), _error_message("")
     @param ec The error code
     @param msg The error message string. */
 Error::Error(ErrorCode ec, string msg)
-        : _error_code(ec), _error_message(msg)
+        : exception(), _error_code(ec), _error_message(msg)
 {}
 
 /** Create an instance with a specific message. The error code is set to \c
@@ -93,16 +93,15 @@ Error::Error(ErrorCode ec, string msg)
     @param msg The error message.
     @see ErrorCode */
 Error::Error(string msg)
-        : _error_code(unknown_error), _error_message(msg)
+        : exception(), _error_code(unknown_error), _error_message(msg)
 {}
 
 Error::Error(const Error &copy_from)
-        : _error_code(copy_from._error_code),
-        _error_message(copy_from._error_message)
+        : exception(), _error_code(copy_from._error_code), _error_message(copy_from._error_message)
 {
 }
 
-Error::~Error()
+Error::~Error() throw()
 {
 }
 

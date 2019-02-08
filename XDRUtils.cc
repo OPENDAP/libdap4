@@ -142,37 +142,30 @@ namespace libdap {
     @return A C function used to encode data in the XDR format.
 */
 xdrproc_t
-XDRUtils::xdr_coder( const Type &t )
+XDRUtils::xdr_coder(const Type &t)
 {
-    switch( t )
-    {
-	case dods_int16_c:
-	    return (xdrproc_t)XDR_INT16 ;
-	    break ;
-	case dods_uint16_c:
-	    return (xdrproc_t)XDR_UINT16 ;
-	    break ;
-	case dods_int32_c:
-	    return (xdrproc_t)XDR_INT32 ;
-	    break ;
-	case dods_uint32_c:
-	    return (xdrproc_t)XDR_UINT32 ;
-	    break ;
-	case dods_float32_c:
-	    return (xdrproc_t)XDR_FLOAT32 ;
-	    break ;
-	case dods_float64_c:
-	    return (xdrproc_t)XDR_FLOAT64 ;
-	    break ;
-	case dods_byte_c:
-	case dods_str_c:
-	case dods_url_c:
-	case dods_array_c:
-	case dods_structure_c:
-	case dods_sequence_c:
-	case dods_grid_c:
-	default:
-	    break ;
+    switch (t) {
+    case dods_int16_c:
+        return (xdrproc_t) XDR_INT16;
+    case dods_uint16_c:
+        return (xdrproc_t) XDR_UINT16;
+    case dods_int32_c:
+        return (xdrproc_t) XDR_INT32;
+    case dods_uint32_c:
+        return (xdrproc_t) XDR_UINT32;
+    case dods_float32_c:
+        return (xdrproc_t) XDR_FLOAT32;
+    case dods_float64_c:
+        return (xdrproc_t) XDR_FLOAT64;
+    case dods_byte_c:
+    case dods_str_c:
+    case dods_url_c:
+    case dods_array_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+    default:
+        break;
     }
 
     return NULL;

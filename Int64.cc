@@ -203,8 +203,6 @@ Int64::ops(BaseType *b, int op)
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
 
     return d4_ops(b, op);
-
-    return false;
 }
 
 /**
