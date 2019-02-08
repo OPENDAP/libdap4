@@ -184,3 +184,5 @@ unit-tests/UInt64Test
 
 
 unit-tests/chunked-io/
+/bw-output/
+/.scannerwork/
