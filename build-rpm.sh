@@ -17,13 +17,22 @@ set -eux
 echo "env:"
 printenv
 
+# verify we are in $HOME
+
 echo "pwd = `pwd`"
+
+if test $HOME != $PWD
+then
+    exit 1
+fi
+
+if ! which aws && test -x /root/.local/bin/aws
+then
+    export PATH=$PATH:/root/.local/bin
+fi
 
 # Get the pre-built dependencies (all static libraries)
 aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
-# (cd /tmp && curl -s -O https://s3.amazonaws.com/opendap.travis.build/hyrax-dependencies-$os-static.tar.gz)
-
-cd $HOME
 
 # This dumps the dependencies in $HOME/install/deps/{lib,bin,...}
 tar -xzvf /tmp/hyrax-dependencies-$os-static.tar.gz
