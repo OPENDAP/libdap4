@@ -20,7 +20,8 @@ printenv
 echo "pwd = `pwd`"
 
 # Get the pre-built dependencies (all static libraries)
-(cd /tmp && curl -s -O https://s3.amazonaws.com/opendap.travis.build/hyrax-dependencies-$os-static.tar.gz)
+aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
+# (cd /tmp && curl -s -O https://s3.amazonaws.com/opendap.travis.build/hyrax-dependencies-$os-static.tar.gz)
 
 cd $HOME
 
