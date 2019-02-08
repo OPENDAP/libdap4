@@ -59,7 +59,7 @@ DataDDS::m_version_string_to_numbers()
 
     if (!num.empty() && num.find('.') != string::npos) {
         istringstream iss(num);
-        char c;
+        char c = 0;
 
         iss >> d_server_version_major;
         iss >> c;               // This reads the `.' in the version string
@@ -92,7 +92,7 @@ DataDDS::m_protocol_string_to_numbers()
     if (!d_protocol_version.empty() && d_protocol_version.find('.')
         != string::npos) {
         istringstream iss(d_protocol_version);
-        char c;
+        char c = 0;
 
         iss >> d_server_protocol_major;
         iss >> c;               // This reads the `.' in the version string

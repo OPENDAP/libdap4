@@ -236,7 +236,7 @@ Int8::transform_to_dap2(AttrTable *parent_attr_table)
         ostringstream oss;
         oss << __func__ << "() -  Something Bad Happened. This transform should produce only ";
         oss << " a single BaseType yet it produced " << vec->size();
-        throw new Error(internal_error,oss.str());
+        throw Error(internal_error,oss.str());
     }
     (*vec)[0]->set_type(dods_byte_c);
     return vec;

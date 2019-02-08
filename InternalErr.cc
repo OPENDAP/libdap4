@@ -79,7 +79,7 @@ InternalErr::InternalErr(const InternalErr &copy_from)
         : Error(copy_from)
 {}
 
-InternalErr::~InternalErr()
+InternalErr::~InternalErr() throw()
 {}
 
 /**

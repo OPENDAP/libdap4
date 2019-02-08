@@ -365,7 +365,6 @@ void D4Connect::request_dmr(DMR &dmr, const string expr)
             // We should never get here; a web error should be picked up read_url
             // (called by fetch_url) and result in a thrown Error object.
             throw InternalErr(__FILE__, __LINE__, "Web error found where it should never be.");
-            break;
 
         default:
             throw InternalErr(__FILE__, __LINE__,
@@ -446,7 +445,6 @@ void D4Connect::request_dap4_data(DMR &dmr, const string expr)
             // We should never get here; a web error should be picked up read_url
             // (called by fetch_url) and result in a thrown Error object.
             throw InternalErr(__FILE__, __LINE__, "Web error found where it should never be.");
-            break;
 
         default:
             throw InternalErr(__FILE__, __LINE__,
