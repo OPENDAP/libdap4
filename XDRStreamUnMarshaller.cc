@@ -78,8 +78,6 @@ XDRStreamUnMarshaller &
 XDRStreamUnMarshaller::operator=(const XDRStreamUnMarshaller &)
 {
     throw InternalErr(__FILE__, __LINE__, "Copy operator not implemented.");
-
-    return *this;
 }
 
 XDRStreamUnMarshaller::~XDRStreamUnMarshaller()

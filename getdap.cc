@@ -221,7 +221,6 @@ int main(int argc, char *argv[])
         default:
             usage(argv[0]);
             exit(1);
-            break;
         }
 
     try {

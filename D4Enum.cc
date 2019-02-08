@@ -674,8 +674,6 @@ D4Enum::ops(BaseType *b, int op)
         default:
             return false;
     }
-
-    return false;
 }
 
 /** @brief dumps information about this object

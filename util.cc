@@ -807,8 +807,6 @@ bool is_simple_type(Type t)
     default:
         return false;
     }
-
-    return false;
 }
 
 /** @brief Returns true if the instance is a vector (i.e., array) type
@@ -852,8 +850,6 @@ bool is_vector_type(Type t)
     default:
         return false;
     }
-
-    return false;
 }
 
 /** @brief Returns true if the instance is a constructor (i.e., Structure,
@@ -895,8 +891,6 @@ bool is_constructor_type(Type t)
     default:
         return true;
     }
-
-    return false;
 }
 
 /**
@@ -1142,8 +1136,6 @@ int glob(const char *c, const char *s)
             break;
         }
     }
-
-    return 1;   // Should never get here; this quiets gcc's warning
 }
 
 /** @name Security functions */

@@ -93,55 +93,42 @@ BaseType *DDXParser::factory(Type t, const string & name)
     switch (t) {
     case dods_byte_c:
         return d_factory->NewByte(name);
-        break;
 
     case dods_int16_c:
         return d_factory->NewInt16(name);
-        break;
 
     case dods_uint16_c:
         return d_factory->NewUInt16(name);
-        break;
 
     case dods_int32_c:
         return d_factory->NewInt32(name);
-        break;
 
     case dods_uint32_c:
         return d_factory->NewUInt32(name);
-        break;
 
     case dods_float32_c:
         return d_factory->NewFloat32(name);
-        break;
 
     case dods_float64_c:
         return d_factory->NewFloat64(name);
-        break;
 
     case dods_str_c:
         return d_factory->NewStr(name);
-        break;
 
     case dods_url_c:
         return d_factory->NewUrl(name);
-        break;
 
     case dods_array_c:
         return d_factory->NewArray(name);
-        break;
 
     case dods_structure_c:
         return d_factory->NewStructure(name);
-        break;
 
     case dods_sequence_c:
         return d_factory->NewSequence(name);
-        break;
 
     case dods_grid_c:
         return d_factory->NewGrid(name);
-        break;
 
     default:
         return 0;

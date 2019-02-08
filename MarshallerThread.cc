@@ -174,10 +174,16 @@ MarshallerThread::MarshallerThread() :
 
 MarshallerThread::~MarshallerThread()
 {
+    (void) pthread_mutex_lock(&d_out_mutex);
+#if 0
     int status = pthread_mutex_lock(&d_out_mutex);
     if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not lock m_mutex");
-    while (d_child_thread_count != 0) {
+#endif
+    // d_child_thread_count is passed into the thread in a structure (see write_thread())
+    // and is decremented by the ChildLocker dtor when write_thread() exits. jhrg 2/7/19
+    if (d_child_thread_count != 0) {
         (void) pthread_cond_wait(&d_out_cond, &d_out_mutex);
+        d_child_thread_count = 0;
 #if 0
         status = pthread_cond_wait(&d_out_cond, &d_out_mutex);
         if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not wait on m_cond");
