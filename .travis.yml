@@ -69,10 +69,12 @@ before_script:
 # The coverity_scan branch is built by the addon
 jobs:
   stages:
-  - name: build
-    if:  branch = master
-  - name: package
-    if:  branch = master
+  # - name: build
+  #   if:  branch = master
+    - name: scan
+      if:  branch = master
+  # - name: package
+  #  if:  branch = master
 
   include:
   - stage: build
@@ -93,7 +95,7 @@ jobs:
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
     - make distcheck -j7
 
-  - stage: package
+  - stage: scan
     addons: sonarcloud
     script:
     - export LIBDAP_BUILD=sonar
