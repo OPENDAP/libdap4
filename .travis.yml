@@ -96,7 +96,8 @@ jobs:
     - make distcheck -j7
 
   - stage: scan
-    addons: sonarcloud
+    addons: 
+      sonarcloud
     script:
     - export LIBDAP_BUILD=sonar
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
