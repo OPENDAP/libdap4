@@ -77,15 +77,6 @@ jobs:
      if:  branch = master
 
   include:
-  - stage: scan
-    addons: 
-      sonarcloud: 
-    script:
-    - export LIBDAP_BUILD=sonar
-    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
-    - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
-    - sonar-scanner -Dsonar.login=$SONAR_LOGIN
-        
   - stage: build
     script:
     - export LIBDAP_BUILD=main
@@ -104,6 +95,15 @@ jobs:
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
     - make distcheck -j7
 
+  - stage: scan
+    addons: 
+      sonarcloud: 
+    script:
+    - export LIBDAP_BUILD=sonar
+    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
+    - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
+    - sonar-scanner -Dsonar.login=$SONAR_LOGIN
+        
   - stage: package
     script: 
     - export LIBDAP_BUILD=deb
