@@ -83,7 +83,7 @@ jobs:
     script:
     - export LIBDAP_BUILD=sonar
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
-    - build-wrapper-macosx-x86 --out-dir bw-output make -j7
+    - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
     - sonar-scanner -Dsonar.login=$SONAR_LOGIN
         
   - stage: build
