@@ -1,3 +1,7 @@
+New for version 3.20.3
+
+Added support for a CI build of a debian package of libdap4
+
 News for version 3.20.2
 
 Added libdap::Array::rename_dim() for HK-247 (an issue in the BES)

@@ -1,3 +1,152 @@
+2019-02-12  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #85 from OPENDAP/sonar-travis
+	Sonar travis
+
+	test sonar via travis
+
+2019-02-11  James Gallagher  <jgallagher@opendap.org>
+
+	Added multi-thread option to the sonar properties file
+	[skip ci]
+
+2019-02-08  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #84 from OPENDAP/rpm-aws-cli
+	RPM aws cli
+
+	Modified build-rpm.sh to work with the CentOS 6 docker image
+	It has the aws cli tools buried in an odd place.
+
+	Modified the RPM CI build to use aws cli and not curl
+
+	Merge branch 'master' of https://github.com/opendap/libdap4 [skip ci]
+
+	Merge pull request #83 from OPENDAP/sonar
+	Sonar
+
+	Added to gitignore for sonarscan
+	[skip ci]
+
+	minor edit to the sonar-project.properties file
+
+	Sonar Scan changes
+
+2019-02-06  James Gallagher  <jgallagher@opendap.org>
+
+	Changes based on sonar scan
+
+2019-02-05  Nathan Potter  <ndp@opendap.org>
+
+	Fixed incorrect delete (changed to delete[]) in chunked_istream.h
+
+	Repaired incorrect 'throw new ...' calls.
+
+2019-01-30  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #82 from OPENDAP/travis-aws
+	Modified the .travis.yml to use aws and not curl.
+
+	Modified the .travis.yml to use aws and not curl.
+	The idea here is that maybe this will be a bit more robust and thus
+	cut down on spurious build errors. Testing here before in the bes.
+
+2019-01-29  Nathan Potter  <ndp@opendap.org>
+
+	Fixed typo [skip ci]
+
+2019-01-02  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Merge pull request #81 from OPENDAP/debian
+	Debian
+
+	Merge branch 'master' into debian
+
+	Travis passed, took out unnecessary code. Also changed the branch to "if branch = master"
+
+	Re-added the travis_build_dir
+
+	Checkpoint.
+
+	Checkpoint.
+
+	Changed directory to $prefix/
+
+	Forgot the / in /root
+
+	Trying to mv the deb package from /root/
+
+	Realized that the build-deb.sh file has a different value for $prefix
+
+2018-12-31  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Changed the directory the db package is put to $prefix/debbuild
+
+	I think the deb package is being place in root
+
+	Merge pull request #80 from OPENDAP/debian
+	Changed where travis looks for the libdap deb package
+
+	Trying to pinpoint libdap deb package...
+
+	Instead of trying to put the libdap deb build in a different
+	directory, will try to locate the deb package the docker build
+	generates.
+
+	Testing to see where libdap4 is put
+
+	Forgot "--env"...
+
+	Renamed the traivs dir
+
+	Added the TravisBuildDir environment
+
+2018-12-27  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Changed it so that the deb packgage is made in the Travis_build_dir
+
+	Merge pull request #79 from OPENDAP/debian
+	Reverted the directory back to $TRAVIS_BUILD_DIR/../
+
+	Reverted the directory back to $TRAVIS_BUILD_DIR/../
+
+2018-12-21  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Merge pull request #78 from OPENDAP/debian
+	Changed the name of the directotry for deb build.
+
+	Changed the name of the directotry for deb build.
+
+	Merge pull request #77 from OPENDAP/debian
+	Debian docker build
+
+	Moved debian packages to Dockerfile
+
+2018-12-21  Kodi Neumiller  <kodi@Udays-MacBook-Pro.local>
+
+	Forgot to set permissions for .sh file
+
+	Had the wrong name for the docker repository...
+
+	libdap debian docker build.
+
+2018-12-20  James Gallagher  <jgallagher@opendap.org>
+
+	Updated comments
+	[skip ci]
+
+2018-12-19  Kodi Neumiller  <kodi@Udays-MacBook-Pro.local>
+
+	Merge branch 'master' into debian
+
+2018-12-06  James Gallagher  <jgallagher@opendap.org>
+
+	Added DOI for 3.20.2
+	[skip ci]
+
+2018-12-05  James Gallagher  <jgallagher@opendap.org>
+
+	Updated version numbers and Documentation for 3.20.2
 2018-11-29  Slav Korolev  <slav.korolev@nasa.gov>
 
 	Corrected comments.
