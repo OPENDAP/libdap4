@@ -2,6 +2,8 @@ libdap (3.20.3-1) trusty; urgency=medium
 
   * Added debian build to Travis CI
 
+ -- James Gallagher <jgallagher@opendap.org>  Wed, 14 Feb 2019 20:00:00 +0700
+
 libdap (3.20.2-1) trusty; urgency=medium
 
   * Added libdap::Array::rename_dim()
