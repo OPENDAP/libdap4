@@ -893,43 +893,45 @@ bool bracket_projection(DDS &table, const char *name, int_list_list *indices)
 {
     BaseType *var = table.var(name);
     Sequence *seq; // used in last else-if clause
-
-    if (!var)
-        return false;
-
-    if (is_array_t(var)) {
-        /* calls to set_send_p should be replaced with
-         calls to DDS::mark so that arrays of Structures,
-         etc. will be processed correctly when individual
-         elements are projected using short names.
-         9/1/98 jhrg */
-        /* var->set_send_p(true); */
-        //table.mark(name, true);
-        // We don't call mark() here for an array. Instead it is called from
-        // within the parser. jhrg 10/10/08
-        process_array_indices(var, indices); // throws on error
-        delete_array_indices(indices);
+    bool ret_val = true;
+    try {
+	    if (!var) {
+	        ret_val = false;
+	    }
+	    else if (is_array_t(var)) {
+	        /* calls to set_send_p should be replaced with
+	         calls to DDS::mark so that arrays of Structures,
+	         etc. will be processed correctly when individual
+	         elements are projected using short names.
+	         9/1/98 jhrg */
+	        /* var->set_send_p(true); */
+	        //table.mark(name, true);
+	        // We don't call mark() here for an array. Instead it is called from
+	        // within the parser. jhrg 10/10/08
+	        process_array_indices(var, indices); // throws on error
+	    }
+	    else if (is_grid_t(var)) {
+	        process_grid_indices(var, indices);
+	        table.mark(name, true);
+	    }
+	    else if (is_sequence_t(var)) {
+	        table.mark(name, true);
+	        process_sequence_indices(var, indices);
+	    }
+	    else if ((seq = parent_is_sequence(table, name))) {
+	        process_sequence_indices(seq, indices);
+	        table.mark(name, true);
+	    }
+	    else {
+	        ret_val = false;
+	    }
+	    delete_array_indices(indices);
     }
-    else if (is_grid_t(var)) {
-        process_grid_indices(var, indices);
-        table.mark(name, true);
-        delete_array_indices(indices);
+    catch(...) {
+	    delete_array_indices(indices);
+	    throw;
     }
-    else if (is_sequence_t(var)) {
-        table.mark(name, true);
-        process_sequence_indices(var, indices);
-        delete_array_indices(indices);
-    }
-    else if ((seq = parent_is_sequence(table, name))) {
-        process_sequence_indices(seq, indices);
-        table.mark(name, true);
-        delete_array_indices(indices);
-    }
-    else {
-        return false;
-    }
-
-    return true;
+    return ret_val;
 }
 
 // Given three values (I1, I2, I3), all of which must be integers, build an
