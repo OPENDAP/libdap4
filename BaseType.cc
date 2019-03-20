@@ -1277,14 +1277,12 @@ BaseType::d4_ops(BaseType *, int)
 }
 
 /**
- * @brief How many bytes does this use
+ * @brief How many bytes does this variable use
  * Return the number of bytes of storage this variable uses. For scalar types,
  * this is pretty simple (an int32 uses 4 bytes, etc.). For arrays and Constructors,
  * it is a bit more complex. Note that a scalar String variable uses sizeof(String*)
- * bytes, not the length of the string. In other words, the value returned is
- * independent of the type. Also note width() of a String array returns the number of
- * elements in the array times sizeof(String*). That is, each different array size
- * is a different data type.
+ * bytes, not the length of the string value. The width() of a String array returns
+ * the number of elements in the array times sizeof(String*).
  *
  * @param constrained Should the current constraint be taken into account?
  * @return Bytes of storage
@@ -1293,9 +1291,6 @@ unsigned int
 BaseType::width(bool /* constrained */) const
 {
     throw InternalErr(__FILE__, __LINE__, "not implemented");
-#if 0
-    return width(constrained);
-#endif
 }
 
 } // namespace libdap
