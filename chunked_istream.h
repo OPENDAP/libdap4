@@ -65,7 +65,7 @@ private:
 	 * chars.
 	 */
 	void m_buffer_alloc() {
-		delete d_buffer;
+		delete[] d_buffer;
 		d_buffer = new char[d_buf_size];
 		setg(d_buffer, 	// beginning of put back area
 			 d_buffer, 	// read position

@@ -4,7 +4,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.19.1, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.20.3, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["4.0"], [Highest DAP version implemented?])
 AC_SUBST(DAP_PROTOCOL_VERSION)
 
@@ -20,6 +20,13 @@ AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
 AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
 AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and version combined])
 AC_SUBST(DVR)
+
+dnl Use one of these two blocks to build a DAP2 or DAP 3.2 DDX
+dnl AC_DEFINE(DAP2_DDX, 1, [Build the DAP 2 version of the DDX])
+dnl AC_SUBST(DAP2_DDX)
+AC_DEFINE(DAP3_2_DDX, 1, [Build the DAP 3.2 version of the DDX])
+AC_SUBST(DAP3_2_DDX)
+
 
 PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
 PACKAGE_MINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
@@ -45,8 +52,8 @@ dnl increment AGE, set REVISION to 0.
 dnl Interfaces removed or changed (BAD, breaks upward compatibility):
 dnl ==> Increment CURRENT, set AGE and REVISION to 0.
 
-DAPLIB_CURRENT=25
-DAPLIB_AGE=0
+DAPLIB_CURRENT=27
+DAPLIB_AGE=2
 DAPLIB_REVISION=1
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)
@@ -57,7 +64,7 @@ AC_SUBST(LIBDAP_VERSION)
 
 CLIENTLIB_CURRENT=7
 CLIENTLIB_AGE=1
-CLIENTLIB_REVISION=7
+CLIENTLIB_REVISION=10
 AC_SUBST(CLIENTLIB_CURRENT)
 AC_SUBST(CLIENTLIB_AGE)
 AC_SUBST(CLIENTLIB_REVISION)
@@ -67,13 +74,19 @@ AC_SUBST(CLIENTLIB_VERSION)
 
 SERVERLIB_CURRENT=13
 SERVERLIB_AGE=6
-SERVERLIB_REVISION=7
+SERVERLIB_REVISION=10
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)
 AC_SUBST(SERVERLIB_REVISION)
 
 SERVERLIB_VERSION="$SERVERLIB_CURRENT:$SERVERLIB_REVISION:$SERVERLIB_AGE"
 AC_SUBST(SERVERLIB_VERSION)
+
+dnl Suppress the default values automake supplies for these. You can still
+dnl set them on the command line, however. (e.g., ./configure ... CXXFLAGS="-g -o3").
+dnl jhrg 2/6/18
+: ${CFLAGS=""}
+: ${CXXFLAGS=""}
 
 dnl Checks for programs.
 AC_PROG_AWK
@@ -84,7 +97,7 @@ dnl Call this gnulib macro right after a working C Compiler is found
 gl_EARLY
 
 dnl echo "CC = $CC"
-AS_IF([test x$CC = xgcc],
+AS_IF([test "x$CC" = xgcc],
       [AM_CONDITIONAL([COMPILER_IS_GCC],[true])],
       [AM_CONDITIONAL([COMPILER_IS_GCC],[false])])
 
@@ -157,8 +170,8 @@ AC_SUBST([ac_word_order])
 DODS_CHECK_SIZES
 
 AC_ARG_ENABLE([runtime-endian-check],
-    AC_HELP_STRING([--enable-runtime-endian-check], [Enable runtime tests for big- or little-endian byte order (default is NO)])
-)
+    [AC_HELP_STRING([--enable-runtime-endian-check], 
+                    [Enable runtime tests for big- or little-endian byte order (default is NO)])])
 
 AS_IF([test "x$enable_runtime_endian_check" = "xyes"], [
     dnl Do the stuff needed for enabling the feature
@@ -176,7 +189,7 @@ gl_MODULES(regex btyeswap)
 
 gl_INIT
 
-AC_ARG_WITH(curl,[  --with-curl=PFX   Prefix where curl/libcurl is installed (optional). This will override pkgconfig, etc.],
+AC_ARG_WITH([curl], [AC_HELP_STRING([--with-curl=pfx], [curl/libcurl prefix; overrides other tests including pkgconfig])],
             with_curl_prefix="$withval", with_curl_prefix="")
 
 dnl I wrote these checks because we need the *-config scripts to build, so 
@@ -303,6 +316,11 @@ AC_CHECK_LIB([uuid], [uuid_generate],
 	[UUID_LIBS=""])
 AC_SUBST([UUID_LIBS])
 
+AC_CHECK_LIB([crypto], [OpenSSL_add_all_algorithms], 
+	[CRYPTO_LIBS="-lcrypto"],
+	[CRYPTO_LIBS=""])
+AC_SUBST([CRYPTO_LIBS])
+
 AM_PATH_CPPUNIT(1.12.0,
 	[AM_CONDITIONAL([CPPUNIT], [true])],
 	[
@@ -334,13 +352,22 @@ AS_IF([test x$enable_dap4 = xyes], [
     AM_CONDITIONAL([DAP4_DEFINED], [false])
 ])
 
-AC_ARG_ENABLE([developer],
-	[AS_HELP_STRING([--enable-developer],
-				    [Build a debug (-g3 -O0) version of this code and include assert() calls in the code (default is no)])],
-    [build_developer=${enableval}],
-    [build_developer=no])
+# AS_IF([test m4_version_compare(m4_defn([AC_AUTOCONF_VERSION]),[2.64]) -ge 0],
+#	[AX_CHECK_COMPILE_FLAG([-fsanitize=address], [has_asan=yes], [has_asan=no])])
 
-AS_IF([test x$build_developer = xyes],
+AC_ARG_ENABLE([asan], 
+    [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
+
+AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
+      [AC_MSG_NOTICE([Building Address Sanitizer version])
+       AM_CONDITIONAL([USE_ASAN], [true])],
+      [AC_MSG_NOTICE([Not building Address Sanitizer version])
+       AM_CONDITIONAL([USE_ASAN], [false])])
+
+AC_ARG_ENABLE([developer],
+    [AS_HELP_STRING([--enable-developer], [Build for debug (-g3 -O0); include assert() calls (default: no)])])
+
+AS_IF([test x$enable_developer = xyes],
       [AC_MSG_NOTICE([Building developer version])
        AM_CONDITIONAL([BUILD_DEVELOPER], [true])],
       [AC_MSG_NOTICE([Not building developer version])
@@ -348,6 +375,10 @@ AS_IF([test x$build_developer = xyes],
        AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])])
 
 DODS_GCOV_VALGRIND
+
+# Find valgrind, if available, and add targets for it.
+# AX_VALGRIND_DFLT([sgcheck], [off])
+# AX_VALGRIND_CHECK
 
 dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
 

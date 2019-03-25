@@ -53,6 +53,7 @@
 #include "DDS.h"	// Included so DMRs can be built using a DDS for 'legacy' handlers
 
 #include "debug.h"
+#include "DapIndent.h"
 
 /**
  * DapXmlNamespaces
@@ -253,12 +254,16 @@ void DMR::build_using_dds(DDS &dds)
     // Now copy the global attributes
     root()->attributes()->transform_to_dap4(dds.get_attr_table());
 }
+
 #if 1
 /**
  * If we have a DMR that includes Attributes, use it to build the DDS. This
  * will copy all of the variables in the DMR into the DDS using
  * BaseType::transform_to_dap2(), so the actual types added can be
  * controlled by code that specializes the various type classes.
+ *
+ * @todo Fix this so that it does not take a reference to a DMR - since
+ * this is a method of DMR and seems to operate on *this.
  *
  * @param dds Read variables and Attributes from this DDS
  */
@@ -268,18 +273,18 @@ DDS *DMR::getDDS(DMR &dmr)
     D4Group *root = dmr.root();
 
     BaseTypeFactory *btf = new BaseTypeFactory();
-    DDS *dds = new DDS(btf,dmr.name());
+    DDS *dds = new DDS(btf, dmr.name());
     dds->filename(dmr.filename());
     AttrTable *dds_at = &(dds->get_attr_table());
 
     // Now copy the global attributes
     // D4Attributes::load_AttrTable(dds_at,root->attributes());
 
-    vector<BaseType *> *top_vars = root->transform_to_dap2(dds_at,true);
+    vector<BaseType *> *top_vars = root->transform_to_dap2(dds_at, true);
 
     vector<BaseType *>::iterator vIter = top_vars->begin();
     vector<BaseType *>::iterator vEnd = top_vars->end();
-    for( ; vIter!=vEnd ; vIter++){
+    for (; vIter != vEnd; vIter++) {
         dds->add_var(*vIter);
     }
 
@@ -289,21 +294,21 @@ DDS *DMR::getDDS(DMR &dmr)
     vector<BaseType *> dropped_vars;
     for (D4Group::Vars_iter i = root->var_begin(), e = root->var_end(); i != e; ++i)
     {
-        DBG( cerr << __func__ << "() - Processing top level variable '"<< (*i)->type_name() << " " <<  (*i)->name() << "' to DDS." << endl; );
+        DBG( cerr << __func__ << "() - Processing top level variable '"<< (*i)->type_name() << " " << (*i)->name() << "' to DDS." << endl; );
         vector<BaseType *> *new_vars = (*i)->transform_to_dap2(&(dds->get_attr_table()));
-        if(new_vars!=0){
+        if(new_vars!=0) {
             vector<BaseType*>::iterator vIter = new_vars->begin();
             vector<BaseType*>::iterator end = new_vars->end();
-            for( ; vIter!=end ; vIter++ ){
+            for(; vIter!=end; vIter++ ) {
                 BaseType *new_var = (*vIter);
                 DBG( cerr << __func__ << "() - Adding variable name: '"<< new_var->name() << "' " <<
-                    "type: " <<  new_var->type() << " " <<
+                    "type: " << new_var->type() << " " <<
                     "type_name: " << new_var->type_name() << " to DDS." << endl; );
                 dds->add_var_nocopy(new_var);
                 Grid *grid = dynamic_cast <Grid *>(new_var);
-                if(grid){
+                if(grid) {
                     Grid::Map_iter m = grid->map_begin();
-                    for( ; m != grid->map_end() ; m++){
+                    for(; m != grid->map_end(); m++) {
                         shared_dim_candidates.insert((*m)->name());
                     }
                 }
@@ -312,12 +317,12 @@ DDS *DMR::getDDS(DMR &dmr)
             delete new_vars;
         }
         else {
-            DBG( cerr << __func__ << "Adding variable '"<< (*i)->type_name() << " " <<  (*i)->name() << "' to drop list." << endl; );
+            DBG( cerr << __func__ << "Adding variable '"<< (*i)->type_name() << " " << (*i)->name() << "' to drop list." << endl; );
             dropped_vars.push_back((*i));
         }
     }
     AttrTable *dv_table = Constructor::make_dropped_vars_attr_table(&dropped_vars);
-    if(dv_table){
+    if(dv_table) {
         DBG( cerr << __func__ << "() - Adding dropped variable AttrTable." << endl;);
         dds_at->append_container(dv_table,dv_table->get_name());
     }
@@ -325,15 +330,15 @@ DDS *DMR::getDDS(DMR &dmr)
     // Get all the child groups.
     D4Group::groupsIter gIter = root->grp_begin();
     D4Group::groupsIter gEnd = root->grp_end();
-    for( ; gIter!=gEnd ; gIter++){
+    for(; gIter!=gEnd; gIter++) {
         D4Group *grp = *gIter;
         DBG( cerr << __func__ << "() - Processing D4Group " << grp->name() << endl;);
         vector<BaseType *> *d2_vars = grp->transform_to_dap2(dds_at);
-        if(d2_vars){
+        if(d2_vars) {
             DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variables." << endl;);
             vector<BaseType *>::iterator vIter = d2_vars->begin();
             vector<BaseType *>::iterator vEnd = d2_vars->end();
-            for( ; vIter!=vEnd; vIter++){
+            for(; vIter!=vEnd; vIter++) {
                 DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variable: " << (*vIter)->name() << endl;);
                 dds->add_var(*vIter);
             }
@@ -341,21 +346,22 @@ DDS *DMR::getDDS(DMR &dmr)
     }
 #endif
 
-
     DBG( cerr << __func__ << "() - END" << endl;);
     return dds;
 }
-
 
 DDS *DMR::getDDS()
 {
     return DMR::getDDS(*this);
 }
-
-
-
 #endif
 
+/**
+ * Get the root group for this DMR. This accessor allocates the root group
+ * if one does not exist using the factory class bound to this DMR
+ *
+ * @return A pointer to the root group.
+ */
 D4Group *
 DMR::root()
 {

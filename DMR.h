@@ -31,8 +31,6 @@
 #include <string>
 #include <vector>
 
-//#include "D4Group.h"
-//#include "XMLWriter.h"
 #include "DapObj.h"
 
 namespace libdap
@@ -58,25 +56,25 @@ private:
     D4BaseTypeFactory *d_factory;
 
     /// The name of the dataset. This should not be the pathname to a file
-    string d_name;
+    std::string d_name;
     /// The pathname or other system identifier for the dataset
-    string d_filename;
+    std::string d_filename;
 
     /// DAP protocol major version number. Should be '4'
     int d_dap_major;
     /// DAP protocol minor version number.
     int d_dap_minor;
     /// String version of the DAP protocol number
-    string d_dap_version;
+    std::string d_dap_version;
 
     /// The version of the DMR document
-    string d_dmr_version;
+    std::string d_dmr_version;
 
     /// The URL for the request base
-    string d_request_xml_base;
+    std::string d_request_xml_base;
 
     /// The namespace to use when printing the XML serialization
-    string d_namespace;
+    std::string d_namespace;
 
     /// The maximum response size (in Kilo bytes)
     long d_max_response_size;
@@ -92,7 +90,7 @@ protected:
 public:
     DMR();
     DMR(const DMR &dmr);
-    DMR(D4BaseTypeFactory *factory, const string &name = "");
+    DMR(D4BaseTypeFactory *factory, const std::string &name = "");
 
     DMR(D4BaseTypeFactory *factory, DDS &dds);
 
@@ -114,46 +112,46 @@ public:
      * error messages.
      */
     //@{
-    string name() const { return d_name; }
-    void set_name(const string &n) { d_name = n; }
+    std::string name() const { return d_name; }
+    void set_name(const std::string &n) { d_name = n; }
     //@}
 
     /** Get/set the factory which makes instances of the variables.
         Specialize D4BaseTypeFactory so that a DMR will be
-        populated with your client or server's specialized types.*/
+        populated with your client's or server's specialized types.*/
     //@{
     virtual D4BaseTypeFactory *factory() { return d_factory; }
     virtual void set_factory(D4BaseTypeFactory *f) { d_factory = f; }
     //@}
 
     /** get/set the dataset's 'filename.' The filename is a string that can
-     * be used to access the dataset's actual data store (it's usually a
-     * pathname to a file, but it might be a database key.
+     * be used to access the dataset via some data store (it's usually a
+     * pathname to a file, but it might be a database key).
      */
     //@{
-    string filename() const { return d_filename; }
-    void set_filename(const string &fn) { d_filename = fn;}
+    std::string filename() const { return d_filename; }
+    void set_filename(const std::string &fn) { d_filename = fn;}
     //@}
 
-    string dap_version() const { return d_dap_version; }
-    void set_dap_version(const string &version_string);
+    std::string dap_version() const { return d_dap_version; }
+    void set_dap_version(const std::string &version_string);
     int dap_major() const { return d_dap_major; }
     int dap_minor() const { return d_dap_minor; }
 
-    string dmr_version() const { return d_dmr_version; }
-    void set_dmr_version(const string &v) { d_dmr_version = v; }
+    std::string dmr_version() const { return d_dmr_version; }
+    void set_dmr_version(const std::string &v) { d_dmr_version = v; }
 
-    /// Get the URL that will return this DMR/DDX/DataThing
-    string request_xml_base() const { return d_request_xml_base; }
+    /// Get the URL that will return this DMR
+    std::string request_xml_base() const { return d_request_xml_base; }
 
     /// @see get_request_xml_base
-    void set_request_xml_base(const string &xb) { d_request_xml_base = xb; }
+    void set_request_xml_base(const std::string &xb) { d_request_xml_base = xb; }
 
-    /// Get the namespace associated with the DDS - likely set only by DDX responses
-    string get_namespace() const { return d_namespace; }
+    /// Get the namespace associated with the DMR
+    std::string get_namespace() const { return d_namespace; }
 
-    /// Set the namespace for this DDS/DDX object/response
-    void set_namespace(const string &ns) { d_namespace = ns; }
+    /// Set the namespace for this DMR
+    void set_namespace(const std::string &ns) { d_namespace = ns; }
 
     // TODO Move the response_limit methods to D4ResponseBuilder? jhrg 5/1/13
     /// Get the maximum response size, in KB. Zero indicates no limit.
@@ -173,15 +171,14 @@ public:
      */
     D4Group *root();
 
+    // TODO Remove this static method? If we have a DMR, why not use the
+    // getDDS() method below? jhrg 2.28.18
     static DDS *getDDS(DMR &dmr);
     virtual DDS *getDDS();
 
-
-
-
     void print_dap4(XMLWriter &xml, bool constrained = false);
 
-    virtual void dump(ostream &strm) const ;
+    virtual void dump(std::ostream &strm) const ;
 };
 
 } // namespace libdap

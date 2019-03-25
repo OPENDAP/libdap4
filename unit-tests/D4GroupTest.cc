@@ -3,7 +3,7 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Copyright (c) 2002,2003,2013 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
@@ -31,6 +31,7 @@
 #include "D4Group.h"
 #include "D4Attributes.h"
 
+#include "crc.h"
 #include "Byte.h"
 #include "Int64.h"
 #include "Structure.h"
@@ -123,13 +124,91 @@ public:
         g->attributes()->add_attribute_nocopy(attr);
     }
 
+    void test_cons()
+    {
+        D4Group g1 = D4Group("a", "b");
+        CPPUNIT_ASSERT(g1.name() == "a" && g1.dataset() == "b");
+    }
+
+    void test_equals()
+    {
+        D4Group g1 = D4Group("a", "b");
+        D4Group g2 = D4Group("c", "d");
+        g2 = g1;
+        CPPUNIT_ASSERT(g2.name() == "a" && g2.dataset() == "b");
+        g2 = g2;
+        CPPUNIT_ASSERT(g2.name() == "a" && g2.dataset() == "b");
+    }
+
+    void test_is_linear()
+    {
+        D4Group g1 = D4Group("a", "b");        
+        CPPUNIT_ASSERT(!g1.is_linear());
+    }
+
+    void test_errors()
+    {
+        D4Group g1 = D4Group("a", "b");
+        Crc32 cs;
+        Constructor *c = &g1;
+        CPPUNIT_ASSERT_THROW(g1.find_dim("/"), InternalErr);
+        CPPUNIT_ASSERT_THROW(g1.find_enum_def("/"), InternalErr);
+        CPPUNIT_ASSERT_THROW(g1.find_var("/"), InternalErr);
+        CPPUNIT_ASSERT_THROW(g1.add_var(0), InternalErr);
+        CPPUNIT_ASSERT_THROW(c->compute_checksum(cs), InternalErr);
+    }
+
+    void test_riter()
+    {
+        load_group_with_scalars(root);
+        int count = 0;
+        for (Constructor::Vars_riter r = root->var_rbegin(); r != root->var_rend(); r++) {
+            CPPUNIT_ASSERT((count == 0 && (*r)->name() == "i64") || (count == 1 && (*r)->name() == "b"));
+            count++;
+        }
+    }
+    
+    void test_get_iter()
+    {
+        load_group_with_scalars(root);
+        int count = 0;
+        for (Constructor::Vars_iter r = root->get_vars_iter(0); r != root->var_end(); r++) {
+            CPPUNIT_ASSERT((count == 0 && (*r)->name() == "b") || (count == 1 && (*r)->name() == "i64"));
+            count++;
+        }
+    }
+
+    void test_get_var_index()
+    {
+        load_group_with_scalars(root);
+        BaseType *bt = root->get_var_index(0);
+        CPPUNIT_ASSERT(bt->name() == "b");
+        bt = root->get_var_index(1);
+        CPPUNIT_ASSERT(bt->name() == "i64");
+    }
+
+    void test_delete_var()
+    {
+        load_group_with_scalars(root);
+        Constructor::Vars_iter r = root->get_vars_iter(0);        
+        root->del_var(r);
+        BaseType *bt = root->get_var_index(0);
+        CPPUNIT_ASSERT(bt->name() == "i64");        
+    }
+
+    void test_size()
+    {
+        D4Group g1 = D4Group("a", "b");
+        CPPUNIT_ASSERT(g1.request_size(true) == 0);
+    }
+
     // An empty D4Group object prints nothing; the XMLWriter class adds
     // a xml doc preface.
     void test_print_empty()
     {
         root->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_empty.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_empty.xml");
         DBG(cerr << "test_print_empty: doc: " << doc << endl);
         DBG(cerr << "test_print_empty: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -139,7 +218,7 @@ public:
     {
         named->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_empty.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_empty.xml");
         DBG(cerr << "test_print_named_empty: doc: " << doc << endl);
         DBG(cerr << "test_print_named_empty: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -151,7 +230,7 @@ public:
 
         root->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_with_scalars.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_with_scalars.xml");
         DBG(cerr << "test_print_with_vars: doc: " << doc << endl);
         DBG(cerr << "test_print_with_vars: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -164,7 +243,7 @@ public:
         named->print_dap4(*xml);
 
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_with_scalars.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_with_scalars.xml");
         DBG(cerr << "test_print_named_with_vars: doc: " << doc << endl);
         DBG(cerr << "test_print_named_with_vars: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -177,7 +256,7 @@ public:
 
         root->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_with_scalars_and_stuff.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_with_scalars_and_stuff.xml");
         DBG(cerr << "test_print_with_vars_and_stuff: doc: " << doc << endl);
         DBG(cerr << "test_print_with_vars_and_stuff: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -190,7 +269,7 @@ public:
 
         named->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_with_scalars_and_stuff.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_with_scalars_and_stuff.xml");
         DBG(cerr << "test_print_named_with_vars_and_stuff: doc: " << doc << endl);
         DBG(cerr << "test_print_named_with_vars_and_stuff: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -241,7 +320,7 @@ public:
 
         root->print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
         DBG(cerr << "test_print_with_vars_and_stuff: doc: " << doc << endl);
         DBG(cerr << "test_print_with_vars_and_stuff: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -261,7 +340,7 @@ public:
 
         lhs.print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
         DBG(cerr << "test_print_copy_ctor: doc: " << doc << endl);
         DBG(cerr << "test_print_copy_ctor: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -281,7 +360,7 @@ public:
 
         lhs.print_dap4(*xml);
         string doc = xml->get_doc();
-        string baseline = readTestBaseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
+        string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_everything.xml");
         DBG(cerr << "test_print_assignment: doc: " << doc << endl);
         DBG(cerr << "test_print_assignment: baseline: " << baseline << endl);
         CPPUNIT_ASSERT(doc == baseline);
@@ -337,8 +416,26 @@ public:
         CPPUNIT_ASSERT(btp && btp->FQN() == "/child/p.c.b");
     }
 
+    void test_find_var_2()
+    {
+        // grp1 = new D4Group("Joey");
+        // grp1->dims()->add_dim_nocopy(new D4Dimension("lat", 1024));        
+        // grp1->add_var_nocopy(new Byte("byte_var"));
+        
+    }        
+
     CPPUNIT_TEST_SUITE (D4GroupTest);
 
+    CPPUNIT_TEST (test_equals);
+    CPPUNIT_TEST (test_cons);
+    CPPUNIT_TEST (test_is_linear);
+    CPPUNIT_TEST (test_errors);
+    CPPUNIT_TEST (test_size);
+    CPPUNIT_TEST (test_riter);
+    CPPUNIT_TEST (test_get_iter);
+    CPPUNIT_TEST (test_get_var_index);
+    CPPUNIT_TEST (test_delete_var);
+    
     CPPUNIT_TEST (test_print_empty);
 
     CPPUNIT_TEST (test_print_named_empty);
@@ -359,6 +456,7 @@ public:
     CPPUNIT_TEST (test_fqn_2);
     CPPUNIT_TEST (test_fqn_3);
     CPPUNIT_TEST (test_fqn_4);
+    CPPUNIT_TEST (test_find_var_2);
 
     CPPUNIT_TEST_SUITE_END();
 };

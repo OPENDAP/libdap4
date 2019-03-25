@@ -7,6 +7,4 @@ Attributes {
         Float32 scale_factor 1.2;
         Int32 coefs 2, 3, 4;
     }
-    j {
-    }
 }

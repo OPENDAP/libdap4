@@ -50,6 +50,7 @@
 
 #include "util.h"
 #include "InternalErr.h"
+#include "DapIndent.h"
 
 namespace libdap {
 
@@ -75,8 +76,6 @@ XDRFileMarshaller &
 XDRFileMarshaller::operator=(const XDRFileMarshaller &)
 {
     throw InternalErr( __FILE__, __LINE__, "Copy operator not implemented.");
-
-    return *this;
 }
 
 XDRFileMarshaller::~XDRFileMarshaller()

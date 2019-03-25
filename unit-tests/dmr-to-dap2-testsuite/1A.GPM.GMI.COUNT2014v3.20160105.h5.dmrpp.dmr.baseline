@@ -1,0 +1,2499 @@
+Attributes {
+    /gmi1aHeader/sampleRangeFile {
+        String DimensionNames "dim7,dim6";
+        String CodeMissingValue "65535";
+    }
+    /S2/Longitude {
+        String DimensionNames "nscan2,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/moonVectorInstFrame {
+        String DimensionNames "nscan2,GMIxyz";
+        String Units "counts";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/ephemerisUsed {
+        String DimensionNames "nscan1,dim10";
+        String CodeMissingValue "50";
+    }
+    /S2/coldSky {
+        String DimensionNames "nscan2,npixelcs,nchannel2";
+        String CodeMissingValue "0";
+    }
+    /S2/sunGlintAngle {
+        String DimensionNames "nscan2,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/Latitude {
+        String DimensionNames "nscan2,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/hotLoad {
+        String DimensionNames "nscan2,npixelht,nchannel2";
+        String CodeMissingValue "0";
+    }
+    /S2/earthView {
+        String DimensionNames "nscan2,npixelev,nchannel2";
+        String CodeMissingValue "0";
+    }
+    /S2/solarAzimuthAngle {
+        String DimensionNames "nscan2,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/satAzimuthAngle {
+        String DimensionNames "nscan2,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/solarZenAngle {
+        String DimensionNames "nscan2,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/incidenceAngle {
+        String DimensionNames "nscan2,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/ScanTime/MilliSecond {
+        String DimensionNames "nscan1";
+        String Units "ms";
+        String CodeMissingValue "-9999";
+    }
+    /S2/ScanTime/Minute {
+        String DimensionNames "nscan1";
+        String Units "minutes";
+        String CodeMissingValue "0";
+    }
+    /S2/ScanTime/Year {
+        String DimensionNames "nscan1";
+        String Units "years";
+        String CodeMissingValue "-9999";
+    }
+    /S2/ScanTime/SecondOfDay {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "-9999.900000";
+    }
+    /S2/ScanTime/Second {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "0";
+    }
+    /S2/ScanTime/DayOfYear {
+        String DimensionNames "nscan1";
+        String Units "days";
+        String CodeMissingValue "-9999";
+    }
+    /S2/ScanTime/Hour {
+        String DimensionNames "nscan1";
+        String Units "hours";
+        String CodeMissingValue "0";
+    }
+    /S2/ScanTime/Month {
+        String DimensionNames "nscan1";
+        String Units "months";
+        String CodeMissingValue "0";
+    }
+    /S2/ScanTime/DayOfMonth {
+        String DimensionNames "nscan1";
+        String Units "days";
+        String CodeMissingValue "0";
+    }
+    /S2/navigation/scPos {
+        String DimensionNames "nscan1,XYZ";
+        String Units "m";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/timeMidScanOffset {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "-9999.900000";
+    }
+    /S2/navigation/scAttPitchGeod {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/scVel {
+        String DimensionNames "nscan1,XYZ";
+        String Units "m/s";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/scAttRollGeod {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/scAttRollGeoc {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/scAlt {
+        String DimensionNames "nscan1";
+        String Units "m";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/scLon {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/scAttYawGeoc {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/scAttPitchGeoc {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/dprAlt {
+        String DimensionNames "nscan1";
+        String Units "m";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/greenHourAng {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/scLat {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/scAttYawGeod {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/navigation/timeMidScan {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "-9999.900000";
+    }
+    /S2/sunData/phaseFromOrbitMidnight {
+        String DimensionNames "nscan2";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/sunData/sunEarthSeparation {
+        String DimensionNames "nscan2";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/sunData/earthAngularRadius {
+        String DimensionNames "nscan2";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/sunData/phaseOfEclipseExit {
+        String DimensionNames "nscan2";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/sunData/solarBetaAngle {
+        String DimensionNames "nscan2";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/sunData/timeSinceEclipseEntry {
+        String DimensionNames "nscan2";
+        String Units "s";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/sunData/orbitRate {
+        String DimensionNames "nscan2";
+        String Units "degrees/s";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/sunData/sunVectorInBodyFrame {
+        String DimensionNames "nscan2,";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S2/scanStatus/operationalMode {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S2/scanStatus/modeStatus {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S2/scanStatus/targetSelectionMidScan {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S2/scanStatus/geoWarning {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "-9999";
+    }
+    /S2/scanStatus/pointingStatus {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "-9999";
+    }
+    /S2/scanStatus/geoError {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "-9999";
+    }
+    /S2/scanStatus/dataQuality {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S2/scanStatus/acsModeMidScan {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S2/scanStatus/missing {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S2/scanStatus/FractionalGranuleNumber {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "-9999.900000";
+    }
+    /S2/scanStatus/SCorientation {
+        String DimensionNames "nscan2";
+        String Units "degrees";
+        String CodeMissingValue "-9999";
+    }
+    /S3/version {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/Longitude {
+        String DimensionNames "nscan2";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S3/type {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/sequenceFlag {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/packetSequenceCount {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "-9999";
+    }
+    /S3/APID {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "-9999";
+    }
+    /S3/ephemerisUsed {
+        String DimensionNames "nscan1,dim10";
+        String CodeMissingValue "50";
+    }
+    /S3/secHeaderFlag {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/numPacketSegments {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/packetLength {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/Latitude {
+        String DimensionNames "nscan2";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S3/spare {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/instrTimeSeconds {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/instrTimeSubseconds {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RDRversion {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "-9999";
+    }
+    /S3/SMPL_INFO/EARTH_18G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_166G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_183G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_183G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_10G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_166G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_166G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_23G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_10G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_23G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_166G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_10G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_183G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_89G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_23G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_36G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_18G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_183G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_10G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_10G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_18G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_89G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_36G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_18G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_89G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_23G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_36G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_183G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_23G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_10G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_36G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_23G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_89G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_36G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_89G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_166G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_18G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_166G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/HLOAD_36G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_18G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/SMPL_INFO_VALID {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/EARTH_89G_STRT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SMPL_INFO/CSKY_183G_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/TAM2/timeOffset {
+        String DimensionNames "nscan2";
+        String Units "s";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S3/TAM2/Vx {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/TAM2/Vy {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/TAM2/Vz {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/RSHSK_STATUS/RS_EPC_15V {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RS_CALRES_2 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_89GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_23GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/BATC_CALRES_1 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/NDIODE_MODE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_CMD_AFTER {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RS_CALRES_1 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/NDIODE10GHZSNUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_SCI_ADC_LP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_36GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RS_EPC_5V {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RS_EPC_NEG12V {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RS_EPC_7V {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_SAMP_OVLP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RESERVED1 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_HSK_ADC_LP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RS_EPC_POS12V {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_166GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_INVLD_CMD {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_183GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_18GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RS_EPC_ISENS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_NDIODE_ST {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/BATC_CALRES_2 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_STATUS/RSST_10GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GSDR_TIME/G_TCU_SECS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GSDR_TIME/G_TCF_LEAP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GSDR_TIME/G_TCF_SUBSECS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GSDR_TIME/G_TCF_SIGN {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GSDR_TIME/G_TCF_SECS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GSDR_TIME/G_TC_PULSE_SECS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GSDR_TIME/GPS_TCU_SUBS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GSDR_TIME/G_TCU_SUBS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GSDR_TIME/G_TCF_SC_SUBSEC {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GSDR_TIME/G_TC_PULSE_SUBS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GSDR_TIME/GPS_TCU_SECS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GSDR_TIME/G_TCF_SC_SECS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/RESERVED2 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_VB183GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_V23GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_H166GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_V36GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_H18GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_H36GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_VA183GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_V166GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_V18GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_V10GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_H89GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_H10GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_GAIN/GAIN_V89GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_RS_MR2 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_HL_TRAY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_166GHZ_LO {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_H18GHZ_ND {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_SMASPUNHSG {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_89GHZ_LO {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_V89GHZMXR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_H166GHZMXR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_FEED {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_RS_EDC {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_36GHZRCVR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_183GHZ_LO {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_183GHZRCVR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_18GHZRCVR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_89GHZRCVR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_H10GHZ_ND {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_V166GHZMXR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_166GHZRCVR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_V18GHZ_ND {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_H89GHZMXR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_V36GHZ_ND {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_23GHZRCVR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_H36GHZ_ND {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_V10GHZ_ND {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_183GHZMXR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_RS_EPC {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_RS_MR1 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_TEMP/TEMP_10GHZRCVR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/RS_1MHZ_REF {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/RS_SCAN_START {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/BOOT_BANK {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/SCE_FORCE_SEL {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/FPGA_ACCSS_ERR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/FPGA_RST_REASON {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/SC_1HZ_REF {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/SCE_A_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/IE_CMD_ERR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/SCE_RSP_RDY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/IE_RSP_ERR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/EEPROM_BUSY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/ERR_HDL_FAILURE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/CURRENT_BANK {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/EDAC_ENABLE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/SCE_B_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/SCE_A_ACTIVE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/VERSION_MIN {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/FPGA_MODE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/RS_TLM_ERR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/RS_CLK_ERR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/VERSION_MAJ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/SCE_B_ACTIVE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/SCE_RSP_PROG {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/FPGA_SCE_RX_EN {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/RS_TLM_PROG {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/CRASH_REASON {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/FPGA_RS_RX_EN {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/IE_PKT_ERR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/IE_TLM_PROG {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/RS_PKT_ERR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/IE_TLM_ERR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/RESET_REASON {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/WDOG_ENABLE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/FPGA_IE_RX_EN {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SENSOR_INFO/KEEP_ALIVE_CNT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/ScanTime/MilliSecond {
+        String DimensionNames "nscan1";
+        String Units "ms";
+        String CodeMissingValue "-9999";
+    }
+    /S3/ScanTime/Minute {
+        String DimensionNames "nscan1";
+        String Units "minutes";
+        String CodeMissingValue "0";
+    }
+    /S3/ScanTime/Year {
+        String DimensionNames "nscan1";
+        String Units "years";
+        String CodeMissingValue "-9999";
+    }
+    /S3/ScanTime/SecondOfDay {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "-9999.900000";
+    }
+    /S3/ScanTime/Second {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "0";
+    }
+    /S3/ScanTime/DayOfYear {
+        String DimensionNames "nscan1";
+        String Units "days";
+        String CodeMissingValue "-9999";
+    }
+    /S3/ScanTime/Hour {
+        String DimensionNames "nscan1";
+        String Units "hours";
+        String CodeMissingValue "0";
+    }
+    /S3/ScanTime/Month {
+        String DimensionNames "nscan1";
+        String Units "months";
+        String CodeMissingValue "0";
+    }
+    /S3/ScanTime/DayOfMonth {
+        String DimensionNames "nscan1";
+        String Units "days";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_14 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_01 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_05 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_10 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_12 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_08 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_03 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_06 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_15 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_13 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_00 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_07 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_05 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_09 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_09 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_01 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_12 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_04 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_00 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_10 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_03 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/IDX_PULSE_SECS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_14 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_13 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_02 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_04 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/IDX_PULSE_SUBS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_07 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_15 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SECS_11 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_11 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_08 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_02 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS/TACH_SUBS_06 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/SMPOFFST_10GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/NUMSMPLS_23GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/NUMSMPLS_18GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/SMPOFFST_18GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/SMPOFFST_36GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/NUMSMPLS_89GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/SMPOFFST_23GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/NUMSMPLS_10GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/NUMSMPLS_36GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/SMPOFFST_166GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/NUMSMPLS_183GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/SMPOFFST_89GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/SMPOFFST_183GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RSHSK_SAMPL_INFO/NUMSMPLS_166GHZ {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/IE_BLANKING_CNT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/CLR_STAT_N {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/PWR_STAT_LR_PR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/HTR_STAT_RS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/PWR_STAT_LR_RED {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/RDA_DEPL_STAT_2 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/MR_LR_LOWR_STAT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/RDA_DEPL_STAT_3 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/HTR_STAT_HTLD {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/IBS_LR3_STAT_N {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/RS_MST_RLY_STAT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/IE_LATCHUP_PAD {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/IBS_LR2_STAT_N {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/IE_LATCHUP_SMPS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/IE_LATCHUP_CHAN {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/HTR_STAT_SMA {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/MR_LR_LEFT_STAT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/IBS_LR1_STAT_N {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/RDA_DEPL_STAT_4 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/PWR_STAT_A {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/RDA_DEPL_STAT_1 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/IE_LATCHUP_NUM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/IE_LATCHUP_RETR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/IE_PASSTHRU_RSP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/IE_LATCHUP_FAIL {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/MR_LR_RGHT_STAT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IE_TELEMETRY/HTR_STAT_RDA {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/TEMP_CALRES_6 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/TEMP_CALRES_2 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/TEMP_CALRES_1 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/SMA_MTR_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/SCE_A_BD_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/ROT_TEMP_SPARE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/IBS_LR3_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/ICA_BOX_TEMP_2 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/RS_TEMP_2 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/MR_LR_LOWR_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/HL_TEMP_11 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/SMA_BEARING_TMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/PC_BD_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/IE_BD_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/MR_LR_LEFT_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/CLR_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/HL_TEMP_2 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/TEMP_CALRES_4 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/LVPS_BD_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/TEMP_CALRES_3 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/RS_TEMP_1 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/SCE_B_BD_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/RDA_TEMP_2 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/HL_TEMP_9 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/RDA_TEMP_3 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/HL_TEMP_1 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/HL_TEMP_13 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/MR_LR_RGHT_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/CSR_TEMP1 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/CE_BD_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/HL_TEMP_10 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/ICA_BOX_TEMP_1 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/HL_TEMP_7 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/HL_TEMP_12 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/SMA_SLPRHTR_TMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/HL_TEMP_15 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/HL_TEMP_14 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/RDA_TEMP_1 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/CSR_TEMP2 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/MR_ICA_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/TEMP_CALRES_5 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/HL_TEMP_8 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/IBS_LR2_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/IEHSK_TEMP/IBS_LR1_TEMP {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/TORQUE_BAR/timeOffset {
+        String DimensionNames "nscan2";
+        String Units "s";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S3/TORQUE_BAR/Vx {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/TORQUE_BAR/Vy {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/TORQUE_BAR/Vz {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_17 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_16 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_29 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_30 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_22 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_29 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_27 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_18 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_23 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_31 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_23 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_19 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_25 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_24 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_25 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_30 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_16 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_28 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_22 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_26 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_20 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_28 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_18 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_20 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/SCAN_COMPL_SUBS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_19 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_31 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_24 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_17 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/SCAN_COMPL_SECS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SUBS_21 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_26 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_27 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/SYNCH_STAMPS2/TACH_SECS_21 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/TAM1/timeOffset {
+        String DimensionNames "nscan2";
+        String Units "s";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S3/TAM1/Vx {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/TAM1/Vy {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/TAM1/Vz {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/MECHANISMS/SCE_LAST_RESPNS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SMA_RATE_PROB {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SCE_PASSPROT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SCE_CMD_RATE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SCE_A_POWER {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/LR_ENABLED {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SMA_CMD_RATE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/BILVL_RDARIGHT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SCE_RATE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SCE_B_POWER {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/TACH_PULSE_CNT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/RAMP_ABRT_CNT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/LR_ABRT_CNT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/BILVL_IBS3 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SMA_SPINNING {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/MECH_CMD_CNT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/OVRD_RDA_LR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SMA_RATE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/BILVL_CAL {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/RESOLVER_POS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SCE_CMD_CNT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SCE_SELECTION {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/BILVL_IBS2 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/BILVL_RDALEFT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SMA_RTPRB_SEC {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/OVRD_IBS_LR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/RAMP_INPROGRESS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/BILVL_IBS1 {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/LR_RLS_IN_PROG {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/BILVL_RDALOWER {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SCE_INHIBIT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/MECHANISMS/SCE_LAST_CMD {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/GMI_TEMPERATURES/timeOffset {
+        String DimensionNames "nscan2";
+        String Units "s";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S3/GMI_TEMPERATURES/SMA_PT_TEMP {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/GMI_TEMPERATURES/ICA_PT_TEMP {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/GMI_TEMPERATURES/RS_PT_TEMP {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/GMI_TEMPERATURES/STAT_PT_TEMP {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/GMI_TEMPERATURES/apid {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/GMI_TEMPERATURES/MR_PT_TEMP {
+        String DimensionNames "nscan2";
+        String Units "count";
+        String CodeMissingValue "65535";
+    }
+    /S3/RS_INFO/RS_DQ_CAL_LIM {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/BLK_DURATION {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_89GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/OVRD_RS_PWR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/BLK_STATE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_DQ_BAD_REVS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_LAST_REV {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_SC_SIZE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/SMPL_TBL {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/PKT_STATE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/GSDR_LEFT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/OVRD_PASS_RS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_ENABLED {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/GSDR_APID {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_DQ_TLM_ERR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_10GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_HSK_SIZE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_DQ_BAD_CONF {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/SAMPLE_TBL_VER {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_183GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_SCAN_CNT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_DQ_PAR_ERR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_DQ_MISSING {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_166GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/GSDR_B_PUSH_IDX {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_23GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/OVRD_SMA_SPIN {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_18GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_MST_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_PAR_ERR_CNT {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_DQ_SAME_REV {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_DQ_DUPES {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_36GHZ_RLY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/BLK_SIDE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_DQ_EXTRAS {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/GSDR_B_POP_IDX {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/GSDR_SIZE {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/BLK_DELAY {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_DQ_CLK_ERR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_POWERED {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S3/RS_INFO/RS_DQ_PKT_ERR {
+        String DimensionNames "nscan2";
+        String CodeMissingValue "0";
+    }
+    /S4/ephemerisUsed {
+        String DimensionNames "nscan1,dim10";
+        String CodeMissingValue "50";
+    }
+    /S4/Longitude {
+        String DimensionNames "nscan2,npixelfr";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S4/fullRotation {
+        String DimensionNames "nscan2,npixelfr,nchannel1";
+        String CodeMissingValue "0";
+    }
+    /S4/Latitude {
+        String DimensionNames "nscan2,npixelfr";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S4/incidenceAngle {
+        String DimensionNames "nscan2,npixelfr";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S4/fullRotBlanking {
+        String DimensionNames "nscan2,npixelfr,VH";
+        String CodeMissingValue "48";
+    }
+    /S4/ScanTime/MilliSecond {
+        String DimensionNames "nscan1";
+        String Units "ms";
+        String CodeMissingValue "-9999";
+    }
+    /S4/ScanTime/Minute {
+        String DimensionNames "nscan1";
+        String Units "minutes";
+        String CodeMissingValue "0";
+    }
+    /S4/ScanTime/Year {
+        String DimensionNames "nscan1";
+        String Units "years";
+        String CodeMissingValue "-9999";
+    }
+    /S4/ScanTime/SecondOfDay {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "-9999.900000";
+    }
+    /S4/ScanTime/Second {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "0";
+    }
+    /S4/ScanTime/DayOfYear {
+        String DimensionNames "nscan1";
+        String Units "days";
+        String CodeMissingValue "-9999";
+    }
+    /S4/ScanTime/Hour {
+        String DimensionNames "nscan1";
+        String Units "hours";
+        String CodeMissingValue "0";
+    }
+    /S4/ScanTime/Month {
+        String DimensionNames "nscan1";
+        String Units "months";
+        String CodeMissingValue "0";
+    }
+    /S4/ScanTime/DayOfMonth {
+        String DimensionNames "nscan1";
+        String Units "days";
+        String CodeMissingValue "0";
+    }
+    /S5/ephemerisUsed {
+        String DimensionNames "nscan1,dim10";
+        String CodeMissingValue "50";
+    }
+    /S5/Longitude {
+        String DimensionNames "nscan2,npixelfr";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S5/fullRotation {
+        String DimensionNames "nscan2,npixelfr,nchannel2";
+        String CodeMissingValue "0";
+    }
+    /S5/Latitude {
+        String DimensionNames "nscan2,npixelfr";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S5/incidenceAngle {
+        String DimensionNames "nscan2,npixelfr";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S5/ScanTime/MilliSecond {
+        String DimensionNames "nscan1";
+        String Units "ms";
+        String CodeMissingValue "-9999";
+    }
+    /S5/ScanTime/Minute {
+        String DimensionNames "nscan1";
+        String Units "minutes";
+        String CodeMissingValue "0";
+    }
+    /S5/ScanTime/Year {
+        String DimensionNames "nscan1";
+        String Units "years";
+        String CodeMissingValue "-9999";
+    }
+    /S5/ScanTime/SecondOfDay {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "-9999.900000";
+    }
+    /S5/ScanTime/Second {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "0";
+    }
+    /S5/ScanTime/DayOfYear {
+        String DimensionNames "nscan1";
+        String Units "days";
+        String CodeMissingValue "-9999";
+    }
+    /S5/ScanTime/Hour {
+        String DimensionNames "nscan1";
+        String Units "hours";
+        String CodeMissingValue "0";
+    }
+    /S5/ScanTime/Month {
+        String DimensionNames "nscan1";
+        String Units "months";
+        String CodeMissingValue "0";
+    }
+    /S5/ScanTime/DayOfMonth {
+        String DimensionNames "nscan1";
+        String Units "days";
+        String CodeMissingValue "0";
+    }
+    /S1/hotLoadBlanking {
+        String DimensionNames "nscan1,npixelht,VH";
+        String CodeMissingValue "48";
+    }
+    /S1/Longitude {
+        String DimensionNames "nscan1,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/moonVectorInstFrame {
+        String DimensionNames "nscan1,GMIxyz";
+        String Units "counts";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/ephemerisUsed {
+        String DimensionNames "nscan1,dim10";
+        String CodeMissingValue "50";
+    }
+    /S1/coldSky {
+        String DimensionNames "nscan1,npixelcs,nchannel1";
+        String CodeMissingValue "0";
+    }
+    /S1/sunGlintAngle {
+        String DimensionNames "nscan1,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/Latitude {
+        String DimensionNames "nscan1,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/hotLoad {
+        String DimensionNames "nscan1,npixelht,nchannel1";
+        String CodeMissingValue "0";
+    }
+    /S1/earthView {
+        String DimensionNames "nscan1,npixelev,nchannel1";
+        String CodeMissingValue "0";
+    }
+    /S1/solarAzimuthAngle {
+        String DimensionNames "nscan1,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/satAzimuthAngle {
+        String DimensionNames "nscan1,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/solarZenAngle {
+        String DimensionNames "nscan1,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/incidenceAngle {
+        String DimensionNames "nscan1,npixelev";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/coldSkyBlanking {
+        String DimensionNames "nscan1,npixelcs,VH";
+        String CodeMissingValue "48";
+    }
+    /S1/earthViewBlanking {
+        String DimensionNames "nscan1,npixelev,VH";
+        String CodeMissingValue "48";
+    }
+    /S1/ScanTime/MilliSecond {
+        String DimensionNames "nscan1";
+        String Units "ms";
+        String CodeMissingValue "-9999";
+    }
+    /S1/ScanTime/Minute {
+        String DimensionNames "nscan1";
+        String Units "minutes";
+        String CodeMissingValue "0";
+    }
+    /S1/ScanTime/Year {
+        String DimensionNames "nscan1";
+        String Units "years";
+        String CodeMissingValue "-9999";
+    }
+    /S1/ScanTime/SecondOfDay {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "-9999.900000";
+    }
+    /S1/ScanTime/Second {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "0";
+    }
+    /S1/ScanTime/DayOfYear {
+        String DimensionNames "nscan1";
+        String Units "days";
+        String CodeMissingValue "-9999";
+    }
+    /S1/ScanTime/Hour {
+        String DimensionNames "nscan1";
+        String Units "hours";
+        String CodeMissingValue "0";
+    }
+    /S1/ScanTime/Month {
+        String DimensionNames "nscan1";
+        String Units "months";
+        String CodeMissingValue "62";
+    }
+    /S1/ScanTime/DayOfMonth {
+        String DimensionNames "nscan1";
+        String Units "days";
+        String CodeMissingValue "47";
+    }
+    /S1/navigation/scPos {
+        String DimensionNames "nscan1,XYZ";
+        String Units "m";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/timeMidScanOffset {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "-9999.900000";
+    }
+    /S1/navigation/scAttPitchGeod {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/scVel {
+        String DimensionNames "nscan1,XYZ";
+        String Units "m/s";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/scAttRollGeod {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/scAttRollGeoc {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/scAlt {
+        String DimensionNames "nscan1";
+        String Units "m";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/scLon {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/scAttYawGeoc {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/scAttPitchGeoc {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/dprAlt {
+        String DimensionNames "nscan1";
+        String Units "m";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/greenHourAng {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/scLat {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/scAttYawGeod {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/navigation/timeMidScan {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "-9999.900000";
+    }
+    /S1/sunData/phaseFromOrbitMidnight {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/sunData/sunEarthSeparation {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/sunData/earthAngularRadius {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/sunData/phaseOfEclipseExit {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/sunData/solarBetaAngle {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/sunData/timeSinceEclipseEntry {
+        String DimensionNames "nscan1";
+        String Units "s";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/sunData/orbitRate {
+        String DimensionNames "nscan1";
+        String Units "degrees/s";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/sunData/sunVectorInBodyFrame {
+        String DimensionNames "nscan1,";
+        String CodeMissingValue "-9999.900391";
+    }
+    /S1/scanStatus/operationalMode {
+        String DimensionNames "nscan1";
+        String CodeMissingValue "0";
+    }
+    /S1/scanStatus/modeStatus {
+        String DimensionNames "nscan1";
+        String CodeMissingValue "0";
+    }
+    /S1/scanStatus/targetSelectionMidScan {
+        String DimensionNames "nscan1";
+        String CodeMissingValue "0";
+    }
+    /S1/scanStatus/geoWarning {
+        String DimensionNames "nscan1";
+        String CodeMissingValue "-9999";
+    }
+    /S1/scanStatus/pointingStatus {
+        String DimensionNames "nscan1";
+        String CodeMissingValue "-9999";
+    }
+    /S1/scanStatus/geoError {
+        String DimensionNames "nscan1";
+        String CodeMissingValue "-9999";
+    }
+    /S1/scanStatus/dataQuality {
+        String DimensionNames "nscan1";
+        String CodeMissingValue "0";
+    }
+    /S1/scanStatus/acsModeMidScan {
+        String DimensionNames "nscan1";
+        String CodeMissingValue "0";
+    }
+    /S1/scanStatus/missing {
+        String DimensionNames "nscan1";
+        String CodeMissingValue "0";
+    }
+    /S1/scanStatus/FractionalGranuleNumber {
+        String DimensionNames "nscan1";
+        String CodeMissingValue "-9999.900000";
+    }
+    /S1/scanStatus/SCorientation {
+        String DimensionNames "nscan1";
+        String Units "degrees";
+        String CodeMissingValue "-9999";
+    }
+    gmi1aHeader {
+    }
+    S2 {
+        String S2_SwathHeader "NumberScansInSet=1;MaximumNumberScansTotal=3100;NumberScansBeforeGranule=0;NumberScansGranule=2961;NumberScansAfterGranule=0;NumberPixels=221;ScanType=CONICAL;";
+        ScanTime {
+        }
+        navigation {
+        }
+        sunData {
+        }
+        scanStatus {
+        }
+    }
+    S3 {
+        String S3_SwathHeader "NumberScansInSet=1;MaximumNumberScansTotal=3100;NumberScansBeforeGranule=0;NumberScansGranule=2961;NumberScansAfterGranule=0;NumberPixels=1;ScanType=CONICAL;";
+        SMPL_INFO {
+        }
+        TAM2 {
+        }
+        RSHSK_STATUS {
+        }
+        GSDR_TIME {
+        }
+        RSHSK_GAIN {
+        }
+        RSHSK_TEMP {
+        }
+        SENSOR_INFO {
+        }
+        ScanTime {
+        }
+        SYNCH_STAMPS {
+        }
+        RSHSK_SAMPL_INFO {
+        }
+        IE_TELEMETRY {
+        }
+        IEHSK_TEMP {
+        }
+        TORQUE_BAR {
+        }
+        SYNCH_STAMPS2 {
+        }
+        TAM1 {
+        }
+        MECHANISMS {
+        }
+        GMI_TEMPERATURES {
+        }
+        RS_INFO {
+        }
+    }
+    S4 {
+        String S4_SwathHeader "NumberScansInSet=1;MaximumNumberScansTotal=3100;NumberScansBeforeGranule=0;NumberScansGranule=2961;NumberScansAfterGranule=0;NumberPixels=465;ScanType=CONICAL;";
+        ScanTime {
+        }
+    }
+    S5 {
+        String S5_SwathHeader "NumberScansInSet=1;MaximumNumberScansTotal=3100;NumberScansBeforeGranule=0;NumberScansGranule=2961;NumberScansAfterGranule=0;NumberPixels=465;ScanType=CONICAL;";
+        ScanTime {
+        }
+    }
+    S1 {
+        String S1_SwathHeader "NumberScansInSet=1;MaximumNumberScansTotal=3100;NumberScansBeforeGranule=0;NumberScansGranule=2961;NumberScansAfterGranule=0;NumberPixels=221;ScanType=CONICAL;";
+        ScanTime {
+        }
+        navigation {
+        }
+        sunData {
+        }
+        scanStatus {
+        }
+    }
+    DAP4_GLOBAL {
+        String FileHeader "DOI=?;AlgorithmID=1AGMI;AlgorithmVersion=4.2;FileName=1A.GPM.GMI.COUNT2014v3.20160105-S230545-E003816.010538.V03B.HDF5;SatelliteName=GPM;InstrumentName=GMI;GenerationDateTime=2016-01-06T02:32:09.000Z;StartGranuleDateTime=2016-01-05T23:05:45.953Z;StopGranuleDateTime=2016-01-06T00:38:17.949Z;GranuleNumber=10538;NumberOfSwaths=5;NumberOfGrids=0;GranuleStart=SOUTHERNMOST_LATITUDE;TimeInterval=ORBIT;ProcessingSystem=PPS;ProductVersion=V03B;EmptyGranule=NOT_EMPTY;MissingData=0;";
+        String InputRecord "InputFileNames=GPM.GMIS.20160105.230141102_20160105.230639231.001.SCANRAWGPM.GMIS.20160105.230641106_20160105.231139235.001.SCANRAWGPM.GMIS.20160105.231141110_20160105.231639239.001.SCANRAWGPM.GMIS.20160105.231641114_20160105.232139243.001.SCANRAWGPM.GMIS.20160105.232141118_20160105.232639247.001.SCANRAWGPM.GMIS.20160105.232641123_20160105.233139252.001.SCANRAWGPM.GMIS.20160105.233141127_20160105.233639256.001.SCANRAWGPM.GMIS.20160105.233641131_20160105.234139260.001.SCANRAWGPM.GMIS.20160105.234141135_20160105.234639264.001.SCANRAWGPM.GMIS.20160105.234641139_20160105.235139268.001.SCANRAWGPM.GMIS.20160105.235141143_20160105.235639272.001.SCANRAWGPM.GMIS.20160105.235641147_20160106.000139276.001.SCANRAWGPM.GMIS.20160106.000141152_20160106.000639281.001.SCANRAWGPM.GMIS.20160106.000641156_20160106.001139285.001.SCANRAWGPM.GMIS.20160106.001141160_20160106.001639289.001.SCANRAWGPM.GMIS.20160106.001641164_20160106.002139293.001.SCANRAWGPM.GMIS.20160106.002141168_20160106.002639297.001.SCANRAWGPM.GMIS.20160106.002641172_20160106.003139301.001.SCANRAWGPM.GMIS.20160106.003141176_20160106.003639305.001.SCANRAWGPM.GMIS.20160106.003641180_20160106.004139309.001.SCANRAW;InputAlgorithmVersions=n/a;InputGenerationDateTimes=n/a;";
+        String NavigationRecord "LongitudeOnEquator=179.046739;UTCDateTimeOnEquator=2016-01-05T23:28:53.899Z;MeanSolarBetaAngle=-18.034080;EphemerisFileName=GPMCORE.20160105.230545953_20160106.003817949.001.EPHEM.txt;AttitudeFileName=GPMCORE.20160105.230545953_20160106.003817949.001.ATT.txt;GeoControlFileName=Control_Parameters_GMI_20140817.V03A.txt;EphemerisSource=7_PVT_WITH_FALLBACK_AS_FLAGGED;AttitudeSource=1_ON_BOARD_CALCULATED_PITCH_ROLL_YAW;GeoToolkitVersion=V3.8  1.7.2015  Nutation  modified ;SensorAlignmentFirstRotationAngle=179.964996;SensorAlignmentSecondRotationAngle=0.004000;SensorAlignmentThirdRotationAngle=0.001000;SensorAlignmentFirstRotationAxis=1;SensorAlignmentSecondRotationAxis=2;SensorAlignmentThirdRotationAxis=3;";
+        String FileInfo "DataFormatVersion=bc;TKCodeBuildVersion=1;MetadataVersion=bc;FormatPackage=HDF5-1.8.9;BlueprintFilename=GPM.V1.1AGMI.blueprint.xml;BlueprintVersion=BV_40;TKIOVersion=3.60.4;MetadataStyle=PVL;EndianType=LITTLE_ENDIAN;";
+    }
+}

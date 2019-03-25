@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="http://52.207.248.86:8080/opendap/arch2/samples/1A.GPM.GMI.COUNT2014v3.20160105-S230545-E003816.010538.V03B.h5.dmrpp" dapVersion="4.0" dmrVersion="1.0" name="1A.GPM.GMI.COUNT2014v3.20160105-S230545-E003816.010538.V03B.h5">
+    <Attribute name="DAP4_GLOBAL" type="Container">
+        <Attribute name="UslessInfo" type="String">
+            <Value>EndianType=LITTLE_ENDIAN;</Value>
+        </Attribute>
+    </Attribute>
+    
+    <Attribute name="DAP4_GLOBAL_1" type="Container">
+        <Attribute name="MoreUslessInfo" type="String">
+            <Value>EndianType=BIG_ENDIAN;</Value>
+        </Attribute>
+    </Attribute>
+    <Attribute name="FileHeader" type="String">
+        <Value>DOI=?;AlgorithmID=1AGMI;AlgorithmVersion=4.2;FileName=1A.GPM.GMI.COUNT2014v3.20160105-S230545-E003816.010538.V03B.HDF5;SatelliteName=GPM;InstrumentName=GMI;GenerationDateTime=2016-01-06T02:32:09.000Z;StartGranuleDateTime=2016-01-05T23:05:45.953Z;StopGranuleDateTime=2016-01-06T00:38:17.949Z;GranuleNumber=10538;NumberOfSwaths=5;NumberOfGrids=0;GranuleStart=SOUTHERNMOST_LATITUDE;TimeInterval=ORBIT;ProcessingSystem=PPS;ProductVersion=V03B;EmptyGranule=NOT_EMPTY;MissingData=0;</Value>
+    </Attribute>
+    <Attribute name="InputRecord" type="String">
+        <Value>InputFileNames=GPM.GMIS.20160105.230141102_20160105.230639231.001.SCANRAWGPM.GMIS.20160105.230641106_20160105.231139235.001.SCANRAWGPM.GMIS.20160105.231141110_20160105.231639239.001.SCANRAWGPM.GMIS.20160105.231641114_20160105.232139243.001.SCANRAWGPM.GMIS.20160105.232141118_20160105.232639247.001.SCANRAWGPM.GMIS.20160105.232641123_20160105.233139252.001.SCANRAWGPM.GMIS.20160105.233141127_20160105.233639256.001.SCANRAWGPM.GMIS.20160105.233641131_20160105.234139260.001.SCANRAWGPM.GMIS.20160105.234141135_20160105.234639264.001.SCANRAWGPM.GMIS.20160105.234641139_20160105.235139268.001.SCANRAWGPM.GMIS.20160105.235141143_20160105.235639272.001.SCANRAWGPM.GMIS.20160105.235641147_20160106.000139276.001.SCANRAWGPM.GMIS.20160106.000141152_20160106.000639281.001.SCANRAWGPM.GMIS.20160106.000641156_20160106.001139285.001.SCANRAWGPM.GMIS.20160106.001141160_20160106.001639289.001.SCANRAWGPM.GMIS.20160106.001641164_20160106.002139293.001.SCANRAWGPM.GMIS.20160106.002141168_20160106.002639297.001.SCANRAWGPM.GMIS.20160106.002641172_20160106.003139301.001.SCANRAWGPM.GMIS.20160106.003141176_20160106.003639305.001.SCANRAWGPM.GMIS.20160106.003641180_20160106.004139309.001.SCANRAW;InputAlgorithmVersions=n/a;InputGenerationDateTimes=n/a;</Value>
+    </Attribute>
+    <Attribute name="NavigationRecord" type="String">
+        <Value>LongitudeOnEquator=179.046739;UTCDateTimeOnEquator=2016-01-05T23:28:53.899Z;MeanSolarBetaAngle=-18.034080;EphemerisFileName=GPMCORE.20160105.230545953_20160106.003817949.001.EPHEM.txt;AttitudeFileName=GPMCORE.20160105.230545953_20160106.003817949.001.ATT.txt;GeoControlFileName=Control_Parameters_GMI_20140817.V03A.txt;EphemerisSource=7_PVT_WITH_FALLBACK_AS_FLAGGED;AttitudeSource=1_ON_BOARD_CALCULATED_PITCH_ROLL_YAW;GeoToolkitVersion=V3.8  1.7.2015  Nutation  modified ;SensorAlignmentFirstRotationAngle=179.964996;SensorAlignmentSecondRotationAngle=0.004000;SensorAlignmentThirdRotationAngle=0.001000;SensorAlignmentFirstRotationAxis=1;SensorAlignmentSecondRotationAxis=2;SensorAlignmentThirdRotationAxis=3;</Value>
+    </Attribute>
+    <Attribute name="FileInfo" type="String">
+        <Value>DataFormatVersion=bc;TKCodeBuildVersion=1;MetadataVersion=bc;FormatPackage=HDF5-1.8.9;BlueprintFilename=GPM.V1.1AGMI.blueprint.xml;BlueprintVersion=BV_40;TKIOVersion=3.60.4;MetadataStyle=PVL;EndianType=LITTLE_ENDIAN;</Value>
+    </Attribute>
+    
+    <String name="AlgorithmRuntimeInfo">
+        <Dim size="1"/>
+    </String>
+    
+    <Group name="gmi1aHeader">
+        <UInt16 name="sampleRangeFile">
+            <Dim size="7"/>
+            <Dim size="6"/>
+            <Attribute name="DimensionNames" type="String">
+                <Value>dim7,dim6</Value>
+            </Attribute>
+            <Attribute name="CodeMissingValue" type="String">
+                <Value>65535</Value>
+            </Attribute>
+        </UInt16>
+    </Group>
+    
+ </Dataset>

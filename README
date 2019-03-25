@@ -1,3 +1,24 @@
+Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
+
+Updated for version 3.20.3
+
+Fixes and Debian packaging via Travis CI
+
+Updated for version 3.20.2
+
+Added libdap::Array::rename_dim()
+DOI For this version: https://doi.org/10.5281/zenodo.2002799
+
+Updated for version 3.20.1
+
+Added Continuous Delivery for CentOS 6 and 7
+
+Updated for version 3.20.0
+
+We now have a Debian package for libdap.
+
+Bug fixes; See the ChangeLog and NEWS files.
+
 Updated for version 3.19.1
 
 Bug fixes; See the ChangeLog and NEWS files.

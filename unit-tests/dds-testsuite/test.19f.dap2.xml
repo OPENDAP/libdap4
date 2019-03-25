@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset name="test.19f" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xml.opendap.org/ns/DAP2" xsi:schemaLocation="http://xml.opendap.org/ns/DAP2 http://xml.opendap.org/dap/dap2.xsd">
+    <Grid name="huh">
+        <Attribute name="long_name" type="String">
+            <value>The Grid huh</value>
+        </Attribute>
+        <Array name="Image#data">
+            <Byte/>
+            <dimension size="512"/>
+        </Array>
+        <Map name="colors">
+            <Attribute name="long_name2" type="String">
+                <value>The color map vector</value>
+            </Attribute>
+            <String/>
+            <dimension size="512"/>
+        </Map>
+    </Grid>
+    <dataBLOB href=""/>
+</Dataset>

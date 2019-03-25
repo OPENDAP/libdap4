@@ -47,11 +47,10 @@
 #include "Structure.h"
 #include "Sequence.h"
 #include "Grid.h"
-#if  0
-#include "Vector.h"
-#endif
+
 #include "util.h"
 #include "InternalErr.h"
+#include "DapIndent.h"
 
 namespace libdap {
 
@@ -77,8 +76,6 @@ XDRFileUnMarshaller &
 XDRFileUnMarshaller::operator=( const XDRFileUnMarshaller & )
 {
     throw InternalErr( __FILE__, __LINE__, "Copy operator not implemented." ) ;
-
-    return *this ;
 }
 
 XDRFileUnMarshaller::~XDRFileUnMarshaller( )

@@ -66,7 +66,7 @@
 #include "Operators.h"
 #include "dods-limits.h"
 #include "InternalErr.h"
-
+#include "DapIndent.h"
 
 using std::cerr;
 using std::endl;
@@ -271,7 +271,7 @@ Float64::ops(BaseType *b, int op)
     }
 
     // Extract the second arg's value.
-    if (!b->read_p() && !b->read()) {
+    if (!b || !(b->read_p() || b->read())) {
         // Jose Garcia
         // Since the read method is virtual and implemented outside
         // libdap++ if we cannot read the data that is the problem

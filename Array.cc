@@ -35,7 +35,7 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG
+//#define DODS_DEBUG
 
 #include <algorithm>
 #include <functional>
@@ -57,6 +57,7 @@
 #include "debug.h"
 #include "InternalErr.h"
 #include "escaping.h"
+#include "DapIndent.h"
 
 using namespace std;
 
@@ -320,16 +321,16 @@ Array::transform_to_dap2(AttrTable *){
             Array *grid_array = (Array *) this->ptr_duplicate();
             g->set_array(grid_array);
 
-            // Get the metadata into the Grid
+            // Get the metadata into the Grid Array
             AttrTable *grid_attrs = attributes()->get_AttrTable(name());
-            g->set_attr_table(*grid_attrs); // Copy it into the Grid object.
+            grid_array->set_attr_table(*grid_attrs); // Copy it into the Grid object.
             // grid_array->set_attr_table(*grid_attrs); // Copy it into the data Array.
             delete grid_attrs;
 
-            // Clear the Grid data Array attributes.
+            // Clear the Grid attributes.
             AttrTable at;
             at.set_name(name());
-            grid_array->set_attr_table(at);
+            g->set_attr_table(at);
 
             // Process the Map Arrays.
             D4Maps *d4_maps = this->maps();
@@ -581,12 +582,32 @@ Array::clear_all_dims()
 {
 	_shape.clear();
 }
+
+/** Renames dimension to a new name
+
+    @brief Renames dimension.
+*/
+
+void
+Array::rename_dim(const string &oldName, const string &newName)
+{
+    std::vector<dimension>::iterator i = _shape.begin(), e = _shape.end();
+    while (i != e) {
+        dimension &d = *i ;
+        if(d.name == oldName){
+            DBG(cerr << "Old name = " << d.name << " newName = " << newName << endl);
+            d.name = newName;
+        }
+
+        ++i;
+    }
+}
+
 /** Resets the dimension constraint information so that the entire
     array is selected.
 
     @brief Reset constraint to select entire array.
 */
-
 void
 Array::reset_constraint()
 {

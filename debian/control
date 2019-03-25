@@ -1,10 +1,14 @@
-Package: libdap
-Version: 3.14.0-1
-Section: science
+Source: libdap
+Maintainer: Kodi Neumiller <kneumiller@mtech.edu>
+Section: misc
 Priority: optional
+Standards-Version: 3.9.2
+Build-Depends: libcurl4-openssl-dev (>= 7.22), libxml2-dev (>= 2.7), uuid-dev (>= 2.20),  
+ debhelper (>= 9)
+
+Package: libdap
 Architecture: amd64
-Depends: libcurl4-openssl-dev (>= 7.22), libxml2-dev (>= 2.7), uuid-dev (>= 2.20)
-Maintainer: James Gallagher <jgallagher@opendap.org>
+Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: libdap
  The libdap library contains an implementation of DAP2 and DAP4. This
  package contains the library, dap-config, getdap and getdap4. The
@@ -12,3 +16,4 @@ Description: libdap
  getdap and getdap4 utilities are a simple command-line tool to read
  from DAP2 and DAP4 servers and are built using the library to
  demonstrates simple uses of it.
+

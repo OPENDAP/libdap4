@@ -83,7 +83,7 @@ public:
     InternalErr(const InternalErr &copy_from);
     //@}
 
-    virtual ~InternalErr();
+    virtual ~InternalErr() throw();
 
     bool OK();
 };

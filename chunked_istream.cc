@@ -161,8 +161,6 @@ chunked_inbuf::underflow()
 		d_error_message = "Failed to read known chunk header type.";
 		return traits_type::eof();
 	}
-
-	return traits_type::eof();	// Can never get here; this quiets g++
 }
 
 /**
@@ -307,15 +305,17 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 	    	// eof; this call returns the number of bytes read and transferred to 's'.
 	    	done = true;
 	    	break;
+
 	    case CHUNK_DATA:
 	    	done = bytes_left_to_read == 0;
 	        break;
+
 	    case CHUNK_ERR:
 			// this is pretty much the end of the show... The error message has
 	    	// already been read above
 			return traits_type::eof();
-	        break;
-		default:
+
+	    default:
 			d_error = true;
 			d_error_message = "Failed to read known chunk header type.";
 			return traits_type::eof();
@@ -393,6 +393,7 @@ chunked_inbuf::read_next_chunk()
 	case CHUNK_END:
 		DBG(cerr << "Found end chunk" << endl);
 		return traits_type::not_eof(chunk_size);
+
 	case CHUNK_DATA:
 		return traits_type::not_eof(chunk_size);
 
@@ -402,13 +403,12 @@ chunked_inbuf::read_next_chunk()
 		d_error = true;
 		d_error_message = string(d_buffer, chunk_size);
 		return traits_type::eof();
+
 	default:
 		d_error = true;
 		d_error_message = "Failed to read known chunk header type.";
 		return traits_type::eof();
 	}
-
-	return traits_type::eof();	// Can never get here; this quiets g++
 }
 
 }

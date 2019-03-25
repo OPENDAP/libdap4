@@ -43,34 +43,6 @@ Attributes {
         String level_desc "Surface";
         String statistic "Mean";
         String parent_stat "Mean";
-        sst {
-        }
-        time {
-            String units "days since 1800-1-1 00:00:00";
-            String long_name "Time";
-            Float64 actual_range 19723.00000000000, 76214.00000000000;
-            String delta_t "0000-01-00 00:00:00";
-            String avg_period "0000-01-00 00:00:00";
-            String prev_avg_period "0000-00-07 00:00:00";
-            String standard_name "time";
-            String axis "t";
-        }
-        lat {
-            String units "degrees_north";
-            String long_name "Latitude";
-            Float32 actual_range 88.0000000, -88.0000000;
-            String standard_name "latitude_north";
-            String axis "y";
-            String coordinate_defines "center";
-        }
-        lon {
-            String units "degrees_east";
-            String long_name "Longitude";
-            Float32 actual_range 0.00000000, 358.000000;
-            String standard_name "longitude_east";
-            String axis "x";
-            String coordinate_defines "center";
-        }
     }
     NC_GLOBAL {
         String title "NOAA Extended Reconstructed SST V3";

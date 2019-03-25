@@ -4,7 +4,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU -I$(top_srcdir)/d4_ce \
--I$(top_srcdir)/d4_function $(XML2_CFLAGS) $(CURL_CFLAGS)
+-I$(top_srcdir)/d4_function $(XML2_CFLAGS) $(CURL_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS =  
 
 if COMPILER_IS_GCC
@@ -12,10 +12,18 @@ AM_CXXFLAGS += -Wall -W -Wcast-align
 endif
 
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align
-TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
+
+# If valgrind is present, add valgrind targets.
+# @VALGRIND_CHECK_RULES@
+
+if USE_ASAN
+ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+endif
 
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+else
+AM_CXXFLAGS += -g -O2
 endif
 
 check_PROGRAMS = das-test dds-test expr-test 
@@ -39,7 +47,7 @@ check_SCRIPTS = $(DASTESTSUITE) $(DDSTESTSUITE) $(EXPRTESTSUITE) \
 lib_LIBRARIES = libtest-types.a
 
 libtest_types_a_SOURCES = $(TESTSRCS) $(TEST_HDR)
-libtest_types_a_CXXFLAGS = -fPIC
+libtest_types_a_CXXFLAGS = $(AM_CXXFLAGS) -fPIC
 
 testheadersdir = $(pkgincludedir)/test
 testheaders_HEADERS = $(TEST_HDR)

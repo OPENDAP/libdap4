@@ -18,4 +18,4 @@ using namespace std;
 } while(0);
 #endif
 
-string readTestBaseline(const string &fn);
+string read_test_baseline(const string &fn);

@@ -42,7 +42,7 @@
 #include "GetOpt.h"
 
 #include "Ancillary.h"
-
+#include "DDS.h"
 #include "debug.h"
 #include <test_config.h>
 
@@ -51,6 +51,7 @@ using namespace std;
 using namespace libdap;
 
 static bool debug = false;
+
 
 class ancT: public TestFixture {
 private:
@@ -77,6 +78,7 @@ public:
 
     CPPUNIT_TEST (find_ancillary_file_test);
     CPPUNIT_TEST (find_group_ancillary_file_test);
+    CPPUNIT_TEST (read_ancillary_das_file_test);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -97,6 +99,22 @@ public:
         CPPUNIT_ASSERT(
             Ancillary::find_ancillary_file((string) TEST_SRC_DIR + "/das-testsuite/test.3.Z", "das", "", "")
                 == (string) TEST_SRC_DIR + "/das-testsuite/test.3.Z.das");
+        CPPUNIT_ASSERT(
+            Ancillary::find_ancillary_file((string) TEST_SRC_DIR + "/das-testste/test_1", "das", (string) TEST_SRC_DIR + "/das-testsuite/", "")
+            == (string) TEST_SRC_DIR + "/das-testsuite/test_1.das");
+        Ancillary::find_ancillary_file((string) TEST_SRC_DIR + "/das-testsuite/te1", "das", (string) TEST_SRC_DIR + "/das-testite/", "");        
+        CPPUNIT_ASSERT(
+            Ancillary::find_ancillary_file((string) TEST_SRC_DIR + "/das-testsuite/te1", "das", (string) TEST_SRC_DIR + "/das-testite/", "")
+            == (string) TEST_SRC_DIR + "/das-testsuite/das");
+        CPPUNIT_ASSERT(
+            Ancillary::find_ancillary_file((string) TEST_SRC_DIR + "/das-testste/test1", "das", (string) TEST_SRC_DIR + "/das-testsuite/", "")
+            == (string) TEST_SRC_DIR + "/das-testsuite/das");
+        CPPUNIT_ASSERT(
+            Ancillary::find_ancillary_file((string) TEST_SRC_DIR + "/das-testste/test1", "das", (string) TEST_SRC_DIR + "/das-testsuite/", "test.1")
+            == (string) TEST_SRC_DIR + "/das-testsuite/test.1.das");
+        CPPUNIT_ASSERT(
+            Ancillary::find_ancillary_file((string) TEST_SRC_DIR + "/das-testste/test1", "ds", (string) TEST_SRC_DIR + "/das-testsuite/", "")
+            == "");
     }
 
     void find_group_ancillary_file_test()
@@ -109,6 +127,15 @@ public:
                 == (string) TEST_SRC_DIR + "/cgi-util-tests/group.htm");
         CPPUNIT_ASSERT(
             Ancillary::find_group_ancillary_file((string) TEST_SRC_DIR + "/cgi-util-tests/group.hdf", ".htm") == "");
+    }
+
+    void read_ancillary_das_file_test()
+    {
+        DAS das;
+        string dir = "";
+        string file = "";
+        Ancillary::read_ancillary_das(das, (string) TEST_SRC_DIR + "/das-testsuite/test.1.das", dir, file);
+        CPPUNIT_ASSERT(das.get_size() == 1);
     }
 
 };

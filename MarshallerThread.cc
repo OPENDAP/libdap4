@@ -109,8 +109,11 @@ Locker::~Locker()
 {
     DBG(cerr << "Unlocking the mutex! (" << pthread_self() << ")" << endl);
 
+    (void) pthread_mutex_unlock(&m_mutex);
+#if 0
     int status = pthread_mutex_unlock(&m_mutex);
     if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not unlock m_mutex");
+#endif
 }
 
 
@@ -144,12 +147,18 @@ ChildLocker::~ChildLocker()
     DBG(cerr << "Unlocking the mutex! (" << pthread_self() << ")" << endl);
 
     m_count = 0;
+
+    (void) pthread_cond_signal(&m_cond);
+    (void) pthread_mutex_unlock(&m_mutex);
+
+#if 0
     int status = pthread_cond_signal(&m_cond);
     if (status != 0)
         throw InternalErr(__FILE__, __LINE__, "Could not signal main thread from ChildLocker!");
 
     status = pthread_mutex_unlock(&m_mutex);
     if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not unlock m_mutex");
+#endif
 }
 
 MarshallerThread::MarshallerThread() :
@@ -165,17 +174,31 @@ MarshallerThread::MarshallerThread() :
 
 MarshallerThread::~MarshallerThread()
 {
+    (void) pthread_mutex_lock(&d_out_mutex);
+#if 0
     int status = pthread_mutex_lock(&d_out_mutex);
     if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not lock m_mutex");
-    while (d_child_thread_count != 0) {
+#endif
+    // d_child_thread_count is passed into the thread in a structure (see write_thread())
+    // and is decremented by the ChildLocker dtor when write_thread() exits. jhrg 2/7/19
+    if (d_child_thread_count != 0) {
+        (void) pthread_cond_wait(&d_out_cond, &d_out_mutex);
+        d_child_thread_count = 0;
+#if 0
         status = pthread_cond_wait(&d_out_cond, &d_out_mutex);
         if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not wait on m_cond");
+#endif
     }
+
+    (void) pthread_mutex_unlock(&d_out_mutex);
+
+#if 0
     if (d_child_thread_count != 0)
         throw InternalErr(__FILE__, __LINE__, "FAIL: left m_cond wait with non-zero child thread count");
 
     status = pthread_mutex_unlock(&d_out_mutex);
     if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not unlock m_mutex");
+#endif
 
     pthread_mutex_destroy(&d_out_mutex);
     pthread_cond_destroy(&d_out_cond);

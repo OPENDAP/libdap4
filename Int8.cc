@@ -51,6 +51,7 @@
 #include "dods-limits.h"
 #include "debug.h"
 #include "InternalErr.h"
+#include "DapIndent.h"
 
 using std::cerr;
 using std::endl;
@@ -174,7 +175,7 @@ Int8::ops(BaseType *b, int op)
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
 
     // Get the second arg's value.
-    if (!b->read_p() && !b->read())
+    if (!b || !(b->read_p() || b->read())) 
         throw InternalErr(__FILE__, __LINE__, "This value not read!");
 
     return d4_ops(b, op);
@@ -235,7 +236,7 @@ Int8::transform_to_dap2(AttrTable *parent_attr_table)
         ostringstream oss;
         oss << __func__ << "() -  Something Bad Happened. This transform should produce only ";
         oss << " a single BaseType yet it produced " << vec->size();
-        throw new Error(internal_error,oss.str());
+        throw Error(internal_error,oss.str());
     }
     (*vec)[0]->set_type(dods_byte_c);
     return vec;

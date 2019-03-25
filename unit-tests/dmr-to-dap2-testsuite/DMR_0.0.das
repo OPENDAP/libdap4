@@ -1,3 +1,5 @@
 Attributes {
-    Int16 test 1, 2, 3;
+    DAP4_GLOBAL {
+        Int16 test 1, 2, 3;
+    }
 }

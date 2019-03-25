@@ -158,6 +158,8 @@ public:
         l = ar.length();
         CPPUNIT_ASSERT(l == 24);
 
+        ar.rename_dim("dim3", "myDim");
+
         bool is_read = ar.read();
         CPPUNIT_ASSERT(is_read == true);
 

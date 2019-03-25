@@ -170,5 +170,19 @@ unit-tests/DmrToDap2Test
 unit-tests/chunked_iostream_test
 unit-tests/D4FilterClauseTest
 unit-tests/D4SequenceTest
+unit-tests/BaseTypeFactoryTest
+unit-tests/D4BaseTypeFactoryTest
+unit-tests/Float32Test
+unit-tests/Float64Test
+unit-tests/Int16Test
+unit-tests/Int32Test
+unit-tests/Int64Test
+unit-tests/Int8Test
+unit-tests/UInt16Test
+unit-tests/UInt32Test
+unit-tests/UInt64Test
+
 
 unit-tests/chunked-io/
+/bw-output/
+/.scannerwork/

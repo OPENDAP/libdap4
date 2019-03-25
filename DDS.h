@@ -62,18 +62,21 @@
 #include "DapObj.h"
 #endif
 
+#if 0
 #ifndef KEYWORDS_H_
 #include "Keywords2.h"
+#endif
 #endif
 
 #ifndef XMLWRITER_H_
 #include "XMLWriter.h"
 #endif
 
-using std::cout;
-
 namespace libdap
 {
+
+bool has_dap2_attributes(BaseType *btp);
+bool has_dap2_attributes(AttrTable &a);
 
 /** The DAP2 Data Descriptor Object (DDS) is a data structure used by
     the DAP2 software to describe datasets and subsets of those
@@ -201,7 +204,9 @@ private:
     int d_timeout;              // alarm time in seconds. If greater than
                                 // zero, raise the alarm signal if more than
                                 // d_timeout seconds are spent reading data.
+#if 0
     Keywords d_keywords;	    // Holds keywords parsed from the CE
+#endif
 
     long d_max_response_size;   // In bytes...
 
@@ -273,7 +278,9 @@ public:
     /// @deprecated
     void set_dap_version(double d);
 
-    Keywords &get_keywords() { return d_keywords; }
+#if 0
+    Keywords &get_keywords() {return d_keywords;}
+#endif
 
     /// Get the URL that will return this DDS/DDX/DataThing
     string get_request_xml_base() const { return d_request_xml_base; }
@@ -287,11 +294,11 @@ public:
     /// Set the namespace for this DDS/DDX object/response
     void set_namespace(const string &ns) { d_namespace = ns; }
 
-    /// Get the maximum response size, in KB. Zero indicates no limit.
+    /// Get the maximum response size, in Bytes. Zero indicates no limit.
     long get_response_limit() { return d_max_response_size; }
 
     /** Set the maximum response size. Zero is the default value. The size
-        is given in kilobytes.
+        is given in kilobytes (but stored internally as the number of bytes).
         @param size The maximum size of the response in kilobytes. */
     void set_response_limit(long size) { d_max_response_size = size * 1024; }
 
@@ -349,7 +356,7 @@ public:
     void timeout_off();
     void set_timeout(int t);
     int get_timeout();
-    //@}
+    ///@}
 
     // These parse the DAP2 curly-brace document and make a C++ object.
     void parse(string fname);
@@ -373,6 +380,8 @@ public:
     void print_dmr(ostream &out, bool constrained);
 
     void print_das(ostream &out);
+    DAS *get_das();
+    void get_das(DAS *das);
 
     void mark_all(bool state);
     bool mark(const string &name, bool state);

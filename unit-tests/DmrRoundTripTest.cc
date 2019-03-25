@@ -59,9 +59,12 @@
 #include "test_config.h"
 
 static bool debug = false;
+static bool debug2 = false;
 
 #undef DBG
 #define DBG(x) do { if (debug) {x;} } while(false)
+#undef DBG2
+#define DBG2(x) do { if (debug2) {x;} } while(false)
 
 using namespace CppUnit;
 using namespace std;
@@ -115,16 +118,15 @@ public:
             BaseTypeFactory factory;
             DDS dds(&factory, dds_file);
             dds.parse(prefix + dds_file);
-            DBG(cerr << "SOURCE DDS: " << prefix + dds_file << endl; dds.print(cerr));
+            DBG2(cerr << "SOURCE DDS: " << prefix + dds_file << endl; dds.print(cerr));
 
             if (!das_file.empty()) {
                 DAS das;
                 das.parse(prefix + das_file);
                 dds.transfer_attributes(&das);
-                DBG(cerr << "SOURCE DAS: " << prefix + das_file << endl; das.print(cerr));
+                DBG2(cerr << "SOURCE DAS: " << prefix + das_file << endl; das.print(cerr));
 
-                DBG(cerr << "dds.print_das(): " << endl; dds.print_das(cerr));
-                // DBG(cerr << "dds.print_xml(): " << endl; dds.print_xml(cerr,false,"blob_foo"));
+                DBG2(cerr << "dds.print_das(): " << endl; dds.print_das(cerr));
             }
 
             D4BaseTypeFactory d4_factory;
@@ -139,7 +141,7 @@ public:
     }
 
     void test_roundtrip_template(const string &dds_file, const string &dmr_baseline, const string &das_file = "")
-       // bool expected_fail = false)
+    // bool expected_fail = false)
     {
         DBG(cerr << __func__ << "() - BEGIN" << endl);
 
@@ -148,11 +150,10 @@ public:
             dmr = build_dmr(dds_file, das_file);
             XMLWriter xml;
             dmr->print_dap4(xml);
-            DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
 
             string prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
             string result_dmr(xml.get_doc());
-            string baseline_dmr = readTestBaseline(prefix + dmr_baseline);
+            string baseline_dmr = read_test_baseline(prefix + dmr_baseline);
             DBG(
                 cerr << "BASELINE DMR(" << baseline_dmr.size() << " chars): " << prefix + dmr_baseline << endl
                     << baseline_dmr << endl);
@@ -164,7 +165,7 @@ public:
             std::ostringstream result_dds;
             dds->print(result_dds);
 
-            string source_dds = readTestBaseline(prefix + dds_file);
+            string source_dds = read_test_baseline(prefix + dds_file);
             DBG(
                 cerr << "SOURCE DDS(" << source_dds.size() << " chars): " << prefix + dds_file << endl << source_dds
                     << endl);
@@ -176,7 +177,7 @@ public:
                 std::ostringstream result_das;
                 dds->print_das(result_das);
 
-                string source_das = readTestBaseline(prefix + das_file);
+                string source_das = read_test_baseline(prefix + das_file);
                 DBG(
                     cerr << "SOURCE DAS(" << source_das.size() << " chars): " << prefix + das_file << endl << source_das
                         << endl);
@@ -254,7 +255,8 @@ public:
 #if 0
         i_am_broken(__func__);
 #endif
-        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr", "coads_climatology.nc.correct.das");
+        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr",
+            "coads_climatology.nc.correct.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
@@ -264,7 +266,8 @@ public:
 #if 0
         i_am_broken(__func__);
 #endif
-        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr", "coads_climatology.nc.flat.das");
+        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr",
+            "coads_climatology.nc.flat.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
@@ -280,8 +283,8 @@ CPPUNIT_TEST_SUITE (DmrRoundTripTest);
     CPPUNIT_TEST(test_grid_rt_02);
     CPPUNIT_TEST(test_grid_rt_03);
 #else
-    CPPUNIT_TEST_FAIL (test_grid_rt_02);
-    CPPUNIT_TEST_FAIL (test_grid_rt_03);
+    CPPUNIT_TEST_FAIL(test_grid_rt_02);
+    CPPUNIT_TEST_FAIL(test_grid_rt_03);
 #endif
 
     CPPUNIT_TEST_SUITE_END()

@@ -33,7 +33,7 @@
 #include <cstdarg>
 #include <cassert>
 
-#include <libxml/parserInternals.h>
+#include <libxml2/libxml/parserInternals.h>
 
 #include "DMR.h"
 
@@ -206,7 +206,7 @@ bool D4ParserSax2::process_dimension_def(const char *name, const xmlChar **attrs
         dim_def()->set_size(xml_attrs["size"].value);
     }
     catch (Error &e) {
-        dmr_error(this, e.get_error_message().c_str());
+        dmr_error(this, "%s", e.get_error_message().c_str());
         return false;
     }
 
@@ -1291,34 +1291,6 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 
     d_dmr = dest_dmr; // dump values here
 
-#if 0
-    // Old, bad, code. Lines are limited to 1023 chars including the element text.
-    const int size = 1024;
-    char chars[size];
-    int line = 1;
-
-    f.getline(chars, size);
-    int res = f.gcount();
-    if (res == 0) throw Error("No input found while parsing the DMR.");
-
-    getline(f, line);
-
-    if (debug) cerr << "line: (" << line++ << "): " << chars << endl;
-
-    d_context = xmlCreatePushParserCtxt(&d_dmr_sax_parser, this, chars, res - 1, "stream");
-    d_context->validate = true;
-    push_state(parser_start);
-
-    f.getline(chars, size);
-    while ((f.gcount() > 0) && (get_state() != parser_end)) {
-        if (debug) cerr << "line: (" << line++ << "): " << chars << endl;
-        xmlParseChunk(d_context, chars, f.gcount() - 1, 0);
-        f.getline(chars, size);
-    }
-
-    // This call ends the parse.
-    xmlParseChunk(d_context, chars, 0, 1/*terminate*/);
-#else
     int line_num = 1;
     string line;
 
@@ -1350,7 +1322,6 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 
     // This call ends the parse.
     xmlParseChunk(d_context, line.c_str(), 0, 1/*terminate*/);
-#endif
 
     // This checks that the state on the parser stack is parser_end and throws
     // an exception if it's not (i.e., the loop exited with gcount() == 0).
@@ -1362,10 +1333,14 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
  * @param document Read the DMR from this string.
  * @param dest_dmr Value/result parameter; dumps the information to this DMR
  * instance.
- * @param debug If true, ouput helpful debugging messages, False by default
+ * @param debug If true, output helpful debugging messages, False by default
  *
  * @exception Error Thrown if the XML document could not be read or parsed.
  * @exception InternalErr Thrown if an internal error is found.
+ *
+ * @deprecated Remove this; it's confusing (looks like it's reading from a file
+ * with the name stored in 'document') and offers nothing more than the call
+ * below with the char* buffer.
  */
 void D4ParserSax2::intern(const string &document, DMR *dest_dmr, bool debug)
 {

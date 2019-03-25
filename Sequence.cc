@@ -73,6 +73,7 @@
 #include "D4Group.h"
 #include "Constructor.h"
 #include "DMR.h"
+#include "DapIndent.h"
 
 #undef CLEAR_LOCAL_DATA
 

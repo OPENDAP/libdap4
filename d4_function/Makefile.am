@@ -25,8 +25,20 @@ endif
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
+if USE_ASAN
+ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+endif
+
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+else
+AM_CXXFLAGS += -g -O2
+endif
+
+AM_LDFLAGS =
+if ENABLE_COVERAGE
+AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
+AM_LDFLAGS += -lgcov --coverage -pg
 endif
 
 noinst_LTLIBRARIES = libd4_function_parser.la
@@ -42,7 +54,7 @@ libd4_function_parser_la_SOURCES = D4FunctionEvaluator.cc	\
 	d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc \
 	stack.hh location.hh position.hh
 
-libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
+libd4_ce_parser_la_CXXFLAGS = $(AM_CPPFLAGS) $(AM_CXXFLAGS)
 
 EXTRA_DIST = d4_function_parser.yy d4_function_scanner.ll
 

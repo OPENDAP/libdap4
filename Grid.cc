@@ -56,6 +56,8 @@
 #include "D4Maps.h"
 #include "D4Attributes.h"
 
+#include "DapIndent.h"
+
 using namespace std;
 
 namespace libdap {
@@ -600,35 +602,42 @@ Grid::components(bool constrained)
     return comp;
 }
 
+/**
+ * All the attributes in a AttrTable for a Grid go in AttrTable for the Array.
+ *
+ * @param at_container
+ */
 void Grid::transfer_attributes(AttrTable *at_container)
 {
     DBG( cerr << __func__ << "() - BEGIN "<< type_name() << " " << name() << " (at_container:"<< at_container->get_name() << ":"<<(void*)at_container<< ")" << endl;);
 
-    // At should be the attribute table for the Grid
+    // The variable 'at' should be the attribute table for the Grid
 	AttrTable *at = at_container->get_attr_table(name());
 	if (at) {
 	    DBG( cerr << __func__ << "() - Found AttrTable ("<< at->get_name() << ":" << (void*)at<< ")" << endl;);
 		at->set_is_global_attribute(false);
 
-		// We don't monkey with the data array attributes because it usually just makes
-		// a mess. but:
-		// TODO We should come back and decide if we want to but configuration
-		// controls on this or do something smarter like check for duplicate values
-		// before merging the Array metadata into the Grid metadata
-		// SO - We don't copy the attributes like we used to:
+#if 0
+		// Removing this is left over from a previous version, unknown date.
+		// If the line is added back, some of the DMR round trip tests fail
+		// and the dapreader behavior is changed - tests that build responses
+		// from .dods and .das files fail when they include Grids. jhrg 5/23/18
 		//
-		//    array_var()->transfer_attributes(at);
-		//
-		// And then to seal the deal we have to
-		// Mark them as not "global" so they don't get copied.
-		AttrTable *dvat = at->get_attr_table(array_var()->name());
-		if(dvat){
-		    dvat->set_is_global_attribute(false);
-		}
+		// See also HYARX-766
+		array_var()->transfer_attributes(at);
+#endif
+
+		// If the AttrTable with the name of this Grid (which is also the
+        // name of the Grid's Array) contains a child AttrTable with that
+        // name, mark the attributes as 'not global' and ignore them. This
+        // code has been here for some time; I just added this comment. jhrg 5/23/18
+        AttrTable *dvat = at->get_attr_table(array_var()->name());
+        if (dvat) {
+            dvat->set_is_global_attribute(false);
+        }
 
 		Map_iter map = map_begin();
 		while (map != map_end()) {
-	        DBG( cerr << __func__ << "() - Processing Map Array ("<< (*map)->name() << ":" << (void*)(*map)<< ")" << endl;);
 			(*map)->transfer_attributes(at);
 			map++;
 		}

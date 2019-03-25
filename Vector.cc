@@ -64,6 +64,7 @@
 #include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
+#include "DapIndent.h"
 
 #undef CLEAR_LOCAL_DATA
 
@@ -145,7 +146,6 @@ bool Vector::m_is_cardinal_type() const
 
         case dods_enum_c:
             return true;
-            break;
 
             // These must be handled differently.
         case dods_str_c:
@@ -158,7 +158,6 @@ bool Vector::m_is_cardinal_type() const
         case dods_sequence_c:
         case dods_grid_c:
             return false;
-            break;
 
         default:
             assert("Vector::var: Unrecognized type");
@@ -510,13 +509,11 @@ BaseType *Vector::var(unsigned int i)
             // Transfer the ith value to the BaseType *d_proto
             d_proto->val2buf(d_buf + (i * d_proto->width()));
             return d_proto;
-            break;
 
         case dods_str_c:
         case dods_url_c:
             d_proto->val2buf(&d_str[i]);
             return d_proto;
-            break;
 
         case dods_opaque_c:
         case dods_array_c:
@@ -524,14 +521,10 @@ BaseType *Vector::var(unsigned int i)
         case dods_sequence_c:
         case dods_grid_c:
             return d_compound_buf[i];
-            break;
 
         default:
             throw Error ("Vector::var: Unrecognized type");
-            break;
     }
-
-    return 0;
 }
 
 /** Returns the number of bytes needed to hold the entire
@@ -631,7 +624,6 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
         case dods_array_c:
             // This is an error since there can never be an Array of Array.
             throw InternalErr(__FILE__, __LINE__, "Array of Array not supported.");
-            break;
 
         case dods_structure_c:
         case dods_sequence_c:
@@ -652,7 +644,6 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
-            break;
     }
 }
 
@@ -669,9 +660,6 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
-#if 0
-    dds.timeout_on();
-#endif
     // Added to streamline zero-length arrays. Not needed for correct function,
     // but explicitly handling this case here makes the code easier to follow.
     // In libdap::Vector::val2buf() there is a test that will catch the zero-length
@@ -684,9 +672,7 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-#if 0
-    dds.timeout_off();
-#endif
+
     // length() is not capacity; it must be set explicitly in read().
     int num = length();
 
@@ -740,7 +726,6 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
-            break;
     }
 
 #ifdef CLEAR_LOCAL_DATA
@@ -842,7 +827,6 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
             // Added jhrg 5/18/17
             // This replaces a comment that was simply 'TO DO'
             throw InternalErr(__FILE__, __LINE__, "Array of array!");
-            break;
 
         case dods_structure_c:
         case dods_sequence_c:
@@ -866,7 +850,6 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown type!");
-            break;
     }
 
     return false;
@@ -911,7 +894,6 @@ void Vector::compute_checksum(Crc32 &checksum)
         case dods_grid_c:	// No grids in DAP4
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown or unsupported datatype (" + d_proto->type_name() + ").");
-            break;
     }
 }
 
@@ -959,7 +941,6 @@ void Vector::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*
         case dods_grid_c:
         default:
         	throw InternalErr(__FILE__, __LINE__, "Unknown or unsupported datatype (" + d_proto->type_name() + ").");
-            break;
     }
 }
 
@@ -1041,7 +1022,6 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter /*= false*/)
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
-            break;
     }
 
 #ifdef CLEAR_LOCAL_DATA
@@ -1131,7 +1111,6 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown type.");
-            break;
     }
 }
 
@@ -1295,7 +1274,6 @@ unsigned int Vector::buf2val(void **val)
 
             memcpy(*val, d_buf, wid);
             return wid;
-            break;
 
         case dods_str_c:
         case dods_url_c: {
@@ -1308,7 +1286,6 @@ unsigned int Vector::buf2val(void **val)
                 *(static_cast<string *> (*val) + i) = d_str[i];
 
             return width();
-            break;
         }
 
         default:
@@ -1467,7 +1444,6 @@ void Vector::reserve_value_capacity(unsigned int numElements)
 
         case dods_array_c:
             throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Arrays not supported!");
-            break;
 
         case dods_opaque_c:
         case dods_structure_c:
@@ -1480,8 +1456,6 @@ void Vector::reserve_value_capacity(unsigned int numElements)
 
         default:
             throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Unknown type!");
-            break;
-
     } // switch
 
 }
@@ -1614,12 +1588,9 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 			// Not sure that this function will be used for these type of nested objects, so I will throw here.
 			throw InternalErr(__FILE__, __LINE__,
 					funcName + "Unimplemented method for Vectors of type: array, opaque, structure, sequence or grid.");
-			break;
 
 		default:
 			throw InternalErr(__FILE__, __LINE__, funcName + ": Unknown type!");
-			break;
-
 	} // switch (_var->type())
 
 	// This is how many elements we copied.

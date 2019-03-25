@@ -34,6 +34,7 @@
 
 #include "util.h"
 #include "debug.h"
+#include "DapIndent.h"
 
 namespace libdap {
 
@@ -292,24 +293,29 @@ AttrType get_dap2_AttrType(D4AttributeType d4_type){
     }
 }
 
-
-void
-D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs)
+/**
+ * @brief Transfer DAP4 attributes to a DAP2 AttrTable object
+ *
+ * This is a helper method, see get_AttrTable().
+ *
+ * @param d2_attr_table Destination object
+ * @param d4_attrs Source of the attribute information
+ * @see get_AttrTable
+ */
+void D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs)
 {
-   //  cerr << __func__ << "() - Loading attribute table: '" << d2_attr_table->get_name() << "'  addr: " << (void *)d2_attr_table << endl;
-
-    // for every attribute in at, copy it to this.
-    for ( D4Attributes::D4AttributesIter i = d4_attrs->attribute_begin(), e = d4_attrs->attribute_end(); i != e; ++i) {
+    // for every attribute in d4_attrs, copy it to d2_attr_table.
+    for (D4Attributes::D4AttributesIter i = d4_attrs->attribute_begin(), e = d4_attrs->attribute_end(); i != e; ++i) {
         string name = (*i)->name();
         D4AttributeType d4_attr_type = (*i)->type();
         AttrType d2_attr_type = get_dap2_AttrType(d4_attr_type);
         string d2_attr_type_name = AttrType_to_String(d2_attr_type);
 
-        D4Attribute::D4AttributeIter vitr =(*i)->value_begin();
-        D4Attribute::D4AttributeIter end =(*i)->value_end();
+        D4Attribute::D4AttributeIter vitr = (*i)->value_begin();
+        D4Attribute::D4AttributeIter end = (*i)->value_end();
 
         vector<string> values;
-        for(;vitr!=end; vitr++){
+        for (; vitr != end; vitr++) {
             values.push_back((*vitr));
         }
 
@@ -318,20 +324,18 @@ D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs)
             // Attr_container
             AttrTable *child_attr_table = new AttrTable();
             child_attr_table->set_name(name);
-            // cerr << __func__ << "() - Created child attribute table: " << name << " addr: " << (void *)child_attr_table << endl;
-            load_AttrTable(child_attr_table,(*i)->attributes());
-            d2_attr_table->append_container(child_attr_table,name);
+
+            load_AttrTable(child_attr_table, (*i)->attributes());
+            d2_attr_table->append_container(child_attr_table, name);
             break;
         }
-        default:{
-            // cerr << __func__ << "() - "<< name << " has " << values.size() << " value(s). d2_attr_type_name: " << d2_attr_type_name << endl;
-            d2_attr_table->append_attr(name,d2_attr_type_name, &values);
+        default: {
+            d2_attr_table->append_attr(name, d2_attr_type_name, &values);
             break;
         }
         }
     }
 }
-
 
 /** @brief copy attributes from DAP4 to DAP2
  *

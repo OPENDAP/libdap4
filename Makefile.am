@@ -6,7 +6,7 @@ ACLOCAL_AMFLAGS = -I conf -I gl/m4
 aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
-AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS)
+AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS = 
 
 if COMPILER_IS_GCC
@@ -19,13 +19,32 @@ endif
 # or ./configure --enable-developer --disable-shared
 # the --disable-shared is not required, but it seems to help with debuggers.
 CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align 
-TEST_COV_FLAGS = -g3 -ftest-coverage -fprofile-arcs
 
-if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
+# Build using the Address sanitizer (gcc 4.8+ and clang 3.3+).
+# See: https://github.com/google/sanitizers/wiki/AddressSanitizer
+# jhrg 2/6/18
+if USE_ASAN
+ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 endif
 
-SUBDIRS = gl d4_ce d4_function . unit-tests tests 
+if BUILD_DEVELOPER
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+else
+AM_CXXFLAGS += -g -O2
+endif
+
+AM_LDFLAGS =
+if ENABLE_COVERAGE
+AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
+AM_LDFLAGS += -lgcov --coverage -pg
+# Generage HTML pages with code coverage.
+collect-coverage-data:
+	-mkdir code_coverage
+	gcovr -r . --html --html-details -o coverage.html
+	mv *.html code_coverage
+endif
+
+SUBDIRS = gl d4_ce d4_function . unit-tests tests
 DIST_SUBDIRS = gl d4_ce d4_function unit-tests tests
 
 noinst_LTLIBRARIES = libparsers.la
@@ -47,7 +66,7 @@ man_MANS = getdap.1 dap-config.1 getdap4.1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
 libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)  
-libparsers_la_CPPFLAGS = $(XML2_CFLAGS)
+libparsers_la_CPPFLAGS = $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)
@@ -60,10 +79,9 @@ libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
 libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la d4_ce/libd4_ce_parser.la \
 d4_function/libd4_function_parser.la libparsers.la
 
-# FIXME use configure to sort this out - no longer needed on OSX. jhrg 12/6/17
-# if DAP4_DEFINED
-#    libdap_la_LIBADD += -lcrypto 
-# endif
+if DAP4_DEFINED
+    libdap_la_LIBADD += $(CRYPTO_LIBS)
+endif
 
 libdapclient_la_SOURCES = $(CLIENT_SRC) 
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
@@ -172,6 +190,14 @@ srpm: dist
 rpm: dist
 	rpmbuild -tb --clean $(RPM_OPTIONS) @PACKAGE@-@PACKAGE_VERSION@.tar.gz
 
+# Build the debain package.
+deb: dist
+	( mv @PACKAGE@-@PACKAGE_VERSION@.tar.gz ../ )
+	( mv ../@PACKAGE@-@PACKAGE_VERSION@.tar.gz ../@PACKAGE@_@PACKAGE_VERSION@.orig.tar.gz )
+	( cd ../ && tar xzf @PACKAGE@_@PACKAGE_VERSION@.orig.tar.gz )
+	( cp -r debian/ ../@PACKAGE@-@PACKAGE_VERSION@ )
+	( cd ../@PACKAGE@-@PACKAGE_VERSION@ && debuild -us -uc )
+
 ###########################################################################
 
 # Build OS/X Packages. The strange operations with configure and make
@@ -214,19 +240,6 @@ pkg-dmg: pkg-main
 	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
 
 pkg: pkg-main 
-
-# Note that the gcov options -f and -b are useful but sometimes make looking
-# at the results of coverage analysis a little taxing. -b reports on all
-# branched and -f reports on all functions. The -l -o options summarize on a
-# per-file basis. 3/27/98 jhrg
-collect-coverage-data:
-	(cd test-coverage; \
-         cov_dat="coverage-data-`date +%m.%d.%y`"; \
-         touch $$cov_dat; \
-         for f in $(ALLSRCS); do \
-            echo "\n*** Coverage data for $$f ***\n" >> $$cov_dat; \
-            gcov -l -o ../ $$f >> $$cov_dat; \
-         done)
 
 #############################################################################
 # Library sources

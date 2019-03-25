@@ -63,7 +63,7 @@ private:
 
 /**
  * Synchronization for the child thread in the multi-threaded version of
- * the DAP2 and DAP4 (when it gets implement) 'Marshaller' class used to
+ * the DAP2 and DAP4 (when it gets implemented) 'Marshaller' class used to
  * send data. The class declared below (MarshallerThread) manages the
  * child thread.
  *
@@ -103,10 +103,6 @@ private:
 
     int d_child_thread_count;   // 0 or 1
     std::string d_thread_error; // non-null indicates an error
-
-#if 0
-    static bool print_time; // false by default
-#endif
 
     /**
      * Used to pass information into the static methods that run the
@@ -159,12 +155,6 @@ public:
     // are passed to pthread_create()
     static void *write_thread(void *arg);
     static void *write_thread_part(void *arg);
-
-#if 0
-    static void set_print_time(bool state) { print_time = state; }
-    static bool get_print_time() { return print_time; }
-#endif
-
 };
 
 }

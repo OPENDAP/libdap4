@@ -67,6 +67,7 @@
 #include "parser.h"
 #include "dods-limits.h"
 #include "InternalErr.h"
+#include "DapIndent.h"
 
 using std::cerr;
 using std::endl;
@@ -350,7 +351,7 @@ Byte::transform_to_dap2(AttrTable *parent_attr_table)
         ostringstream oss;
         oss << __func__ << "() -  Something Bad Happened. This transform should produce only ";
         oss << " a single BaseType yet it produced " << vec->size();
-        throw new Error(internal_error,oss.str());
+        throw Error(internal_error,oss.str());
     }
 
     BaseType *dest = (*vec)[0];

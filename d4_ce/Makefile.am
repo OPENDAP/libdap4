@@ -7,7 +7,7 @@ AUTOMAKE_OPTIONS = foreign
 .NOTPARALLEL:
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir) $(XML2_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS =  
 
 if COMPILER_IS_GCC
@@ -28,8 +28,20 @@ endif
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
+if USE_ASAN
+ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+endif
+
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG)
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+else
+AM_CXXFLAGS += -g -O2
+endif
+
+AM_LDFLAGS =
+if ENABLE_COVERAGE
+AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
+AM_LDFLAGS += -lgcov --coverage -pg
 endif
 
 noinst_LTLIBRARIES = libd4_ce_parser.la
@@ -44,7 +56,7 @@ libd4_ce_parser_la_SOURCES = lex.d4_ce.cc d4_ce_parser.tab.cc	\
 	d4_ce_parser.tab.hh stack.hh location.hh position.hh \
 	D4ConstraintEvaluator.cc  D4ConstraintEvaluator.h D4CEScanner.h   
 
-libd4_ce_parser_la_CXXFLAGS=$(AM_CPPFLAGS)
+libd4_ce_parser_la_CXXFLAGS = $(AM_CPPFLAGS) $(AM_CXXFLAGS)
 
 EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll
 

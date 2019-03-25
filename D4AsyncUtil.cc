@@ -326,9 +326,8 @@ string D4AsyncUtil::getRejectReasonCodeString(RejectReasonCode code){
 
 	default:
 		throw InternalErr(__FILE__, __LINE__, "D4AsyncUtil::getRejectReasonCodeString() - Unrecognized reject_reason_code.");
-		break;
-
 	}
+
 	return codeStr;
 }
 
