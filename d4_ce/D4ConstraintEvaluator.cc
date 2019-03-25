@@ -285,13 +285,8 @@ D4ConstraintEvaluator::slice_dimension(const std::string &id, const index &i)
 
 D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i)
 {
-<<<<<<< HEAD
 	unsigned long long v = get_int64(i.c_str());    // get_int64() throws on error
 	return index(v, 1, v, false, false /*empty*/, "");
-=======
-    unsigned long long v = get_int64(i.c_str());
-    return index(v, 1, v, false, false /*empty*/, "");
->>>>>>> master
 }
 
 D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s,
@@ -316,7 +311,6 @@ D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string
     return index(get_uint64(i.c_str()), s, 0, true, false /*empty*/, "");
 }
 
-<<<<<<< HEAD
 /**
  * Given starting and stopping bounds in terms of a natural axes (i.e., a
  * DAP4 Shared Dimension), compute the index values that match/enclose those
@@ -356,9 +350,6 @@ D4ConstraintEvaluator::make_index_using_natural_axes(const std::string &i, const
 
 static string
 expr_msg(const std::string &op, const std::string &arg1, const std::string &arg2)
-=======
-static string expr_msg(const std::string &op, const std::string &arg1, const std::string &arg2)
->>>>>>> master
 {
     return "(" + arg1 + " " + op + " " + arg2 + ").";
 }
