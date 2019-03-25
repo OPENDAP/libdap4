@@ -778,6 +778,18 @@ array_index:
     j.v.i = atoi($4);
     $$ = make_array_index(i, j);
 }
+|'[' '(' SCAN_WORD ')' ':' '(' SCAN_WORD ')' ']'
+{
+    if (!check_uint32($3))
+        throw Error(malformed_expr, "The word `" + string($3) + "' is not a valid array index.");
+    if (!check_uint32($7))
+        throw Error(malformed_expr, "The word `" + string($7) + "' is not a valid array index.");
+    value i,j;
+    i.type = j.type = dods_uint32_c;
+    i.v.i = atoi($3);
+    j.v.i = atoi($7);
+    $$ = make_array_index(i, j);
+}
 |'[' SCAN_WORD ':' SCAN_STAR ']'
 {
     if (!check_uint32($2))
