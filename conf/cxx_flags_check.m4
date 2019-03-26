@@ -14,7 +14,7 @@ AC_DEFUN([CXX_FLAGS_CHECK],
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],                                            
     [AC_MSG_RESULT([yes])]
     $2,                                                           
-    [AC_MSG_ERROR([no])]
+    [AC_MSG_RESULT([no])]
     $3                                                              
   )                                                                                   
   CXXFLAGS="$ac_saved_cxxflags"                                                       
