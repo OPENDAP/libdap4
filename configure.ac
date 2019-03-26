@@ -2,8 +2,8 @@
 dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
-dnl AC_PREREQ(2.63)
-AC_PREREQ([2.68])
+AC_PREREQ(2.63)
+dnl AC_PREREQ([2.68]); Fails on CentOS 6. jhrg 3/26/19
 dnl m4_pattern_forbid([^_?(gl_[A-Z]|AX_|BISON_)])
 dnl m4_pattern_allow([^BISON_USE_NLS$])
 
