@@ -116,15 +116,14 @@ CXX11_FLAG=""
 
 CXX_FLAGS_CHECK([--std=c++11], [CXX11_FLAG=--std=c++11], [])
 
-dnl AS_IF([test -z "$CXX11_FLAG"],
-dnl    [CXX_FLAGS_CHECK([--std=c++0x], [CXX11_FLAG=--std=c++0x], [])])
+AS_IF([test -z "$CXX11_FLAG"],
+      [CXX_FLAGS_CHECK([--std=c++0x], [CXX11_FLAG=--std=c++0x], [])])
 
 AS_IF([test -z "$CXX11_FLAG"],
       [AC_MSG_NOTICE([Not using C++-11])],
       [AC_MSG_NOTICE([Using $CXX11_FLAG for C++-11 support])])
 
 AC_SUBST(CXX11_FLAG)
-
 
 AM_PROG_LEX
 AC_PROG_INSTALL
