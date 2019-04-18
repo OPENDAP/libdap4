@@ -44,7 +44,7 @@ collect-coverage-data:
 	mv *.html code_coverage
 endif
 
-SUBDIRS = gl d4_ce d4_function . unit-tests tests
+SUBDIRS = gl geo d4_ce d4_function . unit-tests tests
 DIST_SUBDIRS = gl d4_ce d4_function unit-tests tests
 
 noinst_LTLIBRARIES = libparsers.la

@@ -51,7 +51,7 @@ class ConstraintEvaluator;
 // VALUE is used to return constant values from the scanner to the parser.
 // Constants are packaged in BaseType *s for evaluation by the parser.
 
-typedef struct
+typedef struct value
 {
     Type type;   // Type is an enum defined in Type.h
     union {
@@ -83,7 +83,7 @@ typedef void (*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvalua
 // indexes.
 
 // To add the new feature of 'to the end' in an array projection (denoted using
-// start), I used the value -1 for an index. This makes do difference here. jhrg
+// star), I used the value -1 for an index. This makes do difference here. jhrg
 // 12/20/12
 
 typedef std::vector<int> int_list;
@@ -92,6 +92,11 @@ typedef std::vector<int>::iterator int_iter ;
 typedef std::vector<int_list *> int_list_list;
 typedef std::vector<int_list *>::const_iterator int_list_citer ;
 typedef std::vector<int_list *>::iterator int_list_iter ;
+
+// These are probably better names. By using 'value' and not integers,
+// the slices can use floats which is a better fit for lat and lon. jhrg 4/18/19
+typedef std::vector<value> dim_slice;
+typedef std::vector<dim_slice> slices;
 
 } // namespace libdap
 
