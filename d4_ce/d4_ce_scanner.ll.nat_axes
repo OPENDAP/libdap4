@@ -80,6 +80,8 @@ typedef libdap::D4CEParser::token token;
 
 %x quote
 
+NUMBER   [+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)
+
 /* This pattern just ensures that a word does not start with '#' which
    is the DAP2 comment character. 
 
@@ -106,6 +108,8 @@ loc->step();
 "["     return token::LBRACKET;
 "]"     return token::RBRACKET;
 ":"     return token::COLON;
+"("     return token::L_PAREN;
+")"     return token::R_PAREN;
 ","		return token::COMMA;
 ";"		return token::SEMICOLON;
 "|"     return token::PIPE;
@@ -129,6 +133,8 @@ loc->step();
 [ \t]+  /* ignore these */
 
 [\r\n]+ /* ignore these */
+
+{NUMBER}  { yylval->build<std::string>(yytext); return token::NUMBER; }
 
 {WORD}  { yylval->build<std::string>(yytext); return token::WORD; }
 

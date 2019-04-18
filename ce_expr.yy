@@ -645,24 +645,24 @@ id_or_const: SCAN_WORD
 		    }
 		}
         | SCAN_STR
-                {
-                    if ($1.type != dods_str_c || $1.v.s == 0 || $1.v.s->empty())
-                        ce_exprerror(arg, "Malformed string", "");
-                        
-                    BaseType *var = DDS(arg)->var(www2id(*($1.v.s)));
-                    if (var) {
-                        $$ = new rvalue(var);
-                    }
-                    else {
-                        var = make_variable((*EVALUATOR(arg)), $1); 
-                        $$ = new rvalue(var);
-                    }
+        {
+            if ($1.type != dods_str_c || $1.v.s == 0 || $1.v.s->empty())
+                ce_exprerror(arg, "Malformed string", "");
+                       
+            BaseType *var = DDS(arg)->var(www2id(*($1.v.s)));
+            if (var) {
+                $$ = new rvalue(var);
+            }
+            else {
+                var = make_variable((*EVALUATOR(arg)), $1); 
+                $$ = new rvalue(var);
+            }
 		    // When the scanner (ce_expr.lex) returns the SCAN_STR token type
 		    // it makes a local copy of the string in a new std::string object
 		    // that we must delete. Fix for a bug report by Aron.Bartle@mechdyne.com
 		    // See ticket 2240. jhrg 7/30/14
 		    delete $1.v.s;
-                }
+        }
 ;
 
 /* this must return an rvalue. It should run bracket_projection() 
@@ -724,8 +724,8 @@ name:           SCAN_WORD
                         ce_exprerror(arg, "Malformed string", "");
                         
                     strncpy($$, www2id(*($1.v.s)).c_str(), ID_MAX-1);
-		    // See comment about regarding the scanner's behavior WRT SCAN_STR.
-		    // jhrg 7/30/14
+		            // See comment about regarding the scanner's behavior WRT SCAN_STR.
+		            // jhrg 7/30/14
                     delete $1.v.s;
 
                     $$[ID_MAX-1] = '\0';
@@ -784,7 +784,7 @@ array_index:
         throw Error(malformed_expr, "The word `" + string($3) + "' is not a valid array index.");
     if (!check_uint32($7))
         throw Error(malformed_expr, "The word `" + string($7) + "' is not a valid array index.");
-    value i,j;
+    value i,j;  // Value can be a float; see expr.h jhrg 4/17/19
     i.type = j.type = dods_uint32_c;
     i.v.i = atoi($3);
     j.v.i = atoi($7);
@@ -977,6 +977,9 @@ make_array_index(value &i1, value &i2, value &i3)
     return index;
 }
 
+// This is the function that will be called with 'value' instances that are
+// double variables. May have to rethink how the indices are built up.
+// jhrg 4/17/19
 int_list *
 make_array_index(value &i1, value &i2)
 {
