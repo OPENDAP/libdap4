@@ -105,23 +105,22 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 
 %%
 
-clause:		identifier relop constant
-                {
+clause:	identifier relop constant
+        {
 		    ((gse_arg *)arg)->set_gsec(
 			build_gse_clause((gse_arg *)(arg), $1, $2, $3));
 		    $$ = true;
 		}
 		| constant relop identifier
-                {
+        {
 		    ((gse_arg *)arg)->set_gsec(
 		       build_rev_gse_clause((gse_arg *)(arg), $3, $2, $1));
 		    $$ = true;
 		}
 		| constant relop identifier relop constant
-                {
+        {
 		    ((gse_arg *)arg)->set_gsec(
-		       build_dual_gse_clause((gse_arg *)(arg), $3, $2, $1, $4,
-					     $5));
+		       build_dual_gse_clause((gse_arg *)(arg), $3, $2, $1, $4, $5));
 		    $$ = true;
 		}
 ;
@@ -129,12 +128,12 @@ clause:		identifier relop constant
 identifier:	SCAN_WORD 
 ;
 
-constant:       SCAN_INT
+constant: SCAN_INT
 		| SCAN_FLOAT
 ;
 
-relop:		SCAN_EQUAL
-                | SCAN_NOT_EQUAL
+relop:	SCAN_EQUAL
+        | SCAN_NOT_EQUAL
 		| SCAN_GREATER
 		| SCAN_GREATER_EQL
 		| SCAN_LESS

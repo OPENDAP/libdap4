@@ -1,11 +1,6 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-# We need this to make sure that parallel jobs don't fail for 
-# lack of stack.hh, ... because those are built by bison in one
-# shot.
-.NOTPARALLEL:
-
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/geo -I$(srcdir) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS =  

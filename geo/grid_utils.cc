@@ -34,7 +34,10 @@
 #include "grid_utils.h"
 #include "gse_parser.h"
 #include "GSEClause.h"
-// #include "GridGeoConstraint.h"
+
+#if 0
+#include "GridGeoConstraint.h"
+#endif
 
 using namespace libdap;
 

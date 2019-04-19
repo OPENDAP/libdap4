@@ -53,6 +53,7 @@ class ConstraintEvaluator;
 
 typedef struct value
 {
+    bool is_range_value;
     Type type;   // Type is an enum defined in Type.h
     union {
         unsigned int ui;
@@ -93,8 +94,8 @@ typedef std::vector<int_list *> int_list_list;
 typedef std::vector<int_list *>::const_iterator int_list_citer ;
 typedef std::vector<int_list *>::iterator int_list_iter ;
 
-// These are probably better names. By using 'value' and not integers,
-// the slices can use floats which is a better fit for lat and lon. jhrg 4/18/19
+// By using 'value' and not integers, the slices can use floats which is a better fit
+// for lat and lon values. jhrg 4/18/19
 typedef std::vector<value> dim_slice;
 typedef std::vector<dim_slice> slices;
 
