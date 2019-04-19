@@ -288,8 +288,28 @@ AttrType get_dap2_AttrType(D4AttributeType d4_type){
     case attr_str_c:       { return Attr_string; }
     case attr_url_c:       { return Attr_url; }
     case attr_otherxml_c:  { return Attr_other_xml; }
+
+    case attr_int8_c:      { return Attr_byte; }
+    case attr_uint8_c:     { return Attr_byte; }
+    case attr_int64_c:     {
+        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
+            "There is no accepted DAP2 representation of Int64.");
+    }
+    case attr_uint64_c:    {
+        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
+            "There is no accepted DAP2 representation of UInt64.");
+    }
+    case attr_enum_c:    {
+        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
+            "There is no accepted DAP2 representation of Enumeration.");
+    }
+    case attr_opaque_c:    {
+        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
+            "There is no accepted DAP2 representation of Opaque.");
+    }
+
     default:
-        throw InternalErr(__FILE__, __LINE__, "Unknown DAP4 attribute");
+        throw InternalErr(__FILE__, __LINE__, "Unknown DAP4 attribute.");
     }
 }
 
