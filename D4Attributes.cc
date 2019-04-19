@@ -299,6 +299,14 @@ AttrType get_dap2_AttrType(D4AttributeType d4_type){
         throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
             "There is no accepted DAP2 representation of UInt64.");
     }
+    case attr_enum_c:    {
+        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
+            "There is no accepted DAP2 representation of Enumeration.");
+    }
+    case attr_opaque_c:    {
+        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
+            "There is no accepted DAP2 representation of Opaque.");
+    }
 
     default:
         throw InternalErr(__FILE__, __LINE__, "Unknown DAP4 attribute.");
