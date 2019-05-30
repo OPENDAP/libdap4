@@ -285,7 +285,7 @@ DDS *DMR::getDDS(DMR &dmr)
     vector<BaseType *>::iterator vIter = top_vars->begin();
     vector<BaseType *>::iterator vEnd = top_vars->end();
     for (; vIter != vEnd; vIter++) {
-        dds->add_var(*vIter);
+        dds->add_var_nocopy(*vIter);
     }
 
 #if 0
