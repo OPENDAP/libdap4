@@ -281,12 +281,13 @@ DDS *DMR::getDDS(DMR &dmr)
     // D4Attributes::load_AttrTable(dds_at,root->attributes());
 
     vector<BaseType *> *top_vars = root->transform_to_dap2(dds_at, true);
-
     vector<BaseType *>::iterator vIter = top_vars->begin();
     vector<BaseType *>::iterator vEnd = top_vars->end();
     for (; vIter != vEnd; vIter++) {
         dds->add_var_nocopy(*vIter);
     }
+    delete top_vars;
+    top_vars=0;
 
 #if 0
     set<string> shared_dim_candidates;
