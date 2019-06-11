@@ -141,6 +141,7 @@ public:
 
         DBG(cerr << __func__ << "() - BEGIN (test_base: " << test_base_name << ")" << endl);
         DMR *dmr = 0;
+        DDS *dds = 0;
         try {
 
             dmr = build_dmr(dmr_file);
@@ -156,7 +157,7 @@ public:
             DBG(cerr << "RESULT DMR(" << result_dmr.size() << " chars): " << endl << result_dmr << endl);
             CPPUNIT_ASSERT(result_dmr == baseline_dmr);
 
-            DDS *dds = dmr->getDDS();
+            dds = dmr->getDDS();
             std::ostringstream result_dds;
             dds->print(result_dds);
             string baseline_dds = read_test_baseline(dds_file);
@@ -178,7 +179,13 @@ public:
         }
         catch (Error &e) {
             delete dmr;
+            delete dds;
             CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
+        }
+        catch (CPPUNIT_NS::Exception &e){
+            delete dmr;
+            delete dds;
+            CPPUNIT_FAIL(string("CPPUNIT FAIL: ") + e.message().details());
         }
         DBG(cerr << __func__ << "() - END" << endl);
     }
@@ -390,9 +397,17 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
+    void big_airs_metadata()
+    {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        test_template("big_airs_metadata");
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+
 CPPUNIT_TEST_SUITE (DmrToDap2Test);
 
 #if 1 // good (as in should be working) tests
+    CPPUNIT_TEST(big_airs_metadata);
     CPPUNIT_TEST(dmr_to_dap2_01);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_0);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_1);

@@ -322,15 +322,15 @@ Array::transform_to_dap2(AttrTable *){
             g->set_array(grid_array);
 
             // Get the metadata into the Grid Array
-            AttrTable *grid_attrs = attributes()->get_AttrTable(name());
-            grid_array->set_attr_table(*grid_attrs); // Copy it into the Grid object.
+            //AttrTable *grid_attrs = attributes()->get_AttrTable(name());
+            //grid_array->set_attr_table(*grid_attrs); // Copy it into the Grid object.
             // grid_array->set_attr_table(*grid_attrs); // Copy it into the data Array.
-            delete grid_attrs;
+            // delete grid_attrs;
 
             // Clear the Grid attributes.
-            AttrTable at;
-            at.set_name(name());
-            g->set_attr_table(at);
+            //AttrTable at;
+            //at.set_name(name());
+            //g->set_attr_table(at);
 
             // Process the Map Arrays.
             D4Maps *d4_maps = this->maps();
@@ -394,14 +394,12 @@ Array::transform_to_dap2(AttrTable *){
             {
                 dest = this->ptr_duplicate();
                 // convert the d4 attributes to a dap2 attribute table.
-                AttrTable *attrs = this->attributes()->get_AttrTable(name());
-                dest->set_attr_table(*attrs);
+                //AttrTable *attrs = this->attributes()->get_AttrTable(name());
+                //dest->set_attr_table(*attrs);
                 dest->set_is_dap4(false);
-                AttrTable at = dest->get_attr_table();
                 DBG( cerr << __func__ << "() - " <<
                     "DAS for new Array '" << dest->name() << "':" << endl;
-                    at.print(cerr); )
-
+                     dest->get_attr_table().print(cerr); )
                 break;
             }
             }
