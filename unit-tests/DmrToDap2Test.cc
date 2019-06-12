@@ -182,10 +182,15 @@ public:
             delete dds;
             CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
         }
-        catch (CPPUNIT_NS::Exception &e){
+        catch (CPPUNIT_NS::Exception &e) {
             delete dmr;
             delete dds;
             CPPUNIT_FAIL(string("CPPUNIT FAIL: ") + e.message().details());
+        }
+        catch (...) {
+            delete dmr;
+            delete dds;
+            CPPUNIT_FAIL(string("CPPUNIT FAIL: OUCH! Caught unknown exception! "));
         }
         DBG(cerr << __func__ << "() - END" << endl);
     }
