@@ -398,6 +398,12 @@ Array::transform_to_dap2(AttrTable *){
             {
                 // ptr_duplicate() does the Attributes too.
                 dest = this->ptr_duplicate();
+#if 0 // FIXME Adding this back into the code 'fixes' two of the DDSTests
+		// get_das_test_6 and get_das_test_5. jhrg 6/17/19 
+                // convert the d4 attributes to a dap2 attribute table.
+                AttrTable *attrs = this->attributes()->get_AttrTable(name());
+                dest->set_attr_table(*attrs);
+#endif
                 dest->set_is_dap4(false);
                 DBG( cerr << __func__ << "() - " <<
                     "DAS for new Array '" << dest->name() << "':" << endl;
