@@ -321,11 +321,13 @@ Array::transform_to_dap2(AttrTable *){
             Array *grid_array = (Array *) this->ptr_duplicate();
             g->set_array(grid_array);
 
-#if 0 // The enclosed operations are redundant.
+#if 0 // The enclosed operations are redundant. FIXME jhrg
+	    // Including this block 'fixes' DDSTest::get_das_test_2() and completely
+	    // 'fixes' the failures in DmrRoundTripTest. jhrg 6/17/19
             // Get the metadata into the Grid Array
             AttrTable *grid_attrs = attributes()->get_AttrTable(name());
             grid_array->set_attr_table(*grid_attrs); // Copy it into the Grid object.
-            grid_array->set_attr_table(*grid_attrs); // Copy it into the data Array.
+            // grid_array->set_attr_table(*grid_attrs); // Copy it into the data Array.
             delete grid_attrs;
 
             // Clear the Grid attributes.
