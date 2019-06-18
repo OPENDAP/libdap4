@@ -321,7 +321,7 @@ Array::transform_to_dap2(AttrTable *){
             Array *grid_array = (Array *) this->ptr_duplicate();
             g->set_array(grid_array);
 
-#if 0 // The enclosed operations are redundant. FIXME jhrg
+#if 1 // The enclosed operations are redundant. FIXME jhrg HK-403
 	    // Including this block 'fixes' DDSTest::get_das_test_2() and completely
 	    // 'fixes' the failures in DmrRoundTripTest. jhrg 6/17/19
             // Get the metadata into the Grid Array
@@ -398,7 +398,7 @@ Array::transform_to_dap2(AttrTable *){
             {
                 // ptr_duplicate() does the Attributes too.
                 dest = this->ptr_duplicate();
-#if 0 // FIXME Adding this back into the code 'fixes' two of the DDSTests
+#if 1 // FIXME HK-403 Adding this back into the code 'fixes' two of the DDSTests 
 		// get_das_test_6 and get_das_test_5. jhrg 6/17/19 
                 // convert the d4 attributes to a dap2 attribute table.
                 AttrTable *attrs = this->attributes()->get_AttrTable(name());

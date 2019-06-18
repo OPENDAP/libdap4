@@ -280,14 +280,18 @@ DDS *DMR::getDDS(DMR &dmr)
     // Now copy the global attributes
     // D4Attributes::load_AttrTable(dds_at,root->attributes());
 
+    // TODO Make this a unique_ptr<> and let the compiler delete it. jhrg 6/17/19
     vector<BaseType *> *top_vars = root->transform_to_dap2(dds_at, true);
     vector<BaseType *>::iterator vIter = top_vars->begin();
     vector<BaseType *>::iterator vEnd = top_vars->end();
     for (; vIter != vEnd; vIter++) {
+#if 1 // FIXME Try reverting this to see if more tests pass. jhrg 6/17/19 HK-403
         dds->add_var_nocopy(*vIter);
+#else
+        dds->add_var(*vIter);
+#endif
     }
     delete top_vars;
-    top_vars=0;
 
 #if 0
     set<string> shared_dim_candidates;
