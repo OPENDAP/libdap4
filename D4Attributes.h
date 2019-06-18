@@ -138,6 +138,7 @@ public:
     void add_attribute(D4Attribute *attr) {
         d_attrs.push_back(new D4Attribute(*attr));
     }
+
     void add_attribute_nocopy(D4Attribute *attr) {
         d_attrs.push_back(attr);
     }
