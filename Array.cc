@@ -318,7 +318,7 @@ Array::transform_to_dap2(AttrTable *){
             DBG(cerr << __func__ << "() - Array '"<< name() << "' is dap2 Grid!"  << endl;);
             Grid *g = new Grid(name());
             dest = g;
-            Array *grid_array = (Array *) this->ptr_duplicate();
+            Array *grid_array = static_cast<Array *>(ptr_duplicate());
             g->set_array(grid_array);
 
 #if 1 // The enclosed operations are redundant. FIXME jhrg HK-403
@@ -327,7 +327,6 @@ Array::transform_to_dap2(AttrTable *){
             // Get the metadata into the Grid Array
             AttrTable *grid_attrs = attributes()->get_AttrTable(name());
             grid_array->set_attr_table(*grid_attrs); // Copy it into the Grid object.
-            // grid_array->set_attr_table(*grid_attrs); // Copy it into the data Array.
             delete grid_attrs;
 #endif
 #if 0 // HK-403. Removing this does not break any tests. jhrg 6/17/19
