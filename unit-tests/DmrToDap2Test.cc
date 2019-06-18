@@ -409,10 +409,9 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-CPPUNIT_TEST_SUITE (DmrToDap2Test);
+    CPPUNIT_TEST_SUITE (DmrToDap2Test);
 
-#if 1 // good (as in should be working) tests
-    CPPUNIT_TEST_FAIL(big_airs_metadata); // Expect this test to fail. jhrg 6/17/19 HK-403
+    // good (as in should be working) tests
     CPPUNIT_TEST(dmr_to_dap2_01);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_0);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_1);
@@ -446,17 +445,12 @@ CPPUNIT_TEST_SUITE (DmrToDap2Test);
     CPPUNIT_TEST(dmr_to_grid_04);
     CPPUNIT_TEST(dmr_to_grid_05);
 
-#endif
+    // bad tests, here then is the woodshed of Testville.
 
-#if 1 // bad tests, here then is the woodshed of Testville.
-
+    CPPUNIT_TEST_FAIL(big_airs_metadata); // Expect this test to fail. jhrg 6/17/19 HK-403
     CPPUNIT_TEST_FAIL(enum_dmr_to_dap2_1_5); // Broken: Parser issue with look-ahead
 
-#endif
-
-    CPPUNIT_TEST_SUITE_END()
-    ;
-
+    CPPUNIT_TEST_SUITE_END();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DmrToDap2Test);

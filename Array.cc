@@ -329,7 +329,8 @@ Array::transform_to_dap2(AttrTable *){
             grid_array->set_attr_table(*grid_attrs); // Copy it into the Grid object.
             // grid_array->set_attr_table(*grid_attrs); // Copy it into the data Array.
             delete grid_attrs;
-
+#endif
+#if 0 // HK-403. Removing this does not break any tests. jhrg 6/17/19
             // Clear the Grid attributes.
             AttrTable at;
             at.set_name(name());

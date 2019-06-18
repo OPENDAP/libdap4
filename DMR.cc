@@ -285,11 +285,7 @@ DDS *DMR::getDDS(DMR &dmr)
     vector<BaseType *>::iterator vIter = top_vars->begin();
     vector<BaseType *>::iterator vEnd = top_vars->end();
     for (; vIter != vEnd; vIter++) {
-#if 1 // FIXME Try reverting this to see if more tests pass. jhrg 6/17/19 HK-403
         dds->add_var_nocopy(*vIter);
-#else
-        dds->add_var(*vIter);
-#endif
     }
     delete top_vars;
 
