@@ -29,6 +29,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <sstream>
+#include <memory>
 
 #include "Byte.h"
 #include "Int16.h"
@@ -141,11 +142,11 @@ public:
         string das_file = prefix + test_base_name + ".das";
 
         DBG(cerr << __func__ << "() - BEGIN (test_base: " << test_base_name << ")" << endl);
-        DMR *dmr = 0;
-        DDS *dds = 0;
+        //DMR *dmr = 0;
+        //DDS *dds = 0;
         try {
-            dmr = build_dmr(dmr_file);
-            CPPUNIT_ASSERT(dmr != 0);
+            auto_ptr<DMR> dmr(build_dmr(dmr_file));
+            CPPUNIT_ASSERT(dmr.get() != 0);
             XMLWriter xml;
             dmr->print_dap4(xml);
             string result_dmr(xml.get_doc());
@@ -157,7 +158,7 @@ public:
             DBG2(cerr << "RESULT DMR(" << result_dmr.size() << " chars): " << endl << result_dmr << endl);
             CPPUNIT_ASSERT(result_dmr == baseline_dmr);
 
-            dds = dmr->getDDS();
+            auto_ptr<DDS> dds(dmr->getDDS());
             ostringstream result_dds;
             dds->print(result_dds);
             string baseline_dds = read_test_baseline(dds_file);
@@ -174,22 +175,22 @@ public:
             DBG2(cerr << "RESULT DAS(" << result_das.str().size() << " chars): " << endl << result_das.str() << endl);
             CPPUNIT_ASSERT(result_das.str() == source_das);
 
-            delete dmr;
-            delete dds;
+            //delete dmr;
+            //delete dds;
         }
         catch (Error &e) {
-            delete dmr;
-            delete dds;
+            //delete dmr;
+            //delete dds;
             CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
         }
         catch (CPPUNIT_NS::Exception &e) {
-            delete dmr;
-            delete dds;
+            //delete dmr;
+            //delete dds;
             CPPUNIT_FAIL(string("CPPUNIT FAIL: ") + e.message().details());
         }
         catch (...) {
-            delete dmr;
-            delete dds;
+            //delete dmr;
+            //delete dds;
             CPPUNIT_FAIL(string("CPPUNIT FAIL: OUCH! Caught unknown exception! "));
         }
         DBG(cerr << __func__ << "() - END" << endl);
