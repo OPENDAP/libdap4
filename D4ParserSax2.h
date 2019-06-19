@@ -39,8 +39,6 @@
 
 #define CRLF "\r\n"
 
-#define D4_PARSE_BUFF_SIZE 1048576
-
 namespace libdap
 {
 
@@ -118,8 +116,6 @@ private:
 
         parser_end
     };
-
-    char d_parse_buffer[D4_PARSE_BUFF_SIZE+1]; // One Megabyte
 
     xmlSAXHandler d_dmr_sax_parser;
 
