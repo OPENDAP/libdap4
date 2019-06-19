@@ -711,8 +711,9 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
                 string new_name = (is_root ? "" : FQN()) + (*vi)->name();
                 (*vi)->set_name(new_name);
                 results->push_back((*vi));
+#if 0
                 (*vi) = NULL;
-
+#endif
                 DBG( cerr << __func__ << "() - Added member variable '" << (*i)->name() << "' " <<
                     "to results vector. root: "<< (is_root?"true":"false") << endl);
             }
@@ -736,22 +737,14 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
     }
 
     // Get all the child groups.
-    for (D4Group::groupsIter gIter = grp_begin(), gEnd = grp_end(); gIter != gEnd; gIter++) {
-
-        DBG( cerr << __func__ << "() - Processing D4Group " << grp->name() << endl);
-
-        vector<BaseType *> *d2_vars = (*gIter)->transform_to_dap2(group_attrs);
+    for (D4Group::groupsIter gi = grp_begin(), ge = grp_end(); gi != ge; ++gi) {
+        vector<BaseType *> *d2_vars = (*gi)->transform_to_dap2(group_attrs);
         if (d2_vars) {
-
-            DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variables." << endl);
-
-            vector<BaseType *>::iterator vIter = d2_vars->begin();
-            vector<BaseType *>::iterator vEnd = d2_vars->end();
-            for (; vIter != vEnd; vIter++) {
-                results->push_back(*vIter);
+            for (vector<BaseType *>::iterator i = d2_vars->begin(), e = d2_vars->end(); i != e; ++i) {
+                results->push_back(*i);
             }
         }
-
+	delete d2_vars;
     }
 
     if (!is_root) {

@@ -158,7 +158,7 @@ public:
             CPPUNIT_ASSERT(result_dmr == baseline_dmr);
 
             dds = dmr->getDDS();
-            std::ostringstream result_dds;
+            ostringstream result_dds;
             dds->print(result_dds);
             string baseline_dds = read_test_baseline(dds_file);
             DBG2(
@@ -167,7 +167,7 @@ public:
             DBG2(cerr << "RESULT DDS(" << result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
             CPPUNIT_ASSERT(result_dds.str() == baseline_dds);
 
-            std::ostringstream result_das;
+            ostringstream result_das;
             dds->print_das(result_das);
             string source_das = read_test_baseline(das_file);
             DBG2(cerr << "BASELINE DAS(" << source_das.size() << " chars): " << das_file << endl << source_das << endl);

@@ -375,8 +375,11 @@ DMR::getDDS()
 #else
     DBG( cerr << __func__ << "() - BEGIN" << endl);
 
+#if 0
     BaseTypeFactory *btf = new BaseTypeFactory();
-    DDS *dds = new DDS(btf, name());
+#endif
+    BaseTypeFactory btf;
+    DDS *dds = new DDS(&btf, name());
     dds->filename(filename());
 
     // Now copy the global attributes
@@ -388,7 +391,8 @@ DMR::getDDS()
     delete top_vars;
 
     DBG( cerr << __func__ << "() - END" << endl);
-
+    
+    dds->set_factory(0);
     return dds;
 #endif
 }
