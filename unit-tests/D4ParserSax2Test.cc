@@ -106,7 +106,7 @@ public:
             dmr->print_dap4(*xml, false);
             string doc = xml->get_doc();
             string baseline = read_test_baseline(string(TEST_SRC_DIR) + bl);
-            DBG(cerr << "DMR: " << doc << endl);
+            DBG(cerr << "RESULT DMR: " << doc << endl);
             CPPUNIT_ASSERT(doc == baseline);
         }
         catch (Error &e) {
@@ -125,7 +125,7 @@ public:
             dmr->print_dap4(*xml, false);
             string doc = xml->get_doc();
             string baseline = read_test_baseline(string(TEST_SRC_DIR) + bl);
-            DBG(cerr << "DMR: " << doc << endl);
+            DBG(cerr << "RESULT DMR: " << doc << endl);
             CPPUNIT_ASSERT(doc == baseline);
         }
         catch (Error &e) {
