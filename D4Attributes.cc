@@ -337,10 +337,9 @@ void D4Attributes::transform_to_dap2(AttrTable *d2_attr_table)
             break;
         }
         default: {
-	    for (D4Attribute::D4AttributeIter vi = (*i)->value_begin(), ve = (*i)->value_end(); 
-		 vi != ve; vi++) {
-		d2_attr_table->append_attr(name, d2_attr_type_name, *vi);
-	    }
+            for (D4Attribute::D4AttributeIter vi = (*i)->value_begin(), ve = (*i)->value_end(); vi != ve; vi++) {
+                d2_attr_table->append_attr(name, d2_attr_type_name, *vi);
+            }
 
             break;
         }
