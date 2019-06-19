@@ -29,6 +29,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <sstream>
+#include <memory>
 
 #include "Byte.h"
 #include "Int16.h"
@@ -63,7 +64,9 @@ static bool debug = false;
 static bool mo_debug = false;
 
 #undef DBG
+#undef DBG2
 #define DBG(x) do { if (debug) {x;} } while(false)
+#define DBG2(x) do { if (mo_debug) {x;} } while(false)
 
 using namespace CppUnit;
 using namespace std;
@@ -93,7 +96,7 @@ public:
     bool re_match(Regex &r, const string &s)
     {
         int match = r.match(s.c_str(), s.length());
-        DBG(cerr << "Match: " << match << " should be: " << s.length() << endl);
+        DBG2(cerr << "Match: " << match << " should be: " << s.length() << endl);
         return match == static_cast<int>(s.length());
     }
 
@@ -107,8 +110,8 @@ public:
      */
     DMR *build_dmr(const string &dmr_file)
     {
-        DBG(cerr << __func__ << "() - BEGIN" << endl);
-        DBG(cerr << __func__ << "() - dmr_file: " << dmr_file << endl);
+        DBG2(cerr << __func__ << "() - BEGIN" << endl);
+        DBG2(cerr << __func__ << "() - dmr_file: " << dmr_file << endl);
 
         try {
             DMR *dmr = new DMR();
@@ -120,7 +123,7 @@ public:
             ifstream in(dmr_file.c_str(), ios::in);
             parser.intern(in, dmr, mo_debug);
             dmr->set_factory(0);
-            DBG(cerr << __func__ << "() - END" << endl);
+            DBG2(cerr << __func__ << "() - END" << endl);
             return dmr;
         }
         catch (Error &e) {
@@ -132,7 +135,6 @@ public:
 
     void test_template(const string &test_base_name)
     {
-
         string prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
 
         string dmr_file = prefix + test_base_name + ".dmr";
@@ -140,45 +142,56 @@ public:
         string das_file = prefix + test_base_name + ".das";
 
         DBG(cerr << __func__ << "() - BEGIN (test_base: " << test_base_name << ")" << endl);
-        DMR *dmr = 0;
+        //DMR *dmr = 0;
+        //DDS *dds = 0;
         try {
-
-            dmr = build_dmr(dmr_file);
-            CPPUNIT_ASSERT(dmr != 0);
+            auto_ptr<DMR> dmr(build_dmr(dmr_file));
+            CPPUNIT_ASSERT(dmr.get() != 0);
             XMLWriter xml;
             dmr->print_dap4(xml);
             string result_dmr(xml.get_doc());
             string baseline_dmr = read_test_baseline(dmr_file);
 
-            DBG(
+            DBG2(
                 cerr << "BASELINE DMR(" << baseline_dmr.size() << " chars): " << dmr_file << endl << baseline_dmr
                     << endl);
-            DBG(cerr << "RESULT DMR(" << result_dmr.size() << " chars): " << endl << result_dmr << endl);
+            DBG2(cerr << "RESULT DMR(" << result_dmr.size() << " chars): " << endl << result_dmr << endl);
             CPPUNIT_ASSERT(result_dmr == baseline_dmr);
 
-            DDS *dds = dmr->getDDS();
-            std::ostringstream result_dds;
+            auto_ptr<DDS> dds(dmr->getDDS());
+            ostringstream result_dds;
             dds->print(result_dds);
             string baseline_dds = read_test_baseline(dds_file);
-            DBG(
+            DBG2(
                 cerr << "BASELINE DDS(" << baseline_dds.size() << " chars): " << dds_file << endl << baseline_dds
                     << endl);
-            DBG(cerr << "RESULT DDS(" << result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
+            DBG2(cerr << "RESULT DDS(" << result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
             CPPUNIT_ASSERT(result_dds.str() == baseline_dds);
 
-            std::ostringstream result_das;
+            ostringstream result_das;
             dds->print_das(result_das);
             string source_das = read_test_baseline(das_file);
-            DBG(cerr << "BASELINE DAS(" << source_das.size() << " chars): " << das_file << endl << source_das << endl);
-            DBG(cerr << "RESULT DAS(" << result_das.str().size() << " chars): " << endl << result_das.str() << endl);
+            DBG2(cerr << "BASELINE DAS(" << source_das.size() << " chars): " << das_file << endl << source_das << endl);
+            DBG2(cerr << "RESULT DAS(" << result_das.str().size() << " chars): " << endl << result_das.str() << endl);
             CPPUNIT_ASSERT(result_das.str() == source_das);
 
-            delete dmr;
-            delete dds;
+            //delete dmr;
+            //delete dds;
         }
         catch (Error &e) {
-            delete dmr;
+            //delete dmr;
+            //delete dds;
             CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
+        }
+        catch (CPPUNIT_NS::Exception &e) {
+            //delete dmr;
+            //delete dds;
+            CPPUNIT_FAIL(string("CPPUNIT FAIL: ") + e.message().details());
+        }
+        catch (...) {
+            //delete dmr;
+            //delete dds;
+            CPPUNIT_FAIL(string("CPPUNIT FAIL: OUCH! Caught unknown exception! "));
         }
         DBG(cerr << __func__ << "() - END" << endl);
     }
@@ -390,9 +403,16 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-CPPUNIT_TEST_SUITE (DmrToDap2Test);
+    void big_airs_metadata()
+    {
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        test_template("big_airs_metadata");
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
 
-#if 1 // good (as in should be working) tests
+    CPPUNIT_TEST_SUITE (DmrToDap2Test);
+
+    // good (as in should be working) tests
     CPPUNIT_TEST(dmr_to_dap2_01);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_0);
     CPPUNIT_TEST(basic_dmr_to_dap2_0_1);
@@ -426,17 +446,12 @@ CPPUNIT_TEST_SUITE (DmrToDap2Test);
     CPPUNIT_TEST(dmr_to_grid_04);
     CPPUNIT_TEST(dmr_to_grid_05);
 
-#endif
+    // bad tests, here then is the woodshed of Testville.
 
-#if 0 // bad tests, here then is the woodshed of Testville.
+    CPPUNIT_TEST_FAIL(big_airs_metadata); // Expect this test to fail. jhrg 6/17/19 HK-403
+    CPPUNIT_TEST_FAIL(enum_dmr_to_dap2_1_5); // Broken: Parser issue with look-ahead
 
-    CPPUNIT_TEST(enum_dmr_to_dap2_1_5); // Broken: Parser issue with look-ahead
-
-#endif
-
-    CPPUNIT_TEST_SUITE_END()
-    ;
-
+    CPPUNIT_TEST_SUITE_END();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DmrToDap2Test);
@@ -465,7 +480,6 @@ int main(int argc, char *argv[])
             }
             break;
         }
-
         default:
             break;
         }
