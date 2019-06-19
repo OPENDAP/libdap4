@@ -1293,11 +1293,11 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     d_dmr = dest_dmr; // dump values here
 
 
-    // Get the XML prolog: <xml ... ?> line
+    // Get the <xml ... ?> line
     string line;
     getline(f, line);
     if (line.length() == 0) throw Error("No input found while parsing the DMR.");
-    if (debug) cerr << "XML Prolog: '" << line << "'" << endl;
+    if (debug) cerr << "Opening line: '" << line << "'" << endl;
 
     d_context = xmlCreatePushParserCtxt(&d_dmr_sax_parser, this, line.c_str(), line.length(), "stream");
     d_context->validate = true;
