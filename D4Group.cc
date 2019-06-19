@@ -673,7 +673,6 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool is_root)
     // If this is the root group then copy all of its attributes into the parent_attr_table.
     // The group_attrs AttrTable* above will be replaced by the parent_attr_table.
     if (is_root) {
-        DBG( cerr << __func__ << "() - Promoting group attributes to parent" << endl;);
         for (AttrTable::Attr_iter i = group_attrs->attr_begin(), e = group_attrs->attr_end(); i != e; ++i) {
             if ((*i)->type == Attr_container) {
                 // copy the source container so that the DAS passed in can be
@@ -735,15 +734,18 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool is_root)
     D4Group::groupsIter gIter = grp_begin();
     D4Group::groupsIter gEnd = grp_end();
     for (; gIter != gEnd; gIter++) {
-        D4Group *grp = *gIter;
-        DBG( cerr << __func__ << "() - Processing D4Group " << grp->name() << endl;);
-        vector<BaseType *> *d2_vars = grp->transform_to_dap2(group_attrs);
+        // D4Group *grp = *gIter;
+
+        DBG( cerr << __func__ << "() - Processing D4Group " << grp->name() << endl);
+
+        vector<BaseType *> *d2_vars = (*gIter)->transform_to_dap2(group_attrs);
         if (d2_vars) {
-            DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variables." << endl;);
+
+            DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variables." << endl);
+
             vector<BaseType *>::iterator vIter = d2_vars->begin();
             vector<BaseType *>::iterator vEnd = d2_vars->end();
             for (; vIter != vEnd; vIter++) {
-                DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variable: " << (*vIter)->name() << endl;);
                 results->push_back(*vIter);
             }
         }
@@ -753,7 +755,8 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool is_root)
     if (!is_root) {
         group_attrs->set_name(name());
         parent_attr_table->append_container(group_attrs, group_attrs->get_name());
-    } DBG( cerr << __func__ << "() - END" << endl;);
+    }
+
     return results;
 }
 

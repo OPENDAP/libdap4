@@ -183,21 +183,31 @@ Structure::transform_to_dap2(AttrTable *)
     Structure *dest = new Structure(name());
 
     // convert the Structure's d4 attributes to a dap2 attribute table.
+#if 0
     AttrTable *attrs = this->attributes()->get_AttrTable(name());
+#else
+    if (dest->get_attr_table().get_size() == 0) {
+        attributes()->transform_to_dap2(&dest->get_attr_table());
+        dest->get_attr_table().set_name(name());
+    }
+#endif
+
     dest->set_is_dap4(false);
 
     vector<BaseType *> dropped_vars;
     for (Structure::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-        vector<BaseType *> *new_vars = (*i)->transform_to_dap2(attrs);
+        vector<BaseType *> *new_vars = (*i)->transform_to_dap2(&dest->get_attr_table() /*attrs*/);
         if (new_vars) {  // Might be un-mappable
             // It's not so game on..
+#if 0
             vector<BaseType*>::iterator vIter = new_vars->begin();
             vector<BaseType*>::iterator end = new_vars->end();
-            for( ; vIter!=end ; vIter++ ){
-                BaseType *new_var = (*vIter);
+#endif
+            for(vector<BaseType*>::iterator vi = new_vars->begin(), ve = new_vars->end(); vi!=ve ; vi++ ){
+                BaseType *new_var = (*vi);
                 new_var->set_parent(dest);
                 dest->add_var_nocopy(new_var);
-                (*vIter) = NULL;
+                (*vi) = NULL;
             }
             delete new_vars;
 
@@ -210,17 +220,23 @@ Structure::transform_to_dap2(AttrTable *)
 
     AttrTable *dv_attr_table = make_dropped_vars_attr_table(&dropped_vars);
     if(dv_attr_table){
-        DBG(cerr << " " << __func__ << "() - Adding "<< dv_attr_table->get_name() << " AttrTable" << endl);
-        attrs->append_container(dv_attr_table,dv_attr_table->get_name());
+        dest->get_attr_table().append_container(dv_attr_table,dv_attr_table->get_name());
     }
+
     DBG(attrs->print(cerr,"",true););
+
+#if 0
     // Since this does a copy we gotta delete the attrs when done
+    // FIXME This is a bug. jhrg 6/17/19
     dest->set_attr_table(*attrs);
     delete attrs;
+#endif
 
     vector<BaseType *> *result =  new vector<BaseType *>();
     result->push_back(dest);
+
     DBG(cerr << " " << __func__ << " END" << endl);
+
     return result;
 }
 

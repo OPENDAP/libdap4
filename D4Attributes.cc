@@ -315,6 +315,8 @@ AttrType get_dap2_AttrType(D4AttributeType d4_type) {
 
 /**
  * @brief Copy the attributes from this D4Attributes object to a DAP2 AttrTable.
+ *
+ * @param d2_attr_table Load \arg d2_attr_table with the D4Attributes found in this object.
  */
 void D4Attributes::transform_to_dap2(AttrTable *d2_attr_table)
 {
@@ -346,6 +348,7 @@ void D4Attributes::transform_to_dap2(AttrTable *d2_attr_table)
     }
 }
 
+#if 0
 /**
  * @brief Transfer DAP4 attributes to a DAP2 AttrTable object
  *
@@ -361,9 +364,9 @@ void D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_att
     for (D4Attributes::D4AttributesIter i = d4_attrs->attribute_begin(), e = d4_attrs->attribute_end(); i != e; ++i) {
         string name = (*i)->name();
         D4AttributeType d4_attr_type = (*i)->type();
-        AttrType d2_attr_type = get_dap2_AttrType(d4_attr_type);
-        string d2_attr_type_name = AttrType_to_String(d2_attr_type);
+        string d2_attr_type_name = AttrType_to_String(get_dap2_AttrType(d4_attr_type));
 
+#if 0
         D4Attribute::D4AttributeIter vitr = (*i)->value_begin();
         D4Attribute::D4AttributeIter end = (*i)->value_end();
 
@@ -371,6 +374,7 @@ void D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_att
         for (; vitr != end; vitr++) {
             values.push_back((*vitr));
         }
+#endif
 
         switch (d4_attr_type) {
         case attr_container_c: {
@@ -383,12 +387,16 @@ void D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_att
             break;
         }
         default: {
-            d2_attr_table->append_attr(name, d2_attr_type_name, &values);
+            for (D4Attribute::D4AttributeIter vi = (*i)->value_begin(), ve = (*i)->value_end(); vi != ve; vi++) {
+                d2_attr_table->append_attr(name, d2_attr_type_name, *vi);
+            }
+
             break;
         }
         }
     }
 }
+#endif
 
 /** @brief copy attributes from DAP4 to DAP2
  *

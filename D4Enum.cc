@@ -80,7 +80,7 @@ void D4Enum::m_duplicate(const D4Enum &src)
 }
 
 /**
- * @breif Convert an Enum to a DAP2 int type
+ * @brief Convert an Enum to a DAP2 int type
  *
  * Build a DAP2 integer type that matches the D4Enum's internal type and then
  * add an attribute table to that new variable that holds the D4Enum's symbolic
@@ -91,7 +91,7 @@ void D4Enum::m_duplicate(const D4Enum &src)
 vector<BaseType *> *
 D4Enum::transform_to_dap2(AttrTable *)
 {
-    BaseType *my_pretty_pony;
+    BaseType *btp;
 
     DBG(cerr << __func__ << "() - BEGIN" << endl;);
 
@@ -103,7 +103,7 @@ D4Enum::transform_to_dap2(AttrTable *)
         dods_byte val;
         this->value(&val);
         var->set_value(val);
-        my_pretty_pony = var;
+        btp = var;
         break;
     }
     case dods_uint16_c: {
@@ -111,7 +111,7 @@ D4Enum::transform_to_dap2(AttrTable *)
         dods_uint16 val;
         this->value(&val);
         var->set_value(val);
-        my_pretty_pony = var;
+        btp = var;
         break;
     }
     case dods_uint32_c: {
@@ -119,7 +119,7 @@ D4Enum::transform_to_dap2(AttrTable *)
         dods_uint32 val;
         this->value(&val);
         var->set_value(val);
-        my_pretty_pony = var;
+        btp = var;
         break;
     }
     case dods_uint64_c: {
@@ -127,7 +127,7 @@ D4Enum::transform_to_dap2(AttrTable *)
         dods_uint64 val;
         this->value(&val);
         var->set_value(val);
-        my_pretty_pony = var;
+        btp = var;
         break;
     }
     case dods_int16_c: {
@@ -135,7 +135,7 @@ D4Enum::transform_to_dap2(AttrTable *)
         dods_int16 val;
         this->value(&val);
         var->set_value(val);
-        my_pretty_pony = var;
+        btp = var;
         break;
     }
     case dods_int32_c: {
@@ -143,7 +143,7 @@ D4Enum::transform_to_dap2(AttrTable *)
         dods_int32 val;
         this->value(&val);
         var->set_value(val);
-        my_pretty_pony = var;
+        btp = var;
         break;
     }
     case dods_int64_c: {
@@ -151,7 +151,7 @@ D4Enum::transform_to_dap2(AttrTable *)
         dods_int64 val;
         this->value(&val);
         var->set_value(val);
-        my_pretty_pony = var;
+        btp = var;
         break;
     }
     default: {
@@ -162,11 +162,18 @@ D4Enum::transform_to_dap2(AttrTable *)
     }
 
     DBG( cerr << __func__ << "() - Processing Enum  type:"<<
-        my_pretty_pony->type_name() << " name: " << my_pretty_pony->name() << endl;);
+        btp->type_name() << " name: " << btp->name() << endl;);
 
-    //Grab the attributes!
+    // Grab the attributes!
+#if 0
     AttrTable d2_attrs = *(this->attributes()->get_AttrTable(name()));
-    my_pretty_pony->set_attr_table(d2_attrs);
+    btp->set_attr_table(d2_attrs);
+#else
+    if (btp->get_attr_table().get_size() == 0) {
+        attributes()->transform_to_dap2(&btp->get_attr_table());
+        btp->get_attr_table().set_name(name());
+    }
+#endif
 
     // make the Enum label, and the enum's definition into DAP2 attributes for our returned item.
     long long my_value;
@@ -186,19 +193,19 @@ D4Enum::transform_to_dap2(AttrTable *)
         ostringstream oss;
         oss << a_value;
         DBG(cerr << __func__ << "() - a_value: "<< a_value << endl;);
-        enum_def->append_attr(a_label, my_pretty_pony->type_name(), oss.str());
+        enum_def->append_attr(a_label, btp->type_name(), oss.str());
         if (a_value == my_value) {
             my_label = (*dIter).label;
         }
         dIter++;
     }
 
-    if (!my_label.empty()) my_pretty_pony->get_attr_table().append_attr("d4:enum_label", "String", my_label);
+    if (!my_label.empty()) btp->get_attr_table().append_attr("d4:enum_label", "String", my_label);
 
-    my_pretty_pony->get_attr_table().append_container(enum_def, enum_def->get_name());
+    btp->get_attr_table().append_container(enum_def, enum_def->get_name());
 
     vector<BaseType *> *result = new vector<BaseType *>();
-    result->push_back(my_pretty_pony);
+    result->push_back(btp);
     DBG(cerr << __func__ << "() - END" << endl;);
     return result;
 }

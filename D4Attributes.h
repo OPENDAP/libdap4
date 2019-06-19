@@ -131,8 +131,11 @@ public:
     void transform_to_dap4(AttrTable &at);
     void transform_to_dap2(AttrTable *d2_attr_table);
 
+    // TODO Can these be replaced with transform_to_dap2() above? jhrg 6/17/19
     AttrTable *get_AttrTable(const std::string name);
+#if 0
     static void load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs);
+#endif
 
     bool empty() const { return d_attrs.empty(); }
 
