@@ -318,7 +318,7 @@ AttrType get_dap2_AttrType(D4AttributeType d4_type) {
  *
  * @param d2_attr_table Load \arg d2_attr_table with the D4Attributes found in this object.
  */
-void D4Attributes::transform_to_dap2(AttrTable *d2_attr_table)
+void D4Attributes::transform_attrs_to_dap2(AttrTable *d2_attr_table)
 {
     // for every attribute in d4_attrs, copy it to d2_attr_table.
     for (D4Attributes::D4AttributesIter i = attribute_begin(), e = attribute_end(); i != e; ++i) {
@@ -332,7 +332,7 @@ void D4Attributes::transform_to_dap2(AttrTable *d2_attr_table)
             AttrTable *child_attr_table = new AttrTable();
             child_attr_table->set_name(name);
 
-            (*i)->attributes()->transform_to_dap2(child_attr_table);
+            (*i)->attributes()->transform_attrs_to_dap2(child_attr_table);
             d2_attr_table->append_container(child_attr_table, name);
             break;
         }
@@ -407,7 +407,7 @@ void D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_att
 AttrTable *D4Attributes::get_AttrTable(const string name)
 {
     AttrTable *at = new AttrTable();
-    transform_to_dap2(at);
+    transform_attrs_to_dap2(at);
 #if 0
     load_AttrTable(at, this);
 #endif

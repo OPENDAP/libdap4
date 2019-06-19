@@ -187,7 +187,7 @@ Structure::transform_to_dap2(AttrTable *)
     AttrTable *attrs = this->attributes()->get_AttrTable(name());
 #else
     if (dest->get_attr_table().get_size() == 0) {
-        attributes()->transform_to_dap2(&dest->get_attr_table());
+        attributes()->transform_attrs_to_dap2(&dest->get_attr_table());
         dest->get_attr_table().set_name(name());
     }
 #endif
@@ -203,7 +203,7 @@ Structure::transform_to_dap2(AttrTable *)
             vector<BaseType*>::iterator vIter = new_vars->begin();
             vector<BaseType*>::iterator end = new_vars->end();
 #endif
-            for(vector<BaseType*>::iterator vi = new_vars->begin(), ve = new_vars->end(); vi!=ve ; vi++ ){
+            for (vector<BaseType*>::iterator vi = new_vars->begin(), ve = new_vars->end(); vi != ve ; ++vi ) {
                 BaseType *new_var = (*vi);
                 new_var->set_parent(dest);
                 dest->add_var_nocopy(new_var);

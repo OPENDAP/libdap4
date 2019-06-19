@@ -266,7 +266,7 @@ BaseType::transform_to_dap2(AttrTable *)
     dest->set_attr_table(*attrs);
 #else
     if (dest->get_attr_table().get_size() == 0) {
-        attributes()->transform_to_dap2(&dest->get_attr_table());
+        attributes()->transform_attrs_to_dap2(&dest->get_attr_table());
         dest->get_attr_table().set_name(name());
     }
 #endif

@@ -320,7 +320,7 @@ Array::transform_to_dap2(AttrTable *)
             g->set_array(grid_array);
 
             // Fix for HK-403. jhrg 6/17/19
-            attributes()->transform_to_dap2(&grid_array->get_attr_table());
+            attributes()->transform_attrs_to_dap2(&grid_array->get_attr_table());
 
             // Process the Map Arrays.
             D4Maps *d4_maps = this->maps();
@@ -372,14 +372,14 @@ Array::transform_to_dap2(AttrTable *)
             case dods_int64_c:
             case dods_uint64_c:
             case dods_enum_c:
-            case dods_opaque_c: {
+            case dods_opaque_c:
                 // For now we punt on these types as they have no easy representation in
                 // the DAP2 data model. By setting this to NULL we cause the Array to be
                 // dropped and this will be reflected in the metadata (DAS).
                 dest = NULL;
                 break;
-            }
-            default: {
+
+            default:
                 // ptr_duplicate() does the Attributes too.
                 dest = ptr_duplicate();
 
@@ -393,13 +393,12 @@ Array::transform_to_dap2(AttrTable *)
                 // contains attributes, the code assumes they were put there by this transform
                 // process. jhrg 6/18/19
                 if (dest->get_attr_table().get_size() == 0) {
-                    attributes()->transform_to_dap2(&dest->get_attr_table());
+                    attributes()->transform_attrs_to_dap2(&dest->get_attr_table());
                     dest->get_attr_table().set_name(name());
                 }
 
                 dest->set_is_dap4(false);
                 break;
-            }
             }
         }
     }

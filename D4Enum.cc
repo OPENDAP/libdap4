@@ -170,7 +170,7 @@ D4Enum::transform_to_dap2(AttrTable *)
     btp->set_attr_table(d2_attrs);
 #else
     if (btp->get_attr_table().get_size() == 0) {
-        attributes()->transform_to_dap2(&btp->get_attr_table());
+        attributes()->transform_attrs_to_dap2(&btp->get_attr_table());
         btp->get_attr_table().set_name(name());
     }
 #endif
