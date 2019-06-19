@@ -310,10 +310,14 @@ Array::transform_to_dap2(AttrTable *){
     DBG(cerr << __func__ << "() - BEGIN Array '"<< name() << "'" << endl;);
 
     BaseType *dest;
-    if(is_dap4()){ // Don't convert a DAP2 thing
-
-        // Can Precious be represented as a DAP2 Grid
-        if(is_dap2_grid()){
+    if (!is_dap4()) { // Don't convert a DAP2 thing
+        dest = ptr_duplicate();
+    }
+    else {
+        // At this point we have a DAP4 Array. It have D4Attributes and nothing
+        // in the DAP2 AttrTable (which is held as a reference, defined in BaseType).
+        // This test determines in the D4 Array qualifies as a D2 Grid.
+        if (is_dap2_grid()) {
             // Oh yay! Grids are special.
             DBG(cerr << __func__ << "() - Array '"<< name() << "' is dap2 Grid!"  << endl;);
             Grid *g = new Grid(name());
@@ -321,14 +325,18 @@ Array::transform_to_dap2(AttrTable *){
             Array *grid_array = static_cast<Array *>(ptr_duplicate());
             g->set_array(grid_array);
 
-#if 1 // The enclosed operations are redundant. FIXME jhrg HK-403
+#if 0 // The enclosed operations are redundant. FIXME jhrg HK-403
 	    // Including this block 'fixes' DDSTest::get_das_test_2() and completely
 	    // 'fixes' the failures in DmrRoundTripTest. jhrg 6/17/19
             // Get the metadata into the Grid Array
             AttrTable *grid_attrs = attributes()->get_AttrTable(name());
             grid_array->set_attr_table(*grid_attrs); // Copy it into the Grid object.
             delete grid_attrs;
+#else
+	    // Fix for HK-403. jhrg 6/17/19
+	    attributes()->transform_to_dap2(&grid_array->get_attr_table());
 #endif
+
 #if 0 // HK-403. Removing this does not break any tests. jhrg 6/17/19
             // Clear the Grid attributes.
             AttrTable at;
@@ -379,30 +387,45 @@ Array::transform_to_dap2(AttrTable *){
             }
         }
         else {
-            // It's not a Grid so we can make a simple copy of our Precious.
             DBG( cerr << __func__ << "() - Array '"<< name() << "' is not a Grid!"  << endl);
-            BaseType *proto = this->prototype();
-            switch(proto->type()){
+
+            BaseType *proto = prototype();
+            switch(proto->type()) {
             case dods_int64_c:
             case dods_uint64_c:
             case dods_enum_c:
-            case dods_opaque_c:
-            {
-                // For now we punt on these type as they have no easy representation in
+            case dods_opaque_c: {
+                // For now we punt on these types as they have no easy representation in
                 // the DAP2 data model. By setting this to NULL we cause the Array to be
                 // dropped and this will be reflected in the metadata (DAS).
                 dest = NULL;
                 break;
             }
-            default:
-            {
+            default: {
                 // ptr_duplicate() does the Attributes too.
-                dest = this->ptr_duplicate();
-#if 1 // FIXME HK-403 Adding this back into the code 'fixes' two of the DDSTests 
+                dest = ptr_duplicate();
+#if 0 // FIXME HK-403 Adding this back into the code 'fixes' two of the DDSTests 
 		// get_das_test_6 and get_das_test_5. jhrg 6/17/19 
                 // convert the d4 attributes to a dap2 attribute table.
-                AttrTable *attrs = this->attributes()->get_AttrTable(name());
+		cerr << "Processing array: " << name() << ", attr table size: " 
+		     << dest->get_attr_table().get_size() << endl;
+
+                AttrTable *attrs = attributes()->get_AttrTable(name());
                 dest->set_attr_table(*attrs);
+#else
+		// Fix for HK-403. jhrg 6/17/19
+		cerr << "Processing array: " << name() << ", attr table size: " 
+		     << dest->get_attr_table().get_size() << endl;
+#if 0
+		AttrTable *at = new AttrTable();
+		attributes()->transform_to_dap2(at);
+		at->set_name(name());
+		dest->set_attr_table(*at);
+#endif
+		if (dest->get_attr_table().get_size() == 0) {
+		    attributes()->transform_to_dap2(&dest->get_attr_table());
+		    dest->get_attr_table().set_name(name());
+		}
 #endif
                 dest->set_is_dap4(false);
                 DBG( cerr << __func__ << "() - " <<
@@ -412,21 +435,23 @@ Array::transform_to_dap2(AttrTable *){
             }
             }
         }
-
     }
+#if 0
     else {
         // If it's a DAP2 Array already then we just make a copy of our Precious.
         dest = this->ptr_duplicate();
     }
-    // attrs->print(cerr,"",true);
+#endif
+
     vector<BaseType *> *result;
-    if(dest){
+    if (dest) {
         result =  new vector<BaseType *>();
         result->push_back(dest);
     }
     else {
         result = NULL;
     }
+
     DBG( cerr << __func__ << "() - END Array '"<< name() << "'" << endl;);
     return result;
 }

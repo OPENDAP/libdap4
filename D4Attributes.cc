@@ -275,7 +275,7 @@ D4Attributes::transform_to_dap4(AttrTable &at)
 }
 
 
-AttrType get_dap2_AttrType(D4AttributeType d4_type){
+AttrType get_dap2_AttrType(D4AttributeType d4_type) {
     switch (d4_type) {
     case attr_container_c: { return Attr_container; }
     case attr_byte_c:      { return Attr_byte; }
@@ -310,6 +310,39 @@ AttrType get_dap2_AttrType(D4AttributeType d4_type){
 
     default:
         throw InternalErr(__FILE__, __LINE__, "Unknown DAP4 attribute.");
+    }
+}
+
+/**
+ * @brief Copy the attributes from this D4Attributes object to a DAP2 AttrTable.
+ */
+void D4Attributes::transform_to_dap2(AttrTable *d2_attr_table)
+{
+    // for every attribute in d4_attrs, copy it to d2_attr_table.
+    for (D4Attributes::D4AttributesIter i = attribute_begin(), e = attribute_end(); i != e; ++i) {
+        string name = (*i)->name();
+        D4AttributeType d4_attr_type = (*i)->type();
+        AttrType d2_attr_type = get_dap2_AttrType(d4_attr_type);
+        string d2_attr_type_name = AttrType_to_String(d2_attr_type);
+
+        switch (d4_attr_type) {
+        case attr_container_c: {
+            AttrTable *child_attr_table = new AttrTable();
+            child_attr_table->set_name(name);
+
+            (*i)->attributes()->transform_to_dap2(child_attr_table);
+            d2_attr_table->append_container(child_attr_table, name);
+            break;
+        }
+        default: {
+	    for (D4Attribute::D4AttributeIter vi = (*i)->value_begin(), ve = (*i)->value_end(); 
+		 vi != ve; vi++) {
+		d2_attr_table->append_attr(name, d2_attr_type_name, *vi);
+	    }
+
+            break;
+        }
+        }
     }
 }
 
@@ -366,10 +399,13 @@ void D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_att
  */
 AttrTable *D4Attributes::get_AttrTable(const string name)
 {
-    AttrTable *my_pretty_pony = new AttrTable();
-    load_AttrTable(my_pretty_pony, this);
-    my_pretty_pony->set_name(name);
-    return my_pretty_pony;
+    AttrTable *at = new AttrTable();
+    transform_to_dap2(at);
+#if 0
+    load_AttrTable(at, this);
+#endif
+    at->set_name(name);
+    return at;
 }
 
 
