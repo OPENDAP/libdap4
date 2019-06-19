@@ -173,7 +173,7 @@ public:
 
     // TODO Remove this static method? If we have a DMR, why not use the
     // getDDS() method below? jhrg 2.28.18
-    static DDS *getDDS(DMR &dmr);
+    //static DDS *getDDS(DMR &dmr);
     virtual DDS *getDDS();
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
