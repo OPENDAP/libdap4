@@ -1359,8 +1359,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     }
 
     // This call ends the parse.
-    if((get_state() != parser_error) || (get_state() != parser_fatal_error))
-        xmlParseChunk(d_context, d_parse_buffer, chunk_size, 1/*terminate*/);
+    xmlParseChunk(d_context, d_parse_buffer, chunk_size, 1/*terminate*/);
 
 #endif
 
