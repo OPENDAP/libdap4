@@ -395,7 +395,7 @@ void D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_att
         }
     }
 }
-#endif
+
 
 /** @brief copy attributes from DAP4 to DAP2
  *
@@ -414,7 +414,7 @@ AttrTable *D4Attributes::get_AttrTable(const string name)
     at->set_name(name);
     return at;
 }
-
+#endif
 
 D4Attribute *
 D4Attributes::find_depth_first(const string &name, D4AttributesIter i)
