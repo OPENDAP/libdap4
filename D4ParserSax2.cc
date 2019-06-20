@@ -1349,28 +1349,21 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 
 
     bool done = false;
-    while(!done && (get_state() != parser_end)){
+    while(!f.eof()  && (get_state() != parser_end)){
 
-        if(f || f.eof()){
-            // All has been read
-            done = true;
-            if (debug) cerr << "Input stream has been drained." << endl;
-        }
-        else {
-            xmlParseChunk(d_context, d_parse_buffer, chunk_size, 0);
+        xmlParseChunk(d_context, d_parse_buffer, chunk_size, 0);
 
-            // There is more to read. Get the next chunk
-            f.read(d_parse_buffer, D4_PARSE_BUFF_SIZE);
-            chunk_size=f.gcount();
-            d_parse_buffer[chunk_size]=0; // null terminate the string. We can do it this way because the buffer is +1 bigger than D4_PARSE_BUFF_SIZE
-            chunk_count++;
-            if (debug) cerr << "chunk: (" << chunk_count << "): " << endl << d_parse_buffer << endl << endl;
-
-       }
+        // There is more to read. Get the next chunk
+        f.read(d_parse_buffer, D4_PARSE_BUFF_SIZE);
+        chunk_size=f.gcount();
+        d_parse_buffer[chunk_size]=0; // null terminate the string. We can do it this way because the buffer is +1 bigger than D4_PARSE_BUFF_SIZE
+        chunk_count++;
+        if (debug) cerr << "chunk: (" << chunk_count << "): " << endl << d_parse_buffer << endl << endl;
     }
 
     // This call ends the parse.
-    xmlParseChunk(d_context, d_parse_buffer, chunk_size, 1/*terminate*/);
+    if((get_state() != parser_error) || (get_state() != parser_fatal_error))
+        xmlParseChunk(d_context, d_parse_buffer, chunk_size, 1/*terminate*/);
 
 #endif
 
