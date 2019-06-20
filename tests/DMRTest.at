@@ -23,8 +23,8 @@ m4_define([DMR_PARSE], [
     
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
-        AT_CHECK([$abs_builddir/dmr-test -x -p $input || true], [], [stdout], [])
-        AT_CHECK([mv stdout $baseline.tmp])
+        AT_CHECK([$abs_builddir/dmr-test -x -p $input], [ignore], [stdout], [stderr])
+        AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -p $input || true], [], [stdout], [stderr])
