@@ -1344,11 +1344,9 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     f.read(d_parse_buffer, D4_PARSE_BUFF_SIZE);
     chunk_size=f.gcount();
     d_parse_buffer[chunk_size]=0; // null terminate the string. We can do it this way because the buffer is +1 bigger than D4_PARSE_BUFF_SIZE
-    chunk_count++;
-    if (debug) cerr << "chunk: (" << chunk_count << "): " << endl << d_parse_buffer << endl << endl;
+    if (debug) cerr << "chunk: (" << chunk_count++ << "): " << endl << d_parse_buffer << endl << endl;
 
 
-    bool done = false;
     while(!f.eof()  && (get_state() != parser_end)){
 
         xmlParseChunk(d_context, d_parse_buffer, chunk_size, 0);
@@ -1357,8 +1355,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
         f.read(d_parse_buffer, D4_PARSE_BUFF_SIZE);
         chunk_size=f.gcount();
         d_parse_buffer[chunk_size]=0; // null terminate the string. We can do it this way because the buffer is +1 bigger than D4_PARSE_BUFF_SIZE
-        chunk_count++;
-        if (debug) cerr << "chunk: (" << chunk_count << "): " << endl << d_parse_buffer << endl << endl;
+        if (debug) cerr << "chunk: (" << chunk_count++ << "): " << endl << d_parse_buffer << endl << endl;
     }
 
     // This call ends the parse.
