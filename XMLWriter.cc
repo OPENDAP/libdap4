@@ -43,7 +43,9 @@ const int XML_BUF_SIZE = 2000000;
 using namespace libdap;
 
 XMLWriter::XMLWriter(const string &pad) {
-    LIBXML_TEST_VERSION;
+    // LEAK The LIBXML_TEST_VERSION macro leaks 40 bytes according to valgrind
+    // on centos7. jhrg 6/19/19
+    // LIBXML_TEST_VERSION;
 
     /* Create a new XML buffer, to which the XML document will be
      * written */
