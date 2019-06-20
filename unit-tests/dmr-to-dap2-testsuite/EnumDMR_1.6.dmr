@@ -13,19 +13,6 @@
     <Group name="g1">
         <Dimension name="dim1" size="10"/>
         
-        <!-- Move this Group so that it follows thing3 and you'll see an odd error.
-             The forward reference to the /g1/g2/dim1 Dimension breaks the parser
-             in a hard way - no message or exception. jhrg 6/19/19 -->
-        <Group name="g2">
-            <Dimension name="dim1" size="20"/>
-            <Int32 name="thing1">
-                <Dim name="/dim1"/>
-                <Dim name="/g1/dim1"/>
-                <Dim name="/g1/g2/dim1"/>
-            </Int32>
-        </Group>
-    
-        
         <Int32 name="thing1">
             <Dim name="/dim1"/>
             <Dim name="/g1/dim1"/>
@@ -39,5 +26,18 @@
             <Dim name="/g1/dim1"/>
             <Dim name="/g1/g2/dim1"/>
         </Int32>
+        
+        <!-- Move this Group so that it follows thing3 and you'll see an odd error.
+             The forward reference to the /g1/g2/dim1 Dimension breaks the parser
+             in a hard way - no message or exception. jhrg 6/19/19 -->
+        <Group name="g2">
+            <Dimension name="dim1" size="20"/>
+            <Int32 name="thing1">
+                <Dim name="/dim1"/>
+                <Dim name="/g1/dim1"/>
+                <Dim name="/g1/g2/dim1"/>
+            </Int32>
+        </Group>
+    
     </Group>
 </Dataset>

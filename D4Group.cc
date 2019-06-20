@@ -667,13 +667,13 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
     vector<BaseType *> *results = new vector<BaseType *>(); // LEAK
 
     // Get the D4Group's attributes
-    AttrTable *group_attrs = attributes()->get_AttrTable(name());
-
 #if 0
-    AttrTable *group_attrs =
+    AttrTable *group_attrs = attributes()->get_AttrTable(name());
+#else
+    AttrTable *group_attrs = new AttrTable();
     attributes()->transform_attrs_to_dap2(group_attrs);
+    group_attrs->set_name(name());
 #endif
-
 
     // If this is the root group then copy all of its attributes into the parent_attr_table.
     // The group_attrs AttrTable* above will be replaced by the parent_attr_table.
