@@ -1326,7 +1326,7 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     int line_num = 1;
     string line;
 
-    // Get the <xml ... ?> line
+    // Get the XML prolog line (looks like: <?xml ... ?> )
     getline(f, line);
     if (line.length() == 0) throw Error("No input found while parsing the DMR.");
 
@@ -1336,7 +1336,6 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     d_context->validate = true;
     push_state(parser_start);
 
-
     // Get the first chunk of the stuff
     long chunk_count = 0;
     long chunk_size = 0;
@@ -1345,7 +1344,6 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
     chunk_size=f.gcount();
     d_parse_buffer[chunk_size]=0; // null terminate the string. We can do it this way because the buffer is +1 bigger than D4_PARSE_BUFF_SIZE
     if (debug) cerr << "chunk: (" << chunk_count++ << "): " << endl << d_parse_buffer << endl << endl;
-
 
     while(!f.eof()  && (get_state() != parser_end)){
 
@@ -1360,7 +1358,6 @@ void D4ParserSax2::intern(istream &f, DMR *dest_dmr, bool debug)
 
     // This call ends the parse.
     xmlParseChunk(d_context, d_parse_buffer, chunk_size, 1/*terminate*/);
-
 #endif
 
     // This checks that the state on the parser stack is parser_end and throws
