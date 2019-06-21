@@ -1238,7 +1238,7 @@ void D4ParserSax2::cleanup_parse()
     bool wellFormed = d_context->wellFormed;
     bool valid = d_context->valid;
 
-    d_context->sax = NULL;
+    // d_context->sax = NULL;
     xmlFreeParserCtxt(d_context);
 
     delete d_enum_def;
