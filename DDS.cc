@@ -1193,7 +1193,7 @@ DDS::print_das(ostream &out)
     out << "}" << endl;
 #endif
 
-    auto_ptr<DAS> das(get_das());
+    unique_ptr<DAS> das(get_das());
 
     das->print(out);
 }
@@ -1297,7 +1297,7 @@ void DDS::get_das(DAS *das)
     }
 
     // Used in the rare case we have global attributes not in a table.
-    auto_ptr<AttrTable> global(new AttrTable);
+    unique_ptr<AttrTable> global(new AttrTable);
 
     for (AttrTable::Attr_iter i = d_attr.attr_begin(); i != d_attr.attr_end(); ++i) {
         // It's possible, given the API and if the DDS was built from a DMR, that a
@@ -1768,7 +1768,7 @@ DDS::mark(const string &n, bool state)
     BaseType::btp_stack *s = new BaseType::btp_stack;
 #endif
 
-    auto_ptr<BaseType::btp_stack> s(new BaseType::btp_stack);
+    unique_ptr<BaseType::btp_stack> s(new BaseType::btp_stack);
 
     DBG2(cerr << "DDS::mark: Looking for " << n << endl);
 
