@@ -78,7 +78,7 @@ chunked_outbuf::data_chunk()
 	// Add encoding of host's byte order. jhrg 11/24/13
 	if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
 	// network byte order for the header
-	header = htonl(header);
+	htonl(header);
 #endif
 
 	d_os.write((const char *)&header, sizeof(int32_t));
@@ -121,7 +121,7 @@ chunked_outbuf::end_chunk()
     // Add encoding of host's byte order. jhrg 11/24/13
     if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
     // network byte order for the header
-    header = htonl(header);
+    htonl(header);
 #endif
 
     // Write out the CHUNK_END header with the byte count.
@@ -168,7 +168,7 @@ chunked_outbuf::err_chunk(const std::string &m)
     // Add encoding of host's byte order. jhrg 11/24/13
     if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
     // network byte order for the header
-    header = htonl(header);
+    htonl(header);
 #endif
 
     // Write out the CHUNK_END header with the byte count.
@@ -275,7 +275,7 @@ chunked_outbuf::xsputn(const char *s, std::streamsize num)
     // Add encoding of host's byte order. jhrg 11/24/13
     if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
     // network byte order for the header
-    header = htonl(header);
+    htonl(header);
 #endif
 	d_os.write((const char *)&header, sizeof(int32_t));	// Data chunk's CHUNK_TYPE is 0x00000000
 

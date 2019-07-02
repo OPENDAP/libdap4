@@ -99,7 +99,7 @@ chunked_inbuf::underflow()
 #if !BYTE_ORDER_PREFIX
 	// When the endian nature of the server is encoded in the chunk header, the header is
 	// sent using network byte order
-	header = ntohl(header);
+	ntohl(header);
 #endif
 
 	// There are two 'EOF' cases: One where the END chunk is zero bytes and one where
@@ -219,7 +219,7 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
         uint32_t header;
         d_is.read((char *) &header, 4);
 #if !BYTE_ORDER_PREFIX
-        header = ntohl(header);
+        ntohl(header);
 #endif
 
         // There are two EOF cases: One where the END chunk is zero bytes and one where
@@ -344,7 +344,7 @@ chunked_inbuf::read_next_chunk()
 	uint32_t header;
 	d_is.read((char *) &header, 4);
 #if !BYTE_ORDER_PREFIX
-    header = ntohl(header);
+    ntohl(header);
 #endif
 
 	// There are two 'EOF' cases: One where the END chunk is zero bytes and one where
