@@ -1,0 +1,11 @@
+<map id="libdap::Error" name="libdap::Error">
+<area shape="rect" id="node3" href="$classlibdap_1_1AISDatabaseReadFailed.html" title="{libdap::AISDatabaseReadFailed\n||+ AISDatabaseReadFailed()\l+ AISDatabaseReadFailed()\l}" alt="" coords="5,535,217,627"/>
+<area shape="rect" id="node4" href="$classlibdap_1_1AISDatabaseWriteFailed.html" title="{libdap::AISDatabaseWrite\lFailed\n||+ AISDatabaseWriteFailed()\l+ AISDatabaseWriteFailed()\l}" alt="" coords="241,527,429,634"/>
+<area shape="rect" id="node5" href="$classlibdap_1_1D4ParseError.html" title="{libdap::D4ParseError\n||+ D4ParseError()\l+ D4ParseError()\l}" alt="" coords="454,535,601,627"/>
+<area shape="rect" id="node6" href="$classlibdap_1_1DDXParseFailed.html" title="{libdap::DDXParseFailed\n||+ DDXParseFailed()\l+ DDXParseFailed()\l}" alt="" coords="625,535,789,627"/>
+<area shape="rect" id="node7" href="$classlibdap_1_1InternalErr.html" title="A class for software fault reporting. " alt="" coords="813,476,940,685"/>
+<area shape="rect" id="node8" href="$classlibdap_1_1NoSuchPrimaryResource.html" title="{libdap::NoSuchPrimaryResource\n||+ NoSuchPrimaryResource()\l}" alt="" coords="965,542,1181,619"/>
+<area shape="rect" id="node9" href="$classlibdap_1_1ResponseTooBigErr.html" title="{libdap::ResponseTooBigErr\n||+ ResponseTooBigErr()\l+ ResponseTooBigErr()\l}" alt="" coords="1205,535,1391,627"/>
+<area shape="rect" id="node10" href="$classlibdap_1_1SignalHandlerRegisteredErr.html" title="{libdap::SignalHandlerRegisteredErr\n||+ SignalHandlerRegisteredErr()\l+ SignalHandlerRegisteredErr()\l}" alt="" coords="1415,535,1645,627"/>
+<area shape="rect" id="node2" title="STL class. " alt="" coords="739,5,843,83"/>
+</map>
