@@ -4,6 +4,8 @@ Updated for version 3.20.4
 
 Memory leak fixes and C++11 features
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3267984.svg)](https://doi.org/10.5281/zenodo.3267984)
+
 Updated for version 3.20.3
 
 Fixes and Debian packaging via Travis CI
