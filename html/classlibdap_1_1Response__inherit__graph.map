@@ -1,6 +1,0 @@
-<map id="libdap::Response" name="libdap::Response">
-<area shape="rect" id="node2" href="$classlibdap_1_1HTTPResponse.html" title="{libdap::HTTPResponse\n||+ HTTPResponse()\l+ HTTPResponse()\l+ transform_to_cpp()\l+ ~HTTPResponse()\l+ get_headers()\l+ get_file()\l+ set_headers()\l+ set_file()\l# HTTPResponse()\l# HTTPResponse()\l# operator=()\l* HTTPResponse()\l* HTTPResponse()\l* operator=()\l* get_headers()\l* get_file()\l* set_headers()\l* set_file()\l}" alt="" coords="25,585,185,912"/>
-<area shape="rect" id="node4" href="$classlibdap_1_1PipeResponse.html" title="Encapsulate a response. This class provides special treatment for &#39;stream pipes.&#39; It arranges to clos..." alt="" coords="209,688,361,809"/>
-<area shape="rect" id="node5" href="$classlibdap_1_1StdinResponse.html" title="Encapsulate a response read from stdin. " alt="" coords="385,666,541,831"/>
-<area shape="rect" id="node3" href="$classlibdap_1_1HTTPCacheResponse.html" title="{libdap::HTTPCacheResponse\n||+ HTTPCacheResponse()\l+ HTTPCacheResponse()\l+ ~HTTPCacheResponse()\l# HTTPCacheResponse()\l# HTTPCacheResponse()\l# operator=()\l* HTTPCacheResponse()\l* HTTPCacheResponse()\l* operator=()\l}" alt="" coords="5,960,204,1155"/>
-</map>
