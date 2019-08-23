@@ -99,7 +99,9 @@ int ce_exprlex(void);           /* the scanner; see expr.lex */
 void ce_exprerror(ce_parser_arg *arg, const string &s); 
 void ce_exprerror(ce_parser_arg *arg, const string &s, const string &s2);
 void no_such_func(ce_parser_arg *arg, const string &name);
+// TODO Remove this deprecated version. jhrg 7/15/19
 void no_such_ident(ce_parser_arg *arg, const string &name, const string &word);
+void no_such_ident(const string &name, const string &word);
 
 int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list *make_array_index(value &i1, value &i2);
@@ -110,15 +112,17 @@ int_list_list *append_array_index(int_list_list *indices, int_list *index);
 void delete_array_indices(int_list_list *indices);
 bool bracket_projection(DDS &table, const char *name, int_list_list *indices);
 
+void process_array_indices(BaseType *variable, int_list_list *indices);
+void process_grid_indices(BaseType *variable, int_list_list *indices);
+void process_sequence_indices(BaseType *variable, int_list_list *indices);
+
+// dim_slice and slices are defined in expr.h
 dim_slice make_array_slice(value &v1, value &v2, value &v3);
 dim_slice make_array_slice(value &v1, value &v2);
 dim_slice make_array_slice(value &v1);
 slices make_array_slices(dim_slice &ds);
 slices append_array_slices(slices &s, dim_slice &ds);
 
-void process_array_indices(BaseType *variable, int_list_list *indices); 
-void process_grid_indices(BaseType *variable, int_list_list *indices); 
-void process_sequence_indices(BaseType *variable, int_list_list *indices);
 
 void process_sequence_slice(BaseType *variable, slices &s);
 
@@ -284,7 +288,7 @@ proj_clause: name
         DBG(cerr << "result: " << $$ << endl);
     }
     else {
-        no_such_ident(arg, $1, "identifier");
+        no_such_ident($1, "identifier");
     }
 }
 | proj_function
@@ -698,7 +702,7 @@ id_or_const: SCAN_WORD
 array_projection_rvalue : name array_indices
 {
     if (!bracket_projection((*DDS(arg)), $1, $2))
-        no_such_ident(arg, $1, "array, grid or sequence");
+        no_such_ident($1, "array, grid or sequence");
                     
     // strncpy($$, $1, ID_MAX-1);
     // $$[ID_MAX-1] = '\0';
@@ -721,7 +725,7 @@ array_proj_clause: name array_indices
     //string name = www2id($1);
     if (!bracket_projection((*DDS(arg)
                              ), $1, $2))
-        no_such_ident(arg, $1, "array, grid or sequence");
+        no_such_ident($1, "array, grid or sequence");
                     
     strncpy($$, $1, ID_MAX-1);
     $$[ID_MAX-1] = '\0';
@@ -737,7 +741,7 @@ array_proj_clause: name array_indices
     string name = string($1) + string($2);
     if (!bracket_projection((*DDS(arg)
                              ), name.c_str(), $3))
-        no_such_ident(arg, name.c_str(), "array, grid or sequence");
+        no_such_ident(name.c_str(), "array, grid or sequence");
 
     strncpy($$, name.c_str(), ID_MAX-1);
     $$[ID_MAX-1] = '\0';
@@ -893,7 +897,13 @@ void ce_exprerror(ce_parser_arg *, const string &s, const string &s2)
     throw Error(malformed_expr, msg);
 }
 
-void no_such_ident(ce_parser_arg *arg, const string &name, const string &word)
+void no_such_ident(ce_parser_arg *, const string &name, const string &word)
+{
+    string msg = "Constraint expression parse error: No such " + word + " in dataset: " + name;
+    throw Error(no_such_variable, msg);
+}
+
+void no_such_ident(const string &name, const string &word)
 {
     string msg = "Constraint expression parse error: No such " + word + " in dataset: " + name;
     throw Error(no_such_variable, msg);
@@ -1385,32 +1395,34 @@ void process_array_slices(BaseType *variable, slices &s)
     Array *a = dynamic_cast<Array *>(variable); // replace with dynamic cast
     if (!a) throw Error(malformed_expr, string("The constraint expression evaluator expected an array; ") + variable->name() + " is not an array.");
 
-    if (a->dimensions(true) != (unsigned) indices->size())
+    if (a->dimensions(true) != (unsigned) s.size())
         throw Error(malformed_expr,
                     string("Error: The number of dimensions in the constraint for ") + variable->name() + " must match the number in the array.");
 
     DBG(cerr << "Before applying projection to array:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
-
-    int_list_citer p = indices->begin();
     Array::Dim_iter r = a->dim_begin();
-    for (; p != indices->end() && r != a->dim_end(); p++, r++) {
-        int_list *index = *p;
-        assert(index);
+    auto p = s.begin();
+    for (; p != s.end() && r != a->dim_end(); p++, r++) {
+        dim_slice ds = *p;
+        //int_list *index = *p;
+        //assert(index);
 
-        int_citer q = index->begin();
-        assert(q != index->end());
-        int start = *q;
+        auto q = ds.begin();
+        assert(q != ds.end());
 
-        q++;
-        int stride = *q;
-
-        q++;
-        int stop = *q;
+        // FIXME - *q is an instance of value. extract. jhrg 7/15/19
+        int start = q->v.i;
 
         q++;
-        if (q != index->end()) throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
+        int stride = q->v.i;
+
+        q++;
+        int stop = q->v.i;
+
+        q++;
+        if (q != ds.end()) throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
 
         DBG(cerr << "process_array_indices: Setting constraint on " << a->name() << "[" << start << ":" << stop << "]" << endl);
 
@@ -1436,7 +1448,7 @@ void process_array_slices(BaseType *variable, slices &s)
     DBG(cerr << "After applying projection to array:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
-    if (p != indices->end() && r == a->dim_end()) throw Error(malformed_expr, string("Too many indices in constraint for ") + a->name() + ".");
+    if (p != s.end() && r == a->dim_end()) throw Error(malformed_expr, string("Too many indices in constraint for ") + a->name() + ".");
 }
 
 #define set_indicial_value(lhs, rhs) do { \
@@ -1446,7 +1458,6 @@ void process_array_slices(BaseType *variable, slices &s)
         lhs = (*rhs).v.ui; \
     else \
         throw InternalErr("Expected an integer value for an array, grid or sequence subset.", __FILE__, __LINE__); } while(false)
-    
 
 /**
  * This method processes the slices when we know they do not contain range-value
@@ -1456,18 +1467,16 @@ void process_grid_indicial_slices(Grid *g, slices &s)
 {
     Array *a = g->get_array();
 
-    if (a->dimensions(true) != (unsigned) indices->size())
+    if (a->dimensions(true) != (unsigned) s.size())
         throw Error(malformed_expr,
-                    string("Error: The number of dimensions in the constraint for ") + variable->name() + " must match the number in the grid.");
+                    string("Error: The number of dimensions in the constraint for ") + g->name() + " must match the number in the grid.");
 
     // First do the constraints on the ARRAY in the grid.
-    process_array_slices(g->array_var(), slices);
+    process_array_slices(g->array_var(), s);
 
     // Now process the maps.
-    Grid::Map_iter r = g->map_begin();
-
     // Suppress all maps by default.
-    for (; r != g->map_end(); ++r) {
+    for (Grid::Map_iter r = g->map_begin(); r != g->map_end(); ++r) {
         (*r)->set_send_p(false);
     }
 
@@ -1475,32 +1484,32 @@ void process_grid_indicial_slices(Grid *g, slices &s)
     //assert(indices);
     //int_list_citer p = indices->begin();
     
-    slices:iterator p = s.begin();
-    r = g->map_begin();
+    auto p = s.begin();
+    auto r = g->map_begin();
     
     for (; p != s.end() && r != g->map_end(); ++p, ++r) {
         dim_slice slice = *p;
         //assert(index);
 
-        dim_slice::iterator q = slice.begin();
+        auto q = slice.begin();
         //assert(q != index->end());
         int start = (*q).v.ui;
 
         q++;
-        int stride = *q;
+        int stride = q->v.i;
 
         q++;
-        int stop = *q;
+        int stop = q->v.i;
 
         BaseType *btp = *r;
         assert(btp);
         assert(btp->type() == dods_array_c);
-        Array *a = (Array *) btp;
+        Array *a = dynamic_cast<Array*>(btp);
         a->set_send_p(true);
         a->reset_constraint();
 
         q++;
-        if (q != index->end()) {
+        if (q != slice.end()) {
             throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
         }
 
@@ -1517,7 +1526,7 @@ void process_grid_indicial_slices(Grid *g, slices &s)
         cout << endl
         );
 
-    if (p != indices->end() && r == g->map_end()) {
+    if (p != s.end() && r == g->map_end()) {
         throw Error(malformed_expr, string("Too many indices in constraint for ") + (*r)->name() + ".");
     }
 }
@@ -1533,7 +1542,7 @@ void process_grid_slices(BaseType *variable, slices &s /*int_list_list *indices*
     if (!g) throw Error(unknown_error, "Expected a Grid variable");
 
     if (has_range_values(s)) {
-        throw InternalErr("Range-value subsets not implemented", __FILE__, __LINE__);
+        throw InternalErr(__FILE__, __LINE__, "Range-value subsets not implemented");
     }
     else {
         process_grid_indicial_slices(g, s);
