@@ -32,10 +32,11 @@ if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 endif
 
+# See note in d4_function about CXX11_FLAG. jhrg 4/5/19
 if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2
+AM_CXXFLAGS += -g -O2 
 endif
 
 AM_LDFLAGS =

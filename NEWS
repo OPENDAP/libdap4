@@ -1,4 +1,17 @@
-New for version 3.20.3
+News for version 3.20.4
+
+Fixed memory leaks in the libxml2-based DMR and DDX parsers.
+
+Moved more toward C++-11. On CentOS 6 we now build using
+c++0x while CentOS7 uses c++11. This means that we can
+use unique_ptr<> but not null_ptr, for example.
+
+We have found a bug in the code that orders Dimensions,
+Enumeration definitions and Groups in the DMR. Listing the
+Groups last makes DMRs that reference Dimensions defined inside
+Groups fail silently. 
+
+News for version 3.20.3
 
 Added support for a CI build of a debian package of libdap4
 

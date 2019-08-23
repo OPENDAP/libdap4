@@ -1,3 +1,223 @@
+2019-07-01  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #95 from OPENDAP/scan-fixes
+	Fixes to ntohl() use and auto_ptr --> unique_ptr.
+
+	Fixes to ntohl() use and auto_ptr --> unique_ptr.
+	Will this pass the CentOS 6 build?
+
+2019-06-21  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #94 from OPENDAP/libdap-leak-fix
+	DMRParser leak fix
+
+2019-06-20  James Gallagher  <jgallagher@opendap.org>
+
+	DMRParser leak fix
+
+2019-06-20  Nathan Potter  <ndp@opendap.org>
+
+	Code tidying
+
+	Merge pull request #93 from OPENDAP/dmr_chunking_parser
+	Dmr chunking parser
+
+	Dropping conditional termination of the DMR parse operation.
+
+	Minor changes for readability
+
+	Updated baselines to account for modified parse error messages and
+	whitespace alterations
+
+	Merge branch 'master' into dmr_chunking_parser
+
+	chunking improvement
+
+2019-06-20  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #92 from OPENDAP/dmr-test-mem-leak
+	Dmr test mem leak
+
+2019-06-19  James Gallagher  <jgallagher@opendap.org>
+
+	One small edit for D4Attributes - remove unused code.
+
+	Added a DMR that intentionally includes a forward reference error
+	EnumDMR_1.6
+
+	Found that a malformed DMR breaks the parser in a very odd way
+	No error message or exception. The error is to have a forward
+	reference for a dimension defined in a Group.
+
+2019-06-19  Nathan Potter  <ndp@opendap.org>
+
+	Merge branch 'master' into dmr_chunking_parser
+
+	first pass at chunk reading parser
+
+2019-06-19  James Gallagher  <jgallagher@opendap.org>
+
+	Memory leak fix for XMLWriter.
+	The libxml2 macro LIBXML_TEST_VERSION leaks 40 bytes.
+
+	Merge pull request #91 from OPENDAP/HK-403.1
+	Hk 403.1
+
+2019-06-19  Cloud User  <centos@ip-172-31-23-170.ec2.internal>
+
+	Used auto_ptr<> in DmrToDap2Test.cc.
+
+	Memory leak fixes in DMR.cc and D4Group.cc
+
+2019-06-19  Nathan Potter  <ndp@opendap.org>
+
+	Minor output change for D4ParserSax2Test. New baselines with newline chars
+
+2019-06-19  James Gallagher  <jgallagher@opendap.org>
+
+	Reduced method count in D4Group and DMR.
+
+	Spelling in a comment (AttrTable.cc)
+
+2019-06-18  James Gallagher  <jgallagher@opendap.org>
+
+	Formatting in D4Attributes.cc
+
+	More work - tests still pass on OSX.
+	I'm working in removing more code in D4Attributes, load_AttrTable()
+	is removed and get_AttrTable() is only used by D4Group.
+
+	Fixes for HK-403 (the HK-403.1 branch). Tests pass on OSX.
+
+2019-06-18  Cloud User  <centos@ip-172-31-23-170.ec2.internal>
+
+	checkpoint HK-403.1 Work on attribute transfer.
+
+2019-06-18  James Gallagher  <jgallagher@opendap.org>
+
+	Minor edit to D4Attributes.g - formatting only.
+
+	Minor edits to the Array.cc file. In connection with HK-403
+	[skip ci]
+
+2019-06-17  James Gallagher  <jgallagher@opendap.org>
+
+	Found part of HK-403 fixes that doesn't break tests - added back in.
+
+	More fixes - Marked two tests in DmrToDap2Test as expected to fail.
+
+	Another hack to fix DDSTests added.
+	[skip ci]
+
+	I found that some of the CI test failures are 'fixed' by including
+	code in Array.cc That is, some of the code that was removed
+	because it caused leaks was, apparently, doing more than causing
+	leaks. I'm commiting this because, while it's a WIP, I'm on the
+	road and don't know when I can look at it again.
+
+2019-06-13  Nathan Potter  <ndp@opendap.org>
+
+	Cleaning up
+
+2019-06-12  Nathan Potter  <ndp@opendap.org>
+
+	Improved error/memory management for DmrToDap2Test
+
+2019-06-11  Nathan Potter  <ndp@opendap.org>
+
+	Fixed memory leak in DMR::getDDS()
+
+	Fixed copying problem in Array::transform_to_dap2(). Fixed memory
+	leak in DmrToDap2Test.cc
+
+2019-05-30  Nathan Potter  <ndp@opendap.org>
+
+	Memory leak patch.
+
+2019-04-19  Nathan Potter  <ndp@opendap.org>
+
+	Merge pull request #89 from OPENDAP/d4_to_d2_attr_err_msg
+	Added more fine grained error handling in get_dap2_AttrType()
+
+	Added Enum and Opaque to d4->d2 attribute conversion.
+
+	Added more fine grained error handling in get_dap2_AttrType()
+
+2019-04-05  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #88 from OPENDAP/c++11-bison-hack
+	Modified the build so that --std=c++-0x works on CentOS 6
+
+	Modified the build so that --std=c++-0x works on CentOS 6
+	The issue was that the bison code failed to build. The fix is
+	to not use the --std=... flag for it. Since it's generated code
+	we're not using any C++ 2011 stuff. If that changes, it _will_
+	build with 2011++, but not the 0x implementation found on CentOS 6.
+
+2019-03-26  James Gallagher  <jgallagher@opendap.org>
+
+	Arrgh. C++-11 on centos 6 is broken or our code stresses it.
+	Dropping back to, either we find c++11 support or we don't. Use
+	CXX11_FLAG is non-zero to if it was found (and if so, how to get the
+	compiler to use it).
+
+	This runs under autoconf 2.63, but there's another hitch. Potential fix...
+
+	Potential fix for centos 6 and the new c++11 test.
+
+	Merge pull request #87 from OPENDAP/c++11-test-use
+	Added a test for either c++11 or c++0x and its use by the Makefiles
+
+2019-03-25  James Gallagher  <jgallagher@opendap.org>
+
+	Added cxx_flags_check macro for configure.ac
+
+2019-03-22  James Gallagher  <jgallagher@opendap.org>
+
+	Added a test for either c++11 or c++0x and its use by the Makefiles
+	No code changes. The idea is to see if this makes it through CI/CD.
+	C++0x is the prequel to C++11. The '0x' version is supported on
+	CentOS 6 by gcc/++ 4.4.x
+
+2019-03-20  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed comments.
+	[skip ci]
+
+2019-02-15  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #86 from OPENDAP/leak_test
+	HK-87. Fixed libdap memory leak for Ubuntu.
+
+2019-02-15  Slav Korolev  <slav.korolev@nasa.gov>
+
+	HK-87. Fixed libdap memory leak for Ubuntu.
+
+2019-02-15  James Gallagher  <jgallagher@opendap.org>
+
+	fixed debian/changelog
+
+2019-02-14  James Gallagher  <jgallagher@opendap.org>
+
+	Bumped up the version in denian/changelog
+
+	Forgot the libdap spec file for the RPM
+
+	Version 3.20.3 source release
+
+2019-02-12  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #85 from OPENDAP/sonar-travis
+	Sonar travis
+
+	I think we're done - it works. Moving the scan to follow the builds
+	[skip ci]
+
+	Might work!
+
+	one last try
+
+	Another try...
 2019-02-12  James Gallagher  <jgallagher@opendap.org>
 
 	Merge pull request #85 from OPENDAP/sonar-travis

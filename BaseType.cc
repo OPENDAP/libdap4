@@ -260,10 +260,18 @@ BaseType::transform_to_dap2(AttrTable *)
 {
     BaseType *dest = this->ptr_duplicate();
     // convert the d4 attributes to a dap2 attribute table.
+    // HK-403. jhrg 6/17/19
+#if 0
     AttrTable *attrs = this->attributes()->get_AttrTable(name());
     dest->set_attr_table(*attrs);
+#else
+    if (dest->get_attr_table().get_size() == 0) {
+        attributes()->transform_attrs_to_dap2(&dest->get_attr_table());
+        dest->get_attr_table().set_name(name());
+    }
+#endif
+
     dest->set_is_dap4(false);
-    // attrs->print(cerr,"",true);
 
     vector<BaseType *> *result =  new vector<BaseType *>();
     result->push_back(dest);

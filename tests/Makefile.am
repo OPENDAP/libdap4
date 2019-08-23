@@ -21,9 +21,9 @@ ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 endif
 
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+AM_CXXFLAGS += $(CXX11_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2
+AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
 endif
 
 check_PROGRAMS = das-test dds-test expr-test 

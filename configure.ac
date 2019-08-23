@@ -3,10 +3,14 @@ dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
+dnl AC_PREREQ([2.68]); Fails on CentOS 6. jhrg 3/26/19
+dnl m4_pattern_forbid([^_?(gl_[A-Z]|AX_|BISON_)])
+dnl m4_pattern_allow([^BISON_USE_NLS$])
+
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.20.3, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.20.4, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["4.0"], [Highest DAP version implemented?])
-AC_SUBST(DAP_PROTOCOL_VERSION)
+AC_SUBST([DAP_PROTOCOL_VERSION])
 
 AC_CONFIG_SRCDIR([Connect.cc])
 AC_CONFIG_AUX_DIR(conf)
@@ -54,7 +58,7 @@ dnl ==> Increment CURRENT, set AGE and REVISION to 0.
 
 DAPLIB_CURRENT=27
 DAPLIB_AGE=2
-DAPLIB_REVISION=1
+DAPLIB_REVISION=2
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)
 AC_SUBST(DAPLIB_REVISION)
@@ -64,7 +68,7 @@ AC_SUBST(LIBDAP_VERSION)
 
 CLIENTLIB_CURRENT=7
 CLIENTLIB_AGE=1
-CLIENTLIB_REVISION=10
+CLIENTLIB_REVISION=11
 AC_SUBST(CLIENTLIB_CURRENT)
 AC_SUBST(CLIENTLIB_AGE)
 AC_SUBST(CLIENTLIB_REVISION)
@@ -74,7 +78,7 @@ AC_SUBST(CLIENTLIB_VERSION)
 
 SERVERLIB_CURRENT=13
 SERVERLIB_AGE=6
-SERVERLIB_REVISION=10
+SERVERLIB_REVISION=11
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)
 AC_SUBST(SERVERLIB_REVISION)
@@ -103,6 +107,24 @@ AS_IF([test "x$CC" = xgcc],
 
 dnl AC_PROG_YACC
 dnl AC_PROG_LEX
+
+dnl NB: CentOS 6 does not support C++-11 but does support some features:
+dnl https://gcc.gnu.org/gcc-4.4/cxx0x_status.html.
+dnl For now, I'm counting 0x as supporting C++-11 in our code.
+
+CXX11_FLAG=""
+
+CXX_FLAGS_CHECK([--std=c++11], [CXX11_FLAG=--std=c++11], [])
+
+AS_IF([test -z "$CXX11_FLAG"],
+      [CXX_FLAGS_CHECK([--std=c++0x], [CXX11_FLAG=--std=c++0x], [])])
+
+AS_IF([test -z "$CXX11_FLAG"],
+      [AC_MSG_NOTICE([Not using C++-11])],
+      [AC_MSG_NOTICE([Using $CXX11_FLAG for C++-11 support])])
+
+AC_SUBST(CXX11_FLAG)
+
 AM_PROG_LEX
 AC_PROG_INSTALL
 AC_PROG_LN_S

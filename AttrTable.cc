@@ -223,7 +223,7 @@ AttrTable::operator=(const AttrTable &rhs)
 }
 //@}
 
-/** Attributes that are containers count one attribute, as do
+/** Attributes that are containers count as one attribute, as do
  attributes with both scalar and vector values.
  @return The number of entries.
  @brief Get the number of entries in this attribute table.
