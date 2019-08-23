@@ -99,10 +99,15 @@ int ce_exprlex(void);           /* the scanner; see expr.lex */
 void ce_exprerror(ce_parser_arg *arg, const string &s); 
 void ce_exprerror(ce_parser_arg *arg, const string &s, const string &s2);
 void no_such_func(ce_parser_arg *arg, const string &name);
+
+#if 0
 // TODO Remove this deprecated version. jhrg 7/15/19
 void no_such_ident(ce_parser_arg *arg, const string &name, const string &word);
+#endif
+
 void no_such_ident(const string &name, const string &word);
 
+#if 1
 int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list *make_array_index(value &i1, value &i2);
 int_list *make_array_index(value &i1);
@@ -115,6 +120,7 @@ bool bracket_projection(DDS &table, const char *name, int_list_list *indices);
 void process_array_indices(BaseType *variable, int_list_list *indices);
 void process_grid_indices(BaseType *variable, int_list_list *indices);
 void process_sequence_indices(BaseType *variable, int_list_list *indices);
+#endif
 
 // dim_slice and slices are defined in expr.h
 dim_slice make_array_slice(value &v1, value &v2, value &v3);
@@ -123,8 +129,11 @@ dim_slice make_array_slice(value &v1);
 slices make_array_slices(dim_slice &ds);
 slices append_array_slices(slices &s, dim_slice &ds);
 
-
 void process_sequence_slice(BaseType *variable, slices &s);
+
+void process_array_slices(BaseType *variable, slices &s);
+void process_grid_slices(BaseType *variable, slices &s);
+void process_sequence_slices(BaseType *variable, slices &s);
 
 /* Replace these with method calls. jhrg 8/31/06 */
 bool is_array_t(BaseType *variable);
@@ -184,6 +193,9 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
     libdap::int_list *int_l_ptr;
     libdap::int_list_list *int_ll_ptr;
     
+    libdap::dim_slice dim_slice;
+    libdap::slices slices;
+
     libdap::rvalue *rval_ptr;
     libdap::rvalue_list *r_val_l_ptr;
 }
@@ -1119,14 +1131,14 @@ void delete_array_indices(int_list_list *indices)
     delete indices;
 }
 
-dim_slice make_array_slice(value &v1, value &v2, value &v3)
+dim_slice* make_array_slice(value &v1, value &v2, value &v3)
 {
-    dim_slice ds;
-    ds.push_back(v1);
-    ds.push_back(v2);
-    ds.push_back(v3);
+    unique_ptr<dim_slice> ds(new dim_slice);
+    ds->push_back(v1);
+    ds->push_back(v2);
+    ds->push_back(v3);
 
-    return ds;
+    return ds.release();
 }
 
 dim_slice make_array_slice(value &v1, value &v2)
@@ -1412,7 +1424,6 @@ void process_array_slices(BaseType *variable, slices &s)
         auto q = ds.begin();
         assert(q != ds.end());
 
-        // FIXME - *q is an instance of value. extract. jhrg 7/15/19
         int start = q->v.i;
 
         q++;
