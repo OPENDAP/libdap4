@@ -371,11 +371,6 @@ HTTPConnect::www_lib_init()
         curl_easy_setopt(d_curl, CURLOPT_SSL_VERIFYHOST, 0);
     }
 
-#if 0
-    curl_easy_setopt(d_curl, CURLOPT_USERNAME, "");
-    curl_easy_setopt(d_curl, CURLOPT_PASSWORD, "");
-#endif
-
     // Set libcurl to use netrc to access data behind URS auth.
     //  libcurl will use the provided pathname for the ~/.netrc info. 08/23/19 kln
     curl_easy_setopt(d_curl, CURLOPT_NETRC, 1);
