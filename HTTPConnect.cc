@@ -76,6 +76,9 @@ namespace libdap {
 // Set this to 1 to turn on libcurl's verbose mode (for debugging).
 int www_trace = 0;
 
+// Set this to 1 to turn on libcurl's VERY verbose mode.
+int www_trace_extensive = 0;
+
 // Keep the temporary files; useful for debugging.
 int dods_keep_temps = 0;
 
@@ -288,9 +291,11 @@ curl_debug(CURL *, curl_infotype info, char *msg, size_t size, void  *)
     case CURLINFO_HEADER_OUT:
         cerr << "Header out: " << message; break;
     case CURLINFO_DATA_IN:
-        cerr << "Data in: " << message; break;
+    	if (www_trace_extensive)
+    		cerr << "Data in: " << message; break;
     case CURLINFO_DATA_OUT:
-        cerr << "Data out: " << message; break;
+    	if (www_trace_extensive)
+    		cerr << "Data out: " << message; break;
     case CURLINFO_END:
         cerr << "End: " << message; break;
 #ifdef CURLINFO_SSL_DATA_IN
@@ -302,7 +307,8 @@ curl_debug(CURL *, curl_infotype info, char *msg, size_t size, void  *)
         cerr << "SSL Data out: " << message; break;
 #endif
     default:
-        cerr << "Curl info: " << message; break;
+    	if (www_trace_extensive)
+    		cerr << "Curl info: " << message; break;
     }
     return 0;
 }
