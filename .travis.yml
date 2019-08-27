@@ -140,7 +140,7 @@ before_deploy:
             echo "Updating libdap Debian snapshot with ${file}";
             ver=`basename ${file} | sed -e "s|libdap_||g" -e "s|_amd64.deb||g"`;
             snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
-            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap}_amd64.deb.rpm;
+            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
         done
     fi
 
@@ -151,7 +151,7 @@ before_deploy:
             echo "Updating libdap CentOS-6 snapshot with ${file}";
             ver=`basename ${file} | sed -e "s|libdap-||g" -e "s|.static.el6.x86_64.rpm||g"`;
             snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
-            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap}.static.el6.x86_64.rpm;
+            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
         done
     fi
     
@@ -162,7 +162,7 @@ before_deploy:
             echo "Updating libdap CentOS-7 snapshot with ${file}";
             ver=`basename ${file} | sed -e "s|libdap-||g" -e "s|.static.el7.x86_64.rpm||g"`;
             snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
-            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap}.static.el7.x86_64.rpm;
+            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
         done
     fi
     
