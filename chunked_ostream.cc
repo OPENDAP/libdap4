@@ -124,7 +124,7 @@ chunked_outbuf::end_chunk()
     if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
 #if HEADER_IN_NETWORK_BYTE_ORDER
     // network byte order for the header
-    header = htonl(header);
+    htonl(header);
 #endif
 #endif
 

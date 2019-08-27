@@ -218,6 +218,7 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
         // Get a chunk header
         uint32_t header;
         d_is.read((char *) &header, 4);
+
 #if !BYTE_ORDER_PREFIX && HEADER_IN_NETWORK_BYTE_ORDER
         header = ntohl(header);
 #endif
@@ -343,6 +344,7 @@ chunked_inbuf::read_next_chunk()
 	// To read data from the chunked stream, first read the header
 	uint32_t header;
 	d_is.read((char *) &header, 4);
+
 #if !BYTE_ORDER_PREFIX && HEADER_IN_NETWORK_BYTE_ORDER
     header = ntohl(header);
 #endif
