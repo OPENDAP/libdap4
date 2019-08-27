@@ -174,6 +174,12 @@ dds_buffer(FILE *fp)
     return (void *)dds_create_buffer(fp, YY_BUF_SIZE);
 }
 
+void *
+dds_string(const char *str)
+{
+    return (void *)dds_scan_string(str);
+}
+
 void
 dds_switch_to_buffer(void *buf)
 {

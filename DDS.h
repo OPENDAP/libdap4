@@ -363,6 +363,8 @@ public:
     void parse(int fd);
     void parse(FILE *in = stdin);
 
+    void parse_buffer(const string &constraint);
+
     // These print the Binary object in either the curly-brace or XML reps
     void print(FILE *out);
     void print_constrained(FILE *out);

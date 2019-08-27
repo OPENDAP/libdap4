@@ -119,6 +119,8 @@ using namespace std;
 
 int ddsparse(libdap::parser_arg *arg);
 
+void *dds_string(const char*str);
+
 // Glue for the DDS parser defined in dds.lex
 void dds_switch_to_buffer(void *new_buffer);
 void dds_delete_buffer(void * buffer);
@@ -1018,6 +1020,31 @@ DDS::parse(FILE *in)
     }
 }
 
+void
+DDS::parse_buffer(const string &buf)
+{
+    if (buf=="") {
+        throw InternalErr(__FILE__, __LINE__, "The string cannot be NULL.");
+    }
+
+    void *buffer = dds_string(buf.c_str());
+    dds_switch_to_buffer(buffer);
+
+    parser_arg arg(this);
+
+    bool status = ddsparse(&arg) == 0;
+
+    dds_delete_buffer(buffer);
+
+    DBG2(cout << "Status from parser: " << status << endl);
+
+    //  STATUS is the result of the parser function; if a recoverable error
+    //  was found it will be true but arg.status() will be false.
+    if (!status || !arg.status()) {// Check parse result
+        if (arg.error())
+            throw *arg.error();
+    }
+}
 /** @brief Print the entire DDS to the specified file. */
 void
 DDS::print(FILE *out)
