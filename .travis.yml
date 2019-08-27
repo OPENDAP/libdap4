@@ -149,7 +149,7 @@ before_deploy:
         cp ${prefix}/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; 
         for file in ${prefix}/rpmbuild/RPMS/x86_64/*; do
             echo "Updating libdap CentOS-6 snapshot with ${file}";
-            ver=`basename ${file} | sed -e "s|libdap-debuginfo-||g" -e "s|libdap-devel-||g" -e "s|libdap-||g" -e "s|.static.el6.x86_64.rpm||g"`;
+            ver=`basename ${file} | sed -e "s|libdap-debuginfo-||g" -e "s|libdap-devel-||g" -e "s|libdap-||g" -e "s|.el6.x86_64.rpm||g"`;
             snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
             cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
         done
@@ -160,7 +160,7 @@ before_deploy:
         cp ${prefix}/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; 
         for file in ${prefix}/rpmbuild/RPMS/x86_64/*; do
             echo "Updating libdap CentOS-7 snapshot with ${file}";
-            ver=`basename ${file} | sed -e "s|libdap-debuginfo-||g" -e "s|libdap-devel-||g" -e "s|libdap-||g" -e "s|.static.el7.x86_64.rpm||g"`;
+            ver=`basename ${file} | sed -e "s|libdap-debuginfo-||g" -e "s|libdap-devel-||g" -e "s|libdap-||g" -e "s|.el7.x86_64.rpm||g"`;
             snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
             cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
         done
