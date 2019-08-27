@@ -133,23 +133,39 @@ before_deploy:
 - mkdir -p $TRAVIS_BUILD_DIR/package
 - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz 
                                              --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
-- if test "$LIBDAP_BUILD" = "deb"; then cp $prefix/debbuild/libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; fi
+- if test "$LIBDAP_BUILD" = "deb"; 
+    then 
+        cp $prefix/debbuild/libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; 
+        for file in $prefix/debbuild/libdap_*_amd64.deb; do
+            echo "Updating libdap Debian snapshot with ${file}";
+            ver=`basename ${file} | sed -e "s|libdap_||g" -e "s|_amd64.deb||g"`;
+            snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
+            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap}_amd64.deb.rpm;
+        done
+    fi
 
 - if test "$LIBDAP_BUILD" = "centos6"; 
     then 
         cp ${prefix}/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; 
         for file in ${prefix}/rpmbuild/RPMS/x86_64/*; do
-            echo "Updating snapshot with ${file}";
-            ver=`basename ${file} | sed "s|libdap-||g" | sed "s|.static.el6.x86_64.rpm||g"`;
+            echo "Updating libdap CentOS-6 snapshot with ${file}";
+            ver=`basename ${file} | sed -e "s|libdap-||g" -e "s|.static.el6.x86_64.rpm||g"`;
             snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
-            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
+            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap}.static.el6.x86_64.rpm;
         done
     fi
     
 - if test "$LIBDAP_BUILD" = "centos7"; 
     then 
-        cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; 
+        cp ${prefix}/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; 
+        for file in ${prefix}/rpmbuild/RPMS/x86_64/*; do
+            echo "Updating libdap CentOS-7 snapshot with ${file}";
+            ver=`basename ${file} | sed -e "s|libdap-||g" -e "s|.static.el7.x86_64.rpm||g"`;
+            snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
+            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap}.static.el7.x86_64.rpm;
+        done
     fi
+    
     
 - ls -lR $TRAVIS_BUILD_DIR/package
 
