@@ -140,7 +140,7 @@ before_deploy:
         cp ${prefix}/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; 
         for file in ${prefix}/rpmbuild/RPMS/x86_64/*; do
             echo "Updating snapshot with ${file}";
-            ver=`basename ${file} | sed "s|bes-||g" | sed "s|.static.el6.x86_64.rpm||g"`;
+            ver=`basename ${file} | sed "s|libdap-||g" | sed "s|.static.el6.x86_64.rpm||g"`;
             snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
             cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
         done
