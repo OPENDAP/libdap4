@@ -1,7 +1,7 @@
 #
 # The libdap build
 #
-# Initial Travic-CI control file. 6.5.15 jhrg
+# Initial Travis-CI control file. 6.5.15 jhrg
 # Updated many times... finally using docker (containers). 7.14.15 jhrg
 #
 # Modified to push the result of a successful build up to an AWS S3
@@ -96,8 +96,8 @@ jobs:
     - make distcheck -j7
 
   - stage: scan
-    addons: 
-      sonarcloud: 
+    addons:
+    - sonarcloud
     script:
     - export LIBDAP_BUILD=sonar
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
@@ -177,7 +177,6 @@ deploy:
   skip_cleanup: true
   local_dir: $TRAVIS_BUILD_DIR/package
   on:
-    branch:
-    - master
+    branch: master
     condition: $LIBDAP_BUILD =~ ^main|deb|centos7|centos6$
 
