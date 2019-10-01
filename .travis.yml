@@ -97,7 +97,7 @@ jobs:
 
   - stage: scan
     addons:
-    - sonarcloud
+      sonarcloud:
     script:
     - export LIBDAP_BUILD=sonar
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
