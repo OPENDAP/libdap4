@@ -38,6 +38,7 @@
 
 #include "BaseType.h"
 #include "Array.h"
+#include "Grid.h"
 
 #include "XMLWriter.h"
 #include "D4Attributes.h"
@@ -665,6 +666,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
     DBG( cerr << __func__ << "() - BEGIN ("<< name() << ")" << endl);
 
     vector<BaseType *> *results = new vector<BaseType *>(); // LEAK
+    bool show_shared_dims = false;
 
     // Get the D4Group's attributes
 #if 0
@@ -711,11 +713,22 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
                 string new_name = (is_root ? "" : FQN()) + (*vi)->name();
                 (*vi)->set_name(new_name);
                 results->push_back((*vi));
-#if 0
-                (*vi) = NULL;
-#endif
-                DBG( cerr << __func__ << "() - Added member variable '" << (*i)->name() << "' " <<
-                    "to results vector. root: "<< (is_root?"true":"false") << endl);
+
+                if (!show_shared_dims && (*vi)->type() == dods_grid_c) {
+                    Grid *g = static_cast<Grid *>(*vi);
+                    for (auto m = g->map_begin(); m != g->map_end(); ++m) {
+                        //remove shared dimensions
+                        vector<BaseType*>::iterator it;
+                        for(it = results->end(); it!=results->begin(); ){
+                            --it;
+                            if((*it)->name() == (*m)->name()){
+                                delete *it;
+                                it=results->erase(it);
+                            }
+                        }
+                    }
+                }
+
             }
 
             delete new_vars;
