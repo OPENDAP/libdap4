@@ -367,8 +367,8 @@ DDS *DMR::getDDS(DMR &dmr)
  *
  * @return A pointer to the newly allocated DDS.
  */
-DDS *
-DMR::getDDS()
+    DDS *
+DMR::getDDS(bool show_shared_dims)
 {
 #if 0
     return DMR::getDDS(*this);
@@ -384,7 +384,7 @@ DMR::getDDS()
 
     // Now copy the global attributes
     // TODO Make this a unique_ptr<> and let the compiler delete it. jhrg 6/17/19
-    vector<BaseType *> *top_vars = root()->transform_to_dap2(&(dds->get_attr_table())/*, true*/);
+    vector<BaseType *> *top_vars = root()->transform_to_dap2(&(dds->get_attr_table())/*, true*/, false);
     for (vector<BaseType *>::iterator i = top_vars->begin(), e = top_vars->end(); i != e; i++) {
         dds->add_var_nocopy(*i);
     }
