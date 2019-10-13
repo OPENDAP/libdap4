@@ -709,7 +709,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims)
         DBG( cerr << __func__ << "() - Processing member variable '" << (*i)->name() <<
             "' root: " << (is_root?"true":"false") << endl);
 
-        vector<BaseType *> *new_vars = (*i)->transform_to_dap2(group_attrs, false);
+        vector<BaseType *> *new_vars = (*i)->transform_to_dap2(group_attrs, show_shared_dims);
         if (new_vars) {  // Might be un-mappable
             // It's not so game on..
             for (vector<BaseType*>::iterator vi = new_vars->begin(), ve = new_vars->end(); vi != ve; vi++) {

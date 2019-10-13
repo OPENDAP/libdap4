@@ -346,7 +346,7 @@ bool Byte::d4_ops(BaseType *b, int op)
 Byte::transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims)
 {
     DBG(cerr << __func__ << "() - BEGIN" << endl;);
-    vector<BaseType *> *vec = BaseType::transform_to_dap2(parent_attr_table, false);
+    vector<BaseType *> *vec = BaseType::transform_to_dap2(parent_attr_table, show_shared_dims);
     if(vec->size()!=1){
         ostringstream oss;
         oss << __func__ << "() -  Something Bad Happened. This transform should produce only ";

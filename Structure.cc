@@ -196,7 +196,7 @@ Structure::transform_to_dap2(AttrTable *, bool show_shared_dims)
 
     vector<BaseType *> dropped_vars;
     for (Structure::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
-        vector<BaseType *> *new_vars = (*i)->transform_to_dap2(&dest->get_attr_table() /*attrs*/, false);
+        vector<BaseType *> *new_vars = (*i)->transform_to_dap2(&dest->get_attr_table() /*attrs*/, show_shared_dims);
         if (new_vars) {  // Might be un-mappable
             // It's not so game on..
 #if 0
