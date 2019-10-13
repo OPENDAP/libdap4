@@ -717,7 +717,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims)
                 (*vi)->set_name(new_name);
                 results->push_back((*vi));
                 //collect all map dims from grids if show_shared_dims is false
-                if (show_shared_dims && (*vi)->type() == dods_grid_c) {
+                if (!show_shared_dims && (*vi)->type() == dods_grid_c) {
                     // Add only one copy of each Map with the same name
                     Grid *g = static_cast<Grid *>(*vi);
                     for (auto m = g->map_begin(); m != g->map_end(); ++m) {
