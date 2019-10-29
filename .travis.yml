@@ -16,7 +16,7 @@ compiler: gcc
 branches:
   only:
   - master
-  - coverity_scan
+  - travis
 
 addons:
   apt:
@@ -56,11 +56,11 @@ before_script:
 
 stages:
   - name: build
-    if:  branch = master
+    if:  branch = master OR branch = travis
   - name: scan
-    if:  branch = master
+    if:  branch = master OR branch = travis
   - name: package
-    if:  branch = master
+    if:  branch = master OR branch = travis
 
 jobs:
   include:
@@ -169,4 +169,3 @@ deploy:
   on:
     branch: master
     condition: $LIBDAP_BUILD =~ ^main|deb|centos7|centos6$
-
