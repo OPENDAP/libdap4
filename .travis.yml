@@ -9,8 +9,6 @@
 
 dist: trusty
 
-sudo: false
-
 language: cpp
 
 compiler: gcc
@@ -21,13 +19,6 @@ branches:
   - coverity_scan
 
 addons:
-  coverity_scan:
-    project:
-      name: "OPENDAP/libdap4"
-    notification_email: jgallagher@opendap.org
-    build_command_prepend: ./configure --disable-dependency-tracking --prefix=$prefix
-    build_command: "make -j7"
-    branch_pattern: coverity_scan
   apt:
     packages:
     - libxml2-dev
@@ -53,29 +44,25 @@ env:
   # AWS_SECRET_ACCESS_KEY
   - secure: "lL7WaRHysuAKGLhMBbMyCk8yvRn4mmZeF+W7t4duh7/1DrGiPZ9kQwkfM54r5hLXPeKqqMyDjJs5kATlBgzg68dnwSaLFsbe3TqI9Zj258PgUf1+EYaK+vP9O9brHUUrmtqj6uFGtrP1Dqj2S8AUuTvrYtvSr7vGGitv4++n3AY="
 
-# before_install:
-# hyrax-dependencies-build.tar.gz includes/makes the build directory
+before_install:
+  - pip install --user awscli
 
 install:
-- pip install --user awscli
-- aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
-# - (cd $TRAVIS_BUILD_DIR && curl $CURL_OPTIONS -O https://s3.amazonaws.com/opendap.travis.build/hyrax-dependencies-build.tar.gz) 
-- tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz 
+  - aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
+  - tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
 
 before_script:
-- printenv
-- autoreconf --force --install --verbose
+  - autoreconf --force --install --verbose
 
-# The coverity_scan branch is built by the addon
+stages:
+  - name: build
+    if:  branch = master
+  - name: scan
+    if:  branch = master
+  - name: package
+    if:  branch = master
+
 jobs:
-  stages:
-   - name: build
-     if:  branch = master
-   - name: scan
-     if:  branch = master
-   - name: package
-     if:  branch = master
-
   include:
   - stage: build
     script:
@@ -131,6 +118,10 @@ jobs:
 
 before_deploy:
 - mkdir -p $TRAVIS_BUILD_DIR/package
+# This part of the before_deploy action copies the built distributions named with version numbers
+# into $TRAVIS_BUILD_DIR/package and then places a second copy of those files with the version
+# number replaced with the word 'snapshot.' These files are used for the our snapshot delivery
+# and deployment process. jhrg 10/28/19
 - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz 
                                              --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
 - if test "$LIBDAP_BUILD" = "deb"; 
@@ -165,8 +156,7 @@ before_deploy:
             cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
         done
     fi
-    
-    
+
 - ls -lR $TRAVIS_BUILD_DIR/package
 
 deploy:
