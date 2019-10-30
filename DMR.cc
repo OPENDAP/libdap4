@@ -380,6 +380,17 @@ DMR::getDDS(bool show_shared_dims)
 #endif
     BaseTypeFactory btf;
     DDS *dds = new DDS(&btf, name());
+
+    // Rename DDS container if there is a group with explicit container's name
+    string cname = "";
+    for (D4Group::groupsIter i = root()->grp_begin(), e = root()->grp_end(); i != e; ++i) {
+        size_t pos = (*i)->name().find("_excon");
+        if (pos != string::npos) {
+            cname = (*i)->name().substr(0,pos);
+        }
+    }
+    if(!cname.empty()) dds->container_name(cname);
+
     dds->filename(filename());
 
     // Now copy the global attributes
