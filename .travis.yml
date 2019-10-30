@@ -58,7 +58,7 @@ stages:
   - name: build
     if:  branch = master OR branch = travis
   - name: scan
-    if:  branch = master OR branch = travis
+    if:  branch = master
   - name: package
     if:  branch = master OR branch = travis
 
@@ -116,48 +116,31 @@ jobs:
                  --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                  --env os=centos6 opendap/centos6_hyrax_builder:1.3 /root/travis/build-rpm.sh
 
+  - stage: package
+    script:
+      - export LIBDAP_BUILD=srcdist
+      - mkdir -p $TRAVIS_BUILD_DIR/package
+      - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
+      - make dist -j7
+      - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package
+      - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-snapshot.tar.gz;
+
 before_deploy:
-- mkdir -p $TRAVIS_BUILD_DIR/package
-# This part of the before_deploy action copies the built distributions named with version numbers
-# into $TRAVIS_BUILD_DIR/package and then places a second copy of those files with the version
-# number replaced with the word 'snapshot.' These files are used for the our snapshot delivery
-# and deployment process. jhrg 10/28/19
-- if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz 
-                                             --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
-- if test "$LIBDAP_BUILD" = "deb"; 
-    then 
-        cp $prefix/debbuild/libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; 
-        for file in $prefix/debbuild/libdap_*_amd64.deb; do
-            echo "Updating libdap Debian snapshot with ${file}";
-            ver=`basename ${file} | sed -e "s|libdap_||g" -e "s|_amd64.deb||g"`;
-            snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
-            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
-        done
-    fi
-
-- if test "$LIBDAP_BUILD" = "centos6"; 
-    then 
-        cp ${prefix}/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; 
-        for file in ${prefix}/rpmbuild/RPMS/x86_64/*; do
-            echo "Updating libdap CentOS-6 snapshot with ${file}";
-            ver=`basename ${file} | sed -e "s|libdap-debuginfo-||g" -e "s|libdap-devel-||g" -e "s|libdap-||g" -e "s|.el6.x86_64.rpm||g"`;
-            snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
-            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
-        done
-    fi
-    
-- if test "$LIBDAP_BUILD" = "centos7"; 
-    then 
-        cp ${prefix}/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; 
-        for file in ${prefix}/rpmbuild/RPMS/x86_64/*; do
-            echo "Updating libdap CentOS-7 snapshot with ${file}";
-            ver=`basename ${file} | sed -e "s|libdap-debuginfo-||g" -e "s|libdap-devel-||g" -e "s|libdap-||g" -e "s|.el7.x86_64.rpm||g"`;
-            snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
-            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
-        done
-    fi
-
-- ls -lR $TRAVIS_BUILD_DIR/package
+  - mkdir -p $TRAVIS_BUILD_DIR/package
+  # This part of the before_deploy action copies the built distributions named with version numbers
+  # into $TRAVIS_BUILD_DIR/package and then places a second copy of those files with the version
+  # number replaced with the word 'snapshot.' These files are used for the our snapshot delivery
+  # and deployment process. jhrg 10/28/19
+  - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz
+                                               --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
+  # Debian distribution prep
+  - if test "$LIBDAP_BUILD" = "deb"; then ./travis/deb-to-package-dir.sh; fi
+  # CentOS-7  distribution prep
+  - if test "$BES_BUILD" = "centos6"; then ./travis/rpm-to-package-dir.sh "el6"; fi
+  # CentOS-6 distribution prep
+  - if test "$BES_BUILD" = "centos7"; then ./travis/rpm-to-package-dir.sh "el7"; fi
+  # Check for the stuff...
+  - ls -lR $TRAVIS_BUILD_DIR/package
 
 deploy:
   provider: s3
@@ -168,4 +151,4 @@ deploy:
   local_dir: $TRAVIS_BUILD_DIR/package
   on:
     branch: master
-    condition: $LIBDAP_BUILD =~ ^main|deb|centos7|centos6$
+    condition: $LIBDAP_BUILD =~ ^main|srddist|deb|centos7|centos6$
