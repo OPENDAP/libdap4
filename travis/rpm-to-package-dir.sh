@@ -16,7 +16,9 @@ PKG_NAME=libdap
 cp ${prefix}/rpmbuild/RPMS/x86_64/* ${TRAVIS_BUILD_DIR}/package/
 
 # Now make a second set of copies with 'snapshot' in place of the version
+
 ver=`basename ${prefix}/rpmbuild/RPMS/x86_64/${PKG_NAME}-[-0-9.]*.rpm | sed -e "s|${PKG_NAME}-||g" -e "s|.${DIST}.x86_64.rpm||g"`
+
 for file in ${prefix}/rpmbuild/RPMS/x86_64/*
 do
     echo "Updating ${PKG_NAME} ${DIST} snapshot with ${file}"

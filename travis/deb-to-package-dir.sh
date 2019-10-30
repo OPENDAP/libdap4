@@ -7,13 +7,15 @@
 set -e
 
 # 'prefix' and 'TRAVIS_BUILD_DIR' are in the environment
+DIST=amd64.deb
+PKG_NAME=libdap
 
 # Copied the RPM files with version numbers.
-cp ${prefix}/debbuild/libdap_*_amd64.deb ${TRAVIS_BUILD_DIR}/package/
+cp ${prefix}/debbuild/${PKG_NAME}_*_amd64.deb ${TRAVIS_BUILD_DIR}/package/
 
 # Now make a second set of copies with 'snapshot' in place of the version
-ver=`basename ${file} | sed -e "s|libdap_||g" -e "s|_amd64.deb||g"`;
-for file in ${prefix}/debbuild/libdap_*_amd64.deb
+ver=`basename ${prefix}/debbuild/${PKG_NAME}_*_${DIST} | sed -e "s|${PKG_NAME}_||g" -e "s|_${DIST}b||g"`;
+for file in ${prefix}/debbuild/${PKG_NAME}_*_${DIST}
 do
     echo "Updating ${PKG_NAME} ${DIST} snapshot with ${file}"
     snap=`basename ${file} | sed "s|${ver}|snapshot|g"`
