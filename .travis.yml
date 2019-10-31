@@ -9,8 +9,6 @@
 
 dist: trusty
 
-sudo: false
-
 language: cpp
 
 compiler: gcc
@@ -18,16 +16,9 @@ compiler: gcc
 branches:
   only:
   - master
-  - coverity_scan
+  - travis
 
 addons:
-  coverity_scan:
-    project:
-      name: "OPENDAP/libdap4"
-    notification_email: jgallagher@opendap.org
-    build_command_prepend: ./configure --disable-dependency-tracking --prefix=$prefix
-    build_command: "make -j7"
-    branch_pattern: coverity_scan
   apt:
     packages:
     - libxml2-dev
@@ -53,29 +44,25 @@ env:
   # AWS_SECRET_ACCESS_KEY
   - secure: "lL7WaRHysuAKGLhMBbMyCk8yvRn4mmZeF+W7t4duh7/1DrGiPZ9kQwkfM54r5hLXPeKqqMyDjJs5kATlBgzg68dnwSaLFsbe3TqI9Zj258PgUf1+EYaK+vP9O9brHUUrmtqj6uFGtrP1Dqj2S8AUuTvrYtvSr7vGGitv4++n3AY="
 
-# before_install:
-# hyrax-dependencies-build.tar.gz includes/makes the build directory
+before_install:
+  - pip install --user awscli
 
 install:
-- pip install --user awscli
-- aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
-# - (cd $TRAVIS_BUILD_DIR && curl $CURL_OPTIONS -O https://s3.amazonaws.com/opendap.travis.build/hyrax-dependencies-build.tar.gz) 
-- tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz 
+  - aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
+  - tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
 
 before_script:
-- printenv
-- autoreconf --force --install --verbose
+  - autoreconf --force --install --verbose
 
-# The coverity_scan branch is built by the addon
+stages:
+  - name: build
+    if:  branch = master OR branch = travis
+  - name: scan
+    if:  branch = master
+  - name: package
+    if:  branch = master OR branch = travis
+
 jobs:
-  stages:
-   - name: build
-     if:  branch = master
-   - name: scan
-     if:  branch = master
-   - name: package
-     if:  branch = master
-
   include:
   - stage: build
     script:
@@ -129,45 +116,31 @@ jobs:
                  --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                  --env os=centos6 opendap/centos6_hyrax_builder:1.3 /root/travis/build-rpm.sh
 
-before_deploy:
-- mkdir -p $TRAVIS_BUILD_DIR/package
-- if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz 
-                                             --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
-- if test "$LIBDAP_BUILD" = "deb"; 
-    then 
-        cp $prefix/debbuild/libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; 
-        for file in $prefix/debbuild/libdap_*_amd64.deb; do
-            echo "Updating libdap Debian snapshot with ${file}";
-            ver=`basename ${file} | sed -e "s|libdap_||g" -e "s|_amd64.deb||g"`;
-            snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
-            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
-        done
-    fi
+  - stage: package
+    script:
+      - export LIBDAP_BUILD=srcdist
+      - mkdir -p $TRAVIS_BUILD_DIR/package
+      - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
+      - make dist -j7
+      - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package
+      - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-snapshot.tar.gz;
 
-- if test "$LIBDAP_BUILD" = "centos6"; 
-    then 
-        cp ${prefix}/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; 
-        for file in ${prefix}/rpmbuild/RPMS/x86_64/*; do
-            echo "Updating libdap CentOS-6 snapshot with ${file}";
-            ver=`basename ${file} | sed -e "s|libdap-debuginfo-||g" -e "s|libdap-devel-||g" -e "s|libdap-||g" -e "s|.el6.x86_64.rpm||g"`;
-            snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
-            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
-        done
-    fi
-    
-- if test "$LIBDAP_BUILD" = "centos7"; 
-    then 
-        cp ${prefix}/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; 
-        for file in ${prefix}/rpmbuild/RPMS/x86_64/*; do
-            echo "Updating libdap CentOS-7 snapshot with ${file}";
-            ver=`basename ${file} | sed -e "s|libdap-debuginfo-||g" -e "s|libdap-devel-||g" -e "s|libdap-||g" -e "s|.el7.x86_64.rpm||g"`;
-            snap=`basename ${file} | sed "s|${ver}|snapshot|g"`;
-            cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap};
-        done
-    fi
-    
-    
-- ls -lR $TRAVIS_BUILD_DIR/package
+before_deploy:
+  - mkdir -p $TRAVIS_BUILD_DIR/package
+  # This part of the before_deploy action copies the built distributions named with version numbers
+  # into $TRAVIS_BUILD_DIR/package and then places a second copy of those files with the version
+  # number replaced with the word 'snapshot.' These files are used for the our snapshot delivery
+  # and deployment process. jhrg 10/28/19
+  - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz
+                                               --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
+  # Debian distribution prep
+  - if test "$LIBDAP_BUILD" = "deb"; then ./travis/deb-to-package-dir.sh; fi
+  # CentOS-7  distribution prep
+  - if test "$BES_BUILD" = "centos6"; then ./travis/rpm-to-package-dir.sh "el6"; fi
+  # CentOS-6 distribution prep
+  - if test "$BES_BUILD" = "centos7"; then ./travis/rpm-to-package-dir.sh "el7"; fi
+  # Check for the stuff...
+  - ls -lR $TRAVIS_BUILD_DIR/package
 
 deploy:
   provider: s3
@@ -178,5 +151,4 @@ deploy:
   local_dir: $TRAVIS_BUILD_DIR/package
   on:
     branch: master
-    condition: $LIBDAP_BUILD =~ ^main|deb|centos7|centos6$
-
+    condition: $LIBDAP_BUILD =~ ^main|srddist|deb|centos7|centos6$
