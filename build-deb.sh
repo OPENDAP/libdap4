@@ -11,6 +11,8 @@ echo "pwd = `pwd`"
 
 # Get the pre-built dependencies (all static libraries). The env vars $os along with the
 # AWS public and secret key are put in the environment using 'docker run --env ...'
+#
+# NB: I installed the awscli into /usr/local/bin on the ubuntu14 container tagged 1.5
 # jhrg 11/1/19
 aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
 
