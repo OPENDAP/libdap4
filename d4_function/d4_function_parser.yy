@@ -210,6 +210,10 @@ arg: function
 {
     $$ = $1;
 }
+| /* Null, argument lists may be empty */
+{
+    $$ = 0;
+}
 ;
 
 variable_or_constant : id
