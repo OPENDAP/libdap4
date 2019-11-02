@@ -98,7 +98,7 @@ jobs:
     # $TRAVIS_DUILD_DIR:/root/travis used to make the build-deb.sh script available
     - docker run --volume $prefix/debbuild:/root --volume $TRAVIS_BUILD_DIR:/root/travis
                  --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                 --env os=ubuntu14 opendap/ubuntu14_hyrax_build:1.4 /root/travis/build-deb.sh
+                 --env os=ubuntu14 opendap/ubuntu14_hyrax_build:1.5 /root/travis/build-deb.sh
 
   - stage: package
     script: 
