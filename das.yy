@@ -41,6 +41,7 @@
 
 #define YYSTYPE char *
 #define ATTR_STRING_QUOTE_FIX
+#define YYERROR_VERBOSE 0
 
 #include "config.h"
 
