@@ -17,6 +17,7 @@ branches:
   only:
   - master
   - travis
+  - ci_test
 
 addons:
   apt:
@@ -40,9 +41,11 @@ env:
   # SONAR_LOGIN, created using travis encrypt --org -r OPENDAP/libdap4 SONAR_LOGIN=<sonar login key>
   - secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw=" 
   # AWS_ACCESS_KEY_ID for the user 'travis'
-  - secure: "Azd20M0X367Glf6YnQXRLXJXGrKkJwKK6X7hKRvNZ1oSPkTLmW1JlUKpsjmstz+oJxZHATMP64fymTkxRmyHU7bNktBkiI3i6k1cFXRPGEhrf2Uftnve/Zy2TEJ6ucnEpYmw5+LyZgAZVNLzFnUrE2FUbzG8I1yO2KYr00nvof4="
+  - secure: "PaUvp6Aom+hD2cM4gH5xVm81iPH+meKkxoYiqCoAEI7YFgwtQlltOB9/0+98zCzzd+ovYo5kFrU/pywe8eqfP1Ek3UnAuaoJOFXxx9DJ6rWCGzzIeM4h/xkCU9EWN0ZpGFETtDbEpYRnZ+9k03iNl5XaaZ6brZBTxbEoMT9ITzs="
+  # old "Azd20M0X367Glf6YnQXRLXJXGrKkJwKK6X7hKRvNZ1oSPkTLmW1JlUKpsjmstz+oJxZHATMP64fymTkxRmyHU7bNktBkiI3i6k1cFXRPGEhrf2Uftnve/Zy2TEJ6ucnEpYmw5+LyZgAZVNLzFnUrE2FUbzG8I1yO2KYr00nvof4="
   # AWS_SECRET_ACCESS_KEY
-  - secure: "lL7WaRHysuAKGLhMBbMyCk8yvRn4mmZeF+W7t4duh7/1DrGiPZ9kQwkfM54r5hLXPeKqqMyDjJs5kATlBgzg68dnwSaLFsbe3TqI9Zj258PgUf1+EYaK+vP9O9brHUUrmtqj6uFGtrP1Dqj2S8AUuTvrYtvSr7vGGitv4++n3AY="
+  # old "lL7WaRHysuAKGLhMBbMyCk8yvRn4mmZeF+W7t4duh7/1DrGiPZ9kQwkfM54r5hLXPeKqqMyDjJs5kATlBgzg68dnwSaLFsbe3TqI9Zj258PgUf1+EYaK+vP9O9brHUUrmtqj6uFGtrP1Dqj2S8AUuTvrYtvSr7vGGitv4++n3AY="
+  - secure: "cPx/S5VnYiz4WU7NQnlCImgWnJdHHusH2B9YvLh/EOKXoGMQyzMDMKJj9qakOIlQeBoe0fPEtpGFOgURiu01q7XqxtIbxN7rv+zTrG9KcizpsBUcmQ0usAGxYxqQlUEB+l4bn4z48sOlRkC/rh2q2Y2RyGNn0rCfzBMl6WunbOI="
 
 before_install:
   - pip install --user awscli
@@ -61,9 +64,14 @@ stages:
     if:  branch = master
   - name: package
     if:  branch = master OR branch = travis
+  - name: ci_test
+    if: branch = ci_test
 
 jobs:
   include:
+  - stage: ci_test
+    script: cp README $TRAVIS_BUILD_DIR/package/README.libdap4
+    
   - stage: build
     script:
     - export LIBDAP_BUILD=main
