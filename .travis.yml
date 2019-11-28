@@ -70,7 +70,9 @@ stages:
 jobs:
   include:
   - stage: ci_test
-    script: cp README $TRAVIS_BUILD_DIR/package/README.libdap4
+    script:
+      - mkdir -p $TRAVIS_BUILD_DIR/package
+      - cp README $TRAVIS_BUILD_DIR/package/README.libdap4
 
   - stage: build
     script:
