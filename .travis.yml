@@ -17,7 +17,6 @@ branches:
   only:
   - master
   - travis
-  - ci_test
 
 addons:
   apt:
@@ -59,21 +58,21 @@ before_script:
 
 stages:
   - name: build
-    if:  branch = master OR branch = travis
+    if:  branch = master
   - name: scan
     if:  branch = master
   - name: package
-    if:  branch = master OR branch = travis
-  - name: ci_test
-    if: branch = ci_test
+    if:  branch = master
+  - name: travis
+    if: branch = travis
 
 jobs:
   include:
-  - stage: ci_test
+  - stage: travis
     script:
       - mkdir -p $TRAVIS_BUILD_DIR/package
       - cp README $TRAVIS_BUILD_DIR/package/README.libdap4
-      - export LIBDAP_BUILD=ci_test
+      - export LIBDAP_BUILD=travis
 
   - stage: build
     script:
@@ -161,5 +160,6 @@ deploy:
   skip_cleanup: true
   local_dir: $TRAVIS_BUILD_DIR/package
   on:
-    branch: ci_test
-    condition: $LIBDAP_BUILD =~ ^main|srddist|deb|centos7|centos6|ci_test$
+    # Change 'master' to 'travis' to test deployment
+    branch: master
+    condition: $LIBDAP_BUILD =~ ^main|srddist|deb|centos7|centos6|travis$
