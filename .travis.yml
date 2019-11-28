@@ -73,6 +73,7 @@ jobs:
     script:
       - mkdir -p $TRAVIS_BUILD_DIR/package
       - cp README $TRAVIS_BUILD_DIR/package/README.libdap4
+      - export LIBDAP_BUILD=ci_test
 
   - stage: build
     script:
@@ -161,4 +162,4 @@ deploy:
   local_dir: $TRAVIS_BUILD_DIR/package
   on:
     branch: ci_test
-    condition: $LIBDAP_BUILD =~ ^main|srddist|deb|centos7|centos6$
+    condition: $LIBDAP_BUILD =~ ^main|srddist|deb|centos7|centos6|ci_test$
