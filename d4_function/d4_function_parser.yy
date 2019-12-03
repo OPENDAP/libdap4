@@ -46,6 +46,8 @@
 
 %code requires {
 
+#define YYERROR_VERBOSE 0
+
 #include "D4FunctionEvaluator.h"
 #include "D4RValue.h"
 #include "dods-datatypes.h"
