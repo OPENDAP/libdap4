@@ -3,7 +3,6 @@
 # a replacement for the autotols build. But it does provide information that
 # CLion needs to navigate the Hyrax code. jhrg 12/5/19
 
-include_directories(conf)
 include_directories(d4_ce)
 include_directories(d4_function)
 include_directories(geo)
@@ -14,8 +13,6 @@ include_directories(GNU)
 
 include_directories(tests)
 include_directories(unit-tests)
-include_directories(VCPP)
-include_directories(win32/gl)
 
 add_library(libdap4
 	conf/arg-nonnull.h
