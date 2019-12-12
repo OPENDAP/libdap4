@@ -710,6 +710,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
             for (vector<BaseType*>::iterator vi = new_vars->begin(), ve = new_vars->end(); vi != ve; vi++) {
                 string new_name = (is_root ? "" : FQN()) + (*vi)->name();
                 (*vi)->set_name(new_name);
+                (*vi)->set_parent(NULL);
                 results->push_back((*vi));
 #if 0
                 (*vi) = NULL;
