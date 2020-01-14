@@ -715,6 +715,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims)
             for (vector<BaseType*>::iterator vi = new_vars->begin(), ve = new_vars->end(); vi != ve; vi++) {
                 string new_name = (is_root ? "" : FQN()) + (*vi)->name();
                 (*vi)->set_name(new_name);
+                (*vi)->set_parent(NULL);
                 results->push_back((*vi));
                 //collect all map dims from grids if show_shared_dims is false
                 if (!show_shared_dims && (*vi)->type() == dods_grid_c) {
