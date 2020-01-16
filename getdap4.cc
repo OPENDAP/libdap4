@@ -44,6 +44,8 @@
 #include <string>
 #include <sstream>
 
+#include <cstdio> //SBL 12.3.19
+
 #include "GetOpt.h"
 
 #include "DMR.h"
@@ -418,13 +420,16 @@ int main(int argc, char *argv[])
     	}
 
         cerr << "Exiting." << endl;
-        return 1;
+        //return 1;
+        return EXIT_FAILURE;
     }
     catch (exception &e) {
         cerr << "C++ library exception: " << e.what() << endl;
         cerr << "Exiting." << endl;
-        return 1;
+        //return 1;
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    //return 0;
+    return EXIT_SUCCESS;
 }

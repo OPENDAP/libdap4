@@ -52,6 +52,7 @@ using namespace libdap;
 #define ERROR_OBJ(arg) ((Error *)((parser_arg *)(arg))->_object)
 #define STATUS(arg) ((parser_arg *)(arg))->_status
 
+#define YYERROR_VERBOSE 0
 //#define YYPARSE_PARAM arg
 
 extern int error_line_num;	// defined in Error.lex

@@ -44,6 +44,8 @@ typedef libdap::D4CEParser::token token;
 /* define yyterminate as this instead of NULL */
 #define yyterminate() return(token::END)
 
+#define YYERROR_VERBOSE 0
+
 #define YY_FATAL_ERROR(msg) {\
     throw(libdap::Error(malformed_expr, std::string("Error scanning constraint expression text: ") + std::string(msg))); \
 }
