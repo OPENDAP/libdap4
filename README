@@ -1,5 +1,9 @@
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
+Updated for version 3.20.5
+
+Memory leaks. Minor bug fixes. Lots of work on CI.
+
 Updated for version 3.20.4
 
 Memory leak fixes and C++11 features
