@@ -8,7 +8,7 @@ dnl m4_pattern_forbid([^_?(gl_[A-Z]|AX_|BISON_)])
 dnl m4_pattern_allow([^BISON_USE_NLS$])
 
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.20.4, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.20.5, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["4.0"], [Highest DAP version implemented?])
 AC_SUBST([DAP_PROTOCOL_VERSION])
 

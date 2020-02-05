@@ -92,6 +92,7 @@ using namespace libdap ;
 #define EVALUATOR(arg) (static_cast<ce_parser_arg*>(arg)->get_eval())
 #define DDS(arg) (static_cast<ce_parser_arg*>(arg)->get_dds())
 
+#define YYERROR_VERBOSE 0
 // #define YYPARSE_PARAM arg
 
 int ce_exprlex(void);           /* the scanner; see expr.lex */
@@ -159,7 +160,7 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
 %require "2.4"
 
 %parse-param {ce_parser_arg *arg}
-%name-prefix "ce_expr"
+%define api.prefix {ce_expr}
 %defines
 %debug
 %verbose

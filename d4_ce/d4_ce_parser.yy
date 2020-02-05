@@ -46,6 +46,7 @@
 // %define api.prefix { d4_ce }
 
 %code requires {
+#define YYERROR_VERBOSE 0
 #include "D4ConstraintEvaluator.h"
 #include "escaping.h" // for www2id() used with WORD and STRING
 namespace libdap {

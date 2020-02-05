@@ -1,3 +1,175 @@
+2020-01-09  ndp-opendap  <ndp@opendap.org>
+
+	updating aws keys for travis
+
+2019-12-13  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #105 from OPENDAP/hk-532
+	HK-532, set the parent pointer of vars to NULL when transforming DAP4…
+
+2019-12-12  Muqun Yang  <myang6@hdfgroup.org>
+
+	HK-532, set the parent pointer of vars to NULL when transforming DAP4 to DAP2.
+
+2019-12-06  Sam Lloyd  <slloyd@opendap.org>
+
+	Merge pull request #104 from OPENDAP/HK-50
+	Hk 50
+
+2019-12-06  Samuel Lloyd  <slloyd@localhost.localdomain>
+
+	12/6/19 - HK-50 - master merge
+
+2019-12-05  James Gallagher  <jgallagher@opendap.org>
+
+	Removed unneeded include directories
+	[skip ci]
+
+	Added local CMakeLists.txt to streamline work with CLion.
+	[skip ci]
+
+2019-12-04  slloyd  <slloyd@localhost>
+
+	12/4/19 - HK-50 - (In Progress) returns changed
+
+2019-12-03  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #103 from OPENDAP/HK-459
+	11/26/19 - HK-459 - (Awaiting Review) suppressed .yy error messages
+
+2019-11-27  James Gallagher  <jgallagher@opendap.org>
+
+	Prepare for merge
+
+	Set custom condition for ci_test
+
+	Testing 'test deployment'
+
+	Modified ci_test stage
+
+	Reset keys
+
+	Test new AWS keys
+
+2019-11-26  slloyd  <slloyd@localhost>
+
+	11/26/19 - HK-459 - (Awaiting Review) suppressed .yy error messages
+	suppressed error messages thrown from libdap4/*.yy files to the standard
+	out
+
+2019-11-01  James Gallagher  <jgallagher@opendap.org>
+
+	My update of the Ubuntu container failed; modified the deb-build script.
+	The script now loads the awscli code. It would be better to fix the
+	docker container, but I don't have easy access to the Dockerfile.
+
+	Updated the ubuntu 14 container so it has the aws cli.
+
+	Modified build-deb.sh to use the aws cli.
+	This change was needed because the travis.build bucket is no longer
+	public.
+
+2019-10-31  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #102 from OPENDAP/dap4-function-null-args-support
+	Added support for null argument lists to the DAP4 function parser.
+
+	Added support for null argument lists to the DAP4 function parser.
+
+2019-10-30  James Gallagher  <jgallagher@opendap.org>
+
+	Fix for the deb-to-package-dir.sh script.
+
+	Merge pull request #101 from OPENDAP/travis
+	Travis
+
+	Added srcdist to the travis build
+
+2019-10-29  James Gallagher  <jgallagher@opendap.org>
+
+	More clean up and configured to build on the travis branch
+
+	Clean up the travis.yml
+
+2019-10-01  James Gallagher  <jgallagher@opendap.org>
+
+	Changed scan stage so sonarcloud is an 'object'
+
+2019-09-30  James Gallagher  <jgallagher@opendap.org>
+
+	Changed name-prefix to api.prefix
+
+2019-09-25  James Gallagher  <jgallagher@opendap.org>
+
+	Syntax fixes in travis.yml and a new target in Makefile.am for CLion
+	To make CLion work with our code I used the compiledb tool to make
+	a data base of built files. I added a target to the Makefile.am to
+	support that.
+	[skip ci]
+
+2019-09-08  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #99 from OPENDAP/dmr-test-fix
+	Dmr test fix
+
+2019-09-04  slloyd  <slloyd@localhost>
+
+	9/4/19 - HK-411 - (Awaiting Review) implemented remaining DMRTest fixes
+
+2019-08-27  Nathan Potter  <ndp@opendap.org>
+
+	Fixing broken naming of rpm's, again.
+
+	Fixing the missong devel and debuginfo snaps
+
+	Testing snapshot gen in travis, tweaking target names
+
+	Testing snapshot gen in travis
+
+	Testing snapshot gen in travis
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Testing snapshot gen in travis
+
+2019-08-26  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Merge pull request #98 from OPENDAP/authorization_fix
+	Cleanup and Verbose
+
+	Made it easier to set the verbose for HTTPConnect and added a very verbose option.
+
+	Merge pull request #97 from OPENDAP/authorization_fix
+	Fixed netrc authorization
+
+2019-08-23  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Took out the curlopt_username and curlopt_password
+
+	Fixed netrc authorization
+
+2019-07-08  James Gallagher  <jgallagher@opendap.org>
+
+	Added DOI
+	[skip ci]
+
+2019-07-03  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+	Resolved Conflicts: chunked_istream.cc
+
+2019-07-02  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #96 from OPENDAP/header-byte-order-hack
+	Hacked chunked_i/ostream.cc using HEADER_IN_NETWORK_BYTE_ORDER
+
+	Revert "Fixes to ntohl() use and auto_ptr --> unique_ptr."
+	This reverts commit c8c427b01dd95ff2f0da820630ffc8133d77d0aa.
+
+	Hacked chunked_i/ostream.cc using HEADER_IN_NETWORK_BYTE_ORDER
+	This is an attempt to revert edits made to correct the calls
+	to htonl() adn ntohl(). Most thought is needed.
+
 2019-07-01  James Gallagher  <jgallagher@opendap.org>
 
 	Merge pull request #95 from OPENDAP/scan-fixes

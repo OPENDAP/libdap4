@@ -44,6 +44,8 @@
 #include <string>
 #include <sstream>
 
+#include <cstdio> //SBL 12.3.19
+
 #include "GetOpt.h"
 
 #include "Sequence.h"
@@ -61,6 +63,7 @@ const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
 
 extern int libdap::dods_keep_temps;     // defined in HTTPResponse.h
 extern int libdap::www_trace;
+extern int libdap::www_trace_extensive;
 
 void usage(string name)
 {
@@ -90,6 +93,7 @@ void usage(string name)
 	cerr << "        x: For each URL, get the (DAP2) DDX object. Does not get data." << endl;
 	cerr << "        B: Build a DDX in getdap using the DDS and DAS." << endl;
 	cerr << "        v: Verbose output." << endl;
+	cerr << "        e: Extensive (or very) verbose." << endl;
 	cerr << "        V: Version of this client; see 'i' for server version." << endl;
 	cerr << "        c: <expr> is a constraint expression. Used with -D/X and -d/r" << endl;
 	cerr << "           NB: You can use a `?' for the CE also." << endl;
@@ -135,7 +139,7 @@ static void print_data(DDS & dds, bool print_rows = false)
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "idaDxrXBVvkc:m:zshM?Hp:t");
+    GetOpt getopt(argc, argv, "idaDxrXBVvekc:m:zshM?Hp:t");
     int option_char;
 
     bool get_das = false;
@@ -181,7 +185,13 @@ int main(int argc, char *argv[])
             break;
         case 'v':
             verbose = true;
+            www_trace = 1;
             break;
+        case 'e':
+        	verbose = true;
+			www_trace = 1;
+			www_trace_extensive = 1;
+			break;
         case 'k':
             dods_keep_temps = 1;
             break;              // keep_temp is in Connect.cc
@@ -463,12 +473,15 @@ int main(int argc, char *argv[])
     }
     catch (Error &e) {
         cerr << e.get_error_message() << endl;
-        return 1;
+        //return 1;
+        return EXIT_FAILURE;
     }
     catch (exception &e) {
         cerr << "C++ library exception: " << e.what() << endl;
-        return 1;
+        //return 1;
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    //return 0;
+    return EXIT_SUCCESS;
 }

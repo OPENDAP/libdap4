@@ -23,8 +23,8 @@ m4_define([DMR_PARSE], [
     
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
-        AT_CHECK([$abs_builddir/dmr-test -x -p $input || true], [], [stdout], [])
-        AT_CHECK([mv stdout $baseline.tmp])
+        AT_CHECK([$abs_builddir/dmr-test -x -p $input], [ignore], [stdout], [stderr])
+        AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -p $input || true], [], [stdout], [stderr])
@@ -52,8 +52,11 @@ m4_define([DMR_TRANS], [
     
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
-        AT_CHECK([$abs_builddir/dmr-test -x -t $input], [0], [stdout], [ignore])
-        AT_CHECK([mv stdout $baseline.tmp])
+        # // old version - sbl 9.4.19
+        # AT_CHECK([$abs_builddir/dmr-test -x -t $input], [0], [stdout], [ignore])
+        
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input], [ignore], [stdout], [stderr])
+        AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -t $input || true], [], [stdout], [stderr])
@@ -83,8 +86,12 @@ m4_define([DMR_TRANS_UNIVERSAL], [
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
         echo "The command <>$abs_builddir/dmr-test -x -t $input $checksum_filt<>"
-        AT_CHECK([$abs_builddir/dmr-test -x -t $input | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [0], [stdout], [ignore])
-        AT_CHECK([mv stdout $baseline.tmp])
+        
+        # // old version - sbl 9.4.19
+        # AT_CHECK([$abs_builddir/dmr-test -x -t $input | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [0], [stdout], [ignore])
+        
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [ignore], [stdout], [stderr])
+        AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -t $input | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [], [stdout], [ignore])
@@ -110,8 +117,11 @@ m4_define([DMR_TRANS_CE], [
 
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
-        AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2"], [], [stdout], [])
-        AT_CHECK([mv stdout $baseline.tmp])
+        # // old version - sbl 9.4.19
+        # AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2"], [], [stdout], []) old version
+        
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2"], [ignore], [stdout], [stderr])
+        AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2" || true], [], [stdout], [stderr])
@@ -138,8 +148,11 @@ m4_define([DMR_TRANS_FUNC_CE], [
     
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
-        AT_CHECK([$abs_builddir/dmr-test -x -t $input -f "$fe" -c "$ce"], [], [stdout], [])
-        AT_CHECK([mv stdout $baseline.tmp])
+        # // old version - sbl 9.4.19
+        # AT_CHECK([$abs_builddir/dmr-test -x -t $input -f "$fe" -c "$ce"], [], [stdout], [])
+        
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input -f "$fe" -c "$ce"], [ignore], [stdout], [stderr])
+        AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -t $input -f "$fe" -c "$ce" || true], [], [stdout], [stderr])
@@ -166,8 +179,11 @@ m4_define([DMR_TRANS_SERIES_CE], [
     
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
-        AT_CHECK([$abs_builddir/dmr-test -x -e -t $input -c "$ce" | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [], [stdout], [])
-        AT_CHECK([mv stdout $baseline.tmp])
+        # // old version - sbl 9.4.19
+        # AT_CHECK([$abs_builddir/dmr-test -x -e -t $input -c "$ce" | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [], [stdout], [])
+        
+        AT_CHECK([$abs_builddir/dmr-test -x -e -t $input -c "$ce" | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [ignore], [stdout], [stderr])
+        AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -e -t $input -c "$ce" | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [], [stdout], [])
@@ -195,8 +211,11 @@ m4_define([DMR_INTERN], [
 
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
-        AT_CHECK([$abs_builddir/dmr-test -x -i $input], [], [stdout], [])
-        AT_CHECK([mv stdout $baseline.tmp])
+        # // old version - sbl 9.4.19
+        # AT_CHECK([$abs_builddir/dmr-test -x -i $input], [], [stdout], [])
+        
+        AT_CHECK([$abs_builddir/dmr-test -x -i $input], [ignore], [stdout], [stderr])
+        AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
         [
         AT_CHECK([$abs_builddir/dmr-test -x -i $input || true], [], [stdout], [stderr])

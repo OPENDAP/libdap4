@@ -1,15 +1,13 @@
 #
 # The libdap build
 #
-# Initial Travic-CI control file. 6.5.15 jhrg
+# Initial Travis-CI control file. 6.5.15 jhrg
 # Updated many times... finally using docker (containers). 7.14.15 jhrg
 #
 # Modified to push the result of a successful build up to an AWS S3
 # bucket. jhrg 2.24.18
 
 dist: trusty
-
-sudo: false
 
 language: cpp
 
@@ -18,16 +16,9 @@ compiler: gcc
 branches:
   only:
   - master
-  - coverity_scan
+  - travis
 
 addons:
-  coverity_scan:
-    project:
-      name: "OPENDAP/libdap4"
-    notification_email: jgallagher@opendap.org
-    build_command_prepend: ./configure --disable-dependency-tracking --prefix=$prefix
-    build_command: "make -j7"
-    branch_pattern: coverity_scan
   apt:
     packages:
     - libxml2-dev
@@ -48,35 +39,39 @@ env:
   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
   # SONAR_LOGIN, created using travis encrypt --org -r OPENDAP/libdap4 SONAR_LOGIN=<sonar login key>
   - secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw=" 
-  # AWS_ACCESS_KEY_ID for the user 'travis'
-  - secure: "Azd20M0X367Glf6YnQXRLXJXGrKkJwKK6X7hKRvNZ1oSPkTLmW1JlUKpsjmstz+oJxZHATMP64fymTkxRmyHU7bNktBkiI3i6k1cFXRPGEhrf2Uftnve/Zy2TEJ6ucnEpYmw5+LyZgAZVNLzFnUrE2FUbzG8I1yO2KYr00nvof4="
+  # AWS_ACCESS_KEY_ID for the user 'travis-libdap'
+  - secure: "uWXN90b3+L74+TZzGonRmhxfOVyi4/MJ8jlGDTdKRepUpvVLM3D8jwj/A4fOaudrAGg64DSJUUnHp8FmzMPO2hz2kcgDwFJ+VkGdBgxPU81srIN3NOur6EcwQ0rjYEsL6AkOe3lAiQixrhg2aOWRFBtv6fOSApbSh0WqUlNfR/g="
   # AWS_SECRET_ACCESS_KEY
-  - secure: "lL7WaRHysuAKGLhMBbMyCk8yvRn4mmZeF+W7t4duh7/1DrGiPZ9kQwkfM54r5hLXPeKqqMyDjJs5kATlBgzg68dnwSaLFsbe3TqI9Zj258PgUf1+EYaK+vP9O9brHUUrmtqj6uFGtrP1Dqj2S8AUuTvrYtvSr7vGGitv4++n3AY="
+  - secure: "M46pBw0ILYUg+BG9XE5exCmITD/gCAmAkYYu0UsnuQQUsSdJmHNiQ9e7/K6uodlk0doSlyekI0dQj5e+dzCgZSLoKckEwwufslM8C+0Q4ZWCwiyi8sBTOLpcgqfhtyu6gYrRiG3bHGyfDO0LHlpw34UKhtpP9z8YvN8r2isqRX0="
 
 before_install:
+  - pip install --user awscli
 
-# hyrax-dependencies-build.tar.gz includes/makes the build directory
 install:
-- pip install --user awscli
-- aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
-# - (cd $TRAVIS_BUILD_DIR && curl $CURL_OPTIONS -O https://s3.amazonaws.com/opendap.travis.build/hyrax-dependencies-build.tar.gz) 
-- tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz 
+  - aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
+  - tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
 
 before_script:
-- printenv
-- autoreconf --force --install --verbose
+  - autoreconf --force --install --verbose
 
-# The coverity_scan branch is built by the addon
+stages:
+  - name: build
+    if:  branch = master
+  - name: scan
+    if:  branch = master
+  - name: package
+    if:  branch = master
+  - name: travis
+    if: branch = travis
+
 jobs:
-  stages:
-   - name: build
-     if:  branch = master
-   - name: scan
-     if:  branch = master
-   - name: package
-     if:  branch = master
-
   include:
+  - stage: travis
+    script:
+      - mkdir -p $TRAVIS_BUILD_DIR/package
+      - cp README $TRAVIS_BUILD_DIR/package/README.libdap4
+      - export LIBDAP_BUILD=travis
+
   - stage: build
     script:
     - export LIBDAP_BUILD=main
@@ -96,8 +91,8 @@ jobs:
     - make distcheck -j7
 
   - stage: scan
-    addons: 
-      sonarcloud: 
+    addons:
+      sonarcloud:
     script:
     - export LIBDAP_BUILD=sonar
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
@@ -111,7 +106,7 @@ jobs:
     # $TRAVIS_DUILD_DIR:/root/travis used to make the build-deb.sh script available
     - docker run --volume $prefix/debbuild:/root --volume $TRAVIS_BUILD_DIR:/root/travis
                  --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                 --env os=ubuntu14 opendap/ubuntu14_hyrax_build:1.4 /root/travis/build-deb.sh
+                 --env os=ubuntu14 opendap/ubuntu14_hyrax_build:1.5 /root/travis/build-deb.sh
 
   - stage: package
     script: 
@@ -129,14 +124,31 @@ jobs:
                  --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                  --env os=centos6 opendap/centos6_hyrax_builder:1.3 /root/travis/build-rpm.sh
 
+  - stage: package
+    script:
+      - export LIBDAP_BUILD=srcdist
+      - mkdir -p $TRAVIS_BUILD_DIR/package
+      - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
+      - make dist -j7
+      - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package
+      - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-snapshot.tar.gz;
+
 before_deploy:
-- mkdir -p $TRAVIS_BUILD_DIR/package
-- if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz 
-                                             --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
-- if test "$LIBDAP_BUILD" = "deb"; then cp $prefix/debbuild/libdap_*_amd64.deb $TRAVIS_BUILD_DIR/package/; fi
-- if test "$LIBDAP_BUILD" = "centos6"; then cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
-- if test "$LIBDAP_BUILD" = "centos7"; then cp $prefix/rpmbuild/RPMS/x86_64/* $TRAVIS_BUILD_DIR/package/; fi
-- ls -lR $TRAVIS_BUILD_DIR/package
+  - mkdir -p $TRAVIS_BUILD_DIR/package
+  # This part of the before_deploy action copies the built distributions named with version numbers
+  # into $TRAVIS_BUILD_DIR/package and then places a second copy of those files with the version
+  # number replaced with the word 'snapshot.' These files are used for the our snapshot delivery
+  # and deployment process. jhrg 10/28/19
+  - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz
+                                               --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
+  # Debian distribution prep
+  - if test "$LIBDAP_BUILD" = "deb"; then ./travis/deb-to-package-dir.sh; fi
+  # CentOS-7  distribution prep
+  - if test "$BES_BUILD" = "centos6"; then ./travis/rpm-to-package-dir.sh "el6"; fi
+  # CentOS-6 distribution prep
+  - if test "$BES_BUILD" = "centos7"; then ./travis/rpm-to-package-dir.sh "el7"; fi
+  # Check for the stuff...
+  - ls -lR $TRAVIS_BUILD_DIR/package
 
 deploy:
   provider: s3
@@ -146,7 +158,6 @@ deploy:
   skip_cleanup: true
   local_dir: $TRAVIS_BUILD_DIR/package
   on:
-    branch:
-    - master
-    condition: $LIBDAP_BUILD =~ ^main|deb|centos7|centos6$
-
+    # Change 'master' to 'travis' to test deployment
+    branch: master
+    condition: $LIBDAP_BUILD =~ ^main|srddist|deb|centos7|centos6|travis$
