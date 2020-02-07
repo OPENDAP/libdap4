@@ -51,8 +51,7 @@ class ConstraintEvaluator;
 // VALUE is used to return constant values from the scanner to the parser.
 // Constants are packaged in BaseType *s for evaluation by the parser.
 
-typedef struct value
-{
+typedef struct {
     bool is_range_value;
     Type type;   // Type is an enum defined in Type.h
     union {
@@ -62,6 +61,8 @@ typedef struct value
         std::string *s;
     } v;
 } value;
+
+
 
 // Syntactic sugar for `pointer to function returning boolean' (bool_func)
 // and `pointer to function returning BaseType *' (btp_func). Both function
@@ -96,8 +97,11 @@ typedef std::vector<int_list *>::iterator int_list_iter ;
 
 // By using 'value' and not integers, the slices can use floats which is a better fit
 // for lat and lon values. jhrg 4/18/19
+// I used a vector of pointers to dim_slice because pointers have trivial copy ctors and
+// These types are using by the CE parsers in a union. Unions in C++ require trivial copy
+// ctors. jhrg 2/5/20
 typedef std::vector<value> dim_slice;
-typedef std::vector<dim_slice> slices;
+typedef std::vector<dim_slice *> slices;
 
 } // namespace libdap
 

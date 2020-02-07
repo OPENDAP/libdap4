@@ -86,7 +86,7 @@ NUMBER   [+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)
    is the DAP2 comment character. 
 
    Having the characters !, ~, and @ in the second set of the chars allowed
-   in a WORD token meant that 'var!=' parsed as WORD == 'var!' and '=' ane not
+   in a WORD token meant that 'var!=' parsed as WORD == 'var!' and '=' and not
    'var' and '!='. I see that in DAP2 I did not include these in the definition
    of a WORD.
    jhrg 4/29/16 */

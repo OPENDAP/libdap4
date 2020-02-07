@@ -3,19 +3,19 @@
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
 // Access Protocol.
 
-// Copyright (c) 2002,2003 OPeNDAP, Inc.
+// Copyright (c) 2002,2003,2020 OPeNDAP, Inc.
 // Author: James Gallagher <jgallagher@opendap.org>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -32,7 +32,7 @@
  This is the parser for the DODS constraint expression grammar. The parser
  calls various `helper' functions defined by the DAP classes which either
  implement the operations (in the case of relational ops) or store
- information (in the case of selection operations). 
+ information (in the case of selection operations).
 
  jhrg 9/5/95
  */
@@ -97,14 +97,9 @@ using namespace libdap ;
 
 int ce_exprlex(void);           /* the scanner; see expr.lex */
 
-void ce_exprerror(ce_parser_arg *arg, const string &s); 
+void ce_exprerror(ce_parser_arg *arg, const string &s);
 void ce_exprerror(ce_parser_arg *arg, const string &s, const string &s2);
 void no_such_func(ce_parser_arg *arg, const string &name);
-
-#if 0
-// TODO Remove this deprecated version. jhrg 7/15/19
-void no_such_ident(ce_parser_arg *arg, const string &name, const string &word);
-#endif
 
 void no_such_ident(const string &name, const string &word);
 
@@ -124,17 +119,21 @@ void process_sequence_indices(BaseType *variable, int_list_list *indices);
 #endif
 
 // dim_slice and slices are defined in expr.h
-dim_slice make_array_slice(value &v1, value &v2, value &v3);
-dim_slice make_array_slice(value &v1, value &v2);
-dim_slice make_array_slice(value &v1);
-slices make_array_slices(dim_slice &ds);
-slices append_array_slices(slices &s, dim_slice &ds);
+dim_slice *make_array_slice(value &v1, value &v2, value &v3);
+dim_slice *make_array_slice(value &v1, value &v2);
+dim_slice *make_array_slice(value &v1);
 
-void process_sequence_slice(BaseType *variable, slices &s);
+slices *make_array_slices(dim_slice *ds);
+slices *append_array_slices(slices *s, dim_slice *ds);
 
-void process_array_slices(BaseType *variable, slices &s);
-void process_grid_slices(BaseType *variable, slices &s);
-void process_sequence_slices(BaseType *variable, slices &s);
+void delete_array_slices(slices *s);
+bool bracket_projection(DDS &table, const char *name, slices *s);
+
+void process_sequence_slice(BaseType *variable, slices *s);
+
+void process_array_slices(BaseType *variable, slices *s);
+void process_grid_slices(BaseType *variable, slices *s);
+void process_sequence_slices(BaseType *variable, slices *s);
 
 /* Replace these with method calls. jhrg 8/31/06 */
 bool is_array_t(BaseType *variable);
@@ -169,7 +168,7 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
     bool boolean;
     int op;
     char id[ID_MAX];
-    
+
     libdap::dods_byte byte_value;
     libdap::dods_int16 int16_value;
     libdap::dods_uint16 uint16_value;
@@ -177,7 +176,7 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
     libdap::dods_uint32 uint32_value;
     libdap::dods_float32 float32_value;
     libdap::dods_float64 float64_value;
-    
+
     libdap::byte_arg_list byte_values;
     libdap::int16_arg_list int16_values;
     libdap::uint16_arg_list uint16_values;
@@ -185,17 +184,17 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
     libdap::uint32_arg_list uint32_values;
     libdap::float32_arg_list float32_values;
     libdap::float64_arg_list float64_values;
-    
+
     libdap::value val;               // value is defined in expr.h
 
     libdap::bool_func b_func;
     libdap::btp_func bt_func;
 
-    libdap::int_list *int_l_ptr;
-    libdap::int_list_list *int_ll_ptr;
-    
-    libdap::dim_slice dim_slice;
-    libdap::slices slices;
+    // libdap::int_list *int_l_ptr;
+    // libdap::int_list_list *int_ll_ptr;
+
+    libdap::dim_slice *dim_slice_ptr;
+    libdap::slices *slices_ptr;
 
     libdap::rvalue *rval_ptr;
     libdap::rvalue_list *r_val_l_ptr;
@@ -228,8 +227,11 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
 %type <id> array_proj_clause name
 %type <op> rel_op
 
-%type <int_l_ptr> array_index
-%type <int_ll_ptr> array_indices
+// %type <int_l_ptr> array_index
+// %type <int_ll_ptr> array_indices
+
+%type <dim_slice_ptr> array_index
+%type <slices_ptr> array_indices
 
 %type <rval_ptr> r_value id_or_const array_const_special_form array_projection_rvalue
 %type <r_val_l_ptr> r_value_list arg_list
@@ -237,27 +239,27 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
 %type <byte_value> fast_byte_arg
 %type <byte_values> fast_byte_arg_list
 
-%type <int16_value> fast_int16_arg 
+%type <int16_value> fast_int16_arg
 %type <int16_values> fast_int16_arg_list
 
-%type <uint16_value> fast_uint16_arg 
+%type <uint16_value> fast_uint16_arg
 %type <uint16_values> fast_uint16_arg_list
 
-%type <int32_value> fast_int32_arg 
+%type <int32_value> fast_int32_arg
 %type <int32_values> fast_int32_arg_list
 
-%type <uint32_value> fast_uint32_arg 
+%type <uint32_value> fast_uint32_arg
 %type <uint32_values> fast_uint32_arg_list
 
-%type <float32_value> fast_float32_arg 
+%type <float32_value> fast_float32_arg
 %type <float32_values> fast_float32_arg_list
 
-%type <float64_value> fast_float64_arg 
+%type <float64_value> fast_float64_arg
 %type <float64_values> fast_float64_arg_list
 
 %code {
-/* This global is used by the rule 'arg_length_hint' so that the hint can 
-   be used during the paraent rule's parse. See fast_int32_arg_list. */
+/* This global is used by the rule 'arg_length_hint' so that the hint can
+   be used during the parent rule's parse. See fast_int32_arg_list. */
 unsigned long arg_length_hint_value = 0;
 }
 
@@ -275,7 +277,7 @@ constraint_expr: /* empty constraint --> send all */
   /* selection only --> project everything */
 | '&' { DDS(arg)
           ->mark_all(true); } selection
-          { 
+          {
               $$ = $3;
           }
 | projection '&' selection
@@ -291,7 +293,7 @@ projection: proj_clause
 }
 ;
 
-proj_clause: name 
+proj_clause: name
 {
     BaseType *var = DDS(arg)->var($1);
     if (var) {
@@ -315,15 +317,15 @@ proj_clause: name
 | array_const_special_form
 {
     Array *array = dynamic_cast<Array*>($1->bvalue(*DDS(arg)));
-    if (array) { 
+    if (array) {
         /* When the special form appears here (not as a function argument)
-           set send_p so the data will be sent and add it to the DDS. This 
+           set send_p so the data will be sent and add it to the DDS. This
            streamlines testing (and is likely what is intended). */
-                
+
         array->set_send_p(true);
         DDS(arg)
             ->add_var_nocopy(array);
-                
+
         return true;
     }
     else {
@@ -386,14 +388,14 @@ array_const_special_form: SCAN_HASH_FLOAT64 '(' arg_length_hint ':' fast_float64
 }
 ;
 
-/* Here the arg length hint is stored in a global so it can be used by the 
+/* Here the arg length hint is stored in a global so it can be used by the
    function that allocates the vector. The value is passed to vector::reserve(). */
-   
+
 arg_length_hint: SCAN_WORD
 {
     if (!check_int32($1))
         throw Error(malformed_expr, "$<type>(hint, value, ...) special form expected hint to be an integer");
-                   
+
     arg_length_hint_value = atoi($1);
     $$ = true;
 }
@@ -535,7 +537,7 @@ proj_function:  SCAN_WORD '(' arg_list ')'
         EVALUATOR(arg)->append_clause(f, $3);
         $$ = true;
     }
-    else if ((p_f = get_proj_function(*(EVALUATOR(arg)), $1))) { 
+    else if ((p_f = get_proj_function(*(EVALUATOR(arg)), $1))) {
         DDS &dds = dynamic_cast<DDS&>(*(DDS(arg)));
         BaseType **args = build_btp_args( $3, dds );
         (*p_f)(($3) ? $3->size():0, args, dds, *(EVALUATOR(arg)
@@ -607,8 +609,8 @@ r_value: id_or_const
                                       ), $1);
     if (func) {
         $$ = new rvalue(func, $3);
-    } 
-    else { 
+    }
+    else {
         no_such_func(arg, $1);
     }
 }
@@ -639,17 +641,17 @@ r_value_list:   r_value
 ;
 
 arg_list: r_value_list
-{  
+{
     $$ = $1;
 }
 | /* Null, argument lists may be empty */
-{ 
-    $$ = 0; 
+{
+    $$ = 0;
 }
 ;
 
 id_or_const: SCAN_WORD
-{ 
+{
     BaseType *btp = DDS(arg)->var(www2id($1));
     if (btp) {
         btp->set_in_selection(true);
@@ -691,14 +693,14 @@ id_or_const: SCAN_WORD
 {
     if ($1.type != dods_str_c || $1.v.s == 0 || $1.v.s->empty())
         ce_exprerror(arg, "Malformed string", "");
-                       
+
     BaseType *var = DDS(arg)->var(www2id(*($1.v.s)));
     if (var) {
         $$ = new rvalue(var);
     }
     else {
         var = make_variable((*EVALUATOR(arg)
-                             ), $1); 
+                             ), $1);
         $$ = new rvalue(var);
     }
     // When the scanner (ce_expr.lex) returns the SCAN_STR token type
@@ -709,14 +711,14 @@ id_or_const: SCAN_WORD
 }
 ;
 
-/* this must return an rvalue. It should run bracket_projection() 
+/* this must return an rvalue. It should run bracket_projection()
    and then return the BaseType of the Array wrapped in a RValue
    object. */
 array_projection_rvalue : name array_indices
 {
     if (!bracket_projection((*DDS(arg)), $1, $2))
         no_such_ident($1, "array, grid or sequence");
-                    
+
     // strncpy($$, $1, ID_MAX-1);
     // $$[ID_MAX-1] = '\0';
 
@@ -732,14 +734,13 @@ array_projection : array_proj_clause
           ).mark($1, true);
 }
 ;
-                
+
 array_proj_clause: name array_indices
 {
     //string name = www2id($1);
-    if (!bracket_projection((*DDS(arg)
-                             ), $1, $2))
+    if (!bracket_projection((*DDS(arg)), $1, $2))
         no_such_ident($1, "array, grid or sequence");
-                    
+
     strncpy($$, $1, ID_MAX-1);
     $$[ID_MAX-1] = '\0';
 }
@@ -752,8 +753,7 @@ array_proj_clause: name array_indices
 | array_proj_clause name array_indices
 {
     string name = string($1) + string($2);
-    if (!bracket_projection((*DDS(arg)
-                             ), name.c_str(), $3))
+    if (!bracket_projection((*DDS(arg)), name.c_str(), $3))
         no_such_ident(name.c_str(), "array, grid or sequence");
 
     strncpy($$, name.c_str(), ID_MAX-1);
@@ -782,18 +782,18 @@ name: SCAN_WORD
 
 array_indices: array_index
 {
-    $$ = make_array_indices($1);
+    $$ = make_array_slices($1);
 }
 | array_indices array_index
 {
-    $$ = append_array_index($1, $2);
+    $$ = append_array_slices($1, $2);
 }
 ;
 
 /*
  * We added [*], [n:*] and [n:m:*] to the syntax for array projections.
  * These mean, resp., all the elements, elements from n to the end, and
- * from n to the end with a stride of m. To encode this with as little 
+ * from n to the end with a stride of m. To encode this with as little
  * disruption as possible, we represent the star with -1. jhrg 12/20/12
  */
 array_index:
@@ -805,14 +805,14 @@ array_index:
     value i;
     i.type = dods_uint32_c;
     i.v.i = atoi($2);
-    $$ = make_array_index(i);
+    $$ = make_array_slice(i);
 }
 | '[' SCAN_STAR ']'
 {
     value i;
     i.type = dods_int32_c;
     i.v.i =-1;
-    $$ = make_array_index(i);
+    $$ = make_array_slice(i);
 }
 |'[' SCAN_WORD ':' SCAN_WORD ']'
 {
@@ -824,7 +824,7 @@ array_index:
     i.type = j.type = dods_uint32_c;
     i.v.i = atoi($2);
     j.v.i = atoi($4);
-    $$ = make_array_index(i, j);
+    $$ = make_array_slice(i, j);
 }
 |'[' '(' SCAN_WORD ')' ':' '(' SCAN_WORD ')' ']'
 {
@@ -838,7 +838,7 @@ array_index:
     i.type = j.type = dods_int32_c;
     i.v.i = atoi($3);
     j.v.i = atoi($7);
-    $$ = make_array_index(i, j);
+    $$ = make_array_slice(i, j);
 }
 |'[' SCAN_WORD ':' SCAN_STAR ']'
 {
@@ -849,7 +849,7 @@ array_index:
     j.type = dods_int32_c; /* signed */
     i.v.i = atoi($2);
     j.v.i = -1;
-    $$ = make_array_index(i, j);
+    $$ = make_array_slice(i, j);
 }
 | '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_WORD ']'
 {
@@ -864,7 +864,7 @@ array_index:
     i.v.i = atoi($2);
     j.v.i = atoi($4);
     k.v.i = atoi($6);
-    $$ = make_array_index(i, j, k);
+    $$ = make_array_slice(i, j, k);
 }
 | '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_STAR ']'
 {
@@ -878,7 +878,7 @@ array_index:
     i.v.i = atoi($2);
     j.v.i = atoi($4);
     k.v.i = -1;
-    $$ = make_array_index(i, j, k);
+    $$ = make_array_slice(i, j, k);
 }
 ;
 
@@ -930,7 +930,7 @@ void no_such_func(ce_parser_arg *arg, const string &name)
 /* If we're calling this, assume var is not a Sequence. But assume that the
    name contains a dot and it's a separator. Look for the rightmost dot and
    then look to see if the name to the left is a sequence. Return a pointer
-   to the sequence if it is otherwise return null. Uses tail-recursion to
+   to the sequence if it is, otherwise return null. Uses tail-recursion to
    'walk' back from right to left looking at each dot. This way the sequence
    will be found even if there are structures between the field and the
    Sequence. */
@@ -949,21 +949,6 @@ parent_is_sequence(DDS &table, const string &n)
         return seq;
     else
         return parent_is_sequence(table, s);
-}
-
-bool indices_are_range_value(int_list_list *indices)
-{
-#if 0
-    for (auto index : indices) {
-        if (index)
-            }
-#endif
-    return false;
-}
-
-void process_grid_range_value_subset(BaseType *var, int_list_list * indices)
-{
-
 }
 
 bool bracket_projection(DDS &table, const char *name, int_list_list *indices)
@@ -988,12 +973,7 @@ bool bracket_projection(DDS &table, const char *name, int_list_list *indices)
             process_array_indices(var, indices); // throws on error
         }
         else if (is_grid_t(var)) {
-            // Check here to see if the 'indices' represent a range-value subset 
-            // or an indicial subset.
-            if (indices_are_range_value(indices))
-                process_grid_range_value_subset(var, indices);
-            else
-                process_grid_indices(var, indices); // indicial subset
+            process_grid_indices(var, indices); // indicial subset
             table.mark(name, true);
         }
         else if (is_sequence_t(var)) {
@@ -1016,9 +996,54 @@ bool bracket_projection(DDS &table, const char *name, int_list_list *indices)
     return ret_val;
 }
 
+bool bracket_projection(DDS &table, const char *name, slices *s)
+{
+    BaseType *var = table.var(name);
+    Sequence *seq; // used in last else-if clause
+    bool ret_val = true;
+    try {
+        if (!var) {
+            ret_val = false;
+        }
+        else if (is_array_t(var)) {
+            /* calls to set_send_p should be replaced with
+               calls to DDS::mark so that arrays of Structures,
+               etc. will be processed correctly when individual
+               elements are projected using short names.
+               9/1/98 jhrg */
+            /* var->set_send_p(true); */
+            //table.mark(name, true);
+            // We don't call mark() here for an array. Instead it is called from
+            // within the parser. jhrg 10/10/08
+            process_array_slices(var, s); // throws on error
+        }
+        else if (is_grid_t(var)) {
+            process_grid_slices(var, s); // indicial subset
+            table.mark(name, true);
+        }
+        else if (is_sequence_t(var)) {
+            table.mark(name, true);
+            process_sequence_slices(var, s);
+        }
+        else if ((seq = parent_is_sequence(table, name))) {
+            process_sequence_slices(seq, s);
+            table.mark(name, true);
+        }
+        else {
+            ret_val = false;
+        }
+        delete_array_slices(s);
+    }
+    catch (...) {
+        delete_array_slices(s);
+        throw;
+    }
+    return ret_val;
+}
+
 // Given three values (I1, I2, I3), all of which must be integers, build an
 // int_list which contains those values.
-// 
+//
 // Note that we added support for * in the rightmost position of an index
 // (i.e., [*], [n:*], [n:m:*]) and indicate that star using -1 as an index value.
 // Bescause of this change, the test for the type of the rightmost value in
@@ -1075,7 +1100,7 @@ make_array_index(value &i1)
     int_list *index = new int_list;
 
     // When the CE is Array[*] that means all of the elements, but the value
-    // of i1 will be -1. Make the projection triple be 0:1:-1 which is a 
+    // of i1 will be -1. Make the projection triple be 0:1:-1 which is a
     // pattern that libdap::Array will recognize.
     if (i1.v.i == -1)
         index->push_back(0);
@@ -1117,7 +1142,7 @@ append_array_index(int_list_list *indices, int_list *index)
     return indices;
 }
 
-// Delete an array indices list. 
+// Delete an array indices list.
 
 void delete_array_indices(int_list_list *indices)
 {
@@ -1132,7 +1157,8 @@ void delete_array_indices(int_list_list *indices)
     delete indices;
 }
 
-dim_slice* make_array_slice(value &v1, value &v2, value &v3)
+dim_slice *
+make_array_slice(value &v1, value &v2, value &v3)
 {
     unique_ptr<dim_slice> ds(new dim_slice);
     ds->push_back(v1);
@@ -1142,7 +1168,8 @@ dim_slice* make_array_slice(value &v1, value &v2, value &v3)
     return ds.release();
 }
 
-dim_slice make_array_slice(value &v1, value &v2)
+dim_slice *
+make_array_slice(value &v1, value &v2)
 {
     value one;
     one.is_range_value = false;
@@ -1152,10 +1179,11 @@ dim_slice make_array_slice(value &v1, value &v2)
     return make_array_slice(v1, one, v2);
 }
 
-dim_slice make_array_slice(value &v1)
+dim_slice *
+make_array_slice(value &v1)
 {
     // When the CE is Array[*] that means all of the elements, but the value
-    // of i1 will be -1. Make the projection triple be 0:1:-1 which is a 
+    // of i1 will be -1. Make the projection triple be 0:1:-1 which is a
     // pattern that libdap::Array will recognize.
 
     value one;
@@ -1163,8 +1191,8 @@ dim_slice make_array_slice(value &v1)
     one.type = dods_uint32_c;
     one.v.ui = 1;
 
-    // The parser abive looks for the special value '*' and sets the 'value' to -1
-    // values and 
+    // The parser above looks for the special value '*' and sets the 'value' to -1
+    // values and
     if ((v1.type == dods_int32_c && v1.v.i == -1)) {
         value minus_one;
         minus_one.is_range_value = false;
@@ -1178,17 +1206,32 @@ dim_slice make_array_slice(value &v1)
     }
 }
 
-slices make_array_slices(dim_slice &ds)
+slices *
+make_array_slices(dim_slice *ds)
 {
-    slices s;
-    s.push_back(ds);
+    unique_ptr<slices> s(new slices);
+    s->push_back(ds);
+    return s.release();
+}
+
+slices *
+append_array_slices(slices *s, dim_slice *ds)
+{
+    s->push_back(ds);
     return s;
 }
 
-slices append_array_slices(slices &s, dim_slice &ds)
+void delete_array_slices(slices *s)
 {
-    s.push_back(ds);
-    return s;
+    assert(s);
+
+    for (auto i = s->begin(); i != s->end(); i++) {
+        dim_slice *ds = *i;
+        assert(ds);
+        delete ds;
+    }
+
+    delete s;
 }
 
 bool is_array_t(BaseType *variable)
@@ -1390,25 +1433,25 @@ void process_sequence_indices(BaseType *variable, int_list_list *indices)
     }
 }
 
-bool has_range_values(slices &s)
+bool has_range_values(slices *s)
 {
-    for (slices::iterator i = s.begin(); i != s.end(); ++i) {
-        for (dim_slice::iterator j = (*i).begin(); j != (*i).end(); ++j)
+    for (slices::iterator i = s->begin(), e = s->end(); i != e; ++i) {
+        for (dim_slice::iterator j = (*i)->begin(), ej = (*i)->end(); j != ej; ++j)
             if ((*j).is_range_value)
                 return true;
     }
-    
+
     return false;
 }
 
-void process_array_slices(BaseType *variable, slices &s)
+void process_array_slices(BaseType *variable, slices *s)
 {
     assert(variable);
 
     Array *a = dynamic_cast<Array *>(variable); // replace with dynamic cast
     if (!a) throw Error(malformed_expr, string("The constraint expression evaluator expected an array; ") + variable->name() + " is not an array.");
 
-    if (a->dimensions(true) != (unsigned) s.size())
+    if (a->dimensions(true) != (unsigned) s->size())
         throw Error(malformed_expr,
                     string("Error: The number of dimensions in the constraint for ") + variable->name() + " must match the number in the array.");
 
@@ -1416,14 +1459,12 @@ void process_array_slices(BaseType *variable, slices &s)
     DBG(a->print_decl(cerr, "", true, false, true));
 
     Array::Dim_iter r = a->dim_begin();
-    auto p = s.begin();
-    for (; p != s.end() && r != a->dim_end(); p++, r++) {
-        dim_slice ds = *p;
-        //int_list *index = *p;
-        //assert(index);
+    auto p = s->begin();    // p is used after the loop
+    for (; p != s->end() && r != a->dim_end(); p++, r++) {
+        dim_slice *ds = *p;
 
-        auto q = ds.begin();
-        assert(q != ds.end());
+        auto q = ds->begin();
+        assert(q != ds->end());
 
         int start = q->v.i;
 
@@ -1434,7 +1475,7 @@ void process_array_slices(BaseType *variable, slices &s)
         int stop = q->v.i;
 
         q++;
-        if (q != ds.end()) throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
+        if (q != ds->end()) throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
 
         DBG(cerr << "process_array_indices: Setting constraint on " << a->name() << "[" << start << ":" << stop << "]" << endl);
 
@@ -1460,7 +1501,7 @@ void process_array_slices(BaseType *variable, slices &s)
     DBG(cerr << "After applying projection to array:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
-    if (p != s.end() && r == a->dim_end()) throw Error(malformed_expr, string("Too many indices in constraint for ") + a->name() + ".");
+    if (p != s->end() && r == a->dim_end()) throw Error(malformed_expr, string("Too many indices in constraint for ") + a->name() + ".");
 }
 
 #define set_indicial_value(lhs, rhs) do { \
@@ -1475,11 +1516,11 @@ void process_array_slices(BaseType *variable, slices &s)
  * This method processes the slices when we know they do not contain range-value
  * subsetting.
  */
-void process_grid_indicial_slices(Grid *g, slices &s)
+void process_grid_indicial_slices(Grid *g, slices *s)
 {
     Array *a = g->get_array();
 
-    if (a->dimensions(true) != (unsigned) s.size())
+    if (a->dimensions(true) != (unsigned) s->size())
         throw Error(malformed_expr,
                     string("Error: The number of dimensions in the constraint for ") + g->name() + " must match the number in the grid.");
 
@@ -1495,23 +1536,23 @@ void process_grid_indicial_slices(Grid *g, slices &s)
     // Add specified maps to the current projection.
     //assert(indices);
     //int_list_citer p = indices->begin();
-    
-    auto p = s.begin();
+
+    auto p = s->begin();
     auto r = g->map_begin();
-    
-    for (; p != s.end() && r != g->map_end(); ++p, ++r) {
-        dim_slice slice = *p;
+
+    for (; p != s->end() && r != g->map_end(); ++p, ++r) {
+        dim_slice *slice = *p;
         //assert(index);
 
-        auto q = slice.begin();
+        auto q = slice->begin();
         //assert(q != index->end());
         int start = (*q).v.ui;
 
         q++;
-        int stride = q->v.i;
+        int stride = (*q).v.i;
 
         q++;
-        int stop = q->v.i;
+        int stop = (*q).v.i;
 
         BaseType *btp = *r;
         assert(btp);
@@ -1521,7 +1562,7 @@ void process_grid_indicial_slices(Grid *g, slices &s)
         a->reset_constraint();
 
         q++;
-        if (q != slice.end()) {
+        if (q != slice->end()) {
             throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
         }
 
@@ -1538,7 +1579,7 @@ void process_grid_indicial_slices(Grid *g, slices &s)
         cout << endl
         );
 
-    if (p != s.end() && r == g->map_end()) {
+    if (p != s->end() && r == g->map_end()) {
         throw Error(malformed_expr, string("Too many indices in constraint for ") + (*r)->name() + ".");
     }
 }
@@ -1546,7 +1587,7 @@ void process_grid_indicial_slices(Grid *g, slices &s)
 /**
  * @brief Process a indicial subset for a Grid.
  */
-void process_grid_slices(BaseType *variable, slices &s /*int_list_list *indices*/)
+void process_grid_slices(BaseType *variable, slices *s)
 {
     assert(variable);
     assert(variable->type() == dods_grid_c);
@@ -1568,18 +1609,18 @@ void process_grid_slices(BaseType *variable, slices &s /*int_list_list *indices*
  * to have one dimension of slicing. Thus, if \arg s has more than one
  * slice, it's an error.
  */
-void process_sequence_slices(BaseType *variable, slices &s)
+void process_sequence_slices(BaseType *variable, slices *s)
 {
     assert(variable);
     assert(variable->type() == dods_sequence_c);
     Sequence *seq = dynamic_cast<Sequence *>(variable);
     if (!seq) throw Error(malformed_expr, "Expected a Sequence variable");
 
-    if (s.size() != 1) throw Error(string("Expected only one slice when subsetting the Sequence '") + seq->name() + "'.");
+    if (s->size() != 1) throw Error(string("Expected only one slice when subsetting the Sequence '") + seq->name() + "'.");
 
-    dim_slice ds = *(s.begin());
+    dim_slice *ds = *(s->begin());
 
-    dim_slice::iterator q = ds.begin(); // *q is an instance of 'value'
+    dim_slice::iterator q = ds->begin(); // *q is an instance of 'value'
     int start, stop, stride;
 
     if ((*q).is_range_value) throw Error("Range-value subsetting not applicable to Sequences, use filter expressions instead.");
@@ -1654,7 +1695,7 @@ make_variable(ConstraintEvaluator &eval, const value &val)
 }
 
 // Given a string (passed in VAL), consult the DDS CE function lookup table
-// to see if a function by that name exists. 
+// to see if a function by that name exists.
 // NB: function arguments are type-checked at run-time.
 //
 // Returns: A pointer to the function or NULL if not such function exists.
