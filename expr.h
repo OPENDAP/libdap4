@@ -87,18 +87,19 @@ typedef void (*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvalua
 // To add the new feature of 'to the end' in an array projection (denoted using
 // star), I used the value -1 for an index. This makes do difference here. jhrg
 // 12/20/12
-
+#if 0
 typedef std::vector<int> int_list;
 typedef std::vector<int>::const_iterator int_citer ;
 typedef std::vector<int>::iterator int_iter ;
 typedef std::vector<int_list *> int_list_list;
 typedef std::vector<int_list *>::const_iterator int_list_citer ;
 typedef std::vector<int_list *>::iterator int_list_iter ;
+#endif
 
 // By using 'value' and not integers, the slices can use floats which is a better fit
 // for lat and lon values. jhrg 4/18/19
 // I used a vector of pointers to dim_slice because pointers have trivial copy ctors and
-// These types are using by the CE parsers in a union. Unions in C++ require trivial copy
+// these types are using by the CE parsers in a union. Unions in C++ require trivial copy
 // ctors. jhrg 2/5/20
 typedef std::vector<value> dim_slice;
 typedef std::vector<dim_slice *> slices;

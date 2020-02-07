@@ -93,7 +93,6 @@ using namespace libdap ;
 #define DDS(arg) (static_cast<ce_parser_arg*>(arg)->get_dds())
 
 #define YYERROR_VERBOSE 0
-// #define YYPARSE_PARAM arg
 
 int ce_exprlex(void);           /* the scanner; see expr.lex */
 
@@ -103,7 +102,7 @@ void no_such_func(ce_parser_arg *arg, const string &name);
 
 void no_such_ident(const string &name, const string &word);
 
-#if 1
+#if 0
 int_list *make_array_index(value &i1, value &i2, value &i3);
 int_list *make_array_index(value &i1, value &i2);
 int_list *make_array_index(value &i1);
@@ -893,9 +892,8 @@ rel_op: SCAN_EQUAL
 
 %%
 
-        // All these error reporting function now throw instances of Error. The expr
-        // parser no longer returns an error code to indicate and error. 2/16/2000
-        // jhrg.
+// All these error reporting function now throw instances of Error. The expr
+// parser no longer returns an error code to indicate and error. jhrg 2/16/2000
 
 void
 ce_exprerror(ce_parser_arg *, const string &s)
@@ -951,6 +949,7 @@ parent_is_sequence(DDS &table, const string &n)
         return parent_is_sequence(table, s);
 }
 
+#if 0
 bool bracket_projection(DDS &table, const char *name, int_list_list *indices)
 {
     BaseType *var = table.var(name);
@@ -995,6 +994,7 @@ bool bracket_projection(DDS &table, const char *name, int_list_list *indices)
     }
     return ret_val;
 }
+#endif
 
 bool bracket_projection(DDS &table, const char *name, slices *s)
 {
@@ -1041,6 +1041,7 @@ bool bracket_projection(DDS &table, const char *name, slices *s)
     return ret_val;
 }
 
+#if 0
 // Given three values (I1, I2, I3), all of which must be integers, build an
 // int_list which contains those values.
 //
@@ -1156,6 +1157,7 @@ void delete_array_indices(int_list_list *indices)
 
     delete indices;
 }
+#endif
 
 dim_slice *
 make_array_slice(value &v1, value &v2, value &v3)
@@ -1264,6 +1266,7 @@ bool is_sequence_t(BaseType *variable)
         return true;
 }
 
+#if 0
 void process_array_indices(BaseType *variable, int_list_list *indices)
 {
     assert(variable);
@@ -1432,6 +1435,7 @@ void process_sequence_indices(BaseType *variable, int_list_list *indices)
         s->set_row_number_constraint(start, stop, stride);
     }
 }
+#endif
 
 bool has_range_values(slices *s)
 {
