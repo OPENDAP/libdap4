@@ -11,7 +11,9 @@ DIST=${1}
 PKG_NAME=libdap
 
 # 'prefix' and 'TRAVIS_BUILD_DIR' are in the environment
+
 BUILD_RPM_FILES="${prefix}/rpmbuild/RPMS/x86_64/*"
+
 # Copied the RPM files with version numbers.
 cp ${BUILD_RPM_FILES} ${TRAVIS_BUILD_DIR}/package/
 
@@ -26,6 +28,4 @@ do
     cp ${file} ${TRAVIS_BUILD_DIR}/package/${snap}
 done
 
-ls -l ${TRAVIS_BUILD_DIR}/package/
-
-exit 1
+exit 0

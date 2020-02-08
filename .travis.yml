@@ -145,9 +145,9 @@ before_deploy:
   # Debian distribution prep
   - if test "$LIBDAP_BUILD" = "deb"; then ./travis/deb-to-package-dir.sh; fi
   # CentOS-7  distribution prep
-  - if test "$BES_BUILD" = "centos6"; then ./travis/rpm-to-package-dir.sh "el6"; fi
+  - if test "$LIBDAP_BUILD" = "centos6"; then ./travis/rpm-to-package-dir.sh "el6"; fi
   # CentOS-6 distribution prep
-  - if test "$BES_BUILD" = "centos7"; then ./travis/rpm-to-package-dir.sh "el7"; fi
+  - if test "$LIBDAP_BUILD" = "centos7"; then ./travis/rpm-to-package-dir.sh "el7"; fi
   # Check for the stuff...
   - ls -lR $TRAVIS_BUILD_DIR/package
 
