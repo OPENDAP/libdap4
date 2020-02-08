@@ -56,9 +56,9 @@ before_script:
 
 stages:
   - name: build
-    if:  branch = master
+    if:  branch = foo
   - name: scan
-    if:  branch = master
+    if:  branch = foo
   - name: package
     if:  branch = master
   - name: travis
