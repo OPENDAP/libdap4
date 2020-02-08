@@ -134,6 +134,7 @@ jobs:
       - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-snapshot.tar.gz;
 
 before_deploy:
+  - echo "LIBDAP_BUILD ${LIBDAP_BUILD}"
   - mkdir -p $TRAVIS_BUILD_DIR/package
   # This part of the before_deploy action copies the built distributions named with version numbers
   # into $TRAVIS_BUILD_DIR/package and then places a second copy of those files with the version
