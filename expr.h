@@ -39,7 +39,8 @@
 #include <string>
 #include <vector>
 
-#include <Type.h>
+#include "Type.h"
+#include "parser-util.h"
 
 namespace libdap
 {
@@ -50,9 +51,15 @@ class ConstraintEvaluator;
 
 // VALUE is used to return constant values from the scanner to the parser.
 // Constants are packaged in BaseType *s for evaluation by the parser.
+//
+// I changed this to simplify support of natural axes subsetting. Since 'value'
+// was only being used for the string* return, I added a string* filed to ce_exprlval
+// and moved 'value' out of it. This meant that I can use non-trivial ctors for
+// value without breaking the rules for c++ unions. Those ctors make it easier to
+// build value instances without errors. jhrg 2/10/20
 
-typedef struct {
-    bool is_range_value;
+typedef struct value {
+    bool is_range_value;    // true if this is part of a natural axes projection
     Type type;   // Type is an enum defined in Type.h
     union {
         unsigned int ui;
@@ -60,9 +67,75 @@ typedef struct {
         double f;
         std::string *s;
     } v;
+
+    // By default, instances are int32s with values of 0
+    value() : is_range_value(false), type(dods_int32_c) { v.i = 0; }
+
+    value(int i) : is_range_value(false) {
+        type = dods_int32_c;
+        v.i = i;
+    }
+
+    // set a value and explicitly set the value of is_range_value.
+    value(bool rv, const std::string &token) : is_range_value(rv) {
+        if (check_uint32(token.c_str())) {
+            type = dods_uint32_c;
+            v.ui = atoi(token.c_str());
+        }
+        else if (check_int32(token.c_str())) {
+            type = dods_int32_c;
+            v.i = atoi(token.c_str());
+        }
+        else if (check_float64(token.c_str())) {
+            type = dods_float64_c;
+            v.f = atof(token.c_str());
+        }
+        else {
+            type = dods_str_c;
+            v.s = new std::string(token);
+        }
+    }
+
+    // Set a value, assume that it is not a range value.
+    value(const std::string &token) : is_range_value(false) {
+        if (check_uint32(token.c_str())) {
+            type = dods_uint32_c;
+            v.ui = atoi(token.c_str());
+        }
+        else if (check_int32(token.c_str())) {
+            type = dods_int32_c;
+            v.i = atoi(token.c_str());
+        }
+        else if (check_float64(token.c_str())) {
+            type = dods_float64_c;
+            v.f = atof(token.c_str());
+        }
+        else {
+            type = dods_str_c;
+            v.s = new std::string(token);
+        }
+    }
+
+    value(std::string *token) {
+        if (check_uint32(token->c_str())) {
+            type = dods_uint32_c;
+            v.ui = atoi(token->c_str());
+        }
+        else if (check_int32(token->c_str())) {
+            type = dods_int32_c;
+            v.i = atoi(token->c_str());
+        }
+        else if (check_float64(token->c_str())) {
+            type = dods_float64_c;
+            v.f = atof(token->c_str());
+        }
+        else {
+            type = dods_str_c;
+            v.s = token;
+        }
+    }
+
 } value;
-
-
 
 // Syntactic sugar for `pointer to function returning boolean' (bool_func)
 // and `pointer to function returning BaseType *' (btp_func). Both function
@@ -87,14 +160,6 @@ typedef void (*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvalua
 // To add the new feature of 'to the end' in an array projection (denoted using
 // star), I used the value -1 for an index. This makes do difference here. jhrg
 // 12/20/12
-#if 0
-typedef std::vector<int> int_list;
-typedef std::vector<int>::const_iterator int_citer ;
-typedef std::vector<int>::iterator int_iter ;
-typedef std::vector<int_list *> int_list_list;
-typedef std::vector<int_list *>::const_iterator int_list_citer ;
-typedef std::vector<int_list *>::iterator int_list_iter ;
-#endif
 
 // By using 'value' and not integers, the slices can use floats which is a better fit
 // for lat and lon values. jhrg 4/18/19

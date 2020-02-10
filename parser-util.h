@@ -43,9 +43,9 @@ namespace libdap {
     */
 
 void save_str(char *dst, const char *src, const int line_num);
-void save_str(string &dst, const char *src, const int);
+void save_str(std::string &dst, const char *src, const int);
 
-bool is_keyword(string id, const string &keyword);
+bool is_keyword(std::string id, const std::string &keyword);
 
 /**
  * @defgroup check_type
