@@ -38,6 +38,8 @@
 #include "GNURegex.h"  // GNU Regex class used for string =~ op.
 #include "ce_expr.tab.hh"
 
+#pragma GCC diagnostic ignored "-Wsign-compare"
+
 namespace libdap {
 
 /** Compare two numerical types, both of which are either signed or unsigned.
@@ -72,10 +74,20 @@ bool Cmp(int op, T1 v1, T2 v2)
     }
 }
 
+#if 0
 template<class T>
 static inline unsigned long long dap_floor_zero(T i)
 {
     return (unsigned long long) ((i < 0) ? 0 : i);
+}
+#endif
+
+#if 0
+// Hack
+template<class T>
+static inline T dap_floor_zero(T i)
+{
+    return i;
 }
 
 /** Compare two numerical types, the first one unsigned and the second
@@ -147,6 +159,7 @@ bool SUCmp(int op, T1 v1, UT2 v2)
             throw Error(malformed_expr, "Unrecognized operator.");
     }
 }
+#endif
 
 /** Compare two string types.
  This class is one implementation of the comparison policy used by

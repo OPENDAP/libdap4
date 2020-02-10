@@ -634,8 +634,7 @@ id_or_const: SCAN_WORD
         $$ = new rvalue(btp);
     }
     else {
-        // FIXME The Sequence selection evaluator fails if int32 values are held by uint32s
-#if 1
+#if 0
         value val;
         if (check_int32($1)) {
             val.type = dods_int32_c;
