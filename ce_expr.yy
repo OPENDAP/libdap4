@@ -50,6 +50,7 @@
 #include <iterator>
 #include <string>
 #include <stack>
+#include <memory>
 
 // #define DODS_DEBUG
 
@@ -82,9 +83,10 @@
 #include "ce_parser.h"
 #include "expr.h"
 #include "RValue.h"
+#if 0
 #include "geo/GSEClause.h"
 #include "geo/grid_utils.h"
-
+#endif
 using std::cerr;
 using std::endl;
 using namespace libdap ;
@@ -1044,11 +1046,12 @@ make_array_slice(value &v1, value &v2, value &v3)
 dim_slice *
 make_array_slice(value &v1, value &v2)
 {
-    value one;
+    value one((unsigned int)1, false, dods_uint32_c);
+#if 0
     one.is_range_value = false;
     one.type = dods_uint32_c;
     one.v.ui = 1;
-
+#endif
     return make_array_slice(v1, one, v2);
 }
 
