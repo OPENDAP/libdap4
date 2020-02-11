@@ -152,8 +152,9 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
 %union {
     bool boolean;
     int op;
-    std::string *str;
-    char id[ID_MAX];
+    std::string *str;       // Strings - quoted or things that must be strings given the grammar
+
+    char id[ID_MAX];        // Return identifiers
 
     libdap::dods_byte byte_value;
     libdap::dods_int16 int16_value;
@@ -393,6 +394,7 @@ fast_byte_arg_list: fast_byte_arg
 ;
 
 /* This rule does not check SCAN_WORD nor does it perform www escaping */
+/* TODO Use get_int8() in parser-util.cc. jhrg 2.11.20 */
 fast_byte_arg: SCAN_WORD
 {
     $$ = strtol($1, 0, 0);
@@ -411,6 +413,7 @@ fast_int16_arg_list: fast_int16_arg
 ;
 
 /* This rule does not check SCAN_WORD nor does it perform www escaping */
+/* TODO Use get_int16() in parser-util.cc. jhrg 2.11.20 */
 fast_int16_arg: SCAN_WORD
 {
     $$ = strtol($1, 0, 0);
@@ -429,6 +432,7 @@ fast_uint16_arg_list: fast_uint16_arg
 ;
 
 /* This rule does not check SCAN_WORD nor does it perform www escaping */
+/* TODO Use get_uint16() in parser-util.cc. jhrg 2.11.20 */
 fast_uint16_arg: SCAN_WORD
 {
     $$ = strtoul($1, 0, 0);
@@ -447,6 +451,7 @@ fast_int32_arg_list: fast_int32_arg
 ;
 
 /* This rule does not check SCAN_WORD nor does it perform www escaping */
+/* TODO Use get_int32() in parser-util.cc. jhrg 2.11.20 */
 fast_int32_arg: SCAN_WORD
 {
     $$ = strtol($1, 0, 0);
@@ -465,6 +470,7 @@ fast_uint32_arg_list: fast_uint32_arg
 ;
 
 /* This rule does not check SCAN_WORD nor does it perform www escaping */
+/* TODO Use get_uint32() in parser-util.cc. jhrg 2.11.20 */
 fast_uint32_arg: SCAN_WORD
 {
     $$ = strtoul($1, 0, 0);
@@ -483,6 +489,7 @@ fast_float32_arg_list: fast_float32_arg
 ;
 
 /* This rule does not check SCAN_WORD nor does it perform www escaping */
+/* TODO Use get_float32() in parser-util.cc. jhrg 2.11.20 */
 fast_float32_arg: SCAN_WORD
 {
     $$ = strtof($1, 0);
@@ -501,6 +508,7 @@ fast_float64_arg_list: fast_float64_arg
 ;
 
 /* This rule does not check SCAN_WORD nor does it perform www escaping */
+/* TODO Use get_float64() in parser-util.cc. jhrg 2.11.20 */
 fast_float64_arg: SCAN_WORD
 {
     $$ = strtod($1, 0);
@@ -572,8 +580,7 @@ bool_function: SCAN_WORD '(' arg_list ')'
         no_such_func(arg, $1);
     }
     else {
-        EVALUATOR(arg)
-            ->append_clause(b_func, $3);
+        EVALUATOR(arg)->append_clause(b_func, $3);
         $$ = true;
     }
 }
@@ -655,7 +662,7 @@ id_or_const: SCAN_WORD
             val.v.s = new string(www2id($1));
         }
 #else
-        value val($1);
+        value val($1, false);
 #endif
         BaseType *btp = make_variable((*EVALUATOR(arg)), val);
         $$ = new rvalue(btp);
@@ -677,8 +684,10 @@ id_or_const: SCAN_WORD
         tmp.type = dods_str_c;
         *($1) = www2id(*($1));
         tmp.v.s = $1;
+#else
+        *($1) = www2id(*($1));
+        value tmp(*($1), false, dods_str_c);
 #endif
-        value tmp($1);
         var = make_variable((*EVALUATOR(arg)), tmp);
         $$ = new rvalue(var);
     }
@@ -780,7 +789,7 @@ array_index:
     i.type = dods_uint32_c;
     i.v.i = atoi($2);
 #endif
-    value i($2);
+    value i($2, false, dods_uint32_c);
     $$ = make_array_slice(i);
 }
 | '[' SCAN_STAR ']'
@@ -790,7 +799,7 @@ array_index:
     i.type = dods_int32_c;
     i.v.i =-1;
 #else
-    value i(-1);
+    value i(-1, false, dods_int32_c);
 #endif
     $$ = make_array_slice(i);
 }
@@ -807,8 +816,8 @@ array_index:
     j.v.i = atoi($4);
 #endif
 
-    value i($2);
-    value j($4);
+    value i($2, false, dods_uint32_c);
+    value j($4, false, dods_uint32_c);
 
     $$ = make_array_slice(i, j);
 }
@@ -828,8 +837,8 @@ array_index:
     $$ = make_array_slice(i, j);
 #endif
 
-    value i(true, $3);
-    value j(true, $7);
+    value i($3, true);
+    value j($7, true);
 
     $$ = make_array_slice(i, j);
 }
@@ -845,8 +854,8 @@ array_index:
     j.v.i = -1;
 #endif
 
-    value i($2);
-    value j(-1);
+    value i($2, false, dods_uint32_c);
+    value j(-1, false, dods_int32_c);
 
     $$ = make_array_slice(i, j);
 }
@@ -866,9 +875,9 @@ array_index:
     k.v.i = atoi($6);
 #endif
 
-    value i($2);
-    value j($4);
-    value k($6);
+    value i($2, false, dods_uint32_c);
+    value j($4, false, dods_uint32_c);
+    value k($6, false, dods_uint32_c);
 
     $$ = make_array_slice(i, j, k);
 }
@@ -887,9 +896,9 @@ array_index:
     k.v.i = -1;
 #endif
 
-    value i($2);
-    value j($4);
-    value k(-1);
+    value i($2, false, dods_uint32_c);
+    value j($4, false, dods_uint32_c);
+    value k(-1, false, dods_int32_c);
 
     $$ = make_array_slice(i, j, k);
 }
@@ -1050,7 +1059,7 @@ make_array_slice(value &v1)
     // of i1 will be -1. Make the projection triple be 0:1:-1 which is a
     // pattern that libdap::Array will recognize.
 
-    value one(1);
+    value one((unsigned int)1, false, dods_uint32_c);
 #if 0
     one.is_range_value = false;
     one.type = dods_uint32_c;
@@ -1061,7 +1070,7 @@ make_array_slice(value &v1)
     // The projection is set to 0:1:-1 and will be recognized by the code that sets
     // the project for a given dimension
     if ((v1.type == dods_int32_c && v1.v.i == -1)) {
-        value zero(0);
+        value zero((unsigned int)0, false, dods_uint32_c);
 #if 0
         minus_one.is_range_value = false;
         minus_one.type = dods_uint32_c;

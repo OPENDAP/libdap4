@@ -74,6 +74,8 @@ int check_url(const char *val);
  * @{
  * @brief Convert the string to a value; throw if the conversion fails.
  */
+int get_int32(const char *val);
+unsigned int get_uint32(const char *val);
 long long get_int64(const char *val);
 unsigned long long get_uint64(const char *val);
 double get_float64(const char *val);

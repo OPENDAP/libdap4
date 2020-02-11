@@ -41,6 +41,7 @@
 
 #include "Type.h"
 #include "parser-util.h"
+#include "Error.h"
 
 namespace libdap
 {
@@ -68,70 +69,84 @@ typedef struct value {
         std::string *s;
     } v;
 
-    // By default, instances are int32s with values of 0
+    /**
+     * @brief build an instance by divining the type.
+     * @param token
+     */
+    void build_instance(const std::string &token) {
+        if (check_int32(token.c_str())) {
+            type = dods_int32_c;
+            v.i = atoi(token.c_str());
+        }
+        else if (check_uint32(token.c_str())) {
+            type = dods_uint32_c;
+            v.ui = atoi(token.c_str());
+        }
+        else if (check_float64(token.c_str())) {
+            type = dods_float64_c;
+            v.f = atof(token.c_str());
+        }
+        else {
+            type = dods_str_c;
+            v.s = new std::string(token);
+        }
+    }
+
+    /**
+     * @brief Build an instance given the type
+     * @param token
+     */
+    void build_typed_instance(const std::string &token) {
+        switch (type) {
+            case dods_uint32_c:
+                v.ui = get_uint32(token.c_str());
+                break;
+            case dods_int32_c:
+                v.i = get_int32(token.c_str());
+                break;
+            case dods_float64_c:
+                v.ui = get_float64(token.c_str());
+                break;
+            case dods_str_c:
+                v.s = new std::string(token);
+                break;
+            default:
+                throw Error("Expected an int32, unsigned int32, float64 or string token.");
+        }
+    }
+
+    // By default, value instances are int32s with values of 0 and the range_value
+    // property is set to false.
     value() : is_range_value(false), type(dods_int32_c) { v.i = 0; }
 
-    value(int i) : is_range_value(false) {
-        type = dods_int32_c;
-        v.i = i;
+    // set a value
+    value(const std::string &token, bool rv = false, Type t = dods_null_c) : is_range_value(rv),  type(t) {
+        if (type == dods_null_c)
+            build_instance(token);
+        else
+            build_typed_instance(token);
     }
 
-    // set a value and explicitly set the value of is_range_value.
-    value(bool rv, const std::string &token) : is_range_value(rv) {
-        if (check_uint32(token.c_str())) {
-            type = dods_uint32_c;
-            v.ui = atoi(token.c_str());
-        }
-        else if (check_int32(token.c_str())) {
-            type = dods_int32_c;
-            v.i = atoi(token.c_str());
-        }
-        else if (check_float64(token.c_str())) {
-            type = dods_float64_c;
-            v.f = atof(token.c_str());
-        }
-        else {
-            type = dods_str_c;
-            v.s = new std::string(token);
+    value(int val, bool rv = false, Type t = dods_null_c) : is_range_value(rv),  type(t) {
+        switch (type) {
+            case dods_uint32_c:
+                v.ui = val;
+                break;
+            case dods_int32_c:
+                v.i = val;
+                break;
+            default:
+                throw Error("Expected an int32 or unsigned int32 token.");
         }
     }
 
-    // Set a value, assume that it is not a range value.
-    value(const std::string &token) : is_range_value(false) {
-        if (check_uint32(token.c_str())) {
-            type = dods_uint32_c;
-            v.ui = atoi(token.c_str());
-        }
-        else if (check_int32(token.c_str())) {
-            type = dods_int32_c;
-            v.i = atoi(token.c_str());
-        }
-        else if (check_float64(token.c_str())) {
-            type = dods_float64_c;
-            v.f = atof(token.c_str());
-        }
-        else {
-            type = dods_str_c;
-            v.s = new std::string(token);
-        }
-    }
-
-    value(std::string *token) {
-        if (check_uint32(token->c_str())) {
-            type = dods_uint32_c;
-            v.ui = atoi(token->c_str());
-        }
-        else if (check_int32(token->c_str())) {
-            type = dods_int32_c;
-            v.i = atoi(token->c_str());
-        }
-        else if (check_float64(token->c_str())) {
-            type = dods_float64_c;
-            v.f = atof(token->c_str());
-        }
-        else {
-            type = dods_str_c;
-            v.s = token;
+    value(unsigned int val, bool rv = false, Type t = dods_null_c) : is_range_value(rv),  type(t) {
+        switch (type) {
+            case dods_uint32_c:
+                v.ui = val;
+                break;
+            default:
+                throw Error("Expected an unsigned int32 token.");
         }
     }
 
