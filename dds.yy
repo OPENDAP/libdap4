@@ -83,6 +83,7 @@ using namespace libdap;
 // ERROR is no longer used. These parsers now signal problems by throwing
 // exceptions. 5/22/2002 jhrg
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
+#define YYERROR_VERBOSE 0
 
 // #define YYPARSE_PARAM arg
 

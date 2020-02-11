@@ -44,6 +44,8 @@
 #include <string>
 #include <sstream>
 
+#include <cstdio> //SBL 12.3.19
+
 #include "GetOpt.h"
 
 #include "Sequence.h"
@@ -471,12 +473,15 @@ int main(int argc, char *argv[])
     }
     catch (Error &e) {
         cerr << e.get_error_message() << endl;
-        return 1;
+        //return 1;
+        return EXIT_FAILURE;
     }
     catch (exception &e) {
         cerr << "C++ library exception: " << e.what() << endl;
-        return 1;
+        //return 1;
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    //return 0;
+    return EXIT_SUCCESS;
 }
