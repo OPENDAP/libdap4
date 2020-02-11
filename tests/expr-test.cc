@@ -169,6 +169,7 @@ int main(int argc, char *argv[])
     ServerFunctionsList::TheList()->add_function(scale);
 
     // process options
+    ce_exprdebug = false;
 
     while ((option_char = getopt()) != -1)
         switch (option_char) {

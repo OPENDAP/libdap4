@@ -123,7 +123,7 @@ SCAN_HASH_UINT32  $UInt32
 SCAN_HASH_FLOAT32 $Float32
 SCAN_HASH_FLOAT64 $Float64
 
-SCAN_STAR       \*
+SCAN_STAR    \*
 
 NEVER		[^\-+a-zA-Z0-9_/%.\\:,(){}[\]&<>=~]
 

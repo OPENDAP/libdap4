@@ -51,7 +51,7 @@
 #include <string>
 #include <stack>
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "debug.h"
 #include "escaping.h"
@@ -144,6 +144,7 @@ rvalue *build_constant_array(vector<t> *values, DDS *dds);
 
 %parse-param {ce_parser_arg *arg}
 %define api.prefix {ce_expr}
+// %name-prefix "ce_expr"
 %defines
 %debug
 %verbose
@@ -788,10 +789,9 @@ array_index:
     value i;
     i.type = dods_int32_c;
     i.v.i =-1;
-#endif
-
+#else
     value i(-1);
-
+#endif
     $$ = make_array_slice(i);
 }
 |'[' SCAN_WORD ':' SCAN_WORD ']'
@@ -1050,20 +1050,24 @@ make_array_slice(value &v1)
     // of i1 will be -1. Make the projection triple be 0:1:-1 which is a
     // pattern that libdap::Array will recognize.
 
-    value one;
+    value one(1);
+#if 0
     one.is_range_value = false;
     one.type = dods_uint32_c;
     one.v.ui = 1;
+#endif
 
     // The parser above looks for the special value '*' and sets the 'value' to -1
-    // values and
+    // The projection is set to 0:1:-1 and will be recognized by the code that sets
+    // the project for a given dimension
     if ((v1.type == dods_int32_c && v1.v.i == -1)) {
-        value minus_one;
+        value zero(0);
+#if 0
         minus_one.is_range_value = false;
         minus_one.type = dods_uint32_c;
         minus_one.v.ui = -1;
-
-        return make_array_slice(v1, one, minus_one);
+#endif
+        return make_array_slice(zero, one, v1);
     }
     else {
         return make_array_slice(v1, one, v1);
