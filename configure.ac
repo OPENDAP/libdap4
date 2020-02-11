@@ -420,7 +420,6 @@ AC_CONFIG_FILES([Makefile
                  gl/Makefile
                  d4_ce/Makefile
                  d4_function/Makefile
-                 geo/Makefile
                  
                  tests/Makefile
                  tests/atlocal
