@@ -31,7 +31,6 @@
 
 // Implementation for the CE Clause class.
 
-
 #include "config.h"
 
 #include <cassert>

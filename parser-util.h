@@ -43,9 +43,9 @@ namespace libdap {
     */
 
 void save_str(char *dst, const char *src, const int line_num);
-void save_str(string &dst, const char *src, const int);
+void save_str(std::string &dst, const char *src, const int);
 
-bool is_keyword(string id, const string &keyword);
+bool is_keyword(std::string id, const std::string &keyword);
 
 /**
  * @defgroup check_type
@@ -74,6 +74,8 @@ int check_url(const char *val);
  * @{
  * @brief Convert the string to a value; throw if the conversion fails.
  */
+int get_int32(const char *val);
+unsigned int get_uint32(const char *val);
 long long get_int64(const char *val);
 unsigned long long get_uint64(const char *val);
 double get_float64(const char *val);

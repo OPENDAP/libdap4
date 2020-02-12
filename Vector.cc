@@ -1774,7 +1774,7 @@ bool Vector::set_value(vector<string> &val, int sz)
     if (var()->type() == dods_str_c || var()->type() == dods_url_c) {
         d_str.resize(sz);
         d_capacity = sz;
-        for (register int t = 0; t < sz; t++) {
+        for (int t = 0; t < sz; t++) {
             d_str[t] = val[t];
         }
         set_length(sz);

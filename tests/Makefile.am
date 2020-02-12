@@ -102,8 +102,6 @@ dmr-testsuite.tar.gz: dmr-testsuite/*.xml
 
 AUTOM4TE = autom4te
 
-TESTSUITEFLAGS =
-
 DASTESTSUITE = $(srcdir)/DASTest
 
 DDSTESTSUITE = $(srcdir)/DDSTest
