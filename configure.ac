@@ -403,17 +403,17 @@ AS_IF([test x$enable_developer = xyes],
 
 dnl NB: CentOS 6 does not support C++-11 but does support some features:
 dnl https://gcc.gnu.org/gcc-4.4/cxx0x_status.html.
-dnl For now, I'm counting 0x as supporting C++-11 in our code.
+dnl Unfortunately, CentOS6's default version of flex will fail when it compiles
+dnl the DAP4 scanners for the CE and Function expressions (the version is 2.5.35)
+dnl so I'm removing the --std=c++0x option for C6 here. On C7 flex is at 2.5.37
+dnl and that will build our code.
 
 CXX11_FLAG=""
 
 CXX_FLAGS_CHECK([--std=c++11], [CXX11_FLAG=--std=c++11], [])
 
 AS_IF([test -z "$CXX11_FLAG"],
-      [CXX_FLAGS_CHECK([--std=c++0x], [CXX11_FLAG=--std=c++0x], [])])
-
-AS_IF([test -z "$CXX11_FLAG"],
-      [AC_MSG_ERROR([Not using C++-11 (or C++0x)])],
+      [AC_MSG_NOTICE([Not using C++-11 (or C++0x)])],
       [AC_MSG_NOTICE([Using $CXX11_FLAG for C++-11 support])
        cxx_debug_flags="$cxx_debug_flags --pedantic $CXX11_FLAG"])
 
