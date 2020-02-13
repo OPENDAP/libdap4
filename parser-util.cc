@@ -376,7 +376,7 @@ int check_uint64(const char *val)
 int check_float32(const char *val)
 {
     char *ptr;
-    errno = 0;                  // Clear previous value. Fix for the 64bit
+    errno = 0;  // Clear previous value. Fix for the 64bit
 				// IRIX from Rob Morris. 5/21/2001 jhrg
 
 #ifdef WIN32
@@ -438,6 +438,74 @@ int check_float64(const char *val)
         return FALSE;
 
     return TRUE;
+}
+
+int get_int32(const char *val)
+{
+    char *ptr;
+    errno = 0;
+    int v = strtol(val, &ptr, 0);      // `0' --> use val to determine base
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+        throw Error("The value '" + string(val) + "' contains extra characters.");
+    }
+
+    // We need to check errno since strtol return clamps on overflow so the
+    // check against the DODS values below will always pass, even for out of
+    // bounds values in the string. mjohnson 7/20/09
+    if (errno == ERANGE) {
+        throw Error("The value '" + string(val) + "' is out of range.");
+    }
+
+#if 0
+        // This could be combined with the above, or course, but I'm making it
+// separate to highlight the test. On 64-bit linux boxes 'long' may be
+// 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
+//
+// Removed because coverity flags it as useless, which it is until we
+// have 128-bit ints... jhrg 5/9/16
+else if (v > DODS_LLONG_MAX || v < DODS_LLONG_MIN) {
+    throw Error("The value '" + string(val) + "' is out of range.");
+}
+#endif
+
+    else {
+        return v;
+    }
+}
+
+unsigned int get_uint32(const char *val)
+{
+    // Eat whitespace and check for an initial '-' sign...
+    // strtoul allows an initial minus. mjohnson
+    const char* c = val;
+    while (c && isspace(*c)) {
+        c++;
+    }
+    if (c && (*c == '-')) {
+        throw Error("The value '" + string(val) + "' is not a valid array index.");
+    }
+
+    char *ptr;
+    errno = 0;
+    unsigned int v = strtoul(val, &ptr, 0);
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+        throw Error("The value '" + string(val) + "' contains extra characters.");
+    }
+
+    if (errno == ERANGE) {
+        throw Error("The value '" + string(val) + "' is out of range.");
+    }
+#if 0
+        // Coverity; see above. jhrg 5/9/16
+else if (v > DODS_MAX_ARRAY_INDEX) { // 2^61
+    throw Error("The value '" + string(val) + "' is out of range.");
+}
+#endif
+    else {
+        return v;
+    }
 }
 
 long long get_int64(const char *val)

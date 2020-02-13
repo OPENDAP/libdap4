@@ -15,6 +15,13 @@ include_directories(tests)
 include_directories(unit-tests)
 
 add_library(libdap4
+	# These bison files break CLion's parser
+	# ce_expr.yy
+	# ce_expr.lex
+	# das.yy
+	# dds.yy
+	# Error.yy
+
 	conf/arg-nonnull.h
 	conf/c++defs.h
 	conf/warn-on-use.h
@@ -22,6 +29,8 @@ add_library(libdap4
 	d4_ce/D4CEScanner.h
 	d4_ce/D4ConstraintEvaluator.cc
 	d4_ce/D4ConstraintEvaluator.h
+	# d4_ce/d4_ce_parser.yy
+	# d4_ce/d4_ce_scanner.ll
 	d4_ce/lex.d4_ce.cc
 	d4_ce/location.hh
 	d4_ce/position.hh
@@ -30,6 +39,8 @@ add_library(libdap4
 	d4_function/D4FunctionEvaluator.cc
 	d4_function/D4FunctionEvaluator.h
 	d4_function/D4FunctionScanner.h
+	# d4_function/d4_function_parser.yy
+	# d4_function/d4_function_parser.ll
 	d4_function/lex.d4_function.cc
 	d4_function/location.hh
 	d4_function/position.hh

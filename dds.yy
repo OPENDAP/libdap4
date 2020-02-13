@@ -123,6 +123,7 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 
 %parse-param {parser_arg *arg}
 %name-prefix "dds"
+// %define api.prefix {dds}
 %defines
 %debug
 %verbose

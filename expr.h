@@ -39,7 +39,9 @@
 #include <string>
 #include <vector>
 
-#include <Type.h>
+#include "Type.h"
+#include "parser-util.h"
+#include "Error.h"
 
 namespace libdap
 {
@@ -50,9 +52,15 @@ class ConstraintEvaluator;
 
 // VALUE is used to return constant values from the scanner to the parser.
 // Constants are packaged in BaseType *s for evaluation by the parser.
+//
+// I changed this to simplify support of natural axes subsetting. Since 'value'
+// was only being used for the string* return, I added a string* filed to ce_exprlval
+// and moved 'value' out of it. This meant that I can use non-trivial ctors for
+// value without breaking the rules for c++ unions. Those ctors make it easier to
+// build value instances without errors. jhrg 2/10/20
 
-typedef struct
-{
+typedef struct value {
+    bool is_range_value;    // true if this is part of a natural axes projection
     Type type;   // Type is an enum defined in Type.h
     union {
         unsigned int ui;
@@ -60,6 +68,88 @@ typedef struct
         double f;
         std::string *s;
     } v;
+
+    /**
+     * @brief build an instance by divining the type.
+     * @param token
+     */
+    void build_instance(const std::string &token) {
+        if (check_int32(token.c_str())) {
+            type = dods_int32_c;
+            v.i = atoi(token.c_str());
+        }
+        else if (check_uint32(token.c_str())) {
+            type = dods_uint32_c;
+            v.ui = atoi(token.c_str());
+        }
+        else if (check_float64(token.c_str())) {
+            type = dods_float64_c;
+            v.f = atof(token.c_str());
+        }
+        else {
+            type = dods_str_c;
+            v.s = new std::string(token);
+        }
+    }
+
+    /**
+     * @brief Build an instance given the type
+     * @param token
+     */
+    void build_typed_instance(const std::string &token) {
+        switch (type) {
+            case dods_uint32_c:
+                v.ui = get_uint32(token.c_str());
+                break;
+            case dods_int32_c:
+                v.i = get_int32(token.c_str());
+                break;
+            case dods_float64_c:
+                v.ui = get_float64(token.c_str());
+                break;
+            case dods_str_c:
+                v.s = new std::string(token);
+                break;
+            default:
+                throw Error("Expected an int32, unsigned int32, float64 or string token.");
+        }
+    }
+
+    // By default, value instances are int32s with values of 0 and the range_value
+    // property is set to false.
+    value() : is_range_value(false), type(dods_int32_c) { v.i = 0; }
+
+    // set a value
+    value(const std::string &token, bool rv = false, Type t = dods_null_c) : is_range_value(rv),  type(t) {
+        if (type == dods_null_c)
+            build_instance(token);
+        else
+            build_typed_instance(token);
+    }
+
+    value(int val, bool rv = false, Type t = dods_null_c) : is_range_value(rv),  type(t) {
+        switch (type) {
+            case dods_uint32_c:
+                v.ui = val;
+                break;
+            case dods_int32_c:
+                v.i = val;
+                break;
+            default:
+                throw Error("Expected an int32 or unsigned int32 token.");
+        }
+    }
+
+    value(unsigned int val, bool rv = false, Type t = dods_null_c) : is_range_value(rv),  type(t) {
+        switch (type) {
+            case dods_uint32_c:
+                v.ui = val;
+                break;
+            default:
+                throw Error("Expected an unsigned int32 token.");
+        }
+    }
+
 } value;
 
 // Syntactic sugar for `pointer to function returning boolean' (bool_func)
@@ -83,15 +173,16 @@ typedef void (*proj_func)(int argc, BaseType *argv[], DDS &dds, ConstraintEvalua
 // indexes.
 
 // To add the new feature of 'to the end' in an array projection (denoted using
-// start), I used the value -1 for an index. This makes do difference here. jhrg
+// star), I used the value -1 for an index. This makes do difference here. jhrg
 // 12/20/12
 
-typedef std::vector<int> int_list;
-typedef std::vector<int>::const_iterator int_citer ;
-typedef std::vector<int>::iterator int_iter ;
-typedef std::vector<int_list *> int_list_list;
-typedef std::vector<int_list *>::const_iterator int_list_citer ;
-typedef std::vector<int_list *>::iterator int_list_iter ;
+// By using 'value' and not integers, the slices can use floats which is a better fit
+// for lat and lon values. jhrg 4/18/19
+// I used a vector of pointers to dim_slice because pointers have trivial copy ctors and
+// these types are using by the CE parsers in a union. Unions in C++ require trivial copy
+// ctors. jhrg 2/5/20
+typedef std::vector<value> dim_slice;
+typedef std::vector<dim_slice *> slices;
 
 } // namespace libdap
 
