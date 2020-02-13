@@ -34,8 +34,6 @@
 
 #include "D4FunctionScanner.h"
 
-#define YY_NO_UNISTD_H
-
 /* typedef to make the returns for the tokens shorter */
 
 /* NB: It would be best to use the same scanner (and maybe parser) for
