@@ -389,37 +389,12 @@ AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
 AC_ARG_ENABLE([developer],
     [AS_HELP_STRING([--enable-developer], [Build for debug (-g3 -O0); include assert() calls (default: no)])])
 
-dnl This is the default. If the caller uses --enable-developer, that option
-dnl will override these values
-cxx_debug_flags="-g -O2"
-
 AS_IF([test x$enable_developer = xyes],
       [AC_MSG_NOTICE([Building developer version])
-       AM_CONDITIONAL([BUILD_DEVELOPER], [true])
-       cxx_debug_flags="-g3 -O0  -Wall -W -Wcast-align"],
+       AM_CONDITIONAL([BUILD_DEVELOPER], [true])],
       [AC_MSG_NOTICE([Not building developer version])
        AM_CONDITIONAL([BUILD_DEVELOPER], [false])
        AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])])
-
-dnl NB: CentOS 6 does not support C++-11 but does support some features:
-dnl https://gcc.gnu.org/gcc-4.4/cxx0x_status.html.
-dnl For now, I'm counting 0x as supporting C++-11 in our code.
-
-CXX11_FLAG=""
-
-CXX_FLAGS_CHECK([--std=c++11], [CXX11_FLAG=--std=c++11], [])
-
-AS_IF([test -z "$CXX11_FLAG"],
-      [CXX_FLAGS_CHECK([--std=c++0x], [CXX11_FLAG=--std=c++0x], [])])
-
-AS_IF([test -z "$CXX11_FLAG"],
-      [AC_MSG_ERROR([Not using C++-11 (or C++0x)])],
-      [AC_MSG_NOTICE([Using $CXX11_FLAG for C++-11 support])
-       cxx_debug_flags="$cxx_debug_flags --pedantic $CXX11_FLAG"])
-
-AC_SUBST(CXX11_FLAG)
-
-AS_IF([test -n "$cxx_debug_flags"], [CXXFLAGS="$cxx_debug_flags"])
 
 DODS_GCOV_VALGRIND
 

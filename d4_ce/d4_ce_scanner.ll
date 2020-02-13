@@ -33,8 +33,6 @@
 
 #include "D4CEScanner.h"
 
-#define YY_NO_UNISTD_H
-
 /* typedef to make the returns for the tokens shorter */
 typedef libdap::D4CEParser::token token;
 
