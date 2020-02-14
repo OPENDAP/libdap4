@@ -116,8 +116,11 @@ CXX11_FLAG=""
 
 CXX_FLAGS_CHECK([--std=c++11], [CXX11_FLAG=--std=c++11], [])
 
-AS_IF([test -z "$CXX11_FLAG"],
-      [CXX_FLAGS_CHECK([--std=c++0x], [CXX11_FLAG=--std=c++0x], [])])
+dnl don't compile libdap using c++0x on CentOS6. This clashes with flex 2.5.35.
+dnl jhrg 2/14/20
+dnl
+dnl AS_IF([test -z "$CXX11_FLAG"],
+dnl       [CXX_FLAGS_CHECK([--std=c++0x], [CXX11_FLAG=--std=c++0x], [])])
 
 AS_IF([test -z "$CXX11_FLAG"],
       [AC_MSG_NOTICE([Not using C++-11])],

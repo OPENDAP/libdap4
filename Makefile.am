@@ -225,7 +225,7 @@ pkg-build: clean-pkg
 	DESTDIR=`pwd`/mac_osx make install
 
 pkg-main: pkg-build
-	./OSX_Resources/update_mac_package_contents.pl README
+	./OSX_Resources/update_mac_package_contents.pl README.md
 	cat ./OSX_Resources/Info.plist.proto | \
 	   sed -e "s^_PREFIX_^/usr/local/servers/hyrax-1.8.8^g" \
 	       -e "s^_FULL_VERSION_^@PACKAGE_VERSION@^g" \
@@ -244,7 +244,7 @@ pkg-dmg: pkg-main
 	-rm -rf @PACKAGE@-@PACKAGE_VERSION@.dmg
 	mkdir @PACKAGE@-@PACKAGE_VERSION@
 	cp -r @PACKAGE@-@PACKAGE_VERSION@.pkg @PACKAGE@-@PACKAGE_VERSION@
-	cp README README.* NEWS @PACKAGE@-@PACKAGE_VERSION@
+	cp README.md README.* NEWS @PACKAGE@-@PACKAGE_VERSION@
 	dropdmg -i --sanitize-for-servers --format zlib @PACKAGE@-@PACKAGE_VERSION@
 	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
 

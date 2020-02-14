@@ -69,7 +69,7 @@ jobs:
   - stage: travis
     script:
       - mkdir -p $TRAVIS_BUILD_DIR/package
-      - cp README $TRAVIS_BUILD_DIR/package/README.libdap4
+      - cp README.md $TRAVIS_BUILD_DIR/package/README.libdap4
       - export LIBDAP_BUILD=travis
 
   - stage: build
