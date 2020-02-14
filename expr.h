@@ -74,17 +74,23 @@ typedef struct value {
      * @param token
      */
     void build_instance(const std::string &token) {
-        if (check_int32(token.c_str())) {
+        if (check_int32(token.c_str(), v.i)) {
             type = dods_int32_c;
+#if 0
             v.i = atoi(token.c_str());
+#endif
         }
-        else if (check_uint32(token.c_str())) {
+        else if (check_uint32(token.c_str(), v.ui)) {
             type = dods_uint32_c;
+#if 0
             v.ui = atoi(token.c_str());
+#endif
         }
-        else if (check_float64(token.c_str())) {
+        else if (check_float64(token.c_str(), v.f)) {
             type = dods_float64_c;
+#if 0
             v.f = atof(token.c_str());
+#endif
         }
         else {
             type = dods_str_c;
