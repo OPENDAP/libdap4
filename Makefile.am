@@ -113,7 +113,7 @@ getdap4_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
-EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI	\
+EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	\
 	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec VCPP	\
 	dods-datatypes-static.h xdr-datatypes-static.h		\
 	dap-config-pkgconfig $(LEX_YACC_EXTRA) OSX_Resources	\
@@ -225,7 +225,7 @@ pkg-build: clean-pkg
 	DESTDIR=`pwd`/mac_osx make install
 
 pkg-main: pkg-build
-	./OSX_Resources/update_mac_package_contents.pl README
+	./OSX_Resources/update_mac_package_contents.pl README.md
 	cat ./OSX_Resources/Info.plist.proto | \
 	   sed -e "s^_PREFIX_^/usr/local/servers/hyrax-1.8.8^g" \
 	       -e "s^_FULL_VERSION_^@PACKAGE_VERSION@^g" \
@@ -244,7 +244,7 @@ pkg-dmg: pkg-main
 	-rm -rf @PACKAGE@-@PACKAGE_VERSION@.dmg
 	mkdir @PACKAGE@-@PACKAGE_VERSION@
 	cp -r @PACKAGE@-@PACKAGE_VERSION@.pkg @PACKAGE@-@PACKAGE_VERSION@
-	cp README README.* NEWS @PACKAGE@-@PACKAGE_VERSION@
+	cp README.md README.* NEWS @PACKAGE@-@PACKAGE_VERSION@
 	dropdmg -i --sanitize-for-servers --format zlib @PACKAGE@-@PACKAGE_VERSION@
 	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
 

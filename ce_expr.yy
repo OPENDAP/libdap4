@@ -1035,7 +1035,7 @@ bool bracket_projection(DDS &table, const char *name, slices *s)
 dim_slice *
 make_array_slice(value &v1, value &v2, value &v3)
 {
-    unique_ptr<dim_slice> ds(new dim_slice);
+    auto_ptr<dim_slice> ds(new dim_slice);
     ds->push_back(v1);
     ds->push_back(v2);
     ds->push_back(v3);
@@ -1089,7 +1089,7 @@ make_array_slice(value &v1)
 slices *
 make_array_slices(dim_slice *ds)
 {
-    unique_ptr<slices> s(new slices);
+    auto_ptr<slices> s(new slices);
     s->push_back(ds);
     return s.release();
 }

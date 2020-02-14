@@ -68,7 +68,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libtest-types.a
 %{_libdir}/libdapclient.so.*
 %{_libdir}/libdapserver.so.*
-%doc README NEWS COPYING COPYRIGHT_URI README.dodsrc
+%doc README.md NEWS COPYING COPYRIGHT_URI README.dodsrc
 %{_mandir}/man1/*
 
 %files devel

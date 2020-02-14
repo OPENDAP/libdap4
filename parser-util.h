@@ -53,10 +53,13 @@ bool is_keyword(std::string id, const std::string &keyword);
  * @brief Can the given string be converted into a byte, ...?
  */
 int check_byte(const char *val);
+
 int check_int16(const char *val);
 int check_uint16(const char *val);
+
 int check_int32(const char *val);
 int check_uint32(const char *val);
+
 int check_int64(const char *val);
 int check_uint64(const char *val);
 
@@ -67,6 +70,17 @@ int check_float64(const char *val);
     @brief Is the value a valid URL? */
 int check_url(const char *val);
 
+/** @} */
+
+/**
+ * @defgroup check type and set value
+ * @{
+ * @brief Like 'test and set,' check a type and set a value in one go.
+ */
+int check_int32(const char *val, int &v);
+int check_uint32(const char *val, unsigned int &v);
+
+int check_float64(const char *val, double &v);
 /** @} */
 
 /**

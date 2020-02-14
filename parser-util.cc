@@ -307,6 +307,70 @@ int check_uint32(const char *val)
 	}
 }
 
+int check_int32(const char *val, int &v)
+{
+    char *ptr;
+    errno = 0;
+    long tmp = strtol(val, &ptr, 0);      // `0' --> use val to determine base
+
+    if ((tmp == 0 && val == ptr) || *ptr != '\0') {
+        return FALSE;
+    }
+
+    // We need to check errno since strtol return clamps on overflow so the
+    // check against the DODS values below will always pass, even for out of
+    // bounds values in the string. mjohnson 7/20/09
+    if (errno == ERANGE) {
+        return FALSE;
+    }
+    // This could be combined with the above, or course, but I'm making it
+    // separate to highlight the test. On 64-bit linux boxes 'long' may be
+    // 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
+    else if (tmp > DODS_INT_MAX || tmp < DODS_INT_MIN) {
+        return FALSE;
+    }
+    else {
+        v = (int)tmp;
+        return TRUE;
+    }
+}
+
+int check_uint32(const char *val, unsigned int &v)
+{
+    // Eat whitespace and check for an initial '-' sign...
+    // strtoul allows an initial minus. mjohnson
+    const char* c = val;
+    while (c && isspace(*c)) {
+        c++;
+    }
+    if (c && (*c == '-')) {
+        return FALSE;
+    }
+
+    char *ptr;
+    errno = 0;
+    unsigned long tmp = strtoul(val, &ptr, 0);
+
+    if ((tmp == 0 && val == ptr) || *ptr != '\0') {
+        return FALSE;
+    }
+
+    // check overflow first, or the below check is invalid due to
+    // clamping to the maximum value by strtoul
+    // maybe consider using long long for these checks? mjohnson
+    if (errno == ERANGE) {
+        return FALSE;
+    }
+    // See above.
+    else if (tmp > DODS_UINT_MAX) {
+        return FALSE;
+    }
+    else {
+        v = (unsigned int)tmp;
+        return TRUE;
+    }
+}
+
 int check_int64(const char *val)
 {
     char *ptr;
@@ -376,7 +440,7 @@ int check_uint64(const char *val)
 int check_float32(const char *val)
 {
     char *ptr;
-    errno = 0;  // Clear previous value. Fix for the 64bit
+    errno = 0;                  // Clear previous value. Fix for the 64bit
 				// IRIX from Rob Morris. 5/21/2001 jhrg
 
 #ifdef WIN32
@@ -440,6 +504,107 @@ int check_float64(const char *val)
     return TRUE;
 }
 
+int check_float64(const char *val, double &v)
+{
+    DBG(cerr << "val: " << val << endl);
+    char *ptr;
+    errno = 0;                  // Clear previous value. 5/21/2001 jhrg
+
+#ifdef WIN32
+    v = w32strtod(val, &ptr);
+#else
+    v = strtod(val, &ptr);
+#endif
+
+    DBG(cerr << "v: " << v << ", ptr: " << ptr
+             << ", errno: " << errno << ", val==ptr: " << (val == ptr) << endl);
+
+
+    if (errno == ERANGE || (v == 0.0 && val == ptr) || *ptr != '\0')
+        return FALSE;
+#if 0
+        if ((v == 0.0 && (val == ptr || errno == HUGE_VAL || errno == ERANGE))
+        || *ptr != '\0') {
+        return FALSE;
+    }
+#endif
+    DBG(cerr << "fabs(" << val << ") = " << fabs(v) << endl);
+    double abs_val = fabs(v);
+    if (abs_val > DODS_DBL_MAX
+        || (abs_val != 0.0 && abs_val < DODS_DBL_MIN))
+        return FALSE;
+
+    return TRUE;
+}
+
+long long get_int64(const char *val)
+{
+    char *ptr;
+    errno = 0;
+    long long v = strtoll(val, &ptr, 0);      // `0' --> use val to determine base
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+        throw Error("The value '" + string(val) + "' contains extra characters.");
+    }
+
+    // We need to check errno since strtol return clamps on overflow so the
+    // check against the DODS values below will always pass, even for out of
+    // bounds values in the string. mjohnson 7/20/09
+    if (errno == ERANGE) {
+        throw Error("The value '" + string(val) + "' is out of range.");
+    }
+
+#if 0
+        // This could be combined with the above, or course, but I'm making it
+    // separate to highlight the test. On 64-bit linux boxes 'long' may be
+    // 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
+    //
+    // Removed because coverity flags it as useless, which it is until we
+    // have 128-bit ints... jhrg 5/9/16
+    else if (v > DODS_LLONG_MAX || v < DODS_LLONG_MIN) {
+        throw Error("The value '" + string(val) + "' is out of range.");
+    }
+#endif
+
+    else {
+        return v;
+    }
+}
+
+unsigned long long get_uint64(const char *val)
+{
+    // Eat whitespace and check for an initial '-' sign...
+    // strtoul allows an initial minus. mjohnson
+    const char* c = val;
+    while (c && isspace(*c)) {
+        c++;
+    }
+    if (c && (*c == '-')) {
+        throw Error("The value '" + string(val) + "' is not a valid array index.");
+    }
+
+    char *ptr;
+    errno = 0;
+    unsigned long long v = strtoull(val, &ptr, 0);
+
+    if ((v == 0 && val == ptr) || *ptr != '\0') {
+        throw Error("The value '" + string(val) + "' contains extra characters.");
+    }
+
+    if (errno == ERANGE) {
+        throw Error("The value '" + string(val) + "' is out of range.");
+    }
+#if 0
+        // Coverity; see above. jhrg 5/9/16
+    else if (v > DODS_MAX_ARRAY_INDEX) { // 2^61
+        throw Error("The value '" + string(val) + "' is out of range.");
+    }
+#endif
+    else {
+        return v;
+    }
+}
+
 int get_int32(const char *val)
 {
     char *ptr;
@@ -456,18 +621,12 @@ int get_int32(const char *val)
     if (errno == ERANGE) {
         throw Error("The value '" + string(val) + "' is out of range.");
     }
-
-#if 0
-        // This could be combined with the above, or course, but I'm making it
-// separate to highlight the test. On 64-bit linux boxes 'long' may be
-// 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
-//
-// Removed because coverity flags it as useless, which it is until we
-// have 128-bit ints... jhrg 5/9/16
-else if (v > DODS_LLONG_MAX || v < DODS_LLONG_MIN) {
-    throw Error("The value '" + string(val) + "' is out of range.");
-}
-#endif
+    // This could be combined with the above, or course, but I'm making it
+    // separate to highlight the test. On 64-bit linux boxes 'long' may be
+    // 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
+    else if (v > DODS_INT_MAX || v < DODS_INT_MIN) {
+        return FALSE;
+    }
 
     else {
         return v;
@@ -497,80 +656,10 @@ unsigned int get_uint32(const char *val)
     if (errno == ERANGE) {
         throw Error("The value '" + string(val) + "' is out of range.");
     }
-#if 0
-        // Coverity; see above. jhrg 5/9/16
-else if (v > DODS_MAX_ARRAY_INDEX) { // 2^61
-    throw Error("The value '" + string(val) + "' is out of range.");
-}
-#endif
-    else {
-        return v;
+    // See above.
+    else if (v > DODS_UINT_MAX) {
+        return FALSE;
     }
-}
-
-long long get_int64(const char *val)
-{
-    char *ptr;
-    errno = 0;
-    long long v = strtoll(val, &ptr, 0);      // `0' --> use val to determine base
-
-    if ((v == 0 && val == ptr) || *ptr != '\0') {
-        throw Error("The value '" + string(val) + "' contains extra characters.");
-    }
-
-    // We need to check errno since strtol return clamps on overflow so the
-    // check against the DODS values below will always pass, even for out of
-    // bounds values in the string. mjohnson 7/20/09
-    if (errno == ERANGE) {
-        throw Error("The value '" + string(val) + "' is out of range.");
-    }
-
-#if 0
-    // This could be combined with the above, or course, but I'm making it
-    // separate to highlight the test. On 64-bit linux boxes 'long' may be
-    // 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
-    //
-    // Removed because coverity flags it as useless, which it is until we
-    // have 128-bit ints... jhrg 5/9/16
-    else if (v > DODS_LLONG_MAX || v < DODS_LLONG_MIN) {
-        throw Error("The value '" + string(val) + "' is out of range.");
-    }
-#endif
-
-    else {
-        return v;
-    }
-}
-
-unsigned long long get_uint64(const char *val)
-{
-    // Eat whitespace and check for an initial '-' sign...
-    // strtoul allows an initial minus. mjohnson
-    const char* c = val;
-    while (c && isspace(*c)) {
-         c++;
-    }
-    if (c && (*c == '-')) {
-        throw Error("The value '" + string(val) + "' is not a valid array index.");
-    }
-
-    char *ptr;
-    errno = 0;
-    unsigned long long v = strtoull(val, &ptr, 0);
-
-    if ((v == 0 && val == ptr) || *ptr != '\0') {
-        throw Error("The value '" + string(val) + "' contains extra characters.");
-    }
-
-    if (errno == ERANGE) {
-        throw Error("The value '" + string(val) + "' is out of range.");
-    }
-#if 0
-    // Coverity; see above. jhrg 5/9/16
-    else if (v > DODS_MAX_ARRAY_INDEX) { // 2^61
-        throw Error("The value '" + string(val) + "' is out of range.");
-    }
-#endif
     else {
         return v;
     }
