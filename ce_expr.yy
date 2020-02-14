@@ -1035,7 +1035,7 @@ bool bracket_projection(DDS &table, const char *name, slices *s)
 dim_slice *
 make_array_slice(value &v1, value &v2, value &v3)
 {
-    unique_ptr<dim_slice> ds(new dim_slice);
+    auto_ptr<dim_slice> ds(new dim_slice);
     ds->push_back(v1);
     ds->push_back(v2);
     ds->push_back(v3);
@@ -1089,7 +1089,7 @@ make_array_slice(value &v1)
 slices *
 make_array_slices(dim_slice *ds)
 {
-    unique_ptr<slices> s(new slices);
+    auto_ptr<slices> s(new slices);
     s->push_back(ds);
     return s.release();
 }
@@ -1105,7 +1105,7 @@ void delete_array_slices(slices *s)
 {
     assert(s);
 
-    for (auto i = s->begin(); i != s->end(); i++) {
+    for (slices::iterator i = s->begin(); i != s->end(); i++) {
         dim_slice *ds = *i;
         assert(ds);
         delete ds;
@@ -1170,11 +1170,11 @@ void process_array_slices(BaseType *variable, slices *s)
     DBG(a->print_decl(cerr, "", true, false, true));
 
     Array::Dim_iter r = a->dim_begin();
-    auto p = s->begin();    // p is used after the loop
+    slices::iterator p = s->begin();    // p is used after the loop
     for (; p != s->end() && r != a->dim_end(); p++, r++) {
         dim_slice *ds = *p;
 
-        auto q = ds->begin();
+	dim_slice::iterator q = ds->begin();
         assert(q != ds->end());
 
         int start = q->v.i;
@@ -1248,14 +1248,14 @@ void process_grid_indicial_slices(Grid *g, slices *s)
     //assert(indices);
     //int_list_citer p = indices->begin();
 
-    auto p = s->begin();
-    auto r = g->map_begin();
+    slices::iterator p = s->begin();
+    Grid::Map_iter r = g->map_begin();
 
     for (; p != s->end() && r != g->map_end(); ++p, ++r) {
         dim_slice *slice = *p;
         //assert(index);
 
-        auto q = slice->begin();
+	dim_slice::iterator q = slice->begin();
         //assert(q != index->end());
         int start = (*q).v.ui;
 
