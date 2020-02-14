@@ -1105,7 +1105,7 @@ void delete_array_slices(slices *s)
 {
     assert(s);
 
-    for (auto i = s->begin(); i != s->end(); i++) {
+    for (slices::iterator i = s->begin(); i != s->end(); i++) {
         dim_slice *ds = *i;
         assert(ds);
         delete ds;
@@ -1170,11 +1170,11 @@ void process_array_slices(BaseType *variable, slices *s)
     DBG(a->print_decl(cerr, "", true, false, true));
 
     Array::Dim_iter r = a->dim_begin();
-    auto p = s->begin();    // p is used after the loop
+    slices::iterator p = s->begin();    // p is used after the loop
     for (; p != s->end() && r != a->dim_end(); p++, r++) {
         dim_slice *ds = *p;
 
-        auto q = ds->begin();
+	dim_slice::iterator q = ds->begin();
         assert(q != ds->end());
 
         int start = q->v.i;
@@ -1248,14 +1248,14 @@ void process_grid_indicial_slices(Grid *g, slices *s)
     //assert(indices);
     //int_list_citer p = indices->begin();
 
-    auto p = s->begin();
-    auto r = g->map_begin();
+    slices::iterator p = s->begin();
+    Grid::Map_iter r = g->map_begin();
 
     for (; p != s->end() && r != g->map_end(); ++p, ++r) {
         dim_slice *slice = *p;
         //assert(index);
 
-        auto q = slice->begin();
+	dim_slice::iterator q = slice->begin();
         //assert(q != index->end());
         int start = (*q).v.ui;
 
