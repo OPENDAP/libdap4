@@ -43,9 +43,9 @@ namespace libdap {
     */
 
 void save_str(char *dst, const char *src, const int line_num);
-void save_str(string &dst, const char *src, const int);
+void save_str(std::string &dst, const char *src, const int);
 
-bool is_keyword(string id, const string &keyword);
+bool is_keyword(std::string id, const std::string &keyword);
 
 /**
  * @defgroup check_type
@@ -53,10 +53,13 @@ bool is_keyword(string id, const string &keyword);
  * @brief Can the given string be converted into a byte, ...?
  */
 int check_byte(const char *val);
+
 int check_int16(const char *val);
 int check_uint16(const char *val);
+
 int check_int32(const char *val);
 int check_uint32(const char *val);
+
 int check_int64(const char *val);
 int check_uint64(const char *val);
 
@@ -70,10 +73,23 @@ int check_url(const char *val);
 /** @} */
 
 /**
+ * @defgroup check type and set value
+ * @{
+ * @brief Like 'test and set,' check a type and set a value in one go.
+ */
+int check_int32(const char *val, int &v);
+int check_uint32(const char *val, unsigned int &v);
+
+int check_float64(const char *val, double &v);
+/** @} */
+
+/**
  * @defgroup get_type
  * @{
  * @brief Convert the string to a value; throw if the conversion fails.
  */
+int get_int32(const char *val);
+unsigned int get_uint32(const char *val);
 long long get_int64(const char *val);
 unsigned long long get_uint64(const char *val);
 double get_float64(const char *val);

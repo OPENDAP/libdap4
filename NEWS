@@ -1,3 +1,11 @@
+News for version 3.20.5
+
+Fixed memory leaks in imported aws signing code. 
+
+Minor bug fixes. 
+
+Lots of work on CI.
+
 News for version 3.20.4
 
 Fixed memory leaks in the libxml2-based DMR and DDX parsers.

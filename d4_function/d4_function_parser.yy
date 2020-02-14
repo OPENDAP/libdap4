@@ -29,6 +29,7 @@
 
 // The d4_function_parser.tab.cc and .hh files define and declare this class
 %define parser_class_name {D4FunctionParser}
+// %define api.parser.class {D4FunctionParser}
 
 // D4FunctionParser is in this namespace
 %define api.namespace {libdap}

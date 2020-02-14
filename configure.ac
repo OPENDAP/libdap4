@@ -8,7 +8,7 @@ dnl m4_pattern_forbid([^_?(gl_[A-Z]|AX_|BISON_)])
 dnl m4_pattern_allow([^BISON_USE_NLS$])
 
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.20.4, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.20.5, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["4.0"], [Highest DAP version implemented?])
 AC_SUBST([DAP_PROTOCOL_VERSION])
 
@@ -116,8 +116,11 @@ CXX11_FLAG=""
 
 CXX_FLAGS_CHECK([--std=c++11], [CXX11_FLAG=--std=c++11], [])
 
-AS_IF([test -z "$CXX11_FLAG"],
-      [CXX_FLAGS_CHECK([--std=c++0x], [CXX11_FLAG=--std=c++0x], [])])
+dnl don't compile libdap using c++0x on CentOS6. This clashes with flex 2.5.35.
+dnl jhrg 2/14/20
+dnl
+dnl AS_IF([test -z "$CXX11_FLAG"],
+dnl       [CXX_FLAGS_CHECK([--std=c++0x], [CXX11_FLAG=--std=c++0x], [])])
 
 AS_IF([test -z "$CXX11_FLAG"],
       [AC_MSG_NOTICE([Not using C++-11])],

@@ -31,7 +31,6 @@
 
 // The d4ce_parser.tab.cc and .hh files define and declare this class
 %define parser_class_name {D4CEParser}
-// %define api.parser.class {D4CEParser}
 // D4CEParser is in this namespace
 %define api.namespace {libdap}
 
@@ -47,7 +46,6 @@
 // %define api.prefix { d4_ce }
 
 %code requires {
-#define YYERROR_VERBOSE 0
 #include "D4ConstraintEvaluator.h"
 #include "escaping.h" // for www2id() used with WORD and STRING
 namespace libdap {
@@ -96,8 +94,11 @@ namespace libdap {
 }
 
 // The strings used in the token definitions are used for error messages
-%token <std::string> WORD "word"
-%token <std::string> STRING "string"
+%token <std::string> NUMBER "Number"
+
+%token <std::string> WORD "Word"
+
+%token <std::string> STRING "String"
 
 // %type is used to set the return type of non-terminals; %token sets the
 // return type for terminals.
@@ -117,7 +118,10 @@ namespace libdap {
     LBRACKET "["
     RBRACKET "]"
     COLON ":"
-
+    
+    L_PAREN "("
+    R_PAREN ")"
+    
     LBRACE "{"
     RBRACE "}"
 
@@ -311,11 +315,32 @@ indexes : index
 // Note that the index values are scanned as WORDs but the web escaping is
 // not supported as it is for identifiers. jhrg 10/20/16
 index   : "[" "]" { $$ = driver.make_index(); }
+
 | "[" WORD "]" { $$ = driver.make_index($2); }
 | "[" WORD ":" WORD "]" { $$ = driver.make_index($2, 1, $4); }
 | "[" WORD ":" WORD ":" WORD "]" { $$ = driver.make_index($2, $4, $6); }
 | "[" WORD ":" "]" { $$ = driver.make_index($2, 1); }
 | "[" WORD ":" WORD ":" "]" { $$ = driver.make_index($2, $4); }
+
+// These rules were added in an attempt to get 'natural axes' subsetting
+// working. But existing tests fail, so I'm removing the new code until
+// they work again. jhrg 4/18/19 
+//| "[" NUMBER "]" { $$ = driver.make_index($2); }
+//| "[" NUMBER ":" NUMBER "]" { $$ = driver.make_index($2, 1, $4); }
+//| "[" NUMBER ":" NUMBER ":" NUMBER "]" { $$ = driver.make_index($2, $4, $6); }
+//| "[" NUMBER ":" "]" { $$ = driver.make_index($2, 1); }
+//| "[" NUMBER ":" NUMBER ":" "]" { $$ = driver.make_index($2, $4); }
+
+// New rules added to support projection using natural axes (e.g., lat and lon values
+// and not index values. Maybe add 'stride' later? jhrg 12/24/17
+//| "[" "(" NUMBER ")" ":" "(" NUMBER ")" "]" { $$ = driver.make_index_using_natural_axes($3, $7); }
+//| "[" "(" WORD ")" ":" "]" { $$ = driver.make_index_using_natural_axes($3, -1); }
+
+// With indexes, the array starts at zero always, but with natural axes, it starts
+// at an arbitrary value. We explicitly enable 'from the beginning to WORD' with 
+// this rule. Maybe add 'stride' later? jhrg 12/24/17 
+// | "[" ":" "(" WORD ")" "]" { $$ = driver.make_index_using_natural_axes(-1, $4); }
+
 ;
         
 fields : "{" clauses "}" { $$ = $2; }
