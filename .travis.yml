@@ -58,7 +58,7 @@ stages:
   - name: build
     if:  branch = master
   - name: scan
-    if:  branch = travis
+    if:  branch = master
   - name: package
     if:  branch = master
   - name: travis
@@ -92,7 +92,7 @@ jobs:
 
   - stage: scan
     addons:
-      sonarcloud:
+      sonarcloud: true
     script:
     - export LIBDAP_BUILD=sonar
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
