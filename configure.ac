@@ -321,7 +321,7 @@ then
 	dnl `
 	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
 else
-	AC_MSG_ERROR([I could not find ml2-config])
+	AC_MSG_ERROR([I could not find xml2-config])
 fi
 fi
 
