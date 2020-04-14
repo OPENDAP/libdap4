@@ -83,10 +83,6 @@
 #include "ce_parser.h"
 #include "expr.h"
 #include "RValue.h"
-#if 0
-#include "geo/GSEClause.h"
-#include "geo/grid_utils.h"
-#endif
 using std::cerr;
 using std::endl;
 using namespace libdap ;
@@ -98,11 +94,17 @@ using namespace libdap ;
 
 int ce_exprlex(void);           /* the scanner; see expr.lex */
 
+// NB: never pass a variable name or other string from the CE to these functions.
+// Only string literals are allowed. This is to prevent information in the CE that
+// could be an attack from being transferred to the error response and then
+// rendered/run by a browser (an XSS attack). jhrg 4/14/20
+void ce_exprerror(const string &s);
+// Some automatic invocations of yyerror pass ce_parser_arg. It is ignored in this
+// function, however. jhrg 4/14/20
 void ce_exprerror(ce_parser_arg *arg, const string &s);
-void ce_exprerror(ce_parser_arg *arg, const string &s, const string &s2);
-void no_such_func(ce_parser_arg *arg, const string &name);
+void no_such_ident(const string &thing);
 
-void no_such_ident(const string &name, const string &word);
+void no_such_func();
 
 // dim_slice and slices are defined in expr.h
 dim_slice *make_array_slice(value &v1, value &v2, value &v3);
@@ -286,7 +288,7 @@ proj_clause: name
         DBG(cerr << "result: " << $$ << endl);
     }
     else {
-        no_such_ident($1, "identifier");
+        no_such_ident("identifier");
     }
 }
 | proj_function
@@ -312,7 +314,7 @@ proj_clause: name
         return true;
     }
     else {
-        ce_exprerror(arg, "Could not create the anonymous vector using the # special form");
+        ce_exprerror("Could not create the anonymous vector using the # special form.");
         return false;
     }
 }
@@ -536,7 +538,7 @@ proj_function:  SCAN_WORD '(' arg_list ')'
         $$ = true;
     }
     else {
-        no_such_func(arg, $1);
+        no_such_func();
     }
 }
 ;
@@ -579,7 +581,7 @@ bool_function: SCAN_WORD '(' arg_list ')'
 {
     bool_func b_func = get_function((*EVALUATOR(arg)), $1);
     if (!b_func) {
-        no_such_func(arg, $1);
+        no_such_func();
     }
     else {
         EVALUATOR(arg)->append_clause(b_func, $3);
@@ -597,7 +599,7 @@ r_value: id_or_const
         $$ = new rvalue(func, $3);
     }
     else {
-        no_such_func(arg, $1);
+        no_such_func();
     }
 }
 | array_const_special_form
@@ -673,7 +675,7 @@ id_or_const: SCAN_WORD
 | SCAN_STR
 {
     if ($1 == 0 || $1->empty())
-        ce_exprerror(arg, "Malformed string", "");
+        ce_exprerror("Malformed string");
 
     BaseType *var = DDS(arg)->var(www2id(*($1)));
     if (var) {
@@ -707,7 +709,7 @@ id_or_const: SCAN_WORD
 array_projection_rvalue : name array_indices
 {
     if (!bracket_projection((*DDS(arg)), $1, $2))
-        no_such_ident($1, "array, grid or sequence");
+        no_such_ident("array, grid or sequence");
 
     DDS(arg)->mark($1, true);
     $$ = new rvalue(DDS(arg)->var($1));
@@ -723,7 +725,7 @@ array_projection : array_proj_clause
 array_proj_clause: name array_indices
 {
     if (!bracket_projection((*DDS(arg)), $1, $2))
-        no_such_ident($1, "array, grid or sequence");
+        no_such_ident("array, grid or sequence");
 
     strncpy($$, $1, ID_MAX-1);
     $$[ID_MAX-1] = '\0';
@@ -738,7 +740,7 @@ array_proj_clause: name array_indices
 {
     string name = string($1).append($2); // + string($2);
     if (!bracket_projection((*DDS(arg)), name.c_str(), $3))
-        no_such_ident(name.c_str(), "array, grid or sequence");
+        no_such_ident("array, grid or sequence");
 
     strncpy($$, name.c_str(), ID_MAX-1);
     $$[ID_MAX-1] = '\0';
@@ -753,7 +755,7 @@ name: SCAN_WORD
 | SCAN_STR
 {
     if ($1 == 0 || $1->empty())
-        ce_exprerror(arg, "Malformed string", "");
+        ce_exprerror("Malformed string");
 
     strncpy($$, www2id(*($1)).c_str(), ID_MAX-1);
     // See comment about regarding the scanner's behavior WRT SCAN_STR.
@@ -920,34 +922,30 @@ rel_op: SCAN_EQUAL
 // All these error reporting function now throw instances of Error. The expr
 // parser no longer returns an error code to indicate and error. jhrg 2/16/2000
 
+// As moted above, never pass text from the CE like an identifier into these
+// functions since their text could be rendered in a browser. A string passed
+// into the CE could be used in a XSS attack since some errors are shown in HTML
+// pages and thus rendered by browsers. jhrg 4/14/20
+
 void
-ce_exprerror(ce_parser_arg *, const string &s)
+ce_exprerror(const string &s)
 {
-    string msg = "Constraint expression parse error: " +s;
-    throw Error(malformed_expr, msg);
+    throw Error(malformed_expr, string("Constraint expression parse error: ").append(s));
 }
 
-void ce_exprerror(ce_parser_arg *, const string &s, const string &s2)
+void ce_exprerror(ce_parser_arg *, const string &s)
 {
-    string msg = "Constraint expression parse error: " + s + ": " + s2;
-    throw Error(malformed_expr, msg);
+    throw Error(malformed_expr, string("Constraint expression parse error: ").append(s));
 }
 
-void no_such_ident(ce_parser_arg *, const string &name, const string &word)
+void no_such_ident(const string &thing)
 {
-    string msg = "Constraint expression parse error: No such " + word + " in dataset: " + name;
-    throw Error(no_such_variable, msg);
+    throw Error(no_such_variable, string("Constraint expression parse error: the expression referenced a ").append(thing).append(" not found in the dataset."));
 }
 
-void no_such_ident(const string &name, const string &word)
+void no_such_func()
 {
-    string msg = "Constraint expression parse error: No such " + word + " in dataset: " + name;
-    throw Error(no_such_variable, msg);
-}
-
-void no_such_func(ce_parser_arg *arg, const string &name)
-{
-    ce_exprerror(arg, "Not a registered function", name);
+    throw Error(malformed_expr, "One or more functions using the constraint expression was not defined.");
 }
 
 /* If we're calling this, assume var is not a Sequence. But assume that the
