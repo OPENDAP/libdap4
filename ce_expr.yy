@@ -787,7 +787,7 @@ array_index:
 '[' SCAN_WORD ']'
 {
     if (!check_uint32($2))
-        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
 #if 0
     value i;
     i.type = dods_uint32_c;
@@ -810,9 +810,9 @@ array_index:
 |'[' SCAN_WORD ':' SCAN_WORD ']'
 {
     if (!check_uint32($2))
-        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
     if (!check_uint32($4))
-        throw Error(malformed_expr, "The word `" + string($4) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
 #if 0
     value i,j;
     i.type = j.type = dods_uint32_c;
@@ -829,9 +829,9 @@ array_index:
 {
     // TODO These tests are redundant - the value ctor performs them, too
     if (!(check_int32($3) || check_float64($3)))
-        throw Error(malformed_expr, "The word `" + string($3) + "' is not a valid range value.");
+        throw Error(malformed_expr, "Expected an array index.");
     if (!(check_int32($7) || check_float64($3)))
-        throw Error(malformed_expr, "The word `" + string($7) + "' is not a valid range value.");
+        throw Error(malformed_expr, "Expected an array index.");
 
 #if 0
     value i,j;
@@ -849,7 +849,7 @@ array_index:
 |'[' SCAN_WORD ':' SCAN_STAR ']'
 {
     if (!check_uint32($2))
-        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
 #if 0
     value i,j;
     i.type = dods_uint32_c;
@@ -866,11 +866,11 @@ array_index:
 | '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_WORD ']'
 {
     if (!check_uint32($2))
-        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
     if (!check_uint32($4))
-        throw Error(malformed_expr, "The word `" + string($4) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
     if (!check_uint32($6))
-        throw Error(malformed_expr, "The word `" + string($6) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
 #if 0
     value i, j, k;
     i.type = j.type = k.type = dods_uint32_c;
@@ -888,17 +888,9 @@ array_index:
 | '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_STAR ']'
 {
     if (!check_uint32($2))
-        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
     if (!check_uint32($4))
-        throw Error(malformed_expr, "The word `" + string($4) + "' is not a valid array index.");
-#if 0
-    value i, j, k;
-    i.type = j.type = dods_uint32_c;
-    k.type = dods_int32_c;
-    i.v.i = atoi($2);
-    j.v.i = atoi($4);
-    k.v.i = -1;
-#endif
+        throw Error(malformed_expr, "Expected an array index.");
 
     value i($2, false, dods_uint32_c);
     value j($4, false, dods_uint32_c);
@@ -1158,11 +1150,11 @@ void process_array_slices(BaseType *variable, slices *s)
     assert(variable);
 
     Array *a = dynamic_cast<Array *>(variable); // replace with dynamic cast
-    if (!a) throw Error(malformed_expr, string("The constraint expression evaluator expected an array; ") + variable->name() + " is not an array.");
+    if (!a) throw Error(malformed_expr, "The constraint expression evaluator expected an array.");
 
     if (a->dimensions(true) != (unsigned) s->size())
         throw Error(malformed_expr,
-                    string("Error: The number of dimensions in the constraint for ") + variable->name() + " must match the number in the array.");
+                    string("Error: The number of dimensions in the constraint must match the number in the array."));
 
     DBG(cerr << "Before applying projection to array:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
@@ -1184,7 +1176,7 @@ void process_array_slices(BaseType *variable, slices *s)
         int stop = q->v.i;
 
         q++;
-        if (q != ds->end()) throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
+        if (q != ds->end()) throw Error(malformed_expr, string("Too many values in index list for one or more variables."));
 
         DBG(cerr << "process_array_indices: Setting constraint on " << a->name() << "[" << start << ":" << stop << "]" << endl);
 
@@ -1200,7 +1192,7 @@ void process_array_slices(BaseType *variable, slices *s)
 
         if (a->send_p()
             && (a->dimension_start(r, true) != start || (a->dimension_stop(r, true) != stop && stop != -1) || a->dimension_stride(r, true) != stride))
-            throw Error(malformed_expr, string("The Array was already projected differently in the constraint expression: ") + a->name() + ".");
+            throw Error(malformed_expr, string("One or more Array variables were projected multiple times in the constraint expression."));
 
         a->add_constraint(r, start, stride, stop);
 
@@ -1210,7 +1202,7 @@ void process_array_slices(BaseType *variable, slices *s)
     DBG(cerr << "After applying projection to array:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
-    if (p != s->end() && r == a->dim_end()) throw Error(malformed_expr, string("Too many indices in constraint for ") + a->name() + ".");
+    if (p != s->end() && r == a->dim_end()) throw Error(malformed_expr, string("Too many indices in constraint for one or more variables."));
 }
 
 #define set_indicial_value(lhs, rhs) do { \
@@ -1231,7 +1223,7 @@ void process_grid_indicial_slices(Grid *g, slices *s)
 
     if (a->dimensions(true) != (unsigned) s->size())
         throw Error(malformed_expr,
-                    string("Error: The number of dimensions in the constraint for ") + g->name() + " must match the number in the grid.");
+                    string("Error: The number of dimensions in the constraint must match the number in the grid."));
 
     // First do the constraints on the ARRAY in the grid.
     process_array_slices(g->array_var(), s);
@@ -1272,7 +1264,7 @@ void process_grid_indicial_slices(Grid *g, slices *s)
 
         q++;
         if (q != slice->end()) {
-            throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
+            throw Error(malformed_expr, string("Too many values in index list for one or more variables."));
         }
 
         DBG(cerr << "process_grid_indices: Setting constraint on " << a->name() << "[" << start << ":" << stop << "]" << endl);
@@ -1289,7 +1281,7 @@ void process_grid_indicial_slices(Grid *g, slices *s)
         );
 
     if (p != s->end() && r == g->map_end()) {
-        throw Error(malformed_expr, string("Too many indices in constraint for ") + (*r)->name() + ".");
+        throw Error(malformed_expr, string("Too many indices in constraint for one or more variables."));
     }
 }
 

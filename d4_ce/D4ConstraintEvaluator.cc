@@ -450,7 +450,10 @@ D4ConstraintEvaluator::remove_quotes(string &s)
 // This method is called from the parser (see d4_ce_parser.yy, down in the code
 // section). This will be called during the call to D4CEParser::parse(), that
 // is inside D4ConstraintEvaluator::parse(...)
-void D4ConstraintEvaluator::error(const libdap::location &l, const std::string &m)
+//
+// Including the value passed in for 'l' allows the CE text to leak into
+// the error message, a potential XSS attack vector. jhrg 4/15/20
+void D4ConstraintEvaluator::error(const libdap::location &, const std::string &m)
 {
     ostringstream oss;
 #if PREVENT_XXS_VIA_CE
