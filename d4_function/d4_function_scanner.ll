@@ -60,6 +60,7 @@ typedef libdap::D4FunctionParser::token token;
 /* define yyterminate as this instead of NULL */
 #define yyterminate() return(token::END)
 
+// The parameter 'msg' is always a string literal. jhrg 4/14/20
 #define YY_FATAL_ERROR(msg) {\
     throw(libdap::Error(malformed_expr, std::string("Error scanning function expression text: ") + std::string(msg))); \
 }
