@@ -35,6 +35,38 @@ m4_define([DMR_PARSE], [
     AT_CLEANUP
 ])
 
+# Test if the given  CE parses. This was added to test errant CEs to
+# ensure that the parser does not leak CE text into the error messages.
+# jhrg 4/15/20
+#
+# Usage DMR_PARSE_CE $1 <test_input> $2 <ce> $3 <baseline> $4 <pass/xfail>
+# The baseline is assumed to be $1.baseline
+m4_define([DMR_PARSE_CE], [
+
+    AT_SETUP([parse ce $1 $2])
+    AT_KEYWORDS([parse_ce])
+
+    input=$abs_srcdir/dmr-testsuite/$1
+    ce=$2
+    baseline=$abs_srcdir/dmr-testsuite/$3
+
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        AT_CHECK([$abs_builddir/dmr-test -x -p $input -c $ce], [ignore], [stdout], [stderr])
+        AT_CHECK([cat stdout stderr > $baseline.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/dmr-test -x -p $input -c $ce], [ignore], [stdout], [stderr])
+        AT_CHECK([cat stdout stderr > tmp])
+        AT_CHECK([diff -b -B $baseline tmp], [0])
+        AT_XFAIL_IF([test "z$3" = "zxfail"])
+        ])
+
+    AT_CLEANUP
+])
+
+
+
 # Usage DMR_TRANS $1 <test_input> $2 <pass/xfail>
 # This code tests the values printed when the received document is decoded.
 m4_define([DMR_TRANS], [
@@ -593,3 +625,19 @@ DMR_TRANS_SERIES_CE([names_with_spaces2.dmr], [/inst2/\"Point%20Break\".x], [nam
 
 DMR_TRANS_SERIES_CE([names_with_spaces3.dmr], [/inst2/\"New Group\"/x], [names_with_spaces3.dmr.1.trans_base], [xfail])
 DMR_TRANS_SERIES_CE([names_with_spaces3.dmr], [/inst2/New%20Group/x], [names_with_spaces3.dmr.1.trans_base], [xfail])
+
+# Test DAP CE parse errors - ensure they don't leak the supplied
+# CE text into the error message. jhrg 4/15/20
+DMR_PARSE_CE([test_simple_1.xml], [nasty], [test_simple_1.xml.parse_ce_1])
+# This string is 'd1rox<script>alert(1)</script>d55je=1' (%25 --> '%')
+# That is, the % is escaped in this text: %253c --> %3c --> '<'
+DMR_PARSE_CE([test_simple_1.xml], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1],
+    [test_simple_1.xml.parse_ce_2])
+
+DMR_PARSE_CE([test_simple_6.3.xml], [s.nasty], [test_simple_6.3.xml.parse_ce_1])
+DMR_PARSE_CE([test_simple_6.3.xml], [s.d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1],
+    [test_simple_6.3.xml.parse_ce_2])
+
+DMR_PARSE_CE([vol_1_ce_12.xml], [temp[[nasty]]], [vol_1_ce_12.xml.parse_ce_1])
+DMR_PARSE_CE([vol_1_ce_12.xml], [temp[[d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1]]],
+    [vol_1_ce_12.xml.parse_ce_2])

@@ -453,7 +453,11 @@ D4ConstraintEvaluator::remove_quotes(string &s)
 void D4ConstraintEvaluator::error(const libdap::location &l, const std::string &m)
 {
     ostringstream oss;
+#if PREVENT_XXS_VIA_CE
+    oss << "Constraint expression parse error: " << m << ends;
+#else
     oss << l << ": " << m << ends;
+#endif
     throw Error(malformed_expr, oss.str());
 }
 
