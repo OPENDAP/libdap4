@@ -223,7 +223,9 @@ variable_or_constant : id
 {
     D4RValue *rvalue = evaluator.build_rvalue($1);
     if (!rvalue) {
-        throw Error(malformed_expr, "'" + $1 + "' is not a variable, number or string.");
+        // Do not echo value from the CE in an error message. This
+        // change to prevent xss attacks. jhrg 4/14/20
+        throw Error(malformed_expr, "A function argument was not a variable, number or string.");
     }
     
     $$ = rvalue;

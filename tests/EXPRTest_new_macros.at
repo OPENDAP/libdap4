@@ -1,9 +1,6 @@
 # Process with autom4te to create an -*- Autotest -*- test suite.
 
-AT_INIT([expr-test])
-# AT_COPYRIGHT([])
-
-# AT_TESTED([expr-test])
+AT_INIT([tests/expr-test])
 
 AT_ARG_OPTION_ARG([baselines],
     [--baselines=yes|no   Build the baseline file for parser test 'arg'],
@@ -13,45 +10,118 @@ AT_ARG_OPTION_ARG([baselines],
 # Usage: _EXPR_TEST(<flags>, <dds>, <constraint>, <baseline file>, <xfail?>)
 
 m4_define([_EXPR_TEST], [
-    # AT_BANNER([Test $1 $2 $3])
-    AT_SETUP([expr-test $1 $2 -k $3 ($5)])
+    AT_SETUP([$1 $2 $3 ($5)])
+
     AT_KEYWORDS([expr])
 
-    # Added || true because expr-test returns 0 (failure) for some of
-    # these tests which is correct for the test - we expect some of
-    # the input to trigger an error response from the parser, et
-    # cetera. That's also why we capture both stdout and stderr -
-    # successful runs are sent to stdout while the errors are sent to
-    # stderr.
+    AS_IF([test -z "$at_verbose"], [echo "COMMAND: expr-test $1 expr-testsuite/$2 -k $3 -f "dummy""])
+
+    flags="$1"
+    dds=$abs_srcdir/expr-testsuite/$2
+    ce=$3
+    bfile=$abs_srcdir/expr-testsuite/$4
 
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
-        AT_CHECK([$abs_builddir/expr-test $1 $2 -k $3 -f "dummy" || true], [0], [stdout], [stderr])
-        AT_CHECK([mv stdout $4.tmp])
+        AT_CHECK([$abs_builddir/expr-test $flags $dds -k $ce -f "dummy" || true], [0], [stdout], [stderr])
+        AT_CHECK([mv stdout $bfile.tmp])
         ],
         [
-        AT_CHECK([$abs_builddir/expr-test $1 $2 -k $3 -f "dummy" || true], [0], [stdout], [stderr])
-        AT_CHECK([diff -b -B $4 stdout || diff -b -B $4 stderr], [0], [ignore])
-        AT_XFAIL_IF([test "$5" = "xfail"])
+        AT_CHECK([$abs_builddir/expr-test $flags $dds -k $ce -f "dummy" || true], [0], [stdout], [stderr])
+        AT_CHECK([diff -b -B $bfile stdout || diff -b -B $bfile stderr], [0])
+        AT_XFAIL_IF([test "z$5" = "zxfail"])
         ])
     
     AT_CLEANUP
 ])
 
-m4_define([EXPR_RESPONSE_P], [
-    # AT_BANNER([EXPR response for $1, $2, $4.])
+m4_define([EXPR_RESPONSE_P], [dnl
     # Test the serialize/deserialize methods
-    _EXPR_TEST([-w], [$abs_srcdir/expr-testsuite/$1], [$2], [$abs_srcdir/expr-testsuite/$3.base], $4)
+    # _EXPR_TEST([-w], [$1], [$2], [$3.base], $4)
     # Test the intern_data method (which combines serialize and deserialze)
-    _EXPR_TEST([-W], [$abs_srcdir/expr-testsuite/$1], [$2], [$abs_srcdir/expr-testsuite/$3.base], $4)
+    # _EXPR_TEST([-W], [$1], [$2], [$3.base], $4)
+
+    AT_SETUP([$1 $2 ($4)])
+
+    AT_KEYWORDS([static])
+
+    dds=$abs_srcdir/expr-testsuite/$1
+    ce=$2
+    bfile=$abs_srcdir/expr-testsuite/$3.base
+
+    AS_IF([test -z "$at_verbose"], [echo "COMMAND: expr-test -w expr-testsuite/$dds -k $ce -f "dummy""])
+
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        AT_CHECK([$abs_builddir/expr-test -w $dds -k $ce -f "dummy" || true], [0], [stdout], [stderr])
+        AT_CHECK([mv stdout $bfile.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/expr-test -w $dds -k $ce -f "dummy" || true], [0], [stdout], [stderr])
+        AT_CHECK([diff -b -B $bfile stdout || diff -b -B $bfile stderr], [0])
+        AT_XFAIL_IF([test "z$5" = "zxfail"])
+        ])
+
+    AS_IF([test -z "$at_verbose"], [echo "COMMAND: expr-test -W expr-testsuite/$dds -k $ce -f "dummy""])
+
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        AT_CHECK([$abs_builddir/expr-test -W $dds -k $ce -f "dummy" || true], [0], [stdout], [stderr])
+        AT_CHECK([mv stdout $bfile.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/expr-test -W $dds -k $ce -f "dummy" || true], [0], [stdout], [stderr])
+        AT_CHECK([diff -b -B $bfile stdout || diff -b -B $bfile stderr], [0])
+        AT_XFAIL_IF([test "z$5" = "zxfail"])
+        ])
+
+    AT_CLEANUP
+
 ])
 
 # The -b option to expr-test uses the 'series values' feature of the Test
 # classes.
-m4_define([EXPR_RESPONSE_B], [
-    # AT_BANNER([EXPR response for $1, $2, $4.])
-    _EXPR_TEST([-b -w], [$abs_srcdir/expr-testsuite/$1], [$2], [$abs_srcdir/expr-testsuite/$3.base], $4)
-    _EXPR_TEST([-b -W], [$abs_srcdir/expr-testsuite/$1], [$2], [$abs_srcdir/expr-testsuite/$3.base], $4)
+m4_define([EXPR_RESPONSE_B], [dl
+
+    # _EXPR_TEST([-b -w], [$1], [$2], [$3.base], $4)
+    # _EXPR_TEST([-b -W], [$1], [$2], [$3.base], $4)
+
+    AT_SETUP([$1 $2 ($4)])
+
+    AT_KEYWORDS([dynamic])
+
+    dds=$abs_srcdir/expr-testsuite/$1
+    ce=$2
+    bfile=$abs_srcdir/expr-testsuite/$3.base
+
+    AS_IF([test -z "$at_verbose"], [echo "COMMAND: expr-test -w expr-testsuite/$dds -k $ce -f "dummy""])
+
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        AT_CHECK([$abs_builddir/expr-test -b -w $dds -k $ce -f "dummy" || true], [0], [stdout], [stderr])
+        AT_CHECK([mv stdout $bfile.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/expr-test -b -w $dds -k $ce -f "dummy" || true], [0], [stdout], [stderr])
+        AT_CHECK([diff -b -B $bfile stdout || diff -b -B $bfile stderr], [0])
+        AT_XFAIL_IF([test "z$5" = "zxfail"])
+        ])
+
+    AS_IF([test -z "$at_verbose"], [echo "COMMAND: expr-test -W expr-testsuite/$dds -k $ce -f "dummy""])
+
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        AT_CHECK([$abs_builddir/expr-test -b -W $dds -k $ce -f "dummy" || true], [0], [stdout], [stderr])
+        AT_CHECK([mv stdout $bfile.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/expr-test -b -W $dds -k $ce -f "dummy" || true], [0], [stdout], [stderr])
+        AT_CHECK([diff -b -B $bfile stdout || diff -b -B $bfile stderr], [0])
+        AT_XFAIL_IF([test "z$5" = "zxfail"])
+        ])
+
+    AT_CLEANUP
+
 ])
 
 # Tests that capture/evaluate the error text from the parser. jhrg 4/15/20
@@ -101,18 +171,17 @@ dnl In changing the TestStr class so that it writes a constant value (Silly ...:
 dnl I had to hack this test to use the -b option to expr-test. EXPR_RESPONSE_P uses
 dnl only the -w/-W options, so I dropped using that macro kluge and went right for the
 dnl actual test macro. 12/2/13/ jhrg
-dnl
+
 dnl EXPR_RESPONSE_P([test.e], ['names.s&names.s=~".*: 3"'], [test.ea], [pass])
     
-_EXPR_TEST([-b -w], [$abs_srcdir/expr-testsuite/test.e], ['names.s&names.s=~".*: 3"'], 
-    [$abs_srcdir/expr-testsuite/test.ea.base], [pass])
+_EXPR_TEST([-b -w], [test.e], ['names.s&names.s=~".*: 3"'], [test.ea.base], [pass])
     
-_EXPR_TEST([-b -W], [$abs_srcdir/expr-testsuite/test.e], ['names.s&names.s=~".*: 3"'], 
-    [$abs_srcdir/expr-testsuite/test.ea.base], [pass])
+_EXPR_TEST([-b -W], [test.e], ['names.s&names.s=~".*: 3"'], [test.ea.base], [pass])
 
 dnl since 'Silly ...:5' will never be produced, this tests what happens when the sequence
 dnl does not contain the value. Note that this test does not have to be rewritten because
 dnl of the change to the TestStr code. 12/2/13 jhrg
+
 EXPR_RESPONSE_P([test.e], ['names.s&names.s=~".*: 5"'], [test.eb], [pass])
 
 EXPR_RESPONSE_P([test.5], [g[[0:2:4]][[0]][[0]]], [test.5], [pass])
@@ -182,9 +251,9 @@ EXPR_RESPONSE_B([test.26.dds], [""], [data.26], [pass])
 
 # Test error responses. None of the parsers should allow any part of
 # the malformed CE into the error messages. jhrg 4/15/20
+AT_BANNER([Parse error message tests])
 
 EXPR_RESPONSE_E([test.1], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.1.error], [pass])
 EXPR_RESPONSE_E([test.2], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.2.error], [pass])
 EXPR_RESPONSE_E([test.3], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.3.error], [pass])
 EXPR_RESPONSE_E([test.5], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.5.error], [pass])
-

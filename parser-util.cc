@@ -544,14 +544,15 @@ long long get_int64(const char *val)
     long long v = strtoll(val, &ptr, 0);      // `0' --> use val to determine base
 
     if ((v == 0 && val == ptr) || *ptr != '\0') {
-        throw Error("The value '" + string(val) + "' contains extra characters.");
+        throw Error("Expected a 64-bit integer, but found other characters.");
+        // The value '" + string(val) + "' contains extra characters.");
     }
 
     // We need to check errno since strtol return clamps on overflow so the
     // check against the DODS values below will always pass, even for out of
     // bounds values in the string. mjohnson 7/20/09
     if (errno == ERANGE) {
-        throw Error("The value '" + string(val) + "' is out of range.");
+        throw Error("The 64-bit integer value is out of range.");
     }
 
 #if 0
@@ -580,7 +581,7 @@ unsigned long long get_uint64(const char *val)
         c++;
     }
     if (c && (*c == '-')) {
-        throw Error("The value '" + string(val) + "' is not a valid array index.");
+        throw Error("Expected a valid array index.");
     }
 
     char *ptr;
@@ -588,11 +589,11 @@ unsigned long long get_uint64(const char *val)
     unsigned long long v = strtoull(val, &ptr, 0);
 
     if ((v == 0 && val == ptr) || *ptr != '\0') {
-        throw Error("The value '" + string(val) + "' contains extra characters.");
+        throw Error("Expected an unsigned 64-bit integer, but found other characters.");
     }
 
     if (errno == ERANGE) {
-        throw Error("The value '" + string(val) + "' is out of range.");
+        throw Error("The 64-bit integer value is out of range.");
     }
 #if 0
         // Coverity; see above. jhrg 5/9/16
@@ -612,14 +613,14 @@ int get_int32(const char *val)
     int v = strtol(val, &ptr, 0);      // `0' --> use val to determine base
 
     if ((v == 0 && val == ptr) || *ptr != '\0') {
-        throw Error("The value '" + string(val) + "' contains extra characters.");
+        throw Error("Expected a 32-bit integer, but found other characters.");
     }
 
     // We need to check errno since strtol return clamps on overflow so the
     // check against the DODS values below will always pass, even for out of
     // bounds values in the string. mjohnson 7/20/09
     if (errno == ERANGE) {
-        throw Error("The value '" + string(val) + "' is out of range.");
+        throw Error("The 32-bit integer value is out of range.");
     }
     // This could be combined with the above, or course, but I'm making it
     // separate to highlight the test. On 64-bit linux boxes 'long' may be
@@ -642,7 +643,7 @@ unsigned int get_uint32(const char *val)
         c++;
     }
     if (c && (*c == '-')) {
-        throw Error("The value '" + string(val) + "' is not a valid array index.");
+        throw Error("Expected an unsigned 32-bit integer, but found other characters.");
     }
 
     char *ptr;
@@ -650,11 +651,11 @@ unsigned int get_uint32(const char *val)
     unsigned int v = strtoul(val, &ptr, 0);
 
     if ((v == 0 && val == ptr) || *ptr != '\0') {
-        throw Error("The value '" + string(val) + "' contains extra characters.");
+        throw Error("Expected an unsigned 32-bit integer, but found other characters.");
     }
 
     if (errno == ERANGE) {
-        throw Error("The value '" + string(val) + "' is out of range.");
+        throw Error("The 32-bit integer value is out of range.");
     }
     // See above.
     else if (v > DODS_UINT_MAX) {
@@ -678,12 +679,12 @@ double get_float64(const char *val)
 #endif
 
     if (errno == ERANGE || (v == 0.0 && val == ptr) || *ptr != '\0')
-        throw Error("The value '" + string(val) + "' is out of range.");;
+        throw Error("The 64-bit floating point value is out of range.");;
 
     DBG(cerr << "fabs(" << val << ") = " << fabs(v) << endl);
     double abs_val = fabs(v);
     if (abs_val > DODS_DBL_MAX || (abs_val != 0.0 && abs_val < DODS_DBL_MIN))
-        throw Error("The value '" + string(val) + "' is out of range.");;
+        throw Error("The 64-bit floating point value is out of range.");;
 
     return v;
 }

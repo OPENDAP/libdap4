@@ -105,7 +105,6 @@ namespace libdap {
 %type <std::string> id path group name op
 
 %type <libdap::D4ConstraintEvaluator::index> index
-// %type <libdap::D4FilterClause> predicate
 
 %token
     END  0  "end of file"
@@ -241,7 +240,7 @@ subset : id
     
     if (btp->type() == dods_array_c) {
         if (btp->var() && !btp->var()->is_constructor_type())
-            throw Error(no_such_variable, "The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
+            throw Error(no_such_variable, "The constraint expression referenced a variable that must be a Structure or Sequence to be used with {}.");
             
         // This call also tests the btp to make sure it's an array
         driver.mark_array_variable(btp);
@@ -250,7 +249,7 @@ subset : id
         // Don't mark the variable here because only some fields are to be sent and those
         // will be marked when the fields are parsed
         if (!btp->is_constructor_type())
-            throw Error(no_such_variable, "The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
+            throw Error(no_such_variable, "The constraint expression referenced a variable that must be a Structure or Sequence to be used with {}.");
     }
     
     // push the basetype so that it is
@@ -285,18 +284,14 @@ fields
     driver.mark_array_variable(btp);
     
     if (!btp->var()->is_constructor_type())
-        throw Error(no_such_variable, "The variable " + $1 + " must be a Structure or Sequence to be used with {}.");
+        throw Error(no_such_variable, "The constraint expression referenced a variable that must be a Structure or Sequence to be used with {}.");
       
     driver.push_basetype(btp->var());       
 } 
 fields 
-{ 
-    //driver.pop_basetype();
+{
     $$ = true; 
 }
-
-// The following has been removed from the syntax
-// | fields indexes { $$ = true; }
 ;
 
 // push_index stores the index in the D4ConstraintEvaluator
