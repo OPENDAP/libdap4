@@ -1,3 +1,10 @@
+libdap (3.20.6-1) trusty; urgency=medium
+
+  * Stopped CE parse errors from returning user supplied  strings in error messages.
+  * Swapped out unique_ptr for auto_ptr because of CentOS6
+
+ -- Nathan Potter <ndp@opendap.org>  Tue, 21 Apr 2020 01:47:00 +0700
+
 libdap (3.20.5-1) trusty; urgency=medium
 
   * Various bug fixes. CI grooming

@@ -1,5 +1,12 @@
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
+Updated for version 3.20.6 
+
+Stopped CE parse errors from returning user supplied 
+strings in error messages.
+
+README is now README.md
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3641778.svg)](https://doi.org/10.5281/zenodo.3641778)
 
 Updated for version 3.20.5

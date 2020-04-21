@@ -1,3 +1,116 @@
+2020-04-16  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #115 from OPENDAP/error-msg-fix
+	Error msg fix
+
+2020-04-15  James Gallagher  <jgallagher@opendap.org>
+
+	Test baselines for ce parser message fixes
+	And a few more fixes to the messages.
+
+	Added tests for the DAP4 CE parser error messages
+
+	Added tests for the parser error messages.
+
+2020-04-14  James Gallagher  <jgallagher@opendap.org>
+
+	Additional work on the DAP4 function parser.
+
+	Changes to the CE parser to address a xss attack.
+
+2020-04-04  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed a mistake in an error message in configure.ac
+	[skip ci]
+
+2020-02-16  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #113 from OPENDAP/sonarscan-fix
+	Fix for travis and sonarscan based on travis support email
+
+2020-02-15  James Gallagher  <jgallagher@opendap.org>
+
+	Fix for travis and sonarscan based on travis support email
+
+2020-02-13  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed CentOS6 pre std=c++0x issues.
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Swapped out unique_ptr for auto_ptr because of CentOS6 build fail
+	This problem is exacerbated by flex 2.5.35 which fails to build code
+	that will compile on C6 using --std=c++0x.
+
+	Merge pull request #112 from OPENDAP/parser-util-fix
+	Switched to faster functions for CE and Attribute value checking.
+
+	Switched to faster functions for CE and Attribute value checking.
+
+	Added README.md to EXTRA_DIST
+
+	Changes that address (I think) issues with the recent rename of README to README.md
+	I'm pushing this directly onto master because the CI build on a PR branch
+	did not show the issues.
+
+	Merge pull request #111 from OPENDAP/readme-rename
+	Renamed README to README.md
+
+2020-02-12  James Gallagher  <jgallagher@opendap.org>
+
+	Added README.md; removed scan from build to test issues with said scan
+
+	Renamed README to README.md
+	Also trying to debug the sonarscan issue where travis cannot find
+	executable.
+
+	Revert "Merge pull request #109 from OPENDAP/cppunit-build-fix"
+	This reverts commit 3f07795a1e6e228802321797728209fce5ee4962, reversing
+	changes made to f4672a3fc673ad6e330cad00254bfb813865f8bd.
+
+	Revert "Merge pull request #107 from OPENDAP/cppunit-build-fix"
+	This reverts commit 3f07795a1e6e228802321797728209fce5ee4962, reversing
+	changes made to f4672a3fc673ad6e330cad00254bfb813865f8bd.
+
+	Merge pull request #109 from OPENDAP/cppunit-build-fix
+	This change to configure.ac fixes the build for cppunit 1.14.0
+
+	Merge pull request #108 from OPENDAP/natural_axes
+	Natural axes #1
+
+2020-02-11  James Gallagher  <jgallagher@opendap.org>
+
+	Suppres include of unistd.h by the flex sources
+	This is an attempt to fix a c++-11 build issue on linux with modern gcc
+	versions.
+
+	This change to configure.ac fixes the build for cppunit 1.14.0
+	The fix instructs the compiler to use --std=c++-11 or c++-0x which
+	enables cpp 1.14.0's use of std::bind.
+
+	Removed geo/Makefile from configure.ac
+
+	Removed geo from SUBDIRS in Makefile.am
+
+	Added #include <memory> for unique_ptr and removed geo includes
+
+	Removed %define api.parser.class from the two DAP4 CE parsers
+	This broke bison on Linux
+
+	Merge branch 'master' into natural_axes
+
+	Completed fixes for the DAP2 CE parser refactor.
+	I cannot figure out how to make UInt32 the default type for integer
+	constants for function arguments. I dropped back to Int32s by default.
+	I think this means that if functions are called with args that have
+	to be held in UInt32s, those function calls will not work.
+
+2020-02-10  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed broken parse of [*] in an array/grid projection
+	The parser was setting the projection to -1:1:-1 when t should have
+	set it to 0:1:-1. Also fixed the broken expr-test debug feature.
+
 2020-01-09  ndp-opendap  <ndp@opendap.org>
 
 	updating aws keys for travis

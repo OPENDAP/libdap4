@@ -1,3 +1,12 @@
+News for version 3.20.6
+
+Stopped CE parse errors from returning user supplied 
+strings in error messages.
+
+Switched to README.md from README
+
+Swapped out unique_ptr for auto_ptr because of CentOS6 issues.
+
 News for version 3.20.5
 
 Fixed memory leaks in imported aws signing code. 
