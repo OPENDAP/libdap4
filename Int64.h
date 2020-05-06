@@ -52,7 +52,8 @@ class Int64: public BaseType
     	set_value(*reinterpret_cast<dods_int64*>(val));
     	return sizeof(dods_int64);
     }
-    virtual unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
+    //virtual unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
+    virtual unsigned int buf2val(void **); 
     virtual void print_val(FILE *, string, bool) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
 
 protected:

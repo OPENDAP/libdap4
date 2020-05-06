@@ -155,6 +155,21 @@ UInt64::set_value(dods_uint64 i)
     return true;
 }
 
+unsigned int
+UInt64::buf2val(void **val)
+
+{
+    if (!val)
+        throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
+
+    if (!*val)
+        *val = new dods_uint64;
+
+    *(dods_uint64 *)*val = d_buf;
+
+    return width();
+}
+
 void
 UInt64::print_val(ostream &out, string space, bool print_decl_p)
 {
