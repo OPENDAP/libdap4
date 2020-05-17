@@ -26,4 +26,7 @@
 
 #define CHUNK_SIZE 4096
 
+#define BYTE_ORDER_PREFIX 0
+#define HEADER_IN_NETWORK_BYTE_ORDER 1
+
 #endif /* CHUNK_STREAM_H_ */
