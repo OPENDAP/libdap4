@@ -288,7 +288,7 @@ chunked_outbuf::xsputn(const char *s, std::streamsize num)
 	d_os.write((const char *)&header, sizeof(int32_t));	// Data chunk's CHUNK_TYPE is 0x00000000
 
 	// Reset the pptr() and epptr() now in case of an error exit. See the 'if'
-	// at teh end of this for the only code from here down that will modify the
+	// at the end of this for the only code from here down that will modify the
 	// pptr() value.
 	setp(d_buffer, d_buffer + (d_buf_size - 1));
 
