@@ -35,10 +35,8 @@
 #include "config.h"
 // #define DODS_DEBUG 1
 
-
-
 #include <cassert>
-#include <cstring>
+
 #include <sstream>
 
 #include "D4Connect.h"
@@ -55,8 +53,6 @@
 #include "escaping.h"
 #include "mime_util.h"
 #include "debug.h"
-
-
 
 using namespace std;
 
@@ -132,12 +128,6 @@ void D4Connect::process_data(DMR &data, Response &rs)
     DBG(cerr << "Entering process_data. Response.getVersion() = " << rs.get_version() << endl);
     switch (rs.get_type()) {
     case dap4_error: {
-#if 0
-        Error e;
-        if (!e.parse(rs.get_cpp_stream()))
-        throw InternalErr(__FILE__, __LINE__, "Could not parse the Error object returned by the server!");
-        throw e;
-#endif
         throw InternalErr(__FILE__, __LINE__, "DAP4 errors not processed yet: FIXME!");
     }
 
@@ -148,18 +138,7 @@ void D4Connect::process_data(DMR &data, Response &rs)
             "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 
     case dap4_data: {
-#if BYTE_ORDER_PREFIX
-        // Read the byte-order byte; used later on
-        char byte_order;
-        *rs.get_cpp_stream() >> byte_order;
-        //if (debug) cerr << "Byte order: " << ((byte_order) ? "big endian" : "little endian") << endl;
-#endif
-        // get a chunked input stream
-#if BYTE_ORDER_PREFIX
-        chunked_istream cis(*rs.get_cpp_stream(), 1024, byte_order);
-#else
         chunked_istream cis(*(rs.get_cpp_stream()), CHUNK_SIZE);
-#endif
         // parse the DMR, stopping when the boundary is found.
         try {
             // force chunk read
@@ -193,11 +172,7 @@ void D4Connect::process_data(DMR &data, Response &rs)
             return;
         }
 
-#if BYTE_ORDER_PREFIX
-        D4StreamUnMarshaller um(cis, byte_order);
-#else
         D4StreamUnMarshaller um(cis, cis.twiddle_bytes());
-#endif
         data.root()->deserialize(um, data);
 
         return;
@@ -395,19 +370,8 @@ void D4Connect::request_dap4_data(DMR &dmr, const string expr)
             DBG(cerr << "Response type unknown, assuming it's a DAP4 Data response." << endl);
             /* no break */
         case dap4_data: {
-#if BYTE_ORDER_PREFIX
-            istream &in = *rs->get_cpp_stream();
-            // Read the byte-order byte; used later on
-            char byte_order;
-            in >> byte_order;
-#endif
-
             // get a chunked input stream
-#if BYTE_ORDER_PREFIX
-            chunked_istream cis(*(rs->get_cpp_stream()), 1024, byte_order);
-#else
             chunked_istream cis(*(rs->get_cpp_stream()), CHUNK_SIZE);
-#endif
 
             // parse the DMR, stopping when the boundary is found.
 
@@ -428,11 +392,7 @@ void D4Connect::request_dap4_data(DMR &dmr, const string expr)
             parser.intern(chunk, chunk_size - 2, &dmr, false /*debug*/);
 
             // Read data and store in the DMR
-#if BYTE_ORDER_PREFIX
-            D4StreamUnMarshaller um(cis, byte_order);
-#else
             D4StreamUnMarshaller um(cis, cis.twiddle_bytes());
-#endif
             dmr.root()->deserialize(um, dmr);
 
             break;
