@@ -74,14 +74,12 @@ chunked_outbuf::data_chunk()
 	//
 	// unsigned int chunk_header = (unsigned int)num | CHUNK_type;
 	uint32_t header = num;
-#if !BYTE_ORDER_PREFIX
+
 	// Add encoding of host's byte order. jhrg 11/24/13
 	if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
-#if HEADER_IN_NETWORK_BYTE_ORDER
+
 	// network byte order for the header
 	header = htonl(header);
-#endif
-#endif
 
 	d_os.write((const char *)&header, sizeof(int32_t));
 
@@ -119,14 +117,12 @@ chunked_outbuf::end_chunk()
 
 	uint32_t header = (uint32_t)num | CHUNK_END;
 
-#if !BYTE_ORDER_PREFIX
+
     // Add encoding of host's byte order. jhrg 11/24/13
     if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
-#if HEADER_IN_NETWORK_BYTE_ORDER
+
     // network byte order for the header
-    htonl(header);
-#endif
-#endif
+    header = htonl(header);
 
     // Write out the CHUNK_END header with the byte count.
 	// This should be called infrequently, so it's probably not worth
@@ -168,14 +164,12 @@ chunked_outbuf::err_chunk(const std::string &m)
 
 	uint32_t header = (uint32_t)msg.length() | CHUNK_ERR;
 
-#if !BYTE_ORDER_PREFIX
     // Add encoding of host's byte order. jhrg 11/24/13
     if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
-#if HEADER_IN_NETWORK_BYTE_ORDER
+
     // network byte order for the header
     header = htonl(header);
-#endif
-#endif
+
 
     // Write out the CHUNK_END header with the byte count.
 	// This should be called infrequently, so it's probably not worth
@@ -277,14 +271,13 @@ chunked_outbuf::xsputn(const char *s, std::streamsize num)
 	// If here, write a chunk header and a chunk's worth of data by combining the
 	// data in the buffer and some data from 's'.
 	uint32_t header = d_buf_size;
-#if !BYTE_ORDER_PREFIX
+
     // Add encoding of host's byte order. jhrg 11/24/13
     if (!d_big_endian) header |= CHUNK_LITTLE_ENDIAN;
-#if HEADER_IN_NETWORK_BYTE_ORDER
+
     // network byte order for the header
     header = htonl(header);
-#endif
-#endif
+
 	d_os.write((const char *)&header, sizeof(int32_t));	// Data chunk's CHUNK_TYPE is 0x00000000
 
 	// Reset the pptr() and epptr() now in case of an error exit. See the 'if'

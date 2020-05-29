@@ -28,7 +28,6 @@
 #include "config.h"
 
 #include <stdint.h>
-#include <byteswap.h>
 #include <arpa/inet.h>
 
 #include <cstring>
@@ -96,26 +95,23 @@ chunked_inbuf::underflow()
 	// To read data from the chunked stream, first read the header
 	uint32_t header;
 	d_is.read((char *) &header, 4);
-#if !BYTE_ORDER_PREFIX && HEADER_IN_NETWORK_BYTE_ORDER
+
 	// When the endian nature of the server is encoded in the chunk header, the header is
 	// sent using network byte order
 	header = ntohl(header);
-#endif
 
 	// There are two 'EOF' cases: One where the END chunk is zero bytes and one where
 	// it holds data. In the latter case, bytes those will be read and moved into the
 	// buffer. Once those data are consumed, we'll be back here again and this read()
 	// will return EOF. See below for the other case...
 	if (d_is.eof()) return traits_type::eof();
-#if BYTE_ORDER_PREFIX
-	if (d_twiddle_bytes) header = bswap_32(header);
-#else
+
 	// (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
 	if (!d_set_twiddle) {
 	    d_twiddle_bytes = (is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN));
 	    d_set_twiddle = true;
 	}
-#endif
+
 	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 
 	DBG(cerr << "underflow: chunk size from header: " << chunk_size << endl);
@@ -219,24 +215,19 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
         uint32_t header;
         d_is.read((char *) &header, 4);
 
-#if !BYTE_ORDER_PREFIX && HEADER_IN_NETWORK_BYTE_ORDER
         header = ntohl(header);
-#endif
 
         // There are two EOF cases: One where the END chunk is zero bytes and one where
         // it holds data. In the latter case, those will be read and moved into the
         // buffer. Once those data are consumed, we'll be back here again and this read()
         // will return EOF. See below for the other case...
         if (d_is.eof()) return traits_type::eof();
-#if BYTE_ORDER_PREFIX
-        if (d_twiddle_bytes) header = bswap_32(header);
-#else
+
         // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
         if (!d_set_twiddle) {
             d_twiddle_bytes = (is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN));
             d_set_twiddle = true;
         }
-#endif
 
 	    uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 		DBG(cerr << "xsgetn: chunk size from header: " << chunk_size << endl);
@@ -345,24 +336,19 @@ chunked_inbuf::read_next_chunk()
 	uint32_t header;
 	d_is.read((char *) &header, 4);
 
-#if !BYTE_ORDER_PREFIX && HEADER_IN_NETWORK_BYTE_ORDER
     header = ntohl(header);
-#endif
 
 	// There are two 'EOF' cases: One where the END chunk is zero bytes and one where
 	// it holds data. In the latter case, bytes those will be read and moved into the
 	// buffer. Once those data are consumed, we'll be back here again and this read()
 	// will return EOF. See below for the other case...
 	if (d_is.eof()) return traits_type::eof();
-#if BYTE_ORDER_PREFIX
-    if (d_twiddle_bytes) header = bswap_32(header);
-#else
+
     // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
     if (!d_set_twiddle) {
         d_twiddle_bytes = (is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN));
         d_set_twiddle = true;
     }
-#endif
 
 	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 
