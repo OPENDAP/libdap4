@@ -83,8 +83,8 @@ Error::Error() : exception(), _error_code(undefined_error), _error_message("")
 
     @param ec The error code
     @param msg The error message string. */
-Error::Error(ErrorCode ec, string msg)
-        : exception(), _error_code(ec), _error_message(msg)
+Error::Error(ErrorCode ec, string msg, string file /* default: ""*/, int line /* default 0*/)
+        : exception(), _error_code(ec), _error_message(msg), d_file(file), d_line(line)
 {}
 
 /** Create an instance with a specific message. The error code is set to \c
@@ -92,8 +92,8 @@ Error::Error(ErrorCode ec, string msg)
 
     @param msg The error message.
     @see ErrorCode */
-Error::Error(string msg)
-        : exception(), _error_code(unknown_error), _error_message(msg)
+Error::Error(string msg, string file /* default: ""*/, int line /* default 0*/)
+        : exception(), _error_code(unknown_error), _error_message(msg), d_file(file), d_line(line)
 {}
 
 Error::Error(const Error &copy_from)

@@ -95,9 +95,12 @@ protected:
     ErrorCode _error_code;
     std::string _error_message;
 
+    std::string d_file;
+    int d_line;
+
 public:
-    Error(ErrorCode ec, std::string msg);
-    Error(std::string msg);
+    Error(ErrorCode ec, std::string msg, std::string file = "", int line = 0);
+    Error(std::string msg, std::string file = "", int line = 0);
     Error();
 
     Error(const Error &copy_from);
@@ -114,6 +117,11 @@ public:
     std::string get_error_message() const;
     void set_error_code(ErrorCode ec = undefined_error);
     void set_error_message(std::string msg = "");
+
+    std::string get_file() const { return d_file; }
+    void set_file(std::string f) { d_file = f; }
+    int get_line() const { return d_line; }
+    void set_line(int l) { d_line = l; }
 
     virtual const char* what() const throw() {
         return get_error_message().c_str();
