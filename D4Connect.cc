@@ -82,7 +82,7 @@ void D4Connect::process_dmr(DMR &dmr, Response &rs)
         // Web errors (those reported in the return document's MIME header)
         // are processed by the WWW library.
         throw InternalErr(__FILE__, __LINE__,
-            "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
+            "An error was reported by the remote httpd; this should have been processed by HTTPConnect.");
 
     case dap4_dmr: {
         // parse the DMR
