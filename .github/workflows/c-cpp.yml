@@ -13,6 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: autoreconf
+      run: autoreconf -fiv 
     - name: configure
       run: ./configure --enable-developer
     - name: make
