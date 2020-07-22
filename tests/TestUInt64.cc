@@ -25,6 +25,8 @@
  
 #include "config.h"
 
+#include <string>
+
 #ifndef WIN64
 #include <unistd.h>
 #else
@@ -34,6 +36,9 @@
 #endif
 
 #include "TestUInt64.h"
+
+using namespace std;
+using namespace libdap;
 
 extern int test_variable_sleep_interval;
 

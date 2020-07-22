@@ -348,7 +348,7 @@ bool D4ResponseBuilder::is_valid(const string &cache_file_name)
  * @param dds The DDS of the dataset referenced by the URL
  * @return The cached DDS that resulted from calling the server functions
  * in the original CE.
- * @param cache_token A value-result parameter that contains teh name of
+ * @param cache_token A value-result parameter that contains the name of
  * the file in the cache. Used to release the lock on the cached file.
  */
 DDS *D4ResponseBuilder::read_cached_dataset(DDS &dds, ConstraintEvaluator &eval,

@@ -45,8 +45,8 @@ AM_CFLAGS =
 
 AM_LDFLAGS =
 if ENABLE_COVERAGE
-AM_CPPFLAGS += -fprofile-arcs -ftest-coverage -pg
-AM_LDFLAGS += -lgcov --coverage -pg
+AM_CPPFLAGS += -fprofile-dir=$(top_srcdir)/gcov-data -fprofile-arcs -ftest-coverage
+AM_LDFLAGS += --coverage
 endif
 
 noinst_LTLIBRARIES += libgnu.la

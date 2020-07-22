@@ -34,13 +34,15 @@ AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
 endif
 
 AM_LDFLAGS =
+
 if ENABLE_COVERAGE
-AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
-AM_LDFLAGS += -lgcov --coverage -pg
+AM_CXXFLAGS += -fprofile-dir=$(top_srcdir)/gcov-data -fprofile-arcs -ftest-coverage
+AM_LDFLAGS += --coverage
+# -lgcov
 # Generage HTML pages with code coverage.
 collect-coverage-data:
 	-mkdir code_coverage
-	gcovr -r . --html --html-details -o coverage.html
+	gcov -r $(top_srcdir)/gcov-data --html --html-details -o coverage.html
 	mv *.html code_coverage
 endif
 

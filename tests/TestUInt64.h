@@ -26,26 +26,27 @@
 #ifndef _testuint64_h
 #define _testuint64_h 1
 
+#include <string>
 
 #include "UInt64.h"
 #include "TestCommon.h"
 
-using namespace libdap ;
+// using namespace libdap ;
 
-class TestUInt64: public UInt64, public TestCommon {
+class TestUInt64: public libdap::UInt64, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestUInt64 &ts);
 
 public:
-    TestUInt64(const string &n);
-    TestUInt64(const string &n, const string &d);
+    TestUInt64(const std::string &n);
+    TestUInt64(const std::string &n, const std::string &d);
     TestUInt64(const TestUInt64 &rhs);
 
     virtual ~TestUInt64() {}
 
     TestUInt64 &operator=(const TestUInt64 &rhs);
 
-    virtual BaseType *ptr_duplicate();
+    virtual libdap::BaseType *ptr_duplicate();
     
     virtual bool read();
     

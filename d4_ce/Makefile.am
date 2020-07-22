@@ -40,9 +40,11 @@ AM_CXXFLAGS += -g -O2
 endif
 
 AM_LDFLAGS =
+
 if ENABLE_COVERAGE
-AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
-AM_LDFLAGS += -lgcov --coverage -pg
+AM_CXXFLAGS += -fprofile-dir=$(top_srcdir)/gcov-data -fprofile-arcs -ftest-coverage
+AM_LDFLAGS += --coverage
+# -lgcov
 endif
 
 noinst_LTLIBRARIES = libd4_ce_parser.la
