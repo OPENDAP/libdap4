@@ -92,8 +92,6 @@ InternalErr::operator=(const InternalErr &rhs) {
     d_file = rhs.d_file;
     d_line  = rhs.d_line;
 
-    assert(this->OK());
-
     return *this;
 }
 
