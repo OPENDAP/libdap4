@@ -312,11 +312,13 @@ AS_IF([test -z "$xml_set" & xml2-config --version > /dev/null 2>&1],
 
    	XML2_LIBS="`xml2-config --libs`"
    	XML2_CFLAGS="`xml2-config --cflags`"
-   	
+
    	# If XML2_CFLAGS does not have -I that ends in /libxml2, append that to
    	# the string bound to -I. Assume there is only on -I in XML2_CFLAGS. jhrg 8/25/20
    	AS_IF([echo $XML2_CFLAGS | grep -v -e '-I.*/libxml2'],
-   	    [XML2_CFLAGS=`echo $XML2_CFLAGS | sed "s@\(-I.*\)@\1/libxml2/@g"`])
+   	    [
+   	    XML2_CFLAGS=`echo $XML2_CFLAGS | sed "s@\(-I.*\)@\1/libxml2/@g"`
+   	    ])
 
    	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
    	xml_set=yes
@@ -341,14 +343,13 @@ AS_IF([test -z "$xml_set"],
 	    ])
     ])
 
-AS_IF([test -n "xml_set"],
-    [
-    AC_SUBST([XML2_LIBS])
-    AC_SUBST([XML2_CFLAGS])
-    ],
+AS_IF([test -z "xml_set"],
     [
     AC_MSG_ERROR([I could not find xml2-config])
     ])
+
+AC_SUBST([XML2_LIBS])
+AC_SUBST([XML2_CFLAGS])
 
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[PTHREAD_LIBS="-lpthread"],
