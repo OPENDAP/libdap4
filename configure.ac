@@ -275,61 +275,75 @@ AC_SUBST([CURL_LIBS])
 AC_SUBST([CURL_STATIC_LIBS])
 AC_SUBST([CURL_CFLAGS])
 
-AC_ARG_WITH(xml2,[  --with-xml2=PFX   Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.],
-            with_xml2_prefix="$withval", with_xml2_prefix="")
+AC_ARG_WITH(xml2,
+    [AC_HELP_STRING([--with-xml2=PFX],
+        [Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.])],
+    [with_xml2_prefix="$withval"],
+    [with_xml2_prefix=""])
+
+AS_IF([test -n "$with_xml2_prefix" -a ! -x $with_xml2_prefix/bin/xml2-config],
+    [AC_MSG_ERROR([You set the libxml2 prefix directory to $with_xml2_prefix, but xml2-config is not there.])])
 
 xmlprivatereq=
 xmlprivatelibs=
 xml_set=
 
-if test -n "$with_xml2_prefix" -a -x $with_xml2_prefix/bin/xml2-config
-then
+# I changed this code so that it searches for libxml2 using xml2-config
+# first, then pkg-config. This works more reliably when working on OSX
+# given Apple's penchant for moving the lib. jhrg 8/25/20
+
+AS_IF([test -n "$with_xml2_prefix" -a -x $with_xml2_prefix/bin/xml2-config],
+    [
     AC_MSG_NOTICE([Using $with_xml2_prefix as the libxml2 prefix directory.])
     XML2_LIBS="`$with_xml2_prefix/bin/xml2-config --libs`"
-    dnl XML2_STATIC_LIBS=$XML2_LIBS
-    xmlprivatelibs="`$with_xml2_prefix/bin/xml2-config --libs`"
     XML2_CFLAGS="`$with_xml2_prefix/bin/xml2-config --cflags`"
     xml_set="yes"
-elif test -n "$with_xml2_prefix"
-then
-    AC_MSG_ERROR([You set the libxml2 prefix directory to $with_xml2_prefix, but xml2-config is not there.])
-fi
+    ])
 
-if test -z "$xml_set"
-then
-libdap_pkgconfig_libxml2=yes
-libdap_libxml2_module='libxml-2.0 >= 2.7.0'
-PKG_CHECK_MODULES([XML2],[$libdap_libxml2_module], ,[libdap_pkgconfig_libxml2=no])
-AC_MSG_CHECKING([for libxml2])
-if test $libdap_pkgconfig_libxml2 = 'yes'
-then
-	xmlprivatereq=$libdap_libxml2_module
-	dnl XML2_STATIC_LIBS="`$PKG_CONFIG --static --libs libxml-2.0`"
-	XML2_LIBS="`$PKG_CONFIG --libs libxml-2.0`"
-	AC_MSG_RESULT([yes; used pkg-config])
-elif xml2-config --version > /dev/null 2>&1
-then
-	version_libxml2=`xml2-config --version`
+# Try using the xml2-config script.
 
-        AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"], 
-                [AC_MSG_ERROR([I could not find libxml2 2.7.0 or newer])])
-        
-	XML2_LIBS="`xml2-config --libs`"
-	dnl XML2_STATIC_LIBS=$XML2_LIBS
-	XML2_CFLAGS="`xml2-config --cflags`"
-	xmlprivatelibs="`xml2-config --libs `"
-	dnl `
-	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
-else
-	AC_MSG_ERROR([I could not find xml2-config])
-fi
-fi
+AS_IF([test -z "$xml_set" & xml2-config --version > /dev/null 2>&1],
+    [
+    AC_MSG_CHECKING([for libxml2])
+   	version_libxml2=`xml2-config --version`
 
-AC_SUBST([xmlprivatereq])
-AC_SUBST([xmlprivatelibs])
-AC_SUBST([XML2_LIBS])
-dnl AC_SUBST([XML2_STATIC_LIBS])
-AC_SUBST([XML2_CFLAGS])
+    AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"],
+        [AC_MSG_ERROR([I could not find libxml2 2.7.0 or newer])])
+
+   	XML2_LIBS="`xml2-config --libs`"
+   	XML2_CFLAGS="`xml2-config --cflags`"
+   	XML2_CFLAGS=`echo $XML2_CFLAGS | sed "s@\(-I.*\)@\1/libxml2/@g"`
+   	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
+   	xml_set=yes
+   	])
+
+# If not found, try pkg-config
+AS_IF([test -z "$xml_set"],
+    [
+    libdap_libxml2_module='libxml-2.0 >= 2.7.0'
+    PKG_CHECK_MODULES([XML2], [libdap_libxml2_module],
+        [libdap_pkgconfig_libxml2=yes],
+        [libdap_pkgconfig_libxml2=no])
+    AS_IF([test $libdap_pkgconfig_libxml2 = yes],
+        [
+        XML2_LIBS="`$PKG_CONFIG --libs libxml-2.0`"
+        XML2_CFLAGS="`$PKG_CONFIG --cflags libxml-2.0`"
+        AC_MSG_RESULT([yes; used pkg-config])
+        xml_set=yes
+        ],
+        [
+	    AC_MSG_ERROR([I could not find xml2-config])
+	    ])
+    ])
+
+AS_IF([test -n "xml_set"],
+    [
+    AC_SUBST([XML2_LIBS])
+    AC_SUBST([XML2_CFLAGS])
+    ],
+    [
+    AC_MSG_ERROR([I could not find xml2-config])
+    ])
 
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[PTHREAD_LIBS="-lpthread"],
