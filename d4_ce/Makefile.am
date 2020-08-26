@@ -72,8 +72,8 @@ clean-local:
 %.tab.cc %.tab.hh: %.yy
 	$(YACC) $(YFLAGS) $<
 
-#d4_ce_parser.tab.cc d4_ce_parser.tab.hh stack.hh location.hh position.hh: d4_ce_parser.yy
-#	$(YACC) $(YFLAGS) $<
+d4_ce_parser.tab.cc d4_ce_parser.tab.hh stack.hh location.hh position.hh: d4_ce_parser.yy
+	$(YACC) $(YFLAGS) $<
 
 # For now there are two min versions of flex's FlexLexer.h; one that
 # defines the LexerInput() method returning int and one returning size_t.
