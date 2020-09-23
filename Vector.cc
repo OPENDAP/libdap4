@@ -1207,11 +1207,14 @@ unsigned int Vector::val2buf(void *val, bool reuse)
     return width(true);
 }
 
-/** Copies data from the Vector buffer.  This function assumes that
- <i>val</i> points to an array large enough to hold N instances of
- the `C' representation of the \e numeric element type or C++ string
- objects. Never call this method for constructor types Structure,
- Sequence or Grid.
+/**
+ @brief Copies data from the Vector buffer.
+
+ Copy data from a numeric or string arry to a buffer. This method will
+ allocate memory if the handle @p val references NULL, otherwise it
+ assumes the handle references enough storage for the data to be copied.
+
+ Never call this method for constructor types Structure, Sequence or Grid.
 
  When reading data out of a variable that has been constrained, this method
  assumes the N values/bytes of constrained data start at the beginning
@@ -1220,14 +1223,19 @@ unsigned int Vector::val2buf(void *val, bool reuse)
  get the data. Unless your constraint starts with the [0]th element, the
  result will not be the correct values.
 
- In the case of a Vector of Str objects, this method will return an array
- of C++ std::string objects.
+ In the case of a Vector of Str objects, this method will return a
+ pointer to an array of C++ std::string objects.
 
  @note It's best to define the pointer to reference the data as
- 'char *data' and then call this method using '..->buf2val((void**)&data)'.
- Then free the storage once you're done using 'delete[] data'. It's not
- correct C++ to use 'delete[]' on a void pointer and the allocated memory
- \e is an array of char, so 'delete[]' is needed.
+ 'char *data' or some other non-void type and then call this method
+ using '..->buf2val((void**)&data)'. You must free the storage once
+ you're done using 'delete[] data'.
+
+ @note It's also important to initialize the handle to NULL. That is
+ your code should declare the handle like this: 'char *data = 0' if
+ it expects buf2val() to allocate memory. With most compilers, the
+ pointer may be null the first time the code is run, but often not on
+ subsequent calls.
 
  @return The number of bytes used to store the array.
  @param val A pointer to a pointer to the memory into which the
