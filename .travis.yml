@@ -116,13 +116,14 @@ jobs:
                  --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                  --env os=centos7 opendap/centos7_hyrax_builder:1.2 /root/travis/build-rpm.sh
 
-  - stage: package
-    script: 
-    - export LIBDAP_BUILD=centos6
-    - mkdir -p $prefix/rpmbuild
-    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
-                 --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                 --env os=centos6 opendap/centos6_hyrax_builder:1.3 /root/travis/build-rpm.sh
+# Removed jhrg 10/23/20
+#  - stage: package
+#    script:
+#    - export LIBDAP_BUILD=centos6
+#    - mkdir -p $prefix/rpmbuild
+#    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
+#                 --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+#                 --env os=centos6 opendap/centos6_hyrax_builder:1.3 /root/travis/build-rpm.sh
 
   - stage: package
     script:
@@ -130,6 +131,8 @@ jobs:
       - mkdir -p $TRAVIS_BUILD_DIR/package
       - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
       - make dist -j7
+      # Make both a libdap-<version> and libdap-snapshot tar.gz. This will simplify
+      # other operations that use the libdap source code like the bes build.
       - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package
       - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-snapshot.tar.gz;
 
@@ -144,9 +147,10 @@ before_deploy:
                                                --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
   # Debian distribution prep
   - if test "$LIBDAP_BUILD" = "deb"; then ./travis/deb-to-package-dir.sh; fi
-  # CentOS-7  distribution prep
-  - if test "$LIBDAP_BUILD" = "centos6"; then ./travis/rpm-to-package-dir.sh "el6"; fi
+  # Removed jhrg 10/23/20
   # CentOS-6 distribution prep
+  # - if test "$LIBDAP_BUILD" = "centos6"; then ./travis/rpm-to-package-dir.sh "el6"; fi
+  # CentOS-7  distribution prep
   - if test "$LIBDAP_BUILD" = "centos7"; then ./travis/rpm-to-package-dir.sh "el7"; fi
   # Check for the stuff...
   - ls -lR $TRAVIS_BUILD_DIR/package
@@ -161,4 +165,5 @@ deploy:
   on:
     # Change 'master' to 'travis' to test deployment
     branch: master
-    condition: $LIBDAP_BUILD =~ ^main|srddist|deb|centos7|centos6|travis$
+    condition: $LIBDAP_BUILD =~ ^main|srddist|deb|centos7|travis$
+    # Removed 'centos6|' jhrg 10/23/20
