@@ -953,7 +953,7 @@ bool is_boundary(const char *line, const string &boundary)
 
     @param boundary Value of the boundary to look for - optional
     @param in Read from this FILE*
-    @return The value of teh boundary header read
+    @return The value of the boundary header read
     @exception Error if no boundary was found.
  */
 string read_multipart_boundary(FILE *in, const string &boundary)

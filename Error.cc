@@ -116,6 +116,9 @@ Error::operator=(const Error &rhs)
         _error_code = rhs._error_code;
         _error_message = rhs._error_message;
 
+        d_file = rhs.d_file;
+        d_line  = rhs.d_line;
+
         assert(this->OK());
 
         return *this;

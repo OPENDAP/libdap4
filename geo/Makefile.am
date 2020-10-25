@@ -35,8 +35,8 @@ endif
 
 AM_LDFLAGS =
 if ENABLE_COVERAGE
-AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
-AM_LDFLAGS += -lgcov --coverage -pg
+AM_CXXFLAGS += -fprofile-dir=$(top_srcdir)/gcov-data -fprofile-arcs -ftest-coverage
+AM_LDFLAGS += --coverage
 endif
 
 noinst_LTLIBRARIES = libgeodap.la

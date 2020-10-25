@@ -57,7 +57,13 @@ public:
 
 	virtual ~D4RValueList();
 
-	void add_rvalue(D4RValue *rv) {
+    D4RValueList &operator=(const D4RValueList &rhs) {
+        if (this == &rhs) return *this;
+        m_duplicate(rhs);
+        return *this;
+    }
+
+    void add_rvalue(D4RValue *rv) {
 		d_rvalues.push_back(rv);
 	}
 

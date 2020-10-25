@@ -85,6 +85,8 @@ public:
 
     virtual ~InternalErr() throw();
 
+    InternalErr &operator=(const InternalErr &rhs);
+
     bool OK();
 };
 

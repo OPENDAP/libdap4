@@ -82,6 +82,19 @@ InternalErr::InternalErr(const InternalErr &copy_from)
 InternalErr::~InternalErr() throw()
 {}
 
+InternalErr &
+InternalErr::operator=(const InternalErr &rhs) {
+    if (this == &rhs) return *this;
+
+    _error_code = rhs._error_code;
+    _error_message = rhs._error_message;
+
+    d_file = rhs.d_file;
+    d_line  = rhs.d_line;
+
+    return *this;
+}
+
 /**
     @brief Is the InternalErr object valid?
     @return TRUE if the object is valid, FALSE otherwise. */
