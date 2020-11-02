@@ -1710,14 +1710,20 @@ bool Vector::set_value(dods_float64 *val, int sz)
     return set_value_worker(val, sz);
 }
 
-/** @brief set the value of a string or url array */
+/**
+ * @brief set the value of a string or url array
+ * @param val A pointer to an array of string objects
+ * @param sz The number of elements in the string array
+ * @return false if the type of the array is neither Str nor Url
+ * or val is null, otherwise returns true.
+ */
 bool Vector::set_value(string *val, int sz)
 {
     if ((var()->type() == dods_str_c || var()->type() == dods_url_c) && val) {
         d_str.resize(sz);
         d_capacity = sz;
-        for (register int t = 0; t < sz; t++) {
-            d_str[t] = val[t];
+        for (int t = 0; t < sz; t++) {
+            d_str[t] = (*val)[t];
         }
         set_length(sz);
         set_read_p(true);
