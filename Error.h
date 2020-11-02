@@ -123,8 +123,9 @@ public:
     int get_line() const { return d_line; }
     void set_line(int l) { d_line = l; }
 
+    /// The pointer is valid only for the lifetime of the Error instance. jhrg 9/22/20
     virtual const char* what() const throw() {
-        return get_error_message().c_str();
+        return _error_message.c_str();
     }
 };
 

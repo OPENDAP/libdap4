@@ -42,7 +42,7 @@ class D4Group;
 class D4EnumDef {
     string d_name;
     Type d_type;
-    D4EnumDefs *d_parent;
+    D4EnumDefs *d_parent; // a weak pointer, do not delete
 
     struct tuple {
         string label;
@@ -70,6 +70,14 @@ public:
     D4EnumDef(const string &n, const Type &t, D4EnumDefs *e = 0) : d_name(n), d_type(t), d_parent(e) {}
     D4EnumDef(const D4EnumDef &rhs) {
         m_duplicate(rhs);
+    }
+
+    virtual ~D4EnumDef() { }
+
+    D4EnumDef &operator=(const D4EnumDef &rhs) {
+        if (this == &rhs) return *this;
+        m_duplicate(rhs);
+        return *this;
     }
 
     string name() const { return d_name; }

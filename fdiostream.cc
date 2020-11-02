@@ -135,7 +135,7 @@ std::streamsize fdoutbuf::xsputn(const char *s, std::streamsize num)
 
  After each read, gptr() is advanced until it hits egptr, which triggers a
  read. However, before the read takes place, characters are moved into the
- put back part of teh buffer. IE when a character is 'read' using the stream
+ put back part of the buffer. IE when a character is 'read' using the stream
  all the really happens is the gptr is advanced, the character is still in the
  buffer
 

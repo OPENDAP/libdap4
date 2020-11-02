@@ -165,6 +165,8 @@ private:
         XMLAttribute(const XMLAttribute &rhs) {
             clone(rhs);
         }
+        ~XMLAttribute() {
+        }
         XMLAttribute &operator=(const XMLAttribute &rhs) {
             if (this == &rhs)
                 return *this;
