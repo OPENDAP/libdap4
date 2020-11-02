@@ -1,0 +1,3 @@
+<map id="libdap::PipeResponse" name="libdap::PipeResponse">
+<area shape="rect" id="node2" href="$classlibdap_1_1Response.html" title="{libdap::Response\n||+ Response()\l+ Response()\l+ Response()\l+ ~Response()\l+ get_status()\l+ get_stream()\l+ get_cpp_stream()\l+ get_type()\l+ get_version()\l+ get_protocol()\l+ set_status()\l+ set_stream()\l+ set_cpp_stream()\l+ set_type()\l+ set_version()\l+ set_protocol()\l# Response()\l# operator=()\l* Response()\l* operator=()\l* get_status()\l* get_stream()\l* get_cpp_stream()\l* get_type()\l* get_version()\l* get_protocol()\l* set_status()\l* set_stream()\l* set_cpp_stream()\l* set_type()\l* set_version()\l* set_protocol()\l}" alt="" coords="12,5,150,492"/>
+</map>
