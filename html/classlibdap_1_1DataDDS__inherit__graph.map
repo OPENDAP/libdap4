@@ -1,0 +1,4 @@
+<map id="libdap::DataDDS" name="libdap::DataDDS">
+<area shape="rect" id="node2" href="$classlibdap_1_1DDS.html" title="{libdap::DDS\n||+ add_var()\l+ add_var_nocopy()\l+ check_semantics()\l+ DDS()\l+ DDS()\l+ DDS()\l+ del_var()\l+ del_var()\l+ del_var()\l+ dump()\land 49 more...\l+ get_dataset_name()\l+ set_dataset_name()\l+ filename()\l+ filename()\l+ container_name()\l+ container_name()\l+ container()\l+ timeout_on()\l+ timeout_off()\l+ set_timeout()\l+ get_timeout()\l# duplicate()\l# exact_match()\l# leaf_match()\l* get_dataset_name()\l* set_dataset_name()\l* filename()\l* filename()\l* container_name()\l* container_name()\l* container()\l* timeout_on()\l* timeout_off()\l* set_timeout()\l* get_timeout()\l}" alt="" coords="7,140,159,680"/>
+<area shape="rect" id="node3" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects " alt="" coords="28,5,138,92"/>
+</map>

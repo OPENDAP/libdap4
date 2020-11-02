@@ -1,0 +1,28 @@
+var structlibdap_1_1HTTPCacheTable_1_1CacheEntry =
+[
+    [ "CacheEntry", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#afde4845d8168a3f81dd039439882014d", null ],
+    [ "CacheEntry", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a7beadf359df8d7abae1660f24ab3c92e", null ],
+    [ "get_cachename", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a78b388e7b644a3548a7d548550603fd9", null ],
+    [ "get_corrected_initial_age", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a83412eeb15ec59d73b2407943d0a4a04", null ],
+    [ "get_etag", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a6c442bb2e75458b0221fdc0e33a1b987", null ],
+    [ "get_expires", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#ad6c75b405f431deafaba0ce949e514bc", null ],
+    [ "get_freshness_lifetime", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a59da6c588993d40d2829a90cc0c67f1a", null ],
+    [ "get_lm", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a45a937fc7a01fe7b9eff6ed71234ae90", null ],
+    [ "get_max_age", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a15c27c48f367f79bded48569b4d12351", null ],
+    [ "get_must_revalidate", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#ad654840f637bcaf7232ccf851469daba", null ],
+    [ "get_response_time", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a7002294360aa52d1dd86dedca57c7e6d", null ],
+    [ "is_no_cache", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#ac58af16f8cfb31f08020d64ca1914407", null ],
+    [ "lock_read_response", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a95089334635e3f0116257bb62c329395", null ],
+    [ "lock_write_response", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a127f19c06a5f0d2da8b55e4d0d175ae2", null ],
+    [ "set_no_cache", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a112b8ac8aa541ca9a06af7de4d80fc03", null ],
+    [ "set_size", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a6711b2f4b3ebc87f2f6b87da87d0f44b", null ],
+    [ "unlock_read_response", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#ae2db6d25b27dd657dd0a2ef553e28246", null ],
+    [ "unlock_write_response", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a0cddc0fbf4569c5e323e79c5ec098c22", null ],
+    [ "DeleteByHits", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#ac472190ef1064a54cdd7ce172a30c57d", null ],
+    [ "DeleteBySize", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#ae50b4ed6c2560ac5bce0f837c1c29f8a", null ],
+    [ "DeleteCacheEntry", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a7ed7618e87371b669cb062d8315022b6", null ],
+    [ "DeleteExpired", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a2084b474fcedc349564e2ad51420c464", null ],
+    [ "HTTPCacheTable", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a10b3dd04aa2ab3de230f8102d4293d17", null ],
+    [ "HTTPCacheTest", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#a76bd6ce419aad54c8c87e993f5bd11c9", null ],
+    [ "WriteOneCacheEntry", "structlibdap_1_1HTTPCacheTable_1_1CacheEntry.html#ac86f22df4e25865ad192898454e22534", null ]
+];
