@@ -7,7 +7,7 @@
 # Modified to push the result of a successful build up to an AWS S3
 # bucket. jhrg 2.24.18
 
-dist: trusty
+dist: xenial
 
 language: cpp
 
