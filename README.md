@@ -1,26 +1,40 @@
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
-Updated for version 3.20.0
+### Updated for version 3.20.6  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3759849.svg)](https://doi.org/10.5281/zenodo.3759849)
+* Stopped CE parse errors from returning user supplied strings in error messages.
+* README is now called README.md
 
-We now have a Debian package for libdap.
+### Updated for version 3.20.5  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3641778.svg)](https://doi.org/10.5281/zenodo.3641778)
+* Memory leaks. Minor bug fixes. Lots of work on CI.
 
-Bug fixes; See the ChangeLog and NEWS files.
+### Updated for version 3.20.4 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3267984.svg)](https://doi.org/10.5281/zenodo.3267984)
+* Updated for version 3.20.4
+* Memory leak fixes and C++11 features
 
-Updated for version 3.19.1
+### Updated for version 3.20.3 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2566512.svg)](https://doi.org/10.5281/zenodo.2566512)
+* Fixes and Debian packaging via Travis CI
 
-Bug fixes; See the ChangeLog and NEWS files.
+### Updated for version 3.20.2 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2002799.svg)](https://doi.org/10.5281/zenodo.2002799)
+* Added libdap::Array::rename_dim()
 
-Updated for version 3.18.3
+### Updated for version 3.20.1
+* Added Continuous Delivery for CentOS 6 and 7
 
-Bug fixes; See the ChangeLog and NEWS files.
+### Updated for version 3.20.0
+* We now have a Debian package for libdap.
+* Bug fixes; See the ChangeLog and NEWS files.
 
-Updated for version 3.18.2
+### Updated for version 3.19.1
+* Bug fixes; See the ChangeLog and NEWS files.
 
-Added support for DAP4 filter operations.
+### Updated for version 3.18.3
+* Bug fixes; See the ChangeLog and NEWS files.
 
-For other information, see NEWS and ChangeLog
+### Updated for version 3.18.2
+* Added support for DAP4 filter operations.
+* For other information, see NEWS and ChangeLog
 
-Updated for 3.16.0
+### Updated for 3.16.0
 
 libdap now supports parallel I/O for certain data write operations,
 mostly those involving larger amounts of data - Marshaller::put_vector

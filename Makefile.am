@@ -10,7 +10,7 @@ AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2
 AM_CXXFLAGS = 
 
 if COMPILER_IS_GCC
-AM_CXXFLAGS += -Wall -W -Wcast-align
+AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-deprecated-register
 endif
 
 # These are not used by automake but are often useful for certain types of
@@ -28,24 +28,26 @@ ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 endif
 
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+AM_CXXFLAGS += $(CXX11_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2
+AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
 endif
 
 AM_LDFLAGS =
+
 if ENABLE_COVERAGE
-AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
-AM_LDFLAGS += -lgcov --coverage -pg
+AM_CXXFLAGS += -fprofile-dir=$(top_srcdir)/gcov-data -fprofile-arcs -ftest-coverage
+AM_LDFLAGS += --coverage
+# -lgcov
 # Generage HTML pages with code coverage.
 collect-coverage-data:
 	-mkdir code_coverage
-	gcovr -r . --html --html-details -o coverage.html
+	gcov -r $(top_srcdir)/gcov-data --html --html-details -o coverage.html
 	mv *.html code_coverage
 endif
 
-SUBDIRS = gl d4_ce d4_function . tests unit-tests 
-DIST_SUBDIRS = gl d4_ce d4_function tests unit-tests 
+SUBDIRS = gl d4_ce d4_function . unit-tests tests
+DIST_SUBDIRS = gl d4_ce d4_function unit-tests tests
 
 noinst_LTLIBRARIES = libparsers.la
 
@@ -113,7 +115,7 @@ getdap4_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
-EXTRA_DIST = ChangeLog COPYING README.dodsrc COPYRIGHT_URI	\
+EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	\
 	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec VCPP	\
 	dods-datatypes-static.h xdr-datatypes-static.h		\
 	dap-config-pkgconfig $(LEX_YACC_EXTRA) OSX_Resources	\
@@ -138,6 +140,15 @@ docs: ${DOXYGEN_CONF}
 .PHONY: gh-docs 
 gh-docs:
 	./build-gh-docs.sh
+
+# Build a compile_commands.json.tmp file for use with CLion. This will emable
+# reasonable use for all the source that's compiled using either 'all' or
+# 'check' but other targets will have to be added by hand. See the compiledb
+# github site (https://github.com/nickdiego/compiledb) for more info.
+# jhrg 9/25/19
+.PHONY: compiledb
+compiledb:
+	make -nwk all check | compiledb
 
 # cccc computes metrics like Lines of code and McCabe. It's available
 # on the web...
@@ -216,7 +227,7 @@ pkg-build: clean-pkg
 	DESTDIR=`pwd`/mac_osx make install
 
 pkg-main: pkg-build
-	./OSX_Resources/update_mac_package_contents.pl README
+	./OSX_Resources/update_mac_package_contents.pl README.md
 	cat ./OSX_Resources/Info.plist.proto | \
 	   sed -e "s^_PREFIX_^/usr/local/servers/hyrax-1.8.8^g" \
 	       -e "s^_FULL_VERSION_^@PACKAGE_VERSION@^g" \
@@ -235,7 +246,7 @@ pkg-dmg: pkg-main
 	-rm -rf @PACKAGE@-@PACKAGE_VERSION@.dmg
 	mkdir @PACKAGE@-@PACKAGE_VERSION@
 	cp -r @PACKAGE@-@PACKAGE_VERSION@.pkg @PACKAGE@-@PACKAGE_VERSION@
-	cp README README.* NEWS @PACKAGE@-@PACKAGE_VERSION@
+	cp README.md README.* NEWS @PACKAGE@-@PACKAGE_VERSION@
 	dropdmg -i --sanitize-for-servers --format zlib @PACKAGE@-@PACKAGE_VERSION@
 	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
 

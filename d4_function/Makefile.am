@@ -29,6 +29,8 @@ if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 endif
 
+# Removed  $(CXX11_FLAG) since c++0x, gcc 4.4.x and bison -gneerated code
+# do not work together. jhrg 4//5/19
 if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
@@ -36,9 +38,11 @@ AM_CXXFLAGS += -g -O2
 endif
 
 AM_LDFLAGS =
+
 if ENABLE_COVERAGE
-AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
-AM_LDFLAGS += -lgcov --coverage -pg
+AM_CXXFLAGS += -fprofile-dir=$(top_srcdir)/gcov-data -fprofile-arcs -ftest-coverage
+AM_LDFLAGS += --coverage
+# -lgcov
 endif
 
 noinst_LTLIBRARIES = libd4_function_parser.la

@@ -565,7 +565,6 @@ bool TestArray::read()
     case dods_null_c:
     default:
         throw InternalErr(__FILE__, __LINE__, "Bad data type");
-        break;
     }
 
     // set_read_p(true);

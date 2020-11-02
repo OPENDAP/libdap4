@@ -38,6 +38,7 @@
 #include <libxml/parserInternals.h>
 
 #define CRLF "\r\n"
+#define D4_PARSE_BUFF_SIZE 1048576
 
 namespace libdap
 {
@@ -116,6 +117,7 @@ private:
 
         parser_end
     };
+    char d_parse_buffer[D4_PARSE_BUFF_SIZE+1]; // Buff size plus one byte for NULL termination.
 
     xmlSAXHandler d_dmr_sax_parser;
 
@@ -204,6 +206,8 @@ private:
         }
         XMLAttribute(const XMLAttribute &rhs) {
             clone(rhs);
+        }
+        ~XMLAttribute() {
         }
         XMLAttribute &operator=(const XMLAttribute &rhs) {
             if (this == &rhs)

@@ -45,8 +45,6 @@ void ce_expr_switch_to_buffer(void *new_buffer);
 void ce_expr_delete_buffer(void * buffer);
 void *ce_expr_string(const char *yy_str);
 
-extern int ce_exprdebug;
-
 namespace libdap {
 
 ConstraintEvaluator::ConstraintEvaluator()
@@ -365,9 +363,6 @@ bool ConstraintEvaluator::eval_selection(DDS &dds, const string &)
 void ConstraintEvaluator::parse_constraint(const string &constraint, DDS &dds)
 {
     void *buffer = ce_expr_string(constraint.c_str());
-
-    // Toggle this to debug the parser. A last resort...
-    ce_exprdebug = false;
 
     ce_expr_switch_to_buffer(buffer);
 

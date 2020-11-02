@@ -294,11 +294,11 @@ public:
     /// Set the namespace for this DDS/DDX object/response
     void set_namespace(const string &ns) { d_namespace = ns; }
 
-    /// Get the maximum response size, in KB. Zero indicates no limit.
+    /// Get the maximum response size, in Bytes. Zero indicates no limit.
     long get_response_limit() { return d_max_response_size; }
 
     /** Set the maximum response size. Zero is the default value. The size
-        is given in kilobytes.
+        is given in kilobytes (but stored internally as the number of bytes).
         @param size The maximum size of the response in kilobytes. */
     void set_response_limit(long size) { d_max_response_size = size * 1024; }
 

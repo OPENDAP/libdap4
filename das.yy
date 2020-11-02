@@ -41,6 +41,7 @@
 
 #define YYSTYPE char *
 #define ATTR_STRING_QUOTE_FIX
+#define YYERROR_VERBOSE 0
 
 #include "config.h"
 
@@ -126,6 +127,8 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
 
 %parse-param {parser_arg *arg}
 %name-prefix "das"
+// This define should work, replacing name-prefix, but it does not.
+// %define api.prefix {das}
 %defines
 %debug
 %verbose

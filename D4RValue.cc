@@ -284,8 +284,6 @@ D4RValue::value(DMR &dmr)
 	default:
 		throw InternalErr(__FILE__, __LINE__, "Unknown rvalue type.");
 	}
-
-	return 0; // nullptr; added return to quiet warning. jhrg 3/24/15
 }
 
 /**
@@ -316,8 +314,6 @@ D4RValue::value()
     default:
         throw InternalErr(__FILE__, __LINE__, "Unknown rvalue type.");
     }
-
-    return 0; // nullptr; added return to quiet warning. jhrg 3/24/15
 }
 
 } // namespace libdap

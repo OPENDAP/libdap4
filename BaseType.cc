@@ -260,10 +260,18 @@ BaseType::transform_to_dap2(AttrTable *)
 {
     BaseType *dest = this->ptr_duplicate();
     // convert the d4 attributes to a dap2 attribute table.
+    // HK-403. jhrg 6/17/19
+#if 0
     AttrTable *attrs = this->attributes()->get_AttrTable(name());
     dest->set_attr_table(*attrs);
+#else
+    if (dest->get_attr_table().get_size() == 0) {
+        attributes()->transform_attrs_to_dap2(&dest->get_attr_table());
+        dest->get_attr_table().set_name(name());
+    }
+#endif
+
     dest->set_is_dap4(false);
-    // attrs->print(cerr,"",true);
 
     vector<BaseType *> *result =  new vector<BaseType *>();
     result->push_back(dest);
@@ -1277,14 +1285,12 @@ BaseType::d4_ops(BaseType *, int)
 }
 
 /**
- * @brief How many bytes does this use
+ * @brief How many bytes does this variable use
  * Return the number of bytes of storage this variable uses. For scalar types,
  * this is pretty simple (an int32 uses 4 bytes, etc.). For arrays and Constructors,
  * it is a bit more complex. Note that a scalar String variable uses sizeof(String*)
- * bytes, not the length of the string. In other words, the value returned is
- * independent of the type. Also note width() of a String array returns the number of
- * elements in the array times sizeof(String*). That is, each different array size
- * is a different data type.
+ * bytes, not the length of the string value. The width() of a String array returns
+ * the number of elements in the array times sizeof(String*).
  *
  * @param constrained Should the current constraint be taken into account?
  * @return Bytes of storage
@@ -1293,9 +1299,6 @@ unsigned int
 BaseType::width(bool /* constrained */) const
 {
     throw InternalErr(__FILE__, __LINE__, "not implemented");
-#if 0
-    return width(constrained);
-#endif
 }
 
 } // namespace libdap

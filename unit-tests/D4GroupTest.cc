@@ -130,14 +130,15 @@ public:
         CPPUNIT_ASSERT(g1.name() == "a" && g1.dataset() == "b");
     }
 
-    void test_equals()
+    void test_assignment()
     {
         D4Group g1 = D4Group("a", "b");
         D4Group g2 = D4Group("c", "d");
+        //g2 = g1;
+        CPPUNIT_ASSERT(g2.name() == "c" && g2.dataset() == "d");
         g2 = g1;
         CPPUNIT_ASSERT(g2.name() == "a" && g2.dataset() == "b");
-        g2 = g2;
-        CPPUNIT_ASSERT(g2.name() == "a" && g2.dataset() == "b");
+
     }
 
     void test_is_linear()
@@ -426,7 +427,7 @@ public:
 
     CPPUNIT_TEST_SUITE (D4GroupTest);
 
-    CPPUNIT_TEST (test_equals);
+    CPPUNIT_TEST (test_assignment);
     CPPUNIT_TEST (test_cons);
     CPPUNIT_TEST (test_is_linear);
     CPPUNIT_TEST (test_errors);

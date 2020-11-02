@@ -36,9 +36,11 @@
 #ifndef _error_h
 #define _error_h
 
-#include <cstdio>  // For FILE *
 #include <iostream>
 #include <string>
+#include <exception>
+
+#include <cstdio>  // For FILE *
 
 using std::cout;
 using std::string;
@@ -87,31 +89,44 @@ typedef int ErrorCode; //using standard errno+netCDF error codes from server
     @brief A class for error processing.
     @author jhrg */
 
-class Error
+class Error : public std::exception
 {
 protected:
     ErrorCode _error_code;
-    string _error_message;
+    std::string _error_message;
+
+    std::string d_file;
+    int d_line;
 
 public:
-    Error(ErrorCode ec, string msg);
-    Error(string msg);
+    Error(ErrorCode ec, std::string msg, std::string file = "", int line = 0);
+    Error(std::string msg, std::string file = "", int line = 0);
     Error();
 
     Error(const Error &copy_from);
 
-    virtual ~Error();
+    virtual ~Error() throw();
 
     Error &operator=(const Error &rhs);
 
     bool OK() const;
     bool parse(FILE *fp);
     void print(FILE *out) const;
-    void print(ostream &out) const;
+    void print(std::ostream &out) const;
     ErrorCode get_error_code() const;
-    string get_error_message() const;
+    std::string get_error_message() const;
     void set_error_code(ErrorCode ec = undefined_error);
-    void set_error_message(string msg = "");
+    void set_error_message(std::string msg = "");
+
+    std::string get_file() const { return d_file; }
+    void set_file(std::string f) { d_file = f; }
+    int get_line() const { return d_line; }
+    void set_line(int l) { d_line = l; }
+
+    /// The pointer is valid only for the lifetime of the Error instance. jhrg 9/22/20
+    virtual const char* what() const throw() {
+        return _error_message.c_str();
+    }
 };
 
 } // namespace libdap

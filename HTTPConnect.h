@@ -61,6 +61,7 @@ namespace libdap
 {
 
 extern int www_trace;
+extern int www_trace_extensive;
 extern int dods_keep_temps;
 
 /** Use the CURL library to dereference a HTTP URL. Scan the response for

@@ -50,16 +50,16 @@ private:
 
 public:
     // Ensure that d_stream gets initialized...
-    AlarmHandler() : d_file( 0 )// , d_stream( cout )
+    AlarmHandler() : d_file( 0 )
     {}
 
-    AlarmHandler(FILE *s) : d_file(s)//, d_stream( cout )
+    explicit AlarmHandler(FILE *s) : d_file(s)//, d_stream( cout )
     {}
 
     /** Store information to be used by the handler.
         @param out Write to this stream.
         @deprecated The stream param is ignored. Use the default constructor instead. */
-    AlarmHandler(ostream &) : d_file(0)//, d_stream( out )
+    explicit AlarmHandler(ostream &) : d_file(0)
     {}
 
     virtual ~AlarmHandler()

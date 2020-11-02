@@ -52,7 +52,8 @@ class UInt64: public BaseType
     	set_value(*reinterpret_cast<dods_uint64*>(val));
     	return sizeof(dods_uint64);
     }
-    virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
+    //virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
+    unsigned int buf2val(void **);
     virtual void print_val(FILE *, string, bool) { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
 
 protected:

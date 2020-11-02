@@ -155,6 +155,21 @@ UInt64::set_value(dods_uint64 i)
     return true;
 }
 
+unsigned int
+UInt64::buf2val(void **val)
+
+{
+    if (!val)
+        throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
+
+    if (!*val)
+        *val = new dods_uint64;
+
+    *(dods_uint64 *)*val = d_buf;
+
+    return width();
+}
+
 void
 UInt64::print_val(ostream &out, string space, bool print_decl_p)
 {
@@ -179,25 +194,25 @@ UInt64::ops(BaseType *b, int op)
 
     switch (b->type()) {
         case dods_int8_c:
-            return USCmp<dods_uint64, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
+            return Cmp<dods_uint64, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
         case dods_byte_c:
             return Cmp<dods_uint64, dods_byte>(op, d_buf, static_cast<Byte*>(b)->value());
         case dods_int16_c:
-            return USCmp<dods_uint64, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
+            return Cmp<dods_uint64, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
         case dods_uint16_c:
             return Cmp<dods_uint64, dods_uint16>(op, d_buf, static_cast<UInt16*>(b)->value());
         case dods_int32_c:
-            return USCmp<dods_uint64, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
+            return Cmp<dods_uint64, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
         case dods_uint32_c:
             return Cmp<dods_uint64, dods_uint32>(op, d_buf, static_cast<UInt32*>(b)->value());
         case dods_int64_c:
-            return USCmp<dods_uint64, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
+            return Cmp<dods_uint64, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
         case dods_uint64_c:
             return Cmp<dods_uint64, dods_uint64>(op, d_buf, static_cast<UInt64*>(b)->value());
         case dods_float32_c:
-            return USCmp<dods_uint64, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
+            return Cmp<dods_uint64, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
         case dods_float64_c:
-            return USCmp<dods_uint64, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
+            return Cmp<dods_uint64, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
         default:
             return false;
     }
@@ -208,25 +223,25 @@ UInt64::d4_ops(BaseType *b, int op)
 {
     switch (b->type()) {
         case dods_int8_c:
-            return USCmp<dods_uint64, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
+            return Cmp<dods_uint64, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
         case dods_byte_c:
             return Cmp<dods_uint64, dods_byte>(op, d_buf, static_cast<Byte*>(b)->value());
         case dods_int16_c:
-            return USCmp<dods_uint64, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
+            return Cmp<dods_uint64, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
         case dods_uint16_c:
             return Cmp<dods_uint64, dods_uint16>(op, d_buf, static_cast<UInt16*>(b)->value());
         case dods_int32_c:
-            return USCmp<dods_uint64, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
+            return Cmp<dods_uint64, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
         case dods_uint32_c:
             return Cmp<dods_uint64, dods_uint32>(op, d_buf, static_cast<UInt32*>(b)->value());
         case dods_int64_c:
-            return USCmp<dods_uint64, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
+            return Cmp<dods_uint64, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
         case dods_uint64_c:
             return Cmp<dods_uint64, dods_uint64>(op, d_buf, static_cast<UInt64*>(b)->value());
         case dods_float32_c:
-            return USCmp<dods_uint64, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
+            return Cmp<dods_uint64, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
         case dods_float64_c:
-            return USCmp<dods_uint64, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
+            return Cmp<dods_uint64, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
         default:
             return false;
     }

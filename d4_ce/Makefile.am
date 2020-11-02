@@ -32,16 +32,19 @@ if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 endif
 
+# See note in d4_function about CXX11_FLAG. jhrg 4/5/19
 if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2
+AM_CXXFLAGS += -g -O2 
 endif
 
 AM_LDFLAGS =
+
 if ENABLE_COVERAGE
-AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
-AM_LDFLAGS += -lgcov --coverage -pg
+AM_CXXFLAGS += -fprofile-dir=$(top_srcdir)/gcov-data -fprofile-arcs -ftest-coverage
+AM_LDFLAGS += --coverage
+# -lgcov
 endif
 
 noinst_LTLIBRARIES = libd4_ce_parser.la
@@ -69,8 +72,8 @@ clean-local:
 %.tab.cc %.tab.hh: %.yy
 	$(YACC) $(YFLAGS) $<
 
-#d4_ce_parser.tab.cc d4_ce_parser.tab.hh stack.hh location.hh position.hh: d4_ce_parser.yy
-#	$(YACC) $(YFLAGS) $<
+d4_ce_parser.tab.cc d4_ce_parser.tab.hh stack.hh location.hh position.hh: d4_ce_parser.yy
+	$(YACC) $(YFLAGS) $<
 
 # For now there are two min versions of flex's FlexLexer.h; one that
 # defines the LexerInput() method returning int and one returning size_t.

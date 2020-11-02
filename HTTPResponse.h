@@ -130,8 +130,11 @@ public:
 				set_stream(0);
 			}
 			else {
+			    (void) unlink(d_file.c_str());
+#if 0
 				long res = unlink(d_file.c_str());
 				if (res != 0) throw InternalErr(__FILE__, __LINE__, "!FAIL! " + long_to_string(res));
+#endif
 			}
         }
 

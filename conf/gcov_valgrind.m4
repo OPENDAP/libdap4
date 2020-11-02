@@ -9,13 +9,14 @@ AC_ARG_ENABLE(coverage,
                     [Collect coverage data (default is no)]) ],
     [coverage=$enableval],
     [coverage=no])
- 
+
+AM_CONDITIONAL(ENABLE_COVERAGE, false)
+
 AS_IF([test x$coverage = xyes], 
     [ AS_IF([test x$GCC = xyes],
-            [ AC_CHECK_LIB([gcov], [gcov_open],[LIBS="$LIBS -lgcov"],[],[])
-	      AC_MSG_NOTICE([Building coverage reporting.])
+            [ AC_CHECK_LIB([gcov], [gcov_open], [LIBS="$LIBS -lgcov"], [], [])
+	          AC_MSG_NOTICE([Building coverage reporting.])
               AM_CONDITIONAL(ENABLE_COVERAGE, true)],
             [ AC_MSG_ERROR([Can only enable coverage when using gcc.]) ]) ],
-    AM_CONDITIONAL(ENABLE_COVERAGE, false))
-               
+    )
 ])
