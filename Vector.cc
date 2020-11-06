@@ -1712,7 +1712,7 @@ bool Vector::set_value(dods_float64 *val, int sz)
 
 /**
  * @brief set the value of a string or url array
- * @param val A pointer to an array of string objects
+ * @param val An array of string objects
  * @param sz The number of elements in the string array
  * @return false if the type of the array is neither Str nor Url
  * or val is null, otherwise returns true.
@@ -1723,7 +1723,7 @@ bool Vector::set_value(string *val, int sz)
         d_str.resize(sz);
         d_capacity = sz;
         for (int t = 0; t < sz; t++) {
-            d_str[t] = (*val)[t];
+            d_str[t] = val[t];
         }
         set_length(sz);
         set_read_p(true);
