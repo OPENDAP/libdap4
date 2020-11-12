@@ -1723,7 +1723,7 @@ bool Vector::set_value(string *val, int sz)
         d_str.resize(sz);
         d_capacity = sz;
         for (int t = 0; t < sz; t++) {
-            d_str[t] = (*val)[t];
+            d_str[t] = val[t];
         }
         set_length(sz);
         set_read_p(true);
