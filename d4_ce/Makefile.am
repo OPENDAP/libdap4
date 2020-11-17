@@ -26,7 +26,6 @@ endif
 # AM_LFLAGS = -d
 
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
-TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
@@ -39,9 +38,9 @@ AM_CXXFLAGS += -g -O2
 endif
 
 AM_LDFLAGS =
+
 if ENABLE_COVERAGE
-AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
-AM_LDFLAGS += -lgcov --coverage -pg
+include $(top_srcdir)/coverage.mk
 endif
 
 noinst_LTLIBRARIES = libd4_ce_parser.la
@@ -59,6 +58,8 @@ libd4_ce_parser_la_SOURCES = lex.d4_ce.cc d4_ce_parser.tab.cc	\
 libd4_ce_parser_la_CXXFLAGS = $(AM_CPPFLAGS) $(AM_CXXFLAGS)
 
 EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll
+
+CLEANFILES = *.gcda *.gcno *.gcov
 
 DISTCLEANFILES = 
 

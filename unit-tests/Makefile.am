@@ -45,6 +45,12 @@ else
 AM_CXXFLAGS += -g -O2
 endif
 
+AM_LDFLAGS =
+
+if ENABLE_COVERAGE
+include $(top_srcdir)/coverage.mk
+endif
+
 # This determines what gets built by make check
 check_PROGRAMS = $(UNIT_TESTS)
 
