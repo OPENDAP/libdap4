@@ -33,9 +33,9 @@ else
 AM_CXXFLAGS += -g -O2
 endif
 
-AM_LDFLAGS =
-
 if ENABLE_COVERAGE
+AM_LDFLAGS =
+coverage_subdirs = d4_ce d4_function tests unit-tests 
 include $(top_srcdir)/coverage.mk
 endif
 

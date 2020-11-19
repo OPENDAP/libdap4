@@ -9,13 +9,23 @@ AM_LDFLAGS += --coverage -pg
 # -i (write .gcov files), -f (function summaries), -r (relative paths
 # only - i.e., elide system functions), -m (demangle names)
 
-# This doesn't quite work - loops forever. jhrg 11/17/20
-COVDIRS = $(SUBDIRS:%=cov-%)
+.PHONY: coverage
 
-coverage: $(COVDIRS)
+coverage: 
 	gcov -r -i .libs/*.o
+	@if test -n "$(coverage_subdirs)"; then \
+		for d in $(coverage_subdirs); do \
+			(cd $$d && $(MAKE) $(MFLAGS) coverage); \
+		done; \
+	fi
 
-$(COVDIRS):
-	$(MAKE) $(MFLAGS) -C $(@:cov-%=%) coverage
+# This doesn't quite work - loops forever. jhrg 11/17/20
+# COVDIRS = $(SUBDIRS:%=cov-%)
 
-.PHONY: $(COVDIRS) coverage
+# coverage: $(COVDIRS)
+# 	gcov -r -i .libs/*.o
+
+# $(COVDIRS):
+# 	$(MAKE) $(MFLAGS) -C $(@:cov-%=%) coverage
+
+# .PHONY: $(COVDIRS) coverage
