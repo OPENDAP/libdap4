@@ -35,7 +35,9 @@ endif
 
 if ENABLE_COVERAGE
 AM_LDFLAGS =
-coverage_subdirs = d4_ce d4_function tests unit-tests 
+coverage_subdirs = d4_ce d4_function
+# Don't collect coverage for the tests themselves. tests unit-tests
+# jhrg 11/18/20
 include $(top_srcdir)/coverage.mk
 endif
 
