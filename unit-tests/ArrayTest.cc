@@ -184,12 +184,13 @@ public:
     void prepend_dim_2_test()
     {
         Array a1 = Array("a", d_int16);
-        string expected_name[2] = {"dim_b", "dim_a"};
+        string expected_name[2] = {"dim_b", "myDim"};
         int j = 0;
         D4Dimensions *dims = new D4Dimensions();
         D4Dimension *d = new D4Dimension("dim_b", 2, dims);
         a1.prepend_dim(2, "dim_a");
         a1.prepend_dim(d);
+        a1.rename_dim("dim_a", "myDim");
         for (Array::Dim_iter i = a1.dim_begin(); i != a1.dim_end(); i++, j++) {
             CPPUNIT_ASSERT(a1.dimension_name(i) == expected_name[j]);
         }

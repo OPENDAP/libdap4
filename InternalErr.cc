@@ -62,7 +62,7 @@ InternalErr::InternalErr(const string &msg) : Error()
 
 //InternalErr::InternalErr(string msg, string file, int line)
 //    : Error(unknown_error, msg)
-InternalErr::InternalErr(const string &file, const int &line, const string &msg) : Error()
+InternalErr::InternalErr(const string &file, const int &line, const string &msg) : Error(msg, file, line)
 {
     _error_code = internal_error;
     _error_message = "";
@@ -79,8 +79,21 @@ InternalErr::InternalErr(const InternalErr &copy_from)
         : Error(copy_from)
 {}
 
-InternalErr::~InternalErr()
+InternalErr::~InternalErr() throw()
 {}
+
+InternalErr &
+InternalErr::operator=(const InternalErr &rhs) {
+    if (this == &rhs) return *this;
+
+    _error_code = rhs._error_code;
+    _error_message = rhs._error_message;
+
+    d_file = rhs.d_file;
+    d_line  = rhs.d_line;
+
+    return *this;
+}
 
 /**
     @brief Is the InternalErr object valid?

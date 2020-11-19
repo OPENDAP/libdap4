@@ -297,25 +297,25 @@ bool Byte::d4_ops(BaseType *b, int op)
 {
     switch (b->type()) {
         case dods_int8_c:
-            return USCmp<dods_byte, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
+            return Cmp<dods_byte, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
         case dods_byte_c:
             return Cmp<dods_byte, dods_byte>(op, d_buf, static_cast<Byte*>(b)->value());
         case dods_int16_c:
-            return USCmp<dods_byte, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
+            return Cmp<dods_byte, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
         case dods_uint16_c:
             return Cmp<dods_byte, dods_uint16>(op, d_buf, static_cast<UInt16*>(b)->value());
         case dods_int32_c:
-            return USCmp<dods_byte, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
+            return Cmp<dods_byte, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
         case dods_uint32_c:
             return Cmp<dods_byte, dods_uint32>(op, d_buf, static_cast<UInt32*>(b)->value());
         case dods_int64_c:
-            return USCmp<dods_byte, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
+            return Cmp<dods_byte, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
         case dods_uint64_c:
             return Cmp<dods_byte, dods_uint64>(op, d_buf, static_cast<UInt64*>(b)->value());
         case dods_float32_c:
-            return USCmp<dods_byte, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
+            return Cmp<dods_byte, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
         case dods_float64_c:
-            return USCmp<dods_byte, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
+            return Cmp<dods_byte, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
         case dods_str_c:
         case dods_url_c:
             throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
@@ -351,7 +351,7 @@ Byte::transform_to_dap2(AttrTable *parent_attr_table)
         ostringstream oss;
         oss << __func__ << "() -  Something Bad Happened. This transform should produce only ";
         oss << " a single BaseType yet it produced " << vec->size();
-        throw new Error(internal_error,oss.str());
+        throw Error(internal_error,oss.str());
     }
 
     BaseType *dest = (*vec)[0];

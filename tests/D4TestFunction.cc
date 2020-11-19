@@ -185,8 +185,6 @@ function_scale_dap4(D4RValueList *args, DMR &dmr)
     else {
         throw Error(malformed_expr,"The scale() function works only for numerical arrays and scalars.");
     }
-
-    return 0;
 }
 
 } // namesspace libdap

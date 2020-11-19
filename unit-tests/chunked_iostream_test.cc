@@ -143,6 +143,32 @@ public:
         chunked_outfile.flush();
     }
 
+    void write_9000char_data(const string &file, int buf_size)
+    {
+        fstream infile(file.c_str(), ios::in | ios::binary);
+        if (!infile.good()) CPPUNIT_FAIL("File not open or eof");
+
+        string out = file + ".chunked";
+        fstream outfile(out.c_str(), ios::out | ios::binary);
+
+        chunked_ostream chunked_outfile(outfile, buf_size);
+
+        char str[9000];
+        infile.read(str, 9000);
+        int num = infile.gcount();
+        while (num > 0 && !infile.eof()) {
+            chunked_outfile.write(str, num);
+            infile.read(str, 9000);
+            num = infile.gcount();
+        }
+
+        if (num > 0 && !infile.bad()) {
+            chunked_outfile.write(str, num);
+        }
+
+        chunked_outfile.flush();
+    }
+
     // This will not work with the small text file. This code assume that
     // the file to be written has at least 24 bytes for the first chunk,
     // which is deliberately sent using flush before the buffer is full and
@@ -249,6 +275,35 @@ public:
         while (num > 0 && !chunked_infile.eof()) {
             outfile.write(str, num);
             chunked_infile.read(str, 128);
+            num = chunked_infile.gcount();
+            DBG(cerr << "num: " << num << ", " << count++ << ", eof: " << chunked_infile.eof() << endl);
+        }
+
+        if (num > 0 && !chunked_infile.bad()) {
+            outfile.write(str, num);
+        }
+
+        outfile.flush();
+    }
+
+    void read_5000char_data(const string &file, int buf_size)
+    {
+        string in = file + ".chunked";
+        fstream infile(in.c_str(), ios::in | ios::binary);
+        if (!infile.good()) cerr << "File not open or eof" << endl;
+        chunked_istream chunked_infile(infile, buf_size);
+
+        string out = file + ".plain";
+        fstream outfile(out.c_str(), ios::out | ios::binary);
+
+        char str[5000];
+        int count = 1;
+        chunked_infile.read(str, 5000);
+        int num = chunked_infile.gcount();
+        DBG(cerr << "num: " << num << ", " << count++ << endl);
+        while (num > 0 && !chunked_infile.eof()) {
+            outfile.write(str, num);
+            chunked_infile.read(str, 5000);
             num = chunked_infile.gcount();
             DBG(cerr << "num: " << num << ", " << count++ << ", eof: " << chunked_infile.eof() << endl);
         }
@@ -482,6 +537,14 @@ public:
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
+    void test_write_9000_read_5000_big_file_3()
+    {
+        write_9000char_data(big_file_3, 4000);
+        read_5000char_data(big_file_3, 3096);
+        string cmp = "cmp " + big_file_3 + " " + big_file_3 + ".plain";
+        CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
+    }
+
     // Send an error
 
     void test_write_24_read_24_big_file_2_error()
@@ -525,6 +588,8 @@ public:
     CPPUNIT_TEST (test_write_128_read_128_big_file_2);
 
     CPPUNIT_TEST (test_write_24_read_24_big_file_2_error);
+
+    CPPUNIT_TEST (test_write_9000_read_5000_big_file_3);
 
     CPPUNIT_TEST_SUITE_END();
 };

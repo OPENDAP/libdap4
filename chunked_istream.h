@@ -65,7 +65,7 @@ private:
 	 * chars.
 	 */
 	void m_buffer_alloc() {
-		delete d_buffer;
+		delete[] d_buffer;
 		d_buffer = new char[d_buf_size];
 		setg(d_buffer, 	// beginning of put back area
 			 d_buffer, 	// read position
@@ -95,15 +95,6 @@ public:
 	 * @param twiddle_bytes Should the header bytes be twiddled? True if this host and the
 	 * send use a different byte-order. The sender's byte order must be sent out-of-band.
 	 */
-#if BYTE_ORDER_PREFIX
-	chunked_inbuf(std::istream &is, int size, bool twiddle_bytes = false)
-        : d_is(is), d_buf_size(size), d_buffer(0), d_twiddle_bytes(twiddle_bytes), d_error(false) {
-		if (d_buf_size & CHUNK_TYPE_MASK)
-			throw std::out_of_range("A chunked_outbuf (or chunked_ostream) was built using a buffer larger than 0x00ffffff");
-
-		m_buffer_alloc();
-	}
-#else
     chunked_inbuf(std::istream &is, int size)
         : d_is(is), d_buf_size(size), d_buffer(0), d_twiddle_bytes(false), d_set_twiddle(false), d_error(false) {
         if (d_buf_size & CHUNK_TYPE_MASK)
@@ -111,7 +102,6 @@ public:
 
         m_buffer_alloc();
     }
-#endif
 
 	virtual ~chunked_inbuf() {
 		delete[] d_buffer;
@@ -138,11 +128,7 @@ class chunked_istream: public std::istream {
 protected:
 	chunked_inbuf d_cbuf;
 public:
-#if BYTE_ORDER_PREFIX
-	chunked_istream(std::istream &is, int size, bool twiddle_bytes = false) : std::istream(&d_cbuf), d_cbuf(is, size, twiddle_bytes) { }
-#else
     chunked_istream(std::istream &is, int size) : std::istream(&d_cbuf), d_cbuf(is, size) { }
-#endif
 
 	int read_next_chunk() { return d_cbuf.read_next_chunk(); }
 

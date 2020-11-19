@@ -76,8 +76,6 @@ XDRFileUnMarshaller &
 XDRFileUnMarshaller::operator=( const XDRFileUnMarshaller & )
 {
     throw InternalErr( __FILE__, __LINE__, "Copy operator not implemented." ) ;
-
-    return *this ;
 }
 
 XDRFileUnMarshaller::~XDRFileUnMarshaller( )

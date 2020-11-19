@@ -1,2 +1,2 @@
-Error: At line 1: Expected an integer value for an Enumeration constant, got 'not_an_integer' instead.
-At line 1: The document contained unbalanced tags.
+Error: At line 7: Expected an integer value for an Enumeration constant, got 'not_an_integer' instead.
+At line 13: The document contained unbalanced tags.

@@ -54,6 +54,33 @@ m4_define([EXPR_RESPONSE_B], [
     _EXPR_TEST([-b -W], [$abs_srcdir/expr-testsuite/$1], [$2], [$abs_srcdir/expr-testsuite/$3.base], $4)
 ])
 
+# Tests that capture/evaluate the error text from the parser. jhrg 4/15/20
+#
+# Usage: EXPR_RESPONSE_E(DDS, CE, BASELINE, [pass/xfail])
+#
+m4_define([EXPR_RESPONSE_E], [dnl
+    AT_SETUP([Error: $1 $2 ($4)])
+    AT_KEYWORDS([expr])
+
+    AS_IF([test -z "$at_verbose"], [echo "COMMAND: expr-test -e -p expr-testsuite/$1 -k $2"])
+
+    dds=$abs_srcdir/expr-testsuite/$1
+    ce=$2
+
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        AT_CHECK([$abs_builddir/expr-test -e -p $dds -k $ce], [0], [stdout], [stderr])
+        AT_CHECK([mv stderr $abs_srcdir/expr-testsuite/$3.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/expr-test -e -p $dds -k $ce], [0], [stdout], [stderr])
+        AT_CHECK([diff -b -B $abs_srcdir/expr-testsuite/$3 stderr], [0])
+        AT_XFAIL_IF([test z$4 = zxfail])
+        ])
+
+    AT_CLEANUP
+])
+
 EXPR_RESPONSE_P([test.1], [i], [test.1], [pass])
 EXPR_RESPONSE_P([test.1], [i,j], [test.1a], [pass])
 EXPR_RESPONSE_P([test.1], ['i,j&i=j'], [test.1b], [pass])
@@ -152,4 +179,12 @@ EXPR_RESPONSE_B([test.24.dds], [""], [data.24], [pass])
 
 EXPR_RESPONSE_B([test.25.dds], [""], [data.25], [pass])
 EXPR_RESPONSE_B([test.26.dds], [""], [data.26], [pass])
+
+# Test error responses. None of the parsers should allow any part of
+# the malformed CE into the error messages. jhrg 4/15/20
+
+EXPR_RESPONSE_E([test.1], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.1.error], [pass])
+EXPR_RESPONSE_E([test.2], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.2.error], [pass])
+EXPR_RESPONSE_E([test.3], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.3.error], [pass])
+EXPR_RESPONSE_E([test.5], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.5.error], [pass])
 

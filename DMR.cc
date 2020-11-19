@@ -255,7 +255,7 @@ void DMR::build_using_dds(DDS &dds)
     root()->attributes()->transform_to_dap4(dds.get_attr_table());
 }
 
-#if 1
+#if 0
 /**
  * If we have a DMR that includes Attributes, use it to build the DDS. This
  * will copy all of the variables in the DMR into the DDS using
@@ -269,7 +269,7 @@ void DMR::build_using_dds(DDS &dds)
  */
 DDS *DMR::getDDS(DMR &dmr)
 {
-    DBG( cerr << __func__ << "() - BEGIN" << endl;);
+    DBG( cerr << __func__ << "() - BEGIN" << endl);
     D4Group *root = dmr.root();
 
     BaseTypeFactory *btf = new BaseTypeFactory();
@@ -280,13 +280,14 @@ DDS *DMR::getDDS(DMR &dmr)
     // Now copy the global attributes
     // D4Attributes::load_AttrTable(dds_at,root->attributes());
 
+    // TODO Make this a unique_ptr<> and let the compiler delete it. jhrg 6/17/19
     vector<BaseType *> *top_vars = root->transform_to_dap2(dds_at, true);
-
     vector<BaseType *>::iterator vIter = top_vars->begin();
     vector<BaseType *>::iterator vEnd = top_vars->end();
     for (; vIter != vEnd; vIter++) {
-        dds->add_var(*vIter);
+        dds->add_var_nocopy(*vIter);
     }
+    delete top_vars;
 
 #if 0
     set<string> shared_dim_candidates;
@@ -323,7 +324,7 @@ DDS *DMR::getDDS(DMR &dmr)
     }
     AttrTable *dv_table = Constructor::make_dropped_vars_attr_table(&dropped_vars);
     if(dv_table) {
-        DBG( cerr << __func__ << "() - Adding dropped variable AttrTable." << endl;);
+        DBG( cerr << __func__ << "() - Adding dropped variable AttrTable." << endl);
         dds_at->append_container(dv_table,dv_table->get_name());
     }
 
@@ -332,30 +333,76 @@ DDS *DMR::getDDS(DMR &dmr)
     D4Group::groupsIter gEnd = root->grp_end();
     for(; gIter!=gEnd; gIter++) {
         D4Group *grp = *gIter;
-        DBG( cerr << __func__ << "() - Processing D4Group " << grp->name() << endl;);
+        DBG( cerr << __func__ << "() - Processing D4Group " << grp->name() << endl);
         vector<BaseType *> *d2_vars = grp->transform_to_dap2(dds_at);
         if(d2_vars) {
-            DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variables." << endl;);
+            DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variables." << endl);
             vector<BaseType *>::iterator vIter = d2_vars->begin();
             vector<BaseType *>::iterator vEnd = d2_vars->end();
             for(; vIter!=vEnd; vIter++) {
-                DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variable: " << (*vIter)->name() << endl;);
+                DBG( cerr << __func__ << "() - Processing " << grp->name() << " Member Variable: " << (*vIter)->name() << endl);
                 dds->add_var(*vIter);
             }
         }
     }
 #endif
 
-    DBG( cerr << __func__ << "() - END" << endl;);
+    DBG( cerr << __func__ << "() - END" << endl);
     return dds;
-}
-
-DDS *DMR::getDDS()
-{
-    return DMR::getDDS(*this);
 }
 #endif
 
+/**
+ * @brief Build a DDS from a DMR
+ *
+ * Build a DDS from a DMR, collapsing DAP4 Groups, transforming Arrays to Grids
+ * as needed, and moving the attributes around to match the new variables. All
+ * of the variables in the returned DDS object are newly allocated with separate
+ * lifetimes from the objects in the DMR. They are made using ptr_duplicate()
+ * so that all of the variables mirror specializations for the various types.
+ * That is, if the HDF5 handler built the DMR, then the resulting DDS will hold
+ * instances of H5Int32, etc.
+ *
+ * @note The caller is responsible for deleting the resulting DDS object.
+ *
+ * @return A pointer to the newly allocated DDS.
+ */
+DDS *
+DMR::getDDS()
+{
+#if 0
+    return DMR::getDDS(*this);
+#else
+    DBG( cerr << __func__ << "() - BEGIN" << endl);
+
+#if 0
+    BaseTypeFactory *btf = new BaseTypeFactory();
+#endif
+    BaseTypeFactory btf;
+    DDS *dds = new DDS(&btf, name());
+    dds->filename(filename());
+
+    // Now copy the global attributes
+    // TODO Make this a unique_ptr<> and let the compiler delete it. jhrg 6/17/19
+    vector<BaseType *> *top_vars = root()->transform_to_dap2(&(dds->get_attr_table())/*, true*/);
+    for (vector<BaseType *>::iterator i = top_vars->begin(), e = top_vars->end(); i != e; i++) {
+        dds->add_var_nocopy(*i);
+    }
+    delete top_vars;
+
+    DBG( cerr << __func__ << "() - END" << endl);
+    
+    dds->set_factory(0);
+    return dds;
+#endif
+}
+
+/**
+ * Get the root group for this DMR. This accessor allocates the root group
+ * if one does not exist using the factory class bound to this DMR
+ *
+ * @return A pointer to the root group.
+ */
 D4Group *
 DMR::root()
 {

@@ -3,10 +3,14 @@ dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
+dnl AC_PREREQ([2.68]); Fails on CentOS 6. jhrg 3/26/19
+dnl m4_pattern_forbid([^_?(gl_[A-Z]|AX_|BISON_)])
+dnl m4_pattern_allow([^BISON_USE_NLS$])
+
 dnl Update version here and below at LIB_CURRENT, ..., if needed.
-AC_INIT(libdap, 3.20.0, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.20.6, opendap-tech@opendap.org)
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["4.0"], [Highest DAP version implemented?])
-AC_SUBST(DAP_PROTOCOL_VERSION)
+AC_SUBST([DAP_PROTOCOL_VERSION])
 
 AC_CONFIG_SRCDIR([Connect.cc])
 AC_CONFIG_AUX_DIR(conf)
@@ -52,9 +56,9 @@ dnl increment AGE, set REVISION to 0.
 dnl Interfaces removed or changed (BAD, breaks upward compatibility):
 dnl ==> Increment CURRENT, set AGE and REVISION to 0.
 
-DAPLIB_CURRENT=26
-DAPLIB_AGE=1
-DAPLIB_REVISION=0
+DAPLIB_CURRENT=27
+DAPLIB_AGE=2
+DAPLIB_REVISION=3
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_AGE)
 AC_SUBST(DAPLIB_REVISION)
@@ -64,7 +68,7 @@ AC_SUBST(LIBDAP_VERSION)
 
 CLIENTLIB_CURRENT=7
 CLIENTLIB_AGE=1
-CLIENTLIB_REVISION=8
+CLIENTLIB_REVISION=11
 AC_SUBST(CLIENTLIB_CURRENT)
 AC_SUBST(CLIENTLIB_AGE)
 AC_SUBST(CLIENTLIB_REVISION)
@@ -74,7 +78,7 @@ AC_SUBST(CLIENTLIB_VERSION)
 
 SERVERLIB_CURRENT=13
 SERVERLIB_AGE=6
-SERVERLIB_REVISION=8
+SERVERLIB_REVISION=11
 AC_SUBST(SERVERLIB_CURRENT)
 AC_SUBST(SERVERLIB_AGE)
 AC_SUBST(SERVERLIB_REVISION)
@@ -103,6 +107,27 @@ AS_IF([test "x$CC" = xgcc],
 
 dnl AC_PROG_YACC
 dnl AC_PROG_LEX
+
+dnl NB: CentOS 6 does not support C++-11 but does support some features:
+dnl https://gcc.gnu.org/gcc-4.4/cxx0x_status.html.
+dnl For now, I'm counting 0x as supporting C++-11 in our code.
+
+CXX11_FLAG=""
+
+CXX_FLAGS_CHECK([--std=c++11], [CXX11_FLAG=--std=c++11], [])
+
+dnl don't compile libdap using c++0x on CentOS6. This clashes with flex 2.5.35.
+dnl jhrg 2/14/20
+dnl
+dnl AS_IF([test -z "$CXX11_FLAG"],
+dnl       [CXX_FLAGS_CHECK([--std=c++0x], [CXX11_FLAG=--std=c++0x], [])])
+
+AS_IF([test -z "$CXX11_FLAG"],
+      [AC_MSG_NOTICE([Not using C++-11])],
+      [AC_MSG_NOTICE([Using $CXX11_FLAG for C++-11 support])])
+
+AC_SUBST(CXX11_FLAG)
+
 AM_PROG_LEX
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -250,6 +275,92 @@ AC_SUBST([CURL_LIBS])
 AC_SUBST([CURL_STATIC_LIBS])
 AC_SUBST([CURL_CFLAGS])
 
+dnl ******** new version, breaks the bes package step ********
+dnl jhrg 8/31/20
+dnl
+dnl AC_ARG_WITH(xml2,
+dnl     [AC_HELP_STRING([--with-xml2=PFX],
+dnl         [Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.])],
+dnl     [with_xml2_prefix="$withval"],
+dnl     [with_xml2_prefix=""])
+dnl
+dnl AS_IF([test -n "$with_xml2_prefix" -a ! -x $with_xml2_prefix/bin/xml2-config],
+dnl     [AC_MSG_ERROR([You set the libxml2 prefix directory to $with_xml2_prefix, but xml2-config is not there.])])
+dnl 
+dnl xmlprivatereq=
+dnl xmlprivatelibs=
+dnl xml_set=
+dnl 
+dnl # I changed this code so that it searches for libxml2 using xml2-config
+dnl # first, then pkg-config. This works more reliably when working on OSX
+dnl # given Apple's penchant for moving the lib. jhrg 8/25/20
+dnl 
+dnl AS_IF([test -n "$with_xml2_prefix" -a -x $with_xml2_prefix/bin/xml2-config],
+dnl     [
+dnl     AC_MSG_NOTICE([Using $with_xml2_prefix as the libxml2 prefix directory.])
+dnl     XML2_LIBS="`$with_xml2_prefix/bin/xml2-config --libs`"
+dnl     XML2_CFLAGS="`$with_xml2_prefix/bin/xml2-config --cflags`"
+dnl     xml_set="yes"
+dnl     ])
+dnl 
+dnl # Try using the xml2-config script.
+dnl 
+dnl AS_IF([test -z "$xml_set" & xml2-config --version > /dev/null 2>&1],
+dnl     [
+dnl     AC_MSG_CHECKING([for libxml2])
+dnl    	version_libxml2=`xml2-config --version`
+dnl 
+dnl     AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"],
+dnl         [AC_MSG_ERROR([I could not find libxml2 2.7.0 or newer])])
+dnl 
+dnl    	XML2_LIBS="`xml2-config --libs`"
+dnl    	XML2_CFLAGS="`xml2-config --cflags`"
+dnl    	xmlprivatelibs="`xml2-config --libs `"
+dnl 
+dnl    	# If XML2_CFLAGS does not have -I that ends in /libxml2, append that to
+dnl    	# the string bound to -I. Assume there is only on -I in XML2_CFLAGS. jhrg 8/25/20
+dnl    	AS_IF([echo $XML2_CFLAGS | grep -v -e '-I.*/libxml2'],
+dnl    	    [XML2_CFLAGS=`echo $XML2_CFLAGS | sed "s@\(-I.*\)@\1/libxml2/@g"`])
+dnl 
+dnl    	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
+dnl    	xml_set=yes
+dnl    	])
+dnl 
+dnl # If not found, try pkg-config
+dnl AS_IF([test -z "$xml_set"],
+dnl     [
+dnl     libdap_libxml2_module='libxml-2.0 >= 2.7.0'
+dnl     PKG_CHECK_MODULES([XML2], [libdap_libxml2_module],
+dnl         [libdap_pkgconfig_libxml2=yes],
+dnl         [libdap_pkgconfig_libxml2=no])
+dnl     AS_IF([test $libdap_pkgconfig_libxml2 = yes],
+dnl         [
+dnl         XML2_LIBS="`$PKG_CONFIG --libs libxml-2.0`"
+dnl         XML2_CFLAGS="`$PKG_CONFIG --cflags libxml-2.0`"
+dnl         AC_MSG_RESULT([yes; used pkg-config])
+dnl         xmlprivatereq=$libdap_libxml2_module
+dnl         xml_set=yes
+dnl         ],
+dnl         [
+dnl 	    AC_MSG_ERROR([I could not find xml2-config])
+dnl 	    ])
+dnl     ])
+dnl 
+dnl AS_IF([test -z "xml_set"],
+dnl     [
+dnl     AC_MSG_ERROR([I could not find xml2-config])
+dnl     ])
+dnl 
+dnl AC_SUBST([xmlprivatereq])
+dnl AC_SUBST([xmlprivatelibs])
+dnl AC_SUBST([XML2_LIBS])
+dnl AC_SUBST([XML2_CFLAGS])
+dnl 
+dnl ******** end new, broken-for-the-bes version *********
+
+dnl Version of XML2 configuration from git commit 8624abec8e3d510508c3c97ac60082700995af2c
+dnl jhrg 8/31/20
+
 AC_ARG_WITH(xml2,[  --with-xml2=PFX   Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.],
             with_xml2_prefix="$withval", with_xml2_prefix="")
 
@@ -286,9 +397,9 @@ elif xml2-config --version > /dev/null 2>&1
 then
 	version_libxml2=`xml2-config --version`
 
-        AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"], 
+        AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"],
                 [AC_MSG_ERROR([I could not find libxml2 2.7.0 or newer])])
-        
+
 	XML2_LIBS="`xml2-config --libs`"
 	dnl XML2_STATIC_LIBS=$XML2_LIBS
 	XML2_CFLAGS="`xml2-config --cflags`"
@@ -296,7 +407,7 @@ then
 	dnl `
 	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
 else
-	AC_MSG_ERROR([I could not find ml2-config])
+	AC_MSG_ERROR([I could not find xml2-config])
 fi
 fi
 
@@ -305,6 +416,9 @@ AC_SUBST([xmlprivatelibs])
 AC_SUBST([XML2_LIBS])
 dnl AC_SUBST([XML2_STATIC_LIBS])
 AC_SUBST([XML2_CFLAGS])
+
+dnl End old version of XML2 configuration. jhrg 8/31/20
+dnl ********
 
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[PTHREAD_LIBS="-lpthread"],

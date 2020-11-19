@@ -146,7 +146,6 @@ bool Vector::m_is_cardinal_type() const
 
         case dods_enum_c:
             return true;
-            break;
 
             // These must be handled differently.
         case dods_str_c:
@@ -159,7 +158,6 @@ bool Vector::m_is_cardinal_type() const
         case dods_sequence_c:
         case dods_grid_c:
             return false;
-            break;
 
         default:
             assert("Vector::var: Unrecognized type");
@@ -511,13 +509,11 @@ BaseType *Vector::var(unsigned int i)
             // Transfer the ith value to the BaseType *d_proto
             d_proto->val2buf(d_buf + (i * d_proto->width()));
             return d_proto;
-            break;
 
         case dods_str_c:
         case dods_url_c:
             d_proto->val2buf(&d_str[i]);
             return d_proto;
-            break;
 
         case dods_opaque_c:
         case dods_array_c:
@@ -525,14 +521,10 @@ BaseType *Vector::var(unsigned int i)
         case dods_sequence_c:
         case dods_grid_c:
             return d_compound_buf[i];
-            break;
 
         default:
             throw Error ("Vector::var: Unrecognized type");
-            break;
     }
-
-    return 0;
 }
 
 /** Returns the number of bytes needed to hold the entire
@@ -632,7 +624,6 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
         case dods_array_c:
             // This is an error since there can never be an Array of Array.
             throw InternalErr(__FILE__, __LINE__, "Array of Array not supported.");
-            break;
 
         case dods_structure_c:
         case dods_sequence_c:
@@ -653,7 +644,6 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
-            break;
     }
 }
 
@@ -670,9 +660,6 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
-#if 0
-    dds.timeout_on();
-#endif
     // Added to streamline zero-length arrays. Not needed for correct function,
     // but explicitly handling this case here makes the code easier to follow.
     // In libdap::Vector::val2buf() there is a test that will catch the zero-length
@@ -685,9 +672,7 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-#if 0
-    dds.timeout_off();
-#endif
+
     // length() is not capacity; it must be set explicitly in read().
     int num = length();
 
@@ -741,7 +726,6 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
-            break;
     }
 
 #ifdef CLEAR_LOCAL_DATA
@@ -843,7 +827,6 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
             // Added jhrg 5/18/17
             // This replaces a comment that was simply 'TO DO'
             throw InternalErr(__FILE__, __LINE__, "Array of array!");
-            break;
 
         case dods_structure_c:
         case dods_sequence_c:
@@ -867,7 +850,6 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown type!");
-            break;
     }
 
     return false;
@@ -912,7 +894,6 @@ void Vector::compute_checksum(Crc32 &checksum)
         case dods_grid_c:	// No grids in DAP4
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown or unsupported datatype (" + d_proto->type_name() + ").");
-            break;
     }
 }
 
@@ -960,7 +941,6 @@ void Vector::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*
         case dods_grid_c:
         default:
         	throw InternalErr(__FILE__, __LINE__, "Unknown or unsupported datatype (" + d_proto->type_name() + ").");
-            break;
     }
 }
 
@@ -1042,7 +1022,6 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter /*= false*/)
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
-            break;
     }
 
 #ifdef CLEAR_LOCAL_DATA
@@ -1132,7 +1111,6 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Unknown type.");
-            break;
     }
 }
 
@@ -1229,11 +1207,14 @@ unsigned int Vector::val2buf(void *val, bool reuse)
     return width(true);
 }
 
-/** Copies data from the Vector buffer.  This function assumes that
- <i>val</i> points to an array large enough to hold N instances of
- the `C' representation of the \e numeric element type or C++ string
- objects. Never call this method for constructor types Structure,
- Sequence or Grid.
+/**
+ @brief Copies data from the Vector buffer.
+
+ Copy data from a numeric or string arry to a buffer. This method will
+ allocate memory if the handle @p val references NULL, otherwise it
+ assumes the handle references enough storage for the data to be copied.
+
+ Never call this method for constructor types Structure, Sequence or Grid.
 
  When reading data out of a variable that has been constrained, this method
  assumes the N values/bytes of constrained data start at the beginning
@@ -1242,14 +1223,19 @@ unsigned int Vector::val2buf(void *val, bool reuse)
  get the data. Unless your constraint starts with the [0]th element, the
  result will not be the correct values.
 
- In the case of a Vector of Str objects, this method will return an array
- of C++ std::string objects.
+ In the case of a Vector of Str objects, this method will return a
+ pointer to an array of C++ std::string objects.
 
  @note It's best to define the pointer to reference the data as
- 'char *data' and then call this method using '..->buf2val((void**)&data)'.
- Then free the storage once you're done using 'delete[] data'. It's not
- correct C++ to use 'delete[]' on a void pointer and the allocated memory
- \e is an array of char, so 'delete[]' is needed.
+ 'char *data' or some other non-void type and then call this method
+ using '..->buf2val((void**)&data)'. You must free the storage once
+ you're done using 'delete[] data'.
+
+ @note It's also important to initialize the handle to NULL. That is
+ your code should declare the handle like this: 'char *data = 0' if
+ it expects buf2val() to allocate memory. With most compilers, the
+ pointer may be null the first time the code is run, but often not on
+ subsequent calls.
 
  @return The number of bytes used to store the array.
  @param val A pointer to a pointer to the memory into which the
@@ -1296,7 +1282,6 @@ unsigned int Vector::buf2val(void **val)
 
             memcpy(*val, d_buf, wid);
             return wid;
-            break;
 
         case dods_str_c:
         case dods_url_c: {
@@ -1309,7 +1294,6 @@ unsigned int Vector::buf2val(void **val)
                 *(static_cast<string *> (*val) + i) = d_str[i];
 
             return width();
-            break;
         }
 
         default:
@@ -1468,7 +1452,6 @@ void Vector::reserve_value_capacity(unsigned int numElements)
 
         case dods_array_c:
             throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Arrays not supported!");
-            break;
 
         case dods_opaque_c:
         case dods_structure_c:
@@ -1481,8 +1464,6 @@ void Vector::reserve_value_capacity(unsigned int numElements)
 
         default:
             throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Unknown type!");
-            break;
-
     } // switch
 
 }
@@ -1615,12 +1596,9 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 			// Not sure that this function will be used for these type of nested objects, so I will throw here.
 			throw InternalErr(__FILE__, __LINE__,
 					funcName + "Unimplemented method for Vectors of type: array, opaque, structure, sequence or grid.");
-			break;
 
 		default:
 			throw InternalErr(__FILE__, __LINE__, funcName + ": Unknown type!");
-			break;
-
 	} // switch (_var->type())
 
 	// This is how many elements we copied.
@@ -1732,13 +1710,19 @@ bool Vector::set_value(dods_float64 *val, int sz)
     return set_value_worker(val, sz);
 }
 
-/** @brief set the value of a string or url array */
+/**
+ * @brief set the value of a string or url array
+ * @param val An array of string objects
+ * @param sz The number of elements in the string array
+ * @return false if the type of the array is neither Str nor Url
+ * or val is null, otherwise returns true.
+ */
 bool Vector::set_value(string *val, int sz)
 {
     if ((var()->type() == dods_str_c || var()->type() == dods_url_c) && val) {
         d_str.resize(sz);
         d_capacity = sz;
-        for (register int t = 0; t < sz; t++) {
+        for (int t = 0; t < sz; t++) {
             d_str[t] = val[t];
         }
         set_length(sz);
@@ -1804,7 +1788,7 @@ bool Vector::set_value(vector<string> &val, int sz)
     if (var()->type() == dods_str_c || var()->type() == dods_url_c) {
         d_str.resize(sz);
         d_capacity = sz;
-        for (register int t = 0; t < sz; t++) {
+        for (int t = 0; t < sz; t++) {
             d_str[t] = val[t];
         }
         set_length(sz);

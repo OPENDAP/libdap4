@@ -48,6 +48,12 @@
 #include "parser.h"		// for get_ull()
 #include "debug.h"
 
+// Always define this for a production release.
+#define PREVENT_XXS_VIA_CE 1
+#if NDEBUG && !PREVENT_XXS_VIA_CE
+#error("Never release libdap with PREVENT_XXS_VIA_CE turned off")
+#endif
+
 namespace libdap {
 
 bool D4ConstraintEvaluator::parse(const std::string &expr)
@@ -66,14 +72,28 @@ bool D4ConstraintEvaluator::parse(const std::string &expr)
     return parser.parse() == 0;
 }
 
-void D4ConstraintEvaluator::throw_not_found(const string &id, const string &ident)
+/**
+ * print an error message. If PREVENT_XXS_VIA_CE is true (it should be), then
+ * id won't be printed. The value of 'ident' is a literal that identifies the
+ * parse rule to help locate the source of the error.
+ * @param ident
+ */
+void D4ConstraintEvaluator::throw_not_found(const string &/* id */, const string &/* ident */)
 {
+#if PREVENT_XXS_VIA_CE
+    throw Error(no_such_variable, string("The constraint expression referenced a variable that was not found in the dataset."));
+#else
     throw Error(no_such_variable, d_expr + ": The variable " + id + " was not found in the dataset (" + ident + ").");
+#endif
 }
 
-void D4ConstraintEvaluator::throw_not_array(const string &id, const string &ident)
+void D4ConstraintEvaluator::throw_not_array(const string &/* id */, const string &/* ident */)
 {
+#if PREVENT_XXS_VIA_CE
+    throw Error(no_such_variable, string("The constraint expression referenced an Array that was not found in the dataset."));
+#else
     throw Error(no_such_variable, d_expr + ": The variable '" + id + "' is not an Array variable (" + ident + ").");
+#endif
 }
 
 void D4ConstraintEvaluator::search_for_and_mark_arrays(BaseType *btp)
@@ -430,10 +450,17 @@ D4ConstraintEvaluator::remove_quotes(string &s)
 // This method is called from the parser (see d4_ce_parser.yy, down in the code
 // section). This will be called during the call to D4CEParser::parse(), that
 // is inside D4ConstraintEvaluator::parse(...)
-void D4ConstraintEvaluator::error(const libdap::location &l, const std::string &m)
+//
+// Including the value passed in for 'l' allows the CE text to leak into
+// the error message, a potential XSS attack vector. jhrg 4/15/20
+void D4ConstraintEvaluator::error(const libdap::location &, const std::string &m)
 {
     ostringstream oss;
+#if PREVENT_XXS_VIA_CE
+    oss << "Constraint expression parse error: " << m << ends;
+#else
     oss << l << ": " << m << ends;
+#endif
     throw Error(malformed_expr, oss.str());
 }
 

@@ -141,7 +141,7 @@ public:
     }
 
     // In this test, get() is used to get one character from the input source
-    // and readsome() is used to read teh remaining chars. This works inpart
+    // and readsome() is used to read the remaining chars. This works inpart
     // because the input buffer is bigger than the input, so the initial call
     // to get() triggers a read in underflow that grabs all the characters.
     // Given that the stream's input buffer has them all, readsome() returns

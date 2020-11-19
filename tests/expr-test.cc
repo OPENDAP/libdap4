@@ -169,6 +169,7 @@ int main(int argc, char *argv[])
     ServerFunctionsList::TheList()->add_function(scale);
 
     // process options
+    ce_exprdebug = false;
 
     while ((option_char = getopt()) != -1)
         switch (option_char) {
@@ -298,7 +299,7 @@ void test_scanner(bool show_prompt)
             cout << "WORD: " << ce_exprlval.id << endl;
             break;
         case SCAN_STR:
-            cout << "STR: " << *ce_exprlval.val.v.s << endl;
+            cout << "STR: " << *ce_exprlval.str << endl;
             break;
         case SCAN_EQUAL:
             cout << "EQUAL: " << ce_exprlval.op << endl;

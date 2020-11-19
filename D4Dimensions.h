@@ -40,7 +40,7 @@ class XMLWriter;
 
 class D4Dimension {
     string d_name;
-    unsigned long d_size;
+    unsigned long long d_size;
 
     D4Dimensions *d_parent;	// This is used to get the Dimensions and then the Group object
 
@@ -52,15 +52,15 @@ class D4Dimension {
 public:
     D4Dimension() : d_name(""), d_size(0),  d_parent(0), d_constrained(false), d_c_start(0), d_c_stride(0),
             d_c_stop(0), d_used_by_projected_var(false) {}
-    D4Dimension(const string &name, unsigned long size, D4Dimensions *d = 0) : d_name(name), d_size(size), d_parent(d),
+    D4Dimension(const string &name, unsigned long long size, D4Dimensions *d = 0) : d_name(name), d_size(size), d_parent(d),
             d_constrained(false), d_c_start(0), d_c_stride(0), d_c_stop(0), d_used_by_projected_var(false) {}
 
     string name() const {return d_name;}
     void set_name(const string &name) { d_name = name; }
     string fully_qualified_name() const;
 
-    unsigned long size() const { return d_size; }
-    void set_size(unsigned long size) { d_size = size; }
+    unsigned long long size() const { return d_size; }
+    void set_size(unsigned long long size) { d_size = size; }
     // Because we build these in the XML parser and it's all text...
     void set_size(const string &size);
 

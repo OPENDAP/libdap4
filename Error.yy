@@ -52,6 +52,7 @@ using namespace libdap;
 #define ERROR_OBJ(arg) ((Error *)((parser_arg *)(arg))->_object)
 #define STATUS(arg) ((parser_arg *)(arg))->_status
 
+#define YYERROR_VERBOSE 0
 //#define YYPARSE_PARAM arg
 
 extern int error_line_num;	// defined in Error.lex
@@ -68,6 +69,7 @@ void Errorerror(parser_arg *arg, const string &s);	// gotta love automatically g
 %require "2.4"
 %parse-param {parser_arg *arg}
 %name-prefix "Error"
+// %define api.prefix {Error}
 %defines
 %debug
 %verbose

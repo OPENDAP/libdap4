@@ -275,7 +275,7 @@ D4Attributes::transform_to_dap4(AttrTable &at)
 }
 
 
-AttrType get_dap2_AttrType(D4AttributeType d4_type){
+AttrType get_dap2_AttrType(D4AttributeType d4_type) {
     switch (d4_type) {
     case attr_container_c: { return Attr_container; }
     case attr_byte_c:      { return Attr_byte; }
@@ -288,45 +288,108 @@ AttrType get_dap2_AttrType(D4AttributeType d4_type){
     case attr_str_c:       { return Attr_string; }
     case attr_url_c:       { return Attr_url; }
     case attr_otherxml_c:  { return Attr_other_xml; }
+
+    case attr_int8_c:      { return Attr_byte; }
+    case attr_uint8_c:     { return Attr_byte; }
+    case attr_int64_c:     {
+        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
+            "There is no accepted DAP2 representation of Int64.");
+    }
+    case attr_uint64_c:    {
+        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
+            "There is no accepted DAP2 representation of UInt64.");
+    }
+    case attr_enum_c:    {
+        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
+            "There is no accepted DAP2 representation of Enumeration.");
+    }
+    case attr_opaque_c:    {
+        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
+            "There is no accepted DAP2 representation of Opaque.");
+    }
+
     default:
-        throw InternalErr(__FILE__, __LINE__, "Unknown DAP4 attribute");
+        throw InternalErr(__FILE__, __LINE__, "Unknown DAP4 attribute.");
     }
 }
 
-
-void
-D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs)
+/**
+ * @brief Copy the attributes from this D4Attributes object to a DAP2 AttrTable.
+ *
+ * @param d2_attr_table Load \arg d2_attr_table with the D4Attributes found in this object.
+ */
+void D4Attributes::transform_attrs_to_dap2(AttrTable *d2_attr_table)
 {
-   //  cerr << __func__ << "() - Loading attribute table: '" << d2_attr_table->get_name() << "'  addr: " << (void *)d2_attr_table << endl;
-
-    // for every attribute in at, copy it to this.
-    for ( D4Attributes::D4AttributesIter i = d4_attrs->attribute_begin(), e = d4_attrs->attribute_end(); i != e; ++i) {
+    // for every attribute in d4_attrs, copy it to d2_attr_table.
+    for (D4Attributes::D4AttributesIter i = attribute_begin(), e = attribute_end(); i != e; ++i) {
         string name = (*i)->name();
         D4AttributeType d4_attr_type = (*i)->type();
         AttrType d2_attr_type = get_dap2_AttrType(d4_attr_type);
         string d2_attr_type_name = AttrType_to_String(d2_attr_type);
 
-        D4Attribute::D4AttributeIter vitr =(*i)->value_begin();
-        D4Attribute::D4AttributeIter end =(*i)->value_end();
+        switch (d4_attr_type) {
+        case attr_container_c: {
+            AttrTable *child_attr_table = new AttrTable();
+            child_attr_table->set_name(name);
+
+            (*i)->attributes()->transform_attrs_to_dap2(child_attr_table);
+            d2_attr_table->append_container(child_attr_table, name);
+            break;
+        }
+        default: {
+            for (D4Attribute::D4AttributeIter vi = (*i)->value_begin(), ve = (*i)->value_end(); vi != ve; vi++) {
+                d2_attr_table->append_attr(name, d2_attr_type_name, *vi);
+            }
+
+            break;
+        }
+        }
+    }
+}
+
+#if 0
+/**
+ * @brief Transfer DAP4 attributes to a DAP2 AttrTable object
+ *
+ * This is a helper method, see get_AttrTable().
+ *
+ * @param d2_attr_table Destination object
+ * @param d4_attrs Source of the attribute information
+ * @see get_AttrTable
+ */
+void D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs)
+{
+    // for every attribute in d4_attrs, copy it to d2_attr_table.
+    for (D4Attributes::D4AttributesIter i = d4_attrs->attribute_begin(), e = d4_attrs->attribute_end(); i != e; ++i) {
+        string name = (*i)->name();
+        D4AttributeType d4_attr_type = (*i)->type();
+        string d2_attr_type_name = AttrType_to_String(get_dap2_AttrType(d4_attr_type));
+
+#if 0
+        D4Attribute::D4AttributeIter vitr = (*i)->value_begin();
+        D4Attribute::D4AttributeIter end = (*i)->value_end();
 
         vector<string> values;
-        for(;vitr!=end; vitr++){
+        for (; vitr != end; vitr++) {
             values.push_back((*vitr));
         }
+#endif
 
         switch (d4_attr_type) {
         case attr_container_c: {
             // Attr_container
             AttrTable *child_attr_table = new AttrTable();
             child_attr_table->set_name(name);
-            // cerr << __func__ << "() - Created child attribute table: " << name << " addr: " << (void *)child_attr_table << endl;
-            load_AttrTable(child_attr_table,(*i)->attributes());
-            d2_attr_table->append_container(child_attr_table,name);
+
+            load_AttrTable(child_attr_table, (*i)->attributes());
+            d2_attr_table->append_container(child_attr_table, name);
             break;
         }
-        default:{
-            // cerr << __func__ << "() - "<< name << " has " << values.size() << " value(s). d2_attr_type_name: " << d2_attr_type_name << endl;
-            d2_attr_table->append_attr(name,d2_attr_type_name, &values);
+        default: {
+            for (D4Attribute::D4AttributeIter vi = (*i)->value_begin(), ve = (*i)->value_end(); vi != ve; vi++) {
+                d2_attr_table->append_attr(name, d2_attr_type_name, *vi);
+            }
+
             break;
         }
         }
@@ -343,12 +406,15 @@ D4Attributes::load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs)
  */
 AttrTable *D4Attributes::get_AttrTable(const string name)
 {
-    AttrTable *my_pretty_pony = new AttrTable();
-    load_AttrTable(my_pretty_pony, this);
-    my_pretty_pony->set_name(name);
-    return my_pretty_pony;
+    AttrTable *at = new AttrTable();
+    transform_attrs_to_dap2(at);
+#if 0
+    load_AttrTable(at, this);
+#endif
+    at->set_name(name);
+    return at;
 }
-
+#endif
 
 D4Attribute *
 D4Attributes::find_depth_first(const string &name, D4AttributesIter i)

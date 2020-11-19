@@ -123,7 +123,7 @@ SCAN_HASH_UINT32  $UInt32
 SCAN_HASH_FLOAT32 $Float32
 SCAN_HASH_FLOAT64 $Float64
 
-SCAN_STAR       \*
+SCAN_STAR    \*
 
 NEVER		[^\-+a-zA-Z0-9_/%.\\:,(){}[\]&<>=~]
 
@@ -229,12 +229,15 @@ store_str()
     string *s = new string(yytext); // move all calls of www2id into the parser. jhrg 7/5/13 www2id(string(yytext)));
 
     if (*s->begin() == '\"' && *(s->end()-1) == '\"') {
-	s->erase(s->begin());
-	s->erase(s->end()-1);
+	    s->erase(s->begin());
+	    s->erase(s->end()-1);
     }
-
+#if 0
     ce_exprlval.val.type = dods_str_c;
     ce_exprlval.val.v.s = s;
+#else
+    ce_exprlval.str = s;
+#endif
 }
 
 static void

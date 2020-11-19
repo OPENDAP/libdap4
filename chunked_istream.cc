@@ -28,7 +28,6 @@
 #include "config.h"
 
 #include <stdint.h>
-#include <byteswap.h>
 #include <arpa/inet.h>
 
 #include <cstring>
@@ -96,26 +95,23 @@ chunked_inbuf::underflow()
 	// To read data from the chunked stream, first read the header
 	uint32_t header;
 	d_is.read((char *) &header, 4);
-#if !BYTE_ORDER_PREFIX
+
 	// When the endian nature of the server is encoded in the chunk header, the header is
 	// sent using network byte order
-	ntohl(header);
-#endif
+	header = ntohl(header);
 
 	// There are two 'EOF' cases: One where the END chunk is zero bytes and one where
 	// it holds data. In the latter case, bytes those will be read and moved into the
 	// buffer. Once those data are consumed, we'll be back here again and this read()
 	// will return EOF. See below for the other case...
 	if (d_is.eof()) return traits_type::eof();
-#if BYTE_ORDER_PREFIX
-	if (d_twiddle_bytes) header = bswap_32(header);
-#else
+
 	// (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
 	if (!d_set_twiddle) {
 	    d_twiddle_bytes = (is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN));
 	    d_set_twiddle = true;
 	}
-#endif
+
 	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 
 	DBG(cerr << "underflow: chunk size from header: " << chunk_size << endl);
@@ -161,8 +157,6 @@ chunked_inbuf::underflow()
 		d_error_message = "Failed to read known chunk header type.";
 		return traits_type::eof();
 	}
-
-	return traits_type::eof();	// Can never get here; this quiets g++
 }
 
 /**
@@ -220,24 +214,20 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
         // Get a chunk header
         uint32_t header;
         d_is.read((char *) &header, 4);
-#if !BYTE_ORDER_PREFIX
-        ntohl(header);
-#endif
+
+        header = ntohl(header);
 
         // There are two EOF cases: One where the END chunk is zero bytes and one where
         // it holds data. In the latter case, those will be read and moved into the
         // buffer. Once those data are consumed, we'll be back here again and this read()
         // will return EOF. See below for the other case...
         if (d_is.eof()) return traits_type::eof();
-#if BYTE_ORDER_PREFIX
-        if (d_twiddle_bytes) header = bswap_32(header);
-#else
+
         // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
         if (!d_set_twiddle) {
             d_twiddle_bytes = (is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN));
             d_set_twiddle = true;
         }
-#endif
 
 	    uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 		DBG(cerr << "xsgetn: chunk size from header: " << chunk_size << endl);
@@ -307,15 +297,17 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 	    	// eof; this call returns the number of bytes read and transferred to 's'.
 	    	done = true;
 	    	break;
+
 	    case CHUNK_DATA:
 	    	done = bytes_left_to_read == 0;
 	        break;
+
 	    case CHUNK_ERR:
 			// this is pretty much the end of the show... The error message has
 	    	// already been read above
 			return traits_type::eof();
-	        break;
-		default:
+
+	    default:
 			d_error = true;
 			d_error_message = "Failed to read known chunk header type.";
 			return traits_type::eof();
@@ -343,24 +335,20 @@ chunked_inbuf::read_next_chunk()
 	// To read data from the chunked stream, first read the header
 	uint32_t header;
 	d_is.read((char *) &header, 4);
-#if !BYTE_ORDER_PREFIX
-    ntohl(header);
-#endif
+
+    header = ntohl(header);
 
 	// There are two 'EOF' cases: One where the END chunk is zero bytes and one where
 	// it holds data. In the latter case, bytes those will be read and moved into the
 	// buffer. Once those data are consumed, we'll be back here again and this read()
 	// will return EOF. See below for the other case...
 	if (d_is.eof()) return traits_type::eof();
-#if BYTE_ORDER_PREFIX
-    if (d_twiddle_bytes) header = bswap_32(header);
-#else
+
     // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
     if (!d_set_twiddle) {
         d_twiddle_bytes = (is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN));
         d_set_twiddle = true;
     }
-#endif
 
 	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 
@@ -393,6 +381,7 @@ chunked_inbuf::read_next_chunk()
 	case CHUNK_END:
 		DBG(cerr << "Found end chunk" << endl);
 		return traits_type::not_eof(chunk_size);
+
 	case CHUNK_DATA:
 		return traits_type::not_eof(chunk_size);
 
@@ -402,13 +391,12 @@ chunked_inbuf::read_next_chunk()
 		d_error = true;
 		d_error_message = string(d_buffer, chunk_size);
 		return traits_type::eof();
+
 	default:
 		d_error = true;
 		d_error_message = "Failed to read known chunk header type.";
 		return traits_type::eof();
 	}
-
-	return traits_type::eof();	// Can never get here; this quiets g++
 }
 
 }

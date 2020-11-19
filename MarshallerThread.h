@@ -104,10 +104,6 @@ private:
     int d_child_thread_count;   // 0 or 1
     std::string d_thread_error; // non-null indicates an error
 
-#if 0
-    static bool print_time; // false by default
-#endif
-
     /**
      * Used to pass information into the static methods that run the
      * simple stream writer threads. This can pass both an ostream or
@@ -159,12 +155,6 @@ public:
     // are passed to pthread_create()
     static void *write_thread(void *arg);
     static void *write_thread_part(void *arg);
-
-#if 0
-    static void set_print_time(bool state) { print_time = state; }
-    static bool get_print_time() { return print_time; }
-#endif
-
 };
 
 }

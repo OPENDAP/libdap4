@@ -10,7 +10,7 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests \
 $(CURL_CFLAGS) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_LDADD = $(XML2_LIBS)
-AM_CXXFLAGS = 
+AM_CXXFLAGS = $(CXX11_FLAG)
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align

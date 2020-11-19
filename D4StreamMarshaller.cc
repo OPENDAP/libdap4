@@ -814,7 +814,6 @@ void D4StreamMarshaller::put_vector_part(char *val, unsigned int num, int width,
 
     default:
         throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
-        break;
     }
 }
 
