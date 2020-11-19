@@ -36,10 +36,8 @@ else
 AM_CXXFLAGS += -g -O2
 endif
 
-if ENABLE_COVERAGE
 AM_LDFLAGS =
 include $(top_srcdir)/coverage.mk
-endif
 
 noinst_LTLIBRARIES = libd4_function_parser.la
 pkginclude_HEADERS = D4FunctionEvaluator.h

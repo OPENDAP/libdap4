@@ -33,13 +33,12 @@ else
 AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
 endif
 
-if ENABLE_COVERAGE
 AM_LDFLAGS =
-coverage_subdirs = d4_ce d4_function
+
 # Don't collect coverage for the tests themselves. tests unit-tests
 # jhrg 11/18/20
+coverage_subdirs = d4_ce d4_function
 include $(top_srcdir)/coverage.mk
-endif
 
 SUBDIRS = gl d4_ce d4_function . unit-tests tests
 DIST_SUBDIRS = gl d4_ce d4_function unit-tests tests

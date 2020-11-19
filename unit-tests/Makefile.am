@@ -46,10 +46,7 @@ AM_CXXFLAGS += -g -O2
 endif
 
 AM_LDFLAGS =
-
-if ENABLE_COVERAGE
 include $(top_srcdir)/coverage.mk
-endif
 
 # This determines what gets built by make check
 check_PROGRAMS = $(UNIT_TESTS)
@@ -127,7 +124,7 @@ MIMEUtilTest_SOURCES = MIMEUtilTest.cc
 MIMEUtilTest_LDADD = ../libdap.la $(AM_LDADD)
 
 ancT_SOURCES = ancT.cc
-ancT_LDADD = ../libdapserver.la ../libdap.la $(AM_LDADD)
+ancT_LDADD = ../libdap.la ../libdapserver.la $(AM_LDADD)
 
 DASTest_SOURCES = DASTest.cc
 DASTest_LDADD = ../libdap.la $(AM_LDADD)

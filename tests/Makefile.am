@@ -27,10 +27,7 @@ AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
 endif
 
 AM_LDFLAGS =
-
-if ENABLE_COVERAGE
 include $(top_srcdir)/coverage.mk
-endif
 
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 check_PROGRAMS = das-test dds-test expr-test 

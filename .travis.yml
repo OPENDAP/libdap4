@@ -7,11 +7,14 @@
 # Modified to push the result of a successful build up to an AWS S3
 # bucket. jhrg 2.24.18
 
-dist: xenial
+virt: lxd             # use an lxd container
+arch: amd64           # optional, this is default, routes to a full VM
+os: linux             # optional, this is default
+dist: xenial          # or bionic | xenial | trusty | precise with xenial as default
 
 language: cpp
 
-compiler: gcc
+compiler: gcc         # Could add clang
 
 branches:
   only:
@@ -19,12 +22,14 @@ branches:
   - travis
 
 addons:
+  sonarcloud: true
   apt:
     packages:
     - libxml2-dev
     - uuid-dev
     - libcurl4-openssl-dev
     - libcppunit-dev 
+    - gcovr
     - build-essential
     - lintian
     - fakeroot
@@ -60,7 +65,7 @@ stages:
   - name: scan
     if:  branch = master
   - name: package
-    if:  branch = master
+    if:  branch = master AND NOT pull_request
   - name: travis
     if: branch = travis
 
@@ -91,12 +96,17 @@ jobs:
     - make distcheck -j7
 
   - stage: scan
-    addons:
-      sonarcloud: true
     script:
     - export LIBDAP_BUILD=sonar
-    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
+    - ./configure --disable-dependency-tracking  --prefix=$prefix --enable-developer --enable-coverage
     - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
+    # Run these commands in bw-output?
+    - make check -j7
+    - make coverage
+    - find . -wholename \*/.libs/*.gcov -a ! -name \*\#\* -a ! -name \*.hh.gcov > gcov-files.txt
+    - mkdir -p gcov-reports
+    # gcov-reports must be configured in sonar-project.properties. jhrg 11/24/20
+    - mv $(cat gcov-files.txt) gcov-reports/
     - sonar-scanner -Dsonar.login=$SONAR_LOGIN
     # Test the result of the scan and fail a PR/build if the quality gate fails
     - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
@@ -117,15 +127,6 @@ jobs:
     - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
                  --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                  --env os=centos7 opendap/centos7_hyrax_builder:1.2 /root/travis/build-rpm.sh
-
-# Removed jhrg 10/23/20
-#  - stage: package
-#    script:
-#    - export LIBDAP_BUILD=centos6
-#    - mkdir -p $prefix/rpmbuild
-#    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
-#                 --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-#                 --env os=centos6 opendap/centos6_hyrax_builder:1.3 /root/travis/build-rpm.sh
 
   - stage: package
     script:

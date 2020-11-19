@@ -38,10 +38,8 @@ else
 AM_CXXFLAGS += -g -O2 
 endif
 
-if ENABLE_COVERAGE
 AM_LDFLAGS =
 include $(top_srcdir)/coverage.mk
-endif
 
 noinst_LTLIBRARIES = libd4_ce_parser.la
 pkginclude_HEADERS = D4ConstraintEvaluator.h
