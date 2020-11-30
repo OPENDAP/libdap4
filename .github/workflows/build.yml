@@ -12,6 +12,7 @@ on:
     branches: [ actions-test ]
   pull_request:
     branches: [ actions-test ]
+  workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run
 # sequentially or in parallel
@@ -23,21 +24,25 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+      - name: packages
+        run:  sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev
       - name: autoreconf
-        run: autoreconf -fiv 
+        run: autoreconf --force --install --verbose
       - name: configure
         run: ./configure --enable-developer --prefix=$prefix
       - name: make
-        run: make -j20
-      - name: make check
-        run: make -j20 check
+        run: make --jobs=20
+      - name: check
+        run: make --jobs=20 check
 
   osx-build:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
+      - name: packages
+          run: sudo brew --yes install cppunit autoconf automake libtool
       - name: autoreconf
-        run: autoreconf -fiv 
+        run: autoreconf --force --install --verbose
       - name: configure
         run: ./configure --enable-developer --prefix=$prefix
       - name: make
