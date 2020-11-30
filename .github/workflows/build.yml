@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: packages
-          run: sudo brew --yes install cppunit autoconf automake libtool
+        run: sudo brew --yes install cppunit autoconf automake libtool
       - name: autoreconf
         run: autoreconf --force --install --verbose
       - name: configure
