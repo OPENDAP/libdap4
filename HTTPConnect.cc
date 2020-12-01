@@ -325,8 +325,10 @@ HTTPConnect::www_lib_init()
     if (!d_curl)
         throw InternalErr(__FILE__, __LINE__, "Could not initialize libcurl.");
 
+    curl_easy_setopt(d_curl, CURLOPT_ERRORBUFFER, d_error_buffer);
+
     curl_easy_setopt(d_curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2); // enables TLSv1.2 / TLSv1.3 version only
-    
+
     // Now set options that will remain constant for the duration of this
     // CURL object.
 
@@ -355,7 +357,6 @@ HTTPConnect::www_lib_init()
                              d_rcr->get_proxy_server_userpw().c_str());
     }
 
-    curl_easy_setopt(d_curl, CURLOPT_ERRORBUFFER, d_error_buffer);
     // We have to set FailOnError to false for any of the non-Basic
     // authentication schemes to work. 07/28/03 jhrg
     curl_easy_setopt(d_curl, CURLOPT_FAILONERROR, 0);

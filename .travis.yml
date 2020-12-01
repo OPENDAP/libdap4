@@ -65,7 +65,7 @@ stages:
   - name: scan
     if:  branch = master
   - name: package
-    if:  branch = master AND NOT pull_request
+    if:  branch = master
   - name: travis
     if: branch = travis
 
