@@ -26,6 +26,10 @@ else
 AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
 endif
 
+AM_LDFLAGS =
+include $(top_srcdir)/coverage.mk
+
+TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 check_PROGRAMS = das-test dds-test expr-test 
 
 if DAP4_DEFINED
@@ -89,7 +93,7 @@ EXTRA_DIST = DASTest.at $(DASTESTSUITE) DDSTest.at $(DDSTESTSUITE) \
 	getdapTest.at $(GETDAPTESTSUITE) getdap-testsuite atlocal.in \
 	$(srcdir)/package.m4 $(DIRS_EXTRA)
 
-CLEANFILES = dmr-testsuite.tar.gz
+CLEANFILES = *.gcda *.gcno *.gcov dmr-testsuite.tar.gz
 
 DISTCLEANFILES = *.log
 

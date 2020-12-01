@@ -23,7 +23,6 @@ endif
 # AM_LFLAGS = -d
 
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
-TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
@@ -38,12 +37,7 @@ AM_CXXFLAGS += -g -O2
 endif
 
 AM_LDFLAGS =
-
-if ENABLE_COVERAGE
-AM_CXXFLAGS += -fprofile-dir=$(top_srcdir)/gcov-data -fprofile-arcs -ftest-coverage
-AM_LDFLAGS += --coverage
-# -lgcov
-endif
+include $(top_srcdir)/coverage.mk
 
 noinst_LTLIBRARIES = libd4_function_parser.la
 pkginclude_HEADERS = D4FunctionEvaluator.h
@@ -61,6 +55,8 @@ libd4_function_parser_la_SOURCES = D4FunctionEvaluator.cc	\
 libd4_ce_parser_la_CXXFLAGS = $(AM_CPPFLAGS) $(AM_CXXFLAGS)
 
 EXTRA_DIST = d4_function_parser.yy d4_function_scanner.ll
+
+CLEANFILES = *.gcda *.gcno *.gcov
 
 DISTCLEANFILES = 
 

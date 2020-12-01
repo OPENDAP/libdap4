@@ -35,16 +35,10 @@ endif
 
 AM_LDFLAGS =
 
-if ENABLE_COVERAGE
-AM_CXXFLAGS += -fprofile-dir=$(top_srcdir)/gcov-data -fprofile-arcs -ftest-coverage
-AM_LDFLAGS += --coverage
-# -lgcov
-# Generage HTML pages with code coverage.
-collect-coverage-data:
-	-mkdir code_coverage
-	gcov -r $(top_srcdir)/gcov-data --html --html-details -o coverage.html
-	mv *.html code_coverage
-endif
+# Don't collect coverage for the tests themselves. tests unit-tests
+# jhrg 11/18/20
+coverage_subdirs = d4_ce d4_function
+include $(top_srcdir)/coverage.mk
 
 SUBDIRS = gl d4_ce d4_function . unit-tests tests
 DIST_SUBDIRS = gl d4_ce d4_function unit-tests tests
@@ -124,7 +118,7 @@ EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	\
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
-CLEANFILES = *.log *.output *.gcda *.gcno $(BISON_SRC) $(FLEX_SRC) \
+CLEANFILES = *.log *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) \
 	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
 
 HTML_DOCS=html

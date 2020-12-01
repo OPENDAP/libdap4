@@ -472,6 +472,10 @@ AS_IF([test x$enable_dap4 = xyes], [
 AC_ARG_ENABLE([asan], 
     [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
 
+# AM_CONDITIONAL([ENABLE_COVERAGE], [test x$enable_coverage = xyes])
+# AM_COND_IF([SHELL_WRAPPER],
+#           [AC_CONFIG_FILES([wrapper:wrapper.in])])
+           
 AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
       [AC_MSG_NOTICE([Building Address Sanitizer version])
        AM_CONDITIONAL([USE_ASAN], [true])],
@@ -488,7 +492,28 @@ AS_IF([test x$enable_developer = xyes],
        AM_CONDITIONAL([BUILD_DEVELOPER], [false])
        AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])])
 
-DODS_GCOV_VALGRIND
+AC_ARG_ENABLE([coverage],
+    [AS_HELP_STRING([--enable-coverage], [Build so tests emit coverage data and enable collect-coverage-data target (default: no)])])
+
+AC_CHECK_LIB([gcov], [gcov_open], [GCOV_LIBS="-lgcov"], [GCOV_LIBS=])
+
+AS_IF([test x$enable_coverage = xyes],
+      [AC_MSG_NOTICE([Building coverage version])
+       AM_CONDITIONAL([ENABLE_COVERAGE], [true])
+       AS_IF([gcov -help | grep LLVM],
+       	     [GCOVR_FLAGS=],
+	     [GCOVR_FLAGS="-k -e '.*Test.cc' -e '.*T.cc' -e '.*-test.cc'"
+	      LIBS="-lgcov $LIBS"])],
+      [AC_MSG_NOTICE([Not building coverage version])
+       AM_CONDITIONAL([ENABLE_COVERAGE], [false])])
+
+# --xml-pretty -o gcovr_ouput.xml
+
+AC_SUBST([GCOVR_FLAGS])
+
+dnl AM_CONDITIONAL([ENABLE_COVERAGE], [test x$enable_coverage = xyes])
+
+dnl DODS_GCOV_VALGRIND
 
 # Find valgrind, if available, and add targets for it.
 # AX_VALGRIND_DFLT([sgcheck], [off])

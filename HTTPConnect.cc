@@ -371,6 +371,8 @@ HTTPConnect::www_lib_init()
     curl_easy_setopt(d_curl, CURLOPT_FOLLOWLOCATION, 1);
     curl_easy_setopt(d_curl, CURLOPT_MAXREDIRS, 5);
 
+    curl_easy_setopt(d_curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2); // enables TLSv1.2 / TLSv1.3 version only
+
     // If the user turns off SSL validation...
     if (d_rcr->get_validate_ssl() == 0) {
         curl_easy_setopt(d_curl, CURLOPT_SSL_VERIFYPEER, 0);
