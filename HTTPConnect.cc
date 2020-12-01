@@ -325,6 +325,8 @@ HTTPConnect::www_lib_init()
     if (!d_curl)
         throw InternalErr(__FILE__, __LINE__, "Could not initialize libcurl.");
 
+    curl_easy_setopt(d_curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2); // enables TLSv1.2 / TLSv1.3 version only
+    
     // Now set options that will remain constant for the duration of this
     // CURL object.
 
@@ -372,8 +374,6 @@ HTTPConnect::www_lib_init()
     // Follow 302 (redirect) responses
     curl_easy_setopt(d_curl, CURLOPT_FOLLOWLOCATION, 1);
     curl_easy_setopt(d_curl, CURLOPT_MAXREDIRS, 5);
-
-    curl_easy_setopt(d_curl, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2); // enables TLSv1.2 / TLSv1.3 version only
 
     // If the user turns off SSL validation...
     if (d_rcr->get_validate_ssl() == 0) {
