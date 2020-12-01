@@ -20,7 +20,7 @@ on:
 jobs:
   ubuntu-build:
     # Suppress this for the actions-test for now. a hack.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-xenial
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
