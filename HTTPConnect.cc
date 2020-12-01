@@ -319,6 +319,8 @@ curl_debug(CURL *, curl_infotype info, char *msg, size_t size, void  *)
 void
 HTTPConnect::www_lib_init()
 {
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
     d_curl = curl_easy_init();
     if (!d_curl)
         throw InternalErr(__FILE__, __LINE__, "Could not initialize libcurl.");
@@ -340,7 +342,7 @@ HTTPConnect::www_lib_init()
         curl_easy_setopt(d_curl, CURLOPT_PROXYPORT,
                          d_rcr->get_proxy_server_port());
 
-	// As of 4/21/08 only NTLM, Digest and Basic work.
+	    // As of 4/21/08 only NTLM, Digest and Basic work.
 #ifdef CURLOPT_PROXYAUTH
         curl_easy_setopt(d_curl, CURLOPT_PROXYAUTH, (long)CURLAUTH_ANY);
 #endif
