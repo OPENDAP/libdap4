@@ -38,9 +38,19 @@ jobs:
   osx-build:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
       - name: packages
         run: brew install cppunit autoconf automake libtool
+
+      - name: Check out hyrax-dependencie
+        uses: actions/checkout@v2
+          with:
+            repository: OPENDAP/hyrax-dependencies
+      - name: build bison dependency
+        run: |
+          make bison -j20
+          export PATH=$prefix/deps/bin:$PATH
+
+      - uses: actions/checkout@v2
       - name: autoreconf
         run: autoreconf --force --install --verbose
       - name: configure
