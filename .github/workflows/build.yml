@@ -43,8 +43,8 @@ jobs:
 
       - name: Check out hyrax-dependencie
         uses: actions/checkout@v2
-          with:
-            repository: OPENDAP/hyrax-dependencies
+        with:
+          repository: OPENDAP/hyrax-dependencies
       - name: build bison dependency
         run: |
           make bison -j20
