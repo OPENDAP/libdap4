@@ -50,11 +50,11 @@ jobs:
 
     steps:
       - name: build bison dependency
-          run: |
-            pwd
-            git clone https://github.com/OPENDAP/hyrax-dependencies
-            cd hyrax-dependencies
-            make --jobs=20 bison
+        run: |
+          pwd
+          git clone https://github.com/OPENDAP/hyrax-dependencies
+          cd hyrax-dependencies
+          make --jobs=20 bison
       - name: checkout
         uses: actions/checkout@v2
       - name: autoreconf
