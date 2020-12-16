@@ -4,6 +4,7 @@ name: CI
 
 env:
   prefix: ${{ github.workspace }}/build
+  jobs: 16
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -22,24 +23,39 @@ jobs:
     # Suppress this for the actions-test for now. a hack.
     runs-on: ubuntu-16.04
     steps:
+
+      - name: cache-bison
+        id: cache-bison   # Used below in the 'if'
+        uses: actions/cache@v2
+        with:
+          path: $prefix/deps
+          key: bison-${{ runner.os }}
+
       - name: build bison dependency
+        if: steps.cache-bison.outputs.cache-hit != 'true'
         run: |
           pwd
           git clone https://github.com/OPENDAP/hyrax-dependencies
           cd hyrax-dependencies
-          make --jobs=20 bison
+          make --jobs=$jobs bison
+
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+        -
       - name: packages
         run:  sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev
+
       - name: autoreconf
         run: autoreconf --force --install --verbose
+
       - name: configure
         run: ./configure --enable-developer --prefix=$prefix
+
       - name: make
-        run: make --jobs=20
+        run: make --jobs=$jobs
+
       - name: check
-        run: make --jobs=20 check
+        run: make --jobs=$jobs check
 
   # For info on the docker commands: https://www.petefreitag.com/item/903.cfm
   # and https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
@@ -67,8 +83,3 @@ jobs:
         run: make -j20 check
       - name: make install
         run: make install
-#      - name: upload artifact
-#        uses: actions/upload-artifact@v2
-#        with:
-#          path: /hyrax-deps-centos7.tar.gz
-#          name: hyrax-deps-centos7.tar.gz
