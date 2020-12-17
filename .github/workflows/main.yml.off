@@ -1,0 +1,54 @@
+# This is the main build stage from .travis.yml
+
+
+name: Main build wf
+
+env:
+  prefix: ${{ github.workspace }}/build
+  jobs: 16
+
+on:
+  push:
+    branches: [ feature/test-buildout ]
+  pull_request:
+    branches: [ feature/test-buildout ]
+  workflow_dispatch:
+
+jobs:
+  ubuntu-build:
+    runs-on: ubuntu-16.04
+    steps:
+      - name: Packages
+        run: sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev
+     
+      - name: cache-bison
+        id: cache-bison 
+        uses: actions/cache@v2
+        with:
+          path: $prefix/deps
+          key: bison-${{ runner.os }}
+
+      - name: build bison dependency
+        if: steps.cache-bison.outputs.cache-hit != 'true'
+        run: |
+          pwd
+          git clone https://github.com/OPENDAP/hyrax-dependencies
+          cd hyrax-dependencies
+          make --jobs=$jobs bison
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: autoreconf
+        run: autoreconf --force --install --verbose
+
+      - name: configure
+        run: ./configure --prefix=$prefix
+
+      - name: Make
+        run: make -j7 
+
+      - name: Check
+        run: make -j7 check
+
+      - name: Install
+        run: make install
