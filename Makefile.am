@@ -34,10 +34,6 @@ AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
 endif
 
 AM_LDFLAGS =
-
-# Don't collect coverage for the tests themselves. tests unit-tests
-# jhrg 11/18/20
-coverage_subdirs = d4_ce d4_function
 include $(top_srcdir)/coverage.mk
 
 SUBDIRS = gl d4_ce d4_function . unit-tests tests
