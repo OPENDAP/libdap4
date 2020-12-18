@@ -493,7 +493,7 @@ AS_IF([test x$enable_developer = xyes],
        AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])])
 
 AC_ARG_ENABLE([coverage],
-    [AS_HELP_STRING([--enable-coverage], [Build so tests emit coverage data and enable collect-coverage-data target (default: no)])])
+    [AS_HELP_STRING([--enable-coverage], [Build so tests emit coverage data and enable coverage target (default: no)])])
 
 AC_CHECK_LIB([gcov], [gcov_open], [GCOV_LIBS="-lgcov"], [GCOV_LIBS=])
 
