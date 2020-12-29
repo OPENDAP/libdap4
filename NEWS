@@ -1,19 +1,31 @@
+News for version 3.20.7
+
+ Added code coverage (using gcov) to the CI processes. 
+
+ Dropped support for CentOS-6 (whew!)
+
+ Improved Int64 support.
+
+ Corrected byte order issue with DAP4 data transmission.
+
+ Improved error reporting.
+
 News for version 3.20.6
 
-Stopped CE parse errors from returning user supplied 
-strings in error messages.
+ Stopped CE parse errors from returning user supplied 
+ strings in error messages.
 
-Switched to README.md from README
+ Switched to README.md from README
 
-Swapped out unique_ptr for auto_ptr because of CentOS6 issues.
+ Swapped out unique_ptr for auto_ptr because of CentOS6 issues.
 
 News for version 3.20.5
 
-Fixed memory leaks in imported aws signing code. 
+ Fixed memory leaks in imported aws signing code. 
 
-Minor bug fixes. 
+ Minor bug fixes. 
 
-Lots of work on CI.
+ Lots of work on CI.
 
 News for version 3.20.4
 
