@@ -1,6 +1,6 @@
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
-### Updated for version 3.20.7 
+### Updated for version 3.20.7 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4399722.svg)](https://doi.org/10.5281/zenodo.4399722)
 * Added code coverage (using gcov) to the CI processes. 
 * Dropped support for CentOS-6 (whew!)
 * Improved Int64 support.
