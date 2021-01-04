@@ -100,7 +100,7 @@ void Array::_duplicate(const Array &a)
 
  Changes the length property of the array.
  */
-void Array::update_length(int)
+void Array::update_length(uint64_t )
 {
     int length = 1;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
@@ -644,19 +644,20 @@ specified do not match the array variable.";
  'to the end' of the array.
  @exception Error Thrown if the any of values of start, stop or stride
  cannot be applied to this array. */
-void Array::add_constraint(Dim_iter i, int start, int stride, int stop)
+void Array::add_constraint(Dim_iter i, uint64_t start, uint64_t stride, uint64_t stop, bool setStop)
 {
     dimension &d = *i;
 
 // if stop is -1, set it to the array's max element index
 // jhrg 12/20/12
-    if (stop == -1) stop = d.size - 1;
+    //if (stop == -1) stop = d.size - 1;
+    if (setStop) stop = d.size -1;
 
 // Check for bad constraints.
 // Jose Garcia
 // Usually invalid data for a constraint is the user's mistake
 // because they build a wrong URL in the client side.
-    if (start >= d.size || stop >= d.size || stride > d.size || stride <= 0) throw Error(malformed_expr, array_sss);
+    if (start >= d.size || stop >= d.size || stride > d.size) throw Error(malformed_expr, array_sss);
 
     if (((stop - start) / stride + 1) > d.size) throw Error(malformed_expr, array_sss);
 
@@ -677,7 +678,7 @@ void Array::add_constraint(Dim_iter i, D4Dimension *dim)
 {
     dimension &d = *i;
 
-    if (dim->constrained()) add_constraint(i, dim->c_start(), dim->c_stride(), dim->c_stop());
+    if (dim->constrained()) add_constraint(i, dim->c_start(), dim->c_stride(), dim->c_stop(), false);
 
     dim->set_used_by_projected_var(true);
 
@@ -1195,10 +1196,10 @@ void Array::print_xml_writer_core(XMLWriter &xml, bool constrained, string tag)
 
  @brief Print the value given the current constraint.
  */
-unsigned int Array::print_array(FILE *out, unsigned int index, unsigned int dims, unsigned int shape[])
+uint64_t Array::print_array(FILE *out, uint64_t index, unsigned int dims, unsigned int shape[])
 {
     ostringstream oss;
-    unsigned int i = print_array(oss, index, dims, shape);
+    uint64_t i = print_array(oss, index, dims, shape);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 
     return i;
@@ -1215,7 +1216,7 @@ unsigned int Array::print_array(FILE *out, unsigned int index, unsigned int dims
 
  @brief Print the value given the current constraint.
  */
-unsigned int Array::print_array(ostream &out, unsigned int index, unsigned int dims, unsigned int shape[])
+uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, unsigned int shape[])
 {
     if (dims == 1) {
         out << "{";

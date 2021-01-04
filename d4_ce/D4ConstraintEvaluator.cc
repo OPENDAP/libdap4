@@ -240,7 +240,7 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
                 // but others do.
 
                 // First apply the constraint to the Array's dimension
-                a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
+                a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop, false);
 
                 // Then, if the Array has Maps, scan those Maps for any that use dimensions
                 // that match the name of this particular dimension. If any such Maps are found

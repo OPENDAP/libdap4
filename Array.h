@@ -132,7 +132,7 @@ public:
     	// pointer; it is shared between the array and the Group where the
     	// Dimension is defined. To keep Array manageable to implement, size
     	// will be set here using the value from 'dim' if it is not null.
-        int size;  ///< The unconstrained dimension size.
+        uint64_t size;  ///< The unconstrained dimension size.
         string name;    ///< The name of this dimension.
 
         D4Dimension *dim; ///< If not null, a weak pointer to the D4Dimension
@@ -145,10 +145,10 @@ public:
         // from a sliced sdim.
         bool use_sdim_for_slice; ///< Used to control printing the DMR in data responses
 
-        int start;  ///< The constraint start index
-        int stop;  ///< The constraint end index
-        int stride;  ///< The constraint stride
-        int c_size;  ///< Size of dimension once constrained
+        uint64_t start;  ///< The constraint start index
+        uint64_t stop;  ///< The constraint end index
+        uint64_t stride;  ///< The constraint stride
+        uint64_t c_size;  ///< Size of dimension once constrained
 
         dimension() : size(0), name(""), dim(0), use_sdim_for_slice(false) {
             // this information changes with each constraint expression
@@ -183,10 +183,10 @@ private:
 protected:
     void _duplicate(const Array &a);
 
-    unsigned int print_array(FILE *out, unsigned int index,
+    uint64_t print_array(FILE *out, uint64_t index,
                              unsigned int dims, unsigned int shape[]);
 
-    unsigned int print_array(ostream &out, unsigned int index,
+    uint64_t print_array(ostream &out, uint64_t index,
                              unsigned int dims, unsigned int shape[]);
 
 public:
@@ -226,13 +226,13 @@ public:
     void clear_all_dims();
     void rename_dim(const string &oldName = "", const string &newName = "");
 
-    virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
+    virtual void add_constraint(Dim_iter i, uint64_t start, uint64_t stride, uint64_t stop, bool setStop);
     virtual void add_constraint(Dim_iter i, D4Dimension *dim);
     virtual void reset_constraint();
 
     virtual void clear_constraint(); // deprecated
 
-    virtual void update_length(int size = 0); // should be used internally only
+    virtual void update_length(uint64_t size = 0); // should be used internally only
 
     Dim_iter dim_begin() ;
     Dim_iter dim_end() ;

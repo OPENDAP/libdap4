@@ -246,7 +246,7 @@ void XDRStreamUnMarshaller::get_int(int &val)
     DBG(std::cerr << "get_int: " << val << std::endl);
 }
 
-void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, Vector &)
+void XDRStreamUnMarshaller::get_vector(char **val, uint64_t &num, Vector &)
 {
     int i;
     get_int(i); // This leaves the XDR encoded value in d_buf; used later
@@ -256,6 +256,7 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, Vector &)
     i += i & 3;
     DBG(std::cerr << "i: " << i << std::endl);
 
+    auto vec_num = static_cast<unsigned int>(num);
     //char *buf = 0;
     //XDR *source = 0;
     // Must address the case where the string is larger than the buffer
@@ -269,7 +270,7 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, Vector &)
         DBG2(cerr << "bytes read: " << d_in.gcount() << endl);
 
         xdr_setpos(&source, 0);
-        if (!xdr_bytes(&d_source, val, &num, DODS_MAX_ARRAY)) {
+        if (!xdr_bytes(&d_source, val, &vec_num, DODS_MAX_ARRAY)) {
             xdr_destroy(&source);
             throw Error("Network I/O Error. Could not read byte array data.");
         }
@@ -281,17 +282,17 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, Vector &)
         DBG2(cerr << "bytes read: " << d_in.gcount() << endl);
 
         xdr_setpos(&d_source, 0);
-        if (!xdr_bytes(&d_source, val, &num, DODS_MAX_ARRAY))
+        if (!xdr_bytes(&d_source, val, &vec_num, DODS_MAX_ARRAY))
             throw Error("Network I/O Error. Could not read byte array data.");
     }
 }
 
-void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, int width, Vector &vec)
+void XDRStreamUnMarshaller::get_vector(char **val, uint64_t &num, uint64_t width, Vector &vec)
 {
     get_vector(val, num, width, vec.var()->type());
 }
 
-void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, int width, Type type)
+void XDRStreamUnMarshaller::get_vector(char **val, uint64_t &num, uint64_t width, Type type)
 {
     int i;
     get_int(i); // This leaves the XDR encoded value in d_buf; used later
@@ -301,6 +302,8 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, int width,
     DBG(std::cerr << "width: " << width << std::endl);
 
     int size = i * width; // + 4; // '+ 4' to hold the int already read
+
+    auto vec_num = static_cast<unsigned int>(num);
 
     // Must address the case where the string is larger than the buffer
     if (size > XDR_DAP_BUFF_SIZE) {
@@ -314,7 +317,7 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, int width,
         DBG(cerr << "bytes read: " << d_in.gcount() << endl);
 
         xdr_setpos(&source, 0);
-        if (!xdr_array(&source, val, &num, DODS_MAX_ARRAY, width, XDRUtils::xdr_coder(type))) {
+        if (!xdr_array(&source, val, &vec_num, DODS_MAX_ARRAY, width, XDRUtils::xdr_coder(type))) {
             xdr_destroy( &source );
             throw Error("Network I/O Error. Could not read array data.");
         }
@@ -326,7 +329,7 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, int width,
         DBG(cerr << "bytes read (2): " << d_in.gcount() << endl);
 
         xdr_setpos( &d_source, 0);
-        if (!xdr_array(&d_source, val, &num, DODS_MAX_ARRAY, width, XDRUtils::xdr_coder(type)))
+        if (!xdr_array(&d_source, val, &vec_num, DODS_MAX_ARRAY, width, XDRUtils::xdr_coder(type)))
             throw Error("Network I/O Error. Could not read array data.");
     }
 }
