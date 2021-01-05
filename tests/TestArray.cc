@@ -201,28 +201,28 @@ bool TestArray::m_name_is_special()
 void TestArray::m_build_special_values()
 {
     if (name().find("lat_reversed") != string::npos) {
-        int array_len = length();
+        uint64_t array_len = length();
         //double *lat_data = new double[array_len];
         vector<double> lat_data(array_len);
-        for (int i = 0; i < array_len; ++i) {
+        for (uint64_t i = 0; i < array_len; ++i) {
             lat_data[i] = -89 + (180 / array_len) * (i + 1);
         }
         libdap::set_array_using_double(this, &lat_data[0], array_len);
     }
     else if (name().find("lat") != string::npos) {
-        int array_len = length();
+        uint64_t array_len = length();
         // double *lat_data = new double[array_len];
         vector<double> lat_data(array_len);
-        for (int i = 0; i < array_len; ++i) {
+        for (uint64_t i = 0; i < array_len; ++i) {
             lat_data[i] = 90 - (180 / array_len) * (i + 1);
         }
         libdap::set_array_using_double(this, &lat_data[0], array_len);
     }
     else if (name().find("lon") != string::npos) {
-        int array_len = length();
+        uint64_t array_len = length();
         //double *lon_data = new double[array_len];
         vector<double> lon_data(array_len);
-        for (int i = 0; i < array_len; ++i) {
+        for (uint64_t i = 0; i < array_len; ++i) {
             lon_data[i] = (360 / array_len) * (i + 1);
         }
         libdap::set_array_using_double(this, &lon_data[0], array_len);
