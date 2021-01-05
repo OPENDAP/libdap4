@@ -256,6 +256,10 @@ void XDRStreamUnMarshaller::get_vector(char **val, uint64_t &num, Vector &)
     i += i & 3;
     DBG(std::cerr << "i: " << i << std::endl);
 
+    // Make sure we only do this uint32 size vectors.
+    if (num > DODS_UINT_MAX) {
+        throw InternalErr(__FILE__, __LINE__, "get_vector: number of elements exceeds DODS_UINT_MAX.");
+    }
     auto vec_num = static_cast<unsigned int>(num);
     //char *buf = 0;
     //XDR *source = 0;
@@ -303,6 +307,10 @@ void XDRStreamUnMarshaller::get_vector(char **val, uint64_t &num, uint64_t width
 
     int size = i * width; // + 4; // '+ 4' to hold the int already read
 
+    // Make sure we only do this uint32 size vectors.
+    if (num > DODS_UINT_MAX) {
+        throw InternalErr(__FILE__, __LINE__, "get_vector: number of elements exceeds DODS_UINT_MAX.");
+    }
     auto vec_num = static_cast<unsigned int>(num);
 
     // Must address the case where the string is larger than the buffer

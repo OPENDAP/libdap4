@@ -105,18 +105,18 @@ private:
     template <typename T> void value_worker(T *v) const;
     template <typename T> void value_worker(vector<unsigned int> *indices, T *b) const;
 
-    template <typename T> bool set_value_worker(T *v, int sz);
-    template <typename T> bool set_value_worker(vector<T> &v, int sz);
+    template <typename T> bool set_value_worker(T *v, uint64_t sz);
+    template <typename T> bool set_value_worker(vector<T> &v, uint64_t sz);
 
 protected:
     // This function copies the private members of Vector.
     void m_duplicate(const Vector &v);
 
     bool m_is_cardinal_type() const;
-    unsigned int m_create_cardinal_data_buffer_for_type(unsigned int numEltsOfType);
+    uint64_t m_create_cardinal_data_buffer_for_type(uint64_t numEltsOfType);
     void m_delete_cardinal_data_buffer();
 
-    template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int numElts);
+    template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, uint64_t numElts);
 
 public:
     Vector(const string &n, BaseType *v, const Type &t, bool is_dap4 = false);
@@ -215,30 +215,30 @@ public:
     virtual uint64_t set_value_slice_from_row_major_vector(const Vector& rowMajorData, uint64_t startElement);
 
 
-    virtual bool set_value(dods_byte *val, int sz);
-    virtual bool set_value(dods_int8 *val, int sz);
-    virtual bool set_value(dods_int16 *val, int sz);
-    virtual bool set_value(dods_uint16 *val, int sz);
-    virtual bool set_value(dods_int32 *val, int sz);
-    virtual bool set_value(dods_uint32 *val, int sz);
-    virtual bool set_value(dods_int64 *val, int sz);
-    virtual bool set_value(dods_uint64 *val, int sz);
-    virtual bool set_value(dods_float32 *val, int sz);
-    virtual bool set_value(dods_float64 *val, int sz);
-    virtual bool set_value(string *val, int sz);
+    virtual bool set_value(dods_byte *val, uint64_t sz);
+    virtual bool set_value(dods_int8 *val, uint64_t sz);
+    virtual bool set_value(dods_int16 *val, uint64_t sz);
+    virtual bool set_value(dods_uint16 *val, uint64_t sz);
+    virtual bool set_value(dods_int32 *val, uint64_t sz);
+    virtual bool set_value(dods_uint32 *val, uint64_t sz);
+    virtual bool set_value(dods_int64 *val, uint64_t sz);
+    virtual bool set_value(dods_uint64 *val, uint64_t sz);
+    virtual bool set_value(dods_float32 *val, uint64_t sz);
+    virtual bool set_value(dods_float64 *val, uint64_t sz);
+    virtual bool set_value(string *val, uint64_t sz);
 
 
-    virtual bool set_value(vector<dods_byte> &val, int sz);
-    virtual bool set_value(vector<dods_int8> &val, int sz);
-    virtual bool set_value(vector<dods_int16> &val, int sz);
-    virtual bool set_value(vector<dods_uint16> &val, int sz);
-    virtual bool set_value(vector<dods_int32> &val, int sz);
-    virtual bool set_value(vector<dods_uint32> &val, int sz);
-    virtual bool set_value(vector<dods_int64> &val, int sz);
-    virtual bool set_value(vector<dods_uint64> &val, int sz);
-    virtual bool set_value(vector<dods_float32> &val, int sz);
-    virtual bool set_value(vector<dods_float64> &val, int sz);
-    virtual bool set_value(vector<string> &val, int sz);
+    virtual bool set_value(vector<dods_byte> &val, uint64_t sz);
+    virtual bool set_value(vector<dods_int8> &val, uint64_t sz);
+    virtual bool set_value(vector<dods_int16> &val, uint64_t sz);
+    virtual bool set_value(vector<dods_uint16> &val, uint64_t sz);
+    virtual bool set_value(vector<dods_int32> &val, uint64_t sz);
+    virtual bool set_value(vector<dods_uint32> &val, uint64_t sz);
+    virtual bool set_value(vector<dods_int64> &val, uint64_t sz);
+    virtual bool set_value(vector<dods_uint64> &val, uint64_t sz);
+    virtual bool set_value(vector<dods_float32> &val, uint64_t sz);
+    virtual bool set_value(vector<dods_float64> &val, uint64_t sz);
+    virtual bool set_value(vector<string> &val, uint64_t sz);
 
     virtual void value(dods_byte *b) const;
     virtual void value(dods_int8 *b) const;
