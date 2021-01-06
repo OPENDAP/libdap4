@@ -237,10 +237,10 @@ public:
     Dim_iter dim_begin() ;
     Dim_iter dim_end() ;
 
-    virtual int dimension_size(Dim_iter i, bool constrained = false);
-    virtual int dimension_start(Dim_iter i, bool constrained = false);
-    virtual int dimension_stop(Dim_iter i, bool constrained = false);
-    virtual int dimension_stride(Dim_iter i, bool constrained = false);
+    virtual uint64_t dimension_size(Dim_iter i, bool constrained = false);
+    virtual uint64_t dimension_start(Dim_iter i, bool constrained = false);
+    virtual uint64_t dimension_stop(Dim_iter i, bool constrained = false);
+    virtual uint64_t dimension_stride(Dim_iter i, bool constrained = false);
     virtual string dimension_name(Dim_iter i);
     virtual D4Dimension *dimension_D4dim(Dim_iter i);
 

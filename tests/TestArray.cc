@@ -129,7 +129,7 @@ TestArray::operator=(const TestArray &rhs)
 // whole DDS is still present but only variables selected in the CE have
 // values.
 
-unsigned int TestArray::m_print_array(ostream &out, unsigned int index, unsigned int dims, unsigned int shape[])
+uint64_t TestArray::m_print_array(ostream &out, uint64_t index, unsigned int dims, unsigned int shape[])
 {
     if (dims == 1) {
         out << "{";
@@ -180,7 +180,7 @@ void TestArray::output_values(std::ostream &out)
     //unsigned int *shape = new unsigned int[dimensions(true)];
 
     vector<unsigned int> shape(dimensions(true));
-    unsigned int index = 0;
+    uint64_t index = 0;
     for (Dim_iter i = dim_begin(); i != dim_end() && index < dimensions(true); ++i)
         shape[index++] = dimension_size(i, true);
 
@@ -255,7 +255,7 @@ void TestArray::m_constrained_matrix(vector<T>&constrained_array)
         unconstrained_size *= dimension_size(d++, false);
 
     vector<T> whole_array(unconstrained_size);
-    for (int i = 0; i < unconstrained_size; ++i) {
+    for (uint64_t i = 0; i < unconstrained_size; ++i) {
         T v;
         var()->read();
 #if 0
@@ -276,8 +276,8 @@ void TestArray::m_constrained_matrix(vector<T>&constrained_array)
 
     DBG(cerr << "dimension_start(Y): " << dimension_start(Y) << endl); DBG(cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl); DBG(cerr << "dimension_start(X): " << dimension_start(X) << endl); DBG(cerr << "dimension_stop(X): " << dimension_stop(X) << endl);
 
-    int constrained_size = 0;
-    int y = dimension_start(Y);
+    uint64_t constrained_size = 0;
+    uint64_t y = dimension_start(Y);
     while (y < dimension_stop(Y) + 1) {
         int x = dimension_start(X);
 
@@ -293,13 +293,13 @@ void TestArray::m_constrained_matrix(vector<T>&constrained_array)
 template<typename T>
 void TestArray::m_enum_constrained_matrix(vector<T>&constrained_array)
 {
-    int unconstrained_size = 1;
+    uint64_t unconstrained_size = 1;
     Dim_iter d = dim_begin();
     while (d != dim_end())
         unconstrained_size *= dimension_size(d++, false);
 
     vector<T> whole_array(unconstrained_size);
-    for (int i = 0; i < unconstrained_size; ++i) {
+    for (uint64_t i = 0; i < unconstrained_size; ++i) {
         T v;
         var()->read();
         static_cast<D4Enum*>(var())->value(&v);
@@ -314,10 +314,10 @@ void TestArray::m_enum_constrained_matrix(vector<T>&constrained_array)
 
     DBG(cerr << "dimension_start(Y): " << dimension_start(Y) << endl); DBG(cerr << "dimension_stop(Y): " << dimension_stop(Y) << endl); DBG(cerr << "dimension_start(X): " << dimension_start(X) << endl); DBG(cerr << "dimension_stop(X): " << dimension_stop(X) << endl);
 
-    int constrained_size = 0;
-    int y = dimension_start(Y);
+    uint64_t constrained_size = 0;
+    uint64_t y = dimension_start(Y);
     while (y < dimension_stop(Y) + 1) {
-        int x = dimension_start(X);
+        uint64_t x = dimension_start(X);
 
         while (x < dimension_stop(X) + 1) {
             constrained_array[constrained_size++] = whole_array[m_offset(y, X, x)];

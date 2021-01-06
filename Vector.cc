@@ -755,6 +755,7 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 
 bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
 {
+    int vec_num;
     uint64_t num;
     uint64_t i = 0;
 
@@ -766,11 +767,12 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
         case dods_uint32_c:
         case dods_float32_c:
         case dods_float64_c:
-            um.get_int((int &) num);
+            um.get_int((int &) vec_num);
 
             DBG(cerr << "Vector::deserialize: num = " << num << endl);
             DBG(cerr << "Vector::deserialize: length = " << length() << endl);
 
+            num = static_cast<uint64_t>(vec_num);
             if (!d_length_set)
                 set_length(num);
 
@@ -804,8 +806,9 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
 
         case dods_str_c:
         case dods_url_c:
-            um.get_int((int &) num);
+            um.get_int((int &) vec_num);
 
+            num = static_cast<uint64_t>(vec_num);
             if (!d_length_set)
                 set_length(num);
 
@@ -832,7 +835,8 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
         case dods_structure_c:
         case dods_sequence_c:
         case dods_grid_c:
-            um.get_int((int &) num);
+            um.get_int((int &) vec_num);
+            num = static_cast<uint64_t>(vec_num);
 
             if (!d_length_set)
                 set_length(num);

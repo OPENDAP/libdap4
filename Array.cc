@@ -731,9 +731,9 @@ unsigned int Array::dimensions(bool /*constrained*/)
 
  @return An integer containing the size of the specified dimension.
  */
-int Array::dimension_size(Dim_iter i, bool constrained)
+uint64_t Array::dimension_size(Dim_iter i, bool constrained)
 {
-    int size = 0;
+    uint64_t size = 0;
 
     if (!_shape.empty()) {
         if (constrained)
@@ -763,7 +763,7 @@ int Array::dimension_size(Dim_iter i, bool constrained)
  the dimension is constrained.
  @return The desired start index.
  */
-int Array::dimension_start(Dim_iter i, bool /*constrained*/)
+uint64_t Array::dimension_start(Dim_iter i, bool /*constrained*/)
 {
     return (!_shape.empty()) ? (*i).start : 0;
 }
@@ -786,7 +786,7 @@ int Array::dimension_start(Dim_iter i, bool /*constrained*/)
  the dimension is constrained.
  @return The desired stop index.
  */
-int Array::dimension_stop(Dim_iter i, bool /*constrained*/)
+uint64_t Array::dimension_stop(Dim_iter i, bool /*constrained*/)
 {
     return (!_shape.empty()) ? (*i).stop : 0;
 }
@@ -810,7 +810,7 @@ int Array::dimension_stop(Dim_iter i, bool /*constrained*/)
  @return The stride value requested, or zero, if <i>constrained</i>
  is TRUE and the dimension is not selected.
  */
-int Array::dimension_stride(Dim_iter i, bool /*constrained*/)
+uint64_t Array::dimension_stride(Dim_iter i, bool /*constrained*/)
 {
     return (!_shape.empty()) ? (*i).stride : 0;
 }

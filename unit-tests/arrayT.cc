@@ -54,7 +54,7 @@ public:
         TestArray ar("My Array", bt);
 
         int l = ar.length();
-        CPPUNIT_ASSERT(l == -1);
+        CPPUNIT_ASSERT(l == 0);
 
         try {
             int w = ar.width(true);

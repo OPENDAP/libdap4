@@ -407,7 +407,7 @@ void XDRStreamMarshaller::put_vector(char *val, uint64_t num, Vector &)
     if (num > DODS_INT_MAX) {
         throw InternalErr(__FILE__, __LINE__, "put_vector: num greater than DODS_INT_MAX.");
     }
-    auto vec_num = static_cast<int>(num);
+    unsigned int vec_num = static_cast<unsigned int>(num);
     // write the number of members of the array being written and then set the position to 0
     put_int(vec_num);
 
@@ -468,7 +468,7 @@ void XDRStreamMarshaller::put_vector(char *val, uint64_t num, int width, Type ty
     if (num > DODS_INT_MAX) {
         throw InternalErr(__FILE__, __LINE__, "put_vector: num greater than DODS_INT_MAX.");
     }
-    auto vec_num = static_cast<int>(num);
+    unsigned int vec_num = static_cast<unsigned int>(num);
     // write the number of array members being written, then set the position back to 0
     put_int(vec_num);
 
@@ -537,7 +537,7 @@ void XDRStreamMarshaller::put_vector_part(char *val, uint64_t num, int width, Ty
     if (num > DODS_INT_MAX) {
         throw InternalErr(__FILE__, __LINE__, "put_vector: num greater than DODS_INT_MAX.");
     }
-    auto vec_num = static_cast<int>(num);
+    unsigned int vec_num = static_cast<unsigned int>(num);
 
     if (width == 1) {
         // Add space for the 4 bytes of length info and 4 bytes for padding, even though

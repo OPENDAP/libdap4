@@ -163,8 +163,7 @@ void XDRFileMarshaller::put_vector(char *val, uint64_t num, Vector &)
     if (num > DODS_INT_MAX) {
         throw InternalErr(__FILE__, __LINE__, "put_vector: num greater than DODS_INT_MAX.");
     }
-    auto vec_num = static_cast<int>(num);
-
+    unsigned int vec_num = static_cast<unsigned int>(num);
     put_int(vec_num);
 
     if (!xdr_bytes(_sink, (char **) &val, (unsigned int *) &vec_num, DODS_MAX_ARRAY)) {
@@ -180,7 +179,7 @@ void XDRFileMarshaller::put_vector(char *val, uint64_t num, int width, Vector &v
     if (num > DODS_INT_MAX) {
         throw InternalErr(__FILE__, __LINE__, "put_vector: num greater than DODS_INT_MAX.");
     }
-    auto vec_num = static_cast<int>(num);
+    unsigned int vec_num = static_cast<unsigned int>(num);
     put_int(vec_num);
 
     BaseType *var = vec.var();
