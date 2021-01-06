@@ -556,6 +556,7 @@ uint64_t Vector::length() const
 void Vector::set_length(uint64_t l)
 {
     d_length = l;
+    d_length_set = true;
 }
 
 /** Resizes a Vector.  If the input length is greater than the
