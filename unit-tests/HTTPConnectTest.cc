@@ -50,6 +50,8 @@ static bool debug = false;
 #undef DBG
 #define DBG(x) do { if (debug) (x); } while(false);
 
+#define prolog std::string("HTTPConnectTest::").append(__func__).append("() - ")
+
 namespace libdap {
 
 class HTTPConnectTest: public TestFixture {
@@ -109,7 +111,7 @@ public:
 
     void setUp()
     {
-        DBG(cerr << "Setting the DODS_CONF env var" << endl);
+        DBG(cerr << prolog << "Setting the DODS_CONF env var" << endl);
         setenv("DODS_CONF", "cache-testsuite/dodsrc", 1);
         http = new HTTPConnect(RCReader::instance());
 
@@ -119,9 +121,11 @@ public:
         // above URL. The values below much match the etag and last-modified
         // time returned by the server. Run this test with DODS_DEBUG defined
         // to see the values it's returning.
-        // On 10/13/14 we moved to a new httpd and the etag value changed.
-        // jhrg 10/14/14
-        etag = "\"181893-157-3fbcd139c2680\""; //"\"2a008e-157-3fbcd139c2680\""; //\"a10df-157-139c2680\""; // a10df-157-139c2680a
+        //
+        // etag = "\"a10df-157-139c2680\"";
+        // etag = "\"2a008e-157-3fbcd139c2680\"";
+        // etag = "\"181893-157-3fbcd139c2680\""; // On 10/13/14 we moved to a new httpd and the etag value changed.
+        etag ="\"157-3df1e87884680\""; // New httpd service, new etag, ndp - 01/11/21
         lm = "Wed, 13 Jul 2005 19:32:26 GMT";
 
         localhost_pw_url = "http://jimg:dods_test@test.opendap.org/basic/page.txt";
@@ -175,7 +179,8 @@ public:
         ;
 
         try {
-            DBG(cerr << "Entering read_url_test... " << endl);
+            DBG(cerr << prolog << "BEGIN" << endl);
+            DBG(cerr << prolog << "Testing with URL: " << localhost_url << endl);
 
             FILE *dump = fopen("/dev/null", "w");
             long status = http->read_url(localhost_url, dump, resp_h);
@@ -186,7 +191,7 @@ public:
             // First test using a time with if-modified-since
             request_h.push_back(string("If-Modified-Since: ") + lm);
             status = http->read_url(localhost_url, dump, resp_h, &request_h);
-            DBG(cerr << "If modified since test, status: " << status << endl);
+            DBG(cerr << prolog << "If modified since test. Returned http status: " << status << endl);
             DBG(copy(resp_h->begin(), resp_h->end(), ostream_iterator<string>(cerr, "\n")));
             DBG(cerr << endl);
             CPPUNIT_ASSERT(status == 304);
@@ -196,7 +201,7 @@ public:
             request_h.clear();
             request_h.push_back(string("If-None-Match: ") + etag);
             status = http->read_url(localhost_url, dump, resp_h, &request_h);
-            DBG(cerr << "If none match test, status: " << status << endl);
+            DBG(cerr << prolog << "If none match test. Returned http status: " << status << endl);
             DBG(copy(resp_h->begin(), resp_h->end(), ostream_iterator<string>(cerr, "\n")));
             DBG(cerr << endl);
             CPPUNIT_ASSERT(status == 304);
@@ -207,7 +212,7 @@ public:
             request_h.push_back(string("If-None-Match: ") + etag);
             request_h.push_back(string("If-Modified-Since: ") + lm);
             status = http->read_url(localhost_url, dump, resp_h, &request_h);
-            DBG(cerr << "Combined test, status: " << status << endl);
+            DBG(cerr << prolog << "Combined test. Returned http status: " << status << endl);
             DBG(copy(resp_h->begin(), resp_h->end(), ostream_iterator<string>(cerr, "\n")));
             CPPUNIT_ASSERT(status == 304);
 
@@ -218,7 +223,7 @@ public:
         catch (Error & e) {
             delete resp_h;
             resp_h = 0;
-            CPPUNIT_FAIL("Error: " + e.get_error_message());
+            CPPUNIT_FAIL(prolog + "Error: " + e.get_error_message());
         }
     }
 
