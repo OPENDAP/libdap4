@@ -100,9 +100,9 @@ void Array::_duplicate(const Array &a)
 
  Changes the length property of the array.
  */
-void Array::update_length(uint64_t )
+void Array::update_length(uint64_t)
 {
-    int length = 1;
+    uint64_t length = 1;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
 #if 0
         // If the size of any dimension is zero, then the array is not
@@ -651,7 +651,7 @@ void Array::add_constraint(Dim_iter i, uint64_t start, uint64_t stride, uint64_t
 // if stop is -1, set it to the array's max element index
 // jhrg 12/20/12
     //if (stop == -1) stop = d.size - 1;
-    if (setStop) stop = d.size -1;
+    if (setStop) stop = d.size - 1;
 
 // Check for bad constraints.
 // Jose Garcia
@@ -664,6 +664,7 @@ void Array::add_constraint(Dim_iter i, uint64_t start, uint64_t stride, uint64_t
     d.start = start;
     d.stop = stop;
     d.stride = stride;
+    d.stopUndefined = false;
 
     d.c_size = (stop - start) / stride + 1;
 

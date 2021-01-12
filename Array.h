@@ -149,6 +149,7 @@ public:
         uint64_t stop;  ///< The constraint end index
         uint64_t stride;  ///< The constraint stride
         uint64_t c_size;  ///< Size of dimension once constrained
+        bool stopUndefined; ///< Flag indicating dimension length is unknown
 
         dimension() : size(0), name(""), dim(0), use_sdim_for_slice(false) {
             // this information changes with each constraint expression
@@ -156,6 +157,7 @@ public:
             stop = 0;
             stride = 1;
             c_size = size;
+            stopUndefined = true;
         }
 
         dimension(unsigned long s, string n) : size(s), name(n), dim(0), use_sdim_for_slice(false) {
@@ -163,6 +165,7 @@ public:
             stop = size - 1;
             stride = 1;
             c_size = size;
+            stopUndefined = false;
         }
 
         dimension(D4Dimension *d);
