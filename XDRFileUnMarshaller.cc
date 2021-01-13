@@ -178,7 +178,7 @@ XDRFileUnMarshaller::get_vector( char **val, uint64_t &num, Vector & )
 }
 
 void
-XDRFileUnMarshaller::get_vector( char **val, uint64_t &num, uint64_t width, Vector &vec )
+XDRFileUnMarshaller::get_vector( char **val, uint64_t &num, int width, Vector &vec )
 {
     BaseType *var = vec.var() ;
 

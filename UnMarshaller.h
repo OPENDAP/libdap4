@@ -73,8 +73,7 @@ public:
 
     virtual void		get_vector( char **val, uint64_t &num,
                                             Vector &vec ) = 0 ;
-    virtual void		get_vector( char **val, uint64_t &num,
-					    uint64_t width, Vector &vec ) = 0 ;
+    virtual void		get_vector( char **val, uint64_t &num, int width, Vector &vec ) = 0 ;
 
     virtual void		dump(std::ostream &strm) const = 0 ;
 } ;

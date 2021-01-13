@@ -146,7 +146,7 @@ public:
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
 
-    virtual void get_vector(char **, uint64_t &, uint64_t , Vector & ) {
+    virtual void get_vector(char **, uint64_t &, int, Vector & ) {
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
 

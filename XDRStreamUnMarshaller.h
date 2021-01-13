@@ -82,9 +82,9 @@ public:
     virtual void	get_int( int &val ) ;
 
     virtual void	get_vector( char **val, uint64_t &num, Vector &vec ) ;
-    virtual void	get_vector( char **val, uint64_t &num, uint64_t width, Vector &vec ) ;
+    virtual void	get_vector( char **val, uint64_t &num, int width, Vector &vec ) ;
 
-    virtual void get_vector(char **val, uint64_t &num, uint64_t width, Type type);
+    virtual void get_vector(char **val, uint64_t &num, int width, Type type);
 
     virtual void	dump(ostream &strm) const ;
 } ;

@@ -1666,7 +1666,7 @@ static bool types_match(Type t, T *cpp_var)
 /** @brief set the value of a byte array */
 
 template <typename T>
-bool Vector::set_value_worker(T *v, uint64_t sz)
+bool Vector::set_value_worker(T *v, int sz)
 {
     if (!v || !types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
         return false;
@@ -1675,43 +1675,43 @@ bool Vector::set_value_worker(T *v, uint64_t sz)
     return true;
 }
 
-bool Vector::set_value(dods_byte *val, uint64_t sz)
+bool Vector::set_value(dods_byte *val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(dods_int8 *val, uint64_t sz)
+bool Vector::set_value(dods_int8 *val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(dods_int16 *val, uint64_t sz)
+bool Vector::set_value(dods_int16 *val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(dods_uint16 *val, uint64_t sz)
+bool Vector::set_value(dods_uint16 *val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(dods_int32 *val, uint64_t sz)
+bool Vector::set_value(dods_int32 *val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(dods_uint32 *val, uint64_t sz)
+bool Vector::set_value(dods_uint32 *val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(dods_int64 *val, uint64_t sz)
+bool Vector::set_value(dods_int64 *val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(dods_uint64 *val, uint64_t sz)
+bool Vector::set_value(dods_uint64 *val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(dods_float32 *val, uint64_t sz)
+bool Vector::set_value(dods_float32 *val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(dods_float64 *val, uint64_t sz)
+bool Vector::set_value(dods_float64 *val, int sz)
 {
     return set_value_worker(val, sz);
 }
@@ -1723,7 +1723,7 @@ bool Vector::set_value(dods_float64 *val, uint64_t sz)
  * @return false if the type of the array is neither Str nor Url
  * or val is null, otherwise returns true.
  */
-bool Vector::set_value(string *val, uint64_t sz)
+bool Vector::set_value(string *val, int sz)
 {
     if ((var()->type() == dods_str_c || var()->type() == dods_url_c) && val) {
         d_str.resize(sz);
@@ -1741,55 +1741,55 @@ bool Vector::set_value(string *val, uint64_t sz)
 }
 
 template<typename T>
-bool Vector::set_value_worker(vector<T> &v, uint64_t sz)
+bool Vector::set_value_worker(vector<T> &v, int sz)
 {
     return set_value(&v[0], sz);
 }
 
-bool Vector::set_value(vector<dods_byte> &val, uint64_t sz)
+bool Vector::set_value(vector<dods_byte> &val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(vector<dods_int8> &val, uint64_t sz)
+bool Vector::set_value(vector<dods_int8> &val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(vector<dods_int16> &val, uint64_t sz)
+bool Vector::set_value(vector<dods_int16> &val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(vector<dods_uint16> &val, uint64_t sz)
+bool Vector::set_value(vector<dods_uint16> &val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(vector<dods_int32> &val, uint64_t sz)
+bool Vector::set_value(vector<dods_int32> &val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(vector<dods_uint32> &val, uint64_t sz)
+bool Vector::set_value(vector<dods_uint32> &val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(vector<dods_int64> &val, uint64_t sz)
+bool Vector::set_value(vector<dods_int64> &val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(vector<dods_uint64> &val, uint64_t sz)
+bool Vector::set_value(vector<dods_uint64> &val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(vector<dods_float32> &val, uint64_t sz)
+bool Vector::set_value(vector<dods_float32> &val, int sz)
 {
     return set_value_worker(val, sz);
 }
-bool Vector::set_value(vector<dods_float64> &val, uint64_t sz)
+bool Vector::set_value(vector<dods_float64> &val, int sz)
 {
     return set_value_worker(val, sz);
 }
 
 
 /** @brief set the value of a string or url array */
-bool Vector::set_value(vector<string> &val, uint64_t sz)
+bool Vector::set_value(vector<string> &val, int sz)
 {
     if (var()->type() == dods_str_c || var()->type() == dods_url_c) {
         d_str.resize(sz);

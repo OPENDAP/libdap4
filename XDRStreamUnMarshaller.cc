@@ -291,12 +291,12 @@ void XDRStreamUnMarshaller::get_vector(char **val, uint64_t &num, Vector &)
     }
 }
 
-void XDRStreamUnMarshaller::get_vector(char **val, uint64_t &num, uint64_t width, Vector &vec)
+void XDRStreamUnMarshaller::get_vector(char **val, uint64_t &num, int width, Vector &vec)
 {
     get_vector(val, num, width, vec.var()->type());
 }
 
-void XDRStreamUnMarshaller::get_vector(char **val, uint64_t &num, uint64_t width, Type type)
+void XDRStreamUnMarshaller::get_vector(char **val, uint64_t &num, int width, Type type)
 {
     int i;
     get_int(i); // This leaves the XDR encoded value in d_buf; used later

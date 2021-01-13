@@ -74,7 +74,7 @@ public:
     virtual void		get_vector( char **val, uint64_t &num,
 					    Vector &vec ) ;
     virtual void		get_vector( char **val, uint64_t &num,
-					    uint64_t width, Vector &vec ) ;
+					    int width, Vector &vec ) ;
 
     virtual void		dump(ostream &strm) const ;
 } ;
