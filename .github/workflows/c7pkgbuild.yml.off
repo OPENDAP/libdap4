@@ -61,12 +61,9 @@ jobs:
 
       - name: upload to s3
         run: |
-          yum install -y awscli
-          #aws s3 cp /github/home/rpmbuild/RPMS/* s3://opendap.travis.build --recursive    
+          yum install -y awscli 
           aws s3 cp /github/home/rpmbuild/RPMS/* s3://opendap.github.actions.build --recursive     
-          #aws s3 cp /github/home/rpmbuild/RPMS/* s3://${{ secrets.AWS_BUCKET }} --recursive   
-          #aws s3 cp /github/home/rpmbuild/RPMS/* s3://${AWS_BUCKET_NAME} --recursive 
-          #aws s3 cp /github/home/rpmbuild/RPMS/* s3://$AWS_BUCKET_NAME --recursive
+         
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
