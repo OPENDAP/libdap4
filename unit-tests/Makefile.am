@@ -94,6 +94,9 @@ UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
 	D4SequenceTest DmrRoundTripTest DmrToDap2Test
 endif
 
+check-local:
+	./HTTPConnectTest -d
+
 else
 UNIT_TESTS =
 
@@ -104,6 +107,7 @@ check-local:
 	@echo "check target in unit-tests directory                     *"
 	@echo "**********************************************************"
 	@echo ""
+	./HTTPConnectTest -d
 endif
 
 TEST_SRC = testFile.cc testFile.h

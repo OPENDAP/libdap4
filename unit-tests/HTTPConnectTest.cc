@@ -176,7 +176,6 @@ public:
     void read_url_test()
     {
         vector<string> *resp_h = new vector<string>;
-        ;
 
         try {
             DBG(cerr << prolog << "BEGIN" << endl);
