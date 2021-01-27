@@ -1,3 +1,279 @@
+2020-12-18  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/opendap/libdap4
+
+	Fixed a comment on the --emable-coverage configure option
+	Also added a gcovr report.
+	[skip ci]
+
+	Merge pull request #140 from OPENDAP/code-coverage
+	Report now built using gcovr, and a small syntax fix
+
+	Report now built using gcovr, and a small syntax fix
+	The gcovr report might show different detatils than the reports
+	from sonarscan.
+
+2020-12-01  James Gallagher  <jgallagher@opendap.org>
+
+	Travis should now package the code
+	Added a CMakeLists.txt to keep CLion from complaining.
+	Moved the error buffer libcurl call so it's run before
+	all of the setopt calls.
+
+	Reorder code to see if that placates sonarscan
+
+	Merge pull request #139 from OPENDAP/curl-init-fix
+	Fixed an issue with curl_easy_init
+
+	Fixed an issue with curl_easy_init
+
+	Merge pull request #138 from OPENDAP/enable-coverage
+	Enable coverage
+
+	Fixed an issue. Coverage computed and gcovr working. Not SonarScan
+	No idea why sonarscan is not working. However, we get a report and
+	maybe codecov will come to the rescue.
+
+	Added coverage collection to the scan step
+	Not doing anything with the coverage data, however
+	Updated to hopefully work on Ubuntu. Works on OSX
+	Working on teh odd segmentation fault on Ubuntu
+	limit this branch travis build to a scan
+	Try Ubuntu focal
+	Try Ubuntu bionic
+	Drop back to xenail - Maybe this will fix the missing FlexLexer.h issue
+	Try turning off virtual memory randomization
+	Let's try bionic, using acontainer
+	Try gcovr ...
+	Try removing the second 'addons' section to squash the missing cppunit bug
+	Arrrgh bionic won't work with the flex/bison versions we use
+	Coverage working using gcovr to process the gcov files.
+	Next step is to get SonarScan to use the gcovr report.
+	More work on gcovr - now it's excluding the test code
+	Now the gcov reports might be used by sonarscan
+	They are copied to a single directory and the sonarscan tool
+	is configured to look there for the reports.
+	Started adding support for
+	Another fix for the coverage files
+	Both cp and mv won't copy files on top of other files in the same
+	command (so --force and --backup won't help). I suppressed copying
+	the stack.hh.gcov, etc., files from the d4_ce and d4_function
+	directory. The mv/cp commands were failing and thus so was the build.
+	Set the sonar.coverage.jacoco.xmlReportPaths prop to gcov-reports
+	Another try at getting the coverage reports to work.
+	Remove ls -lR as it doesn't seem to be doing much.
+	We have coverage data, but it's not getting into sonarcloud.
+	Time for user support.
+	Edited travis.yml coverage lines - cleaned up old comments
+	Fixed coverage so there's no error?
+
+2020-11-28  James Gallagher  <jgallagher@opendap.org>
+
+	Change the github actions build file. Include CentOS7.
+
+2020-11-18  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' into enable-coverage
+	 Conflicts:
+		Makefile.am
+		d4_ce/Makefile.am
+		d4_function/Makefile.am
+
+	Removed tests and unit-tests from the coverge collection target
+
+2020-11-18  James Gallagher  <jimg@localhost.localdomain>
+
+	Added better 'coverage' target that will recurse
+	It's a little rough, but it works OK.
+
+	Added coverage.mk file
+
+2020-11-17  James Gallagher  <jimg@localhost.localdomain>
+
+	Coverage data collected, but no gcov files
+	The recursive gcov/coverage rule doesn't work correctly
+
+2020-11-13  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #136 from OPENDAP/sonarscan-test
+	If the SonarScan Quality gate fails, fail the PR
+
+	Merge pull request #137 from OPENDAP/distcheck-fix
+	fix for distcheck on autoconf 2.69
+
+	fix for distcheck on autoconf 2.69
+
+	If the SonarScan Quality gate fails, fail the PR
+
+	Merge pull request #135 from OPENDAP/d4dimension-size-fix
+	Changed the size of a D4Dimension 'size' to unsigned long long
+
+2020-11-12  James Gallagher  <jgallagher@opendap.org>
+
+	Changed the size of a D4Dimension 'size' to unsigned long long
+	size_t can vary between 16 and 64 bits, long long has to be
+	64 bits.
+
+	Merge pull request #134 from OPENDAP/vector-string-fix
+	Fixed the set_vector() method
+
+	Fixed the set_vector() method
+	I introduced a fix that was based on a missunderstanding
+	of the code. This backs that change out.
+
+2020-11-06  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #132 from OPENDAP/vector-string-fix
+	Back-out the bad Vector of string mistake
+
+	Merge branch 'vector-string-fix' of https://github.com/opendap/libdap4 
+	into vector-string-fix
+
+	Back-out the bad Vector of string mistake
+
+	Backout the bad Vector or string mistake
+
+2020-11-02  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed the build-gh-pages.sh script.
+	[skip-ci]
+
+	Added new docs
+
+	Merge pull request #130 from OPENDAP/string_vector_bug
+	String vector bug
+
+	Merge pull request #129 from OPENDAP/switch-to-xenial
+	Changed .travis.yml to use xenial (from trusty)
+
+	Updated this branch. I think it's ready for a merge.
+
+	Merge branch 'master' into string_vector_bug
+
+	Changed .travis.yml to use xenial (from trusty)
+
+2020-10-25  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #121 from OPENDAP/sonarcloud-suggestions
+	Sonarcloud suggestions
+
+	Merge pull request #128 from OPENDAP/remove-c6
+	Removed the CentOS 6 build from .travis.yml
+
+2020-10-23  James Gallagher  <jgallagher@opendap.org>
+
+	Removed the CentOS 6 build from .travis.yml
+
+2020-09-27  ndp-opendap  <ndp@opendap.org>
+
+	Fixed bug in string handling in Vector
+
+2020-09-23  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #126 from OPENDAP/error-fix
+	Fixed an issue in Error
+
+	Fixed an issue in Error
+	The what() method was returning a pointer to a temporary object.
+
+2020-08-31  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #125 from OPENDAP/configure-fix
+	Complete revert of configure.ac to the old xml config code
+
+	Complete revert of configure.ac to the old xml config code
+
+2020-08-28  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #124 from OPENDAP/configure-fix
+	Fix for pkg-config code for libxml2
+
+	Fix for pkg-config code for libxml2
+
+2020-08-26  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' into sonarcloud-suggestions
+
+	Fix for CentOS 6
+	Shell scripts with empty 'then' clauses fail with whatever bash
+	version is part of CentOS 6.
+
+	Better support for CLion so it can find functions
+
+2020-08-25  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #122 from OPENDAP/xml2-lib-build-fix
+	Added better support for libxml2 in configure
+
+	Fix for linux and xml2/configure
+
+	Added better support for libxml2 in configure
+
+2020-07-24  James Gallagher  <jgallagher@opendap.org>
+
+	REmove assert from InternalErr::operator=()
+
+	more fixes
+
+2020-07-23  James Gallagher  <jgallagher@opendap.org>
+
+	Added dtor and op= to D4EnumDef
+
+2020-07-22  James Gallagher  <jgallagher@opendap.org>
+
+	Fixes to enable configure --enable-coverage. Does not work on OSX.
+
+2020-07-15  James Gallagher  <jgallagher@opendap.org>
+
+	added autoreconf
+
+	Create c-cpp.yml
+
+2020-07-07  James Gallagher  <jgallagher@opendap.org>
+
+	Typo in error message.
+	[skip ci]
+
+2020-06-30  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #120 from OPENDAP/errors-with-line-nums
+	Added file/line info to the libdap::Error class
+
+2020-06-17  James Gallagher  <jgallagher@opendap.org>
+
+	Added file/line info to the libdap::Error class
+
+2020-05-29  James Gallagher  <jgallagher@opendap.org>
+
+	Merge pull request #119 from OPENDAP/chunk-header-fix
+	Chunk header fix
+
+	Based on info from Dennis Heimbigner, fixed the DAP4 chunked I/O Stream
+	I was sendng the chunk header bytes in host byte-order and not
+	network byte order.
+
+2020-05-18  James Gallagher  <jgallagher@opendap.org>
+
+	Comment fix
+
+2020-05-17  James Gallagher  <jgallagher@opendap.org>
+
+	Adopt network byte order for the chunk header
+
+2020-05-06  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #117 from OPENDAP/hk-638
+	HK-638, add the buf2val function for 64-bit integer.
+
+2020-05-06  Muqun Yang  <myang6@hdfgroup.org>
+
+	HK-638, add the buf2val function for 64-bit integer.
+
+2020-04-21  ndp-opendap  <ndp@opendap.org>
+
+	Added release DOI to README.md, did some formatting. [skip ci]
+
+	Make release 3.20.6
 2020-04-16  James Gallagher  <jgallagher@opendap.org>
 
 	Merge pull request #115 from OPENDAP/error-msg-fix
