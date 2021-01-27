@@ -94,7 +94,7 @@ UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
 	D4SequenceTest DmrRoundTripTest DmrToDap2Test
 endif
 
-check-local:
+check-local: HTTPConnectTest
 	./HTTPConnectTest -d
 
 else
