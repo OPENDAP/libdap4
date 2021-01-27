@@ -24,6 +24,6 @@ AM_LDFLAGS += --coverage -pg
 # fi
 
 coverage: 
-	-gcovr -r . $(GCOVR_FLAGS)
+	-gcovr -r . $(GCOVR_FLAGS) > gcovr_report.txt
 
 endif
