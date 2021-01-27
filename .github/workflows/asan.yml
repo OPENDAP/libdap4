@@ -6,23 +6,23 @@ env:
   prefix: ${{ github.workspace }}/build
   jobs: 16
 
-#on:
-  #push:
-    #branches: [ feature/test-buildout ]
+on:
+  push:
+    branches: [ master ]
   pull_request:
-    branches: [ feature/test-buildout ]
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
   ubuntu-build:
-
     runs-on: ubuntu-16.04
+    
     steps:
       - name: Packages
         run: sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev
      
       - name: cache-bison
-        id: cache-bison
+        id: cache-bison    #id is required for the if below, not key
         uses: actions/cache@v2
         with:
           path: $prefix/deps
@@ -35,6 +35,7 @@ jobs:
           git clone https://github.com/OPENDAP/hyrax-dependencies
           cd hyrax-dependencies
           make --jobs=$jobs bison
+     
       - name: checkout
         uses: actions/checkout@v2
 

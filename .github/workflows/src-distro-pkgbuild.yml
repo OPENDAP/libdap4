@@ -1,10 +1,13 @@
 # This is the source distribution package build
 
-name: ci
+name: source distribution
 
-on: 
+on:
   push:
-    branches: [feature/test-buildout]
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
 
 jobs:
     source-distribution:
@@ -24,12 +27,6 @@ jobs:
             run: |
               set -x
               autoreconf -i
-              
-
-          # - name: make
-          #   run: |
-          #     set -x
-          #     make dist -j7
 
           - name: Build source distro package
             run: |
@@ -38,9 +35,6 @@ jobs:
               sudo mkdir -p $GHACTIONS_BUILD_DIR/package
               ./configure --prefix=$prefix --enable-developer
               make dist -j7
-              # sudo mkdir -p $TRAVIS_BUILD_DIR/package
-              # sudo cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package
-              # sudo cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-snapshot.tar.gz;
               sudo cp libdap-*.tar.gz $GHACTIONS_BUILD_DIR/package
               sudo cp libdap-*.tar.gz $GHACTIONS_BUILD_DIR/package/libdap-snapshot.tar.gz;
 

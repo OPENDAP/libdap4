@@ -1,10 +1,13 @@
 ## This is the sonar scan stage from .travis.yml
 
-name: ci
+name: sonar scan
 
 on:
   push:
-    branches: [ feature/test-buildout ]
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
 
 jobs:
     sonarscan:
@@ -55,6 +58,7 @@ jobs:
               ./build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output make -j7
               /opt/sonar-scanner/bin/sonar-scanner -Dsonar.login=$SONAR_LOGIN
               #curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS
+              
             env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
