@@ -75,9 +75,8 @@ D4-xml.tar.gz: D4-xml/DMR_*[0-9].xml
 	tar -czf $@ $^
 
 # Override the default
-check:
-	${MAKE} ${MFLAGS} check-TESTS
-	${MAKE} ${MFLAGS} check-local
+check: HTTPConnectTest
+	./HTTPConnectTest -d
 
 ############################################################################
 # Unit Tests
@@ -98,9 +97,6 @@ UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
 	chunked_iostream_test D4AsyncDocTest DMRTest D4FilterClauseTest \
 	D4SequenceTest DmrRoundTripTest DmrToDap2Test
 endif
-
-check-local: HTTPConnectTest
-	./HTTPConnectTest -d
 
 else
 UNIT_TESTS =
