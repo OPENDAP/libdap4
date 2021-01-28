@@ -38,7 +38,7 @@ jobs:
             run: |
               git clone https://github.com/OPENDAP/hyrax-dependencies
               cd hyrax-dependencies
-              make dist -j7 --jobs=$jobs bison
+              make -j7 --jobs=$jobs bison
 
           - name: Configure
             run: |
