@@ -37,7 +37,8 @@ jobs:
 
           # Again, look around. see where things are at the end of the build.
           - name: home dir files
-            run: ls -lR ~
+            run: |
+              ls -lR ~
 
           - name: upload to s3
             run: aws s3 cp $HOME/package/* s3://opendap.github.actions.build --recursive
