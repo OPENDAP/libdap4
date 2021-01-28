@@ -28,10 +28,11 @@ jobs:
           path: $prefix/deps
           key: c7-pkg           #changed the key to avoid conflict with the id.
 
-      # build the depdendencies so that we don't have to update teh container
+      # build the dependencies so that we don't have to update the container
       # every time the deps change.
       - name: build bison dependency
-        if: steps.bison-centos7-docker.outputs.cache-hit != 'true'   #this statement should carry cache step id not the key, inform James & Nathan
+        # this statement should use the cache step id not the key
+        if: steps.bison-centos7-docker.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/OPENDAP/hyrax-dependencies
           cd hyrax-dependencies
@@ -40,11 +41,10 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
 
-      - name: autoreconf
-        run: autoreconf -fiv
-
       - name: configure
-        run: ./configure --enable-developer --prefix=$prefix
+        run: |
+          autoreconf -fiv
+          ./configure --enable-developer --prefix=$prefix
 
       - name: make
         run: make rpm --jobs=$jobs
@@ -55,7 +55,8 @@ jobs:
 
       - name: upload to s3
         run: |
-          yum install -y awscli 
+          yum install -y awscli
+          echo "HOME: $HOME"
           aws s3 cp /github/home/rpmbuild/RPMS/* s3://opendap.github.actions.build --recursive     
          
         env:
