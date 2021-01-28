@@ -17,26 +17,27 @@ jobs:
           - name: Checkout repo
             uses: actions/checkout@v2
 
-          - name: Installs
-            run: |
-              set -x
-              sudo apt-get update
-              sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev gcovr build-essential lintian fakeroot
+          # - name: Installs
+          #   run: |
+          #     set -x
+          #     sudo apt-get update
+          #     sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev gcovr build-essential lintian fakeroot
 
-          - name: Configure
-            run: |
-              set -x
-              autoreconf -i
+          # - name: Configure
+          #   run: |
+          #     set -x
+          #     autoreconf -i
 
           - name: Build source distro package
             run: |
               set -x
-              export LIBDAP_BUILD=srcdist
-              sudo mkdir -p $GHACTIONS_BUILD_DIR/package
-              ./configure --prefix=$prefix --enable-developer
-              make dist -j7
-              sudo cp libdap-*.tar.gz $GHACTIONS_BUILD_DIR/package
-              sudo cp libdap-*.tar.gz $GHACTIONS_BUILD_DIR/package/libdap-snapshot.tar.gz;
+              #export LIBDAP_BUILD=srcdist
+              pwd
+              # sudo mkdir -p GHACTIONS_BUILD_DIR/package
+              # ./configure --prefix=$prefix --enable-developer
+              # make dist -j7
+              # sudo cp libdap-*.tar.gz $GHACTIONS_BUILD_DIR/package
+              # sudo cp libdap-*.tar.gz $GHACTIONS_BUILD_DIR/package/libdap-snapshot.tar.gz;
 
         # Make both a libdap-<version> and libdap-snapshot tar.gz. This will simplify
         # other operations that use the libdap source code like the bes build.
