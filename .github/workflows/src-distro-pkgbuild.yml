@@ -4,10 +4,10 @@ name: source distribution
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  workflow_dispatch:
+    branches: [ feature/test-buildout ]
+  # pull_request:
+  #   branches: [ master ]
+  # workflow_dispatch:
 
 jobs:
     source-distribution:
