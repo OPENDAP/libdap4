@@ -41,7 +41,8 @@ jobs:
               ls -lR ~
 
           - name: upload to s3
-            run: aws s3 cp $HOME/package/* s3://opendap.github.actions.build --recursive
+            run: |
+              aws s3 cp $HOME/package/* s3://opendap.github.actions.build
 
             env:
               AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ID }}
