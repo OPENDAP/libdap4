@@ -19,25 +19,27 @@ jobs:
 
           - name: Installs
             run: |
-              set -x
               sudo apt-get update
-              sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev gcovr build-essential lintian fakeroot
+              sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev awscli
 
           - name: Configure
-            run: |
-              set -x
-              autoreconf -i
+            run: autoreconf -i
 
+          # Make both a libdap-<version> and libdap-snapshot tar.gz. This will simplify
+          # other operations that use the libdap source code like the bes build.
           - name: Build source distro package
             run: |
-              set -x
-              export LIBDAP_BUILD=srcdist
-              sudo mkdir -p $GHACTIONS_BUILD_DIR/package
-              ./configure --prefix=$prefix --enable-developer
+              sudo mkdir -p $HOME/package
+              ./configure
               make dist -j7
-              sudo cp libdap-*.tar.gz $GHACTIONS_BUILD_DIR/package
-              sudo cp libdap-*.tar.gz $GHACTIONS_BUILD_DIR/package/libdap-snapshot.tar.gz;
+              sudo cp libdap-*.tar.gz $HOME/package
+              sudo cp libdap-*.tar.gz $HOME/package/libdap-snapshot.tar.gz;
 
-        # Make both a libdap-<version> and libdap-snapshot tar.gz. This will simplify
-        # other operations that use the libdap source code like the bes build.
+          - name: upload to s3
+            run: aws s3 cp $HOME/package s3://opendap.github.actions.build --recursive
+
+            env:
+              AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ID }}
+              AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+
 
