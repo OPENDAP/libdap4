@@ -46,7 +46,7 @@ jobs:
           - name: Configure
             run: |
               set -x
-              autoreconf -i
+              autoreconf -fiv
               ./configure --prefix=$prefix --enable-developer --enable-coverage             
 
           - name: build wrapper & scan
@@ -57,7 +57,7 @@ jobs:
               export LD_LIBRARY_PATH=$(pwd)/build-wrapper-linux-x86
               ./build-wrapper-linux-x86/build-wrapper-linux-x86-64 --out-dir bw-output make -j7
               /opt/sonar-scanner/bin/sonar-scanner -Dsonar.login=$SONAR_LOGIN
-              #curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS
+              curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
               
             env:
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

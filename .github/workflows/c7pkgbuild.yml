@@ -49,10 +49,6 @@ jobs:
       - name: make
         run: make rpm --jobs=$jobs
 
-      # Again, look around. see where things are at the end of the build.
-      - name: home dir files
-        run: ls -lR ~
-
       - name: upload to s3
         run: |
           yum install -y awscli 
