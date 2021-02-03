@@ -23,23 +23,23 @@ jobs:
               sudo apt-get update
               sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev gcovr build-essential lintian fakeroot
 
-          - name: cache-bison
-            id: bison-src-dist  # Used below in the 'if'. So i changed the id to match the if statement below
-            uses: actions/cache@v2
-            with:
-              path: $prefix/deps
-              key: sd-pkg           #changed the key to avoid conflict with the id.
+      #     - name: cache-bison
+      #       id: bison-src-dist  # Used below in the 'if'. So i changed the id to match the if statement below
+      #       uses: actions/cache@v2
+      #       with:
+      #         path: $prefix/deps
+      #         key: sd-pkg           #changed the key to avoid conflict with the id.
 
-      # build the depdendencies so that we don't have to update the container
-      # every time the deps change.
+      # # build the depdendencies so that we don't have to update the container
+      # # every time the deps change.
 
-          - name: build bison dependency
-          #this statement should use cache step id not the key
-            if: steps.bison-src-dist.outputs.cache-hit != 'true'   
-            run: |
-              git clone https://github.com/OPENDAP/hyrax-dependencies
-              cd hyrax-dependencies
-              make -j7 --jobs=$jobs bison
+      #     - name: build bison dependency
+      #     #this statement should use cache step id not the key
+      #       if: steps.bison-src-dist.outputs.cache-hit != 'true'   
+      #       run: |
+      #         git clone https://github.com/OPENDAP/hyrax-dependencies
+      #         cd hyrax-dependencies
+      #         make -j7 --jobs=$jobs bison
 
           - name: Configure
             run: |
