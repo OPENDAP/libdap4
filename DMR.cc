@@ -96,6 +96,8 @@ DMR::m_duplicate(const DMR &dmr)
 
     d_max_response_size = dmr.d_max_response_size;
 
+    d_ce_empty = dmr.d_ce_empty;
+
     // Deep copy, using ptr_duplicate()
     // d_root can only be a D4Group, so the thing returned by ptr_duplicate() must be a D4Group.
     d_root = static_cast<D4Group*>(dmr.d_root->ptr_duplicate());
@@ -121,7 +123,8 @@ DMR::DMR(D4BaseTypeFactory *factory, const string &name)
         : d_factory(factory), d_name(name), d_filename(""),
           d_dap_major(4), d_dap_minor(0),
           d_dmr_version("1.0"), d_request_xml_base(""),
-          d_namespace(c_dap40_namespace), d_max_response_size(0), d_root(0)
+          d_namespace(c_dap40_namespace), d_max_response_size(0), 
+          d_ce_empty(false),d_root(0)
 {
     // sets d_dap_version string and the two integer fields too
     set_dap_version("4.0");
@@ -151,7 +154,7 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
         : d_factory(factory), d_name(dds.get_dataset_name()),
           d_filename(dds.filename()), d_dap_major(4), d_dap_minor(0),
           d_dmr_version("1.0"), d_request_xml_base(""),
-          d_namespace(c_dap40_namespace), d_max_response_size(0), d_root(0)
+          d_namespace(c_dap40_namespace), d_max_response_size(0),d_ce_empty(false), d_root(0)
 {
     // sets d_dap_version string and the two integer fields too
     set_dap_version("4.0");
@@ -182,7 +185,7 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
 DMR::DMR()
         : d_factory(0), d_name(""), d_filename(""), d_dap_major(4), d_dap_minor(0),
           d_dap_version("4.0"), d_dmr_version("1.0"), d_request_xml_base(""),
-          d_namespace(c_dap40_namespace), d_max_response_size(0), d_root(0)
+          d_namespace(c_dap40_namespace), d_max_response_size(0), d_ce_empty(false),d_root(0)
 {
     // sets d_dap_version string and the two integer fields too
     set_dap_version("4.0");
