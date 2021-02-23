@@ -172,7 +172,7 @@ public:
     void set_ce_empty(bool ce_empty) { d_ce_empty = ce_empty; }
 
     /// Get the flag that marks the expression constraint as empty.
-    bool get_ce_empty() const{ return d_ce_empty; }
+    bool get_ce_empty() const { return d_ce_empty; }
 
 
     /** Return the root group of this Dataset. If no root group has been
