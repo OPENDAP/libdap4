@@ -174,6 +174,7 @@ public:
     /// Get the flag that marks the expression constraint as empty.
     bool get_ce_empty() const{ return d_ce_empty; }
 
+
     /** Return the root group of this Dataset. If no root group has been
      * set, use the D4BaseType factory to make it.
      * @return The root group of the dataset.
