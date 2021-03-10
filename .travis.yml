@@ -77,35 +77,35 @@ stages:
 jobs:
   include:
   - stage: travis
-    name: "libdap4 - travis time"
+    name: "travis stuff"
     script:
       - mkdir -p $TRAVIS_BUILD_DIR/package
       - cp README.md $TRAVIS_BUILD_DIR/package/README.libdap4
       - export LIBDAP_BUILD=travis
 
   - stage: build
-    name: "libdap4 - build"
+    name: "make"
     script:
     - export LIBDAP_BUILD=main
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make -j7 && make check -j7 && make install
 
   - stage: build
-    name: "libdap4 - build/asan"
+    name: "asan"
     script:
     - export LIBDAP_BUILD=asan
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
     - make -j7 && make check -j7
 
   - stage: build
-    name: "libdap4 - distcheck"
+    name: "distcheck"
     script:
     - export LIBDAP_BUILD=distcheck
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
     - make distcheck -j7
 
   - stage: scan
-    name: "libdap4 - scan"
+    name: "scan"
     script:
     - export LIBDAP_BUILD=sonar
     - ./configure --disable-dependency-tracking  --prefix=$prefix --enable-developer --enable-coverage
@@ -131,7 +131,7 @@ jobs:
   #               --env os=ubuntu14 opendap/ubuntu14_hyrax_build:1.5 /root/travis/build-deb.sh
 
   - stage: package
-    name: "libdap4 - centos7 rpms"
+    name: "centos7 rpms"
     script:
     - export LIBDAP_BUILD=centos7
     - mkdir -p $prefix/rpmbuild
@@ -140,7 +140,7 @@ jobs:
                  --env os=centos7 opendap/centos7_hyrax_builder:1.2 /root/travis/build-rpm.sh
 
   - stage: package
-    name: "libdap4 - source distribution"
+    name: "source distribution"
     script:
       - export LIBDAP_BUILD=srcdist
       - mkdir -p $TRAVIS_BUILD_DIR/package
