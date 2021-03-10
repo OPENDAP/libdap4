@@ -98,7 +98,7 @@ jobs:
     - make -j7 && make check -j7
 
   - stage: build
-    name: "libdap4 - build/asan"
+    name: "libdap4 - distcheck"
     script:
     - export LIBDAP_BUILD=distcheck
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
