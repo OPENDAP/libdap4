@@ -31,7 +31,6 @@ jobs:
       - name: build bison dependency
         if: steps.cache-bison.outputs.cache-hit != 'true'
         run: |
-          pwd
           git clone https://github.com/OPENDAP/hyrax-dependencies
           cd hyrax-dependencies
           make --jobs=$jobs bison
