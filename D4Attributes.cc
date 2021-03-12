@@ -487,7 +487,7 @@ D4Attribute::print_dap4(XMLWriter &xml) const
 
     switch (type()) {
     case attr_container_c:
-        // Just print xml when containing attributes. KY 2021-03-11
+        // Just print xml when containing attributes. KY 2021-03-12
         if (d_attributes)
             d_attributes->print_dap4(xml);
         break;
