@@ -50,7 +50,10 @@ env:
   - secure: "uWXN90b3+L74+TZzGonRmhxfOVyi4/MJ8jlGDTdKRepUpvVLM3D8jwj/A4fOaudrAGg64DSJUUnHp8FmzMPO2hz2kcgDwFJ+VkGdBgxPU81srIN3NOur6EcwQ0rjYEsL6AkOe3lAiQixrhg2aOWRFBtv6fOSApbSh0WqUlNfR/g="
   # AWS_SECRET_ACCESS_KEY
   - secure: "M46pBw0ILYUg+BG9XE5exCmITD/gCAmAkYYu0UsnuQQUsSdJmHNiQ9e7/K6uodlk0doSlyekI0dQj5e+dzCgZSLoKckEwwufslM8C+0Q4ZWCwiyi8sBTOLpcgqfhtyu6gYrRiG3bHGyfDO0LHlpw34UKhtpP9z8YvN8r2isqRX0="
-
+  # GIT_UID travis-ci-opendap
+  - secure: "g+SL53aSnULaToAu+HJO86Ljr6//j+aVSlVh7ROj6h80PDVmSW0xyiLUQRkA24vMrQqNY/rj6+qAXgVGORCPs2JBGcKjELzLr30eNDXfUNOjB+0actXI8sKD8I3eTZMHawOpedtk9v884Z+iQJauh04tD70sUMBp/WpCp+mXgQE="
+  # GIT_PSWD travis-ci-opendap
+  - secure: "bWsnJ7hN8OW3Qxg4RHCSSFq/dW8sIRzoN1Sn6gLSOuLc1fqGX/Grg4ICa/Fvcx6XwXZ0IJQC9yVP/YKYao0xCQTxC30D5VS7VhVanOSfwWKvmWngjsKrYsZ3qxsQyY60ArR3Zqc6t3boZi6DTHeIMOOfeYL/F93BCRxORSmgpZA="
 before_install:
   - pip install --user awscli
 
@@ -74,30 +77,35 @@ stages:
 jobs:
   include:
   - stage: travis
+    name: "travis stuff"
     script:
       - mkdir -p $TRAVIS_BUILD_DIR/package
       - cp README.md $TRAVIS_BUILD_DIR/package/README.libdap4
       - export LIBDAP_BUILD=travis
 
   - stage: build
+    name: "make"
     script:
     - export LIBDAP_BUILD=main
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make -j7 && make check -j7 && make install
 
   - stage: build
-    script: 
+    name: "asan"
+    script:
     - export LIBDAP_BUILD=asan
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
     - make -j7 && make check -j7
 
   - stage: build
-    script: 
+    name: "distcheck"
+    script:
     - export LIBDAP_BUILD=distcheck
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
     - make distcheck -j7
 
   - stage: scan
+    name: "scan"
     script:
     - export LIBDAP_BUILD=sonar
     - ./configure --disable-dependency-tracking  --prefix=$prefix --enable-developer --enable-coverage
@@ -123,7 +131,8 @@ jobs:
   #               --env os=ubuntu14 opendap/ubuntu14_hyrax_build:1.5 /root/travis/build-deb.sh
 
   - stage: package
-    script: 
+    name: "centos7 rpms"
+    script:
     - export LIBDAP_BUILD=centos7
     - mkdir -p $prefix/rpmbuild
     - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
@@ -131,6 +140,7 @@ jobs:
                  --env os=centos7 opendap/centos7_hyrax_builder:1.2 /root/travis/build-rpm.sh
 
   - stage: package
+    name: "source distribution"
     script:
       - export LIBDAP_BUILD=srcdist
       - mkdir -p $TRAVIS_BUILD_DIR/package
@@ -143,6 +153,7 @@ jobs:
 
 before_deploy:
   - echo "LIBDAP_BUILD ${LIBDAP_BUILD}"
+  - export DEPLOY="S3"
   - mkdir -p $TRAVIS_BUILD_DIR/package
   # This part of the before_deploy action copies the built distributions named with version numbers
   # into $TRAVIS_BUILD_DIR/package and then places a second copy of those files with the version
@@ -172,3 +183,6 @@ deploy:
     branch: master
     condition: $LIBDAP_BUILD =~ ^main|srddist|deb|centos7|travis$
     # Removed 'centos6|' jhrg 10/23/20
+
+after_deploy:
+  - if test x"$LIBDAP_BUILD" = x"centos7" -a x"$DEPLOY" = x"S3"; then ./travis/trigger-bes-build.sh; fi
