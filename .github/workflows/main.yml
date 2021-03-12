@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-16.04
     
     steps:
+      - name: Set PATH
+        run: echo "$prefix/bin:$prefix/deps/bin" >> $GITHUB_PATH
+
       - name: Packages
         run: sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev
      
