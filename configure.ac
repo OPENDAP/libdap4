@@ -25,22 +25,41 @@ AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
 AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and version combined])
 AC_SUBST(DVR)
 
+
 dnl Use one of these two blocks to build a DAP2 or DAP 3.2 DDX
 dnl AC_DEFINE(DAP2_DDX, 1, [Build the DAP 2 version of the DDX])
 dnl AC_SUBST(DAP2_DDX)
 AC_DEFINE(DAP3_2_DDX, 1, [Build the DAP 3.2 version of the DDX])
 AC_SUBST(DAP3_2_DDX)
 
-
 PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
 PACKAGE_MINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
-PACKAGE_SUBMINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
-AC_MSG_NOTICE(Package Major Version:     $PACKAGE_MAJOR_VERSION)
-AC_MSG_NOTICE(Package Minor Version:     $PACKAGE_MINOR_VERSION)
-AC_MSG_NOTICE(Package SubMinor Version:  $PACKAGE_SUBMINOR_VERSION)
+PACKAGE_PATCH_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
+AC_MSG_NOTICE(Package Major Version: $PACKAGE_MAJOR_VERSION)
+AC_MSG_NOTICE(Package Minor Version: $PACKAGE_MINOR_VERSION)
+AC_MSG_NOTICE(Package Patch Version: $PACKAGE_PATCH_VERSION)
 AC_SUBST(PACKAGE_MAJOR_VERSION)
 AC_SUBST(PACKAGE_MINOR_VERSION)
-AC_SUBST(PACKAGE_SUBMINOR_VERSION)
+AC_SUBST(PACKAGE_PATCH_VERSION)
+
+dnl Provide a way to pass in a build number. This is used by CI/CD systems to record
+dnl each build. The version number is set by the value in AC_INIT (see above). For
+dnl people building the source, it's not customary to supply a build number (i.e.,
+dnl if you're building the code for your own use, a build number seems like overkill).
+dnl jhrg 3/16/21
+AC_ARG_WITH([build],
+            [AC_HELP_STRING([--with-build=<number>],
+             [Inject the integer build number (default is to not define a build number)])],
+            [build_number=${withval}], [build_number=])
+
+dnl If a build number is given and valid (it must be an integer), use it.
+AS_IF([test -n "$with_build"],
+    [AS_IF([echo $build_number | grep '^[[0-9]][[0-9]]*$' > /dev/null 2>&1 ],
+     [PACKAGE_BUILD_NUMBER=$build_number
+      AC_MSG_NOTICE(Package Build Number: $PACKAGE_BUILD_NUMBER)
+      AC_SUBST(PACKAGE_BUILD_NUMBER)],
+     [AC_MSG_ERROR([Invalid build number given (must be an integer): $build_number])])],
+    [PACKAGE_BUILD_NUMBER=])
 
 dnl flags for the compilers and linkers - set these before locating the
 dnl actual tools since some of the AC_PROG macros set these `flag variables'
