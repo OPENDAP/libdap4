@@ -182,6 +182,10 @@ fortifyclean:
 
 ###########################################################################
 
+dist-hook:
+	cat $VERSION NEWS > NEWS.tmp
+	mv NEWS.tmp NEWS
+
 # Build linux RPMs. Use the environment variable 'RPM_OPTIONS' to pass in
 # extra options like --nodeps and --macros
 
