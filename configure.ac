@@ -10,7 +10,9 @@ dnl m4_pattern_allow([^BISON_USE_NLS$])
 dnl Set the version number here. Set the build number using --with-build
 dnl The version info is put in the VERSION file. THe build number is used
 dnl in the RPM spec file. The build number is not part of the pkg config
-dnl 'pc' files and tarball for the source.
+dnl 'pc' files and tarball for the source. See
+dnl libdap4/travis/travis_libdap_build_offset.sh for info about setting the
+dnl base value for the build number. jhrg 3/22/21
 AC_INIT(libdap, 3.20.7, opendap-tech@opendap.org)
 
 dnl As an alternative, we can...
