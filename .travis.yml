@@ -63,7 +63,7 @@ install:
   - tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
 
 before_script:
-  - source travis_libdap_build_offset.sh
+  - source travis/travis_libdap_build_offset.sh
   - export LIBDAP_BUILD_NUMBER=$(expr $TRAVIS_BUILD_NUMBER - $LIBDAP_OLFS_BUILD_OFFSET)
   - autoreconf --force --install --verbose
 
