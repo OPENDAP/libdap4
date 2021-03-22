@@ -19,7 +19,7 @@ compiler: gcc         # Could add clang
 branches:
   only:
   - master
-  - travis
+  - build-number-option
 
 addons:
   sonarcloud: true
