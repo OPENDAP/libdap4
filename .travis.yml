@@ -59,6 +59,7 @@ before_install:
   - pip install --user awscli
 
 install:
+  # $HOME is /home/travis and $TRAVIS_BUILD_DIR is /home/travis/build/OPENDAP/libdap4
   - aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
   - tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
 
@@ -72,11 +73,11 @@ before_script:
 
 stages:
   - name: build
-    if:  branch = master OR branch = build-number-option
+    if:  branch = master
   - name: scan
     if:  branch = master
   - name: package
-    if:  branch = master OR branch = build-number-option
+    if:  branch = master
 
 jobs:
   include:
@@ -127,6 +128,7 @@ jobs:
     name: "centos7 rpms"
     script:
     - export LIBDAP_BUILD=centos7
+    # $prefix = $HOME/install which is /home/travis/install here but /root/install in the container.
     - mkdir -p $prefix/rpmbuild
     - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
                  --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
