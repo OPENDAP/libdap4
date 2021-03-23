@@ -45,7 +45,12 @@ cd $HOME/libdap4
 # build (autoreconf; configure, make)
 autoreconf -fiv
 
+echo "LIBDAP_BUILD_NUMBER is $LIBDAP_BUILD_NUMBER"
+
 ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
 
 # This will leave the package in $HOME/rpmbuild/RPMS/x86_64/*.rpm
 make -j4 rpm
+
+ls -l $HOME/rpmbuild/RPMS/x86_64/
+

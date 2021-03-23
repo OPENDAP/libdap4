@@ -64,7 +64,8 @@ install:
 
 before_script:
   - source travis/travis_libdap_build_offset.sh
-  - export LIBDAP_BUILD_NUMBER=$(expr $TRAVIS_BUILD_NUMBER - $LIBDAP_OLFS_BUILD_OFFSET)
+  - export LIBDAP_BUILD_NUMBER=$(expr $TRAVIS_BUILD_NUMBER - $LIBDAP_TRAVIS_BUILD_OFFSET)
+  - echo "LIBDAP_BUILD_NUMBER is $LIBDAP_BUILD_NUMBER = $TRAVIS_BUILD_NUMBER - $LIBDAP_TRAVIS_BUILD_OFFSET"
   - autoreconf --force --install --verbose
 
 stages:
@@ -124,7 +125,7 @@ jobs:
     - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
                  --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                  --env os=centos7 --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
-                 opendap/centos7_hyrax_builder:1.2 /root/travis/build-rpm.sh
+                 opendap/centos7_hyrax_builder:1.5 /root/travis/build-rpm.sh
 
   - stage: package
     name: "source distribution"
@@ -138,6 +139,7 @@ jobs:
       - SOURCE_VERSION=$(cat VERSION)
       - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-$SOURCE_VERSION-$LIBDAP_BUILD_NUMBER.tar.gz
       - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-snapshot.tar.gz;
+      - ls -l $TRAVIS_BUILD_DIR/package/
 
 before_deploy:
   # This part of the before_deploy action copies the built distributions named with version numbers
@@ -166,7 +168,7 @@ deploy:
   on:
     # Change 'master' to 'travis' to test deployment
     branch: master
-    condition: $LIBDAP_BUILD =~ ^main|srddist|deb|centos7|travis$
+    condition: $LIBDAP_BUILD =~ ^main|srddist|centos7$
     # Removed 'centos6|' jhrg 10/23/20
 
 after_deploy:
