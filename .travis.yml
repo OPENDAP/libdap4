@@ -70,9 +70,9 @@ before_script:
 
 stages:
   - name: build
-    if:  branch = master OR branch = build-number-option
+    if:  branch = master
   - name: scan
-    if:  branch = master OR branch = build-number-option
+    if:  branch = master
   - name: package
     if:  branch = master OR branch = build-number-option
 
@@ -135,9 +135,11 @@ jobs:
       - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
       - make dist -j7
       # Make both a libdap-<version>-<build num> and libdap-snapshot tar.gz. This will simplify
-      # other operations that use the libdap source code like the bes build.
+      # other operations that use the libdap source code like the bes build. Note that the VERSION
+      # file holds a string that is the version number as set by the configure script and the build
+      # number passed into configure when it is run. jhrg 3/23/21
       - SOURCE_VERSION=$(cat VERSION)
-      - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-$SOURCE_VERSION-$LIBDAP_BUILD_NUMBER.tar.gz
+      - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-$SOURCE_VERSION.tar.gz
       - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-snapshot.tar.gz;
       - ls -l $TRAVIS_BUILD_DIR/package/
 
