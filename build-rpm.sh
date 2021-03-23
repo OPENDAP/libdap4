@@ -17,14 +17,17 @@ set -eux
 echo "env:"
 printenv
 
-# Get the pre-built dependencies (all static libraries)
+# Get the pre-built dependencies (all static libraries). It might be more
+# economical to just get and build the deps since all we need for libdap
+# is the bison executable. However, using this process might translate to
+# the bes build more easily.
 aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
 
-# This dumps the dependencies in $HOME/install/deps/{lib,bin,...}
+# This dumps the dependencies in $HOME/install/deps/{lib,bin,...}. By default
+# our Travis yaml file installs the smaller deps that uses shared libs. So,
+# remove that and install this.
+rm -rf $HOME/install/deps
 tar -xzvf /tmp/hyrax-dependencies-$os-static.tar.gz
-
-# Get a fresh copy of the sources
-# git clone https://github.com/opendap/libdap4
 
 # cd to the $TRAVIS_BUILD_DIRECTORY directory
 cd $HOME/travis
@@ -33,7 +36,8 @@ cd $HOME/travis
 # for the inside of this container
 autoreconf -fiv
 
-# This builds the libdap.spec file with the correct version and build number
+# This builds the libdap.spec file with the correct version and build number.
+# NB: prefix=$HOME/install
 ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
 
 # Now make the source dist (which will be libdap-version.tar.gz - no build number)
