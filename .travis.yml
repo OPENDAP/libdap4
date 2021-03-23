@@ -65,12 +65,12 @@ install:
 before_script:
   - source travis/travis_libdap_build_offset.sh
   - export LIBDAP_BUILD_NUMBER=$(expr $TRAVIS_BUILD_NUMBER - $LIBDAP_TRAVIS_BUILD_OFFSET)
-  - echo "LIBDAP_BUILD_NUMBER is $LIBDAP_BUILD_NUMBER = $TRAVIS_BUILD_NUMBER - $LIBDAP_TRAVIS_BUILD_OFFSET"
+  - echo "LIBDAP_BUILD_NUMBER is ${LIBDAP_BUILD_NUMBER} = ${TRAVIS_BUILD_NUMBER} - ${LIBDAP_TRAVIS_BUILD_OFFSET}"
   - autoreconf --force --install --verbose
 
 stages:
   - name: build
-    if:  branch = master
+    if:  branch = master OR branch = build-number-option
   - name: scan
     if:  branch = master
   - name: package

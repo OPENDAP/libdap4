@@ -106,7 +106,7 @@ LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
 EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	\
-	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec VCPP	\
+	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec.in VCPP	\
 	dods-datatypes-static.h xdr-datatypes-static.h		\
 	dap-config-pkgconfig $(LEX_YACC_EXTRA) OSX_Resources	\
 	getdap.man1 dap-config.man1 getdap4.man1
@@ -115,7 +115,8 @@ dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
 CLEANFILES = *.log *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) \
-	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
+	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1 \
+	libdap.spec
 
 HTML_DOCS=html
 DOXYGEN_CONF=doxy.conf
@@ -147,38 +148,6 @@ cccc:
 	-mkdir cccc
 	cccc --outdir=cccc $(DAP_SRC) $(SERVER_SRC) $(CLIENT_SRC) \
 	$(DAP_HDR) $(SERVER_HDR) $(CLIENT_HDR)
-
-###########################################################################
-
-# Fortify targets.
-.PHONY: fortify
-fortify: $(BUILT_SOURCES)
-	(cd gl && sourceanalyzer -b @PACKAGE@-gl $(MAKE) $(MFLAGS) )
-	(cd d4_ce && sourceanalyzer -b @PACKAGE@-d4_ce $(MAKE) $(MFLAGS) )
-	sourceanalyzer -b @PACKAGE@-parsers $(MAKE) $(MFLAGS) libparsers.la
-	sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS) libdap.la libdapserver.la libdapclient.la
-	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
-
-# run fortify on only our code, not the gnulib code or the flex/bison code.
-# This does skip testing some of the functions we wrote in the *.lex/*.yy
-# files but should eliminate the false positives from flex and bison, too.
-.PHONY: fortify-lite
-fortify-lite: dods-datatypes.h xdr-datatypes.h
-	( cd gl && $(MAKE) $(MFLAGS) )
-	( cd d4_ce && $(MAKE) $(MFLAGS) )
-	$(MAKE)  $(MFLAGS) libparsers.la
-	sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS) libdap.la libdapserver.la libdapclient.la
-	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
-
-# No longer used? jhrg 1/29/13
-#grammar_objects = lex.das.o das.tab.o lex.dds.o dds.tab.o lex.ce_expr.o \
-#ce_expr.tab.o lex.gse_.o gse.tab.o lex.Error.o Error.tab.o
-
-# Use this to clean the fortify project.
-.PHONY: fortifyclean
-fortifyclean:
-	(cd gl && sourceanalyzer -b @PACKAGE@-gl -clean )
-	sourceanalyzer -b @PACKAGE@ -clean
 
 ###########################################################################
 
