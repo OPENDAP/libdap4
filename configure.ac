@@ -41,7 +41,6 @@ dnl given but invalid, print a message and exit. jhrg 3/17/21
 AS_IF([test -n "$with_build"],
     [AS_IF([echo $build_number | grep '^[[0-9]][[-0-9.]]*$' > /dev/null 2>&1 ],
      [PACKAGE_VERSION=$PACKAGE_VERSION-$build_number
-      VERSION=$VERSION-$build_number
       echo "PACKAGE_VERSION: $PACKAGE_VERSION; VERSION: $VERSION"],
      [AC_MSG_ERROR([Invalid build number given (must be an integer): $build_number])])])
 

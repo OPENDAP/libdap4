@@ -106,7 +106,7 @@ LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
 EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	\
-	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec.in VCPP	\
+	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec.in libdap.spec VCPP	\
 	dods-datatypes-static.h xdr-datatypes-static.h		\
 	dap-config-pkgconfig $(LEX_YACC_EXTRA) OSX_Resources	\
 	getdap.man1 dap-config.man1 getdap4.man1
@@ -115,8 +115,9 @@ dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
 CLEANFILES = *.log *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) \
-	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1 \
-	libdap.spec
+	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
+
+DISTCLEAN = libdap.spec
 
 HTML_DOCS=html
 DOXYGEN_CONF=doxy.conf
@@ -159,10 +160,10 @@ cccc:
 # extra options like --nodeps and --macros
 
 srpm: dist
-	rpmbuild -ts --clean $(RPM_OPTIONS) @PACKAGE@-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -ts --clean $(RPM_OPTIONS) @PACKAGE@-@VERSION@.tar.gz
 
 rpm: dist
-	rpmbuild -tb --clean $(RPM_OPTIONS) @PACKAGE@-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -tb --clean $(RPM_OPTIONS) @PACKAGE@-@VERSION@.tar.gz
 
 # Build the debain package.
 deb: dist

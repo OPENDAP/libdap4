@@ -17,19 +17,7 @@ set -eux
 echo "env:"
 printenv
 
-# verify we are in $HOME
-
-echo "pwd = `pwd`"
-
-if test $HOME != $PWD
-then
-    exit 1
-fi
-
-if ! which aws && test -x /root/.local/bin/aws
-then
-    export PATH=$PATH:/root/.local/bin
-fi
+echo "HOME: ${HOME}"
 
 # Get the pre-built dependencies (all static libraries)
 aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
@@ -38,9 +26,9 @@ aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
 tar -xzvf /tmp/hyrax-dependencies-$os-static.tar.gz
 
 # Get a fresh copy of the sources
-git clone https://github.com/opendap/libdap4
+# git clone https://github.com/opendap/libdap4
 
-cd $HOME/libdap4
+# cd $HOME/libdap4
 
 # build (autoreconf; configure, make)
 autoreconf -fiv

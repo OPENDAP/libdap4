@@ -66,7 +66,7 @@ before_script:
   - source travis/travis_libdap_build_offset.sh
   - export LIBDAP_BUILD_NUMBER=$(expr $TRAVIS_BUILD_NUMBER - $LIBDAP_TRAVIS_BUILD_OFFSET)
   - echo "LIBDAP_BUILD_NUMBER is ${LIBDAP_BUILD_NUMBER} = ${TRAVIS_BUILD_NUMBER} - ${LIBDAP_TRAVIS_BUILD_OFFSET}"
-  - autoreconf --force --install --verbose
+  # moved down below to individual steps. jhrg 3/23/21 autoreconf --force --install --verbose
 
 stages:
   - name: build
@@ -83,6 +83,7 @@ jobs:
     name: "make"
     script:
     - export LIBDAP_BUILD=main
+    - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make -j7 && make check -j7 && make install
 
@@ -90,6 +91,7 @@ jobs:
     name: "asan"
     script:
     - export LIBDAP_BUILD=asan
+    - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
     - make -j7 && make check -j7
 
@@ -97,6 +99,7 @@ jobs:
     name: "distcheck"
     script:
     - export LIBDAP_BUILD=distcheck
+    - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
     - make distcheck -j7
 
@@ -104,6 +107,7 @@ jobs:
     name: "scan"
     script:
     - export LIBDAP_BUILD=sonar
+    - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking  --prefix=$prefix --enable-developer --enable-coverage
     - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
     # Run these commands in bw-output?
@@ -132,6 +136,7 @@ jobs:
     script:
       - export LIBDAP_BUILD=srcdist
       - mkdir -p $TRAVIS_BUILD_DIR/package
+      - autoreconf --force --install --verbose
       - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
       - make dist -j7
       # Make both a libdap-<version>-<build num> and libdap-snapshot tar.gz. This will simplify
