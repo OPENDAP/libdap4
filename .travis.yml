@@ -66,6 +66,8 @@ before_script:
   - source travis/travis_libdap_build_offset.sh
   - export LIBDAP_BUILD_NUMBER=$(expr $TRAVIS_BUILD_NUMBER - $LIBDAP_TRAVIS_BUILD_OFFSET)
   - echo "LIBDAP_BUILD_NUMBER is ${LIBDAP_BUILD_NUMBER} = ${TRAVIS_BUILD_NUMBER} - ${LIBDAP_TRAVIS_BUILD_OFFSET}"
+  - echo "Travis default env:"
+  - printenv
   # moved down below to individual steps. jhrg 3/23/21 autoreconf --force --install --verbose
 
 stages:

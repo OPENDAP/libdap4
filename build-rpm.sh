@@ -21,17 +21,20 @@ printenv
 # economical to just get and build the deps since all we need for libdap
 # is the bison executable. However, using this process might translate to
 # the bes build more easily.
-# aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
+#aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
 
 # This dumps the dependencies in $HOME/install/deps/{lib,bin,...}. By default
 # our Travis yaml file installs the smaller deps that uses shared libs. So,
-# remove that and install this.
-# rm -rf $HOME/install/deps
-# tar -xzvf /tmp/hyrax-dependencies-$os-static.tar.gz
+# remove that and install this. Note that in this script, $HOME is /root while
+# in the .travis.yml it is
+#rm -rf $HOME/install/deps
+#tar -xzvf /tmp/hyrax-dependencies-$os-static.tar.gz
 
+ln -s /root/travis/install/deps $HOME/install/deps
 ls -lR $HOME/install/deps
 
-# cd to the $TRAVIS_BUILD_DIRECTORY directory
+# cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
+# using the docker run --volume option and set it to $TRAVIS_BUILD_DIR.
 cd $HOME/travis
 
 # Run autoreconf so the missing, etc., scripts have the correct paths
