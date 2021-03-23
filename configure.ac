@@ -7,8 +7,43 @@ dnl AC_PREREQ([2.68]); Fails on CentOS 6. jhrg 3/26/19
 dnl m4_pattern_forbid([^_?(gl_[A-Z]|AX_|BISON_)])
 dnl m4_pattern_allow([^BISON_USE_NLS$])
 
-dnl Update version here and below at LIB_CURRENT, ..., if needed.
+dnl Set the version number here. Set the build number using --with-build
+dnl The version info is put in the VERSION file. THe build number is used
+dnl in the RPM spec file. The build number is not part of the pkg config
+dnl 'pc' files and tarball for the source. See
+dnl libdap4/travis/travis_libdap_build_offset.sh for info about setting the
+dnl base value for the build number. jhrg 3/22/21
 AC_INIT(libdap, 3.20.7, opendap-tech@opendap.org)
+
+dnl As an alternative, we can...
+dnl Read the version number from the file VERSION. The file must contain
+dnl only the version number in the form x.y.z or x.y.z-b. Newlines are
+dnl ignored. Anything else and the build will fail.
+dnl
+dnl But, this requires that the NEWS file have the version number AND build
+dnl number somewhere int eh first 15 lines or teh dist target will fail.
+dnl jhrg 3/17/21
+dnl https://stackoverflow.com/questions/8559456/read-a-version-number-from-a-file-in-configure-ac
+dnl AC_INIT([libdap], m4_normalize(m4_include([VERSION])), [opendap-tech@opendap.org])
+
+dnl Provide a way to pass in a build number. This is used by CI/CD systems to record
+dnl each build. The version number is set by the value in AC_INIT (see above). For
+dnl people building the source, it's not customary to supply a build number (i.e.,
+dnl if you're building the code for your own use, a build number seems like overkill).
+dnl jhrg 3/16/21
+AC_ARG_WITH([build],
+            [AC_HELP_STRING([--with-build=<number>],
+             [Inject the integer build number (default is to not define a build number)])],
+            [build_number=${withval}], [build_number=])
+
+dnl If a build number is given and valid (it must be an integer), use it. If it's
+dnl given but invalid, print a message and exit. jhrg 3/17/21
+AS_IF([test -n "$with_build"],
+    [AS_IF([echo $build_number | grep '^[[0-9]][[-0-9.]]*$' > /dev/null 2>&1 ],
+     [PACKAGE_VERSION=$PACKAGE_VERSION-$build_number
+      echo "PACKAGE_VERSION: $PACKAGE_VERSION; VERSION: $VERSION"],
+     [AC_MSG_ERROR([Invalid build number given (must be an integer): $build_number])])])
+
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["4.0"], [Highest DAP version implemented?])
 AC_SUBST([DAP_PROTOCOL_VERSION])
 
@@ -31,16 +66,26 @@ dnl AC_SUBST(DAP2_DDX)
 AC_DEFINE(DAP3_2_DDX, 1, [Build the DAP 3.2 version of the DDX])
 AC_SUBST(DAP3_2_DDX)
 
+AS_IF([echo $PACKAGE_VERSION | grep '^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$'],
+      [PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$@\1@'`
+       PACKAGE_MINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$@\2@'`
+       PACKAGE_PATCH_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$@\3@'`
+       PACKAGE_BUILD_NUMBER=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$@\4@'`],
+      [AS_IF([echo $PACKAGE_VERSION | grep '^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$'],
+       [PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
+        PACKAGE_MINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
+        PACKAGE_PATCH_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
+        PACKAGE_BUILD_NUMBER=],
+       [AC_MSG_ERROR([VERSION file does not contain a valid version number (x.y.z or x.y.z-b)])])])
 
-PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
-PACKAGE_MINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
-PACKAGE_SUBMINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
-AC_MSG_NOTICE(Package Major Version:     $PACKAGE_MAJOR_VERSION)
-AC_MSG_NOTICE(Package Minor Version:     $PACKAGE_MINOR_VERSION)
-AC_MSG_NOTICE(Package SubMinor Version:  $PACKAGE_SUBMINOR_VERSION)
+AC_MSG_NOTICE(Package Major Version: $PACKAGE_MAJOR_VERSION)
+AC_MSG_NOTICE(Package Minor Version: $PACKAGE_MINOR_VERSION)
+AC_MSG_NOTICE(Package Patch Version: $PACKAGE_PATCH_VERSION)
+AC_MSG_NOTICE(Package Build Number: $PACKAGE_BUILD_NUMBER)
 AC_SUBST(PACKAGE_MAJOR_VERSION)
 AC_SUBST(PACKAGE_MINOR_VERSION)
-AC_SUBST(PACKAGE_SUBMINOR_VERSION)
+AC_SUBST(PACKAGE_PATCH_VERSION)
+AC_SUBST(PACKAGE_BUILD_NUMBER)
 
 dnl flags for the compilers and linkers - set these before locating the
 dnl actual tools since some of the AC_PROG macros set these `flag variables'
@@ -187,7 +232,7 @@ AC_STRUCT_TM
 AC_C_VOLATILE
 AC_C_BIGENDIAN
 
-# This is used byt eh DMR tests which must choose the correct set of baselines
+# This is used by the DMR tests which must choose the correct set of baselines
 # based on word order given that DAP4 uses 'reader make right' and thus the 
 # DAP4 data responses are different for different word order machines. jhrg 9/29/15
 AS_IF([test $ac_cv_c_bigendian = yes], [ac_word_order=big-endian], [ac_word_order=little-endian])
@@ -522,6 +567,8 @@ AH_TOP([#ifndef _config_h
 AH_BOTTOM([#endif /* _config_h */])
 
 AC_CONFIG_FILES([Makefile
+                 VERSION
+                 libdap.spec
                  libdap.pc
                  libdapclient.pc
                  libdapserver.pc

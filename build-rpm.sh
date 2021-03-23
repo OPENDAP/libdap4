@@ -17,35 +17,37 @@ set -eux
 echo "env:"
 printenv
 
-# verify we are in $HOME
-
-echo "pwd = `pwd`"
-
-if test $HOME != $PWD
-then
-    exit 1
-fi
-
-if ! which aws && test -x /root/.local/bin/aws
-then
-    export PATH=$PATH:/root/.local/bin
-fi
-
-# Get the pre-built dependencies (all static libraries)
+# Get the pre-built dependencies (all static libraries). It might be more
+# economical to just get and build the deps since all we need for libdap
+# is the bison executable. However, using this process might translate to
+# the bes build more easily.
 aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
 
-# This dumps the dependencies in $HOME/install/deps/{lib,bin,...}
+# This dumps the dependencies in $HOME/install/deps/{lib,bin,...}. By default
+# our Travis yaml file installs the smaller deps that uses shared libs.
 tar -xzvf /tmp/hyrax-dependencies-$os-static.tar.gz
 
-# Get a fresh copy of the sources
-git clone https://github.com/opendap/libdap4
+ls -lR $HOME/install/deps
 
-cd $HOME/libdap4
+# cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
+# using the docker run --volume option and set it to $TRAVIS_BUILD_DIR.
+cd $HOME/travis
 
-# build (autoreconf; configure, make)
+# Run autoreconf so the missing, etc., scripts have the correct paths
+# for the inside of this container
 autoreconf -fiv
 
-./configure --disable-dependency-tracking --prefix=$prefix 
+# This builds the libdap.spec file with the correct version and build number.
+# NB: prefix=$HOME/install
+./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
 
+# Now make the source dist (which will be libdap-version.tar.gz - no build number)
+# and will contain the libdap.spec made above with configure. The call to rpmbuild
+# will unpack that and run configure _again_. Tedious, but the computer won't complain.
+# jhrg 3/23/21
+#
 # This will leave the package in $HOME/rpmbuild/RPMS/x86_64/*.rpm
 make -j4 rpm
+
+# Just a little reassurance... jhrg 3/23/21
+ls -l $HOME/rpmbuild/RPMS/x86_64/

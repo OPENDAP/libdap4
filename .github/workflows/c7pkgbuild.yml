@@ -44,7 +44,7 @@ jobs:
       - name: configure
         run: |
           autoreconf -fiv
-          ./configure --enable-developer --prefix=$prefix
+          ./configure --prefix=$prefix
 
       - name: make
         run: make rpm --jobs=$jobs
