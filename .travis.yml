@@ -7,9 +7,9 @@
 # Modified to push the result of a successful build up to an AWS S3
 # bucket. jhrg 2.24.18
 
-virt: lxd             # use an lxd container
-arch: amd64           # optional, this is default, routes to a full VM
-os: linux             # optional, this is default
+# virt: lxd             # use an lxd container
+# arch: amd64           # optional, this is default, routes to a full VM
+# os: linux             # optional, this is default
 dist: xenial          # or bionic | xenial | trusty | precise with xenial as default
 
 language: cpp
@@ -19,7 +19,7 @@ compiler: gcc         # Could add clang
 branches:
   only:
   - master
-  - build-number-option
+  - build-num-redux
 
 addons:
   sonarcloud: true
@@ -78,6 +78,8 @@ stages:
     if:  branch = master
   - name: package
     if:  branch = master
+  - name: hyrax-bes-trigger
+    if: branch = master AND type != pull_request
 
 jobs:
   include:
@@ -148,9 +150,17 @@ jobs:
       # file holds a string that is the version number as set by the configure script and the build
       # number passed into configure when it is run. jhrg 3/23/21
       - SOURCE_VERSION=$(cat VERSION)
-      - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-$SOURCE_VERSION.tar.gz
-      - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-snapshot.tar.gz;
-      - ls -l $TRAVIS_BUILD_DIR/package/
+      - mv libdap-*.tar.gz libdap-$SOURCE_VERSION.tar.gz
+      - cp libdap-$SOURCE_VERSION.tar.gz libdap-snapshot.tar.gz;
+
+  - stage: hyrax-bes-trigger
+    name: "Hyrax BES Trigger"
+    script:
+      - export STAGE=hyrax-bes
+      - echo $STAGE
+      - autoreconf --force --install --verbose
+      - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$BES_BUILD_NUMBER
+      - ./travis/trigger-bes-build.sh
 
 before_deploy:
   # This part of the before_deploy action copies the built distributions named with version numbers
@@ -162,10 +172,13 @@ before_deploy:
   - echo "LIBDAP_BUILD ${LIBDAP_BUILD}"
   - export DEPLOY="S3"
   - mkdir -p $TRAVIS_BUILD_DIR/package
+  # Build the binary used by downstream Travis BES builds
   - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz
                                                --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
-  # CentOS-7  distribution prep
+  # CentOS-7 distribution prep
   - if test "$LIBDAP_BUILD" = "centos7"; then ./travis/rpm-to-package-dir.sh "el7"; fi
+  # Src dist distribution prep
+  - if test "$BES_BUILD" = "srcdist"; then cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package; fi
   # Check for the stuff...
   - ls -lR $TRAVIS_BUILD_DIR/package
 
@@ -182,5 +195,5 @@ deploy:
     condition: $LIBDAP_BUILD =~ ^main|srddist|centos7$
     # Removed 'centos6|' jhrg 10/23/20
 
-after_deploy:
-  - if test x"$LIBDAP_BUILD" = x"centos7" -a x"$DEPLOY" = x"S3"; then ./travis/trigger-bes-build.sh; fi
+# after_deploy:
+#   - if test x"$LIBDAP_BUILD" = x"centos7" -a x"$DEPLOY" = x"S3"; then ./travis/trigger-bes-build.sh; fi

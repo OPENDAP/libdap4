@@ -18,7 +18,7 @@ git config --global user.email "npotter@opendap.org"
 cd bes
 git checkout master
 
-LIBDAP4_SNAPSHOT="libdap4-<version.build> "`date "+%FT%T%z"`
+LIBDAP4_SNAPSHOT="libdap4-""rsion.build> "`date "+%FT%T%z"`
 
 echo "libdap4-snapshot record: ${LIBDAP_SNAPSHOT}"  >&2
 echo "${LIBDAP4_SNAPSHOT}" > libdap4-snapshot
