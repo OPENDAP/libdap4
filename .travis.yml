@@ -78,9 +78,7 @@ stages:
   - name: package
     if:  branch = master
   - name: hyrax-bes-trigger
-    if: branch = master
-
-# AND type != pull_request
+    if: branch = master AND type != pull_request
 
 jobs:
   include:
@@ -195,6 +193,3 @@ deploy:
     branch: master
     condition: $LIBDAP_BUILD =~ ^main|srddist|centos7$
     # Removed 'centos6|' jhrg 10/23/20
-
-# after_deploy:
-#   - if test x"$LIBDAP_BUILD" = x"centos7" -a x"$DEPLOY" = x"S3"; then ./travis/trigger-bes-build.sh; fi
