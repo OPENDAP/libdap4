@@ -19,7 +19,6 @@ compiler: gcc         # Could add clang
 branches:
   only:
   - master
-  - build-num-redux
 
 addons:
   sonarcloud: true
@@ -79,7 +78,9 @@ stages:
   - name: package
     if:  branch = master
   - name: hyrax-bes-trigger
-    if: branch = master AND type != pull_request
+    if: branch = master
+
+# AND type != pull_request
 
 jobs:
   include:
