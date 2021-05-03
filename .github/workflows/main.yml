@@ -1,4 +1,7 @@
 # This is the main build stage from .travis.yml
+# Workflows used:
+# https://github.com/actions/checkout@v2
+# https://github.com/actions/cache@v2
 
 name: Main build wf
 
@@ -8,7 +11,7 @@ env:
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, actions-test ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
@@ -31,11 +34,18 @@ jobs:
           path: $prefix/deps
           key: bison-${{ runner.os }}
 
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          repository: OPENDAP/hyrax-dependencies
+          path: hyrax-dependencies
+
       - name: build bison dependency
         if: steps.cache-bison.outputs.cache-hit != 'true'
         run: |
-          git clone https://github.com/OPENDAP/hyrax-dependencies
-          cd hyrax-dependencies
+          # git clone https://github.com/OPENDAP/hyrax-dependencies
+          # cd hyrax-dependencies
+          echo "CWD: $(pwd)"
           make --jobs=$jobs bison
           
       - name: checkout
