@@ -18,7 +18,9 @@ on:
 
 jobs:
   ubuntu-build:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
+
+    # Was: ubuntu-16.04
     
     steps:
       - name: Set PATH
@@ -43,8 +45,7 @@ jobs:
       - name: build bison dependency
         if: steps.cache-bison.outputs.cache-hit != 'true'
         run: |
-          # git clone https://github.com/OPENDAP/hyrax-dependencies
-          # cd hyrax-dependencies
+          cd hyrax-dependencies
           echo "CWD: $(pwd)"
           make --jobs=$jobs bison
           
