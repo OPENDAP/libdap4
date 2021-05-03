@@ -27,7 +27,7 @@ jobs:
         run: echo "$prefix/bin:$prefix/deps/bin" >> $GITHUB_PATH
 
       - name: Packages
-        run: sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev
+        run: sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev libfl-dev gcovr
      
       - name: cache-bison
         id: cache-bison 
