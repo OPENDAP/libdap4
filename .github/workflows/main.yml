@@ -2,6 +2,10 @@
 # Workflows used:
 # https://github.com/actions/checkout@v2
 # https://github.com/actions/cache@v2
+#
+# To enable debugging output in the actions log/output, set these
+# 'secrets' in the repo's settings: ACTIONS_STEP_DEBUG, and
+# ACTIONS_RUNNER_DEBUG.
 
 name: Main build wf
 
@@ -20,8 +24,10 @@ jobs:
   ubuntu-build:
     runs-on: ubuntu-20.04
 
-    # Was: ubuntu-16.04
-    
+    # In the 'steps' the values of 'path:' are all relative to ${{ github.workspace }}
+    # so using $prefix there will break the Action. However, you should use $prefix
+    # when calling configure since it needs the full path. The 'path:' property is
+    # evaluated by the various Actions (e.g., checkout@v2).
     steps:
       - name: Set PATH
         run: echo "$prefix/bin:$prefix/deps/bin" >> $GITHUB_PATH
@@ -37,7 +43,7 @@ jobs:
           # Was: $prefix/deps
           key: bison-${{ runner.os }}
 
-      - name: checkout
+      - name: checkout hyrax-dependencies
         uses: actions/checkout@v2
         with:
           repository: OPENDAP/hyrax-dependencies
@@ -49,8 +55,9 @@ jobs:
           cd hyrax-dependencies
           echo "CWD: $(pwd)"
           make --jobs=$jobs bison
+          ls -lR $prefix/deps
           
-      - name: checkout
+      - name: checkout libdap4
         uses: actions/checkout@v2
 
       - name: autoreconf
