@@ -63,7 +63,8 @@ jobs:
           # whenever the git commit differs from the cached build. Note that the
           # cache operation saves $prefix/deps/share/built-commit-hash because that
           # file is within $prefix/deps/ (see 'path:' in 'cache-bison' above.
-          if test $(git log -1 --format='%H') != $(cat $prefix/deps/share/built-commit-hash)
+          if test -f $prefix/deps/share/built-commit-hash -a \
+              $(git log -1 --format='%H') != $(cat $prefix/deps/share/built-commit-hash)
           then
             make --jobs=$jobs bison
             git log -1 --format='%H' > $prefix/deps/share/built-commit-hash
@@ -72,6 +73,8 @@ jobs:
           
       - name: checkout libdap4
         uses: actions/checkout@v2
+        # NB: since this use of checkout@v2 doesn't use 'path:', we don't have to
+        # cd into libdap4 in the following named steps.
 
       - name: autoreconf
         run: autoreconf --force --install --verbose
