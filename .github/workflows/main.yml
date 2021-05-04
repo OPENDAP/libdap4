@@ -30,6 +30,8 @@ jobs:
     # evaluated by the various Actions (e.g., checkout@v2).
     steps:
       - name: Set PATH
+        # Setting PATH this way ensures that the builds' configure scripts find built
+        # dependencies in preference to packages installed with apt-get.
         run: echo "$prefix/bin:$prefix/deps/bin" >> $GITHUB_PATH
 
       - name: Packages
@@ -39,22 +41,33 @@ jobs:
         id: cache-bison 
         uses: actions/cache@v2
         with:
+          # Here 'path:' cannot use $prefix because of the way the cache@v2 action
+          # is written. The path is relative to ${{ github.workspace }}
           path: build/deps
-          # Was: $prefix/deps
           key: bison-${{ runner.os }}
 
       - name: checkout hyrax-dependencies
         uses: actions/checkout@v2
         with:
           repository: OPENDAP/hyrax-dependencies
+          # using 'path:' here means the action must 'cd' into the named directory
+          # in subsequent steps.
           path: hyrax-dependencies
 
       - name: build bison dependency
-        if: steps.cache-bison.outputs.cache-hit != 'true'
+        # if: steps.cache-bison.outputs.cache-hit != 'true'
         run: |
           cd hyrax-dependencies
           echo "CWD: $(pwd)"
-          make --jobs=$jobs bison
+          # Regardless of whether there was a 'cache hit,' build the dependencies
+          # whenever the git commit differs from the cached build. Note that the
+          # cache operation saves $prefix/deps/share/built-commit-hash because that
+          # file is within $prefix/deps/ (see 'path:' in 'cache-bison' above.
+          if test $(git log -1 --format='%H') != $(cat $prefix/deps/share/built-commit-hash)
+          then
+            make --jobs=$jobs bison
+            git log -1 --format='%H' > $prefix/deps/share/built-commit-hash
+          fi
           ls -lR $prefix/deps
           
       - name: checkout libdap4
