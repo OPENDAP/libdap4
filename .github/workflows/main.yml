@@ -36,15 +36,6 @@ jobs:
 
       - name: Packages
         run: sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev libfl-dev gcovr
-     
-      - name: cache-bison
-        id: cache-bison 
-        uses: actions/cache@v2
-        with:
-          # Here 'path:' cannot use $prefix because of the way the cache@v2 action
-          # is written. The path is relative to ${{ github.workspace }}
-          path: build/deps
-          key: bison-${{ runner.os }}
 
       - name: checkout hyrax-dependencies
         uses: actions/checkout@v2
@@ -54,21 +45,23 @@ jobs:
           # in subsequent steps.
           path: hyrax-dependencies
 
+      - name: cache-bison
+        id: cache-bison 
+        uses: actions/cache@v2
+        with:
+          # Here 'path:' cannot use $prefix because of the way the cache@v2 action
+          # is written. The path is relative to ${{ github.workspace }}. Similarly,
+          # the path used by hashFiles is relative to github_workspace.
+          path: build/deps
+          # Any change to the deps is reflected in a change to the Makefile
+          key: ${{ runner.os }}-bison-${{ hashFiles('hyrax-dependencies/Makefile') }}
+
       - name: build bison dependency
-        # if: steps.cache-bison.outputs.cache-hit != 'true'
+        # The test is for 'steps.[ID].outputs.cache-hit' from the cache@v2 step above
+        if: steps.cache-bison.outputs.cache-hit != 'true'
         run: |
           cd hyrax-dependencies
-          echo "CWD: $(pwd)"
-          # Regardless of whether there was a 'cache hit,' build the dependencies
-          # whenever the git commit differs from the cached build. Note that the
-          # cache operation saves $prefix/deps/share/built-commit-hash because that
-          # file is within $prefix/deps/ (see 'path:' in 'cache-bison' above.
-          if test ! -f $prefix/deps/share/built-commit-hash || \
-              test $(git log -1 --format='%H') != $(cat $prefix/deps/share/built-commit-hash)
-          then
-            make --jobs=$jobs bison
-            git log -1 --format='%H' > $prefix/deps/share/built-commit-hash
-          fi
+          make --jobs=$jobs bison
 
       - name: checkout libdap4
         uses: actions/checkout@v2
