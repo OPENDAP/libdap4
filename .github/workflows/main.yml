@@ -63,8 +63,8 @@ jobs:
           # whenever the git commit differs from the cached build. Note that the
           # cache operation saves $prefix/deps/share/built-commit-hash because that
           # file is within $prefix/deps/ (see 'path:' in 'cache-bison' above.
-          if test ! -f $prefix/deps/share/built-commit-hash -o \
-              $(git log -1 --format='%H') != $(cat $prefix/deps/share/built-commit-hash)
+          if test ! -f $prefix/deps/share/built-commit-hash || \
+              test $(git log -1 --format='%H') != $(cat $prefix/deps/share/built-commit-hash)
           then
             make --jobs=$jobs bison
             git log -1 --format='%H' > $prefix/deps/share/built-commit-hash
