@@ -33,7 +33,8 @@ jobs:
         id: cache-bison 
         uses: actions/cache@v2
         with:
-          path: $prefix/deps
+          path: build/deps
+          # Was: $prefix/deps
           key: bison-${{ runner.os }}
 
       - name: checkout
