@@ -567,7 +567,7 @@ AH_TOP([#ifndef _config_h
 AH_BOTTOM([#endif /* _config_h */])
 
 AC_CONFIG_FILES([Makefile
-                 VERSION
+                 libdap_VERSION
                  libdap.spec
                  libdap.pc
                  libdapclient.pc
