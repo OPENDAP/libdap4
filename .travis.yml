@@ -148,7 +148,7 @@ jobs:
       # other operations that use the libdap source code like the bes build. Note that the VERSION
       # file holds a string that is the version number as set by the configure script and the build
       # number passed into configure when it is run. jhrg 3/23/21
-      - SOURCE_VERSION=$(cat VERSION)
+      - SOURCE_VERSION=$(cat libdap_VERSION)
       - mv libdap-*.tar.gz libdap-$SOURCE_VERSION.tar.gz
       - cp libdap-$SOURCE_VERSION.tar.gz libdap-snapshot.tar.gz;
 
