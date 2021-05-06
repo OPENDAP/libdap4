@@ -487,9 +487,9 @@ D4Attribute::print_dap4(XMLWriter &xml) const
 
     switch (type()) {
     case attr_container_c:
-        if (!d_attributes)
-            throw InternalErr(__FILE__, __LINE__, "Null Attribute container");
-        d_attributes->print_dap4(xml);
+        // Just print xml when containing attributes. KY 2021-03-12
+        if (d_attributes)
+            d_attributes->print_dap4(xml);
         break;
 
     case attr_otherxml_c:

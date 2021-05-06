@@ -694,6 +694,7 @@ id_or_const: SCAN_WORD
 #endif
         var = make_variable((*EVALUATOR(arg)), tmp);
         $$ = new rvalue(var);
+        delete (tmp.v.s);
     }
     // When the scanner (ce_expr.lex) returns the SCAN_STR token type
     // it makes a local copy of the string in a new std::string object

@@ -7,9 +7,9 @@
 # Modified to push the result of a successful build up to an AWS S3
 # bucket. jhrg 2.24.18
 
-virt: lxd             # use an lxd container
-arch: amd64           # optional, this is default, routes to a full VM
-os: linux             # optional, this is default
+# virt: lxd             # use an lxd container
+# arch: amd64           # optional, this is default, routes to a full VM
+# os: linux             # optional, this is default
 dist: xenial          # or bionic | xenial | trusty | precise with xenial as default
 
 language: cpp
@@ -19,7 +19,6 @@ compiler: gcc         # Could add clang
 branches:
   only:
   - master
-  - travis
 
 addons:
   sonarcloud: true
@@ -30,9 +29,11 @@ addons:
     - libcurl4-openssl-dev
     - libcppunit-dev 
     - gcovr
-    - build-essential
-    - lintian
-    - fakeroot
+
+# remove support for debian packages. jhrg 2/23/21
+# - build-essential
+# - lintian
+# - fakeroot
     
 env:
   global:
@@ -48,16 +49,26 @@ env:
   - secure: "uWXN90b3+L74+TZzGonRmhxfOVyi4/MJ8jlGDTdKRepUpvVLM3D8jwj/A4fOaudrAGg64DSJUUnHp8FmzMPO2hz2kcgDwFJ+VkGdBgxPU81srIN3NOur6EcwQ0rjYEsL6AkOe3lAiQixrhg2aOWRFBtv6fOSApbSh0WqUlNfR/g="
   # AWS_SECRET_ACCESS_KEY
   - secure: "M46pBw0ILYUg+BG9XE5exCmITD/gCAmAkYYu0UsnuQQUsSdJmHNiQ9e7/K6uodlk0doSlyekI0dQj5e+dzCgZSLoKckEwwufslM8C+0Q4ZWCwiyi8sBTOLpcgqfhtyu6gYrRiG3bHGyfDO0LHlpw34UKhtpP9z8YvN8r2isqRX0="
+  # GIT_UID travis-ci-opendap
+  - secure: "g+SL53aSnULaToAu+HJO86Ljr6//j+aVSlVh7ROj6h80PDVmSW0xyiLUQRkA24vMrQqNY/rj6+qAXgVGORCPs2JBGcKjELzLr30eNDXfUNOjB+0actXI8sKD8I3eTZMHawOpedtk9v884Z+iQJauh04tD70sUMBp/WpCp+mXgQE="
+  # GIT_PSWD travis-ci-opendap
+  - secure: "bWsnJ7hN8OW3Qxg4RHCSSFq/dW8sIRzoN1Sn6gLSOuLc1fqGX/Grg4ICa/Fvcx6XwXZ0IJQC9yVP/YKYao0xCQTxC30D5VS7VhVanOSfwWKvmWngjsKrYsZ3qxsQyY60ArR3Zqc6t3boZi6DTHeIMOOfeYL/F93BCRxORSmgpZA="
 
 before_install:
   - pip install --user awscli
 
 install:
+  # $HOME is /home/travis and $TRAVIS_BUILD_DIR is /home/travis/build/OPENDAP/libdap4
   - aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
   - tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
 
 before_script:
-  - autoreconf --force --install --verbose
+  - source travis/travis_libdap_build_offset.sh
+  - export LIBDAP_BUILD_NUMBER=$(expr $TRAVIS_BUILD_NUMBER - $LIBDAP_TRAVIS_BUILD_OFFSET)
+  - echo "LIBDAP_BUILD_NUMBER is ${LIBDAP_BUILD_NUMBER} = ${TRAVIS_BUILD_NUMBER} - ${LIBDAP_TRAVIS_BUILD_OFFSET}"
+  - echo "Travis default env:"
+  - printenv
+  # moved down below to individual steps. jhrg 3/23/21 autoreconf --force --install --verbose
 
 stages:
   - name: build
@@ -66,38 +77,41 @@ stages:
     if:  branch = master
   - name: package
     if:  branch = master
-  - name: travis
-    if: branch = travis
+  - name: hyrax-bes-trigger
+    if: branch = master AND type != pull_request
 
 jobs:
   include:
-  - stage: travis
-    script:
-      - mkdir -p $TRAVIS_BUILD_DIR/package
-      - cp README.md $TRAVIS_BUILD_DIR/package/README.libdap4
-      - export LIBDAP_BUILD=travis
 
   - stage: build
+    name: "make"
     script:
     - export LIBDAP_BUILD=main
+    - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking --prefix=$prefix
     - make -j7 && make check -j7 && make install
 
   - stage: build
-    script: 
+    name: "asan"
+    script:
     - export LIBDAP_BUILD=asan
+    - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
     - make -j7 && make check -j7
 
   - stage: build
-    script: 
+    name: "distcheck"
+    script:
     - export LIBDAP_BUILD=distcheck
+    - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
     - make distcheck -j7
 
   - stage: scan
+    name: "scan"
     script:
     - export LIBDAP_BUILD=sonar
+    - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking  --prefix=$prefix --enable-developer --enable-coverage
     - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
     # Run these commands in bw-output?
@@ -110,51 +124,60 @@ jobs:
     - sonar-scanner -Dsonar.login=$SONAR_LOGIN
     # Test the result of the scan and fail a PR/build if the quality gate fails
     - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
-        
-  - stage: package
-    script: 
-    - export LIBDAP_BUILD=deb
-    - mkdir -p $prefix/debbuild
-    # $TRAVIS_DUILD_DIR:/root/travis used to make the build-deb.sh script available
-    - docker run --volume $prefix/debbuild:/root --volume $TRAVIS_BUILD_DIR:/root/travis
-                 --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                 --env os=ubuntu14 opendap/ubuntu14_hyrax_build:1.5 /root/travis/build-deb.sh
 
   - stage: package
-    script: 
+    name: "centos7 rpms"
+    script:
     - export LIBDAP_BUILD=centos7
+    # $prefix = $HOME/install which is /home/travis/install here but /root/install in the container.
     - mkdir -p $prefix/rpmbuild
     - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
                  --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                 --env os=centos7 opendap/centos7_hyrax_builder:1.2 /root/travis/build-rpm.sh
+                 --env os=centos7 --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
+                 opendap/centos7_hyrax_builder:1.7 /root/travis/build-rpm.sh
 
   - stage: package
+    name: "source distribution"
     script:
       - export LIBDAP_BUILD=srcdist
       - mkdir -p $TRAVIS_BUILD_DIR/package
-      - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
+      - autoreconf --force --install --verbose
+      - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
       - make dist -j7
-      # Make both a libdap-<version> and libdap-snapshot tar.gz. This will simplify
-      # other operations that use the libdap source code like the bes build.
-      - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package
-      - cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package/libdap-snapshot.tar.gz;
+      # Make both a libdap-<version>-<build num> and libdap-snapshot tar.gz. This will simplify
+      # other operations that use the libdap source code like the bes build. Note that the VERSION
+      # file holds a string that is the version number as set by the configure script and the build
+      # number passed into configure when it is run. jhrg 3/23/21
+      - SOURCE_VERSION=$(cat libdap_VERSION)
+      - mv libdap-*.tar.gz libdap-$SOURCE_VERSION.tar.gz
+      - cp libdap-$SOURCE_VERSION.tar.gz libdap-snapshot.tar.gz;
+
+  - stage: hyrax-bes-trigger
+    name: "Hyrax BES Trigger"
+    script:
+      - export STAGE=hyrax-bes
+      - echo $STAGE
+      - autoreconf --force --install --verbose
+      - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$BES_BUILD_NUMBER
+      - ./travis/trigger-bes-build.sh
 
 before_deploy:
-  - echo "LIBDAP_BUILD ${LIBDAP_BUILD}"
-  - mkdir -p $TRAVIS_BUILD_DIR/package
   # This part of the before_deploy action copies the built distributions named with version numbers
   # into $TRAVIS_BUILD_DIR/package and then places a second copy of those files with the version
   # number replaced with the word 'snapshot.' These files are used for the our snapshot delivery
   # and deployment process. jhrg 10/28/19
+  # Also, when $LIBDAP_BUILD is 'main' a 'binary build' is captured in a tar ball and used for the
+  # downstream BES build to save having to compile libdap there. jhrg 3/22/21
+  - echo "LIBDAP_BUILD ${LIBDAP_BUILD}"
+  - export DEPLOY="S3"
+  - mkdir -p $TRAVIS_BUILD_DIR/package
+  # Build the binary used by downstream Travis BES builds
   - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz
                                                --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
-  # Debian distribution prep
-  - if test "$LIBDAP_BUILD" = "deb"; then ./travis/deb-to-package-dir.sh; fi
-  # Removed jhrg 10/23/20
-  # CentOS-6 distribution prep
-  # - if test "$LIBDAP_BUILD" = "centos6"; then ./travis/rpm-to-package-dir.sh "el6"; fi
-  # CentOS-7  distribution prep
+  # CentOS-7 distribution prep
   - if test "$LIBDAP_BUILD" = "centos7"; then ./travis/rpm-to-package-dir.sh "el7"; fi
+  # Src dist distribution prep
+  - if test "$BES_BUILD" = "srcdist"; then cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package; fi
   # Check for the stuff...
   - ls -lR $TRAVIS_BUILD_DIR/package
 
@@ -168,5 +191,5 @@ deploy:
   on:
     # Change 'master' to 'travis' to test deployment
     branch: master
-    condition: $LIBDAP_BUILD =~ ^main|srddist|deb|centos7|travis$
+    condition: $LIBDAP_BUILD =~ ^main|srddist|centos7$
     # Removed 'centos6|' jhrg 10/23/20

@@ -79,6 +79,9 @@ private:
     /// The maximum response size (in Kilo bytes)
     long d_max_response_size;
 
+    /// Whether transferring the whole DMR(the expression constraint is empty)
+    bool d_ce_empty;
+
     /// The root group; holds dimensions, enums, variables, groups, ...
     D4Group *d_root;
 
@@ -164,6 +167,13 @@ public:
 
     /// Get the estimated response size, in kilo bytes
     long request_size(bool constrained);
+
+    /// Set the flag that marks the expression constraint as empty. 
+    void set_ce_empty(bool ce_empty) { d_ce_empty = ce_empty; }
+
+    /// Get the flag that marks the expression constraint as empty.
+    bool get_ce_empty() const { return d_ce_empty; }
+
 
     /** Return the root group of this Dataset. If no root group has been
      * set, use the D4BaseType factory to make it.

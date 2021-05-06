@@ -106,7 +106,7 @@ LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
 EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	\
-	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec VCPP	\
+	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec.in libdap.spec VCPP	\
 	dods-datatypes-static.h xdr-datatypes-static.h		\
 	dap-config-pkgconfig $(LEX_YACC_EXTRA) OSX_Resources	\
 	getdap.man1 dap-config.man1 getdap4.man1
@@ -116,6 +116,8 @@ pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
 CLEANFILES = *.log *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) \
 	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
+
+DISTCLEAN = libdap.spec
 
 HTML_DOCS=html
 DOXYGEN_CONF=doxy.conf
@@ -150,46 +152,18 @@ cccc:
 
 ###########################################################################
 
-# Fortify targets.
-.PHONY: fortify
-fortify: $(BUILT_SOURCES)
-	(cd gl && sourceanalyzer -b @PACKAGE@-gl $(MAKE) $(MFLAGS) )
-	(cd d4_ce && sourceanalyzer -b @PACKAGE@-d4_ce $(MAKE) $(MFLAGS) )
-	sourceanalyzer -b @PACKAGE@-parsers $(MAKE) $(MFLAGS) libparsers.la
-	sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS) libdap.la libdapserver.la libdapclient.la
-	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
+# dist-hook:
+#	if test -n "$$VERSION"; then cat $$VERSION NEWS > NEWS.tmp; mv NEWS.tmp NEWS; fi
 
-# run fortify on only our code, not the gnulib code or the flex/bison code.
-# This does skip testing some of the functions we wrote in the *.lex/*.yy
-# files but should eliminate the false positives from flex and bison, too.
-.PHONY: fortify-lite
-fortify-lite: dods-datatypes.h xdr-datatypes.h
-	( cd gl && $(MAKE) $(MFLAGS) )
-	( cd d4_ce && $(MAKE) $(MFLAGS) )
-	$(MAKE)  $(MFLAGS) libparsers.la
-	sourceanalyzer -b @PACKAGE@ $(MAKE) $(MFLAGS) libdap.la libdapserver.la libdapclient.la
-	sourceanalyzer -b @PACKAGE@ -scan -f @PACKAGE@-@PACKAGE_VERSION@.fpr
-
-# No longer used? jhrg 1/29/13
-#grammar_objects = lex.das.o das.tab.o lex.dds.o dds.tab.o lex.ce_expr.o \
-#ce_expr.tab.o lex.gse_.o gse.tab.o lex.Error.o Error.tab.o
-
-# Use this to clean the fortify project.
-.PHONY: fortifyclean
-fortifyclean:
-	(cd gl && sourceanalyzer -b @PACKAGE@-gl -clean )
-	sourceanalyzer -b @PACKAGE@ -clean
-
-###########################################################################
 
 # Build linux RPMs. Use the environment variable 'RPM_OPTIONS' to pass in
 # extra options like --nodeps and --macros
 
 srpm: dist
-	rpmbuild -ts --clean $(RPM_OPTIONS) @PACKAGE@-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -ts --clean $(RPM_OPTIONS) @PACKAGE@-@VERSION@.tar.gz
 
 rpm: dist
-	rpmbuild -tb --clean $(RPM_OPTIONS) @PACKAGE@-@PACKAGE_VERSION@.tar.gz
+	rpmbuild -tb --clean $(RPM_OPTIONS) @PACKAGE@-@VERSION@.tar.gz
 
 # Build the debain package.
 deb: dist

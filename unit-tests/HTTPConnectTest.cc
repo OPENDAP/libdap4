@@ -39,12 +39,13 @@
 #include "debug.h"
 
 #include "test_config.h"
+#include "GetOpt.h"
 
 using namespace CppUnit;
 using namespace std;
 
-#include"GetOpt.h"
-
+// FIXME By default this should be false, but we're tracking down a
+//  potential bug in this code or test. jhrg 1/28/21
 static bool debug = false;
 
 #undef DBG
@@ -176,7 +177,6 @@ public:
     void read_url_test()
     {
         vector<string> *resp_h = new vector<string>;
-        ;
 
         try {
             DBG(cerr << prolog << "BEGIN" << endl);
@@ -487,7 +487,7 @@ public:
 
     void fetch_url_test_4_cpp()
     {
-        DBG(cerr << "Entering fetch_url_test 4" << endl);
+        DBG(cerr << "Entering fetch_url_test_4_cpp" << endl);
         http->set_use_cpp_streams(true);
 
         HTTPResponse *stuff = 0;

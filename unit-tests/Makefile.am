@@ -74,6 +74,10 @@ test_config.h: test_config.h.in Makefile
 D4-xml.tar.gz: D4-xml/DMR_*[0-9].xml
 	tar -czf $@ $^
 
+# Override the default
+# check: HTTPConnectTest
+#	./HTTPConnectTest -d
+
 ############################################################################
 # Unit Tests
 #
