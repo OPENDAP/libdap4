@@ -28,7 +28,7 @@ set -e
 
 echo "New CentOS-7 snapshot of libdap4 has been pushed. Triggering a BES build..."
 
-LIBDAP4_SNAPSHOT="libdap4-`cat libdap_VERSION` `date \"+%FT%T%z\"`"
+LIBDAP4_SNAPSHOT="libdap4-`cat ./libdap_VERSION` `date \"+%FT%T%z\"`"
 echo "libdap4-snapshot record: ${LIBDAP_SNAPSHOT}"  >&2
 
 git clone --depth 1 https://github.com/opendap/bes

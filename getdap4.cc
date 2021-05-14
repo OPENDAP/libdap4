@@ -93,21 +93,23 @@ static void usage(const string &name)
 	cerr << "to be processed." << endl;
 	cerr << endl;
 	cerr << "Options:" << endl;
-	cerr << "        d: For each URL, get the (DAP4) DMR object. Does not get data." << endl;
+    cerr << "        d: For each URL, get the (DAP4) DMR object. Does not get data." << endl;
 	cerr << "        D: For each URL, get the DAP4 Data response." << endl;
 	cerr << endl;
 	cerr << "        v: Verbose output." << endl;
 	cerr << "        V: Version of this client; see 'i' for server version." << endl;
 	cerr << "        i: For each URL, get the server version." << endl;
-	cerr << "        k: Keep temporary files created by libdap." << endl;
+	// cerr << "        k: Keep temporary files created by libdap." << endl;
 	cerr << "        m: Request the same URL <num> times." << endl;
 	cerr << "        z: Ask the server to compress data." << endl;
 	cerr << "        s: Print Sequences using numbered rows." << endl;
-	cerr << "        t: Trace www accesses." << endl;
+	// cerr << "        t: Trace www accesses." << endl;
 	cerr << "        M: Assume data read from a file has no MIME headers; use only with files" << endl;
 	cerr << endl;
 	cerr << "        c: <expr> is a constraint expression. Used with -d/D" << endl;
 	cerr << "           NB: You can use a `?' for the CE also." << endl;
+    cerr << "        S: Used in conjunction with -d and will report the total size of the data "
+            "referenced in the DMR." << endl;
 }
 
 // Used for raw http access/transfer
@@ -172,9 +174,45 @@ static void print_data(DMR &dmr, bool print_rows = false)
     cout << endl << flush;
 }
 
+/** Get the size of a response. This method looks at the variables in the DDS
+ *  a computes the number of bytes in the response.
+ *
+ *  @note This version of the method does a poor job with Sequences. A better
+ *  implementation would look at row-constraint-based limitations and use them
+ *  for size computations. If a row-constraint is missing, return an error.
+ *
+ *  @param constrained Should the size of the whole DDS be used or should the
+ *  current constraint be taken into account?
+ */
+unsigned long long get_size(D4Group *grp, bool constrained=false)
+{
+    unsigned long long  w = 0;
+
+    for (auto var_itr = grp->var_begin(); var_itr != grp->var_end(); var_itr++) {
+        if (constrained) {
+            if ((*var_itr)->send_p())
+                w += (*var_itr)->width(constrained);
+        }
+        else {
+            w += (*var_itr)->width(constrained);
+        }
+    }
+    for(auto grp_itr = grp->grp_begin(); grp_itr != grp->grp_end(); grp_itr++){
+        w += get_size(*grp_itr,constrained);
+    }
+
+    return w;
+}
+
+unsigned long long get_size(DMR &dmr, bool constrained=false)
+{
+    return get_size(dmr.root(),constrained);
+}
+
+
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "[dDvVikrm:Mzstc:]");
+    GetOpt getopt(argc, argv, "[dDvVikrm:Mzstc:S]");
     int option_char;
 
     bool get_dmr = false;
@@ -191,6 +229,7 @@ int main(int argc, char *argv[])
     int dap_client_major = 4;
     int dap_client_minor = 0;
     string expr = "";
+    bool compute_size = false;
 
 #ifdef WIN32
     _setmode(_fileno(stdout), _O_BINARY);
@@ -212,6 +251,9 @@ int main(int argc, char *argv[])
             exit(0);
         case 'i':
             get_version = true;
+            break;
+        case 'S':
+            compute_size = true;
             break;
 #if 0
         case 'k':
@@ -329,6 +371,9 @@ int main(int argc, char *argv[])
                         XMLWriter xml;
                         dmr.print_dap4(xml);
                         cout << xml.get_doc() << endl;
+                        if(compute_size){
+                            cout << "DMR References " << get_size(dmr) << " bytes of data," << endl;
+                        }
                     }
                     catch (Error & e) {
                         cerr << e.get_error_message() << endl;

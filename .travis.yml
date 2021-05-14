@@ -158,7 +158,7 @@ jobs:
       - export STAGE=hyrax-bes
       - echo $STAGE
       - autoreconf --force --install --verbose
-      - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$BES_BUILD_NUMBER
+      - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
       - ./travis/trigger-bes-build.sh
 
 before_deploy:
