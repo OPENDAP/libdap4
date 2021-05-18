@@ -43,6 +43,8 @@ lex.*.cc
 *.trace
 
 # literal files
+libdap.spec
+libdap_VERSION
 Makefile
 Makefile.in
 conf/compile
