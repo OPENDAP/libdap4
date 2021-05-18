@@ -10,7 +10,7 @@
 # virt: lxd             # use an lxd container
 # arch: amd64           # optional, this is default, routes to a full VM
 # os: linux             # optional, this is default
-dist: bionic          # or bionic | xenial | trusty | precise with xenial as default
+dist: xenial          # or bionic | xenial | trusty | precise with xenial as default
 
 language: cpp
 
@@ -29,7 +29,6 @@ addons:
     - libcurl4-openssl-dev
     - libcppunit-dev 
     - gcovr
-    - fl-dev
 
 # remove support for debian packages. jhrg 2/23/21
 # - build-essential
