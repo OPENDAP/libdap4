@@ -29,6 +29,7 @@ addons:
     - libcurl4-openssl-dev
     - libcppunit-dev 
     - gcovr
+    - fl-dev
 
 # remove support for debian packages. jhrg 2/23/21
 # - build-essential
