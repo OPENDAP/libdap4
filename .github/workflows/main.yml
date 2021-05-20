@@ -1,4 +1,11 @@
 # This is the main build stage from .travis.yml
+# Workflows used:
+# https://github.com/actions/checkout@v2
+# https://github.com/actions/cache@v2
+#
+# To enable debugging output in the actions log/output, set these
+# 'secrets' in the repo's settings: ACTIONS_STEP_DEBUG, and
+# ACTIONS_RUNNER_DEBUG.
 
 name: Main build wf
 
@@ -8,38 +15,58 @@ env:
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, actions-test ]
   pull_request:
     branches: [ master ]
   workflow_dispatch:
 
 jobs:
   ubuntu-build:
-    runs-on: ubuntu-16.04
-    
+    runs-on: ubuntu-20.04
+
+    # In the 'steps' the values of 'path:' are all relative to ${{ github.workspace }}
+    # so using $prefix there will break the Action. However, you should use $prefix
+    # when calling configure since it needs the full path. The 'path:' property is
+    # evaluated by the various Actions (e.g., checkout@v2).
     steps:
       - name: Set PATH
+        # Setting PATH this way ensures that the builds' configure scripts find built
+        # dependencies in preference to packages installed with apt-get.
         run: echo "$prefix/bin:$prefix/deps/bin" >> $GITHUB_PATH
 
       - name: Packages
-        run: sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev
-     
+        run: sudo apt-get --yes install libxml2-dev uuid-dev libcurl4-openssl-dev libcppunit-dev libfl-dev gcovr
+
+      - name: checkout hyrax-dependencies
+        uses: actions/checkout@v2
+        with:
+          repository: OPENDAP/hyrax-dependencies
+          # using 'path:' here means the action must 'cd' into the named directory
+          # in subsequent steps.
+          path: hyrax-dependencies
+
       - name: cache-bison
         id: cache-bison 
         uses: actions/cache@v2
         with:
-          path: $prefix/deps
-          key: bison-${{ runner.os }}
+          # Here 'path:' cannot use $prefix because of the way the cache@v2 action
+          # is written. The path is relative to ${{ github.workspace }}. Similarly,
+          # the path used by hashFiles is relative to github_workspace.
+          path: build/deps
+          # Any change to the deps is reflected in a change to the Makefile
+          key: ${{ runner.os }}-bison-${{ hashFiles('hyrax-dependencies/Makefile') }}
 
       - name: build bison dependency
+        # The test is for 'steps.[ID].outputs.cache-hit' from the cache@v2 step above
         if: steps.cache-bison.outputs.cache-hit != 'true'
         run: |
-          git clone https://github.com/OPENDAP/hyrax-dependencies
           cd hyrax-dependencies
           make --jobs=$jobs bison
-          
-      - name: checkout
+
+      - name: checkout libdap4
         uses: actions/checkout@v2
+        # NB: since this use of checkout@v2 doesn't use 'path:', we don't have to
+        # cd into libdap4 in the following named steps.
 
       - name: autoreconf
         run: autoreconf --force --install --verbose
