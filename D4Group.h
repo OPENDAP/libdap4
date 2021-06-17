@@ -23,6 +23,7 @@
 #define D4GROUP_H_
 
 #include <string>
+#include <cstdint>
 
 #include "Constructor.h"
 #include "D4Dimensions.h"

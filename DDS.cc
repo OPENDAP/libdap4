@@ -36,6 +36,7 @@
 #include <cstdio>
 #include <cmath>
 #include <climits>
+#include <cstdint>
 
 #include <sys/types.h>
 
