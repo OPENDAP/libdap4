@@ -31,9 +31,9 @@ endif
 # Removed  $(CXX11_FLAG) since c++0x, gcc 4.4.x and bison -gneerated code
 # do not work together. jhrg 4//5/19
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+AM_CXXFLAGS += $(CXX11_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2
+AM_CXXFLAGS += -g -O2 $(CXX11_FLAG) 
 endif
 
 AM_LDFLAGS =
