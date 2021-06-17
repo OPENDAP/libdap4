@@ -58,7 +58,7 @@ man_MANS = getdap.1 dap-config.1 getdap4.1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
 libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)  
-libparsers_la_CPPFLAGS =  $(CXX11_FLAG) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
+libparsers_la_CPPFLAGS =  $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)
