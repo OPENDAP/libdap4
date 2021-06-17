@@ -209,6 +209,7 @@ private:
 #endif
 
     long d_max_response_size;   // In bytes...
+    uint64_t d_max_response_size64;   // In bytes...
 
     friend class DDSTest;
 
@@ -297,13 +298,28 @@ public:
     /// Get the maximum response size, in Bytes. Zero indicates no limit.
     long get_response_limit() { return d_max_response_size; }
 
+    /// Get the maximum response size, in kilobytes. Zero indicates no limit.
+    uint64_t get_response_limit_kb() { return d_max_response_size64/1024; }
+
     /** Set the maximum response size. Zero is the default value. The size
         is given in kilobytes (but stored internally as the number of bytes).
         @param size The maximum size of the response in kilobytes. */
-    void set_response_limit(long size) { d_max_response_size = size * 1024; }
+    void set_response_limit(long size) {
+        d_max_response_size = size * 1024;
+        d_max_response_size64 = d_max_response_size;
+    }
+
+    /**
+     * @return Returns true if the total data bytes requested exceeds the set limit, false otherwise.
+     */
+    bool too_big() {
+        return d_max_response_size64 != 0 && get_request_size_kb(true) > d_max_response_size64;
+    }
+
 
     /// Get the estimated response size.
     int get_request_size(bool constrained);
+    uint64_t get_request_size_kb(bool constrained);
 
     string container_name() ;
     void container_name( const string &cn ) ;

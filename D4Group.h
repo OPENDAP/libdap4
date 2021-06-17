@@ -129,6 +129,7 @@ public:
     D4Group *find_child_grp(const string &grp_name);
 
     long request_size(bool constrained);
+    uint64_t request_size_kb(bool constrained);
 
     virtual void set_send_p(bool state);
     virtual void set_read_p(bool state);

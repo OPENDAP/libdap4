@@ -464,11 +464,29 @@ DMR::set_dap_version(const string &v)
  * current constraint be taken into account?
  * @return The size of the request in kilobytes
  */
-long
-DMR::request_size(bool constrained)
+[[deprecated("Use request_size_kb()")]]
+long DMR::request_size(bool constrained)
 {
     return d_root->request_size(constrained);
 }
+
+/** Get the size of a response, in kilobytes. This method looks at the
+ * variables in the DMR a computes the number of bytes in the response.
+ *
+ * @note This version of the method does a poor job with Arrays that
+ * have varying dimensions.
+ *
+ * @param constrained Should the size of the whole DMR be used or should the
+ * current constraint be taken into account?
+ * @return The size of the request in kilobytes
+ */
+uint64_t DMR::request_size_kb(bool constrained)
+{
+    return d_root->request_size_kb(constrained);
+}
+
+
+
 
 /**
  * Print the DAP4 DMR object.

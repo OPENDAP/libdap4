@@ -431,6 +431,30 @@ D4Group::request_size(bool constrained)
     return size / 1024;
 }
 
+uint64_t D4Group::request_size_kb(bool constrained)
+{
+    uint64_t size = 0;
+    // variables
+    Constructor::Vars_iter v = var_begin();
+    while (v != var_end()) {
+        if (constrained) {
+            if ((*v)->send_p())
+                size += (*v)->width(constrained);
+        }
+        else {
+            size += (*v)->width(constrained);
+        }
+        ++v;
+    }
+    // groups
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end())
+        size += (*g++)->request_size(constrained);
+
+    return size / 1024;
+}
+
+
 void
 D4Group::set_read_p(bool state)
 {

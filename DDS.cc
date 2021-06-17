@@ -578,6 +578,22 @@ DDS::get_request_size(bool constrained)
     return w;
 }
 
+uint64_t DDS::get_request_size_kb(bool constrained)
+{
+    uint64_t req_size = 0;
+    for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
+        if (constrained) {
+            if ((*i)->send_p())
+                req_size += (*i)->width(constrained);
+        }
+        else {
+            req_size += (*i)->width(constrained);
+        }
+    }
+    return req_size/1024;
+}
+
+
 /** @brief Adds a copy of the variable to the DDS.
     Using the ptr_duplicate() method, perform a deep copy on the variable
     \e bt and adds the result to this DDS.

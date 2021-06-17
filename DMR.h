@@ -78,6 +78,7 @@ private:
 
     /// The maximum response size (in Kilo bytes)
     long d_max_response_size;
+    uint64_t d_max_response_size_kb;
 
     /// Whether transferring the whole DMR(the expression constraint is empty)
     bool d_ce_empty;
@@ -158,15 +159,27 @@ public:
 
     // TODO Move the response_limit methods to D4ResponseBuilder? jhrg 5/1/13
     /// Get the maximum response size, in KB. Zero indicates no limit.
-    long response_limit() { return d_max_response_size; }
+    long response_limit() const { return d_max_response_size; }
+    uint64_t response_limit_kb() const { return d_max_response_size_kb; }
 
     /** Set the maximum response size. Zero is the default value. The size
         is given in kilobytes.
         @param size The maximum size of the response in kilobytes. */
-    void set_response_limit(long size) { d_max_response_size = size; }
+    void set_response_limit(long size) {
+        d_max_response_size = size;
+        d_max_response_size_kb = size;
+    }
 
     /// Get the estimated response size, in kilo bytes
     long request_size(bool constrained);
+
+    /// Get the estimated response size, in kilo bytes
+    uint64_t request_size_kb(bool constrained);
+
+    bool too_big() {
+        return d_max_response_size_kb != 0 && request_size_kb(true) > d_max_response_size_kb;
+    }
+
 
     /// Set the flag that marks the expression constraint as empty. 
     void set_ce_empty(bool ce_empty) { d_ce_empty = ce_empty; }
