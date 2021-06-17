@@ -6,11 +6,11 @@ ACLOCAL_AMFLAGS = -I conf -I gl/m4
 aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
-AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS) $(TIRPC_CFLAGS) -std=c++11
+AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS = 
 
 if COMPILER_IS_GCC
-AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-deprecated-register -std=gnu++11
+AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-deprecated-register
 endif
 
 # These are not used by automake but are often useful for certain types of
