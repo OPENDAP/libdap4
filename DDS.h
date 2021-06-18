@@ -296,7 +296,7 @@ public:
 
     /// Get the maximum response size, in bytes. Zero indicates no limit.
     [[deprecated("Use DDS::get_response_limit_kb()")]]
-    long get_response_limit() const { return (long)(d_max_response_size_kb * 1024); }
+    long get_response_limit() { return (long)(d_max_response_size_kb * 1024); }
 
     /**
      * @brief The maximum allowed response size, in kilobytes. Zero indicates no limit (default).

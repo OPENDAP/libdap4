@@ -193,13 +193,21 @@ public:
         d_max_response_size_kb = size;
     }
 
-    /// Get the estimated response size, in kilo bytes
+    /// Get the estimated response size, in kilobytes
     [[deprecated("Use DMR::request_size_kb()")]]
     long request_size(bool constrained);
 
-    /// Get the estimated response size, in kilo bytes
+    /// Get the estimated response size, in kilobytes
+    /**
+     * @brief Compute the estimated response size, in kilobytes.
+     * @param constrained
+     * @return The estimated response size, in kilobytes.
+     */
     uint64_t request_size_kb(bool constrained);
 
+    /**
+     * @return Returns true if the total data bytes requested exceeds the set limit, false otherwise.
+     */
     bool too_big() {
         return d_max_response_size_kb != 0 && request_size_kb(true) > d_max_response_size_kb;
     }
