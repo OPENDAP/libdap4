@@ -55,6 +55,9 @@ while test $# -gt 0; do
 	echo "@CXX@"
 	;;
 
+    # Added -I${includedir} so that code can use #include <libdap/Array.h>, ...
+    # which avoids issues with IDE warnings and will help later when there are
+    # two libdap libraries. jhrg 6/17/21
     --cflags)
 	echo "-I${includedir} -I${includedir}/libdap @XML2_CFLAGS@ @CURL_CFLAGS@"
 	;;
