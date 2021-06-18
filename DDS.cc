@@ -187,7 +187,7 @@ DDS::duplicate(const DDS &dds)
     d_keywords = dds.d_keywords; // value copy; Keywords contains no pointers
 #endif
 
-    d_max_response_size = dds.d_max_response_size;
+    d_max_response_size_kb = dds.d_max_response_size_kb;
 }
 
 /**
@@ -205,7 +205,7 @@ DDS::duplicate(const DDS &dds)
 DDS::DDS(BaseTypeFactory *factory, const string &name)
         : d_factory(factory), d_name(name), d_container_name(""), d_container(0),
           d_request_xml_base(""),
-          d_timeout(0), /*d_keywords(),*/ d_max_response_size(0)
+          d_timeout(0), /*d_keywords(),*/ d_max_response_size_kb(0)
 {
     DBG(cerr << "Building a DDS for the default version (2.0)" << endl);
 
@@ -232,7 +232,7 @@ DDS::DDS(BaseTypeFactory *factory, const string &name)
 DDS::DDS(BaseTypeFactory *factory, const string &name, const string &version)
         : d_factory(factory), d_name(name), d_container_name(""), d_container(0),
           d_request_xml_base(""),
-          d_timeout(0), /*d_keywords(),*/ d_max_response_size(0)
+          d_timeout(0), /*d_keywords(),*/ d_max_response_size_kb(0)
 {
     DBG(cerr << "Building a DDS for version: " << version << endl);
 
@@ -562,8 +562,8 @@ DDS::container()
  *  @param constrained Should the size of the whole DDS be used or should the
  *  current constraint be taken into account?
  */
-int
-DDS::get_request_size(bool constrained)
+[[deprecated("Use DDS::get_request_size_kb()")]]
+int DDS::get_request_size(bool constrained)
 {
 	int w = 0;
     for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
@@ -575,10 +575,21 @@ DDS::get_request_size(bool constrained)
     		w += (*i)->width(constrained);
     	}
     }
-
     return w;
 }
 
+/**
+ * @brief Get the estimated size of a response in kilobytes.
+ * This method looks at the variables in the DDS and computes
+ * the number of bytes in the response.
+ *
+ *  @note This version of the method does a poor job with Sequences. A better
+ *  implementation would look at row-constraint-based limitations and use them
+ *  for size computations. If a row-constraint is missing, return an error.
+ *
+ *  @param constrained Should the size of the whole DDS be used or should the
+ *  current constraint be taken into account?
+ */
 uint64_t DDS::get_request_size_kb(bool constrained)
 {
     uint64_t req_size = 0;
