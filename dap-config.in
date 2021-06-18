@@ -56,7 +56,7 @@ while test $# -gt 0; do
 	;;
 
     --cflags)
-	echo "-I${includedir}/libdap @XML2_CFLAGS@ @CURL_CFLAGS@"
+	echo "-I${includedir} -I${includedir}/libdap @XML2_CFLAGS@ @CURL_CFLAGS@"
 	;;
 
     --libs)
