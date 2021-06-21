@@ -304,9 +304,11 @@ public:
      */
     uint64_t get_response_limit_kb() const { return d_max_response_size_kb; }
 
-    /** Set the maximum response size. Zero is the default value. The size
-        is given in kilobytes (but stored internally as the number of bytes).
-        @param size The maximum size of the response in kilobytes. */
+    /**
+     * Set the maximum response size. Zero is the default value. The size
+     * is given in kilobytes (but stored internally as the number of bytes).
+     * @param size The maximum size of the response in kilobytes.
+     */
     [[deprecated("Use DDS::set_response_limit(uint64_t &size)")]]
     void set_response_limit(long size) { d_max_response_size_kb = size; }
 
@@ -315,7 +317,7 @@ public:
      * The size is given in kilobytes..
      * @param size The maximum size of the response in kilobytes.
      */
-    void set_response_limit(const uint64_t &size) {  d_max_response_size_kb = size; }
+    void set_response_limit(uint64_t size) {  d_max_response_size_kb = size; }
 
     /**
      * @return Returns true if the total data bytes requested exceeds the set limit, false otherwise.

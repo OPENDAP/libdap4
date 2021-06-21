@@ -431,6 +431,18 @@ D4Group::request_size(bool constrained)
     return size / 1024;
 }
 
+/**
+ * @brief Get the estimated size of a response in kilobytes.
+ * This method looks at the variables in the DDS and computes
+ * the number of bytes in the response.
+ *
+ *  @note This version of the method does a poor job with Sequences. A better
+ *  implementation would look at row-constraint-based limitations and use them
+ *  for size computations. If a row-constraint is missing, return an error.
+ *
+ *  @param constrained Should the size of the whole DDS be used or should the
+ *  current constraint be taken into account?
+ */
 uint64_t D4Group::request_size_kb(bool constrained)
 {
     uint64_t size = 0;
