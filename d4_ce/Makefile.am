@@ -7,7 +7,7 @@ AUTOMAKE_OPTIONS = foreign
 .NOTPARALLEL:
 
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir)  $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS =  
 
 if COMPILER_IS_GCC
@@ -33,9 +33,9 @@ endif
 
 # See note in d4_function about CXX11_FLAG. jhrg 4/5/19
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+AM_CXXFLAGS += $(CXX11_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2 
+AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
 endif
 
 AM_LDFLAGS =

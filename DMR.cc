@@ -94,7 +94,7 @@ DMR::m_duplicate(const DMR &dmr)
 
     d_namespace = dmr.d_namespace;
 
-    d_max_response_size = dmr.d_max_response_size;
+    d_max_response_size_kb = dmr.d_max_response_size_kb;
 
     d_ce_empty = dmr.d_ce_empty;
 
@@ -123,7 +123,7 @@ DMR::DMR(D4BaseTypeFactory *factory, const string &name)
         : d_factory(factory), d_name(name), d_filename(""),
           d_dap_major(4), d_dap_minor(0),
           d_dmr_version("1.0"), d_request_xml_base(""),
-          d_namespace(c_dap40_namespace), d_max_response_size(0), 
+          d_namespace(c_dap40_namespace), d_max_response_size_kb(0),
           d_ce_empty(false),d_root(0)
 {
     // sets d_dap_version string and the two integer fields too
@@ -154,7 +154,7 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
         : d_factory(factory), d_name(dds.get_dataset_name()),
           d_filename(dds.filename()), d_dap_major(4), d_dap_minor(0),
           d_dmr_version("1.0"), d_request_xml_base(""),
-          d_namespace(c_dap40_namespace), d_max_response_size(0),d_ce_empty(false), d_root(0)
+          d_namespace(c_dap40_namespace), d_max_response_size_kb(0),d_ce_empty(false), d_root(0)
 {
     // sets d_dap_version string and the two integer fields too
     set_dap_version("4.0");
@@ -185,7 +185,7 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
 DMR::DMR()
         : d_factory(0), d_name(""), d_filename(""), d_dap_major(4), d_dap_minor(0),
           d_dap_version("4.0"), d_dmr_version("1.0"), d_request_xml_base(""),
-          d_namespace(c_dap40_namespace), d_max_response_size(0), d_ce_empty(false),d_root(0)
+          d_namespace(c_dap40_namespace), d_max_response_size_kb(0), d_ce_empty(false),d_root(0)
 {
     // sets d_dap_version string and the two integer fields too
     set_dap_version("4.0");
@@ -464,11 +464,29 @@ DMR::set_dap_version(const string &v)
  * current constraint be taken into account?
  * @return The size of the request in kilobytes
  */
-long
-DMR::request_size(bool constrained)
+[[deprecated("Use DMR::request_size_kb()")]]
+long DMR::request_size(bool constrained)
 {
     return d_root->request_size(constrained);
 }
+
+/** Get the size of a response, in kilobytes. This method looks at the
+ * variables in the DMR a computes the number of bytes in the response.
+ *
+ * @note This version of the method does a poor job with Arrays that
+ * have varying dimensions.
+ *
+ * @param constrained Should the size of the whole DMR be used or should the
+ * current constraint be taken into account?
+ * @return The size of the request in kilobytes
+ */
+uint64_t DMR::request_size_kb(bool constrained)
+{
+    return d_root->request_size_kb(constrained);
+}
+
+
+
 
 /**
  * Print the DAP4 DMR object.

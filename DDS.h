@@ -208,7 +208,7 @@ private:
     Keywords d_keywords;	    // Holds keywords parsed from the CE
 #endif
 
-    long d_max_response_size;   // In bytes...
+    uint64_t d_max_response_size_kb;   // In kilobytes...
 
     friend class DDSTest;
 
@@ -294,16 +294,45 @@ public:
     /// Set the namespace for this DDS/DDX object/response
     void set_namespace(const string &ns) { d_namespace = ns; }
 
-    /// Get the maximum response size, in Bytes. Zero indicates no limit.
-    long get_response_limit() { return d_max_response_size; }
+    /// Get the maximum response size, in bytes. Zero indicates no limit.
+    [[deprecated("Use DDS::get_response_limit_kb()")]]
+    long get_response_limit() { return (long)(d_max_response_size_kb * 1024); }
 
-    /** Set the maximum response size. Zero is the default value. The size
-        is given in kilobytes (but stored internally as the number of bytes).
-        @param size The maximum size of the response in kilobytes. */
-    void set_response_limit(long size) { d_max_response_size = size * 1024; }
+    /**
+     * @brief The maximum allowed response size, in kilobytes. Zero indicates no limit (default).
+     * @return The maximum allowed response size, in kilobytes. Zero indicates no limit (default).
+     */
+    uint64_t get_response_limit_kb() const { return d_max_response_size_kb; }
 
-    /// Get the estimated response size.
+    /**
+     * Set the maximum response size. Zero is the default value. The size
+     * is given in kilobytes (but stored internally as the number of bytes).
+     * @param size The maximum size of the response in kilobytes.
+     */
+    [[deprecated("Use DDS::set_response_limit(uint64_t &size)")]]
+    void set_response_limit(long size) { d_max_response_size_kb = size; }
+
+    /**
+     * @brief Set the maximum response size, in kilobytes.
+     * The size is given in kilobytes..
+     * @param size The maximum size of the response in kilobytes.
+     */
+    void set_response_limit(uint64_t size) {  d_max_response_size_kb = size; }
+
+    /**
+     * @return Returns true if the total data bytes requested exceeds the set limit, false otherwise.
+     */
+    bool too_big() {
+        return d_max_response_size_kb != 0 && get_request_size_kb(true) > d_max_response_size_kb;
+    }
+
+
+    /// Get the estimated response size in bytes.
+    [[deprecated("Use DDS::get_request_size_kb()")]]
     int get_request_size(bool constrained);
+
+    /// Get the estimated response size in kilobytes.
+    uint64_t get_request_size_kb(bool constrained);
 
     string container_name() ;
     void container_name( const string &cn ) ;

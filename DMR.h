@@ -30,6 +30,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 #include "DapObj.h"
 
@@ -77,7 +78,7 @@ private:
     std::string d_namespace;
 
     /// The maximum response size (in Kilo bytes)
-    long d_max_response_size;
+    uint64_t d_max_response_size_kb;
 
     /// Whether transferring the whole DMR(the expression constraint is empty)
     bool d_ce_empty;
@@ -158,15 +159,59 @@ public:
 
     // TODO Move the response_limit methods to D4ResponseBuilder? jhrg 5/1/13
     /// Get the maximum response size, in KB. Zero indicates no limit.
-    long response_limit() { return d_max_response_size; }
+    /**
+     * @brief Get the maximum response size, in KB. Zero indicates no limit.
+     * @return The maximum allowable response size. A value of 0 means there is no
+     * limit (default).
+     */
+    [[deprecated("Use DMR::response_limit_kb()")]]
+    long response_limit() const { return (long) d_max_response_size_kb; }
 
-    /** Set the maximum response size. Zero is the default value. The size
-        is given in kilobytes.
-        @param size The maximum size of the response in kilobytes. */
-    void set_response_limit(long size) { d_max_response_size = size; }
+    /**
+     * @brief Get the maximum response size, in KB. Zero indicates no limit.
+     * @return The maximum allowable response size. A value of 0 means there is no
+     * limit (default).
+     */
+    uint64_t response_limit_kb() const { return d_max_response_size_kb; }
 
-    /// Get the estimated response size, in kilo bytes
+    /**
+     * Set the maximum response size. Zero is the default value. The size
+     * is given in kilobytes.
+     * @param size The maximum size of the response in kilobytes.
+     */
+    [[deprecated("Use DMR::set_response_limit(uint64_t &size)")]]
+    void set_response_limit(long size) {
+        d_max_response_size_kb = size;
+    }
+
+    /**
+     * Set the maximum response size. Zero is the default value and indicates there is no limit.
+     * The size is given in kilobytes.
+     * @param size The maximum size of the response in kilobytes.
+     */
+    void set_response_limit(const uint64_t &size) {
+        d_max_response_size_kb = size;
+    }
+
+    /// Get the estimated response size, in kilobytes
+    [[deprecated("Use DMR::request_size_kb()")]]
     long request_size(bool constrained);
+
+    /// Get the estimated response size, in kilobytes
+    /**
+     * @brief Compute the estimated response size, in kilobytes.
+     * @param constrained
+     * @return The estimated response size, in kilobytes.
+     */
+    uint64_t request_size_kb(bool constrained);
+
+    /**
+     * @return Returns true if the total data bytes requested exceeds the set limit, false otherwise.
+     */
+    bool too_big() {
+        return d_max_response_size_kb != 0 && request_size_kb(true) > d_max_response_size_kb;
+    }
+
 
     /// Set the flag that marks the expression constraint as empty. 
     void set_ce_empty(bool ce_empty) { d_ce_empty = ce_empty; }
