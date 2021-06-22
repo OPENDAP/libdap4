@@ -179,17 +179,17 @@ public:
      * is given in kilobytes.
      * @param size The maximum size of the response in kilobytes.
      */
-    [[deprecated("Use DMR::set_response_limit(uint64_t &size)")]]
-    void set_response_limit(long size) {
+     [[deprecated("Use DMR::set_response_limit_kb(uint64_t &size)")]]
+     void set_response_limit(long size) {
         d_max_response_size_kb = size;
-    }
+     }
 
     /**
      * Set the maximum response size. Zero is the default value and indicates there is no limit.
      * The size is given in kilobytes.
      * @param size The maximum size of the response in kilobytes.
      */
-    void set_response_limit(const uint64_t &size) {
+    void set_response_limit_kb(const uint64_t &size) {
         d_max_response_size_kb = size;
     }
 
