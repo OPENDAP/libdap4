@@ -112,7 +112,7 @@ add_executable(libdap
 		EncodingType.h
 		Error.cc
 		Error.h
-		Error.tab.cc
+		#Error.tab.cc
 		EventHandler.h
 		Float32.cc
 		Float32.h
@@ -199,7 +199,7 @@ add_executable(libdap
 		XDRUtils.h
 		XMLWriter.cc
 		XMLWriter.h
-		ce_expr.tab.cc
+		#e_expr.tab.cc
 		ce_parser.h
 		cgi_util.h
 		chunked_istream.cc
@@ -216,15 +216,15 @@ add_executable(libdap
 		d4_ce/D4CEScanner.h
 		d4_ce/D4ConstraintEvaluator.cc
 		d4_ce/D4ConstraintEvaluator.h
-		d4_ce/d4_ce_parser.tab.cc
-		d4_ce/lex.d4_ce.cc
+		#d4_ce/d4_ce_parser.tab.cc
+		#d4_ce/lex.d4_ce.cc
 		d4_function/D4FunctionEvaluator.cc
 		d4_function/D4FunctionEvaluator.h
 		d4_function/D4FunctionScanner.h
-		d4_function/d4_function_parser.tab.cc
-		d4_function/lex.d4_function.cc
-		das.tab.cc
-		dds.tab.cc
+		#d4_function/d4_function_parser.tab.cc
+		#d4_function/lex.d4_function.cc
+		#das.tab.cc
+		#dds.tab.cc
 		debug.h
 		dods-datatypes-config.h
 		dods-datatypes-static.h
@@ -240,9 +240,9 @@ add_executable(libdap
 		geo/GSEClause.h
 		geo/grid_utils.cc
 		geo/grid_utils.h
-		geo/gse.tab.cc
+		# geo/gse.tab.cc
 		geo/gse_parser.h
-		geo/lex.gse.cc
+		#geo/lex.gse.cc
 		getdap.cc
 		getdap4.cc
 		gl/_Noreturn.h
@@ -305,10 +305,10 @@ add_executable(libdap
 		gl/wctype.h
 		gl/wctype.in.h
 		gl/xalloc-oversized.h
-		lex.Error.cc
-		lex.ce_expr.cc
-		lex.das.cc
-		lex.dds.cc
+		#lex.Error.cc
+		#lex.ce_expr.cc
+		#lex.das.cc
+		#lex.dds.cc
 		media_types.h
 		mime_util.cc
 		mime_util.h
