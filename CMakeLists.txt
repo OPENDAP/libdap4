@@ -2,13 +2,17 @@
 # a replacement for the autotools build. But it does provide information that
 # CLion needs to navigate the Hyrax code. jhrg 12/5/19
 
-include_directories(/usr/local/Cellar/openssl/1.0.2q/include/)
+if (EXISTS /usr/local/Cellar/openssl/1.0.2r)
 include_directories(/usr/local/Cellar/openssl/1.0.2r/include/)
+endif()
+
 include_directories(/usr/local/include/)
 
-# Where the hyrax project puts the dependencies' headers
-
+# Where the hyrax project puts the dependencies' headers. We might be building
+# standalone. jhrg 7/22/21
+if (EXISTS ../build/deps/include)
 include_directories(../build/deps/include)
+endif()
 
 include_directories(.)
 include_directories(d4_ce)

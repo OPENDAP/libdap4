@@ -89,7 +89,7 @@ build_constant_array(vector<T> &values, DAP_TYPE &dt)
     array->append_dim(values.size());
 
     // TODO Make set_value_nocopy() methods so that values' pointers can be copied
-    // instead of allocating memory twice. jhrg 7/5/13
+    //  instead of allocating memory twice. jhrg 7/5/13
 
     array->set_value(values, values.size());
 
