@@ -93,6 +93,9 @@ private:
     // or the capacity of d_str for strings or capacity of _vec.
     unsigned int d_capacity;
 
+    unsigned int _storagesize;
+    unsigned int _dlevel;
+
     friend class MarshallerTest;
 
     /*
@@ -204,6 +207,12 @@ public:
     void set_vec_nocopy(unsigned int i, BaseType * val);
 
     void vec_resize(int l);
+
+    void set_storagesize(unsigned int ssize) {_storagesize = ssize;}
+    unsigned int get_storagesize() { return _storagesize; }
+    void set_deflate_level(unsigned int level) {_dlevel = level;}
+    unsigned int get_deflate_level() { return _dlevel; }
+
 
     virtual void clear_local_data();
 
