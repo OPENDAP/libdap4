@@ -75,11 +75,11 @@ InternalErr::InternalErr(const string &file, const int &line, const string &msg)
     _error_message += "Please report this to support@opendap.org\n";
 }
 
-InternalErr::InternalErr(const InternalErr &copy_from)
+InternalErr::InternalErr(const InternalErr &copy_from) noexcept
         : Error(copy_from)
 {}
 
-InternalErr::~InternalErr() throw()
+InternalErr::~InternalErr() noexcept
 {}
 
 InternalErr &

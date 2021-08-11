@@ -74,16 +74,16 @@ public:
     @name Constructors */
     //@{
     ///
-    InternalErr(const string &msg);
+    explicit InternalErr(const string &msg);
     ///
     InternalErr(const string &file, const int &line, const string &msg);
     ///
     InternalErr();
     ///
-    InternalErr(const InternalErr &copy_from);
+    InternalErr(const InternalErr &copy_from) noexcept;
     //@}
 
-    virtual ~InternalErr() throw();
+    ~InternalErr() noexcept override;
 
     InternalErr &operator=(const InternalErr &rhs);
 

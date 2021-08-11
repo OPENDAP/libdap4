@@ -37,7 +37,7 @@ class D4ParseError : public Error
 public:
     D4ParseError() : Error("The DMR response document parse failed.")
     {}
-    D4ParseError(const string &msg) :
+    explicit D4ParseError(const string &msg) :
             Error(string("The DMR response document parse failed: ") + msg)
     {}
 };

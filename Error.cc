@@ -36,6 +36,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <utility>
 
 #include "Error.h"
 #include "parser.h"
@@ -68,42 +69,6 @@ static const char *err_messages[] = {
     "Not Implemented",
     ""
 };
-
-/** Specializations of Error should use this to set the error code and
-    message. */
-Error::Error() : exception(), _error_code(undefined_error), _error_message("")
-{}
-
-/** Create an instance with a specific code and message string. This ctor
-    provides a way to to use any code and string you'd like. The code can be
-    one of the standard codes or it may be specific to your server. Thus a
-    client which can tell it's dealing with a specific type of server can use
-    the code accordingly. In general, clients simply show the error message
-    to users or write it to a log file.
-
-    @param ec The error code
-    @param msg The error message string. */
-Error::Error(ErrorCode ec, string msg, string file /* default: ""*/, int line /* default 0*/)
-        : exception(), _error_code(ec), _error_message(msg), d_file(file), d_line(line)
-{}
-
-/** Create an instance with a specific message. The error code is set to \c
-    unknown_error.
-
-    @param msg The error message.
-    @see ErrorCode */
-Error::Error(string msg, string file /* default: ""*/, int line /* default 0*/)
-        : exception(), _error_code(unknown_error), _error_message(msg), d_file(file), d_line(line)
-{}
-
-Error::Error(const Error &copy_from)
-        : exception(), _error_code(copy_from._error_code), _error_message(copy_from._error_message)
-{
-}
-
-Error::~Error() throw()
-{
-}
 
 Error &
 Error::operator=(const Error &rhs)
@@ -279,14 +244,14 @@ Error::get_error_message() const
 {
     assert(OK());
 
-    return string(_error_message);
+    return {_error_message};
 }
 
 /** Set the error message. */
 void
 Error::set_error_message(string msg)
 {
-    _error_message = msg;
+    _error_message = std::move(msg);
 }
 
 } // namespace libdap
