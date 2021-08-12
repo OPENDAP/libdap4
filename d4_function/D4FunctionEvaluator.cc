@@ -195,6 +195,9 @@ void D4FunctionEvaluator::eval(DMR *function_result)
  * a double from the string (in that order). If that fails the code
  * converts the id into a string.
  *
+ * @note Constants are returned as the libdap4 types for int64_t,
+ * uint64_t, double, or string (dods_int64_c, ...)
+ *
  * @param id An identifier (really a string) parsed from the function
  * expression. May contain quotes.
  * @return Return a pointer to the new allocated D4RValue object.
