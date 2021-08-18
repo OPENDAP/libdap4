@@ -48,7 +48,7 @@ class AISDatabaseReadFailed : public Error
 public:
     AISDatabaseReadFailed() : Error("The AIS database read failed.")
     {}
-    AISDatabaseReadFailed(const string &msg) :
+    explicit AISDatabaseReadFailed(const string &msg) :
             Error(string("The AIS database read failed: ") + msg)
     {}
 };
@@ -59,7 +59,7 @@ class AISDatabaseWriteFailed : public Error
 public:
     AISDatabaseWriteFailed() : Error("The AIS database write failed.")
     {}
-    AISDatabaseWriteFailed(const string &msg) :
+    explicit AISDatabaseWriteFailed(const string &msg) :
             Error(string("The AIS database write failed: ") + msg)
     {}
 };
