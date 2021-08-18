@@ -52,7 +52,7 @@ env:
   # GIT_UID travis-ci-opendap
   - secure: "g+SL53aSnULaToAu+HJO86Ljr6//j+aVSlVh7ROj6h80PDVmSW0xyiLUQRkA24vMrQqNY/rj6+qAXgVGORCPs2JBGcKjELzLr30eNDXfUNOjB+0actXI8sKD8I3eTZMHawOpedtk9v884Z+iQJauh04tD70sUMBp/WpCp+mXgQE="
   # GIT_PSWD travis-ci-opendap
-  - secure: "bWsnJ7hN8OW3Qxg4RHCSSFq/dW8sIRzoN1Sn6gLSOuLc1fqGX/Grg4ICa/Fvcx6XwXZ0IJQC9yVP/YKYao0xCQTxC30D5VS7VhVanOSfwWKvmWngjsKrYsZ3qxsQyY60ArR3Zqc6t3boZi6DTHeIMOOfeYL/F93BCRxORSmgpZA="
+  - secure: "tWdPVVe+22hRx5LP4jhwG4LVxrWXnW2fBR+S05kiBwnsNI7YS5Lq2uOANJ/z8T1tPE2+hq5ErWKTkOqRsMMLg1Y/TUX5Vd+718oVGiSf/Iz3HWCBakxgCuyq5ejzCZWKJxBqmoTigBCWIyzMV7S+BCjjqZV2DxGzXY5kSg7uG3A="
 
 before_install:
   - pip install --user awscli
