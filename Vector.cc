@@ -246,7 +246,7 @@ void Vector::m_set_cardinal_values_internal(const CardType* fromArray, int numEl
  @see Type
  @brief The Vector constructor.  */
 Vector::Vector(const string & n, BaseType * v, const Type & t, bool is_dap4 /* default:false */) :
-    BaseType(n, t, is_dap4), d_length(-1), d_proto(0), d_buf(0), d_compound_buf(0), d_capacity(0)
+    BaseType(n, t, is_dap4), d_length(-1), d_proto(0), d_buf(0), d_compound_buf(0), d_capacity(0),_storagesize(0),_dlevel(0)
 {
     if (v)
         add_var(v);
@@ -275,7 +275,7 @@ Vector::Vector(const string & n, BaseType * v, const Type & t, bool is_dap4 /* d
  @see Type
  @brief The Vector constructor.  */
 Vector::Vector(const string & n, const string &d, BaseType * v, const Type & t, bool is_dap4 /* default:false */) :
-    BaseType(n, d, t, is_dap4), d_length(-1), d_proto(0), d_buf(0), d_compound_buf(0), d_capacity(0)
+    BaseType(n, d, t, is_dap4), d_length(-1), d_proto(0), d_buf(0), d_compound_buf(0), d_capacity(0),_storagesize(0),_dlevel(0)
 {
     if (v)
         add_var(v);
