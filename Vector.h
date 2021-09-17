@@ -128,7 +128,7 @@ public:
     virtual BaseType *ptr_duplicate() = 0;
 
     /**
-     * Provide access to internal data by reference. Callers cannot delete this
+     * Provide access to internal data. Callers cannot delete this
      * but can pass them to other methods.
      *
      * @note Added so that the NCML handler can code some optimizations in its

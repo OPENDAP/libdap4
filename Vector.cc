@@ -1371,7 +1371,7 @@ void Vector::set_vec_nocopy(unsigned int i, BaseType * val)
  * Remove any read or set data in the private data of this Vector,
  * setting read_p() to false.
  * Essentially clears the _buf, d_str, and d_compound_buf of any data.
- * Useful for tightening up memory when the data is no longer needed,
+ * Useful for tightening up memory when the data are no longer needed,
  * but the object cannot yet be destroyed.
  *
  * On exit: get_value_capacity() == 0 && !read_p()
