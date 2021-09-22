@@ -112,10 +112,20 @@ void Vector::m_duplicate(const Vector & v)
 
     // copy numeric values if there are any.
     d_buf = 0; // init to null
+    if(v._storagesize >0) {
+    if (v.d_buf) // only copy if data present
+        val2buf_dc(v.d_buf); // store v's value in this's _BUF.
+    }
+    else {
     if (v.d_buf) // only copy if data present
         val2buf(v.d_buf); // store v's value in this's _BUF.
+    }
+    
 
     d_capacity = v.d_capacity;
+
+    _storagesize = v._storagesize;
+    _dlevel = v._dlevel;
 }
 
 /**
@@ -203,6 +213,36 @@ unsigned int Vector::m_create_cardinal_data_buffer_for_type(unsigned int numElts
     d_capacity = numEltsOfType;
     return bytesNeeded;
 }
+unsigned int Vector::m_create_cardinal_data_buffer_for_type_dc(unsigned int numEltsOfType)
+{
+    // Make sure we HAVE a _var, or we cannot continue.
+    if (!d_proto) {
+        throw InternalErr(__FILE__, __LINE__, "create_cardinal_data_buffer_for_type: Logic error: _var is null!");
+    }
+
+    // Make sure we only do this for the correct data types.
+    if (!m_is_cardinal_type()) {
+        throw InternalErr(__FILE__, __LINE__, "create_cardinal_data_buffer_for_type: incorrectly used on Vector whose type was not a cardinal (simple data types).");
+    }
+
+    m_delete_cardinal_data_buffer();
+
+    // Handle this special case where this is an array that holds no values
+    if (numEltsOfType == 0)
+        return 0;
+
+    // Actually new up the array with enough bytes to hold numEltsOfType of the actual type.
+#if 0
+    unsigned int bytesPerElt = d_proto->width();
+    unsigned int bytesNeeded = bytesPerElt * numEltsOfType;
+#endif
+    unsigned int bytesNeeded = get_storagesize();
+    d_buf = new char[bytesNeeded];
+
+    d_capacity = numEltsOfType;
+    return bytesNeeded;
+}
+
 
 /** Delete d_buf and zero it and d_capacity out */
 void Vector::m_delete_cardinal_data_buffer()
@@ -1206,6 +1246,73 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 
     return width(true);
 }
+unsigned int Vector::val2buf_dc(void *val, bool reuse)
+{
+    // Jose Garcia
+
+    // Added for zero-length arrays - support in the handlers. jhrg 1/29/16
+    if (!val && length() == 0)
+        return 0;
+
+    // I *think* this method has been mainly designed to be use by read which
+    // is implemented in the surrogate library. Passing NULL as a pointer to
+    // this method will be an error of the creator of the surrogate library.
+    // Even though I recognize the fact that some methods inside libdap++ can
+    // call val2buf, I think by now no coding bugs such as misusing val2buf
+    // will be in libdap++, so it will be an internal error from the
+    // surrogate library.
+    if (!val)
+        throw InternalErr(__FILE__, __LINE__, "The incoming pointer does not contain any data.");
+
+    switch (d_proto->type()) {
+        case dods_byte_c:
+        case dods_char_c:
+        case dods_int8_c:
+        case dods_uint8_c:
+        case dods_int16_c:
+        case dods_uint16_c:
+        case dods_int32_c:
+        case dods_uint32_c:
+        case dods_int64_c:
+        case dods_uint64_c:
+
+        case dods_enum_c:
+
+        case dods_float32_c:
+        case dods_float64_c:
+#if 0
+        	if (d_buf && !reuse)
+                m_delete_cardinal_data_buffer();
+#endif
+            // First time or no reuse (free'd above)
+            if (!d_buf || !reuse)
+                m_create_cardinal_data_buffer_for_type_dc(length());
+
+            // width(true) returns the size in bytes given the constraint
+            //memcpy(d_buf, val, width(true));
+            memcpy(d_buf, val, get_storagesize());
+            break;
+
+        case dods_str_c:
+        case dods_url_c:
+            // Assume val points to an array of C++ string objects. Copy
+            // them into the vector<string> field of this object.
+            // Note: d_length is the number of elements in the Vector
+            d_str.resize(d_length);
+            d_capacity = d_length;
+            for (int i = 0; i < d_length; ++i)
+                d_str[i] = *(static_cast<string *> (val) + i);
+
+            break;
+
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Vector::val2buf: bad type");
+
+    }
+
+    return width(true);
+}
+
 
 /**
  @brief Copies data from the Vector buffer.

@@ -116,6 +116,7 @@ protected:
 
     bool m_is_cardinal_type() const;
     unsigned int m_create_cardinal_data_buffer_for_type(unsigned int numEltsOfType);
+    unsigned int m_create_cardinal_data_buffer_for_type_dc(unsigned int numEltsOfType);
     void m_delete_cardinal_data_buffer();
 
     template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int numElts);
@@ -201,6 +202,7 @@ public:
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     virtual unsigned int val2buf(void *val, bool reuse = false);
+    virtual unsigned int val2buf_dc(void *val, bool reuse = false);
     virtual unsigned int buf2val(void **val);
 
     void set_vec(unsigned int i, BaseType *val);
