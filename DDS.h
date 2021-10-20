@@ -295,7 +295,6 @@ public:
     void set_namespace(const string &ns) { d_namespace = ns; }
 
     /// Get the maximum response size, in bytes. Zero indicates no limit.
-    [[deprecated("Use DDS::get_response_limit_kb()")]]
     long get_response_limit() { return (long)(d_max_response_size_kb * 1024); }
 
     /**
@@ -309,7 +308,6 @@ public:
      * is given in kilobytes (but stored internally as the number of bytes).
      * @param size The maximum size of the response in kilobytes.
      */
-    [[deprecated("Use DDS::set_response_limit_kb(uint64_t &size)")]]
     void set_response_limit(long size) { d_max_response_size_kb = size; }
 
     /**
@@ -326,9 +324,7 @@ public:
         return d_max_response_size_kb != 0 && get_request_size_kb(true) > d_max_response_size_kb;
     }
 
-
     /// Get the estimated response size in bytes.
-    [[deprecated("Use DDS::get_request_size_kb()")]]
     int get_request_size(bool constrained);
 
     /// Get the estimated response size in kilobytes.

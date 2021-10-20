@@ -157,14 +157,11 @@ public:
     /// Set the namespace for this DMR
     void set_namespace(const std::string &ns) { d_namespace = ns; }
 
-    // TODO Move the response_limit methods to D4ResponseBuilder? jhrg 5/1/13
-    /// Get the maximum response size, in KB. Zero indicates no limit.
     /**
      * @brief Get the maximum response size, in KB. Zero indicates no limit.
      * @return The maximum allowable response size. A value of 0 means there is no
      * limit (default).
      */
-    [[deprecated("Use DMR::response_limit_kb()")]]
     long response_limit() const { return (long) d_max_response_size_kb; }
 
     /**
@@ -179,7 +176,6 @@ public:
      * is given in kilobytes.
      * @param size The maximum size of the response in kilobytes.
      */
-     [[deprecated("Use DMR::set_response_limit_kb(uint64_t &size)")]]
      void set_response_limit(long size) {
         d_max_response_size_kb = size;
      }
@@ -194,10 +190,8 @@ public:
     }
 
     /// Get the estimated response size, in kilobytes
-    [[deprecated("Use DMR::request_size_kb()")]]
     long request_size(bool constrained);
 
-    /// Get the estimated response size, in kilobytes
     /**
      * @brief Compute the estimated response size, in kilobytes.
      * @param constrained
@@ -212,13 +206,11 @@ public:
         return d_max_response_size_kb != 0 && request_size_kb(true) > d_max_response_size_kb;
     }
 
-
     /// Set the flag that marks the expression constraint as empty. 
     void set_ce_empty(bool ce_empty) { d_ce_empty = ce_empty; }
 
     /// Get the flag that marks the expression constraint as empty.
     bool get_ce_empty() const { return d_ce_empty; }
-
 
     /** Return the root group of this Dataset. If no root group has been
      * set, use the D4BaseType factory to make it.
@@ -226,9 +218,6 @@ public:
      */
     D4Group *root();
 
-    // TODO Remove this static method? If we have a DMR, why not use the
-    // getDDS() method below? jhrg 2.28.18
-    //static DDS *getDDS(DMR &dmr);
     virtual DDS *getDDS();
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
