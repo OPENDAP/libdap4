@@ -8,12 +8,12 @@ dnl m4_pattern_forbid([^_?(gl_[A-Z]|AX_|BISON_)])
 dnl m4_pattern_allow([^BISON_USE_NLS$])
 
 dnl Set the version number here. Set the build number using --with-build
-dnl The version info is put in the VERSION file. THe build number is used
+dnl The version info is put in the VERSION file. The build number is used
 dnl in the RPM spec file. The build number is not part of the pkg config
 dnl 'pc' files and tarball for the source. See
 dnl libdap4/travis/travis_libdap_build_offset.sh for info about setting the
 dnl base value for the build number. jhrg 3/22/21
-AC_INIT(libdap, 3.20.7, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.20.8, opendap-tech@opendap.org)
 
 dnl As an alternative, we can...
 dnl Read the version number from the file VERSION. The file must contain
@@ -21,7 +21,7 @@ dnl only the version number in the form x.y.z or x.y.z-b. Newlines are
 dnl ignored. Anything else and the build will fail.
 dnl
 dnl But, this requires that the NEWS file have the version number AND build
-dnl number somewhere int eh first 15 lines or teh dist target will fail.
+dnl number somewhere in the first 15 lines or the dist target will fail.
 dnl jhrg 3/17/21
 dnl https://stackoverflow.com/questions/8559456/read-a-version-number-from-a-file-in-configure-ac
 dnl AC_INIT([libdap], m4_normalize(m4_include([VERSION])), [opendap-tech@opendap.org])
