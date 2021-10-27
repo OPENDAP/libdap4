@@ -47,8 +47,8 @@ env:
   - secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw=" 
   # AWS_ACCESS_KEY_ID ci-user
   # AWS_SECRET_ACCESS_KEY
-  - secure: "En3sxnLpGs+79aiW+e07YTvXHFvRXUy6sDtEbrAWE93vWoxLhu4HrgooyuxXzXulJESaGPKGY1y3G/fa4ipirVWZuINKHr0C2vz+txorRFX3EVQA/19IrXUlipmd9nIILm7zLRfY9LaWTuDlnnQ/+y+Xx0i+eJ9kDks7rzu/Qhc="
-  - secure: "q70lEiENXEKxxKws6qo61Dojx1ULHxFPjsA3ydfbqEIW6n0H4D3YVU7/lfI1P9pmwxNJNZMaN8Wew2XcZ8liqPSJuKL3YWa/xygNZID5nJKZyEMxth5c3ioX2QuomtuZgMFNericfA+x+RidQO2GlcPluKqodKHd5cmSc2uG7iA="
+  - secure: "soO9hvOBs3yPQjPxjhZ12XUeLnglkf4e6orzmjdpmHJtbkv2WgQeSaixix2vimGZg7Jz4dJFAgZveIk7GGXvbkWroFWPV6NfsYHYkRklM6mDF1N6pQO2qr86n3M8HOkKW9BaHjuQRtWY3K1cgKeLzDuhoFhJDbZxk0ZLNL6cSQE="
+  - secure: "Dnt/TL/BZHPZe4/zKW5Kt9KEGU+aA2uFLotJMkS8nVhJcwafNzK5ke2rFtdYUjUlE60qjo5dWLiZOvOixy/0koGY0Q6waKxcMGMvZaq12BqpbJPER1gvmqcqDJLXTDQgC7YBySSt6SwHjwLDkjSNPSBcKq3s47VzDFYifyUMgcM="
   # GIT_UID travis-ci-opendap
   - secure: "g+SL53aSnULaToAu+HJO86Ljr6//j+aVSlVh7ROj6h80PDVmSW0xyiLUQRkA24vMrQqNY/rj6+qAXgVGORCPs2JBGcKjELzLr30eNDXfUNOjB+0actXI8sKD8I3eTZMHawOpedtk9v884Z+iQJauh04tD70sUMBp/WpCp+mXgQE="
   # GIT_PSWD travis-ci-opendap
