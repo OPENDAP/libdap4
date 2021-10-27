@@ -463,8 +463,9 @@ DMR::set_dap_version(const string &v)
  * @param constrained Should the size of the whole DMR be used or should the
  * current constraint be taken into account?
  * @return The size of the request in kilobytes
+ * @deprecated "Use DMR::request_size_kb()"
  */
-[[deprecated("Use DMR::request_size_kb()")]]
+//[[deprecated("Use DMR::request_size_kb()")]]
 long DMR::request_size(bool constrained)
 {
     return d_root->request_size(constrained);

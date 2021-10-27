@@ -561,8 +561,9 @@ DDS::container()
  *
  *  @param constrained Should the size of the whole DDS be used or should the
  *  current constraint be taken into account?
+ *  @deprecated "Use DDS::get_request_size_kb()"
  */
-[[deprecated("Use DDS::get_request_size_kb()")]]
+//[[deprecated("Use DDS::get_request_size_kb()")]]
 int DDS::get_request_size(bool constrained)
 {
 	int w = 0;
