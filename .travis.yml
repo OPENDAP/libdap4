@@ -40,22 +40,39 @@ env:
   # NB: This value of $prefix must be shared between the hyrax-deps, libdap and bes builds.
   - prefix=$HOME/install
   - PATH=$prefix/bin:$PATH
-  - TESTSUITEFLAGS=-j7  
+  - TESTSUITEFLAGS=-j7
+
   # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
   - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
   # SONAR_LOGIN, created using travis encrypt --org -r OPENDAP/libdap4 SONAR_LOGIN=<sonar login key>
   - secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw=" 
-  # AWS_ACCESS_KEY_ID ci-user
+
+  # AWS_ACCESS_KEY_ID for the user 'travis-libdap'
+  #- secure: "uWXN90b3+L74+TZzGonRmhxfOVyi4/MJ8jlGDTdKRepUpvVLM3D8jwj/A4fOaudrAGg64DSJUUnHp8FmzMPO2hz2kcgDwFJ+VkGdBgxPU81srIN3NOur6EcwQ0rjYEsL6AkOe3lAiQixrhg2aOWRFBtv6fOSApbSh0WqUlNfR/g="
   # AWS_SECRET_ACCESS_KEY
-  - secure: "soO9hvOBs3yPQjPxjhZ12XUeLnglkf4e6orzmjdpmHJtbkv2WgQeSaixix2vimGZg7Jz4dJFAgZveIk7GGXvbkWroFWPV6NfsYHYkRklM6mDF1N6pQO2qr86n3M8HOkKW9BaHjuQRtWY3K1cgKeLzDuhoFhJDbZxk0ZLNL6cSQE="
-  - secure: "Dnt/TL/BZHPZe4/zKW5Kt9KEGU+aA2uFLotJMkS8nVhJcwafNzK5ke2rFtdYUjUlE60qjo5dWLiZOvOixy/0koGY0Q6waKxcMGMvZaq12BqpbJPER1gvmqcqDJLXTDQgC7YBySSt6SwHjwLDkjSNPSBcKq3s47VzDFYifyUMgcM="
+  #- secure: "M46pBw0ILYUg+BG9XE5exCmITD/gCAmAkYYu0UsnuQQUsSdJmHNiQ9e7/K6uodlk0doSlyekI0dQj5e+dzCgZSLoKckEwwufslM8C+0Q4ZWCwiyi8sBTOLpcgqfhtyu6gYrRiG3bHGyfDO0LHlpw34UKhtpP9z8YvN8r2isqRX0="
+
+  # For the AWS user ci-user: travis encrypt --org -r OPENDAP/libdap4 AWS_ACCESS_KEY_ID=
+  - secure: "QIk09Kg5l6QLKE44W2fqlJ840b82PpGBhb74p/fWjQPmnuUTlCnBN2/BqD5egeoTetDbtwo5K3tNTFlFbiLjO6vTKmj6L2EZL6ghaPkidBv+5Tmp1oj/UwbINakdUV3S4Y/jJ5Z3iahIW9+wiwGAnxGSNbgRhOnpivZEY787qRM="
+  # travis encrypt --org -r OPENDAP/libdap4 AWS_SECRET_ACCESS_KEY=
+  - secure: "MYuhqdkVABYLrY+a/wgjDsmFn0y3jXAMZMaY9UADG/wHayv7tO26gdLblLu3Y8LqzA9sq9R1aI0n1vJB//UwCMkhpSQeuNo/vYZBaRB5+uvPovdzewqJ/7Y5e806QCalTuZNtKldZE8O8ANxwy+8M7t7es6hXjImPyI+wMpdsjc="
+
   # GIT_UID travis-ci-opendap
   - secure: "g+SL53aSnULaToAu+HJO86Ljr6//j+aVSlVh7ROj6h80PDVmSW0xyiLUQRkA24vMrQqNY/rj6+qAXgVGORCPs2JBGcKjELzLr30eNDXfUNOjB+0actXI8sKD8I3eTZMHawOpedtk9v884Z+iQJauh04tD70sUMBp/WpCp+mXgQE="
   # GIT_PSWD travis-ci-opendap
   - secure: "tWdPVVe+22hRx5LP4jhwG4LVxrWXnW2fBR+S05kiBwnsNI7YS5Lq2uOANJ/z8T1tPE2+hq5ErWKTkOqRsMMLg1Y/TUX5Vd+718oVGiSf/Iz3HWCBakxgCuyq5ejzCZWKJxBqmoTigBCWIyzMV7S+BCjjqZV2DxGzXY5kSg7uG3A="
 
+  # DOCKER_HUB_UID for our DockerHub account
+  - secure: "PsI4sAD6i7dPfsYRof05Ya0GmuE9j3/gpULUNrIOGYc2wbLlApqhkUoznqeOaXGB3O+kM1Mxah6ft4PyYcuLZ0xM0H7ulT3mz+clqXuH9ssgGoDt/Ye5PJiFWNOQlRvWd7F9NNtVSBikjWN4ujalUqby2cSThBizkOXhZYe3CzM="
+  # DOCKER_HUB_PSWD for our DockerHub account
+  - secure: "dD0lFOU73qJztihQeK+m3mzYTUOB5uq2jI/oWRsyc9DIevI+H2RhMRC/Cc7eJP5yRUWxxVgU3Ad15ov2cnTSCyd/bddM4DmeZeoWi79G8IkjMhTL628ZAiJeysCO/vSFkw0bu4NbFADqswtCO8PUk9FICjnJr/Ts2zOvIaQOkR8="
+
 before_install:
   - pip install --user awscli
+  - echo "print env:"
+  - printenv
+  - echo $DOCKER_HUB_PSWD | docker login -u $DOCKER_HUB_UID --password-stdin
+
 
 install:
   # $HOME is /home/travis and $TRAVIS_BUILD_DIR is /home/travis/build/OPENDAP/libdap4
