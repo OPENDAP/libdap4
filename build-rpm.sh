@@ -39,6 +39,8 @@ autoreconf -fiv
 
 # This builds the libdap.spec file with the correct version and build number.
 # NB: prefix=$HOME/install
+
+echo "LIBDAP_BUILD_NUMBER: $LIBDAP_BUILD_NUMBER"
 ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
 
 # Now make the source dist (which will be libdap-version.tar.gz - no build number)
