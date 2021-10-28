@@ -91,8 +91,7 @@ stages:
   - name: build
     if:  branch = master
   - name: scan
-    if:  false
-    # branch = master
+    if: branch = master
   - name: package
     if:  branch = master
   - name: hyrax-bes-trigger
