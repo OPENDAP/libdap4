@@ -525,7 +525,9 @@ libdap_root()
 extern "C" const char *
 libdap_version()
 {
-    return PACKAGE_VERSION;
+    // return PACKAGE_VERSION;
+    // Switched to CVER which is <version>-<build_number>
+    return CVER;
 }
 
 extern "C" const char *
