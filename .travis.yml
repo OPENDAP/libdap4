@@ -88,10 +88,10 @@ before_script:
   # moved down below to individual steps. jhrg 3/23/21 autoreconf --force --install --verbose
 
 stages:
-  - name: build
-    if:  branch = master
   - name: scan
     if: branch = master
+  - name: build
+    if:  branch = master
   - name: package
     if:  branch = master
   - name: hyrax-bes-trigger
@@ -138,7 +138,7 @@ jobs:
     - mkdir -p gcov-reports
     # gcov-reports must be configured in sonar-project.properties. jhrg 11/24/20
     - mv $(cat gcov-files.txt) gcov-reports/
-    - sonar-scanner -X -Dsonar.login=$SONAR_LOGIN
+    - sonar-scanner -Dsonar.login=$SONAR_LOGIN
     # Test the result of the scan and fail a PR/build if the quality gate fails
     - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
 
