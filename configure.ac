@@ -41,7 +41,7 @@ dnl given but invalid, print a message and exit. jhrg 3/17/21
 AS_IF([test -n "$with_build"],
     [AS_IF([echo $build_number | grep '^[[0-9]][[-0-9.]]*$' > /dev/null 2>&1 ],
      [PACKAGE_VERSION=$PACKAGE_VERSION-$build_number
-      echo "PACKAGE_VERSION: $PACKAGE_VERSION; VERSION: $VERSION"],
+      echo "PACKAGE_VERSION: $PACKAGE_VERSION"],
      [AC_MSG_ERROR([Invalid build number given (must be an integer): $build_number])])])
 
 AC_DEFINE(DAP_PROTOCOL_VERSION, ["4.0"], [Highest DAP version implemented?])
@@ -78,7 +78,7 @@ AS_IF([echo $PACKAGE_VERSION | grep '^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\
         PACKAGE_BUILD_NUMBER=],
        [AC_MSG_ERROR([VERSION file does not contain a valid version number (x.y.z or x.y.z-b)])])])
 
-AC_MSG_NOTICE(Package Major Version: $PACKAGE_MAJOR_VERSION)
+AC_MSG_NOTICE(Package Version: $PACKAGE_VERSION)
 AC_MSG_NOTICE(Package Minor Version: $PACKAGE_MINOR_VERSION)
 AC_MSG_NOTICE(Package Patch Version: $PACKAGE_PATCH_VERSION)
 AC_MSG_NOTICE(Package Build Number: $PACKAGE_BUILD_NUMBER)
