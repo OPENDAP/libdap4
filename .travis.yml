@@ -133,11 +133,7 @@ jobs:
     - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
     # Run these commands in bw-output?
     - make check -j7
-    - make coverage
-    - find . -wholename \*/.libs/\*.gcov -a ! -name \*\#\* -a ! -name \*.hh.gcov > gcov-files.txt
-    - mkdir -p gcov-reports
-    # gcov-reports must be configured in sonar-project.properties. jhrg 11/24/20
-    - mv -f $(cat gcov-files.txt) gcov-reports/
+    - ./travis/sonar-scanner-cpverage.sh
     - sonar-scanner -Dsonar.login=$SONAR_LOGIN
     # Test the result of the scan and fail a PR/build if the quality gate fails
     - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
