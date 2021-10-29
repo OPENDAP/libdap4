@@ -133,7 +133,7 @@ jobs:
     - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
     # Run these commands in bw-output?
     - make check -j7
-    - ./travis/sonar-scanner-cpverage.sh
+    - ./travis/sonar-scanner-coverage.sh
     - sonar-scanner -Dsonar.login=$SONAR_LOGIN
     # Test the result of the scan and fail a PR/build if the quality gate fails
     - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
