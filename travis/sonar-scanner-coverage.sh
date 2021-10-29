@@ -11,7 +11,7 @@ cat gcov-files.txt
 echo "#----------------------------------------------------------------------"
 
 mkdir -p "${reports_dir}"
-for gcov_file in ${gcov_files}
+for gcov_file in `cat gcov-files.txt`
 do
     target_dir="${reports_dir}"
     bname=`basename "${gcov_file}"`
