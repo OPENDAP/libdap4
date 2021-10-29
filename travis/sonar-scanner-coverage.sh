@@ -1,5 +1,7 @@
 #!/bin/bash
-reports_dir="gcov-reports"
+
+# The directory gcov-reports must be configured in sonar-project.properties. jhrg 11/24/20
+export reports_dir="gcov-reports"
 
 make coverage
 find . -wholename \*/.libs/\*.gcov -a ! -name \*\#\* -a ! -name \*.hh.gcov > gcov-files.txt
@@ -9,8 +11,6 @@ cat gcov-files.txt
 echo "#----------------------------------------------------------------------"
 
 mkdir -p "${reports_dir}"
-# gcov-reports must be configured in sonar-project.properties. jhrg 11/24/20
-mkdir -p "${gcov_dir}"
 for gcov_file in ${gcov_files}
 do
     target_dir="${reports_dir}"
@@ -27,6 +27,6 @@ do
 done
 echo "#----------------------------------------------------------------------"
 echo "# ${reports_dir}: "
-ls -lRa "${gcov_dir}"
+ls -lRa "${reports_dir}"
 echo "#----------------------------------------------------------------------"
 
