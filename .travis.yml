@@ -88,10 +88,10 @@ before_script:
   # moved down below to individual steps. jhrg 3/23/21 autoreconf --force --install --verbose
 
 stages:
-  - name: scan
-    if: branch = master
   - name: build
     if:  branch = master
+  - name: scan
+    if: branch = master
   - name: package
     if:  branch = master
   - name: hyrax-bes-trigger
