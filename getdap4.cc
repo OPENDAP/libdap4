@@ -43,10 +43,11 @@
 #include <cstring>
 #include <string>
 #include <sstream>
+#include <unistd.h>
 
 #include <cstdio> //SBL 12.3.19
 
-#include "GetOpt.h"
+// #include "GetOpt.h"
 
 #include "DMR.h"
 #include "XMLWriter.h"
@@ -66,50 +67,47 @@ const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
 extern int libdap::dods_keep_temps;     // defined in HTTPResponse.h
 extern int libdap::www_trace;
 #endif
-static void usage(const string &name)
+static void usage(const string &)
 {
-	cerr << "Usage: " << name << endl;
-	cerr << " [dD vVikmzstM][-c <expr>][-m <num>] <url> [<url> ...] | <file> [<file> ...]" << endl;
-	cerr << endl;
-	cerr << "In the first form of the command, dereference the URL and" << endl;
-	cerr << "perform the requested operations. This includes routing" << endl;
-	cerr << "the returned information through the DAP processing" << endl;
-	cerr << "library (parsing the returned objects, et c.). If none" << endl;
-	cerr << "of a, d, or D are used with a URL, then the DAP library" << endl;
-	cerr << "routines are NOT used and the URLs contents are dumped" << endl;
-	cerr << "to standard output." << endl;
-	cerr << "Note: If the URL contains a query string the query string" << endl;
-	cerr << "will be preserved in the request. However, if the query " << endl;
-	cerr << "string contains DAP4 keys they may interfere with the" << endl;
-	cerr << "operation of " << name << ". A warning will be" << endl;
-	cerr << "written to stderr when "<< name << " identifies" << endl;
-	cerr << "the presence of a DAP4 query key in the submitted" << endl;
-	cerr << "URL's query string." << endl;
-	cerr << endl;
-	cerr << "In the second form of the command, assume the files are" << endl;
-	cerr << "DataDDS objects (stored in files or read from pipes)" << endl;
-	cerr << "and process them as if -D were given. In this case the" << endl;
-	cerr << "information *must* contain valid MIME header in order" << endl;
-	cerr << "to be processed." << endl;
-	cerr << endl;
-	cerr << "Options:" << endl;
-    cerr << "        d: For each URL, get the (DAP4) DMR object. Does not get data." << endl;
-	cerr << "        D: For each URL, get the DAP4 Data response." << endl;
-	cerr << endl;
-	cerr << "        v: Verbose output." << endl;
-	cerr << "        V: Version of this client; see 'i' for server version." << endl;
-	cerr << "        i: For each URL, get the server version." << endl;
-	// cerr << "        k: Keep temporary files created by libdap." << endl;
-	cerr << "        m: Request the same URL <num> times." << endl;
-	cerr << "        z: Ask the server to compress data." << endl;
-	cerr << "        s: Print Sequences using numbered rows." << endl;
-	// cerr << "        t: Trace www accesses." << endl;
-	cerr << "        M: Assume data read from a file has no MIME headers; use only with files" << endl;
-	cerr << endl;
-	cerr << "        c: <expr> is a constraint expression. Used with -d/D" << endl;
-	cerr << "           NB: You can use a `?' for the CE also." << endl;
-    cerr << "        S: Used in conjunction with -d and will report the total size of the data "
-            "referenced in the DMR." << endl;
+    const char *message = R"(
+    Usage: getdap4 [dD vVmzsM][-c <expr>][-m <num>] <url> [<url> ...]
+           getdap4 [dD vVmzsM][-c <expr>][-m <num>] <file> [<file> ...]
+
+    In the first form of the command, dereference the URL and perform
+    the requested operations. This includes routing the returned
+    information through the DAP processing library (parsing the
+    returned objects, et c.). If none of d, or D are used with a URL,
+    then the DAP library routines are NOT used and the URLs contents
+    are dumped to standard output.
+
+    Note: If the URL contains a query string the query string will be
+    preserved in the request. However, if the query string contains
+    DAP4 keys they may interfere with the operation of getdap4. A
+    warning will be written to stderr when getdap4 identifies the
+    presence of a DAP4 query key in the submitted URL's query string.
+
+    In the second form of the command, assume the files are DAP4 data
+    responses (stored in files or read from pipes)
+
+    Options: 
+            d: For each URL, get the (DAP4) DMR object. Does not get data. 
+            D: For each URL, get the DAP4 Data response. 
+
+            v: Verbose output. 
+            V: Version of this client 
+            i: For each URL, get the server version. 
+            m: Request the same URL <num> times. 
+            z: Ask the server to compress data. 
+            s: Print Sequences using numbered rows. 
+            M: Assume data read from a file has no MIME headers; use only 
+               with files 
+
+            c: <expr> is a constraint expression. Used with -d/D 
+               NB: You can use a `?' for the CE also. 
+            S: Used in conjunction with -d and will report the total size 
+               of the data referenced in the DMR.)";
+
+    cerr << message << endl;
 }
 
 // Used for raw http access/transfer
@@ -212,12 +210,12 @@ unsigned long long get_size(DMR &dmr, bool constrained=false)
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "[dDvVikrm:Mzstc:S]");
+    //GetOpt getopt(argc, argv, "[dDvVikrm:Mzstc:S]");
     int option_char;
 
     bool get_dmr = false;
     bool get_dap4_data = false;
-    bool get_version = false;
+    // bool get_version = false;
     bool cexpr = false;
     bool verbose = false;
     bool multi = false;
@@ -235,7 +233,7 @@ int main(int argc, char *argv[])
     _setmode(_fileno(stdout), _O_BINARY);
 #endif
 
-    while ((option_char = getopt()) != -1)
+    while ((option_char = getopt(argc, argv, "dDvVrm:Mzsc:S")) != -1)
         switch (option_char) {
         case 'd':
             get_dmr = true;
@@ -249,9 +247,11 @@ int main(int argc, char *argv[])
         case 'V':
         	cerr << "getdap4 version: " << version << endl;
             exit(0);
-        case 'i':
+#if 0
+            case 'i':
             get_version = true;
             break;
+#endif
         case 'S':
             compute_size = true;
             break;
@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
         	break;
         case 'm':
             multi = true;
-            times = atoi(getopt.optarg);
+            times = atoi(optarg);
             break;
         case 'z':
             accept_deflate = true;
@@ -283,7 +283,7 @@ int main(int argc, char *argv[])
 #endif
         case 'c':
             cexpr = true;
-            expr = getopt.optarg;
+            expr = optarg;
             break;
         case 'h':
         case '?':
@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
     try {
         // If after processing all the command line options there is nothing
         // left (no URL or file) assume that we should read from stdin.
-        for (int i = getopt.optind; i < argc; ++i) {
+        for (int i = optind; i < argc; ++i) {
             if (verbose)
                 cerr << "Fetching: " << argv[i] << endl;
 

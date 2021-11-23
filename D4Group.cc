@@ -684,7 +684,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
  * be prepended to the name of the variable. Group names are separated using
  * a '/' character.
  *
- * The Group attributes are transfered to the parent_attr_table.
+ * The Group attributes are transferred to the parent_attr_table.
  *
  * @todo Fix the comment.
  *
