@@ -198,11 +198,6 @@ name_eq(D4Group *g, const string name)
 	return g->name() == name;
 }
 
-static inline std::string &ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c) {return !std::isspace(c);}));
-    return s;
-}
-
 #endif
 
 D4Group *
