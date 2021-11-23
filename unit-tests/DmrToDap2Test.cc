@@ -147,7 +147,7 @@ public:
         DBG(cerr << __func__ << "() - BEGIN (test_base: " << test_base_name << ")" << endl);
 
         try {
-            auto_ptr<DMR> dmr(build_dmr(dmr_file));
+            unique_ptr<DMR> dmr(build_dmr(dmr_file));
             CPPUNIT_ASSERT(dmr.get() != 0);
             XMLWriter xml;
             dmr->print_dap4(xml);
@@ -159,7 +159,7 @@ public:
 
             CPPUNIT_ASSERT(result_dmr == baseline_dmr);
 
-            auto_ptr<DDS> dds(dmr->getDDS());
+            unique_ptr<DDS> dds(dmr->getDDS());
             ostringstream result_dds;
             dds->print(result_dds);
             string baseline_dds = read_test_baseline(dds_file);
