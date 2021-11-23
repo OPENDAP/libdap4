@@ -188,6 +188,8 @@ D4Group::FQN() const
 	return (name() == "/") ? "/" : static_cast<D4Group*>(get_parent())->FQN() + name() + "/";
 }
 
+#if 0
+
 // Note that in order for this to work the second argument must not be a reference.
 // jhrg 8/20/13
 static bool
@@ -196,10 +198,18 @@ name_eq(D4Group *g, const string name)
 	return g->name() == name;
 }
 
+static inline std::string &ltrim(std::string &s) {
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c) {return !std::isspace(c);}));
+    return s;
+}
+
+#endif
+
 D4Group *
 D4Group::find_child_grp(const string &grp_name)
 {
-	groupsIter g = find_if(grp_begin(), grp_end(), bind2nd(ptr_fun(name_eq), grp_name));
+	// groupsIter g = find_if(grp_begin(), grp_end(), bind2nd(ptr_fun(name_eq), grp_name));
+    groupsIter g = find_if(grp_begin(), grp_end(), [grp_name](D4Group *g) { return g->name() == grp_name; });
 	return (g == grp_end()) ? 0: *g;
 }
 
