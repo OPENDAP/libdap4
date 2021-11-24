@@ -95,15 +95,28 @@ build_btp_args(rvalue_list *args, DDS &dds)
     // Sanitize allocation size
     if (!size_ok(sizeof(BaseType*), argc + 1))
         throw Error(malformed_expr, string("Malformed argument list (")
-                + long_to_string(argc) + string(")."));
+        + long_to_string(argc) + string(")."));
 
     // Add space for a null terminator
     BaseType **argv = new BaseType*[argc + 1];
+    argv[argc] = nullptr;
 
+    if (argc) {
+        int i = 0;
+        for (auto btp: *args) {
+            argv[i++] = btp->bvalue(dds);
+        }
+
+        assert(i == argc);
+    }
+
+    return argv;
+}
+
+#if 0
     int index = 0;
     if (argv && argc) {
-        for (rvalue::Args_iter i = args->begin(); i != args->end() && index
-                < argc + 1; ++i)
+        for (rvalue::Args_iter i = args->begin(); i != args->end() && index < argc + 1; ++i)
             argv[index++] = (*i)->bvalue(dds);
 
         argv[index] = 0; // Add the null terminator.
@@ -113,11 +126,9 @@ build_btp_args(rvalue_list *args, DDS &dds)
         delete[] argv;
         throw InternalErr(__FILE__, __LINE__, "index out of range.");
     }
-#if 0
-    argv[index] = 0; // Add the null terminator.
-#endif
+
     return argv;
-}
+#endif
 
 rvalue::rvalue(BaseType *bt): d_value(bt), d_func(0), d_args(0)
 {}
