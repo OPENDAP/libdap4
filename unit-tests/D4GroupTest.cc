@@ -304,6 +304,35 @@ public:
         CPPUNIT_ASSERT(btp->get_parent()->name() == "child" && btp->get_parent()->get_parent()->name() == "/");
     }
 
+    void test_find_var_2()
+    {
+        D4Group *child = new D4Group("child");
+        D4Group *g_child_1 = new D4Group("g_child_1");
+        D4Group *g_child_2 = new D4Group("g_child_2");
+
+        load_group_with_scalars(g_child_1);
+        load_group_with_stuff(g_child_2);
+
+        child->add_group_nocopy(g_child_1);
+        child->add_group_nocopy(g_child_2);
+
+        root->add_group_nocopy(child);
+
+        g_child_1->add_var_nocopy(new Byte("byte_var_gc_1"));
+        g_child_2->add_var_nocopy(new Byte("byte_var_gc_2"));
+
+        auto bv_gc_1 = root->find_var("/child/g_child_1/byte_var_gc_1");
+        CPPUNIT_ASSERT(bv_gc_1);
+
+        auto bv_gc_2 = root->find_var("/child/g_child_2/byte_var_gc_2");
+        CPPUNIT_ASSERT(bv_gc_2);
+
+        auto its_not_there = root->find_var("/child/g_child_2/byte_var_gc_1");
+        CPPUNIT_ASSERT(its_not_there == nullptr);
+        // grp1 = new D4Group("Joey");
+        // grp1->dims()->add_dim_nocopy(new D4Dimension("lat", 1024));
+        // grp1->add_var_nocopy(new Byte("byte_var"));
+    }
     void test_print_everything()
     {
         load_group_with_scalars(root);
@@ -417,13 +446,7 @@ public:
         CPPUNIT_ASSERT(btp && btp->FQN() == "/child/p.c.b");
     }
 
-    void test_find_var_2()
-    {
-        // grp1 = new D4Group("Joey");
-        // grp1->dims()->add_dim_nocopy(new D4Dimension("lat", 1024));        
-        // grp1->add_var_nocopy(new Byte("byte_var"));
-        
-    }        
+
 
     CPPUNIT_TEST_SUITE (D4GroupTest);
 
@@ -449,6 +472,7 @@ public:
     CPPUNIT_TEST (test_print_everything);
 
     CPPUNIT_TEST (test_find_var);
+    CPPUNIT_TEST (test_find_var_2);
 
     CPPUNIT_TEST (test_print_copy_ctor);
     CPPUNIT_TEST (test_print_assignment);
@@ -457,7 +481,6 @@ public:
     CPPUNIT_TEST (test_fqn_2);
     CPPUNIT_TEST (test_fqn_3);
     CPPUNIT_TEST (test_fqn_4);
-    CPPUNIT_TEST (test_find_var_2);
 
     CPPUNIT_TEST_SUITE_END();
 };

@@ -543,7 +543,7 @@ public:
         try {
             delete hc;
             hc = 0;
-            auto_ptr<HTTPCache> gc(new HTTPCache("cache-testsuite/gc_cache", true));
+            unique_ptr<HTTPCache> gc(new HTTPCache("cache-testsuite/gc_cache", true));
             DBG(cerr << "get_cache_root: " << gc->get_cache_root() << endl);
 
             HTTPResponse *rs = http_conn->fetch_url(localhost_url);
@@ -575,7 +575,7 @@ public:
     void purge_cache_and_release_cached_response_test()
     {
         try {
-            auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
+            unique_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
             DBG(cerr << "get_cache_root: " << pc->get_cache_root() << endl);
 
             time_t now = time(0);
@@ -686,7 +686,7 @@ public:
     void get_conditional_response_headers_test()
     {
         try {
-            auto_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/header_cache", true));
+            unique_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/header_cache", true));
             DBG(cerr << "get_cache_root: " << c->get_cache_root() << endl);
 
             CPPUNIT_ASSERT(c->get_cache_root() == "cache-testsuite/header_cache/");
@@ -723,7 +723,7 @@ public:
     void update_response_test()
     {
         try {
-            auto_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/singleton_cache", true));
+            unique_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/singleton_cache", true));
             DBG(cerr << "get_cache_root: " << c->get_cache_root() << endl);
 
             if (!c->is_url_in_cache(localhost_url)) {
@@ -786,7 +786,7 @@ public:
     void interrupt_test()
     {
         try {
-            auto_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/singleton_cache", true));
+            unique_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/singleton_cache", true));
             string coads = "http://test.opendap.org/dap/data/nc/coads_climatology.nc";
             if (!c->is_url_in_cache(coads)) {
                 HTTPResponse *rs = http_conn->fetch_url(coads);
@@ -807,7 +807,7 @@ public:
         string jan = "http://test.opendap.org/dap/data/nc/jan.nc.dds";
         string feb = "http://test.opendap.org/dap/data/nc/feb.nc.dds";
         try {
-            auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
+            unique_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
 #if 0
             // This broke Fedora ppc64le system with XFS system
             CPPUNIT_ASSERT(pc->d_http_cache_table->d_block_size == 4096);
@@ -856,7 +856,7 @@ public:
         // performed. The feb URL should have been deleted.
 
         try {
-            auto_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
+            unique_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
             CPPUNIT_ASSERT(!pc->is_url_in_cache(feb));
         }
         catch (Error &e) {

@@ -117,25 +117,25 @@ public:
         D4RValue *arg1 = new D4RValue(byte);    // holds 17
         D4RValue *arg2 = new D4RValue((long long) 21);
 
-        auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
+        unique_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
         CPPUNIT_ASSERT(less->value(dmr));
 
         D4RValue *arg2_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg2_2 = new D4RValue((long long) 21);
 
-        auto_ptr<D4FilterClause> greater(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
+        unique_ptr<D4FilterClause> greater(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
         CPPUNIT_ASSERT(!greater->value(dmr));
 
         D4RValue *arg3_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg3_2 = new D4RValue((long long) 21);
 
-        auto_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
+        unique_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
         CPPUNIT_ASSERT(!equal->value(dmr));
 
         D4RValue *arg4_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg4_2 = new D4RValue((long long) 21);
 
-        auto_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
+        unique_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
         CPPUNIT_ASSERT(not_equal->value(dmr));
     }
 
@@ -145,25 +145,25 @@ public:
         D4RValue *arg1 = new D4RValue(byte);    // holds 17
         D4RValue *arg2 = new D4RValue((long long) 21);
 
-        auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
+        unique_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
         CPPUNIT_ASSERT(less->value());
 
         D4RValue *arg2_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg2_2 = new D4RValue((long long) 21);
 
-        auto_ptr<D4FilterClause> greater(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
+        unique_ptr<D4FilterClause> greater(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
         CPPUNIT_ASSERT(!greater->value());
 
         D4RValue *arg3_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg3_2 = new D4RValue((long long) 21);
 
-        auto_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
+        unique_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
         CPPUNIT_ASSERT(!equal->value());
 
         D4RValue *arg4_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg4_2 = new D4RValue((long long) 21);
 
-        auto_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
+        unique_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
         CPPUNIT_ASSERT(not_equal->value());
     }
 
@@ -172,25 +172,25 @@ public:
         D4RValue *arg1 = new D4RValue(byte);    // holds 17
         D4RValue *arg2 = new D4RValue((double) 21.0);
 
-        auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
+        unique_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
         CPPUNIT_ASSERT(less->value(dmr));
 
         D4RValue *arg2_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg2_2 = new D4RValue((double) 21);
 
-        auto_ptr<D4FilterClause> greater(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
+        unique_ptr<D4FilterClause> greater(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
         CPPUNIT_ASSERT(!greater->value(dmr));
 
         D4RValue *arg3_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg3_2 = new D4RValue((double) 21);
 
-        auto_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
+        unique_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
         CPPUNIT_ASSERT(!equal->value(dmr));
 
         D4RValue *arg4_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg4_2 = new D4RValue((double) 21);
 
-        auto_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
+        unique_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
         CPPUNIT_ASSERT(not_equal->value(dmr));
     }
 
@@ -202,7 +202,7 @@ public:
         D4RValue *arg1 = new D4RValue(byte);    // holds 17
         D4RValue *arg2 = new D4RValue((unsigned long long) (21));
 
-        auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
+        unique_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
         CPPUNIT_ASSERT(less->value());
 
     }
@@ -212,7 +212,7 @@ public:
         D4RValue *arg1 = new D4RValue(byte);    // holds 17
         D4RValue *arg2 = new D4RValue((float) 21.0);
 
-        auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
+        unique_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
         CPPUNIT_ASSERT(less->value());
 
     }
@@ -224,25 +224,25 @@ public:
         D4RValue *arg1 = new D4RValue(str);
         D4RValue *arg2 = new D4RValue(string("Tesla"));
 
-        auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
+        unique_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
         CPPUNIT_ASSERT(less->value());
 
         D4RValue *arg2_1 = new D4RValue(str);
         D4RValue *arg2_2 = new D4RValue("Tesla");
 
-        auto_ptr<D4FilterClause> greater(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
+        unique_ptr<D4FilterClause> greater(new D4FilterClause(D4FilterClause::greater, arg2_1, arg2_2));
         CPPUNIT_ASSERT(!greater->value());
 
         D4RValue *arg3_1 = new D4RValue(str);
         D4RValue *arg3_2 = new D4RValue("Tesla");
 
-        auto_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
+        unique_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
         CPPUNIT_ASSERT(!equal->value(dmr));
 
         D4RValue *arg4_1 = new D4RValue(str);
         D4RValue *arg4_2 = new D4RValue("Tesla");
 
-        auto_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
+        unique_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
         CPPUNIT_ASSERT(not_equal->value(dmr));
     }
 
@@ -251,7 +251,7 @@ public:
         D4RValue *arg1 = new D4RValue(str);
         D4RValue *arg2 = new D4RValue(string("E.*n"));
 
-        auto_ptr<D4FilterClause> match(new D4FilterClause(D4FilterClause::match, arg1, arg2));
+        unique_ptr<D4FilterClause> match(new D4FilterClause(D4FilterClause::match, arg1, arg2));
         CPPUNIT_ASSERT(match->value());
     }
 
@@ -261,7 +261,7 @@ public:
         D4RValue *arg2 = new D4RValue((long long) 21);
 
         try {
-            auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
+            unique_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
             // The Filter Clause instance is built OK, but the value() method
             // will balk at this comparison. jhrg 4/21/16
             DBG(cerr << "built filter clause instance" << endl);
@@ -281,7 +281,7 @@ public:
         D4RValue *arg2 = new D4RValue("Tesla");
 
         try {
-            auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
+            unique_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
 
             CPPUNIT_ASSERT(less->value());
             CPPUNIT_FAIL("Expected error");
@@ -294,13 +294,13 @@ public:
 
     void Structure_and_string_error_test()
     {
-        auto_ptr<Structure> s(new Structure("s"));
+        unique_ptr<Structure> s(new Structure("s"));
         s->add_var(byte); // copy the object
         D4RValue *arg1 = new D4RValue(s.get()); // BaseType*s are not free'd by D4RValue
         D4RValue *arg2 = new D4RValue("Tesla");
 
         try {
-            auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
+            unique_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
 
             CPPUNIT_ASSERT(less->value());
             CPPUNIT_FAIL("Expected error");
@@ -314,13 +314,13 @@ public:
     // There's no way this will get past the parser, but ...
     void Byte_and_Structure_error_test()
     {
-        auto_ptr<Structure> s(new Structure("s"));
+        unique_ptr<Structure> s(new Structure("s"));
         s->add_var(str); // copy the object
         D4RValue *arg1 = new D4RValue(byte);
         D4RValue *arg2 = new D4RValue(s.get());
 
         try {
-            auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
+            unique_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
 
             CPPUNIT_ASSERT(less->value());
             CPPUNIT_FAIL("Expected error");
@@ -334,13 +334,13 @@ public:
     // There's no way this will get past the parser, but ...
     void Str_and_Structure_error_test()
     {
-        auto_ptr<Structure> s(new Structure("s"));
+        unique_ptr<Structure> s(new Structure("s"));
         s->add_var(str); // copy the object
         D4RValue *arg1 = new D4RValue(str);
         D4RValue *arg2 = new D4RValue(s.get());
 
         try {
-            auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
+            unique_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg1, arg2));
 
             CPPUNIT_ASSERT(less->value());
             CPPUNIT_FAIL("Expected error");
@@ -357,25 +357,25 @@ public:
         D4RValue *arg2_1 = new D4RValue(f32);
         D4RValue *arg2_2 = new D4RValue(17.0);
 
-        auto_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg2_1, arg2_2));
+        unique_ptr<D4FilterClause> less(new D4FilterClause(D4FilterClause::less, arg2_1, arg2_2));
         CPPUNIT_ASSERT(less->value());
 
         D4RValue *arg3_1 = new D4RValue(url);
         D4RValue *arg3_2 = new D4RValue("https://github.com/opendap");
 
-        auto_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
+        unique_ptr<D4FilterClause> equal(new D4FilterClause(D4FilterClause::equal, arg3_1, arg3_2));
         CPPUNIT_ASSERT(equal->value(dmr));
 
         D4RValue *arg4_1 = new D4RValue(url);
         D4RValue *arg4_2 = new D4RValue("https://.*dap$");
 
-        auto_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
+        unique_ptr<D4FilterClause> not_equal(new D4FilterClause(D4FilterClause::not_equal, arg4_1, arg4_2));
         CPPUNIT_ASSERT(not_equal->value(dmr));
 
         D4RValue *arg5_1 = new D4RValue(url);
         D4RValue *arg5_2 = new D4RValue("https://.*dap$");
 
-        auto_ptr<D4FilterClause> match(new D4FilterClause(D4FilterClause::match, arg5_1, arg5_2));
+        unique_ptr<D4FilterClause> match(new D4FilterClause(D4FilterClause::match, arg5_1, arg5_2));
         CPPUNIT_ASSERT(match->value(dmr));
     }
 
@@ -384,7 +384,7 @@ public:
         D4RValue *arg2_1 = new D4RValue(f32);
         D4RValue *arg2_2 = new D4RValue(3.1415);
 
-        auto_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::equal, arg2_1, arg2_2));
+        unique_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::equal, arg2_1, arg2_2));
         CPPUNIT_ASSERT(clause->value());
     }
 
@@ -393,7 +393,7 @@ public:
         D4RValue *arg2_1 = new D4RValue(f32);
         D4RValue *arg2_2 = new D4RValue(3.1415);
 
-        auto_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::greater_equal, arg2_1, arg2_2));
+        unique_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::greater_equal, arg2_1, arg2_2));
         CPPUNIT_ASSERT(clause->value());
     }
 
@@ -402,25 +402,25 @@ public:
         D4RValue *arg2_1 = new D4RValue(f32);
         D4RValue *arg2_2 = new D4RValue(3.1415);
 
-        auto_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::less_equal, arg2_1, arg2_2));
+        unique_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::less_equal, arg2_1, arg2_2));
         CPPUNIT_ASSERT(clause->value());
     }
 
     void int_test()
     {
-        auto_ptr<Int8> i8(new Int8(""));
+        unique_ptr<Int8> i8(new Int8(""));
         i8->set_value(17);
         D4RValue *arg2_1 = new D4RValue(i8.get());
         D4RValue *arg2_2 = new D4RValue((long long) 17);
 
-        auto_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::equal, arg2_1, arg2_2));
+        unique_ptr<D4FilterClause> clause(new D4FilterClause(D4FilterClause::equal, arg2_1, arg2_2));
         CPPUNIT_ASSERT(clause->value());
     }
 
     void true_clauses_test()
     {
         // Testing this as a pointer since that's how it will be stored in D4Sequence
-        auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
+        unique_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg1_2 = new D4RValue((double) 21.0);
@@ -446,7 +446,7 @@ public:
     // This should return true
     void no_clauses_test()
     {
-        auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
+        unique_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         CPPUNIT_ASSERT(clauses->size() == 0);
         CPPUNIT_ASSERT(clauses->value(dmr));
@@ -455,7 +455,7 @@ public:
 
     void false_clauses_test()
     {
-        auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
+        unique_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg1_2 = new D4RValue((double) 21.0);
@@ -481,7 +481,7 @@ public:
 
     void evaluation_order_test()
     {
-        auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
+        unique_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg1_2 = new D4RValue((double) 21.0);
@@ -515,7 +515,7 @@ public:
 
     void evaluation_order_test_2()
     {
-        auto_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
+        unique_ptr<D4FilterClauseList> clauses(new D4FilterClauseList());
 
         D4RValue *arg1_1 = new D4RValue(byte);    // holds 17
         D4RValue *arg1_2 = new D4RValue((double) 21.0);

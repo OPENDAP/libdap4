@@ -127,7 +127,7 @@ public:
 
     void copy_ctor_test()
     {
-        auto_ptr<TestD4Sequence> ts(new TestD4Sequence(*s));
+        unique_ptr<TestD4Sequence> ts(new TestD4Sequence(*s));
         ts->intern_data();
 
         CPPUNIT_ASSERT(ts->length() == 7);
