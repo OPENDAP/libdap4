@@ -199,7 +199,9 @@ name_eq(D4Group *g, const string name)
 D4Group *
 D4Group::find_child_grp(const string &grp_name)
 {
-	groupsIter g = find_if(grp_begin(), grp_end(), bind2nd(ptr_fun(name_eq), grp_name));
+	// groupsIter g = find_if(grp_begin(), grp_end(), bind2nd(ptr_fun(name_eq), grp_name));
+    auto g = find_if(grp_begin(), grp_end(),
+                     [grp_name](const D4Group *g) { return g->name() == grp_name; });
 	return (g == grp_end()) ? 0: *g;
 }
 
