@@ -188,6 +188,7 @@ D4Group::FQN() const
 	return (name() == "/") ? "/" : static_cast<D4Group*>(get_parent())->FQN() + name() + "/";
 }
 
+#if 0
 // Note that in order for this to work the second argument must not be a reference.
 // jhrg 8/20/13
 static bool
@@ -195,14 +196,15 @@ name_eq(D4Group *g, const string name)
 {
 	return g->name() == name;
 }
+#endif
 
 D4Group *
 D4Group::find_child_grp(const string &grp_name)
 {
-	// groupsIter g = find_if(grp_begin(), grp_end(), bind2nd(ptr_fun(name_eq), grp_name));
+	  // groupsIter g = find_if(grp_begin(), grp_end(), bind2nd(ptr_fun(name_eq), grp_name));
     auto g = find_if(grp_begin(), grp_end(),
                      [grp_name](const D4Group *g) { return g->name() == grp_name; });
-	return (g == grp_end()) ? 0: *g;
+	  return (g == grp_end()) ? 0: *g;
 }
 
 // TODO Add constraint param? jhrg 11/17/13
