@@ -86,6 +86,8 @@ private:
     ResourceMap d_db;  // This holds the URL resources
     ResourceRegexps d_re; // This holds the regular expression res.
 
+#if 0
+
     // Scan RegExps looking for a particular regular expression.
     struct FindRegexp : public binary_function<RVPair, string, bool>
     {
@@ -112,7 +114,8 @@ private:
             return r.match(candidate.c_str(), candidate.length()) != -1;
         }
     };
-
+#endif
+    
     friend class AISResourcesTest; // unit tests access to private stuff
     friend ostream &operator<<(ostream &os, const AISResources &ais_res);
 
