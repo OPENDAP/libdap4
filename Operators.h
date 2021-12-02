@@ -183,8 +183,6 @@ bool StrCmp(int op, T1 v1, T2 v2)
         case SCAN_LESS_EQL:
             return v1 <= v2;
         case SCAN_REGEXP: {
-            // FIXME Update to use match(string). 12/1/21
-            // Regex r(v2.c_str());
             Regex r(v2);
             return r.match(v1.c_str(), v1.length()) > 0;
         }

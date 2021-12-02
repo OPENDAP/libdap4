@@ -532,6 +532,9 @@ bool
 HTTPConnect::url_uses_proxy_for(const string &url)
 {
     if (d_rcr->is_proxy_for_used()) {
+        // NB: This could be improved by moving the Regex instance into
+        // the RCReader class, but the proxy stuff is all deprecated.
+        // jhrg 12/1/21
         Regex host_regex(d_rcr->get_proxy_for_regexp().c_str());
         int index = 0, matchlen;
         return host_regex.search(url.c_str(), url.size(), matchlen, index) != -1;
