@@ -407,9 +407,9 @@ string
 unescattr(string s)
 {
     // FIXME Make this const or static. 12/1/21
-    Regex octal("\\\\[0-3][0-7][0-7]");  // matches 4 characters
-    Regex esc_quote("\\\\\"");  // matches 3 characters
-    Regex esc_esc("\\\\\\\\");      // matches 2 characters
+    const Regex octal("\\\\[0-3][0-7][0-7]");  // matches 4 characters
+    const Regex esc_quote("\\\\\"");  // matches 3 characters
+    const Regex esc_esc("\\\\\\\\");      // matches 2 characters
     const string ESC = "\\";
     const string QUOTE = "\"";
     int matchlen;
