@@ -115,7 +115,7 @@ private:
         }
     };
 #endif
-    
+
     friend class AISResourcesTest; // unit tests access to private stuff
     friend ostream &operator<<(ostream &os, const AISResources &ais_res);
 

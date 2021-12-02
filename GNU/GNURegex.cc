@@ -160,7 +160,8 @@ Regex::match(const char *s, int len, int pos) const
         throw Error("Position exceed length in Regex::match()");
 
     smatch match;
-    bool found = regex_search(string(s+pos, len-pos), match, d_exp);
+    auto target = string(s+pos, len-pos);
+    bool found = regex_search(target, match, d_exp);
     if (found)
         return match.length();
     else
@@ -233,7 +234,11 @@ Regex::search(const char *s, int len, int& matchlen, int pos) const
 #endif
 
     smatch match;
-    bool found = regex_search(string(s+pos, len-pos), match, d_exp);
+    // This is needed because in C++14, the first arg to regex_search() cannot be a
+    // temporary string. It seems the C++11 compilers on some linux dists are using
+    // regex headers that enforce c++14 rules. jhrg 12/2/21
+    auto target = string(s+pos, len-pos);
+    bool found = regex_search(target, match, d_exp);
     matchlen = match.length();
     if (found)
         return match.position();
@@ -250,13 +255,13 @@ Regex::search(const char *s, int len, int& matchlen, int pos) const
 int
 Regex::search(const string &s, int& matchlen) const
 {
-        smatch match;
-        bool found = regex_search(s, match, d_exp);
-        matchlen = match.length();
-        if (found)
-            return match.position();
-        else
-            return -1;
+    smatch match;
+    bool found = regex_search(s, match, d_exp);
+    matchlen = match.length();
+    if (found)
+        return match.position();
+    else
+        return -1;
 }
 
 } // namespace libdap
