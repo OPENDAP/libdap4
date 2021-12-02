@@ -26,8 +26,9 @@
 
 //#define DODS_DEBUG
 
-#include <config.h>
+#include "config.h"
 
+#if 0
 #ifndef WIN32
 #include <alloca.h>
 #endif
@@ -41,19 +42,27 @@
 #include <vector>
 #include <stdexcept>
 
+#endif
+
 #include "GNURegex.h"
 #include "Error.h"
+
+#if 0
+
 #include "util.h"
 #include "debug.h"
 
+#endif
 
 using namespace std;
 
 namespace libdap {
 
+#if 0
 void
 Regex::init(const char *t)
 {
+#if 0
     DBG( cerr << "Regex::init() - BEGIN" << endl);
 
     DBG( cerr << "Regex::init() - creating new regex..." << endl);
@@ -81,15 +90,28 @@ Regex::init(const char *t)
     }
     DBG( cerr << "Regex::init() - Call to regcomp() SUCCEEDED" << endl);
     DBG( cerr << "Regex::init() - END" << endl);
+#endif
+
+    d_exp = regex(t);
 }
 
+void
+Regex::init(const string &t)
+{
+    d_exp = regex(t);
+}
+#endif
+
+#if 0
 Regex::~Regex()
 {
     regfree(static_cast<regex_t*>(d_preg));
     delete static_cast<regex_t*>(d_preg); d_preg = 0;
 
 }
+#endif
 
+#if 0
 /** Initialize a POSIX regular expression (using the 'extended' features).
 
     @param t The regular expression pattern. */
@@ -104,6 +126,7 @@ Regex::Regex(const char* t, int)
 {
     init(t);
 }
+#endif
 
 /** Does the regular expression match the string? 
 
@@ -112,9 +135,10 @@ Regex::Regex(const char* t, int)
     @param pos Start looking at this position in the string
     @return The number of characters that match, -1 if there's no match. */
 int 
-Regex::match(const char* s, int len, int pos)
+Regex::match(const char *s, int len, int pos) const
 {
-   if (len > 32766)	// Integer overflow protection
+#if 0
+    if (len > 32766)	// Integer overflow protection
     	return -1;
     	
     regmatch_t *pmatch = new regmatch_t[len+1];
@@ -131,6 +155,32 @@ Regex::match(const char* s, int len, int pos)
 	delete[] pmatch; pmatch = 0;
 
     return matchnum;
+#endif
+    if (pos > len)
+        throw Error("Position exceed length in Regex::match()");
+
+    smatch match;
+    bool found = regex_search(string(s+pos, len-pos), match, d_exp);
+    if (found)
+        return match.length();
+    else
+        return -1;
+}
+
+/**
+ * @brief Search for a match to the regex
+ * @param s The target for the search
+ * @return The length of the matching substring, or -1 if no match was found
+ */
+int
+Regex::match(const string &s) const
+{
+    smatch match;
+    bool found = regex_search(s, match, d_exp);
+    if (found)
+        return match.length();
+    else
+        return -1;
 }
 
 /** Does the regular expression match the string? 
@@ -144,9 +194,10 @@ Regex::match(const char* s, int len, int pos)
     POSIX regular expressions, whcih return the start position of the 
     longest match. */
 int 
-Regex::search(const char* s, int len, int& matchlen, int pos)
+Regex::search(const char *s, int len, int& matchlen, int pos) const
 {
-	// sanitize allocation
+#if 0
+    // sanitize allocation
     if (!size_ok(sizeof(regmatch_t), len+1))
     	return -1;
     	
@@ -179,6 +230,33 @@ Regex::search(const char* s, int len, int& matchlen, int pos)
     
     delete[] pmatch; pmatch = 0;
     return matchpos;
+#endif
+
+    smatch match;
+    bool found = regex_search(string(s+pos, len-pos), match, d_exp);
+    matchlen = match.length();
+    if (found)
+        return match.position();
+    else
+        return -1;
+}
+
+/**
+ * @brief Search for a match to the regex
+ * @param s The target for the search
+ * @param matchlen The number of characters that matched
+ * @return The starting position of the first set of matching characters
+ */
+int
+Regex::search(const string &s, int& matchlen) const
+{
+        smatch match;
+        bool found = regex_search(s, match, d_exp);
+        matchlen = match.length();
+        if (found)
+            return match.position();
+        else
+            return -1;
 }
 
 } // namespace libdap

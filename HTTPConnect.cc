@@ -726,6 +726,7 @@ get_tempfile_template(const string &file_template)
 
 #else	// Unix/Linux/OSX has another...
     // white list for a directory
+    // FIXME Make this cosnt 12/1/21
     Regex directory("[-a-zA-Z0-9_/]*");
 #ifdef USE_GETENV
     c = getenv("TMPDIR");

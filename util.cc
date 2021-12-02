@@ -1172,6 +1172,7 @@ bool pathname_ok(const string &path, bool strict)
 {
     if (path.length() > 255) return false;
 
+    // FIXME Make this use a const regex 12/1/21
     Regex name("[-0-9A-z_./]+");
     if (!strict) name = "[:print:]+";
 

@@ -58,7 +58,9 @@
 // #define DODS_DEBUG
 // #define DODS_DEBUG2
 
+#if 0
 #include "GNURegex.h"
+#endif
 
 #include "DAS.h"
 #include "Clause.h"
