@@ -49,14 +49,6 @@ namespace libdap
 class Regex
 {
 private:
-    // d_preg was a regex_t* but I needed to include both regex.h and config.h
-    // to make the gnulib code work. Because this header is installed (and is
-    // used by other libraries) it cannot include config.h, so I moved the 
-    // regex.h and config.h (among other) includes to the implementation. It
-    // would be cleaner to use a special class, but for one field that seems
-    // like overkill.
-    //void *d_preg;
-
     std::regex d_exp;
 
     void init(const char *s) { d_exp = std::regex(s); }
@@ -64,11 +56,11 @@ private:
     
 public:
     /// @brief initialize a Regex with a C string
-    Regex(const char *s) { init(s); }
+    explicit Regex(const char *s) { init(s); }
     /// @deprecated
     Regex(const char *s, int) { init(s); }
     /// @brief nitialize a Regex with a C++ string
-    Regex(const std::string &s) { init(s); }
+    explicit Regex(const std::string &s) { init(s); }
 
     ~Regex() = default;
 

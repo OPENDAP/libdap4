@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
                 catch (Error &e) {
                     cerr << "Error: " << e.get_error_message() << endl;
                     delete url;
-                    url = 0;
+                    url = nullptr;
                     if (report_errors)
                         return EXIT_FAILURE;
                 }

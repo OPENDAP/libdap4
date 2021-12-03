@@ -41,17 +41,14 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
-
 #endif
 
 #include "GNURegex.h"
 #include "Error.h"
 
 #if 0
-
 #include "util.h"
 #include "debug.h"
-
 #endif
 
 using namespace std;
@@ -163,7 +160,7 @@ Regex::match(const char *s, int len, int pos) const
     auto target = string(s+pos, len-pos);
     bool found = regex_search(target, match, d_exp);
     if (found)
-        return match.length();
+        return (int)match.length();
     else
         return -1;
 }
@@ -179,7 +176,7 @@ Regex::match(const string &s) const
     smatch match;
     bool found = regex_search(s, match, d_exp);
     if (found)
-        return match.length();
+        return (int)match.length();
     else
         return -1;
 }
@@ -241,7 +238,7 @@ Regex::search(const char *s, int len, int& matchlen, int pos) const
     bool found = regex_search(target, match, d_exp);
     matchlen = match.length();
     if (found)
-        return match.position();
+        return (int)match.position();
     else
         return -1;
 }
@@ -259,7 +256,7 @@ Regex::search(const string &s, int& matchlen) const
     bool found = regex_search(s, match, d_exp);
     matchlen = match.length();
     if (found)
-        return match.position();
+        return (int)match.position();
     else
         return -1;
 }
