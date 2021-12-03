@@ -236,7 +236,7 @@ Regex::search(const char *s, int len, int& matchlen, int pos) const
     // regex headers that enforce c++14 rules. jhrg 12/2/21
     auto target = string(s+pos, len-pos);
     bool found = regex_search(target, match, d_exp);
-    matchlen = match.length();
+    matchlen = (int)match.length();
     if (found)
         return (int)match.position();
     else
@@ -254,7 +254,7 @@ Regex::search(const string &s, int& matchlen) const
 {
     smatch match;
     bool found = regex_search(s, match, d_exp);
-    matchlen = match.length();
+    matchlen = (int)match.length();
     if (found)
         return (int)match.position();
     else
