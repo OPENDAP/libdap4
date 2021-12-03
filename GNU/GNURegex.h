@@ -26,33 +26,53 @@
 #ifndef _Regex_h
 #define _Regex_h 1
 
+#include <regex>
+
 namespace libdap
 {
 
-/** a C++ interface to POSIX regular expression functions.
-
-    @author James Gallagher <jgallagher@opendap.org> */
+/**
+ * @brief Regular expression matching
+ *
+ * This class provides an interface that mimics the libgnu C++ library
+ * that was used with the first version of libdap (c. 1993). It can been
+ * re-implemented several times, this last time using the C++-11 regex
+ * class. We found this was faster than the unix regex_t (man(3)) that
+ * was being used.
+ *
+ * @note Make sure to compile the regular expressions only when really
+ * needed (e.g., make Regex instances const, etc., when possible) since
+ * it is an expensive operation
+ *
+ * @author James Gallagher <jgallagher@opendap.org>
+ */
 class Regex
 {
 private:
-    // d_preg was a regex_t* but I needed to include both regex.h and config.h
-    // to make the gnulib code work. Because this header is installed (and is
-    // used by other libraries) it cannot include config.h, so I moved the 
-    // regex.h and config.h (among other) includes to the implementation. It
-    // would be cleaner to use a special class, but for one field that seems
-    // like overkill.
-    void *d_preg;
-    void init(const char *t);
+    std::regex d_exp;
+
+    void init(const char *s) { d_exp = std::regex(s); }
+    void init(const std::string &s) { d_exp = std::regex(s); } // , std::regex::basic
     
 public:
-    Regex(const char *t);
-    Regex(const char *t, int dummy);
-    ~Regex();
+    /// @brief initialize a Regex with a C string
+    explicit Regex(const char *s) { init(s); }
+    /// @deprecated
+    Regex(const char *s, int) { init(s); }
+    /// @brief nitialize a Regex with a C++ string
+    explicit Regex(const std::string &s) { init(s); }
 
-    /// Does the pattern match.
-    int match(const char* s, int len, int pos = 0);
-    /// How much of the string does the pattern match.
-    int search(const char* s, int len, int& matchlen, int pos = 0);
+    ~Regex() = default;
+
+    /// @brief Does the pattern match.
+    int match(const char *s, int len, int pos = 0) const;
+    /// @brief Does the pattern match.
+    int match(const std::string &s) const;
+
+    /// @brief How much of the string does the pattern match.
+    int search(const char *s, int len, int &matchlen, int pos = 0) const ;
+    /// @brief How much of the string does the pattern match.
+    int search(const std::string &s, int &matchlen) const;
 };
 
 } // namespace libdap

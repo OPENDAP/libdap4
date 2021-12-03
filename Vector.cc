@@ -88,7 +88,7 @@ void Vector::m_duplicate(const Vector & v)
     }
 
     // d_compound_buf and d_buf (further down) hold the values of the Vector. The field
-    // d_compound_buf is used when the Vector holds non-numeric data (including strings
+    // d_compound_buf is used when the Vector holds non-numeric data (including strings,
     // although it used to be that was not the case jhrg 2/10/05) while d_buf
     // holds numeric values.
     if (v.d_compound_buf.empty()) {
@@ -208,7 +208,7 @@ unsigned int Vector::m_create_cardinal_data_buffer_for_type(unsigned int numElts
 void Vector::m_delete_cardinal_data_buffer()
 {
 	delete[] d_buf;
-	d_buf = 0;
+	d_buf = nullptr;
 	d_capacity = 0;
 }
 
@@ -226,7 +226,8 @@ void Vector::m_set_cardinal_values_internal(const CardType* fromArray, int numEl
     }
     set_length(numElts);
     m_create_cardinal_data_buffer_for_type(numElts);
-    memcpy(d_buf, fromArray, numElts * sizeof(CardType));
+    if (d_buf)
+        memcpy(d_buf, fromArray, numElts * sizeof(CardType));
     set_read_p(true);
 }
 
@@ -929,7 +930,7 @@ void Vector::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*
         case dods_opaque_c:
         case dods_structure_c:
         case dods_sequence_c:
-            // Modified the assert here from '... != 0' to '... >= length())
+            // Modified the assertion here from '... != 0' to '... >= length())
             // to accommodate the case of a zero-length array. jhrg 1/28/16
             assert(d_compound_buf.capacity() >= (unsigned)length());
 
@@ -1184,7 +1185,8 @@ unsigned int Vector::val2buf(void *val, bool reuse)
                 m_create_cardinal_data_buffer_for_type(length());
 
             // width(true) returns the size in bytes given the constraint
-            memcpy(d_buf, val, width(true));
+            if (d_buf)
+                memcpy(d_buf, val, width(true));
             break;
 
         case dods_str_c:
@@ -1256,7 +1258,7 @@ unsigned int Vector::buf2val(void **val)
 
     // This is the width computed using length(). The
     // length() property is changed when a projection
-    // constraint is applied. Thus this is the number of
+    // constraint is applied. Thus, this is the number of
     // bytes in the buffer given the current constraint.
 
     switch (d_proto->type()) {

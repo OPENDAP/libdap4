@@ -157,8 +157,12 @@ AISResources::add_regexp_resource(const string &re, const Resource &ancillary)
 void
 AISResources::add_regexp_resource(const string &re, const ResourceVector &rv)
 {
+#if 0
     ResourceRegexpsIter pos = find_if(d_re.begin(), d_re.end(),
                                       FindRegexp(re));
+#endif
+    ResourceRegexpsIter pos = find_if(d_re.begin(), d_re.end(),
+                                      [re](const RVPair &p){ return re == p.first; });
     if (pos == d_re.end()) {
         d_re.push_back(std::make_pair(re, rv));
     }
@@ -186,7 +190,10 @@ AISResources::has_resource(const string &primary) const
     // literal. If not, then it tries to match each regular expression in the
     // database.
     return ((d_db.find(primary) != d_db.end())
-            || (find_if(d_re.begin(), d_re.end(), MatchRegexp(primary))
+            || (find_if(d_re.begin(), d_re.end(),
+                        [primary] (const RVPair &p) {
+                                Regex r(p.first.c_str());
+                                return r.match(p.first) != -1; } /*MatchRegexp(primary)*/)
                 != d_re.end()));
 
 }
@@ -221,7 +228,9 @@ AISResources::get_resource(const string &primary)
     // Finds the first matching regular expression and returns a vector of
     // AIS resources.
     const ResourceRegexpsIter &j = find_if(d_re.begin(), d_re.end(),
-                                           MatchRegexp(primary));
+                                        [primary] (const RVPair &p) {
+                                                Regex r(p.first.c_str());
+                                                return r.match(p.first) != -1; } /*MatchRegexp(primary)*/);
     if (j != d_re.end())
         copy(j->second.begin(), j->second.end(), inserter(rv, rv.begin()));
 

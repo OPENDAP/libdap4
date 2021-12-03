@@ -1172,16 +1172,36 @@ bool pathname_ok(const string &path, bool strict)
 {
     if (path.length() > 255) return false;
 
+#if 0
+    // Make this use a const regex 12/1/21
     Regex name("[-0-9A-z_./]+");
     if (!strict) name = "[:print:]+";
+#endif
 
+    const Regex strict_name("[-0-9A-z_./]+");
+    const Regex relaxed_name("[:print:]+");
+
+#if 0
     string::size_type len = path.length();
-    int result = name.match(path.c_str(), len);
+#endif
+    int result;
+    if (strict)
+        result = strict_name.match(path);
+    else
+        result = relaxed_name.match(path);
+
+    return (result == path.length());
+
+#if 0
     // Protect against casting too big an uint to int
     // if LEN is bigger than the max int32, the second test can't work
+
+    // This makes no sense - len can never be > 255 given the test at the
+    // start of this function. jhrg 12/1/21
     if (len > INT_MAX || result != static_cast<int>(len)) return false;
 
     return true;
+#endif
 }
 
 //@}

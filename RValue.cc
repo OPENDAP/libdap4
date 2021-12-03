@@ -85,7 +85,7 @@ append_rvalue_list(rvalue_list *rvals, rvalue *rv)
     @param args A list of RValue objects
     @param dds Use this DDS when evaluating functions */
 BaseType **
-build_btp_args(rvalue_list *args, DDS &dds)
+build_btp_args(const rvalue_list *args, DDS &dds)
 {
     int argc = 0;
 
