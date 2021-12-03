@@ -13,5 +13,4 @@ cleanup.sh: cleanup.sh.in
 
 clean-local: cleanup.sh
 	sh $(builddir)/cleanup.sh
-
-#rm -rf dods_cache
+    rm -rf dods_cache
