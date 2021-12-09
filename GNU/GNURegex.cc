@@ -43,8 +43,15 @@
 #include <stdexcept>
 #endif
 
+#include <vector>
+
+#include <regex.h>
+
 #include "GNURegex.h"
 #include "Error.h"
+
+#include "debug.h"
+#include "util.h"
 
 #if 0
 #include "util.h"
@@ -55,11 +62,10 @@ using namespace std;
 
 namespace libdap {
 
-#if 0
 void
 Regex::init(const char *t)
 {
-#if 0
+#if !USE_CPP_11_REGEX
     DBG( cerr << "Regex::init() - BEGIN" << endl);
 
     DBG( cerr << "Regex::init() - creating new regex..." << endl);
@@ -87,11 +93,12 @@ Regex::init(const char *t)
     }
     DBG( cerr << "Regex::init() - Call to regcomp() SUCCEEDED" << endl);
     DBG( cerr << "Regex::init() - END" << endl);
-#endif
-
+#else
     d_exp = regex(t);
+#endif
 }
 
+#if 0
 void
 Regex::init(const string &t)
 {
@@ -99,12 +106,11 @@ Regex::init(const string &t)
 }
 #endif
 
-#if 0
+#if !USE_CPP_11_REGEX
 Regex::~Regex()
 {
     regfree(static_cast<regex_t*>(d_preg));
     delete static_cast<regex_t*>(d_preg); d_preg = 0;
-
 }
 #endif
 
@@ -134,7 +140,7 @@ Regex::Regex(const char* t, int)
 int 
 Regex::match(const char *s, int len, int pos) const
 {
-#if 0
+#if !USE_CPP_11_REGEX
     if (len > 32766)	// Integer overflow protection
     	return -1;
     	
@@ -152,7 +158,7 @@ Regex::match(const char *s, int len, int pos) const
 	delete[] pmatch; pmatch = 0;
 
     return matchnum;
-#endif
+#else
     if (pos > len)
         throw Error("Position exceed length in Regex::match()");
 
@@ -163,6 +169,7 @@ Regex::match(const char *s, int len, int pos) const
         return (int)match.length();
     else
         return -1;
+#endif
 }
 
 /**
@@ -173,12 +180,16 @@ Regex::match(const char *s, int len, int pos) const
 int
 Regex::match(const string &s) const
 {
+#if USE_CPP_11_REGEX
     smatch match;
     bool found = regex_search(s, match, d_exp);
     if (found)
         return (int)match.length();
     else
         return -1;
+#else
+    return match(s.c_str(), s.length(), 0);
+#endif
 }
 
 /** Does the regular expression match the string? 
@@ -194,7 +205,7 @@ Regex::match(const string &s) const
 int 
 Regex::search(const char *s, int len, int& matchlen, int pos) const
 {
-#if 0
+#if !USE_CPP_11_REGEX
     // sanitize allocation
     if (!size_ok(sizeof(regmatch_t), len+1))
     	return -1;
@@ -228,8 +239,7 @@ Regex::search(const char *s, int len, int& matchlen, int pos) const
     
     delete[] pmatch; pmatch = 0;
     return matchpos;
-#endif
-
+#else
     smatch match;
     // This is needed because in C++14, the first arg to regex_search() cannot be a
     // temporary string. It seems the C++11 compilers on some linux dists are using
@@ -241,6 +251,7 @@ Regex::search(const char *s, int len, int& matchlen, int pos) const
         return (int)match.position();
     else
         return -1;
+#endif
 }
 
 /**
@@ -252,6 +263,7 @@ Regex::search(const char *s, int len, int& matchlen, int pos) const
 int
 Regex::search(const string &s, int& matchlen) const
 {
+#if USE_CPP_11_REGEX
     smatch match;
     bool found = regex_search(s, match, d_exp);
     matchlen = (int)match.length();
@@ -259,6 +271,10 @@ Regex::search(const string &s, int& matchlen) const
         return (int)match.position();
     else
         return -1;
+#else
+    // search(const char *s, int len, int& matchlen, int pos) const
+    return search(s.c_str(), s.length(), matchlen, 0);
+#endif
 }
 
 } // namespace libdap
