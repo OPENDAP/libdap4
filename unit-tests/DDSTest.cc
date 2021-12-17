@@ -554,7 +554,7 @@ public:
             das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
             dds.transfer_attributes(&das);
 
-            auto_ptr<DAS> new_das(dds.get_das());
+            unique_ptr<DAS> new_das(dds.get_das());
 
             string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
             ostringstream oss;
@@ -586,8 +586,8 @@ public:
 
             parser.intern(ifs, &dmr);
 
-            auto_ptr<DDS> dds(dmr.getDDS());
-            auto_ptr<DAS> das(dds->get_das());
+            unique_ptr<DDS> dds(dmr.getDDS());
+            unique_ptr<DAS> das(dds->get_das());
 
             string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/dmr-testsuite/coads_climatology.nc.full.dmr.das");
             ostringstream oss;
@@ -613,7 +613,7 @@ public:
             das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_var");
             dds.transfer_attributes(&das);
 
-            auto_ptr<DAS> new_das(dds.get_das());
+            unique_ptr<DAS> new_das(dds.get_das());
 
             string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_var");
             ostringstream oss;
@@ -639,7 +639,7 @@ public:
             das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_global");
             dds.transfer_attributes(&das);
 
-            auto_ptr<DAS> new_das(dds.get_das());
+            unique_ptr<DAS> new_das(dds.get_das());
 
             string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_global");
             ostringstream oss;
@@ -667,8 +667,8 @@ public:
 
             parser.intern(ifs, &dmr);
 
-            auto_ptr<DDS> dds(dmr.getDDS());
-            auto_ptr<DAS> das(dds->get_das());
+            unique_ptr<DDS> dds(dmr.getDDS());
+            unique_ptr<DAS> das(dds->get_das());
 
             string baseline = read_test_baseline(string(TEST_SRC_DIR) +  "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105.h5.dmrpp.dmr.baseline");
             ostringstream oss;
@@ -695,8 +695,8 @@ public:
 
             parser.intern(ifs, &dmr);
 
-            auto_ptr<DDS> dds(dmr.getDDS());
-            auto_ptr<DAS> das(dds->get_das());
+            unique_ptr<DDS> dds(dmr.getDDS());
+            unique_ptr<DAS> das(dds->get_das());
 
             string baseline = read_test_baseline(string(TEST_SRC_DIR) +  "/dmr-to-dap2-testsuite/hacked.dmrpp.dmr.baseline");
             ostringstream oss;

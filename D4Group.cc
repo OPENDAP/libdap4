@@ -188,19 +188,12 @@ D4Group::FQN() const
 	return (name() == "/") ? "/" : static_cast<D4Group*>(get_parent())->FQN() + name() + "/";
 }
 
-// Note that in order for this to work the second argument must not be a reference.
-// jhrg 8/20/13
-static bool
-name_eq(D4Group *g, const string name)
-{
-	return g->name() == name;
-}
-
 D4Group *
 D4Group::find_child_grp(const string &grp_name)
 {
-	groupsIter g = find_if(grp_begin(), grp_end(), bind2nd(ptr_fun(name_eq), grp_name));
-	return (g == grp_end()) ? 0: *g;
+    auto g = find_if(grp_begin(), grp_end(),
+                     [grp_name](const D4Group *g) { return g->name() == grp_name; });
+    return (g == grp_end()) ? 0: *g;
 }
 
 // TODO Add constraint param? jhrg 11/17/13
@@ -684,7 +677,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
  * be prepended to the name of the variable. Group names are separated using
  * a '/' character.
  *
- * The Group attributes are transfered to the parent_attr_table.
+ * The Group attributes are transferred to the parent_attr_table.
  *
  * @todo Fix the comment.
  *

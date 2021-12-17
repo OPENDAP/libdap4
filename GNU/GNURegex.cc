@@ -26,8 +26,9 @@
 
 //#define DODS_DEBUG
 
-#include <config.h>
+#include "config.h"
 
+#if 0
 #ifndef WIN32
 #include <alloca.h>
 #endif
@@ -40,12 +41,22 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#endif
+
+#include <vector>
+
+#include <regex.h>
 
 #include "GNURegex.h"
 #include "Error.h"
+
+#include "debug.h"
+#include "util.h"
+
+#if 0
 #include "util.h"
 #include "debug.h"
-
+#endif
 
 using namespace std;
 
@@ -54,6 +65,7 @@ namespace libdap {
 void
 Regex::init(const char *t)
 {
+#if !USE_CPP_11_REGEX
     DBG( cerr << "Regex::init() - BEGIN" << endl);
 
     DBG( cerr << "Regex::init() - creating new regex..." << endl);
@@ -81,15 +93,28 @@ Regex::init(const char *t)
     }
     DBG( cerr << "Regex::init() - Call to regcomp() SUCCEEDED" << endl);
     DBG( cerr << "Regex::init() - END" << endl);
+#else
+    d_exp = regex(t);
+#endif
 }
 
+#if 0
+void
+Regex::init(const string &t)
+{
+    d_exp = regex(t);
+}
+#endif
+
+#if !USE_CPP_11_REGEX
 Regex::~Regex()
 {
     regfree(static_cast<regex_t*>(d_preg));
     delete static_cast<regex_t*>(d_preg); d_preg = 0;
-
 }
+#endif
 
+#if 0
 /** Initialize a POSIX regular expression (using the 'extended' features).
 
     @param t The regular expression pattern. */
@@ -104,6 +129,7 @@ Regex::Regex(const char* t, int)
 {
     init(t);
 }
+#endif
 
 /** Does the regular expression match the string? 
 
@@ -112,9 +138,10 @@ Regex::Regex(const char* t, int)
     @param pos Start looking at this position in the string
     @return The number of characters that match, -1 if there's no match. */
 int 
-Regex::match(const char* s, int len, int pos)
+Regex::match(const char *s, int len, int pos) const
 {
-   if (len > 32766)	// Integer overflow protection
+#if !USE_CPP_11_REGEX
+    if (len > 32766)	// Integer overflow protection
     	return -1;
     	
     regmatch_t *pmatch = new regmatch_t[len+1];
@@ -131,6 +158,38 @@ Regex::match(const char* s, int len, int pos)
 	delete[] pmatch; pmatch = 0;
 
     return matchnum;
+#else
+    if (pos > len)
+        throw Error("Position exceed length in Regex::match()");
+
+    smatch match;
+    auto target = string(s+pos, len-pos);
+    bool found = regex_search(target, match, d_exp);
+    if (found)
+        return (int)match.length();
+    else
+        return -1;
+#endif
+}
+
+/**
+ * @brief Search for a match to the regex
+ * @param s The target for the search
+ * @return The length of the matching substring, or -1 if no match was found
+ */
+int
+Regex::match(const string &s) const
+{
+#if USE_CPP_11_REGEX
+    smatch match;
+    bool found = regex_search(s, match, d_exp);
+    if (found)
+        return (int)match.length();
+    else
+        return -1;
+#else
+    return match(s.c_str(), s.length(), 0);
+#endif
 }
 
 /** Does the regular expression match the string? 
@@ -144,9 +203,10 @@ Regex::match(const char* s, int len, int pos)
     POSIX regular expressions, whcih return the start position of the 
     longest match. */
 int 
-Regex::search(const char* s, int len, int& matchlen, int pos)
+Regex::search(const char *s, int len, int& matchlen, int pos) const
 {
-	// sanitize allocation
+#if !USE_CPP_11_REGEX
+    // sanitize allocation
     if (!size_ok(sizeof(regmatch_t), len+1))
     	return -1;
     	
@@ -179,6 +239,42 @@ Regex::search(const char* s, int len, int& matchlen, int pos)
     
     delete[] pmatch; pmatch = 0;
     return matchpos;
+#else
+    smatch match;
+    // This is needed because in C++14, the first arg to regex_search() cannot be a
+    // temporary string. It seems the C++11 compilers on some linux dists are using
+    // regex headers that enforce c++14 rules. jhrg 12/2/21
+    auto target = string(s+pos, len-pos);
+    bool found = regex_search(target, match, d_exp);
+    matchlen = (int)match.length();
+    if (found)
+        return (int)match.position();
+    else
+        return -1;
+#endif
+}
+
+/**
+ * @brief Search for a match to the regex
+ * @param s The target for the search
+ * @param matchlen The number of characters that matched
+ * @return The starting position of the first set of matching characters
+ */
+int
+Regex::search(const string &s, int& matchlen) const
+{
+#if USE_CPP_11_REGEX
+    smatch match;
+    bool found = regex_search(s, match, d_exp);
+    matchlen = (int)match.length();
+    if (found)
+        return (int)match.position();
+    else
+        return -1;
+#else
+    // search(const char *s, int len, int& matchlen, int pos) const
+    return search(s.c_str(), s.length(), matchlen, 0);
+#endif
 }
 
 } // namespace libdap

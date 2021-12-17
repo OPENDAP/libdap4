@@ -406,9 +406,9 @@ escattr(string s)
 string
 unescattr(string s)
 {
-    Regex octal("\\\\[0-3][0-7][0-7]");  // matches 4 characters
-    Regex esc_quote("\\\\\"");  // matches 3 characters
-    Regex esc_esc("\\\\\\\\");      // matches 2 characters
+    const Regex octal("\\\\[0-3][0-7][0-7]");  // matches 4 characters
+    const Regex esc_quote("\\\\\"");  // matches 3 characters
+    const Regex esc_esc("\\\\\\\\");      // matches 2 characters
     const string ESC = "\\";
     const string QUOTE = "\"";
     int matchlen;

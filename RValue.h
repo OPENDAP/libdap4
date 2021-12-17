@@ -80,8 +80,7 @@ typedef std::vector<dods_float64> *float64_arg_list;
 
 rvalue_list *make_rvalue_list(rvalue *rv);
 rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
-
-BaseType **build_btp_args(rvalue_list *args, DDS &dds);
+BaseType **build_btp_args(const rvalue_list *args, DDS &dds);
 
 } // namespace libdap
 #endif // _rvalue_h
