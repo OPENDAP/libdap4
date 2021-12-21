@@ -7,8 +7,8 @@
 # Modified to push the result of a successful build up to an AWS S3
 # bucket. jhrg 2.24.18
 
-# virt: lxd             # use an lxd container
-# arch: amd64           # optional, this is default, routes to a full VM
+virt: lxd             # use an lxd container
+arch: amd64-graviton2           # optional, this is default, routes to a full VM
 # os: linux             # optional, this is default
 dist: xenial          # or bionic | xenial | trusty | precise with xenial as default
 
