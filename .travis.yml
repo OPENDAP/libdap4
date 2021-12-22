@@ -27,7 +27,8 @@ addons:
     - libxml2-dev
     - uuid-dev
     - libcurl4-openssl-dev
-    - libcppunit-dev 
+    - libcppunit-dev
+    - libfl-dev
     - gcovr
 
 # remove support for debian packages. jhrg 2/23/21
