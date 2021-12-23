@@ -130,7 +130,7 @@ void D4ConstraintEvaluator::search_for_and_mark_arrays(BaseType *btp)
  * which means it is part of the set of variables to be sent back to the client. This
  * method sets a flag in the variable (send_p; pronounced 'send predicate') indicating that.
  *
- * @note This will check if the variable is an array and set it's slices accordingly
+ * @note This will check if the variable is an array and set its slices accordingly
  * @param btp BaseType pointer to the variable. Must be non-null
  * @return The BaseType* to the variable; the send_p flag is set as a side effect.
  */
