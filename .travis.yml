@@ -7,7 +7,7 @@
 # Modified to push the result of a successful build up to an AWS S3
 # bucket. jhrg 2.24.18
 
-virt: vm             # use a full vm or lxd container - cannot get the lxd to with graviton2
+virt: lxd             # use a full vm or lxd container - cannot get the lxd to with graviton2
 # arch: arm64-graviton2  # and is the default
 os: linux             # optional, this is default
 dist: focal          # xenial is the default
