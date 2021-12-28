@@ -1,3 +1,138 @@
+# libdap version 3.20.9
+
+2021-12-17  ndp-opendap  <ndp@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+	Triggering TravisCI build
+
+2021-12-09  James Gallagher  <jgallagher@opendap.org>
+
+	Reverse the switch to C++11 regex - now a comp time option (#167)
+
+2021-12-03  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed for automake 1.16
+
+	Added rm -rf dods_cache back to Makefile
+	Not sure why that's needed, however.
+
+	unit-tests/cache-testsuite cleanup.sh failing again
+
+	Regex fix (#166)
+	Reworked Regex class (in GNU/GNURegex.h/.cc)
+	Also some other fixes from sonar scan suggestions and
+	a fix to getdap4. These should have go in on their own
+	branch, but wound up here.
+	To improve performance, added 'const' to some of the Regex instances
+	so they will be constructed (and the regex compiled) only once.
+
+2021-11-24  James Gallagher  <jgallagher@opendap.org>
+
+	build_btp_args() fix
+
+	Removed code smells (#165)
+
+2021-11-23  James Gallagher  <jgallagher@opendap.org>
+
+	Dump auto ptr (#164)
+	Time to remove the old auto_ptr code
+	Also removed bind2nd and ptr_fun from D4Group and
+	replaced it with a lambda. In C++-17, bind2nd goes away.
+	Also includes a fix for distcheck on automake 1.16
+
+	Removed unsupported options from getdap4, replaced GetOpt with getopt (#163)
+	Also reformatted the help.
+
+2021-11-04  Nathan Potter  <ndp@opendap.org>
+
+	Added build number to configure call in libdap.spec.in (#161)
+
+2021-11-01  ndp-opendap  <ndp@opendap.org>
+
+	Restoring previous TravisCI stage order
+
+2021-10-29  ndp-opendap  <ndp@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+	This might be the one... looks like sonar s working for real."
+
+	This might be the one...
+
+	More with sonar scan coverage issues
+
+	More with sonar scan coverage issues
+
+	More with sonar scan coverage issues
+
+	More with sonar scan coverage issues
+
+	More with sonar scan coverage issues
+
+	Returned CI to mominal stage order.
+
+	Working on getting the coverage files into the sonar system
+
+	Working on getting the coverage files into the sonar system
+
+	Trying to ammend sonar properties
+
+	Trying to ammend sonar properties
+
+	Trying to ammend sonar properties
+
+	Trying to ammend sonar properties
+
+	Trying to ammend sonar properties
+
+2021-10-28  ndp-opendap  <ndp@opendap.org>
+
+	Debugging scan stage
+
+	Enable scan stage
+
+	Enable scan stage
+
+	Reenabling full build
+
+	Switched libdap_version() to CVER. release-buildnum
+
+	Probing Package_Version
+
+	Debugging RPM build.
+
+2021-10-27  James Gallagher  <jgallagher@opendap.org>
+
+	new credentials (#159)
+	New encrypted credentials for AWS
+
+	Moved the [[deprecated]] annotations into the doxygen comments (#160)
+	Moved the [[deprecated]] annotations into the doxygen comments
+	Adding C++-14 features to our code makes for many warnings
+	which hides errors.
+	Add login for docker hub
+
+2021-10-20  The-Robot-Travis  <npotter@opendap.org>
+
+	Removed [[deprecated ...]] from headers - it's fine in the .cc files
+	[skip ci]
+
+2021-09-17  James Gallagher  <jgallagher@opendap.org>
+
+	Spelling fixes in configure.ac
+	[skip ci]
+
+2021-09-16  dh-opendap  <dholloway@opendap.org>
+
+	skip ci
+
+2021-09-15  dh-opendap  <dholloway@opendap.org>
+
+	Updated on 2021-09-15
+	
+# libdap version 3.20.9
+
 2021-08-18  ndp-opendap  <ndp@opendap.org>
 
 	Merge branch 'master' of https://github.com/OPENDAP/libdap4

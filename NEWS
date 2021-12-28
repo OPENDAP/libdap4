@@ -1,3 +1,10 @@
+News for version 3.20.9
+
+ Started migrating from (deprecated) auto_ptr to C++11 unique_ptr
+
+ Migrated use of regex functions from outdfated GNU implementation 
+ to C++11 implementation (uses compile time swicth)
+
 News for version 3.20.8
 
  Modified Error so that it is more in line with C++11.
