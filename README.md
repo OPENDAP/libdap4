@@ -1,10 +1,14 @@
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
+### Updated for version 3.20.9 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5807905.svg)](https://doi.org/10.5281/zenodo.5807905)
+* Started migrating from (deprecated) auto_ptr to C++11 unique_ptr
+* Migrated use of regex functions from outdfated GNU implementation 
+  to C++11 implementation (uses compile time swicth)
 
 ### Updated for version 3.20.8 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4399722.svg)](https://doi.org/10.5281/zenodo.4399722)
 * Modified Error so that it is more in line with C++11.
 * Added (shallow) unit64_t request size computations and max_request_size state.
 * Changed the internal representation of max response size to uint64_t and confined the overflow
- to just the (deprecated) functions.
+  to just the (deprecated) functions.
 
 ### Updated for version 3.20.7 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4399722.svg)](https://doi.org/10.5281/zenodo.4399722)
 * Added code coverage (using gcov) to the CI processes. 
