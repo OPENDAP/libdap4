@@ -6,7 +6,7 @@ ACLOCAL_AMFLAGS = -I conf -I gl/m4
 aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
-AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS) $(TIRPC_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/GNU $(XML2_CFLAGS) $(TIRPC_CFLAGS) -I$(top_builddir)/gl -I$(top_srcdir)/gl
 AM_CXXFLAGS = 
 
 if COMPILER_IS_GCC
@@ -68,8 +68,8 @@ endif
 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
-libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la d4_ce/libd4_ce_parser.la \
-d4_function/libd4_function_parser.la libparsers.la
+libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) d4_ce/libd4_ce_parser.la \
+d4_function/libd4_function_parser.la libparsers.la gl/libgnu.la
 
 if DAP4_DEFINED
     libdap_la_LIBADD += $(CRYPTO_LIBS)
