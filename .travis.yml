@@ -24,6 +24,12 @@ branches:
   only:
   - master
 
+# This cache is used to speed up sonar scan runs. See https://docs.travis-ci.com/user/caching.
+# Each branch gets its own cache. jhrg 1/14/22
+cache:
+  directories:
+    - ./.cache/sonar/
+
 addons:
   sonarcloud: true
   apt:
