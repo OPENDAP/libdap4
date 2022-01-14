@@ -12,6 +12,10 @@
 # os: linux             # optional, this is default
 dist: xenial          # or bionic | xenial | trusty | precise with xenial as default
 
+# Added vm size upgrade. This costs extra $s
+vm:
+  size: x-large
+
 language: cpp
 
 compiler: gcc         # Could add clang
@@ -106,7 +110,7 @@ jobs:
     - export LIBDAP_BUILD=main
     - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking --prefix=$prefix
-    - make -j7 && make check -j7 && make install
+    - make -j16 && make check -j16 && make install
 
   - stage: build
     name: "asan"
@@ -114,7 +118,7 @@ jobs:
     - export LIBDAP_BUILD=asan
     - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
-    - make -j7 && make check -j7
+    - make -j16 && make check -j16
 
   - stage: build
     name: "distcheck"
@@ -122,7 +126,7 @@ jobs:
     - export LIBDAP_BUILD=distcheck
     - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
-    - make distcheck -j7
+    - make distcheck -j16
 
   - stage: scan
     name: "scan"
@@ -130,10 +134,16 @@ jobs:
     - export LIBDAP_BUILD=sonar
     - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking  --prefix=$prefix --enable-developer --enable-coverage
-    - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
+    - build-wrapper-linux-x86-64 --out-dir bw-output make -j16
     # Run these commands in bw-output?
-    - make check -j7
-    - ./travis/sonar-scanner-coverage.sh
+    # - make check -j7
+    # - ./travis/sonar-scanner-coverage.sh
+    - |
+      if test "$TRAVIS_BRANCH" = "master" -a "$TRAVIS_PULL_REQUEST" = "false"; then
+        make check -j16
+        ./travis/sonar-scanner-coverage.sh
+      fi
+
     - sonar-scanner -Dsonar.login=$SONAR_LOGIN
     # Test the result of the scan and fail a PR/build if the quality gate fails
     - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
@@ -156,7 +166,7 @@ jobs:
       - mkdir -p $TRAVIS_BUILD_DIR/package
       - autoreconf --force --install --verbose
       - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
-      - make dist -j7
+      - make dist -j16
       # Make both a libdap-<version>-<build num> and libdap-snapshot tar.gz. This will simplify
       # other operations that use the libdap source code like the bes build. Note that the VERSION
       # file holds a string that is the version number as set by the configure script and the build
