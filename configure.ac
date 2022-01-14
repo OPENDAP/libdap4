@@ -1,43 +1,40 @@
 
-dnl -*- autoconf -*-
-dnl Process this file with autoconf to produce a configure script.
+# -*- autoconf -*-
+# Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.63)
-dnl AC_PREREQ([2.68]); Fails on CentOS 6. jhrg 3/26/19
-dnl m4_pattern_forbid([^_?(gl_[A-Z]|AX_|BISON_)])
-dnl m4_pattern_allow([^BISON_USE_NLS$])
+AC_PREREQ([2.69])
 
-dnl Set the version number here. Set the build number using --with-build
-dnl The version info is put in the VERSION file. The build number is used
-dnl in the RPM spec file. The build number is not part of the pkg config
-dnl 'pc' files and tarball for the source. See
-dnl libdap4/travis/travis_libdap_build_offset.sh for info about setting the
-dnl base value for the build number. jhrg 3/22/21
-AC_INIT(libdap, 3.20.9, opendap-tech@opendap.org)
+# Set the version number here. Set the build number using --with-build
+# The version info is put in the VERSION file. The build number is used
+# in the RPM spec file. The build number is not part of the pkg config
+# 'pc' files and tarball for the source. See
+# libdap4/travis/travis_libdap_build_offset.sh for info about setting the
+# base value for the build number. jhrg 3/22/21
 
-dnl As an alternative, we can...
-dnl Read the version number from the file VERSION. The file must contain
-dnl only the version number in the form x.y.z or x.y.z-b. Newlines are
-dnl ignored. Anything else and the build will fail.
-dnl
-dnl But, this requires that the NEWS file have the version number AND build
-dnl number somewhere in the first 15 lines or the dist target will fail.
-dnl jhrg 3/17/21
-dnl https://stackoverflow.com/questions/8559456/read-a-version-number-from-a-file-in-configure-ac
-dnl AC_INIT([libdap], m4_normalize(m4_include([VERSION])), [opendap-tech@opendap.org])
+AC_INIT([libdap],[3.20.9],[opendap-tech@opendap.org])
 
-dnl Provide a way to pass in a build number. This is used by CI/CD systems to record
-dnl each build. The version number is set by the value in AC_INIT (see above). For
-dnl people building the source, it's not customary to supply a build number (i.e.,
-dnl if you're building the code for your own use, a build number seems like overkill).
-dnl jhrg 3/16/21
+# As an alternative, we can...
+# Read the version number from the file VERSION. The file must contain
+# only the version number in the form x.y.z or x.y.z-b. Newlines are
+# ignored. Anything else and the build will fail.
+#
+# But, this requires that the NEWS file have the version number AND build
+# number somewhere in the first 15 lines or the dist target will fail.
+# jhrg 3/17/21
+# https://stackoverflow.com/questions/8559456/read-a-version-number-from-a-file-in-configure-ac
+# AC_INIT([libdap],[m4_normalize(m4_include(VERSION))],[opendap-tech@opendap.org])
+
+# Provide a way to pass in a build number. This is used by CI/CD systems to record
+# each build. The version number is set by the value in AC_INIT (see above). For
+# people building the source, it's not customary to supply a build number (i.e.,
+# if you're building the code for your own use, a build number seems like overkill).
+# jhrg 3/16/21
 AC_ARG_WITH([build],
-            [AC_HELP_STRING([--with-build=<number>],
-             [Inject the integer build number (default is to not define a build number)])],
+            [AS_HELP_STRING([--with-build=number],[Inject the integer build number (default is to not define a build number)])],
             [build_number=${withval}], [build_number=])
 
-dnl If a build number is given and valid (it must be an integer), use it. If it's
-dnl given but invalid, print a message and exit. jhrg 3/17/21
+# If a build number is given and valid (it must be an integer), use it. If it's
+# given but invalid, print a message and exit. jhrg 3/17/21
 AS_IF([test -n "$with_build"],
     [AS_IF([echo $build_number | grep '^[[0-9]][[-0-9.]]*$' > /dev/null 2>&1 ],
      [PACKAGE_VERSION=$PACKAGE_VERSION-$build_number
@@ -60,9 +57,9 @@ AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
 AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and version combined])
 AC_SUBST(DVR)
 
-dnl Use one of these two blocks to build a DAP2 or DAP 3.2 DDX
-dnl AC_DEFINE(DAP2_DDX, 1, [Build the DAP 2 version of the DDX])
-dnl AC_SUBST(DAP2_DDX)
+# Use one of these two blocks to build a DAP2 or DAP 3.2 DDX
+# AC_DEFINE(DAP2_DDX, 1, [Build the DAP 2 version of the DDX])
+# AC_SUBST(DAP2_DDX)
 AC_DEFINE(DAP3_2_DDX, 1, [Build the DAP 3.2 version of the DDX])
 AC_SUBST(DAP3_2_DDX)
 
@@ -87,19 +84,19 @@ AC_SUBST(PACKAGE_MINOR_VERSION)
 AC_SUBST(PACKAGE_PATCH_VERSION)
 AC_SUBST(PACKAGE_BUILD_NUMBER)
 
-dnl flags for the compilers and linkers - set these before locating the
-dnl actual tools since some of the AC_PROG macros set these `flag variables'
-dnl to default values otherwise.
+# flags for the compilers and linkers - set these before locating the
+# actual tools since some of the AC_PROG macros set these `flag variables'
+# to default values otherwise.
 
 AC_CANONICAL_HOST
 AC_SUBST(host)
 
-dnl How to set these SO variables:
-dnl No interfaces changed, only implementations (good): ==> Increment REVISION.
-dnl Interfaces added, none removed (good): ==> Increment CURRENT,
-dnl increment AGE, set REVISION to 0.
-dnl Interfaces removed or changed (BAD, breaks upward compatibility):
-dnl ==> Increment CURRENT, set AGE and REVISION to 0.
+# How to set these SO variables:
+# No interfaces changed, only implementations (good): ==> Increment REVISION.
+# Interfaces added, none removed (good): ==> Increment CURRENT,
+# increment AGE, set REVISION to 0.
+# Interfaces removed or changed (BAD, breaks upward compatibility):
+# ==> Increment CURRENT, set AGE and REVISION to 0.
 
 DAPLIB_CURRENT=27
 DAPLIB_REVISION=5
@@ -132,41 +129,37 @@ AC_SUBST(SERVERLIB_REVISION)
 SERVERLIB_VERSION="$SERVERLIB_CURRENT:$SERVERLIB_REVISION:$SERVERLIB_AGE"
 AC_SUBST(SERVERLIB_VERSION)
 
-dnl Suppress the default values automake supplies for these. You can still
-dnl set them on the command line, however. (e.g., ./configure ... CXXFLAGS="-g -o3").
-dnl jhrg 2/6/18
+# Suppress the default values automake supplies for CFLAGS and CXXFLAGS. You can still
+# set them on the command line, however. (e.g., ./configure ... CXXFLAGS="-g -o3").
+# jhrg 2/6/18
 : ${CFLAGS=""}
 : ${CXXFLAGS=""}
 
-dnl Checks for programs.
+# Checks for programs.
 AC_PROG_AWK
 AC_PROG_CXX
 AC_PROG_CC
 
-dnl Call this gnulib macro right after a working C Compiler is found
+# Call this gnulib macro right after a working C Compiler is found.
+#
+# To update the gnulib code, run '<path to gnulib source clone>/gnulib-tool --lgpl --import'
+# in the libdap4 directory. The configure.ac options and the gnulib-tool will update the
+# correct files in the gl subdir. jhrg 1/14/22
+
 gl_EARLY
 
-dnl echo "CC = $CC"
 AS_IF([test "x$CC" = xgcc],
       [AM_CONDITIONAL([COMPILER_IS_GCC],[true])],
       [AM_CONDITIONAL([COMPILER_IS_GCC],[false])])
 
-dnl AC_PROG_YACC
-dnl AC_PROG_LEX
-
-dnl NB: CentOS 6 does not support C++-11 but does support some features:
-dnl https://gcc.gnu.org/gcc-4.4/cxx0x_status.html.
-dnl For now, I'm counting 0x as supporting C++-11 in our code.
+# NB: CentOS 6 does not support C++-11. We require C++-11
 
 CXX11_FLAG=""
 
 CXX_FLAGS_CHECK([--std=c++11], [CXX11_FLAG=--std=c++11], [])
 
 AS_IF([test -z "$CXX11_FLAG"],
-      [CXX_FLAGS_CHECK([--std=c++0x], [CXX11_FLAG=--std=c++0x], [])])
-
-AS_IF([test -z "$CXX11_FLAG"],
-      [AC_MSG_ERROR([Not using C++11 (or C++0x)])],
+      [AC_MSG_ERROR([Not using C++11])],
       [AC_MSG_NOTICE([Using $CXX11_FLAG for C++11 support])
        cxx_debug_flags="$cxx_debug_flags --pedantic $CXX11_FLAG"])
 
@@ -176,56 +169,55 @@ AM_PROG_LEX
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_LIBTOOL
+LT_INIT
 
-dnl We really need bison and not yacc. If you use AC_PROG_YACC, the resulting 
-dnl Makefile will call bison -y which doesn't know how to make the parsers 
-dnl we require. jhrg 6/15/05
+# We really need bison and not yacc. If you use AC_PROG_YACC, the resulting 
+# Makefile will call bison -y which doesn't know how to make the parsers 
+# we require. jhrg 6/15/05
+
 AC_CHECK_PROG(YACC,[bison],[bison])
 
-dnl We have found bison; get its version
+# We have found bison; get its version
 bison_version=`bison --version | sed -n '/^bison.*/p' | sed 's@.* \(.*\)@\1@'`
 
 AC_MSG_CHECKING([for bison 3.0])
-
-# This was used to set a conditional in the d4_ce/Makefile.am to build
-# the DAP4 parsers using bison 3 or get pre-built sources from a set
-# of template files. That didn't work on some linux machines, so bison
-# 3 is a requirement for building until that gets sorted out. jhrg 4/5/15
-dnl AS_VERSION_COMPARE(["$bison_version"], ["3.0"], 
-dnl 	[AM_CONDITIONAL([BISON3], [false])],
-dnl 	[AM_CONDITIONAL([BISON3], [true])],
-dnl 	[AM_CONDITIONAL([BISON3], [true])])
-        
 AS_VERSION_COMPARE(["$bison_version"], ["3.0"], 
 	[AC_MSG_ERROR([not found])],
 	[ ],
 	[ ])
 
-AC_MSG_RESULT([found vesion $bison_version])
+AC_MSG_RESULT([found version $bison_version])
 
-dnl Checks for header files.
+# Checks for header files.
 AC_HEADER_DIRENT
-AC_HEADER_STDC
+m4_warn([obsolete],
+[The preprocessor macro `STDC_HEADERS' is obsolete.
+  Except in unusual embedded environments, you can safely include all
+  ISO C90 headers unconditionally.])dnl
+# Autoupdate added the next two lines to ensure that your configure
+# script's behavior did not change.  They are probably safe to remove.
+# AC_CHECK_INCLUDES_DEFAULT
+# AC_PROG_EGREP
+
 AC_HEADER_SYS_WAIT
 
 AC_CHECK_HEADERS_ONCE([fcntl.h malloc.h memory.h stddef.h stdlib.h string.h strings.h unistd.h pthread.h])
 AC_CHECK_HEADERS_ONCE([sys/param.h sys/time.h])
 AC_CHECK_HEADERS_ONCE([netinet/in.h])
 
-dnl AC_CHECK_HEADERS_ONCE([uuid/uuid.h uuid.h])
-dnl Do this because we have had a number of problems with the UUID header/library
+# AC_CHECK_HEADERS_ONCE([uuid/uuid.h uuid.h])
+# Do this because we have had a number of problems with the UUID header/library
 AC_CHECK_HEADERS([uuid/uuid.h],[found_uuid_uuid_h=true],[found_uuid_uuid_h=false])
 AC_CHECK_HEADERS([uuid.h],[found_uuid_h=true],[found_uuid_h=false])
 
 AS_IF([test $found_uuid_uuid_h = true -o $found_uuid_h = true], [], [AC_MSG_ERROR([Could not find uuid.h])])
 
-dnl Checks for typedefs, structures, and compiler characteristics.
+# Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_CHECK_MEMBERS([struct stat.st_blksize])
-AC_HEADER_TIME
+
 AC_STRUCT_TM
 AC_C_VOLATILE
 AC_C_BIGENDIAN
@@ -239,30 +231,32 @@ AC_SUBST([ac_word_order])
 DODS_CHECK_SIZES
 
 AC_ARG_ENABLE([runtime-endian-check],
-    [AC_HELP_STRING([--enable-runtime-endian-check], 
-                    [Enable runtime tests for big- or little-endian byte order (default is NO)])])
+    [AS_HELP_STRING([--enable-runtime-endian-check],[Enable runtime tests for big- or little-endian byte order (default is NO)])])
 
 AS_IF([test "x$enable_runtime_endian_check" = "xyes"], [
-    dnl Do the stuff needed for enabling the feature
+    # Do the stuff needed for enabling the feature
     AC_DEFINE([COMPUTE_ENDIAN_AT_RUNTIME], 1, [Should a function (run-time) be used to determine the byte order?])
 ])
 
 # Checks for library functions.
 
-dnl using AC_CHECK_FUNCS does not run macros from gnulib.
+# using AC_CHECK_FUNCS does not run macros from gnulib.
 AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strtol strtoul timegm mktime])
 
+# To update the gnulib code, run '<path to gnulib source clone>/gnulib-tool --lgpl --import'
+# in the libdap4 directory. The configure.ac options and the gnulib-tool will update the
+# correct files in the gl subdir. jhrg 1/14/22
 gl_SOURCE_BASE(gl)
 gl_M4_BASE(gl/m4)
 gl_MODULES(regex btyeswap)
 
 gl_INIT
 
-AC_ARG_WITH([curl], [AC_HELP_STRING([--with-curl=pfx], [curl/libcurl prefix; overrides other tests including pkgconfig])],
+AC_ARG_WITH([curl], [AS_HELP_STRING([--with-curl=pfx],[curl/libcurl prefix; overrides other tests including pkgconfig])],
             with_curl_prefix="$withval", with_curl_prefix="")
 
-dnl I wrote these checks because we need the *-config scripts to build, so 
-dnl the AC_CHECK_LIB macro is not needed.
+# I wrote these checks because we need the *-config scripts to build, so 
+# the AC_CHECK_LIB macro is not needed.
 
 curlprivatereq=
 curlprivatelibs=
@@ -319,91 +313,90 @@ AC_SUBST([CURL_LIBS])
 AC_SUBST([CURL_STATIC_LIBS])
 AC_SUBST([CURL_CFLAGS])
 
-dnl ******** new version, breaks the bes package step ********
-dnl jhrg 8/31/20
-dnl
-dnl AC_ARG_WITH(xml2,
-dnl     [AC_HELP_STRING([--with-xml2=PFX],
-dnl         [Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.])],
-dnl     [with_xml2_prefix="$withval"],
-dnl     [with_xml2_prefix=""])
-dnl
-dnl AS_IF([test -n "$with_xml2_prefix" -a ! -x $with_xml2_prefix/bin/xml2-config],
-dnl     [AC_MSG_ERROR([You set the libxml2 prefix directory to $with_xml2_prefix, but xml2-config is not there.])])
-dnl 
-dnl xmlprivatereq=
-dnl xmlprivatelibs=
-dnl xml_set=
-dnl 
-dnl # I changed this code so that it searches for libxml2 using xml2-config
-dnl # first, then pkg-config. This works more reliably when working on OSX
-dnl # given Apple's penchant for moving the lib. jhrg 8/25/20
-dnl 
-dnl AS_IF([test -n "$with_xml2_prefix" -a -x $with_xml2_prefix/bin/xml2-config],
-dnl     [
-dnl     AC_MSG_NOTICE([Using $with_xml2_prefix as the libxml2 prefix directory.])
-dnl     XML2_LIBS="`$with_xml2_prefix/bin/xml2-config --libs`"
-dnl     XML2_CFLAGS="`$with_xml2_prefix/bin/xml2-config --cflags`"
-dnl     xml_set="yes"
-dnl     ])
-dnl 
-dnl # Try using the xml2-config script.
-dnl 
-dnl AS_IF([test -z "$xml_set" & xml2-config --version > /dev/null 2>&1],
-dnl     [
-dnl     AC_MSG_CHECKING([for libxml2])
-dnl    	version_libxml2=`xml2-config --version`
-dnl 
-dnl     AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"],
-dnl         [AC_MSG_ERROR([I could not find libxml2 2.7.0 or newer])])
-dnl 
-dnl    	XML2_LIBS="`xml2-config --libs`"
-dnl    	XML2_CFLAGS="`xml2-config --cflags`"
-dnl    	xmlprivatelibs="`xml2-config --libs `"
-dnl 
-dnl    	# If XML2_CFLAGS does not have -I that ends in /libxml2, append that to
-dnl    	# the string bound to -I. Assume there is only on -I in XML2_CFLAGS. jhrg 8/25/20
-dnl    	AS_IF([echo $XML2_CFLAGS | grep -v -e '-I.*/libxml2'],
-dnl    	    [XML2_CFLAGS=`echo $XML2_CFLAGS | sed "s@\(-I.*\)@\1/libxml2/@g"`])
-dnl 
-dnl    	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
-dnl    	xml_set=yes
-dnl    	])
-dnl 
-dnl # If not found, try pkg-config
-dnl AS_IF([test -z "$xml_set"],
-dnl     [
-dnl     libdap_libxml2_module='libxml-2.0 >= 2.7.0'
-dnl     PKG_CHECK_MODULES([XML2], [libdap_libxml2_module],
-dnl         [libdap_pkgconfig_libxml2=yes],
-dnl         [libdap_pkgconfig_libxml2=no])
-dnl     AS_IF([test $libdap_pkgconfig_libxml2 = yes],
-dnl         [
-dnl         XML2_LIBS="`$PKG_CONFIG --libs libxml-2.0`"
-dnl         XML2_CFLAGS="`$PKG_CONFIG --cflags libxml-2.0`"
-dnl         AC_MSG_RESULT([yes; used pkg-config])
-dnl         xmlprivatereq=$libdap_libxml2_module
-dnl         xml_set=yes
-dnl         ],
-dnl         [
-dnl 	    AC_MSG_ERROR([I could not find xml2-config])
-dnl 	    ])
-dnl     ])
-dnl 
-dnl AS_IF([test -z "xml_set"],
-dnl     [
-dnl     AC_MSG_ERROR([I could not find xml2-config])
-dnl     ])
-dnl 
-dnl AC_SUBST([xmlprivatereq])
-dnl AC_SUBST([xmlprivatelibs])
-dnl AC_SUBST([XML2_LIBS])
-dnl AC_SUBST([XML2_CFLAGS])
-dnl 
-dnl ******** end new, broken-for-the-bes version *********
+# ******** new version, breaks the bes package step ********
+# jhrg 8/31/20
+#
+# AC_ARG_WITH(xml2,
+#     [AS_HELP_STRING([--with-xml2=PFX],[dnl         Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.])],
+#     [with_xml2_prefix="$withval"],
+#     [with_xml2_prefix=""])
+#
+# AS_IF([test -n "$with_xml2_prefix" -a ! -x $with_xml2_prefix/bin/xml2-config],
+#     [AC_MSG_ERROR([You set the libxml2 prefix directory to $with_xml2_prefix, but xml2-config is not there.])])
+# 
+# xmlprivatereq=
+# xmlprivatelibs=
+# xml_set=
+# 
+# # I changed this code so that it searches for libxml2 using xml2-config
+# # first, then pkg-config. This works more reliably when working on OSX
+# # given Apple's penchant for moving the lib. jhrg 8/25/20
+# 
+# AS_IF([test -n "$with_xml2_prefix" -a -x $with_xml2_prefix/bin/xml2-config],
+#     [
+#     AC_MSG_NOTICE([Using $with_xml2_prefix as the libxml2 prefix directory.])
+#     XML2_LIBS="`$with_xml2_prefix/bin/xml2-config --libs`"
+#     XML2_CFLAGS="`$with_xml2_prefix/bin/xml2-config --cflags`"
+#     xml_set="yes"
+#     ])
+# 
+# # Try using the xml2-config script.
+# 
+# AS_IF([test -z "$xml_set" & xml2-config --version > /dev/null 2>&1],
+#     [
+#     AC_MSG_CHECKING([for libxml2])
+#    	version_libxml2=`xml2-config --version`
+# 
+#     AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"],
+#         [AC_MSG_ERROR([I could not find libxml2 2.7.0 or newer])])
+# 
+#    	XML2_LIBS="`xml2-config --libs`"
+#    	XML2_CFLAGS="`xml2-config --cflags`"
+#    	xmlprivatelibs="`xml2-config --libs `"
+# 
+#    	# If XML2_CFLAGS does not have -I that ends in /libxml2, append that to
+#    	# the string bound to -I. Assume there is only on -I in XML2_CFLAGS. jhrg 8/25/20
+#    	AS_IF([echo $XML2_CFLAGS | grep -v -e '-I.*/libxml2'],
+#    	    [XML2_CFLAGS=`echo $XML2_CFLAGS | sed "s@\(-I.*\)@\1/libxml2/@g"`])
+# 
+#    	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
+#    	xml_set=yes
+#    	])
+# 
+# # If not found, try pkg-config
+# AS_IF([test -z "$xml_set"],
+#     [
+#     libdap_libxml2_module='libxml-2.0 >= 2.7.0'
+#     PKG_CHECK_MODULES([XML2], [libdap_libxml2_module],
+#         [libdap_pkgconfig_libxml2=yes],
+#         [libdap_pkgconfig_libxml2=no])
+#     AS_IF([test $libdap_pkgconfig_libxml2 = yes],
+#         [
+#         XML2_LIBS="`$PKG_CONFIG --libs libxml-2.0`"
+#         XML2_CFLAGS="`$PKG_CONFIG --cflags libxml-2.0`"
+#         AC_MSG_RESULT([yes; used pkg-config])
+#         xmlprivatereq=$libdap_libxml2_module
+#         xml_set=yes
+#         ],
+#         [
+# 	    AC_MSG_ERROR([I could not find xml2-config])
+# 	    ])
+#     ])
+# 
+# AS_IF([test -z "xml_set"],
+#     [
+#     AC_MSG_ERROR([I could not find xml2-config])
+#     ])
+# 
+# AC_SUBST([xmlprivatereq])
+# AC_SUBST([xmlprivatelibs])
+# AC_SUBST([XML2_LIBS])
+# AC_SUBST([XML2_CFLAGS])
+# 
+# ******** end new, broken-for-the-bes version *********
 
-dnl Version of XML2 configuration from git commit 8624abec8e3d510508c3c97ac60082700995af2c
-dnl jhrg 8/31/20
+# Version of XML2 configuration from git commit 8624abec8e3d510508c3c97ac60082700995af2c
+# jhrg 8/31/20
 
 AC_ARG_WITH(xml2,[  --with-xml2=PFX   Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.],
             with_xml2_prefix="$withval", with_xml2_prefix="")
@@ -458,11 +451,11 @@ fi
 AC_SUBST([xmlprivatereq])
 AC_SUBST([xmlprivatelibs])
 AC_SUBST([XML2_LIBS])
-dnl AC_SUBST([XML2_STATIC_LIBS])
+# AC_SUBST([XML2_STATIC_LIBS])
 AC_SUBST([XML2_CFLAGS])
 
-dnl End old version of XML2 configuration. jhrg 8/31/20
-dnl ********
+# End old version of XML2 configuration. jhrg 8/31/20
+# ********
 
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[PTHREAD_LIBS="-lpthread"],
@@ -491,14 +484,14 @@ AM_PATH_CPPUNIT(1.12.0,
 
 DODS_DEBUG_OPTION
 
-dnl See util.cc:dods_root()
+# See util.cc:dods_root()
 AS_IF([test "$prefix" = "NONE"],
       [AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])],
 	  [AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])])
 
-dnl By default, DAP4 is enabled. Use this to disable. jhrg 5/12/15
+# By default, DAP4 is enabled. Use this to disable. jhrg 5/12/15
 AC_ARG_ENABLE([dap4], 
-    [AC_HELP_STRING([--enable-dap4], [Enable DAP4 types and responses (default is Yes)])],
+    [AS_HELP_STRING([--enable-dap4],[Enable DAP4 types and responses (default is Yes)])],
     [enable_dap4=${enableval}], [enable_dap4=yes])
 
 AS_IF([test x$enable_dap4 = xyes], [
@@ -510,16 +503,9 @@ AS_IF([test x$enable_dap4 = xyes], [
     AM_CONDITIONAL([DAP4_DEFINED], [false])
 ])
 
-# AS_IF([test m4_version_compare(m4_defn([AC_AUTOCONF_VERSION]),[2.64]) -ge 0],
-#	[AX_CHECK_COMPILE_FLAG([-fsanitize=address], [has_asan=yes], [has_asan=no])])
-
 AC_ARG_ENABLE([asan], 
     [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
 
-# AM_CONDITIONAL([ENABLE_COVERAGE], [test x$enable_coverage = xyes])
-# AM_COND_IF([SHELL_WRAPPER],
-#           [AC_CONFIG_FILES([wrapper:wrapper.in])])
-           
 AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
       [AC_MSG_NOTICE([Building Address Sanitizer version])
        AM_CONDITIONAL([USE_ASAN], [true])],
@@ -553,11 +539,9 @@ AS_IF([test x$enable_coverage = xyes && which gcov],
              [AC_MSG_NOTICE([Check that gcov is on your PATH])])
        AM_CONDITIONAL([ENABLE_COVERAGE], [false])])
 
-# --xml-pretty -o gcovr_ouput.xml
-
 AC_SUBST([GCOVR_FLAGS])
 
-dnl autoheader macros; tack some text at the top and bottom of config_dap.h.in
+# autoheader macros; tack some text at the top and bottom of config_dap.h.in
 
 AH_TOP([#ifndef _config_h
 #define _config_h])
