@@ -108,10 +108,11 @@ Error.lex Error.yy
 EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	\
 	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec.in libdap.spec VCPP	\
 	dods-datatypes-static.h xdr-datatypes-static.h		\
-	dap-config-pkgconfig $(LEX_YACC_EXTRA) m4/gnulib-cache.m4 OSX_Resources	\
+	dap-config-pkgconfig $(LEX_YACC_EXTRA) OSX_Resources	\
 	getdap.man1 dap-config.man1 getdap4.man1
 
 dist_aclocal_DATA = conf/libdap.m4
+
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
 CLEANFILES = *.log *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) \
