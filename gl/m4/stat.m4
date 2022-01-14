@@ -1,6 +1,6 @@
-# serial 12
+# serial 18
 
-# Copyright (C) 2009-2017 Free Software Foundation, Inc.
+# Copyright (C) 2009-2022 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -43,10 +43,12 @@ AC_DEFUN([gl_FUNC_STAT],
              ]])],
            [gl_cv_func_stat_file_slash=yes], [gl_cv_func_stat_file_slash=no],
            [case "$host_os" in
-                      # Guess yes on glibc systems.
-              *-gnu*) gl_cv_func_stat_file_slash="guessing yes" ;;
-                      # If we don't know, assume the worst.
-              *)      gl_cv_func_stat_file_slash="guessing no" ;;
+                               # Guess yes on Linux systems.
+              linux-* | linux) gl_cv_func_stat_file_slash="guessing yes" ;;
+                               # Guess yes on glibc systems.
+              *-gnu* | gnu*)   gl_cv_func_stat_file_slash="guessing yes" ;;
+                               # If we don't know, obey --enable-cross-guesses.
+              *)               gl_cv_func_stat_file_slash="$gl_cross_guess_normal" ;;
             esac
            ])
          rm -f conftest.tmp conftest.lnk])
@@ -56,12 +58,28 @@ AC_DEFUN([gl_FUNC_STAT],
           AC_DEFINE([REPLACE_FUNC_STAT_FILE], [1], [Define to 1 if stat needs
             help when passed a file name with a trailing slash]);;
       esac
+      case $host_os in
+        dnl Solaris stat can return a negative tv_nsec.
+        solaris*)
+          REPLACE_FSTAT=1 ;;
+      esac
       ;;
   esac
 ])
 
 # Prerequisites of lib/stat.c and lib/stat-w32.c.
 AC_DEFUN([gl_PREREQ_STAT], [
-  AC_REQUIRE([gl_HEADER_SYS_STAT_H])
+  AC_REQUIRE([gl_SYS_STAT_H])
+  AC_REQUIRE([gl_PREREQ_STAT_W32])
   :
+])
+
+# Prerequisites of lib/stat-w32.c.
+AC_DEFUN([gl_PREREQ_STAT_W32], [
+  AC_REQUIRE([AC_CANONICAL_HOST])
+  case "$host_os" in
+    mingw*)
+      AC_CHECK_HEADERS([sdkddkver.h])
+      ;;
+  esac
 ])

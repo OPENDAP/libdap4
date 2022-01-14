@@ -142,9 +142,9 @@ AC_PROG_CC
 
 # Call this gnulib macro right after a working C Compiler is found.
 #
-# To update the gnulib code, run '<path to gnulib source clone>/gnulib-tool --lgpl --import'
-# in the libdap4 directory. The configure.ac options and the gnulib-tool will update the
-# correct files in the gl subdir. jhrg 1/14/22
+# To update the gnulib code, cd to the 'gl' dir and look at the instructions
+# in Makefile.am regarding gnulib-tool. Copy that command and run it in the
+# libdap4 directory. jhrg 1/14/22
 
 gl_EARLY
 
@@ -190,15 +190,6 @@ AC_MSG_RESULT([found version $bison_version])
 
 # Checks for header files.
 AC_HEADER_DIRENT
-m4_warn([obsolete],
-[The preprocessor macro `STDC_HEADERS' is obsolete.
-  Except in unusual embedded environments, you can safely include all
-  ISO C90 headers unconditionally.])dnl
-# Autoupdate added the next two lines to ensure that your configure
-# script's behavior did not change.  They are probably safe to remove.
-# AC_CHECK_INCLUDES_DEFAULT
-# AC_PROG_EGREP
-
 AC_HEADER_SYS_WAIT
 
 AC_CHECK_HEADERS_ONCE([fcntl.h malloc.h memory.h stddef.h stdlib.h string.h strings.h unistd.h pthread.h])
@@ -243,9 +234,9 @@ AS_IF([test "x$enable_runtime_endian_check" = "xyes"], [
 # using AC_CHECK_FUNCS does not run macros from gnulib.
 AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strtol strtoul timegm mktime])
 
-# To update the gnulib code, run '<path to gnulib source clone>/gnulib-tool --lgpl --import'
-# in the libdap4 directory. The configure.ac options and the gnulib-tool will update the
-# correct files in the gl subdir. jhrg 1/14/22
+# To update the gnulib code, cd to the 'gl' dir and look at the instructions
+# in Makefile.am regarding gnulib-tool. Copy that command and run it in the
+# libdap4 directory. jhrg 1/14/22
 gl_SOURCE_BASE(gl)
 gl_M4_BASE(gl/m4)
 gl_MODULES(regex btyeswap)

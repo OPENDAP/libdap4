@@ -1,19 +1,19 @@
 /* Test for initial conversion state.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2022 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2008.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU Lesser General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 
@@ -54,15 +54,12 @@ mbsinit (const mbstate_t *ps)
 int
 mbsinit (const mbstate_t *ps)
 {
-# if (defined _WIN32 || defined __WIN32__) && !defined __CYGWIN__
+# if defined _WIN32 && !defined __CYGWIN__
   /* Native Windows.  */
-#  ifdef __MINGW32__
-  /* On mingw, 'mbstate_t' is defined as 'int'.  */
-  return ps == NULL || *ps == 0;
-#  else
-  /* MSVC defines 'mbstate_t' as an 8-byte struct; the first 4-bytes matter.  */
+  /* MSVC defines 'mbstate_t' as an 8-byte struct; the first 4 bytes matter.
+     On mingw, 'mbstate_t' is sometimes defined as 'int', sometimes defined as
+     an 8-byte struct, of which the first 4 bytes matter.  */
   return ps == NULL || *(const unsigned int *)ps == 0;
-#  endif
 # else
   /* Minix, HP-UX 11.00, Solaris 2.6, Interix, ...  */
   /* Maybe this definition works, maybe not...  */

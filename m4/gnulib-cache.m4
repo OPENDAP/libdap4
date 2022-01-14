@@ -29,36 +29,30 @@
 # Specification in the form of a command-line invocation:
 # gnulib-tool --import \
 #  --lib=libgnu \
-#  --source-base=gl \
-#  --m4-base=gl/m4 \
-#  --doc-base=gl/doc \
+#  --source-base=lib \
+#  --m4-base=m4 \
+#  --doc-base=doc \
 #  --tests-base=tests \
 #  --aux-dir=conf \
 #  --lgpl \
 #  --no-conditional-dependencies \
-#  --libtool \
-#  --macro-prefix=gl \
-#  byteswap \
-#  mkstemps \
-#  regex
+#  --no-libtool \
+#  --macro-prefix=gl
 
 # Specification in the form of a few gnulib-tool.m4 macro invocations:
 gl_LOCAL_DIR([])
 gl_MODULES([
-  byteswap
-  mkstemps
-  regex
+  
 ])
 gl_AVOID([])
-gl_SOURCE_BASE([gl])
-gl_M4_BASE([gl/m4])
+gl_SOURCE_BASE([lib])
+gl_M4_BASE([m4])
 gl_PO_BASE([])
-gl_DOC_BASE([gl/doc])
+gl_DOC_BASE([doc])
 gl_TESTS_BASE([tests])
 gl_LIB([libgnu])
 gl_LGPL
 gl_MAKEFILE_NAME([])
-gl_LIBTOOL
 gl_MACRO_PREFIX([gl])
 gl_PO_DOMAIN([])
 gl_WITNESS_C_MACRO([])
