@@ -150,7 +150,7 @@ send_data(DMR *dataset, const string &constraint, const string &function, bool s
     // It's declared at this scope because we (may) need it for the code beyond the
     // function parse/eval code that immediately follows. jhrg 3/12/14
     D4TestTypeFactory d4_factory;
-    auto_ptr<DMR> function_result(new DMR(&d4_factory, "function_results"));
+    unique_ptr<DMR> function_result(new DMR(&d4_factory, "function_results"));
 
 	// The Function Parser
 	if (!function.empty()) {
