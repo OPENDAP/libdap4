@@ -28,13 +28,6 @@
 #include <cstring>
 #include <stdarg.h>
 
-#if 0
-// Removed for VC 2008 compatibility. jhrg 4/23/08
-#ifdef WIN32
-#define vsnprintf _vsnprintf
-#endif
-#endif
-
 #include "AISDatabaseParser.h"
 #include "util.h"
 #include "debug.h"

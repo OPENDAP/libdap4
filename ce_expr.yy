@@ -687,7 +687,7 @@ id_or_const: SCAN_WORD
 }
 ;
 
-/* this must return an rvalue. It should run bracket_projection()
+/* this must return a rvalue. It should run bracket_projection()
    and then return the BaseType of the Array wrapped in a RValue
    object. */
 array_projection_rvalue : name array_indices
@@ -966,7 +966,7 @@ bool bracket_projection(DDS &table, const char *name, slices *s)
                9/1/98 jhrg */
             /* var->set_send_p(true); */
             //table.mark(name, true);
-            // We don't call mark() here for an array. Instead it is called from
+            // We don't call mark() here for an array, instead it is called from
             // within the parser. jhrg 10/10/08
             process_array_slices(var, s); // throws on error
         }
@@ -1148,7 +1148,7 @@ void process_array_slices(BaseType *variable, slices *s)
     for (; p != s->end() && r != a->dim_end(); p++, r++) {
         dim_slice *ds = *p;
 
-	dim_slice::iterator q = ds->begin();
+	    dim_slice::iterator q = ds->begin();
         assert(q != ds->end());
 
         int start = q->v.i;
@@ -1177,6 +1177,13 @@ void process_array_slices(BaseType *variable, slices *s)
         if (a->send_p()
             && (a->dimension_start(r, true) != start || (a->dimension_stop(r, true) != stop && stop != -1) || a->dimension_stride(r, true) != stride))
             throw Error(malformed_expr, string("One or more Array variables were projected multiple times in the constraint expression."));
+
+        // Add a fix for ticket 'With constraint indices are reversed, the server fails'
+        // (https://bugs.earthdata.nasa.gov/browse/HYRAX-540). Note that the values can be the
+        // same (e.g., [0:1:0]) and the stride may be larger than the difference between
+        // start and stop - one value will be sent. jhrg 2/2/22
+        if (start > stop)
+            throw Error(malformed_expr, string("The start value of an array index is past the stop value."));
 
         a->add_constraint(r, start, stride, stop);
 
@@ -1332,6 +1339,9 @@ void process_sequence_slices(BaseType *variable, slices *s)
         stop = (*q).v.i;
     else
         throw Error(string("Expected an integer value for the bracket subset operator used with Sequence '") + seq->name() + "'.");
+
+    if (start > stop)
+        throw Error(malformed_expr, string("The start value of an index into a sequence is past the stop value."));
 
     seq->set_row_number_constraint(start, stop, stride);
 }
