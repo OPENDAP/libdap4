@@ -19,4 +19,4 @@ Parse successful
     </Float32>
 </Dataset>
 
-CE Parse error: Expected a 64-bit integer, but found other characters.
+CE Parse error: Expected an unsigned 64-bit integer, but found other characters.
