@@ -310,26 +310,26 @@ D4ConstraintEvaluator::slice_dimension(const std::string &id, const index &i)
 
 D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i)
 {
-    unsigned long long v = get_int64(i.c_str());
+    unsigned long long v = get_uint64(i.c_str());
     return index(v, 1, v, false, false /*empty*/, "");
 }
 
 D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s,
     const std::string &e)
 {
-    int64_t initial = get_int64(i.c_str());
-    int64_t end = get_int64(e.c_str());
+    int64_t initial = get_uint64(i.c_str());
+    int64_t end = get_uint64(e.c_str());
     if (initial > end)
         throw Error(malformed_expr, string("The start value of an array index is past the stop value."));
 
-    return index(initial, get_int64(s.c_str()), end, false, false /*empty*/, "");
+    return index(initial, get_uint64(s.c_str()), end, false, false /*empty*/, "");
 }
 
 D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s,
     const std::string &e)
 {
-    int64_t initial = get_int64(i.c_str());
-    int64_t end = get_int64(e.c_str());
+    int64_t initial = get_uint64(i.c_str());
+    int64_t end = get_uint64(e.c_str());
     if (initial > end)
         throw Error(malformed_expr, string("The start value of an array index is past the stop value."));
 
@@ -338,7 +338,7 @@ D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string
 
 D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s)
 {
-    return index(get_int64(i.c_str()), get_int64(s.c_str()), 0, true, false /*empty*/, "");
+    return index(get_uint64(i.c_str()), get_uint64(s.c_str()), 0, true, false /*empty*/, "");
 }
 
 D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s)
