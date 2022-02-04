@@ -65,8 +65,6 @@ m4_define([DMR_PARSE_CE], [
     AT_CLEANUP
 ])
 
-
-
 # Usage DMR_TRANS $1 <test_input> $2 <pass/xfail>
 # This code tests the values printed when the received document is decoded.
 m4_define([DMR_TRANS], [
@@ -411,7 +409,7 @@ DMR_TRANS_CE([test_array_4.xml], [x[[]][[]] ], [/test_array_4.xml.6.trans_base],
 DMR_TRANS_CE([test_array_4.xml], [/row=[[0:1]];x[[]][[]] ], [test_array_4.xml.7.trans_base], [pass])
 
 DMR_TRANS_CE([test_array_4.xml], [c[[2:]][[2:]] ], [test_array_4.xml.8.trans_base], [pass])
-    
+
 DMR_TRANS_CE([test_simple_6.xml], [s], [test_simple_6.xml.1.trans_base], [pass])
 DMR_TRANS_CE([test_simple_6.xml], [s.i1], [test_simple_6.xml.2.trans_base], [pass])
 DMR_TRANS_CE([test_simple_6.xml], [s.s], [test_simple_6.xml.3.trans_base], [pass])
@@ -641,3 +639,6 @@ DMR_PARSE_CE([test_simple_6.3.xml], [s.d1rox%253cscript%253ealert%25281%2529%253
 DMR_PARSE_CE([vol_1_ce_12.xml], [temp[[nasty]]], [vol_1_ce_12.xml.parse_ce_1])
 DMR_PARSE_CE([vol_1_ce_12.xml], [temp[[d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1]]],
     [vol_1_ce_12.xml.parse_ce_2])
+
+# Test revered array indices
+DMR_PARSE_CE([test_array_4.xml], [b[[2:1]][[2:3]] ], [test_array_4.xml.error.base], [pass])

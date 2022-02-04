@@ -253,22 +253,14 @@ unsigned long arg_length_hint_value = 0;
 constraint_expr: /* empty constraint --> send all */
 {
     DBG(cerr << "Mark all variables" << endl);
-    DDS(arg)
-        ->mark_all(true);
+    DDS(arg)->mark_all(true);
     $$ = true;
 }
 /* projection only */
 | projection
   /* selection only --> project everything */
-| '&' { DDS(arg)
-          ->mark_all(true); } selection
-          {
-              $$ = $3;
-          }
-| projection '&' selection
-{
-    $$ = $1 && $3;
-}
+| '&' { DDS(arg)->mark_all(true); } selection { $$ = $3; }
+| projection '&' selection {  $$ = $1 && $3; }
 ;
 
 projection: proj_clause
@@ -283,8 +275,7 @@ proj_clause: name
     BaseType *var = DDS(arg)->var($1);
     if (var) {
         DBG(cerr << "Marking " << $1 << endl);
-        $$ = DDS(arg)
-            ->mark($1, true);
+        $$ = DDS(arg)->mark($1, true);
         DBG(cerr << "result: " << $$ << endl);
     }
     else {
@@ -308,8 +299,7 @@ proj_clause: name
            streamlines testing (and is likely what is intended). */
 
         array->set_send_p(true);
-        DDS(arg)
-            ->add_var_nocopy(array);
+        DDS(arg)->add_var_nocopy(array);
 
         return true;
     }
@@ -326,50 +316,43 @@ proj_clause: name
 /* return a rvalue */
 array_const_special_form: SCAN_HASH_BYTE '(' arg_length_hint ':' fast_byte_arg_list ')'
 {
-    $$ = build_constant_array<dods_byte, Byte>($5, DDS(arg)
-                                               );
+    $$ = build_constant_array<dods_byte, Byte>($5, DDS(arg));
 }
 ;
 
 array_const_special_form: SCAN_HASH_INT16 '(' arg_length_hint ':' fast_int16_arg_list ')'
 {
-    $$ = build_constant_array<dods_int16, Int16>($5, DDS(arg)
-                                                 );
+    $$ = build_constant_array<dods_int16, Int16>($5, DDS(arg));
 }
 ;
 
 array_const_special_form: SCAN_HASH_UINT16 '(' arg_length_hint ':' fast_uint16_arg_list ')'
 {
-    $$ = build_constant_array<dods_uint16, UInt16>($5, DDS(arg)
-                                                   );
+    $$ = build_constant_array<dods_uint16, UInt16>($5, DDS(arg));
 }
 ;
 
 array_const_special_form: SCAN_HASH_INT32 '(' arg_length_hint ':' fast_int32_arg_list ')'
 {
-    $$ = build_constant_array<dods_int32, Int32>($5, DDS(arg)
-                                                 );
+    $$ = build_constant_array<dods_int32, Int32>($5, DDS(arg));
 }
 ;
 
 array_const_special_form: SCAN_HASH_UINT32 '(' arg_length_hint ':' fast_uint32_arg_list ')'
 {
-    $$ = build_constant_array<dods_uint32, UInt32>($5, DDS(arg)
-                                                   );
+    $$ = build_constant_array<dods_uint32, UInt32>($5, DDS(arg));
 }
 ;
 
 array_const_special_form: SCAN_HASH_FLOAT32 '(' arg_length_hint ':' fast_float32_arg_list ')'
 {
-    $$ = build_constant_array<dods_float32, Float32>($5, DDS(arg)
-                                                     );
+    $$ = build_constant_array<dods_float32, Float32>($5, DDS(arg));
 }
 ;
 
 array_const_special_form: SCAN_HASH_FLOAT64 '(' arg_length_hint ':' fast_float64_arg_list ')'
 {
-    $$ = build_constant_array<dods_float64, Float64>($5, DDS(arg)
-                                                     );
+    $$ = build_constant_array<dods_float64, Float64>($5, DDS(arg));
 }
 ;
 
@@ -704,7 +687,7 @@ id_or_const: SCAN_WORD
 }
 ;
 
-/* this must return an rvalue. It should run bracket_projection()
+/* this must return a rvalue. It should run bracket_projection()
    and then return the BaseType of the Array wrapped in a RValue
    object. */
 array_projection_rvalue : name array_indices
@@ -983,7 +966,7 @@ bool bracket_projection(DDS &table, const char *name, slices *s)
                9/1/98 jhrg */
             /* var->set_send_p(true); */
             //table.mark(name, true);
-            // We don't call mark() here for an array. Instead it is called from
+            // We don't call mark() here for an array, instead it is called from
             // within the parser. jhrg 10/10/08
             process_array_slices(var, s); // throws on error
         }
@@ -1026,7 +1009,7 @@ bool bracket_projection(DDS &table, const char *name, slices *s)
 dim_slice *
 make_array_slice(value &v1, value &v2, value &v3)
 {
-    auto_ptr<dim_slice> ds(new dim_slice);
+    unique_ptr<dim_slice> ds(new dim_slice);
     ds->push_back(v1);
     ds->push_back(v2);
     ds->push_back(v3);
@@ -1080,7 +1063,7 @@ make_array_slice(value &v1)
 slices *
 make_array_slices(dim_slice *ds)
 {
-    auto_ptr<slices> s(new slices);
+    unique_ptr<slices> s(new slices);
     s->push_back(ds);
     return s.release();
 }
@@ -1165,7 +1148,7 @@ void process_array_slices(BaseType *variable, slices *s)
     for (; p != s->end() && r != a->dim_end(); p++, r++) {
         dim_slice *ds = *p;
 
-	dim_slice::iterator q = ds->begin();
+	    dim_slice::iterator q = ds->begin();
         assert(q != ds->end());
 
         int start = q->v.i;
@@ -1194,6 +1177,13 @@ void process_array_slices(BaseType *variable, slices *s)
         if (a->send_p()
             && (a->dimension_start(r, true) != start || (a->dimension_stop(r, true) != stop && stop != -1) || a->dimension_stride(r, true) != stride))
             throw Error(malformed_expr, string("One or more Array variables were projected multiple times in the constraint expression."));
+
+        // Add a fix for ticket 'With constraint indices are reversed, the server fails'
+        // (https://bugs.earthdata.nasa.gov/browse/HYRAX-540). Note that the values can be the
+        // same (e.g., [0:1:0]) and the stride may be larger than the difference between
+        // start and stop - one value will be sent. jhrg 2/2/22
+        if (start > stop)
+            throw Error(malformed_expr, string("The start value of an array index is past the stop value."));
 
         a->add_constraint(r, start, stride, stop);
 
@@ -1349,6 +1339,9 @@ void process_sequence_slices(BaseType *variable, slices *s)
         stop = (*q).v.i;
     else
         throw Error(string("Expected an integer value for the bracket subset operator used with Sequence '") + seq->name() + "'.");
+
+    if (start > stop)
+        throw Error(malformed_expr, string("The start value of an index into a sequence is past the stop value."));
 
     seq->set_row_number_constraint(start, stop, stride);
 }

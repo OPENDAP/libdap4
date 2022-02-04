@@ -157,10 +157,6 @@ AISResources::add_regexp_resource(const string &re, const Resource &ancillary)
 void
 AISResources::add_regexp_resource(const string &re, const ResourceVector &rv)
 {
-#if 0
-    ResourceRegexpsIter pos = find_if(d_re.begin(), d_re.end(),
-                                      FindRegexp(re));
-#endif
     ResourceRegexpsIter pos = find_if(d_re.begin(), d_re.end(),
                                       [re](const RVPair &p){ return re == p.first; });
     if (pos == d_re.end()) {

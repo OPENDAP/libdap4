@@ -104,11 +104,6 @@ void Array::update_length(int)
 {
     int length = 1;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
-#if 0
-        // If the size of any dimension is zero, then the array is not
-        // capable of storing any values. jhrg 1/28/16
-        length *= (*i).c_size > 0 ? (*i).c_size : 1;
-#endif
         length *= (*i).c_size;
     }
 

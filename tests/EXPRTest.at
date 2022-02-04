@@ -95,6 +95,10 @@ EXPR_RESPONSE_P([test.2], [s2[[2:2:4]].m,s2[[2:2:4]].l], [test.2e], [pass])
 
 EXPR_RESPONSE_P([test.2a], [s2[[2:4]].m[[0:4]],s2[[2:4]].l[[0:5]]], [test.2f], [pass])
 EXPR_RESPONSE_P([test.3], [i[[1:10]]], [test.3], [pass])
+
+dnl Test the new code to limit reversed index values. 10:10 should pass. jhrg 2/3/11
+EXPR_RESPONSE_P([test.3], [i[[10:10]]], [test.3a], [pass])
+
 EXPR_RESPONSE_P([test.4], ['s&s=~"^Silly.*"'], [test.4], [pass])
 
 dnl In changing the TestStr class so that it writes a constant value (Silly ...: 1)
@@ -144,6 +148,8 @@ EXPR_RESPONSE_P([test.a], ["" -b], [test.a], [pass])
 EXPR_RESPONSE_P([test.a], ["&i<2000" -b], [test.aa], [pass])
 EXPR_RESPONSE_P([test.a], ["j&i>2000" -b], [test.ab], [pass])
 EXPR_RESPONSE_P([test.a], ["i,j&i<0" -b], [test.ac], [pass])
+dnl Added 2/3/22 jhrg
+EXPR_RESPONSE_P([test.a], [[s[0:3]] -b], [test.ad], [pass])
 EXPR_RESPONSE_P([test.b], ["" -b], [test.b], [pass])
 EXPR_RESPONSE_P([test.b], ["i,f" -b], [test.ba], [pass])
 EXPR_RESPONSE_P([test.b], ["i,f&i<2000" -b], [test.bb], [pass])
@@ -188,3 +194,13 @@ EXPR_RESPONSE_E([test.2], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript
 EXPR_RESPONSE_E([test.3], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.3.error], [pass])
 EXPR_RESPONSE_E([test.5], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.5.error], [pass])
 
+dnl Test errant array and grid index values (stop < start).
+dnl These tests should show the parser returning an error message. jhrg 2/3/22
+
+EXPR_RESPONSE_E([test.3], [i[[10:9]]], [test.3b.error], [pass])
+EXPR_RESPONSE_E([test.3], [i[[4:1]]], [test.3c.error], [pass])
+
+EXPR_RESPONSE_E([test.5], [g[[2:2:1]][[0]][[0]]], [test.5a.error], [pass])
+EXPR_RESPONSE_E([test.5], [g[[2:4]][[0]][[1:0]]], [test.5b.error], [pass])
+
+EXPR_RESPONSE_P([test.a], [[s[3:0]] -b], [test.a.error], [pass])

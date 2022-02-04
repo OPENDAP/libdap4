@@ -1224,7 +1224,7 @@ DDS::print_das(ostream &out)
     out << "}" << endl;
 #endif
 
-    auto_ptr<DAS> das(get_das());
+    unique_ptr<DAS> das(get_das());
 
     das->print(out);
 }
@@ -1328,7 +1328,7 @@ void DDS::get_das(DAS *das)
     }
 
     // Used in the rare case we have global attributes not in a table.
-    auto_ptr<AttrTable> global(new AttrTable);
+    unique_ptr<AttrTable> global(new AttrTable);
 
     for (AttrTable::Attr_iter i = d_attr.attr_begin(); i != d_attr.attr_end(); ++i) {
         // It's possible, given the API and if the DDS was built from a DMR, that a
@@ -1794,26 +1794,15 @@ DDS::check_semantics(bool all)
 bool
 DDS::mark(const string &n, bool state)
 {
-#if 0
-    // TODO use auto_ptr
-    BaseType::btp_stack *s = new BaseType::btp_stack;
-#endif
-
-    auto_ptr<BaseType::btp_stack> s(new BaseType::btp_stack);
+    unique_ptr<BaseType::btp_stack> s(new BaseType::btp_stack);
 
     DBG2(cerr << "DDS::mark: Looking for " << n << endl);
 
     BaseType *variable = var(n, s.get());
     if (!variable) {
         throw Error(malformed_expr, "Could not find variable " + n);
-#if 0
-        DBG2(cerr << "Could not find variable " << n << endl);
-#if 0
-        delete s; s = 0;
-#endif
-        return false;
-#endif
     }
+
     variable->set_send_p(state);
 
     DBG2(cerr << "DDS::mark: Set variable " << variable->d_name()
@@ -1835,10 +1824,6 @@ DDS::mark(const string &n, bool state)
 
         s->pop();
     }
-
-#if 0
-    delete s; s = 0;
-#endif
 
     return true;
 }
