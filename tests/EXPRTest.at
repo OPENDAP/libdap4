@@ -123,6 +123,9 @@ EXPR_RESPONSE_P([test.5], [g[[0:2:4]][[0]][[0]]], [test.5], [pass])
 EXPR_RESPONSE_P([test.5], [g[[0:2:4]][[0:2:4]][[0:2:4]]], [test.5a], [pass])
 EXPR_RESPONSE_P([test.6], [i], [test.6], [pass])
 EXPR_RESPONSE_P([test.6], [i[[1:2]][[2:4]]], [test.6a], [pass])
+dnl Added test of '*' DAP2 syntax. jhrg 2/4/22
+EXPR_RESPONSE_P([test.6], [i[[1:2]][[*]]], [test.6b], [pass])
+
 EXPR_RESPONSE_P([test.5], [g.val[[0:1]][[0:1]][[0:1]]], [test.5b], [pass])
 EXPR_RESPONSE_P([test.5], [g.length], [test.5c], [pass])
 EXPR_RESPONSE_P([test.5], [g.length,g.width], [test.5d], [pass])
@@ -133,7 +136,7 @@ EXPR_RESPONSE_P([test.8], ["x%23y,y"], [test.8a], [pass])
 EXPR_RESPONSE_P([test.8], ["data%20name,y"], [test.8b], [pass])
 EXPR_RESPONSE_P([test.9], ["Data-Set-2.fakeDim0[[0:3]],Data-Set-2.fakeDim1[[0:3]]"], [test.9], [pass])
 EXPR_RESPONSE_P([test.5], [g[[1:4:9]]], [test.5e], [pass])
-EXPR_RESPONSE_P([test.6], [i[[1:4:9]]], [test.6b], [pass])
+EXPR_RESPONSE_P([test.6], [i[[1:4:9]]], [test.6c], [pass])
 
 # New tests for server functions that take arrays and include array projections
 # Added 10/23/13 jhrg

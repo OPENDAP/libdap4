@@ -56,7 +56,6 @@
 #include "DataDDS.h"
 #include "ConstraintEvaluator.h"
 #include "ServerFunctionsList.h"
-// #include "XDRStreamUnMarshaller.h"
 #include "XDRStreamMarshaller.h"
 #include "ResponseBuilder.h"
 #include "Response.h"
@@ -97,7 +96,6 @@ void intern_data_test(const string & dds_name, const bool constraint_expr,
                  const string & ce, const bool series_values);
 
 int ce_exprlex();               // exprlex() uses the global ce_exprlval
-// int ce_exprparse(void *arg);
 void ce_exprrestart(FILE * in);
 
 // Glue routines declared in expr.lex
@@ -106,10 +104,6 @@ void ce_expr_delete_buffer(void *buffer);
 void *ce_expr_string(const char *yy_str);
 
 extern int ce_exprdebug;
-
-#if 0
-static int keep_temps = 0;      // MT-safe; test code.
-#endif
 
 const string version = "version 1.12";
 const string prompt = "expr-test: ";
