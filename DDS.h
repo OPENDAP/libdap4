@@ -62,12 +62,6 @@
 #include "DapObj.h"
 #endif
 
-#if 0
-#ifndef KEYWORDS_H_
-#include "Keywords2.h"
-#endif
-#endif
-
 #ifndef XMLWRITER_H_
 #include "XMLWriter.h"
 #endif
@@ -204,9 +198,6 @@ private:
     int d_timeout;              // alarm time in seconds. If greater than
                                 // zero, raise the alarm signal if more than
                                 // d_timeout seconds are spent reading data.
-#if 0
-    Keywords d_keywords;	    // Holds keywords parsed from the CE
-#endif
 
     uint64_t d_max_response_size_kb;   // In kilobytes...
 
@@ -278,10 +269,6 @@ public:
     /// @deprecated
     void set_dap_version(double d);
 
-#if 0
-    Keywords &get_keywords() {return d_keywords;}
-#endif
-
     /// Get the URL that will return this DDS/DDX/DataThing
     string get_request_xml_base() const { return d_request_xml_base; }
 
@@ -344,26 +331,30 @@ public:
     BaseType *var(const string &n, BaseType::btp_stack *s = 0);
     int num_var();
 
+    /**
+     * Get a const reference to the vector of BaseType pointers.
+     * @note Use this in range-based for loops to iterate over the variables.
+     * @return A const reference to the vector of BaseType pointers.
+     */
+    const vector<BaseType*> &variables() { return vars; }
+
     /// Return an iterator to the first variable
-    Vars_iter var_begin();
-#if 0
-    /// Return a const iterator.
-    Vars_citer var_cbegin() const { return vars.cbegin(); }
-#endif
+    /// @see vars()
+    /// @deprecated
+    Vars_iter var_begin() { return vars.begin(); }
     /// Return a reverse iterator
-    Vars_riter var_rbegin();
+    Vars_riter var_rbegin() { return vars.rbegin(); }
+
     /// Return an iterator
-    Vars_iter var_end();
-#if 0
-    /// Return a const iterator
-    Vars_citer var_cend() const { return vars.cend(); }
-#endif
+    Vars_iter var_end() { return vars.end() ; }
     /// Return a reverse iterator
-    Vars_riter var_rend();
+    Vars_riter var_rend() { return vars.rend() ; }
+
     /// Get an iterator
-    Vars_iter get_vars_iter(int i);
+    Vars_iter get_vars_iter(int i) { return vars.begin() + i;  }
     /// Get a variable
-    BaseType *get_var_index(int i);
+    BaseType *get_var_index(int i)  { return *(vars.begin() + i); }
+
     /// Insert a variable before the referenced element
     void insert_var(Vars_iter i, BaseType *ptr);
     void insert_var_nocopy(Vars_iter i, BaseType *ptr);

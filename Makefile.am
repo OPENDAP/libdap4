@@ -61,36 +61,23 @@ libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)
 libparsers_la_CPPFLAGS =  $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
-libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)
-if DAP4_DEFINED
-    libdap_la_SOURCES += $(DAP4_ONLY_SRC)
-endif
+libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)  $(DAP4_ONLY_SRC)
 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
 libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
 libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la d4_ce/libd4_ce_parser.la \
-d4_function/libd4_function_parser.la libparsers.la
+d4_function/libd4_function_parser.la libparsers.la $(CRYPTO_LIBS)
 
-if DAP4_DEFINED
-    libdap_la_LIBADD += $(CRYPTO_LIBS)
-endif
-
-libdapclient_la_SOURCES = $(CLIENT_SRC) 
+libdapclient_la_SOURCES = $(CLIENT_SRC) $(DAP4_CLIENT_HDR) $(DAP4_CLIENT_SRC)
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
 libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
-if DAP4_DEFINED
-    libdapclient_la_SOURCES += $(DAP4_CLIENT_HDR) $(DAP4_CLIENT_SRC)
-endif
 
 libdapserver_la_SOURCES = $(SERVER_SRC)
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
 libdapserver_la_LIBADD = libdap.la $(UUID_LIBS)
 
-pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) 
-if DAP4_DEFINED
-    pkginclude_HEADERS += $(DAP4_ONLY_HDR) $(DAP4_CLIENT_HDR)
-endif
+pkginclude_HEADERS = $(DAP_HDR) $(GNU_HDR) $(CLIENT_HDR) $(SERVER_HDR) $(DAP4_ONLY_HDR) $(DAP4_CLIENT_HDR)
 
 noinst_HEADERS = config_dap.h
 
