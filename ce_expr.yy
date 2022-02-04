@@ -1182,7 +1182,10 @@ void process_array_slices(BaseType *variable, slices *s)
         // (https://bugs.earthdata.nasa.gov/browse/HYRAX-540). Note that the values can be the
         // same (e.g., [0:1:0]) and the stride may be larger than the difference between
         // start and stop - one value will be sent. jhrg 2/2/22
-        if (start > stop)
+        // The '&& stop != -1' is a hack - we added '*' after the fact to DAP2 and use -1
+        // as the value of stop to signal that. So in that case start > stop will be true,
+        // but the constraint is valid and we should not throw an exception. jhrg 2/4/22
+        if (start > stop && stop != -1)
             throw Error(malformed_expr, string("The start value of an array index is past the stop value."));
 
         a->add_constraint(r, start, stride, stop);
