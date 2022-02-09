@@ -38,6 +38,7 @@ addons:
 env:
   global:
   # NB: This value of $prefix must be shared between the hyrax-deps, libdap and bes builds.
+  # Three env vars below simulate running 'source spath.sh' in the 'hyrax' repo main directory.
   # $HOME is /home/travis
   - prefix=$HOME/install
   - PATH=$prefix/bin:$PATH
@@ -160,7 +161,7 @@ jobs:
       - docker run --env prefix=/root/install --volume $prefix/rpmbuild:/root/rpmbuild 
           --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID 
           --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=centos-stream8 
-          --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/centos-stream8_hyrax_builder:1.0 
+          --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/centos-stream8_hyrax_builder:1.1 
           /root/travis/build-rpm.sh
 
   - stage: package
@@ -218,5 +219,5 @@ deploy:
   on:
     # Change 'master' to 'travis' to test deployment
     branch: master
-    condition: $LIBDAP_BUILD =~ ^main|srddist|centos7$
+    condition: $LIBDAP_BUILD =~ ^main|srddist|centos7|centos-stream8$
     # Removed 'centos6|' jhrg 10/23/20
