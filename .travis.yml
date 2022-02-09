@@ -38,6 +38,7 @@ addons:
 env:
   global:
   # NB: This value of $prefix must be shared between the hyrax-deps, libdap and bes builds.
+  # $HOME is /home/travis
   - prefix=$HOME/install
   - PATH=$prefix/bin:$PATH
   - TESTSUITEFLAGS=-j7
@@ -89,9 +90,9 @@ before_script:
 
 stages:
   - name: build
-    if:  branch = master
+    if:  branch = master AND type != pull_request
   - name: scan
-    if: branch = master
+    if: branch = master AND type != pull_request
   - name: package
     if:  branch = master
   - name: hyrax-bes-trigger
@@ -141,13 +142,26 @@ jobs:
   - stage: package
     name: "centos7 rpms"
     script:
-    - export LIBDAP_BUILD=centos7
-    # $prefix = $HOME/install which is /home/travis/install here but /root/install in the container.
-    - mkdir -p $prefix/rpmbuild
-    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
-                 --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                 --env os=centos7 --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
-                 opendap/centos7_hyrax_builder:1.7 /root/travis/build-rpm.sh
+      - export LIBDAP_BUILD=centos7
+      # $prefix = $HOME/install which is /home/travis/install here but /root/install in the image.
+      # For this image, prefix is already set.
+      - mkdir -p $prefix/rpmbuild
+      - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
+          --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+          --env os=centos7 --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
+          opendap/centos7_hyrax_builder:1.7 /root/travis/build-rpm.sh
+
+  - stage: package
+    name: "centos stream8 rpms"
+    script:
+      - export LIBDAP_BUILD=centos-stream8
+      # $prefix = $HOME/install which is /home/travis/install here but should be /root/install in the image.
+      - mkdir -p $prefix/rpmbuild
+      - docker run --env prefix=/root/install --volume $prefix/rpmbuild:/root/rpmbuild 
+          --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID 
+          --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=centos-stream8 
+          --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/centos-stream8_hyrax_builder:1.0 
+          /root/travis/build-rpm.sh
 
   - stage: package
     name: "source distribution"

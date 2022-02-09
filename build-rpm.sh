@@ -49,7 +49,7 @@ echo "LIBDAP_BUILD_NUMBER: $LIBDAP_BUILD_NUMBER"
 # jhrg 3/23/21
 #
 # This will leave the package in $HOME/rpmbuild/RPMS/x86_64/*.rpm
-make -j4 rpm
+make -j16 rpm
 
 # Just a little reassurance... jhrg 3/23/21
 ls -l $HOME/rpmbuild/RPMS/x86_64/
