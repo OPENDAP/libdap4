@@ -23,12 +23,15 @@ branches:
 addons:
   sonarcloud: true
   apt:
+    sources:
+      - deadsnakes # source required so it finds the (python3.6) package definition below
     packages:
     - libxml2-dev
     - uuid-dev
     - libcurl4-openssl-dev
     - libcppunit-dev 
     - gcovr
+    - python3.6
 
 # remove support for debian packages. jhrg 2/23/21
 # - build-essential
@@ -70,6 +73,8 @@ env:
   - secure: "dD0lFOU73qJztihQeK+m3mzYTUOB5uq2jI/oWRsyc9DIevI+H2RhMRC/Cc7eJP5yRUWxxVgU3Ad15ov2cnTSCyd/bddM4DmeZeoWi79G8IkjMhTL628ZAiJeysCO/vSFkw0bu4NbFADqswtCO8PUk9FICjnJr/Ts2zOvIaQOkR8="
 
 before_install:
+  # - sudo apt-get update
+  # - sudo apt-get install python3
   - pip3 install --user awscli
   # echo "print env:"
   # printenv
