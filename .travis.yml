@@ -19,7 +19,6 @@ compiler: gcc         # Could add clang
 branches:
   only:
   - master
-  - cs8-rpms
 
 addons:
   sonarcloud: true
@@ -96,7 +95,7 @@ stages:
   - name: scan
     if: branch = master
   - name: package
-    if:  branch = master OR branch = cs8-rpms
+    if:  branch = master
   - name: hyrax-bes-trigger
     if: branch = master AND type != pull_request
 
@@ -221,6 +220,6 @@ deploy:
   local_dir: $TRAVIS_BUILD_DIR/package
   on:
     # Change 'master' to 'travis' to test deployment
-    branch: cs8-rpms
+    branch: master
     condition: $LIBDAP_BUILD =~ ^main|srddist|centos7|centos-stream8$
     # Removed 'centos6|' jhrg 10/23/20
