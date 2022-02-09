@@ -69,14 +69,14 @@ env:
   # DOCKER_HUB_PSWD for our DockerHub account
   - secure: "dD0lFOU73qJztihQeK+m3mzYTUOB5uq2jI/oWRsyc9DIevI+H2RhMRC/Cc7eJP5yRUWxxVgU3Ad15ov2cnTSCyd/bddM4DmeZeoWi79G8IkjMhTL628ZAiJeysCO/vSFkw0bu4NbFADqswtCO8PUk9FICjnJr/Ts2zOvIaQOkR8="
 
-before_install:
-  # - sudo apt-get update
-  # - sudo apt-get install python3
-  - pip install --user awscli
-  # echo "print env:"
-  # printenv
-  # - echo $DOCKER_HUB_PSWD | docker login -u $DOCKER_HUB_UID --password-stdin
+# This file was using docker login but that didn't seem to be needed and was generating
+# a warning about the plain-text credentials being stored/accessible. I dropped it, but
+# in case we need to login in the future, here's what we were doing (with the caveat that
+# it is not secure) jhrg 2/9/22:
+# - echo $DOCKER_HUB_PSWD | docker login -u $DOCKER_HUB_UID --password-stdin
 
+before_install:
+  - pip install --user awscli
 
 install:
   # $HOME is /home/travis and $TRAVIS_BUILD_DIR is /home/travis/build/OPENDAP/libdap4
@@ -87,8 +87,6 @@ before_script:
   - source travis/travis_libdap_build_offset.sh
   - export LIBDAP_BUILD_NUMBER=$(expr $TRAVIS_BUILD_NUMBER - $LIBDAP_TRAVIS_BUILD_OFFSET)
   - echo "LIBDAP_BUILD_NUMBER is ${LIBDAP_BUILD_NUMBER} = ${TRAVIS_BUILD_NUMBER} - ${LIBDAP_TRAVIS_BUILD_OFFSET}"
-  # - echo "Travis default env:"
-  # - printenv
   # moved down below to individual steps. jhrg 3/23/21 autoreconf --force --install --verbose
 
 stages:
@@ -152,7 +150,7 @@ jobs:
       - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
           --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
           --env os=centos7 --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
-          opendap/centos7_hyrax_builder:1.7 /root/travis/build-rpm.sh
+          opendap/centos7_hyrax_builder:1.7 /root/travis/travis/build-rpm.sh
 
   - stage: package
     name: "centos stream8 rpms"
@@ -164,7 +162,7 @@ jobs:
           --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID 
           --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=centos-stream8 
           --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/centos-stream8_hyrax_builder:1.1 
-          /root/travis/build-rpm.sh
+          /root/travis/travis/build-rpm.sh
 
   - stage: package
     name: "source distribution"
