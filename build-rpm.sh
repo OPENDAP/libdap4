@@ -14,7 +14,7 @@ set -eux
 # set to include $prefix/bin and $prefix/deps/bin; $prefix will be
 # $HOME/install. $HOME is /root for the build container.
 
-echo "prefix HOME PATH:"
+echo "Inside the docker container, prefix HOME PATH:"
 printenv prefix HOME PATH
 
 # Get the pre-built dependencies (all static libraries). It might be more

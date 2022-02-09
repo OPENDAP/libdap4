@@ -70,10 +70,10 @@ env:
   - secure: "dD0lFOU73qJztihQeK+m3mzYTUOB5uq2jI/oWRsyc9DIevI+H2RhMRC/Cc7eJP5yRUWxxVgU3Ad15ov2cnTSCyd/bddM4DmeZeoWi79G8IkjMhTL628ZAiJeysCO/vSFkw0bu4NbFADqswtCO8PUk9FICjnJr/Ts2zOvIaQOkR8="
 
 before_install:
-  - pip install --user awscli
-  - echo "print env:"
-  - printenv
-  - echo $DOCKER_HUB_PSWD | docker login -u $DOCKER_HUB_UID --password-stdin
+  - pip3 install --user awscli
+  # echo "print env:"
+  # printenv
+  # - echo $DOCKER_HUB_PSWD | docker login -u $DOCKER_HUB_UID --password-stdin
 
 
 install:
@@ -85,8 +85,8 @@ before_script:
   - source travis/travis_libdap_build_offset.sh
   - export LIBDAP_BUILD_NUMBER=$(expr $TRAVIS_BUILD_NUMBER - $LIBDAP_TRAVIS_BUILD_OFFSET)
   - echo "LIBDAP_BUILD_NUMBER is ${LIBDAP_BUILD_NUMBER} = ${TRAVIS_BUILD_NUMBER} - ${LIBDAP_TRAVIS_BUILD_OFFSET}"
-  - echo "Travis default env:"
-  - printenv
+  # - echo "Travis default env:"
+  # - printenv
   # moved down below to individual steps. jhrg 3/23/21 autoreconf --force --install --verbose
 
 stages:
@@ -204,6 +204,8 @@ before_deploy:
                                                --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
   # CentOS-7 distribution prep
   - if test "$LIBDAP_BUILD" = "centos7"; then ./travis/rpm-to-package-dir.sh "el7"; fi
+  # CentOS-Stream8 distribution prep
+  - if test "$LIBDAP_BUILD" = "centos-stream8"; then ./travis/rpm-to-package-dir.sh "el8"; fi
   # Src dist distribution prep
   - if test "$BES_BUILD" = "srcdist"; then cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package; fi
   # Check for the stuff...
