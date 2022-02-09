@@ -24,14 +24,14 @@ addons:
   sonarcloud: true
   apt:
     sources:
-      - deadsnakes # source required so it finds the (python3.6) package definition below
+      - deadsnakes # source required so it finds the (python3) package definition below
     packages:
     - libxml2-dev
     - uuid-dev
     - libcurl4-openssl-dev
     - libcppunit-dev 
     - gcovr
-    - python3.6
+    - python3
 
 # remove support for debian packages. jhrg 2/23/21
 # - build-essential
