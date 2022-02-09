@@ -23,15 +23,12 @@ branches:
 addons:
   sonarcloud: true
   apt:
-    sources:
-      - deadsnakes # source required so it finds the (python3) package definition below
     packages:
     - libxml2-dev
     - uuid-dev
     - libcurl4-openssl-dev
     - libcppunit-dev 
     - gcovr
-    - python3
 
 # remove support for debian packages. jhrg 2/23/21
 # - build-essential
@@ -75,7 +72,7 @@ env:
 before_install:
   # - sudo apt-get update
   # - sudo apt-get install python3
-  - pip3 install --user awscli
+  - pip install --user awscli
   # echo "print env:"
   # printenv
   # - echo $DOCKER_HUB_PSWD | docker login -u $DOCKER_HUB_UID --password-stdin
