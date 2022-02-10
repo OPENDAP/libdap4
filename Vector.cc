@@ -314,8 +314,10 @@ Vector & Vector::operator=(const Vector & rhs)
     if (this == &rhs)
         return *this;
 
+#if 0
     dynamic_cast<BaseType &> (*this) = rhs;
-
+#endif
+    BaseType::operator=(rhs);
     m_duplicate(rhs);
 
     return *this;

@@ -33,6 +33,7 @@
 
 #include "Array.h"
 #include "Int16.h"
+#include "Float32.h"
 #include "Str.h"
 #include "Structure.h"
 #include "D4Dimensions.h"
@@ -140,7 +141,9 @@ public:
     CPPUNIT_TEST_SUITE (ArrayTest);
 
     CPPUNIT_TEST (cons_test);
-    CPPUNIT_TEST (equals_test);
+    CPPUNIT_TEST (assignment_test_1);
+    CPPUNIT_TEST (assignment_test_2);
+    CPPUNIT_TEST (assignment_test_3);
     CPPUNIT_TEST (prepend_dim_test);
     CPPUNIT_TEST (prepend_dim_2_test);
     CPPUNIT_TEST (clear_dims_test);
@@ -159,15 +162,45 @@ public:
         CPPUNIT_ASSERT(a1.name() == "a");
     }
 
-    void equals_test()
+    void assignment_test_1()
     {
         Array a1 = Array("a", d_int16);
+        a1.append_dim(17, "bob");
+        CPPUNIT_ASSERT(a1.dimension_size(a1.dim_begin()) == 17);
         a1 = *d_cardinal;
-        Array::Dim_iter i = a1.dim_begin();        
-        CPPUNIT_ASSERT(a1.dimension_size(i) == 4);
+        CPPUNIT_ASSERT(a1.dimension_size(a1.dim_begin()) == 4);
+#if 0
         a1 = a1;
         i = a1.dim_begin();        
         CPPUNIT_ASSERT(a1.dimension_size(i) == 4);
+#endif
+    }
+
+    void assignment_test_2()
+    {
+        Array a1 = Array("a", d_int16);
+#if 0
+        a1 = *d_cardinal;
+        Array::Dim_iter i = a1.dim_begin();
+        CPPUNIT_ASSERT(a1.dimension_size(i) == 4);
+#endif
+        // are they changed by the assignment?
+        Array *before = &a1;
+        a1 = a1;
+        Array *after = &a1;
+        CPPUNIT_ASSERT_MESSAGE("The pointers should be the same", before == after);
+    }
+
+    // This tests that the assignment operator defined in Array correctly copies
+    // information held in a parent class (Vector). jhrg 2/9/22
+    void assignment_test_3()
+    {
+        // Array manages the storage
+        unique_ptr<Float32> f32(new Float32("float_proto"));
+        Array a1 = Array("a", f32.get());
+        CPPUNIT_ASSERT_MESSAGE("The type of a1.var() should be dods_float32", a1.var()->type() == dods_float32_c);
+        a1 = *d_cardinal;
+        CPPUNIT_ASSERT_MESSAGE("The type of a1.var() should now be dods_int16_c", a1.var()->type() == dods_int16_c);
     }
 
     void prepend_dim_test()
