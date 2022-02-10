@@ -6,7 +6,7 @@
 
 set -e
 
-# DIST should be one of el6 or el7
+# DIST should be one of el6, el7, or el8
 DIST=${1}
 PKG_NAME=libdap
 

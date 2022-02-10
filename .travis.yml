@@ -38,6 +38,8 @@ addons:
 env:
   global:
   # NB: This value of $prefix must be shared between the hyrax-deps, libdap and bes builds.
+  # Three env vars below simulate running 'source spath.sh' in the 'hyrax' repo main directory.
+  # $HOME is /home/travis
   - prefix=$HOME/install
   - PATH=$prefix/bin:$PATH
   - TESTSUITEFLAGS=-j7
@@ -67,12 +69,14 @@ env:
   # DOCKER_HUB_PSWD for our DockerHub account
   - secure: "dD0lFOU73qJztihQeK+m3mzYTUOB5uq2jI/oWRsyc9DIevI+H2RhMRC/Cc7eJP5yRUWxxVgU3Ad15ov2cnTSCyd/bddM4DmeZeoWi79G8IkjMhTL628ZAiJeysCO/vSFkw0bu4NbFADqswtCO8PUk9FICjnJr/Ts2zOvIaQOkR8="
 
+# This file was using docker login but that didn't seem to be needed and was generating
+# a warning about the plain-text credentials being stored/accessible. I dropped it, but
+# in case we need to login in the future, here's what we were doing (with the caveat that
+# it is not secure) jhrg 2/9/22:
+# - echo $DOCKER_HUB_PSWD | docker login -u $DOCKER_HUB_UID --password-stdin
+
 before_install:
   - pip install --user awscli
-  - echo "print env:"
-  - printenv
-  - echo $DOCKER_HUB_PSWD | docker login -u $DOCKER_HUB_UID --password-stdin
-
 
 install:
   # $HOME is /home/travis and $TRAVIS_BUILD_DIR is /home/travis/build/OPENDAP/libdap4
@@ -83,8 +87,6 @@ before_script:
   - source travis/travis_libdap_build_offset.sh
   - export LIBDAP_BUILD_NUMBER=$(expr $TRAVIS_BUILD_NUMBER - $LIBDAP_TRAVIS_BUILD_OFFSET)
   - echo "LIBDAP_BUILD_NUMBER is ${LIBDAP_BUILD_NUMBER} = ${TRAVIS_BUILD_NUMBER} - ${LIBDAP_TRAVIS_BUILD_OFFSET}"
-  - echo "Travis default env:"
-  - printenv
   # moved down below to individual steps. jhrg 3/23/21 autoreconf --force --install --verbose
 
 stages:
@@ -141,13 +143,26 @@ jobs:
   - stage: package
     name: "centos7 rpms"
     script:
-    - export LIBDAP_BUILD=centos7
-    # $prefix = $HOME/install which is /home/travis/install here but /root/install in the container.
-    - mkdir -p $prefix/rpmbuild
-    - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
-                 --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                 --env os=centos7 --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
-                 opendap/centos7_hyrax_builder:1.7 /root/travis/build-rpm.sh
+      - export LIBDAP_BUILD=centos7
+      # $prefix = $HOME/install which is /home/travis/install here but /root/install in the image.
+      # For this image, prefix is already set.
+      - mkdir -p $prefix/rpmbuild
+      - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
+          --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+          --env os=centos7 --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
+          opendap/centos7_hyrax_builder:1.7 /root/travis/travis/build-rpm.sh
+
+  - stage: package
+    name: "centos stream8 rpms"
+    script:
+      - export LIBDAP_BUILD=centos-stream8
+      # $prefix = $HOME/install which is /home/travis/install here but should be /root/install in the image.
+      - mkdir -p $prefix/rpmbuild
+      - docker run --env prefix=/root/install --volume $prefix/rpmbuild:/root/rpmbuild 
+          --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID 
+          --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=centos-stream8 
+          --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/centos-stream8_hyrax_builder:1.1 
+          /root/travis/travis/build-rpm.sh
 
   - stage: package
     name: "source distribution"
@@ -189,6 +204,8 @@ before_deploy:
                                                --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
   # CentOS-7 distribution prep
   - if test "$LIBDAP_BUILD" = "centos7"; then ./travis/rpm-to-package-dir.sh "el7"; fi
+  # CentOS-Stream8 distribution prep
+  - if test "$LIBDAP_BUILD" = "centos-stream8"; then ./travis/rpm-to-package-dir.sh "el8"; fi
   # Src dist distribution prep
   - if test "$BES_BUILD" = "srcdist"; then cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package; fi
   # Check for the stuff...
@@ -204,5 +221,5 @@ deploy:
   on:
     # Change 'master' to 'travis' to test deployment
     branch: master
-    condition: $LIBDAP_BUILD =~ ^main|srddist|centos7$
+    condition: $LIBDAP_BUILD =~ ^main|srddist|centos7|centos-stream8$
     # Removed 'centos6|' jhrg 10/23/20
