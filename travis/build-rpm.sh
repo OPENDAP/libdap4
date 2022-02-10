@@ -14,20 +14,26 @@ set -eux
 # set to include $prefix/bin and $prefix/deps/bin; $prefix will be
 # $HOME/install. $HOME is /root for the build container.
 
-echo "env:"
-printenv
+echo "Inside the docker container, prefix HOME PATH:"
+printenv prefix HOME PATH
 
 # Get the pre-built dependencies (all static libraries). It might be more
 # economical to just get and build the deps since all we need for libdap
 # is the bison executable. However, using this process might translate to
 # the bes build more easily.
-aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
+#
+# These are not needed for CentOS Stream8 for libdap4. Only do this for
+# CentOS7. jhrg 2/9/22
+if test -n $os -a $os = centos7
+then
+  aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
 
-# This dumps the dependencies in $HOME/install/deps/{lib,bin,...}. By default
-# our Travis yaml file installs the smaller deps that uses shared libs.
-tar -xzvf /tmp/hyrax-dependencies-$os-static.tar.gz
+  # This dumps the dependencies in $HOME/install/deps/{lib,bin,...}. By default
+  # our Travis yaml file installs the smaller deps that uses shared libs.
+  tar -xzvf /tmp/hyrax-dependencies-$os-static.tar.gz
 
-ls -lR $HOME/install/deps
+  ls -lR $HOME/install/deps
+fi
 
 # cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
 # using the docker run --volume option and set it to $TRAVIS_BUILD_DIR.
@@ -49,7 +55,7 @@ echo "LIBDAP_BUILD_NUMBER: $LIBDAP_BUILD_NUMBER"
 # jhrg 3/23/21
 #
 # This will leave the package in $HOME/rpmbuild/RPMS/x86_64/*.rpm
-make -j4 rpm
+make -j16 rpm
 
 # Just a little reassurance... jhrg 3/23/21
 ls -l $HOME/rpmbuild/RPMS/x86_64/
