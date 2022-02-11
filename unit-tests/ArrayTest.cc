@@ -164,27 +164,18 @@ public:
 
     void assignment_test_1()
     {
+        // Are fields from the object copied by the assignment
         Array a1 = Array("a", d_int16);
         a1.append_dim(17, "bob");
         CPPUNIT_ASSERT(a1.dimension_size(a1.dim_begin()) == 17);
         a1 = *d_cardinal;
         CPPUNIT_ASSERT(a1.dimension_size(a1.dim_begin()) == 4);
-#if 0
-        a1 = a1;
-        i = a1.dim_begin();        
-        CPPUNIT_ASSERT(a1.dimension_size(i) == 4);
-#endif
     }
 
     void assignment_test_2()
     {
+        // Self-assignment; are objects changed by the assignment?
         Array a1 = Array("a", d_int16);
-#if 0
-        a1 = *d_cardinal;
-        Array::Dim_iter i = a1.dim_begin();
-        CPPUNIT_ASSERT(a1.dimension_size(i) == 4);
-#endif
-        // are they changed by the assignment?
         Array *before = &a1;
         a1 = a1;
         Array *after = &a1;
@@ -195,7 +186,7 @@ public:
     // information held in a parent class (Vector). jhrg 2/9/22
     void assignment_test_3()
     {
-        // Array manages the storage
+        // Array copies the proto pointer and manages the storage
         unique_ptr<Float32> f32(new Float32("float_proto"));
         Array a1 = Array("a", f32.get());
         CPPUNIT_ASSERT_MESSAGE("The type of a1.var() should be dods_float32", a1.var()->type() == dods_float32_c);
