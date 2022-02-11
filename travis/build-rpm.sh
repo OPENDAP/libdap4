@@ -23,7 +23,7 @@ printenv prefix HOME PATH
 # the bes build more easily.
 #
 # These are not needed for CentOS Stream8 for libdap4. Only do this for
-# CentOS7. jhrg 2/9/22
+# CentOS7 (libdap4 needs a newer version of bison teh C7 provides). jhrg 2/9/22
 if test -n $os -a $os = centos7
 then
   aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
