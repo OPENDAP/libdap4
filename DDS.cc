@@ -51,8 +51,8 @@
 
 #include <iostream>
 #include <sstream>
-//#include <algorithm>
-//#include <functional>
+#include <algorithm>
+#include <functional>
 #include <memory>
 
 // #define DODS_DEBUG
