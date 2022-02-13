@@ -36,9 +36,9 @@
 #include <cstdio>
 #include <cmath>
 #include <climits>
-#include <cstdint>
+//#include <cstdint>
 
-#include <sys/types.h>
+//#include <sys/types.h>
 
 #ifdef WIN32
 #include <io.h>
@@ -58,23 +58,6 @@
 // #define DODS_DEBUG
 // #define DODS_DEBUG2
 
-#if 0
-#include "GNURegex.h"
-#endif
-
-#include "DAS.h"
-#include "Clause.h"
-#include "Error.h"
-#include "InternalErr.h"
-#if 0
-#include "Keywords2.h"
-#endif
-
-#include "parser.h"
-#include "debug.h"
-#include "util.h"
-#include "DapIndent.h"
-
 #include "Byte.h"
 #include "Int16.h"
 #include "UInt16.h"
@@ -89,7 +72,15 @@
 #include "Sequence.h"
 #include "Grid.h"
 
+#include "DAS.h"
+#include "Clause.h"
+#include "Error.h"
+#include "InternalErr.h"
 #include "escaping.h"
+#include "parser.h"
+#include "debug.h"
+#include "util.h"
+#include "DapIndent.h"
 
 /**
  * DapXmlNamespaces
@@ -133,32 +124,6 @@ void
 DDS::duplicate(const DDS &dds)
 {
     DBG(cerr << "Entering DDS::duplicate... " <<endl);
-#if 0
-    BaseTypeFactory *d_factory;
-
-    string d_name;                // The dataset d_name
-    string d_filename;          // File d_name (or other OS identifier) for
-    string d_container_name;    // d_name of container structure
-    Structure *d_container;     // current container for container d_name
-                                // dataset or part of dataset.
-
-    int d_dap_major;            // The protocol major version number
-    int d_dap_minor;            // ... and minor version number
-    string d_dap_version;       // String version of the protocol
-    string d_request_xml_base;
-    string d_namespace;
-
-    AttrTable d_attr;           // Global attributes.
-
-    vector<BaseType *> vars;    // Variables at the top level
-
-    int d_timeout;              // alarm time in seconds. If greater than
-                                // zero, raise the alarm signal if more than
-                                // d_timeout seconds are spent reading data.
-    Keywords d_keywords;        // Holds keywords parsed from the CE
-
-    long d_max_response_size;   // In bytes
-#endif
 
     d_factory = dds.d_factory;
 
@@ -184,10 +149,6 @@ DDS::duplicate(const DDS &dds)
     }
 
     d_timeout = dds.d_timeout;
-
-#if 0
-    d_keywords = dds.d_keywords; // value copy; Keywords contains no pointers
-#endif
 
     d_max_response_size_kb = dds.d_max_response_size_kb;
 }
@@ -302,22 +263,8 @@ void DDS::transfer_attributes(DAS *das)
     for (DDS::Vars_iter i = var_begin(), e = var_end(); i != e; i++) {
         (*i)->transfer_attributes(top);
     }
-#if 0
-    Vars_iter var = var_begin();
-    while (var != var_end()) {
-        try {
-            DBG(cerr << "Processing the attributes for: " << (*var)->d_name() << " a " << (*var)->type_name() << endl);
-            (*var)->transfer_attributes(top);
-            var++;
-        }
-        catch (Error &e) {
-            DBG(cerr << "Got this exception: " << e.get_error_message() << endl);
-            var++;
-            throw e;
-        }
-    }
-#endif
-    // Now we transfer all of the attributes still marked as global to the
+
+    // Now we transfer all the attributes still marked as global to the
     // global container in the DDS.
     for (AttrTable::Attr_iter i = top->attr_begin(), e = top->attr_end(); i != e; ++i) {
         if ((*i)->type == Attr_container && (*i)->attributes->is_global_attribute()) {
@@ -327,23 +274,6 @@ void DDS::transfer_attributes(DAS *das)
             d_attr.append_container(at, at->get_name());
         }
     }
-#if 0
-    AttrTable::Attr_iter at_cont_p = top_level->attr_begin();
-    while (at_cont_p != top_level->attr_end()) {
-        // In truth, all of the top level attributes should be containers, but
-        // this test handles the abnormal case where somehow someone makes a
-        // top level attribute that is not a container by silently dropping it.
-        if ((*at_cont_p)->type == Attr_container && (*at_cont_p)->attributes->is_global_attribute()) {
-            DBG(cerr << (*at_cont_p)->d_name << " is a global attribute." << endl);
-            // copy the source container so that the DAS passed in can be
-            // deleted after calling this method.
-            AttrTable *at = new AttrTable(*(*at_cont_p)->attributes);
-            d_attr.append_container(at, at->get_name());
-        }
-
-        at_cont_p++;
-    }
-#endif
 }
 
 /** Get and set the dataset's d_name.  This is the d_name of the dataset
@@ -617,10 +547,7 @@ uint64_t DDS::get_request_size_kb(bool constrained)
 void DDS::add_var(BaseType *bt) {
     if (!bt)
         throw InternalErr(__FILE__, __LINE__, "Trying to add a BaseType object with a NULL pointer.");
-#if 0
-    if (bt->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 DDS.");
-#endif
+
     DBG2(cerr << "In DDS::add_var(), bt's address is: " << bt << endl);
 
     BaseType *btp = bt->ptr_duplicate();
@@ -655,7 +582,6 @@ DDS::add_var_nocopy(BaseType *bt)
         vars.push_back(bt);
     }
 }
-
 
 /** Remove the named variable from the DDS. This method is not smart about
     looking up names. The variable must exist at the top level of the DDS and
@@ -724,6 +650,7 @@ DDS::var(const string &n, BaseType::btp_stack &s)
 {
     return var(n, &s);
 }
+
 /** @brief Find the variable with the given d_name.
 
     Returns a pointer to the named variable. If the d_name contains one or
@@ -823,51 +750,6 @@ DDS::exact_match(const string &name, BaseType::btp_stack *s)
     return 0;   // It is not here.
 }
 
-
-/** @brief Returns the first variable in the DDS. */
-
-DDS::Vars_iter
-DDS::var_begin()
-{
-    return vars.begin();
-}
-
-DDS::Vars_riter
-DDS::var_rbegin()
-{
-    return vars.rbegin();
-}
-
-DDS::Vars_iter
-DDS::var_end()
-{
-    return vars.end() ;
-}
-
-DDS::Vars_riter
-DDS::var_rend()
-{
-    return vars.rend() ;
-}
-
-/** Return the iterator for the \e ith variable.
-    @param i the index
-    @return The corresponding  Vars_iter */
-DDS::Vars_iter
-DDS::get_vars_iter(int i)
-{
-    return vars.begin() + i;
-}
-
-/** Return the \e ith variable.
-    @param i the index
-    @return The corresponding variable */
-BaseType *
-DDS::get_var_index(int i)
-{
-    return *(vars.begin() + i);
-}
-
 /** Insert a copy of the BaseType before the position given.
  * @param i The iterator that marks the position
  * @param ptr The BaseType object to copy and insert
@@ -875,10 +757,6 @@ DDS::get_var_index(int i)
 void
 DDS::insert_var(Vars_iter i, BaseType *ptr)
 {
-#if 0
-    if (ptr->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 DDS.");
-#endif
     vars.insert(i, ptr->ptr_duplicate());
 }
 
@@ -892,10 +770,6 @@ DDS::insert_var(Vars_iter i, BaseType *ptr)
 void
 DDS::insert_var_nocopy(Vars_iter i, BaseType *ptr)
 {
-#if 0
-    if (ptr->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 DDS.");
-#endif
     vars.insert(i, ptr);
 }
 
@@ -1093,24 +967,6 @@ has_dap2_attributes(AttrTable &a)
     }
 
     return false;
-
-#if 0
-    vector<AttrTable*> tables;
-
-    for (AttrTable::Attr_iter i = a.attr_begin(), e = a.attr_end(); i != e; ++i) {
-        if (a.get_attr_type(i) != Attr_container)
-        return true;
-        else
-        tables.push_back(a.get_attr_table(i));
-    }
-
-    bool it_does = false;
-    for (vector<AttrTable*>::iterartor i = tables.begin(), e = tables.end(); it_does || i != e; ++i) {
-        it_does = has_dap2_attributes(**i);
-    }
-
-    return it_does;
-#endif
 }
 
 /**
@@ -1212,18 +1068,6 @@ void print_var_das(ostream &out, BaseType *bt, string indent = "") {
 void
 DDS::print_das(ostream &out)
 {
-#if 0
-    string indent("    ");
-    out << "Attributes {" << endl;
-    for (Vars_citer i = vars.begin(); i != vars.end(); i++) {
-        if (has_dap2_attributes(*i))
-        print_var_das(out, *i, four_spaces);
-    }
-    // Print the global attributes at the end.
-    d_attr.print(out,indent);
-    out << "}" << endl;
-#endif
-
     unique_ptr<DAS> das(get_das());
 
     das->print(out);
@@ -1465,99 +1309,6 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
 {
     XMLWriter xml("    ");
 
-    // this is the old version of this method. It produced different output for
-    // different version of DAP. We stopped using version numbers and use different
-    // web api calls (DMR, DAP for DAP4 and DAS, DDS and DODS for DAP2) so the
-    // dap version numbers are old and should not be used. There also seems to
-    // be a bug where these version numbers change 'randomly' but which doesn't
-    // show up in testing (or with valgrind or asan). jhrg 9/10/18
-#if 0
-    // Stamp and repeat for these sections; trying to economize is makes it
-    // even more confusing
-    if (get_dap_major() >= 4) {
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Group") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write Group element");
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "dapVersion", (const xmlChar*)get_dap_version().c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dapVersion");
-
-        if (!get_request_xml_base().empty()) {
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xml", (const xmlChar*)c_xml_namespace.c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xml");
-
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xml:base", (const xmlChar*)get_request_xml_base().c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xml:base");
-        }
-        if (!get_namespace().empty()) {
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*)get_namespace().c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
-        }
-    }
-    else if (get_dap_major() == 3 && get_dap_minor() >= 2) {
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dataset") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write Dataset element");
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xsi", (const xmlChar*)"http://www.w3.org/2001/XMLSchema-instance") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
-
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xsi:schemaLocation", (const xmlChar*)c_dap_32_n_sl.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:schemaLocation");
-
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:grddl", (const xmlChar*)"http://www.w3.org/2003/g/data-view#") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:grddl");
-
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "grddl:transformation", (const xmlChar*)grddl_transformation_dap32.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:transformation");
-
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*)c_dap32_namespace.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:dap", (const xmlChar*)c_dap32_namespace.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:dap");
-
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "dapVersion", (const xmlChar*)"3.2") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dapVersion");
-
-        if (!get_request_xml_base().empty()) {
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xml", (const xmlChar*)c_xml_namespace.c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xml");
-
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xml:base", (const xmlChar*)get_request_xml_base().c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xml:base");
-        }
-    }
-    else { // dap2
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dataset") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write Dataset element");
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for d_name");
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xsi", (const xmlChar*)"http://www.w3.org/2001/XMLSchema-instance") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
-
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*)c_dap20_namespace.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
-
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xsi:schemaLocation", (const xmlChar*)c_dap_20_n_sl.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:schemaLocation");
-    }
-#endif
-
-#if DAP2_DDX
-    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dataset") < 0)
-    throw InternalErr(__FILE__, __LINE__, "Could not write Dataset element");
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
-    throw InternalErr(__FILE__, __LINE__, "Could not write attribute for d_name");
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xsi", (const xmlChar*)"http://www.w3.org/2001/XMLSchema-instance") < 0)
-    throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
-
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*)c_dap20_namespace.c_str()) < 0)
-    throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
-
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xsi:schemaLocation", (const xmlChar*)c_dap_20_n_sl.c_str()) < 0)
-    throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:schemaLocation");
-#elif DAP3_2_DDX
     // This is the 'DAP 3.2' DDX response - now the only response libdap will return.
     // jhrg 9/10/18
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dataset") < 0)
@@ -1591,9 +1342,6 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xml:base", (const xmlChar*)get_request_xml_base().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xml:base");
     }
-#else
-#error Must define DAP2_DDX or DAP3_2_DDX
-#endif
 
     // Print the global attributes
     d_attr.print_xml_writer(xml);
@@ -1601,51 +1349,6 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
     // Print each variable
     for_each(var_begin(), var_end(), VariablePrintXMLWriter(xml, constrained));
 
-    // As above, this method now onl returns the DAP 3.2 version of the DDX response.
-    // jhrg 9/10/28
-#if 0
-    // For DAP 3.2 and greater, use the new syntax and value. The 'blob' is
-    // the CID of the MIME part that holds the data. For DAP2 (which includes
-    // 3.0 and 3.1), the blob is an href. For DAP4, only write the CID if it's
-    // given.
-    if (get_dap_major() >= 4) {
-        if (!blob.empty()) {
-            if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "blob") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write blob element");
-            string cid = "cid:" + blob;
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "href", (const xmlChar*) cid.c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for d_name");
-            if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not end blob element");
-        }
-    }
-    else if (get_dap_major() == 3 && get_dap_minor() >= 2) {
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "blob") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write blob element");
-        string cid = "cid:" + blob;
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "href", (const xmlChar*) cid.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for d_name");
-        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not end blob element");
-    }
-    else { // dap2
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "dataBLOB") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write dataBLOB element");
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "href", (const xmlChar*) "") < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for d_name");
-        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not end dataBLOB element");
-    }
-#endif
-
-#if DAP2_DDX
-    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "dataBLOB") < 0)
-    throw InternalErr(__FILE__, __LINE__, "Could not write dataBLOB element");
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "href", (const xmlChar*) "") < 0)
-    throw InternalErr(__FILE__, __LINE__, "Could not write attribute for d_name");
-    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-    throw InternalErr(__FILE__, __LINE__, "Could not end dataBLOB element");
-#elif DAP3_2_DDX
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "blob") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write blob element");
     string cid = "cid:" + blob;
@@ -1656,9 +1359,6 @@ DDS::print_xml_writer(ostream &out, bool constrained, const string &blob)
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end Dataset element");
-#else
-#error Must define DAP2_DDX or DAP3_2_DDX
-#endif
 
     out << xml.get_doc();// << ends;// << endl;
 }

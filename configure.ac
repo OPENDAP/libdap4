@@ -60,11 +60,14 @@ AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
 AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and version combined])
 AC_SUBST(DVR)
 
+dnl This block of code can be removed since the DDS now only builds the v3.2 DDX.
+dnl jhrg 2/4/22
+dnl
 dnl Use one of these two blocks to build a DAP2 or DAP 3.2 DDX
 dnl AC_DEFINE(DAP2_DDX, 1, [Build the DAP 2 version of the DDX])
 dnl AC_SUBST(DAP2_DDX)
-AC_DEFINE(DAP3_2_DDX, 1, [Build the DAP 3.2 version of the DDX])
-AC_SUBST(DAP3_2_DDX)
+dnl AC_DEFINE(DAP3_2_DDX, 1, [Build the DAP 3.2 version of the DDX])
+dnl AC_SUBST(DAP3_2_DDX)
 
 AS_IF([echo $PACKAGE_VERSION | grep '^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$'],
       [PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$@\1@'`
@@ -188,15 +191,6 @@ bison_version=`bison --version | sed -n '/^bison.*/p' | sed 's@.* \(.*\)@\1@'`
 
 AC_MSG_CHECKING([for bison 3.0])
 
-# This was used to set a conditional in the d4_ce/Makefile.am to build
-# the DAP4 parsers using bison 3 or get pre-built sources from a set
-# of template files. That didn't work on some linux machines, so bison
-# 3 is a requirement for building until that gets sorted out. jhrg 4/5/15
-dnl AS_VERSION_COMPARE(["$bison_version"], ["3.0"], 
-dnl 	[AM_CONDITIONAL([BISON3], [false])],
-dnl 	[AM_CONDITIONAL([BISON3], [true])],
-dnl 	[AM_CONDITIONAL([BISON3], [true])])
-        
 AS_VERSION_COMPARE(["$bison_version"], ["3.0"], 
 	[AC_MSG_ERROR([not found])],
 	[ ],
@@ -213,7 +207,6 @@ AC_CHECK_HEADERS_ONCE([fcntl.h malloc.h memory.h stddef.h stdlib.h string.h stri
 AC_CHECK_HEADERS_ONCE([sys/param.h sys/time.h])
 AC_CHECK_HEADERS_ONCE([netinet/in.h])
 
-dnl AC_CHECK_HEADERS_ONCE([uuid/uuid.h uuid.h])
 dnl Do this because we have had a number of problems with the UUID header/library
 AC_CHECK_HEADERS([uuid/uuid.h],[found_uuid_uuid_h=true],[found_uuid_uuid_h=false])
 AC_CHECK_HEADERS([uuid.h],[found_uuid_h=true],[found_uuid_h=false])
@@ -496,29 +489,9 @@ AS_IF([test "$prefix" = "NONE"],
       [AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])],
 	  [AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])])
 
-dnl By default, DAP4 is enabled. Use this to disable. jhrg 5/12/15
-AC_ARG_ENABLE([dap4], 
-    [AC_HELP_STRING([--enable-dap4], [Enable DAP4 types and responses (default is Yes)])],
-    [enable_dap4=${enableval}], [enable_dap4=yes])
-
-AS_IF([test x$enable_dap4 = xyes], [
-    dnl Do the stuff needed for enabling the feature
-    dnl echo "Defining DAP4! "
-    AC_DEFINE([DAP4], 1, [Should DAP4 support be enabled?])
-    AM_CONDITIONAL([DAP4_DEFINED], [true]) ],
-    [ dnl else enable_dap4 is false
-    AM_CONDITIONAL([DAP4_DEFINED], [false])
-])
-
-# AS_IF([test m4_version_compare(m4_defn([AC_AUTOCONF_VERSION]),[2.64]) -ge 0],
-#	[AX_CHECK_COMPILE_FLAG([-fsanitize=address], [has_asan=yes], [has_asan=no])])
-
 AC_ARG_ENABLE([asan], 
     [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
 
-# AM_CONDITIONAL([ENABLE_COVERAGE], [test x$enable_coverage = xyes])
-# AM_COND_IF([SHELL_WRAPPER],
-#           [AC_CONFIG_FILES([wrapper:wrapper.in])])
            
 AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
       [AC_MSG_NOTICE([Building Address Sanitizer version])
@@ -552,8 +525,6 @@ AS_IF([test x$enable_coverage = xyes && which gcov],
        AS_IF([test x$enable_coverage = xyes],
              [AC_MSG_NOTICE([Check that gcov is on your PATH])])
        AM_CONDITIONAL([ENABLE_COVERAGE], [false])])
-
-# --xml-pretty -o gcovr_ouput.xml
 
 AC_SUBST([GCOVR_FLAGS])
 

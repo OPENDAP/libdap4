@@ -91,12 +91,12 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	Int32Test UInt32Test Int64Test UInt64Test Float32Test Float64Test \
 	D4BaseTypeFactoryTest BaseTypeFactoryTest
 
-if DAP4_DEFINED
+# Unit tests for DAP4-only code. jhrg 2/4/22
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
 	D4EnumDefsTest D4GroupTest D4ParserSax2Test D4AttributesTest D4EnumTest \
 	chunked_iostream_test D4AsyncDocTest DMRTest D4FilterClauseTest \
 	D4SequenceTest DmrRoundTripTest DmrToDap2Test
-endif
+
 
 else
 UNIT_TESTS =
@@ -173,17 +173,6 @@ DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 DDXParserTest_LDADD = ../libdap.la $(AM_LDADD)
 
-# DODSFilterTest_SOURCES = DODSFilterTest.cc $(TEST_SRC)
-# DODSFilterTest_LDADD = ../libdapserver.la ../libdap.la \
-#	../tests/libtest-types.a $(AM_LDADD)
-
-# ResponseBuilderTest_SOURCES = ResponseBuilderTest.cc $(TEST_SRC)
-# ResponseBuilderTest_LDADD = ../libdapserver.la ../libdap.la \
-#	../tests/libtest-types.a $(AM_LDADD)
-
-# Keywords2Test_SOURCES = Keywords2Test.cc
-# Keywords2Test_LDADD = ../libdap.la $(AM_LDADD)
-
 generalUtilTest_SOURCES = generalUtilTest.cc
 generalUtilTest_LDADD = ../libdap.la $(AM_LDADD)
 
@@ -234,11 +223,6 @@ dasT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 ServerFunctionsListUnitTest_SOURCES = ServerFunctionsListUnitTest.cc
 ServerFunctionsListUnitTest_LDADD = ../libdap.la $(AM_LDADD)
 
-# ResponseCacheTest_SOURCES = ResponseCacheTest.cc
-# ResponseCacheTest_LDADD = ../tests/libtest-types.a ../libdapserver.la ../libdap.la $(AM_LDADD)
-
-if DAP4_DEFINED
-
 D4MarshallerTest_SOURCES = D4MarshallerTest.cc
 D4MarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
 
@@ -283,5 +267,3 @@ D4FilterClauseTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4SequenceTest_SOURCES = D4SequenceTest.cc $(TEST_SRC)
 D4SequenceTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
-
-endif

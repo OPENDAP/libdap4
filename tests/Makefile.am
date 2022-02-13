@@ -30,11 +30,7 @@ AM_LDFLAGS =
 include $(top_srcdir)/coverage.mk
 
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
-check_PROGRAMS = das-test dds-test expr-test 
-
-if DAP4_DEFINED
-check_PROGRAMS += dmr-test
-endif
+check_PROGRAMS = das-test dds-test expr-test dmr-test
 
 # This will use automake's test envokation code. It's better to use
 # our own so we can pass in flags for autotest, esp --jobs=N to get
@@ -65,10 +61,8 @@ dds_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la
 expr_test_SOURCES = expr-test.cc ResponseBuilder.cc ResponseBuilder.h
 expr_test_LDADD = libtest-types.a ../libdapserver.la ../libdapclient.la ../libdap.la
 
-if DAP4_DEFINED
 dmr_test_SOURCES = dmr-test.cc D4ResponseBuilder.cc D4ResponseBuilder.h
 dmr_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la
-endif
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestSequence.cc		 \

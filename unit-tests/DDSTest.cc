@@ -115,6 +115,10 @@ public:
     // DAS, it will need to specialize the BaseType::transfer_attributes()
     // method.
     CPPUNIT_TEST_SUITE (DDSTest);
+
+    CPPUNIT_TEST(iterator_use_test_1);
+    CPPUNIT_TEST(iterator_use_test_2);
+
     CPPUNIT_TEST(transfer_attributes_test_1);
     CPPUNIT_TEST(transfer_attributes_test_2);
 
@@ -153,6 +157,74 @@ public:
     CPPUNIT_TEST(get_das_test_6);
 
     CPPUNIT_TEST_SUITE_END();
+    
+    void iterator_use_test_1() {
+        DBG(cerr << "iterator_use_test_1" << endl);
+        
+        dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+        DAS das;
+        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+        dds1->transfer_attributes(&das);
+        
+        // in this loop count the variables and accumulate their names. This tests using the
+        // old and new way of iterating over the BaseType pointers. jhrg 2/4/22
+        int old_count = 0;
+        string old_names = "";
+        for (DDS::Vars_iter i = dds1->var_begin(), e = dds1->var_end(); i != e; ++i) {
+            ++old_count;
+            old_names.append((*i)->name());
+        }
+
+        DBG(cerr << "old_count: " << old_count << endl);
+        DBG(cerr << "old_names: " << old_names << endl);
+        
+        int new_count = 0;
+        string new_names = "";
+        for (auto &btp: dds1->variables()) {
+            ++new_count;
+            new_names.append(btp->name());
+        }
+
+        DBG(cerr << "new_count: " << new_count << endl);
+        DBG(cerr << "new_names: " << new_names << endl);
+        
+        CPPUNIT_ASSERT_MESSAGE("The number of variable should be the same", old_count == new_count);
+        CPPUNIT_ASSERT_MESSAGE("The names of the variables should be the same", old_names == new_names);
+    }
+
+    void iterator_use_test_2() {
+        DBG(cerr << "iterator_use_test_2" << endl);
+
+        dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+        DAS das;
+        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+        dds1->transfer_attributes(&das);
+
+        // in this loop count the variables and accumulate their names. This tests using the
+        // old and new way of iterating over the BaseType pointers. jhrg 2/4/22
+        int old_count = 0;
+        string old_names = "";
+        for (DDS::Vars_riter i = dds1->var_rbegin(), e = dds1->var_rend(); i != e; ++i) {
+            ++old_count;
+            old_names.append((*i)->name());
+        }
+
+        DBG(cerr << "old_count: " << old_count << endl);
+        DBG(cerr << "old_names: " << old_names << endl);
+
+        int new_count = 0;
+        string new_names = "";
+        for (auto i = dds1->variables().rbegin(), e = dds1->variables().rend(); i != e; ++i) {
+            ++new_count;
+            new_names.append((*i)->name());
+        }
+
+        DBG(cerr << "new_count: " << new_count << endl);
+        DBG(cerr << "new_names: " << new_names << endl);
+
+        CPPUNIT_ASSERT_MESSAGE("The number of variable should be the same", old_count == new_count);
+        CPPUNIT_ASSERT_MESSAGE("The names of the variables should be the same", old_names == new_names);
+    }
 
     void transfer_attributes_test_1()
     {
