@@ -37,6 +37,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <memory>
 
 //#define DODS_DEBUG
 //#define DODS_DEBUG2
