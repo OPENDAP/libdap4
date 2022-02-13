@@ -53,7 +53,7 @@
 #include <sstream>
 //#include <algorithm>
 //#include <functional>
-//#include <memory>
+#include <memory>
 
 // #define DODS_DEBUG
 // #define DODS_DEBUG2
