@@ -336,7 +336,7 @@ public:
      * @note Use this in range-based for loops to iterate over the variables.
      * @return A const reference to the vector of BaseType pointers.
      */
-    const vector<BaseType*> &variables() { return vars; }
+    const vector<BaseType*> &variables() const { return vars; }
 
     /// Return an iterator to the first variable
     /// @see vars()
