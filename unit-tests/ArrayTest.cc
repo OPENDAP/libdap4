@@ -29,6 +29,8 @@
 #include <cstring>
 #include <string>
 
+#include <unistd.h>
+
 #include "GNURegex.h"
 
 #include "Array.h"
@@ -39,7 +41,6 @@
 #include "D4Dimensions.h"
 
 #include "debug.h"
-#include "GetOpt.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -368,43 +369,52 @@ CPPUNIT_TEST_SUITE_REGISTRATION (ArrayTest);
 
 int main(int argc, char *argv[])
 {
+#if 0
     GetOpt getopt(argc, argv, "dh");
     int option_char;
 
     while ((option_char = getopt()) != -1)
+#endif
+
+    int option_char;
+    while ((option_char = getopt(argc, argv, "dh")) != EOF) {
         switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
+            case 'd':
+                debug = 1;  // debug is a static global
+                break;
 
-        case 'h': {     // help - show test names
-            cerr << "Usage: ArrayTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::ArrayTest::suite()->getTests();
-            unsigned int prefix_len = libdap::ArrayTest::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            case 'h': {     // help - show test names
+                cerr << "Usage: ArrayTest has the following tests:" << endl;
+                const std::vector<Test *> &tests = libdap::ArrayTest::suite()->getTests();
+                unsigned int prefix_len = libdap::ArrayTest::suite()->getName().append("::").length();
+                for (std::vector<Test *>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                    cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+                }
+                break;
             }
-            break;
-        }
 
-        default:
-            break;
+            default:
+                break;
         }
+    }
+
+    argc -= optind;
+    argv += optind;
 
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
+    if (0 == argc) {
         // run them all
         wasSuccessful = runner.run("");
     }
     else {
-        for (; i < argc; ++i) {
+        int i = 0;
+        while (i < argc) {
             if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::ArrayTest::suite()->getName().append("::").append(argv[i]);
+            test = libdap::ArrayTest::suite()->getName().append("::").append(argv[i++]);
             wasSuccessful = wasSuccessful && runner.run(test);
         }
     }
