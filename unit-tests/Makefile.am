@@ -84,7 +84,7 @@ D4-xml.tar.gz: D4-xml/DMR_*[0-9].xml
 
 if CPPUNIT
 UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
-	RegexTest ArrayTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest \
+	RegexTest ArrayTest GridTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest \
 	DDSTest	DDXParserTest  generalUtilTest HTTPConnectTest parserUtilTest \
 	RCReaderTest SequenceTest SignalHandlerTest  MarshallerTest \
 	HTTPCacheTest ServerFunctionsListUnitTest Int8Test Int16Test UInt16Test \
@@ -117,6 +117,9 @@ RegexTest_LDADD = ../libdap.la $(AM_LDADD)
 
 ArrayTest_SOURCES = ArrayTest.cc
 ArrayTest_LDADD = ../libdap.la $(AM_LDADD)
+
+GridTest_SOURCES = GridTest.cc
+GridTest_LDADD = ../libdap.la $(AM_LDADD)
 
 AttrTableTest_SOURCES = AttrTableTest.cc $(TEST_SRC)
 AttrTableTest_LDADD = ../libdap.la $(AM_LDADD)

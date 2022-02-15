@@ -500,15 +500,7 @@ Grid::prepend_map(Array* p_new_map, bool add_copy)
 BaseType *
 Grid::array_var()
 {
-    //return d_array_var;
-	// FIXME Should really test that the array has not be set; maps might be added first. jhrg 5/9/13
-#if 0
-	if (d_array_var)
-		cerr << "In array_var(), d_array_var holds a " << d_array_var->type_name() << endl;
-	else
-		cerr << "In array_var(), d_array_var is null" << endl;
-#endif
-	return d_is_array_set /*d_vars.size() > 0*/ ? *d_vars.begin() : 0;
+	return d_is_array_set ? *d_vars.begin() : nullptr;
 }
 
 /** @brief Returns the Grid Array.
@@ -528,7 +520,7 @@ Grid::map_begin()
     // d_var vector<BaseType*> of Constructor _unless_ the Array part
     // has yet to be set. In the latter case, there are only maps in
     // d_vars
-    return d_is_array_set/*(d_array_var != 0)*/ ? d_vars.begin() + 1: d_vars.begin();
+    return d_is_array_set ? d_vars.begin() + 1: d_vars.begin();
 }
 
 /** Returns an iterator referencing the end of the list of Map vectors.
@@ -544,7 +536,6 @@ Grid::Map_riter
 Grid::map_rbegin()
 {
     // see above
-    // return d_is_array_set/*(d_array_var != 0)*/ ? d_vars.rbegin() + 1: d_vars.rbegin();
     return d_vars.rbegin();
 }
 
@@ -562,8 +553,7 @@ Grid::map_rend()
 Grid::Map_iter
 Grid::get_map_iter(int i)
 {
-    // return map_begin() + i;
-    return d_is_array_set ? map_begin() + 1 + i : map_begin() + i;
+    return d_is_array_set ? d_vars.begin() + 1 + i : d_vars.begin() + i;
 }
 
 /** Returns the number of components in the Grid object.  This is
