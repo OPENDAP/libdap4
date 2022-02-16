@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+#include <algorithm>
 
 #include "D4Attributes.h"
 #include "D4AttributeType.h"
