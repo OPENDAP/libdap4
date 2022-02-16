@@ -475,6 +475,45 @@ D4Attributes::get(const string &fqn)
     return 0;
 }
 
+/**
+ * @brief Erase the given attribute.
+ * @param fqn Fully Qualified Name for the attribute to remove.
+ */
+void
+D4Attributes::erase(const string &fqn)
+{
+    // name1.name2.name3; part is name1 and rest is name2.name3
+    // name1; part is name1 and rest is ""
+    // name1.name2; part is name1 and rest is name2
+    size_t pos = fqn.find('.');
+    string part = fqn.substr(0, pos);
+    string rest= "";
+
+    if (pos != string::npos)
+        rest = fqn.substr(pos + 1);
+
+    if (!part.empty()) {
+        if (!rest.empty()) {
+            // in this case, we are not looking for a leaf node, so descend the
+            // attribute container hierarchy.
+            for(auto i = d_attrs.begin(), e = d_attrs.end(); i != e; ++i) {
+                if ((*i)->name() == part && (*i)->type() == attr_container_c) {
+                    (*i)->attributes()->erase(rest);
+                }
+            }
+        }
+        else {
+            // now we have a leaf node, find and erase it.
+            for(auto i = d_attrs.begin(), e = d_attrs.end(); i != e; ++i) {
+                if ((*i)->name() == part) {
+                    delete *i;  // delete the D4Attribute
+                    d_attrs.erase(i); // remove the D4Attribute* from the container
+                }
+            }
+        }
+    }
+}
+
 void
 D4Attribute::print_dap4(XMLWriter &xml) const
 {

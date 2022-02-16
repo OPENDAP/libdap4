@@ -358,6 +358,48 @@ public:
         CPPUNIT_ASSERT(baseline == get_result);
     }
 
+    // test erasing an attribute
+    void test_erase_1()
+    {
+        attrs->add_attribute(&a);
+        attrs->add_attribute(&a2);
+        attrs->add_attribute(&c);
+        attrs->add_attribute(&c2);
+
+        D4Attribute *first = attrs->get("first");
+        CPPUNIT_ASSERT_MESSAGE("The attribute should be present before calling erase()", first != nullptr);
+        // sanity check
+        CPPUNIT_ASSERT(first->type() == attr_byte_c);
+        CPPUNIT_ASSERT(first->name() == "first");
+
+        attrs->erase("first");
+
+        first = attrs->get("first");
+        CPPUNIT_ASSERT_MESSAGE("The attribute should not be present after calling erase()", first == nullptr);
+    }
+
+    // test erasing an attribute in a container
+    void test_erase_2()
+    {
+        attrs->add_attribute(&a);
+        attrs->add_attribute(&a2);
+        attrs->add_attribute(&c);
+        attrs->add_attribute(&c2);
+
+        D4Attribute *color = attrs->get("container_1.color");
+        CPPUNIT_ASSERT_MESSAGE("The attribute should be present before calling erase()", color != nullptr);
+        // sanity check
+        CPPUNIT_ASSERT(color->type() == attr_str_c);
+        CPPUNIT_ASSERT(color->name() == "color");
+
+        attrs->erase("container_1.color");
+
+        color = attrs->get("container_1.color");
+        // attrs->dump(cerr), attrs <-- Trick to get a return value for the ternary op. jhrg 2/16/22
+        DBG(cerr << "after erase: attrs: " << (attrs != nullptr ? attrs->dump(cerr), attrs: 0) << endl);
+        CPPUNIT_ASSERT_MESSAGE("The attribute should not be present after calling erase()", color == nullptr);
+    }
+
     CPPUNIT_TEST_SUITE (D4AttributesTest);
 
     CPPUNIT_TEST (test_type_to_string);
@@ -379,6 +421,9 @@ public:
     CPPUNIT_TEST (test_get);
     CPPUNIT_TEST (test_get2);
 
+    CPPUNIT_TEST (test_erase_1);
+    CPPUNIT_TEST (test_erase_2);
+
     CPPUNIT_TEST_SUITE_END();
 };
 
@@ -386,39 +431,40 @@ CPPUNIT_TEST_SUITE_REGISTRATION (D4AttributesTest);
 
 int main(int argc, char*argv[])
 {
-    GetOpt getopt(argc, argv, "dh");
     int option_char;
-    while ((option_char = getopt()) != -1)
+    while ((option_char = getopt(argc, argv, "dh")) != EOF) {
         switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-        case 'h': {     // help - show test names
-            cerr << "Usage: D4AttributesTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = D4AttributesTest::suite()->getTests();
-            unsigned int prefix_len = D4AttributesTest::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+            case 'd':
+                debug = 1;  // debug is a static global
+                break;
+            case 'h': {     // help - show test names
+                cerr << "Usage: D4AttributesTest has the following tests:" << endl;
+                const std::vector<Test *> &tests = D4AttributesTest::suite()->getTests();
+                unsigned int prefix_len = D4AttributesTest::suite()->getName().append("::").length();
+                for (std::vector<Test *>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
+                    cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
+                }
+                break;
             }
-            break;
-        }
 
-        default:
-            break;
+            default:
+                break;
         }
+    }
+    argc -= optind;
+    argv += optind;
 
     CppUnit::TextTestRunner runner;
     runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
 
     bool wasSuccessful = true;
     string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
+    if (0 == argc) {
         // run them all
         wasSuccessful = runner.run("");
     }
     else {
-        for (; i < argc; ++i) {
+        for (int i = 0; i < argc; ++i) {
             if (debug) cerr << "Running " << argv[i] << endl;
             test = D4AttributesTest::suite()->getName().append("::").append(argv[i]);
             wasSuccessful = wasSuccessful && runner.run(test);
