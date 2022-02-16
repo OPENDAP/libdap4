@@ -79,7 +79,7 @@ TestStr::operator=(const TestStr &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<Str &>(*this) = rhs; // run Constructor=
+    Str::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 

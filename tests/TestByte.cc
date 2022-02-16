@@ -117,7 +117,7 @@ TestByte::operator=(const TestByte &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<Byte &>(*this) = rhs; // run Constructor=
+    Byte::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 

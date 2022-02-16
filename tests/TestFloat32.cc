@@ -86,7 +86,7 @@ TestFloat32::operator=(const TestFloat32 &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<Float32 &>(*this) = rhs; // run Constructor=
+    Float32::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 

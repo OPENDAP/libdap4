@@ -68,7 +68,7 @@ TestInt64::operator=(const TestInt64 &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<Int64 &>(*this) = rhs; // run Constructor=
+    Int64::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 

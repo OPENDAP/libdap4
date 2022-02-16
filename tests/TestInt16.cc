@@ -76,7 +76,7 @@ TestInt16::operator=(const TestInt16 &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<Int16 &>(*this) = rhs; // run Constructor=
+    Int16::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 

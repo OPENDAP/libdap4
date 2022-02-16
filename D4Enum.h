@@ -31,12 +31,6 @@
 #include "BaseType.h"
 #include "dods-datatypes.h"
 
-#if 0
-#include "InternalErr.h"
-#include "dods-datatypes.h"
-#include "dods-limits.h"
-#include "util.h"
-#endif
 
 namespace libdap
 {
@@ -111,7 +105,7 @@ public:
     D4Enum &operator=(const D4Enum &rhs) {
         if (this == &rhs)
             return *this;
-        static_cast<BaseType &>(*this) = rhs;
+        BaseType::operator=(rhs);
         m_duplicate(rhs);
         return *this;
     }

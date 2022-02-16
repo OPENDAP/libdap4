@@ -85,7 +85,7 @@ TestFloat64::operator=(const TestFloat64 &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<Float64 &>(*this) = rhs; // run Constructor=
+    Float64::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 

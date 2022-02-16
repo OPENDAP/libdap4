@@ -76,7 +76,7 @@ TestUrl::operator=(const TestUrl &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<Url &>(*this) = rhs; // run Constructor=
+    Url::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 

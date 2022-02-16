@@ -64,7 +64,7 @@ TestInt8::operator=(const TestInt8 &rhs)
 {
 	if (this == &rhs) return *this;
 
-	dynamic_cast<Int8 &>(*this) = rhs; // run Constructor=
+	Int8::operator=(rhs); // run Constructor=
 
 	m_duplicate(rhs);
 

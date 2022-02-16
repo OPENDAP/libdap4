@@ -71,7 +71,7 @@ TestUInt64::operator=(const TestUInt64 &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<UInt64 &>(*this) = rhs; // run Constructor=
+    UInt64::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 

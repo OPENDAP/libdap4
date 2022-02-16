@@ -71,7 +71,7 @@ TestD4Sequence::operator=(const TestD4Sequence &rhs)
     if (this == &rhs)
         return *this;
 
-    dynamic_cast<D4Sequence &>(*this) = rhs;
+    D4Sequence::operator=(rhs);
 
     m_duplicate(rhs);
 

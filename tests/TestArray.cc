@@ -114,7 +114,7 @@ TestArray::operator=(const TestArray &rhs)
 {
     if (this == &rhs) return *this;
 
-    dynamic_cast<Array &>(*this) = rhs;
+    Array::operator=(rhs);
 
     _duplicate(rhs);
 

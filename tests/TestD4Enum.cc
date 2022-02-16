@@ -68,7 +68,7 @@ TestD4Enum::operator=(const TestD4Enum &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<D4Enum &>(*this) = rhs; // run Constructor=
+    D4Enum::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 

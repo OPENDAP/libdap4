@@ -78,7 +78,7 @@ TestD4Opaque::operator=(const TestD4Opaque &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<D4Opaque &>(*this) = rhs; // run Constructor=
+    D4Opaque::operator=(rhs); // run Constructor=
 
     m_duplicate(rhs);
 

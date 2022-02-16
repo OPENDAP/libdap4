@@ -65,7 +65,7 @@ TestStructure::operator=(const TestStructure &rhs)
 {
 	if (this == &rhs) return *this;
 
-	dynamic_cast<Structure &>(*this) = rhs; // run Constructor=
+	Structure::operator=(rhs); // run Constructor=
 
 	m_duplicate(rhs);
 

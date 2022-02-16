@@ -79,7 +79,7 @@ TestInt32::operator=(const TestInt32 &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<Int32 &>(*this) = rhs; // run Constructor=
+    Int32::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 
