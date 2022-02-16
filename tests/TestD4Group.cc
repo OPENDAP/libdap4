@@ -54,7 +54,7 @@ TestD4Group::operator=(const TestD4Group &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<D4Group &>(*this) = rhs; // run Constructor=
+    D4Group::operator=(rhs); // run Constructor=
 
     m_duplicate(rhs);
 

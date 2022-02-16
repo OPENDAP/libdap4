@@ -77,7 +77,7 @@ TestUInt32::operator=(const TestUInt32 &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<UInt32 &>(*this) = rhs; // run Constructor=
+    UInt32::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 

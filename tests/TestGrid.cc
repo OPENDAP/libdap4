@@ -109,7 +109,7 @@ TestGrid::operator=(const TestGrid &rhs)
     if (this == &rhs)
 	return *this;
 
-    dynamic_cast<Grid &>(*this) = rhs; // run Constructor=
+    Grid::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 

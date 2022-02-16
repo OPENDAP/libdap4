@@ -88,7 +88,7 @@ TestSequence::operator=(const TestSequence &rhs)
 {
     if (this == &rhs) return *this;
 
-    dynamic_cast<Sequence &>(*this) = rhs; // run Constructor=
+    Sequence::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 
