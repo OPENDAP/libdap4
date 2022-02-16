@@ -176,13 +176,8 @@ Array &
 Array::operator=(const Array &rhs)
 {
     if (this == &rhs) return *this;
-
-#if 0
-    dynamic_cast<Vector &>(*this) = rhs;
-#endif
     Vector::operator=(rhs);
     _duplicate(rhs);
-
     return *this;
 }
 

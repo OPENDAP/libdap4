@@ -197,9 +197,7 @@ DMR::operator=(const DMR &rhs)
 {
     if (this == &rhs)
         return *this;
-
     m_duplicate(rhs);
-
     return *this;
 }
 

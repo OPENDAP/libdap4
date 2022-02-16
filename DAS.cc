@@ -88,9 +88,7 @@ DAS &DAS::operator=(const DAS &rhs)
 {
     if (this == &rhs)
         return *this;
-
     duplicate(rhs);
-
     return *this;
 }
 

@@ -224,13 +224,9 @@ DDS::~DDS()
 DDS &
 DDS::operator=(const DDS &rhs)
 {
-    DBG(cerr << "Entering DDS::operator= ..." << endl);
     if (this == &rhs)
         return *this;
-
     duplicate(rhs);
-
-    DBG(cerr << " bye." << endl);
     return *this;
 }
 

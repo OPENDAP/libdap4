@@ -124,15 +124,10 @@ Constructor::~Constructor()
 Constructor &
 Constructor::operator=(const Constructor &rhs)
 {
-    DBG(cerr << "Entering Constructor::operator=" << endl);
     if (this == &rhs)
         return *this;
-
-    dynamic_cast<BaseType &>(*this) = rhs; // run BaseType=
-
+    BaseType::operator=(rhs);
     m_duplicate(rhs);
-
-    DBG(cerr << "Exiting Constructor::operator=" << endl);
     return *this;
 }
 

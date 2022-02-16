@@ -123,21 +123,8 @@ Grid::operator=(const Grid &rhs)
 {
     if (this == &rhs)
         return *this;
-
-    // Removed this; it makes this operator= work differently than the rest
-#if 0
-    delete d_array_var; d_array_var = 0;
-
-    for (Map_iter i = d_map_vars.begin(); i != d_map_vars.end(); i++) {
-        BaseType *btp = *i ;
-        delete btp ;
-    }
-#endif
-
-    dynamic_cast<Constructor &>(*this) = rhs;
-
+    Constructor::operator=(rhs);
     m_duplicate(rhs);
-
     return *this;
 }
 

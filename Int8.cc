@@ -99,11 +99,8 @@ Int8::operator=(const Int8 &rhs)
 {
     if (this == &rhs)
         return *this;
-
-    static_cast<BaseType &>(*this) = rhs;
-
+    BaseType::operator=(rhs);
     d_buf = rhs.d_buf;
-
     return *this;
 }
 

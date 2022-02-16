@@ -167,11 +167,8 @@ D4Group::operator=(const D4Group &rhs)
 {
     if (this == &rhs)
         return *this;
-
-    dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
-
+    Constructor::operator=(rhs);
     m_duplicate(rhs);
-
     return *this;
 }
 

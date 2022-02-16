@@ -167,13 +167,9 @@ BaseType::~BaseType()
 BaseType &
 BaseType::operator=(const BaseType &rhs)
 {
-    DBG(cerr << "Entering BaseType::operator=" << endl);
     if (this == &rhs)
         return *this;
-
     m_duplicate(rhs);
-
-    DBG(cerr << "Exiting BaseType::operator=" << endl);
     return *this;
 }
 
