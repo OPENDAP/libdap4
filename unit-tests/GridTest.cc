@@ -56,9 +56,7 @@ class GridTest: public TestFixture {
 private:
     Grid *d_grid = nullptr;
     Array *d_array = nullptr;
-    // Float32 *d_array_proto;
     Array *d_map = nullptr;
-    // Float32 *d_map_proto;
 
 public:
     GridTest() = default;
@@ -197,19 +195,6 @@ public:
         DBG(cerr << "d_map: " << hex << d_map << endl);
         CPPUNIT_ASSERT(*d_grid->map_rbegin() == d_map);
     }
-
-#if 0
-    Map_iter get_map_iter(int i);
-
-    Map_riter map_rbegin() ;
-    Map_iter map_begin() ;
-#endif
-
-
-#if 0
-    Vars_iter get_vars_iter(int i);
-    BaseType *get_var_index(int i);
-#endif
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION (GridTest);
