@@ -503,13 +503,20 @@ D4Attributes::erase(const string &fqn)
             }
         }
         else {
-            // now we have a leaf node, find and erase it.
+            // now we have a leaf node, find and erase it. Note that attributes are uniquely
+            // named within a container, so when/if we find a match, we're done. jhrg 2/16/22
+            d_attrs.erase(remove_if(d_attrs.begin(), d_attrs.end(),
+                                    [part](D4Attribute *a) -> bool { return a->name() == part; }),
+                          d_attrs.end());
+#if 0
             for(auto i = d_attrs.begin(), e = d_attrs.end(); i != e; ++i) {
                 if ((*i)->name() == part) {
                     delete *i;  // delete the D4Attribute
                     d_attrs.erase(i); // remove the D4Attribute* from the container
+                    break;
                 }
             }
+#endif
         }
     }
 }
