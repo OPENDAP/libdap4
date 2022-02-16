@@ -52,12 +52,8 @@ D4Opaque::operator=(const D4Opaque &rhs)
 {
     if (this == &rhs)
         return *this;
-
-    // Call BaseType::operator=
-    dynamic_cast<BaseType &>(*this) = rhs;
-
+    BaseType::operator=(rhs);
     d_buf = rhs.d_buf;
-
     return *this;
 }
 

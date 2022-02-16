@@ -111,11 +111,8 @@ Float32::operator=(const Float32 &rhs)
 {
     if (this == &rhs)
         return *this;
-
-    dynamic_cast<BaseType &>(*this) = rhs;
-
+    BaseType::operator=(rhs);
     d_buf = rhs.d_buf;
-
     return *this;
 }
 

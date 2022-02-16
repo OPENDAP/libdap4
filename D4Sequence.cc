@@ -197,11 +197,8 @@ D4Sequence &
 D4Sequence::operator=(const D4Sequence &rhs)
 {
     if (this == &rhs) return *this;
-
-    dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
-
+    Constructor::operator=(rhs);
     m_duplicate(rhs);
-
     return *this;
 }
 

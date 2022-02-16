@@ -113,13 +113,8 @@ Byte & Byte::operator=(const Byte & rhs)
 {
     if (this == &rhs)
         return *this;
-#if 0
-    dynamic_cast < BaseType & >(*this) = rhs;
-#endif
     BaseType::operator=(rhs);
-
     d_buf = rhs.d_buf;
-
     return *this;
 }
 

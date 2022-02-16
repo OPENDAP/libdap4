@@ -247,33 +247,11 @@ Structure::transform_to_dap2(AttrTable *)
 Structure &
 Structure::operator=(const Structure &rhs)
 {
-    DBG(cerr << "Entering Structure::operator=" << endl);
     if (this == &rhs)
         return *this;
-
-    dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
-
-    //m_duplicate(rhs);
-
-    DBG(cerr << "Exiting Structure::operator=" << endl);
+    Constructor::operator=(rhs);
     return *this;
 }
-
-#if 0
-int
-Structure::element_count(bool leaves)
-{
-    if (!leaves)
-        return d_vars.size();
-    else {
-        int i = 0;
-        for (Vars_iter j = d_vars.begin(); j != d_vars.end(); j++) {
-            i += (*j)->element_count(leaves);
-        }
-        return i;
-    }
-}
-#endif
 
 bool
 Structure::is_linear()
