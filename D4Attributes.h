@@ -131,12 +131,6 @@ public:
     void transform_to_dap4(AttrTable &at);
     void transform_attrs_to_dap2(AttrTable *d2_attr_table);
 
-#if 0
-    // Can these be replaced with transform_to_dap2() above? jhrg 6/17/19
-    AttrTable *get_AttrTable(const std::string name);
-    static void load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs);
-#endif
-
     bool empty() const { return d_attrs.empty(); }
 
     void add_attribute(D4Attribute *attr) {
@@ -155,11 +149,14 @@ public:
 
     D4Attribute *find(const string &name);
     D4Attribute *get(const string &fqn);
+    void erase(const string &fqn);
 
-    // D4Attribute *find_container(const string &name);
-    // D4Attribute *get_container(const string &fqn);
-
-    // Might add erase()
+    /**
+      * Get a const reference to the vector of D$attribute pointers.
+      * @note Use this in range-based for loops to iterate over the variables.
+      * @return A const reference to the vector of D4Attribute pointers.
+      */
+    const vector<D4Attribute*> &attributes() const { return d_attrs; }
 
     void print_dap4(XMLWriter &xml) const;
 

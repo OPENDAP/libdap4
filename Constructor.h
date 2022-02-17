@@ -92,6 +92,13 @@ public:
     Vars_iter get_vars_iter(int i);
     BaseType *get_var_index(int i);
 
+    /**
+      * Get a const reference to the vector of BaseType pointers.
+      * @note Use this in range-based for loops to iterate over the variables.
+      * @return A const reference to the vector of BaseType pointers.
+      */
+    const vector<BaseType*> &variables() const { return d_vars; }
+
     virtual void add_var(BaseType *bt, Part part = nil);
     virtual void add_var_nocopy(BaseType *bt, Part part = nil);
 
