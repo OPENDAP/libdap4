@@ -476,6 +476,38 @@ D4Attributes::get(const string &fqn)
 }
 
 /**
+ * @brief Erase an attribute from a specific container
+ * This method expects to find 'name' in the D4Attributes object
+ * on which it is called.
+ * @param name The name of the attribute in this container
+ * @see void D4Attributes::erase(const string &fqn) for code that
+ * searches for a fully qualified attribute name and erases it.
+ */
+void
+D4Attributes::erase_named_attribute(const string &name)
+{
+    for (auto i = d_attrs.begin(), e = d_attrs.end(); i != e; ++i) {
+        if ((*i)->name() == name) {
+            delete *i;  // delete the D4Attribute
+            d_attrs.erase(i); // remove the D4Attribute* from the container
+            break;
+        }
+    }
+#if 0
+    // This is slick, but leaks memory.
+    d_attrs.erase(remove_if(d_attrs.begin(), d_attrs.end(),
+                            [part](D4Attribute *a) -> bool { return a->name() == part; }),
+                 d_attrs.end());
+    // I wonder about this instead... but it's hard to test these on OSX.
+    d_attrs.erase(remove_if(d_attrs.begin(), d_attrs.end(),
+                            [part](D4Attribute *a) -> bool {
+                            if (a->name() == part) { delete a;  return true; }
+                            else {  return false; }}),
+                 d_attrs.end());
+#endif
+}
+
+/**
  * @brief Erase the given attribute.
  * @param fqn Fully Qualified Name for the attribute to remove.
  */
@@ -503,27 +535,7 @@ D4Attributes::erase(const string &fqn)
             }
         }
         else {
-            // now we have a leaf node, find and erase it. Note that attributes are uniquely
-            // named within a container, so when/if we find a match, we're done. jhrg 2/16/22
-            for(auto i = d_attrs.begin(), e = d_attrs.end(); i != e; ++i) {
-                if ((*i)->name() == part) {
-                    delete *i;  // delete the D4Attribute
-                    d_attrs.erase(i); // remove the D4Attribute* from the container
-                    break;
-                }
-            }
-#if 0
-            // This is slick, but leaks memory.
-            d_attrs.erase(remove_if(d_attrs.begin(), d_attrs.end(),
-                                    [part](D4Attribute *a) -> bool { return a->name() == part; }),
-                         d_attrs.end());
-            // I wonder about this instead... but it's hard to test these on OSX.
-            d_attrs.erase(remove_if(d_attrs.begin(), d_attrs.end(),
-                                    [part](D4Attribute *a) -> bool {
-                                    if (a->name() == part) { delete a;  return true; }
-                                    else {  return false; }}),
-                         d_attrs.end());
-#endif
+            erase_named_attribute(part);
         }
     }
 }
