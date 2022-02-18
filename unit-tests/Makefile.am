@@ -241,10 +241,17 @@ D4EnumDefsTest_LDADD = ../libdap.la $(AM_LDADD)
 D4GroupTest_SOURCES = D4GroupTest.cc $(TEST_SRC)
 D4GroupTest_LDADD = ../libdap.la $(AM_LDADD)
 
+# making these link statically makes them easier to debug and to use
+# with OSX's leaks tool. It also seems to force the linker to use the
+# locally built copy of the library and not the installed copy.
+# leaks example: leaks --atExit -- ./D4AttributesTest
+# jhrg 2/17/22
 D4ParserSax2Test_SOURCES = D4ParserSax2Test.cc $(TEST_SRC)
+D4ParserSax2Test_LDFLAGS = -static
 D4ParserSax2Test_LDADD = ../libdap.la $(AM_LDADD)
 
 D4AttributesTest_SOURCES = D4AttributesTest.cc $(TEST_SRC)
+D4AttributesTest_LDFLAGS = -static
 D4AttributesTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4EnumTest_SOURCES = D4EnumTest.cc $(TEST_SRC)
