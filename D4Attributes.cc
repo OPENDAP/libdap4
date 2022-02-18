@@ -476,6 +476,33 @@ D4Attributes::get(const string &fqn)
 }
 
 /**
+ * @brief Erase an attribute from a specific container
+ * This method expects to find 'name' in the D4Attributes object
+ * on which it is called.
+ * @param name The name of the attribute in this container
+ * @see void D4Attributes::erase(const string &fqn) for code that
+ * searches for a fully qualified attribute name and erases it.
+ */
+void
+D4Attributes::erase_named_attribute(const string &name)
+{
+#if 1
+    // This does not leak memory, according to the OSX 'leaks' tool.
+    d_attrs.erase(remove_if(d_attrs.begin(), d_attrs.end(),
+                            [name](D4Attribute *a) -> bool { return a->name() == name ? delete a, true: false; }),
+                 d_attrs.end());
+#else
+    for (auto i = d_attrs.begin(), e = d_attrs.end(); i != e; ++i) {
+        if ((*i)->name() == name) {
+            delete *i;  // delete the D4Attribute
+            d_attrs.erase(i); // remove the D4Attribute* from the container
+            break;
+        }
+    }
+#endif
+}
+
+/**
  * @brief Erase the given attribute.
  * @param fqn Fully Qualified Name for the attribute to remove.
  */
@@ -496,27 +523,14 @@ D4Attributes::erase(const string &fqn)
         if (!rest.empty()) {
             // in this case, we are not looking for a leaf node, so descend the
             // attribute container hierarchy.
-            for(auto i = d_attrs.begin(), e = d_attrs.end(); i != e; ++i) {
-                if ((*i)->name() == part && (*i)->type() == attr_container_c) {
-                    (*i)->attributes()->erase(rest);
+            for (auto a: d_attrs) {
+                if (a->name() == part && a->type() == attr_container_c) {
+                    a->attributes()->erase(rest);
                 }
             }
         }
         else {
-            // now we have a leaf node, find and erase it. Note that attributes are uniquely
-            // named within a container, so when/if we find a match, we're done. jhrg 2/16/22
-            d_attrs.erase(remove_if(d_attrs.begin(), d_attrs.end(),
-                                    [part](D4Attribute *a) -> bool { return a->name() == part; }),
-                          d_attrs.end());
-#if 0
-            for(auto i = d_attrs.begin(), e = d_attrs.end(); i != e; ++i) {
-                if ((*i)->name() == part) {
-                    delete *i;  // delete the D4Attribute
-                    d_attrs.erase(i); // remove the D4Attribute* from the container
-                    break;
-                }
-            }
-#endif
+            erase_named_attribute(part);
         }
     }
 }

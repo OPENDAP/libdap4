@@ -150,6 +150,7 @@ public:
     D4Attribute *find(const string &name);
     D4Attribute *get(const string &fqn);
     void erase(const string &fqn);
+    void erase_named_attribute(const string &name);
 
     /**
       * Get a const reference to the vector of D$attribute pointers.
