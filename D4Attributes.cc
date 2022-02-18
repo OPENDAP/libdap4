@@ -486,6 +486,12 @@ D4Attributes::get(const string &fqn)
 void
 D4Attributes::erase_named_attribute(const string &name)
 {
+#if 1
+    // This does not leak memory, according to the OSX 'leaks' tool.
+    d_attrs.erase(remove_if(d_attrs.begin(), d_attrs.end(),
+                            [name](D4Attribute *a) -> bool { return a->name() == name ? delete a, true: false; }),
+                 d_attrs.end());
+#else
     for (auto i = d_attrs.begin(), e = d_attrs.end(); i != e; ++i) {
         if ((*i)->name() == name) {
             delete *i;  // delete the D4Attribute
@@ -493,17 +499,6 @@ D4Attributes::erase_named_attribute(const string &name)
             break;
         }
     }
-#if 0
-    // This is slick, but leaks memory.
-    d_attrs.erase(remove_if(d_attrs.begin(), d_attrs.end(),
-                            [part](D4Attribute *a) -> bool { return a->name() == part; }),
-                 d_attrs.end());
-    // I wonder about this instead... but it's hard to test these on OSX.
-    d_attrs.erase(remove_if(d_attrs.begin(), d_attrs.end(),
-                            [part](D4Attribute *a) -> bool {
-                            if (a->name() == part) { delete a;  return true; }
-                            else {  return false; }}),
-                 d_attrs.end());
 #endif
 }
 
@@ -528,9 +523,9 @@ D4Attributes::erase(const string &fqn)
         if (!rest.empty()) {
             // in this case, we are not looking for a leaf node, so descend the
             // attribute container hierarchy.
-            for(auto i = d_attrs.begin(), e = d_attrs.end(); i != e; ++i) {
-                if ((*i)->name() == part && (*i)->type() == attr_container_c) {
-                    (*i)->attributes()->erase(rest);
+            for (auto a: d_attrs) {
+                if (a->name() == part && a->type() == attr_container_c) {
+                    a->attributes()->erase(rest);
                 }
             }
         }
