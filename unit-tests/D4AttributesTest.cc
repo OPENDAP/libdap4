@@ -400,6 +400,50 @@ public:
         CPPUNIT_ASSERT_MESSAGE("The attribute should not be present after calling erase()", color == nullptr);
     }
 
+    // test erasing a container
+    void test_erase_3()
+    {
+        attrs->add_attribute(&a);
+        attrs->add_attribute(&a2);
+        attrs->add_attribute(&c);
+        attrs->add_attribute(&c2);
+
+        D4Attribute *color = attrs->get("container_1");
+        CPPUNIT_ASSERT_MESSAGE("The attribute should be present before calling erase()", color != nullptr);
+        // sanity check
+        CPPUNIT_ASSERT(color->type() == attr_container_c);
+        CPPUNIT_ASSERT(color->name() == "container_1");
+
+        attrs->erase("container_1");
+
+        color = attrs->get("container_1");
+        // attrs->dump(cerr), attrs <-- Trick to get a return value for the ternary op. jhrg 2/16/22
+        DBG(cerr << "after erase: attrs: " << (attrs != nullptr ? attrs->dump(cerr), attrs: 0) << endl);
+        CPPUNIT_ASSERT_MESSAGE("The attribute should not be present after calling erase()", color == nullptr);
+    }
+
+    // test erasing a container, using erase_named_attribute() and instead of erase()
+    void test_erase_4()
+    {
+        attrs->add_attribute(&a);
+        attrs->add_attribute(&a2);
+        attrs->add_attribute(&c);
+        attrs->add_attribute(&c2);
+
+        D4Attribute *color = attrs->get("container_1");
+        CPPUNIT_ASSERT_MESSAGE("The attribute should be present before calling erase()", color != nullptr);
+        // sanity check
+        CPPUNIT_ASSERT(color->type() == attr_container_c);
+        CPPUNIT_ASSERT(color->name() == "container_1");
+
+        attrs->erase_named_attribute("container_1");
+
+        color = attrs->get("container_1");
+        // attrs->dump(cerr), attrs <-- Trick to get a return value for the ternary op. jhrg 2/16/22
+        DBG(cerr << "after erase: attrs: " << (attrs != nullptr ? attrs->dump(cerr), attrs: 0) << endl);
+        CPPUNIT_ASSERT_MESSAGE("The attribute should not be present after calling erase()", color == nullptr);
+    }
+
     CPPUNIT_TEST_SUITE (D4AttributesTest);
 
     CPPUNIT_TEST (test_type_to_string);
@@ -423,6 +467,8 @@ public:
 
     CPPUNIT_TEST (test_erase_1);
     CPPUNIT_TEST (test_erase_2);
+    CPPUNIT_TEST (test_erase_3);
+    CPPUNIT_TEST (test_erase_4);
 
     CPPUNIT_TEST_SUITE_END();
 };
@@ -431,8 +477,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION (D4AttributesTest);
 
 int main(int argc, char*argv[])
 {
+    bool sleep_on_exit = false;
     int option_char;
-    while ((option_char = getopt(argc, argv, "dh")) != EOF) {
+    while ((option_char = getopt(argc, argv, "dhs")) != EOF) {
         switch (option_char) {
             case 'd':
                 debug = 1;  // debug is a static global
@@ -446,7 +493,9 @@ int main(int argc, char*argv[])
                 }
                 break;
             }
-
+            case 's':
+                sleep_on_exit = true;
+                break;
             default:
                 break;
         }
@@ -471,6 +520,7 @@ int main(int argc, char*argv[])
         }
     }
 
+    if (sleep_on_exit) sleep(10);
     return wasSuccessful ? 0 : 1;
 }
 

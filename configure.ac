@@ -491,13 +491,29 @@ AS_IF([test "$prefix" = "NONE"],
 
 AC_ARG_ENABLE([asan], 
     [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
-
            
 AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
       [AC_MSG_NOTICE([Building Address Sanitizer version])
        AM_CONDITIONAL([USE_ASAN], [true])],
       [AC_MSG_NOTICE([Not building Address Sanitizer version])
        AM_CONDITIONAL([USE_ASAN], [false])])
+
+AC_ARG_ENABLE([leaks],
+    [AS_HELP_STRING([--enable-leaks], [Run unit tests on OSX using the 'leaks' if available (default: no)])])
+
+# The 'leaks' tool on OSX can be used to test if a program leaks memory.
+# Look for 'leaks' and set LEAKS to it if found, else set it to 'no'
+AC_CHECK_PROG(LEAKS, [leaks], [leaks], [no])
+
+AS_IF([test x$enable_leaks = xyes -a x$LEAKS != xno],
+      [AC_MSG_NOTICE([Will run unit-tests using leaks])
+       LEAKS_FLAGS="-atExit -- "
+       AC_SUBST(LEAKS_FLAGS)
+       AM_CONDITIONAL([USE_LEAKS], [true])],
+      [AC_MSG_NOTICE([Will not run unit-tests using leaks])
+       LEAKS_FLAGS=
+       AC_SUBST(LEAKS_FLAGS)
+       AM_CONDITIONAL([USE_LEAKS], [false])])
 
 AC_ARG_ENABLE([developer],
     [AS_HELP_STRING([--enable-developer], [Build for debug (-g3 -O0); include assert() calls (default: no)])])

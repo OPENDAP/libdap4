@@ -56,21 +56,13 @@ private:
     Str *d_str;
     Structure *d_struct;
 
-    string svalues[4];
+    string svalues[4] = {"0 String", "1 String", "2 String", "3 String" };
     char a[1024];
     
 public:
-    ArrayTest()
-    {
-        svalues[0] = "0 String";
-        svalues[1] = "1 String";
-        svalues[2] = "2 String";
-        svalues[3] = "3 String";
-    }
+    ArrayTest() = default;
 
-    ~ArrayTest()
-    {
-    }
+    ~ArrayTest() = default;
 
     void setUp()
     {
@@ -253,22 +245,6 @@ public:
         CPPUNIT_ASSERT_THROW(a1.add_constraint(i, 0, 3, 1), Error);
     }
 
-    void print_test()
-    {
-        // Array a1 = Array("a", d_int16);
-        // FILE *fp;
-        // a1.append_dim(2, "dim_a");
-        // CPPUNIT_ASSERT(fp = fopen("ArrayTest.output", "w"));
-        // a1.print_xml(fp, " ", true);
-        // fclose(fp);
-        // ifstream ifs("ArrayTest.output");
-        // while(!ifs.eof())
-        //     ifs >> a;
-        // ifs.close();
-        // cout<<a;
-//        CPPUNIT_ASSERT(!strcmp(a, "22;"));
-    }
-
     void duplicate_structure_test()
     {
         Array::Dim_iter i = d_structure->dim_begin();
@@ -369,13 +345,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION (ArrayTest);
 
 int main(int argc, char *argv[])
 {
-#if 0
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-#endif
-
     int option_char;
     while ((option_char = getopt(argc, argv, "dh")) != EOF) {
         switch (option_char) {

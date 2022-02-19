@@ -52,6 +52,12 @@ libtest_types_a_CXXFLAGS = $(AM_CXXFLAGS) -fPIC
 testheadersdir = $(pkgincludedir)/test
 testheaders_HEADERS = $(TEST_HDR)
 
+# linking this way enables the test programs to work with OSX's leaks
+# tool. I cannot get leaks to work with the autotest-generated scripts
+# without changing how they work. But at least the individual C++
+# programs can be use with leaks. jhrg 2/18/22
+AM_LDFLAGS += -static
+
 das_test_SOURCES = das-test.cc
 das_test_LDADD =  libtest-types.a ../libdapserver.la ../libdap.la 
 

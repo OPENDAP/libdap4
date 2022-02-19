@@ -1,0 +1,24 @@
+
+On OSX valgrind does not work but Apple provides a command line tool
+called 'leaks' which can be used to find leaked memory, esp. with
+unit tests.
+
+NB: leaks seems to require static linkage.
+
+    linkage     build       leaks   time
+    static      serial      no      10-11s
+    static      parallel    no      4.6-4.7s
+    static      serial      yes     12-13s
+    static      parallel    yes     10-5s
+
+    dynamic     serial      yes     fail*
+    dynamic     parallel    yes     fail*
+    dynamic     serial      no      10-11
+    dynamic     parallel    no      4.8
+
+* Either all the tests fail or they fail in a random pattern; leaks
+seems to need to be statically linked to work with the CppUnit-based
+tests.
+
+So, from this I think static linkage is no slower than dynamic for these
+tests and enables us to use the leaks tool on OSX.
