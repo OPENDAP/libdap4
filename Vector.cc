@@ -80,8 +80,8 @@ void Vector::m_duplicate(const Vector & v)
     // _var holds the type of the elements. That is, it holds a BaseType
     // which acts as a template for the type of each element.
     if (v.d_proto) {
-	// Vector manages this ptr, delete before assigning a new object. jhrg 2/19/22
-	if (d_proto) delete d_proto;
+	    // Vector manages this ptr, delete before assigning a new object. jhrg 2/19/22
+	    if (d_proto) delete d_proto;
         d_proto = v.d_proto->ptr_duplicate(); // use ptr_duplicate()
         d_proto->set_parent(this); // ptr_duplicate does not set d_parent.
     }
@@ -250,10 +250,6 @@ void Vector::m_set_cardinal_values_internal(const CardType* fromArray, int numEl
  @brief The Vector constructor.  */
 Vector::Vector(const string & n, BaseType * v, const Type & t, bool is_dap4 /* default:false */) :
     BaseType(n, t, is_dap4)
-#if 0
-    // Moved initialiaztion to header; c++-11
-, d_length(-1), d_proto(0), d_buf(0), d_compound_buf(0), d_capacity(0)
-#endif
 {
     if (v)
         add_var(v);
@@ -283,9 +279,6 @@ Vector::Vector(const string & n, BaseType * v, const Type & t, bool is_dap4 /* d
  @brief The Vector constructor.  */
 Vector::Vector(const string & n, const string &d, BaseType * v, const Type & t, bool is_dap4 /* default:false */) :
     BaseType(n, d, t, is_dap4)
-#if 0
-    , d_length(-1), d_proto(nullptr), d_buf(nullptr), d_compound_buf(0), d_capacity(0)
-#endif
 {
     if (v)
         add_var(v);
@@ -296,8 +289,8 @@ Vector::Vector(const string & n, const string &d, BaseType * v, const Type & t, 
 }
 
 /** The Vector copy constructor. */
-Vector::Vector(const Vector & rhs) :
-    BaseType(rhs), d_length(-1), d_proto(nullptr), d_buf(nullptr), d_compound_buf(0), d_capacity(0)
+Vector::Vector(const Vector & rhs) : BaseType(rhs)
+
 {
     DBG2(cerr << "Entering Vector const ctor for object: " << this <<
             endl); DBG2(cerr << "RHS: " << &rhs << endl);
