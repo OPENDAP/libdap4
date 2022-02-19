@@ -40,8 +40,9 @@ endif
 
 if USE_LEAKS
 LOG_COMPILER = $(LEAKS)
+# valgrind
 AM_LOG_FLAGS = $(LEAKS_FLAGS)
-# -atExit --
+# --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all
 endif
 
 AM_LDFLAGS =

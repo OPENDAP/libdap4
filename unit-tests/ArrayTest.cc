@@ -142,7 +142,6 @@ public:
     CPPUNIT_TEST (clear_dims_test);
     CPPUNIT_TEST (error_handling_test);
     CPPUNIT_TEST (error_handling_2_test);
-    CPPUNIT_TEST (print_test);
     CPPUNIT_TEST (duplicate_cardinal_test);
     CPPUNIT_TEST (duplicate_string_test);
     CPPUNIT_TEST (duplicate_structure_test);
@@ -180,8 +179,14 @@ public:
     void assignment_test_3()
     {
         // Array copies the proto pointer and manages the storage
+#if 0       
         unique_ptr<Float32> f32(new Float32("float_proto"));
         Array a1 = Array("a", f32.get());
+#endif
+        auto f32_ptr = new Float32("float_proto");
+        Array a1 = Array("a", f32_ptr);
+	delete f32_ptr;
+	
         CPPUNIT_ASSERT_MESSAGE("The type of a1.var() should be dods_float32", a1.var()->type() == dods_float32_c);
         a1 = *d_cardinal;
         CPPUNIT_ASSERT_MESSAGE("The type of a1.var() should now be dods_int16_c", a1.var()->type() == dods_int16_c);
