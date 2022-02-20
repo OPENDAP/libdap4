@@ -58,29 +58,26 @@ static bool debug = false;
  */
 class marshT: public CppUnit::TestFixture {
 private:
-    TestByte *b;
-    TestInt16 *i16;
-    TestInt32 *i32;
-    TestUInt16 *ui16;
-    TestUInt32 *ui32;
-    TestFloat32 *f32;
-    TestFloat64 *f64;
-    TestStr *str;
-    TestUrl *url;
-    TestByte *ab;
+    TestByte *b = nullptr;
+    TestInt16 *i16 = nullptr;
+    TestInt32 *i32 = nullptr;
+    TestUInt16 *ui16 = nullptr;
+    TestUInt32 *ui32 = nullptr;
+    TestFloat32 *f32 = nullptr;
+    TestFloat64 *f64 = nullptr;
+    TestStr *str = nullptr;
+    TestUrl *url = nullptr;
+    TestByte *ab = nullptr;
 
-    TestArray *arr;
+    TestArray *arr = nullptr;
 
-    TestStructure *s;
+    TestStructure *s = nullptr;
 
-    TestSequence *seq, *seq2;
+  TestSequence *seq = nullptr, *seq2 = nullptr;
 
 public:
-    marshT() :
-        b(0), i16(0), i32(0), ui16(0), ui32(0), f32(0), f64(0), str(0), url(0), ab(0), arr(0), s(0), seq(0), seq2(0)
-    {
-
-    }
+    marshT() = default;
+    ~marshT() = default;
 
     void setUp()
     {
@@ -162,6 +159,8 @@ public:
         arr = 0;
         delete s;
         s = 0;
+	delete seq;
+	delete seq2;
     }
 
     void data_dds_dump_test()

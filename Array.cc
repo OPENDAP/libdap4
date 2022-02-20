@@ -85,7 +85,6 @@ void Array::_duplicate(const Array &a)
     else {
         d_maps = 0;
     }
-    // d_maps = a.d_maps ? new D4Maps(*(a.d_maps)) : 0;
 }
 
 // The first method of calculating length works when only one dimension is
