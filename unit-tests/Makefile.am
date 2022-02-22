@@ -23,19 +23,6 @@ endif
 
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -Wcast-align
 
-# if USE_VALGRIND
-# See LOG_COMPILER below. TESTS_ENVIRONMENT is no longer used this way. jhrg 2/17/22
-# TESTS_ENVIRONMENT=valgrind --quiet --trace-children=yes --error-exitcode=1 \
-# --leak-check=yes --dsymutil=yes --suppressions=valgrind_suppressions.txt
-
-# # skip using --log-file="valgrind-%p.log" because it always generates files
-# # Might also drop --dsymutil=yes because it can take a long time to run.
-# endif
-
-# If valgrind is present, add valgrind targets.
-# @VALGRIND_CHECK_RULES@
-VALGRIND_SUPPRESSIONS_FILES = valgrind_suppressions.txt
-
 if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 endif
@@ -50,8 +37,13 @@ endif
 # may require linking all of the tests with -static. Using LOG_COMPILER requires
 # automake 1.12+ For some reason, OSX's leaks tool does not work reliably with
 # parallel make runs. jhrg 2/17/22
-# LOG_COMPILER = leaks
-# AM_LOG_FLAGS = -atExit --
+
+if USE_LEAKS
+LOG_COMPILER = $(LEAKS)
+# valgrind
+AM_LOG_FLAGS = $(LEAKS_FLAGS)
+# --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all
+endif
 
 AM_LDFLAGS =
 include $(top_srcdir)/coverage.mk
@@ -117,79 +109,64 @@ check-local:
 	@echo ""
 endif
 
+# making these link statically makes them easier to debug and to use
+# with OSX's leaks tool. It also seems to force the linker to use the
+# locally built copy of the library and not the installed copy.
+# leaks example: leaks --atExit -- ./D4AttributesTest
+# jhrg 2/17/22
+#
 # Started reworking this file to reduce the number of program-specific configurations.
-# added -static for OSX 'leaks.' Run this through CI/CD to see if Linux works ok with
-# the static linking.. jhrg 2/18/22
+# added -static for OSX 'leaks.' jhrg 2/18/22
+
 TEST_SRC = testFile.cc testFile.h
 LDADD = ../libdap.la $(AM_LDADD)
-LDFLAGS = -static
+AM_LDFLAGS += -static
 
 RegexTest_SOURCES = RegexTest.cc
-# RegexTest_LDADD = ../libdap.la $(AM_LDADD)
 
 ArrayTest_SOURCES = ArrayTest.cc
-# ArrayTest_LDADD = ../libdap.la $(AM_LDADD)
 
 GridTest_SOURCES = GridTest.cc
-# GridTest_LDADD = ../libdap.la $(AM_LDADD)
 
 AttrTableTest_SOURCES = AttrTableTest.cc $(TEST_SRC)
-# AttrTableTest_LDADD = ../libdap.la $(AM_LDADD)
 
 ByteTest_SOURCES = ByteTest.cc $(TEST_SRC)
-# ByteTest_LDADD = ../libdap.la $(AM_LDADD)
 
 MIMEUtilTest_SOURCES = MIMEUtilTest.cc
-# MIMEUtilTest_LDADD = ../libdap.la $(AM_LDADD)
 
 ancT_SOURCES = ancT.cc
 ancT_LDADD = ../libdap.la ../libdapserver.la $(AM_LDADD)
 
 DASTest_SOURCES = DASTest.cc
-# DASTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DDSTest_SOURCES = DDSTest.cc $(TEST_SRC)
-# DDSTest_LDADD = ../libdap.la $(AM_LDADD)
 
 Int8Test_SOURCES = Int8Test.cc $(TEST_SRC)
-# Int8Test_LDADD = ../libdap.la $(AM_LDADD)
 
 Int16Test_SOURCES = Int16Test.cc $(TEST_SRC)
-# Int16Test_LDADD = ../libdap.la $(AM_LDADD)
 
 UInt16Test_SOURCES = UInt16Test.cc $(TEST_SRC)
-UInt16Test_LDADD = ../libdap.la $(AM_LDADD)
 
 Int32Test_SOURCES = Int32Test.cc $(TEST_SRC)
-Int32Test_LDADD = ../libdap.la $(AM_LDADD)
 
 UInt32Test_SOURCES = UInt32Test.cc $(TEST_SRC)
-UInt32Test_LDADD = ../libdap.la $(AM_LDADD)
 
 Int64Test_SOURCES = Int64Test.cc $(TEST_SRC)
-Int64Test_LDADD = ../libdap.la $(AM_LDADD)
 
 UInt64Test_SOURCES = UInt64Test.cc $(TEST_SRC)
-UInt64Test_LDADD = ../libdap.la $(AM_LDADD)
 
 Float32Test_SOURCES = Float32Test.cc $(TEST_SRC)
-Float32Test_LDADD = ../libdap.la $(AM_LDADD)
 
 Float64Test_SOURCES = Float64Test.cc $(TEST_SRC)
-Float64Test_LDADD = ../libdap.la $(AM_LDADD)
 
 D4BaseTypeFactoryTest_SOURCES = D4BaseTypeFactoryTest.cc $(TEST_SRC)
-D4BaseTypeFactoryTest_LDADD = ../libdap.la $(AM_LDADD)
 
 BaseTypeFactoryTest_SOURCES = BaseTypeFactoryTest.cc $(TEST_SRC)
-BaseTypeFactoryTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
-DDXParserTest_LDADD = ../libdap.la $(AM_LDADD)
 
 generalUtilTest_SOURCES = generalUtilTest.cc
-generalUtilTest_LDADD = ../libdap.la $(AM_LDADD)
 
 HTTPCacheTest_SOURCES = HTTPCacheTest.cc
 HTTPCacheTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
@@ -200,7 +177,6 @@ HTTPConnectTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 HTTPConnectTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
 
 parserUtilTest_SOURCES = parserUtilTest.cc
-parserUtilTest_LDADD = ../libdap.la $(AM_LDADD)
 
 RCReaderTest_SOURCES = RCReaderTest.cc
 RCReaderTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
@@ -209,7 +185,6 @@ SequenceTest_SOURCES = SequenceTest.cc
 SequenceTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
 SignalHandlerTest_SOURCES = SignalHandlerTest.cc
-SignalHandlerTest_LDADD = ../libdap.la $(AM_LDADD)
 
 arrayT_SOURCES = arrayT.cc
 arrayT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
@@ -236,56 +211,34 @@ dasT_SOURCES = dasT.cc $(TEST_SRC)
 dasT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
 ServerFunctionsListUnitTest_SOURCES = ServerFunctionsListUnitTest.cc
-ServerFunctionsListUnitTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4MarshallerTest_SOURCES = D4MarshallerTest.cc
-D4MarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4UnMarshallerTest_SOURCES = D4UnMarshallerTest.cc
-D4UnMarshallerTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4DimensionsTest_SOURCES = D4DimensionsTest.cc $(TEST_SRC)
-D4DimensionsTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4EnumDefsTest_SOURCES = D4EnumDefsTest.cc $(TEST_SRC)
-D4EnumDefsTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4GroupTest_SOURCES = D4GroupTest.cc $(TEST_SRC)
-D4GroupTest_LDADD = ../libdap.la $(AM_LDADD)
 
-# making these link statically makes them easier to debug and to use
-# with OSX's leaks tool. It also seems to force the linker to use the
-# locally built copy of the library and not the installed copy.
-# leaks example: leaks --atExit -- ./D4AttributesTest
-# jhrg 2/17/22
 D4ParserSax2Test_SOURCES = D4ParserSax2Test.cc $(TEST_SRC)
-D4ParserSax2Test_LDFLAGS = -static
-D4ParserSax2Test_LDADD = ../libdap.la $(AM_LDADD)
 
 D4AttributesTest_SOURCES = D4AttributesTest.cc $(TEST_SRC)
-#D4AttributesTest_LDFLAGS = -static
-#D4AttributesTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4EnumTest_SOURCES = D4EnumTest.cc $(TEST_SRC)
-D4EnumTest_LDADD = ../libdap.la $(AM_LDADD)
 
 chunked_iostream_test_SOURCES = chunked_iostream_test.cc $(TEST_SRC)
-chunked_iostream_test_LDADD = ../libdap.la $(AM_LDADD)
 
 D4AsyncDocTest_SOURCES = D4AsyncDocTest.cc $(TEST_SRC)
-D4AsyncDocTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DMRTest_SOURCES = DMRTest.cc $(TEST_SRC)
-DMRTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DmrRoundTripTest_SOURCES = DmrRoundTripTest.cc $(TEST_SRC)
-DmrRoundTripTest_LDADD = ../libdap.la $(AM_LDADD)
 
 DmrToDap2Test_SOURCES = DmrToDap2Test.cc $(TEST_SRC)
-DmrToDap2Test_LDADD = ../libdap.la $(AM_LDADD)
 
 D4FilterClauseTest_SOURCES = D4FilterClauseTest.cc
-D4FilterClauseTest_LDADD = ../libdap.la $(AM_LDADD)
 
 D4SequenceTest_SOURCES = D4SequenceTest.cc $(TEST_SRC)
 D4SequenceTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)

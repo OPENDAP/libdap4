@@ -80,18 +80,18 @@ namespace libdap
 class Vector: public BaseType
 {
 private:
-    int d_length;  		// number of elements in the vector
-    BaseType *d_proto;  // element prototype for the Vector
+    int d_length = -1;  		// number of elements in the vector
+    BaseType *d_proto = nullptr;  // element prototype for the Vector
 
     // _buf was a pointer to void; delete[] complained. 6/4/2001 jhrg
-    char *d_buf;   		// storage for cardinal data
+    char *d_buf = nullptr;   		// storage for cardinal data
     vector<string> d_str;		// special storage for strings. jhrg 2/11/05
     vector<BaseType *> d_compound_buf; 	// storage for data in compound types (e.g., Structure)
 
     // the number of elements we have allocated memory to store.
     // This should be either the sizeof(buf)/width(bool constrained = false) for cardinal data
     // or the capacity of d_str for strings or capacity of _vec.
-    unsigned int d_capacity;
+    unsigned int d_capacity = 0;
 
     friend class MarshallerTest;
 
