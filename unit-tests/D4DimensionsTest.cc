@@ -28,7 +28,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <GetOpt.h> // Part of libdap
+ // Part of libdap
 
 //#define DODS_DEBUG
 
@@ -39,16 +39,16 @@
 #include "debug.h"
 
 #include "testFile.h"
+#include "run_tests_cppunit.h"
 #include "test_config.h"
+
 
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
-static bool debug = false;
 
-#undef DBG
-#define DBG(x) do { if (debug) (x); } while(false);
+
 
 class D4DimensionsTest: public TestFixture {
 private:
@@ -238,45 +238,5 @@ CPPUNIT_TEST_SUITE_REGISTRATION (D4DimensionsTest);
 
 int main(int argc, char*argv[])
 {
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-        case 'h': {     // help - show test names
-            cerr << "Usage: D4DimensionsTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = D4DimensionsTest::suite()->getTests();
-            unsigned int prefix_len = D4DimensionsTest::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = D4DimensionsTest::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
+    return run_tests<D4DimensionsTest>(argc, argv) ? 0: 1;
 }
-

@@ -39,19 +39,18 @@
 #include <string>
 #include <sstream>
 
-#include "GetOpt.h"
-
 #include "Ancillary.h"
 #include "DDS.h"
 #include "debug.h"
-#include <test_config.h>
+
+#include "run_tests_cppunit.h"
+#include "run_tests_cppunit.h"
+#include "test_config.h"
+
 
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
-
-static bool debug = false;
-
 
 class ancT: public TestFixture {
 private:
@@ -59,20 +58,8 @@ private:
 protected:
 
 public:
-    ancT()
-    {
-    }
-    ~ancT()
-    {
-    }
-
-    void setUp()
-    {
-    }
-
-    void tearDown()
-    {
-    }
+    ancT() = default;
+    ~ancT() = default;
 
     CPPUNIT_TEST_SUITE (ancT);
 
@@ -144,46 +131,5 @@ CPPUNIT_TEST_SUITE_REGISTRATION (ancT);
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-
-        case 'h': {     // help - show test names
-            cerr << "Usage: ancT has the following tests:" << endl;
-            const std::vector<Test*> &tests = ancT::suite()->getTests();
-            unsigned int prefix_len = ancT::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = ancT::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
+    return run_tests<ancT>(argc, argv) ? 0: 1;
 }

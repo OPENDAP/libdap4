@@ -40,12 +40,15 @@
 #include "Structure.h"
 #include "D4Dimensions.h"
 
+#include "run_tests_cppunit.h"
+#include "run_tests_cppunit.h"
+#include "run_tests_cppunit.h"
+#include "test_config.h"
+
 #include "debug.h"
 
 using namespace CppUnit;
 using namespace std;
-
-static bool debug = false;
 
 namespace libdap {
 
@@ -350,48 +353,5 @@ CPPUNIT_TEST_SUITE_REGISTRATION (ArrayTest);
 
 int main(int argc, char *argv[])
 {
-    int option_char;
-    while ((option_char = getopt(argc, argv, "dh")) != EOF) {
-        switch (option_char) {
-            case 'd':
-                debug = 1;  // debug is a static global
-                break;
-
-            case 'h': {     // help - show test names
-                cerr << "Usage: ArrayTest has the following tests:" << endl;
-                const std::vector<Test *> &tests = libdap::ArrayTest::suite()->getTests();
-                unsigned int prefix_len = libdap::ArrayTest::suite()->getName().append("::").length();
-                for (std::vector<Test *>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                    cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-                }
-                break;
-            }
-
-            default:
-                break;
-        }
-    }
-
-    argc -= optind;
-    argv += optind;
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    if (0 == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        int i = 0;
-        while (i < argc) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::ArrayTest::suite()->getName().append("::").append(argv[i++]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
+    return run_tests<libdap::ArrayTest>(argc, argv) ? 0: 1;
 }

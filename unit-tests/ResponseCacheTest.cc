@@ -26,8 +26,12 @@
 
 #include <dirent.h>
 
+#if 0
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
+
+#endif
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "ConstraintEvaluator.h"
@@ -36,15 +40,18 @@
 #include "DDXParserSAX2.h"
 #include "ResponseCache.h"
 
-#include "GetOpt.h"
+
 #include "GNURegex.h"
 #include "util.h"
 #include "debug.h"
 
 #include "../tests/TestTypeFactory.h"
 
+#include "run_tests_cppunit.h"
 #include "testFile.h"
+#include "run_tests_cppunit.h"
 #include "test_config.h"
+
 
 using namespace CppUnit;
 using namespace std;
@@ -52,10 +59,10 @@ using namespace libdap;
 
 int test_variable_sleep_interval = 0;
 
-static bool debug = false;
+#if 0
 
-#undef DBG
-#define DBG(x) do { if (debug) (x); } while(false);
+
+#endif
 
 namespace libdap {
 
@@ -351,6 +358,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION (ResponseCacheTest);
 
 int main(int argc, char*argv[])
 {
+    return run_tests<libdap::ResponseCacheTest>(argc, argv) ? 0: 1;
+#if 0
     GetOpt getopt(argc, argv, "dh");
     char option_char;
     while ((option_char = getopt()) != EOF)
@@ -390,4 +399,5 @@ int main(int argc, char*argv[])
     }
 
     return wasSuccessful ? 0 : 1;
+#endif
 }

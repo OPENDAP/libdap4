@@ -33,7 +33,10 @@
 #include "Connect.h"
 #include "AISMerge.h"
 #include "debug.h"
-#include <test_config.h>
+#include "run_tests_cppunit.h"
+#include "run_tests_cppunit.h"
+#include "test_config.h"
+
 
 #include "testFile.h"
 
@@ -357,46 +360,5 @@ CPPUNIT_TEST_SUITE_REGISTRATION (AISMergeTest);
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-
-        case 'h': {     // help - show test names
-            cerr << "Usage: AISMergeTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::AISMergeTest::suite()->getTests();
-            unsigned int prefix_len = libdap::AISMergeTest::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::AISMergeTest::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
+    return run_tests<AISMergeTest>(argc, argv) ? 0: 1;
 }

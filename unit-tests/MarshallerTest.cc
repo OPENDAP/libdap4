@@ -40,16 +40,13 @@
 #include "XDRStreamMarshaller.h"
 #include "XDRFileUnMarshaller.h"
 #include "XDRStreamUnMarshaller.h"
-#include "GetOpt.h"
-//#include "Locker.h"
+
 #include "debug.h"
 
+#include "run_tests_cppunit.h"
+#include "test_config.h"
+
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeouts.
-
-static bool debug = false;
-
-#undef DBG
-#define DBG(x) do { if (debug) {x;} } while(false)
 
 using namespace CppUnit;
 using namespace std;
@@ -1618,50 +1615,9 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION (MarshallerTest);
 
-} // namepsace libdap
+} // namespace libdap
 
 int main(int argc, char*argv[])
 {
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-        case 'h': {     // help - show test names
-            cerr << "Usage: MarshallerTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::MarshallerTest::suite()->getTests();
-            unsigned int prefix_len = libdap::MarshallerTest::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::MarshallerTest::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    xmlMemoryDump();
-
-    return wasSuccessful ? 0 : 1;
+    return run_tests<libdap::MarshallerTest>(argc, argv) ? 0: 1;
 }
