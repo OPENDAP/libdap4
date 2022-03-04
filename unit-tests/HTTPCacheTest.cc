@@ -43,15 +43,10 @@
 #include "SignalHandler.h"	// Needed to clean up this singleton.
 #endif
 #include "RCReader.h"		// ditto
-#include"GetOpt.h"
-
-// #define DODS_DEBUG
 
 #include "debug.h"
-
-#if defined(DODS_DEBUG) || defined(DODS_DEBUG2)
-#include <iterator>
-#endif
+#include "run_tests_cppunit.h"
+#include "test_config.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -61,11 +56,6 @@ using namespace std;
 #define W_OK 2
 #endif
 
-static bool debug = false;
-
-#undef DBG
-#define DBG(x) do { if (debug) (x); } while(false);
-
 namespace libdap {
 
 inline static int file_size(string name)
@@ -74,14 +64,6 @@ inline static int file_size(string name)
     stat(name.c_str(), &s);
     return s.st_size;
 }
-
-#if 0
-inline static void
-print_entry(HTTPCache *, HTTPCacheTable::CacheEntry **e)
-{
-    cerr << "Entry: " << (*e)->get_cachename() << endl;
-}
-#endif
 
 // Note that because this test class uses the fixture 'hc' we must always
 // force access to the single user/process lock for the cache. This is
@@ -129,6 +111,7 @@ public:
         http_conn = 0;
         DBG2(cerr << "Entering the HTTPCacheTest dtor... ");DBG2(cerr << "exiting." << endl);
     }
+
 #if 0
     static inline bool
     is_hop_by_hop_header(const string &header) {
@@ -140,6 +123,7 @@ public:
         || header.find("Upgrade") != string::npos;
     }
 #endif
+
     void setUp()
     {
         // Called before every test.
@@ -511,6 +495,7 @@ public:
         }
 
 #ifdef DODS_DEBUG
+#include <iterator>
         std::ostream_iterator<string> out_it(std::cerr, "\n");
         cerr << "Cached headers: ";
         std::copy(cached_headers.begin(), cached_headers.end(), out_it);
@@ -872,50 +857,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION (HTTPCacheTest);
 
 int main(int argc, char*argv[])
 {
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-        case 'h': {     // help - show test names
-            cerr << "Usage: HTTPCacheTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::HTTPCacheTest::suite()->getTests();
-            unsigned int prefix_len = libdap::HTTPCacheTest::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-        default:
-            break;
-        }
-
     // Run cleanup here, so that the first run works (since this code now
     // sets up the tests).
     // This gives valgrind fits...
     system("cd cache-testsuite && ./cleanup.sh");
 
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::HTTPCacheTest::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
+    return run_tests<libdap::HTTPCacheTest>(argc, argv) ? 0: 1;
 }
-
