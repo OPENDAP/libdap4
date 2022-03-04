@@ -28,7 +28,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "GetOpt.h"
+
 
 #include "DDXParserSAX2.h"
 #include "BaseTypeFactory.h"
@@ -36,16 +36,16 @@
 #include "mime_util.h"
 #include "debug.h"
 
-#include <test_config.h>
+#include "run_tests_cppunit.h"
+#include "test_config.h"
+
 
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
-static bool debug = false;
 
-#undef DBG
-#define DBG(x) do { if (debug) (x); } while(false);
+
 
 namespace libdap {
 
@@ -666,45 +666,5 @@ CPPUNIT_TEST_SUITE_REGISTRATION (DDXParserTest);
 
 int main(int argc, char*argv[])
 {
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-        case 'h': {     // help - show test names
-            cerr << "Usage: DDXParserTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::DDXParserTest::suite()->getTests();
-            unsigned int prefix_len = libdap::DDXParserTest::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::DDXParserTest::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    xmlMemoryDump();
-
-    return wasSuccessful ? 0 : 1;
+    return run_tests<DDXParserTest>(argc, argv) ? 0: 1;
 }

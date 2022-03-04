@@ -62,7 +62,7 @@ chunked-io D4-marshaller D4-type-testsuite dmr-testsuite \
 dmr-to-dap2-testsuite dmr-rt-testsuite
 
 EXTRA_DIST = $(DIRS_EXTRA) testFile.cc testFile.h test_config.h.in \
-valgrind_suppressions.txt
+run_tests_cppunit.h valgrind_suppressions.txt
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno *.gcov *.trs *.log *.file D4-xml.tar.gz *.output
 

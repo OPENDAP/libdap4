@@ -29,7 +29,10 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "AISDatabaseParser.h"
-#include <test_config.h>
+#include "run_tests_cppunit.h"
+#include "run_tests_cppunit.h"
+#include "test_config.h"
+
 #include "debug.h"
 
 using namespace CppUnit;
@@ -173,46 +176,5 @@ CPPUNIT_TEST_SUITE_REGISTRATION (AISDatabaseParserTest);
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-
-        case 'h': {     // help - show test names
-            cerr << "Usage: AISDatabaseParserTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::AISDatabaseParserTest::suite()->getTests();
-            unsigned int prefix_len = libdap::AISDatabaseParserTest::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::AISDatabaseParserTest::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
+    return run_tests<AISDatabaseParserTest>(argc, argv) ? 0: 1;
 }

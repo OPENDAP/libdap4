@@ -51,14 +51,16 @@
 #include "D4ParserSax2.h"
 
 #include "GNURegex.h"
-#include "GetOpt.h"
+
 #include "util.h"
 #include "debug.h"
 
 #include "testFile.h"
+#include "run_tests_cppunit.h"
 #include "test_config.h"
 
-static bool debug = false;
+
+
 
 #undef DBG
 #define DBG(x) do { if (debug) {x;} } while(false)
@@ -345,86 +347,5 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DMRTest);
 
 int main(int argc, char *argv[])
 {
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-
-        case 'h': {     // help - show test names
-            cerr << "Usage: DMRTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = DMRTest::suite()->getTests();
-            unsigned int prefix_len = DMRTest::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = DMRTest::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
+    return run_tests<DMRTest>(argc, argv) ? 0: 1;
 }
-
-//##################################################################################################
-#if 0 // old way
-int main(int argc, char*argv[]) {
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    GetOpt getopt(argc, argv, "d");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-    switch (option_char) {
-        case 'd':
-        debug = 1;  // debug is a static global
-        break;
-        default:
-        break;
-    }
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        while (i < argc) {
-            test = string("DMRTest::") + argv[i++];
-            DBG(cerr << "test: " << test << endl);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    xmlMemoryDump();
-
-    return wasSuccessful ? 0 : 1;
-}
-#endif
-

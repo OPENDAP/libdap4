@@ -35,17 +35,17 @@
 #include "debug.h"
 
 #include "testFile.h"
+#include "run_tests_cppunit.h"
 #include "test_config.h"
-#include "GetOpt.h"
+
+
 
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
-static bool debug = false;
 
-#undef DBG
-#define DBG(x) do { if (debug) (x); } while(false);
+
 
 class D4AttributesTest: public TestFixture {
 private:
@@ -477,50 +477,5 @@ CPPUNIT_TEST_SUITE_REGISTRATION (D4AttributesTest);
 
 int main(int argc, char*argv[])
 {
-    bool sleep_on_exit = false;
-    int option_char;
-    while ((option_char = getopt(argc, argv, "dhs")) != EOF) {
-        switch (option_char) {
-            case 'd':
-                debug = 1;  // debug is a static global
-                break;
-            case 'h': {     // help - show test names
-                cerr << "Usage: D4AttributesTest has the following tests:" << endl;
-                const std::vector<Test *> &tests = D4AttributesTest::suite()->getTests();
-                unsigned int prefix_len = D4AttributesTest::suite()->getName().append("::").length();
-                for (std::vector<Test *>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                    cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-                }
-                break;
-            }
-            case 's':
-                sleep_on_exit = true;
-                break;
-            default:
-                break;
-        }
-    }
-    argc -= optind;
-    argv += optind;
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    if (0 == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (int i = 0; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = D4AttributesTest::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    if (sleep_on_exit) sleep(10);
-    return wasSuccessful ? 0 : 1;
+    return run_tests<D4AttributesTest>(argc, argv) ? 0: 1;
 }
-
