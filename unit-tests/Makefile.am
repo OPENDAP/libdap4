@@ -13,7 +13,7 @@ AM_LDADD = $(XML2_LIBS)
 AM_CXXFLAGS = $(CXX11_FLAG)
 
 if COMPILER_IS_GCC
-AM_CXXFLAGS += -Wall -W -Wcast-align
+AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-self-assign-overloaded
 endif
 
 if CPPUNIT
@@ -89,7 +89,7 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	RCReaderTest SequenceTest SignalHandlerTest  MarshallerTest \
 	HTTPCacheTest ServerFunctionsListUnitTest Int8Test Int16Test UInt16Test \
 	Int32Test UInt32Test Int64Test UInt64Test Float32Test Float64Test \
-	D4BaseTypeFactoryTest BaseTypeFactoryTest
+	D4BaseTypeFactoryTest BaseTypeFactoryTest util_mitTest
 
 # Unit tests for DAP4-only code. jhrg 2/4/22
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
@@ -123,6 +123,9 @@ LDADD = ../libdap.la $(AM_LDADD)
 AM_LDFLAGS += -static
 
 RegexTest_SOURCES = RegexTest.cc
+
+util_mitTest_SOURCES = util_mitTest.cc
+util_mitTest_LDADD = ../libdap.la ../libdapclient.la $(AM_LDADD)
 
 ArrayTest_SOURCES = ArrayTest.cc
 

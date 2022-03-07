@@ -41,8 +41,9 @@ namespace libdap {
     @return void
     @brief Save a string to a temporary variable during the parse.
     */
-
+#if 0
 void save_str(char *dst, const char *src, const int line_num);
+#endif
 void save_str(std::string &dst, const char *src, const int);
 
 bool is_keyword(std::string id, const std::string &keyword);

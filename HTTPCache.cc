@@ -887,17 +887,17 @@ HTTPCache::set_cache_control(const vector<string> &cc)
                 if (value == "no-cache" || value == "no-store")
                     d_cache_enabled = false;
                 else if (value.find("max-age") != string::npos) {
-                    string max_age = value.substr(value.find("=" + 1));
+                    string max_age = value.substr(value.find("=") + 1);
                     d_max_age = parse_time(max_age.c_str());
                 }
                 else if (value == "max-stale")
                     d_max_stale = 0; // indicates will take anything;
                 else if (value.find("max-stale") != string::npos) {
-                    string max_stale = value.substr(value.find("=" + 1));
+                    string max_stale = value.substr(value.find("=") + 1);
                     d_max_stale = parse_time(max_stale.c_str());
                 }
                 else if (value.find("min-fresh") != string::npos) {
-                    string min_fresh = value.substr(value.find("=" + 1));
+                    string min_fresh = value.substr(value.find("=") + 1);
                     d_min_fresh = parse_time(min_fresh.c_str());
                 }
             }
@@ -1028,9 +1028,10 @@ HTTPCache::read_metadata(const string &cachename, vector<string> &headers)
                           "Could not open named cache entry meta data file.");
     }
 
-    char line[1024];
-    while (!feof(md) && fgets(line, 1024, md)) {
-        line[min(1024, static_cast<int>(strlen(line)))-1] = '\0'; // erase newline
+    const unsigned long line_buf_len = 1024;
+    char line[line_buf_len];
+    while (!feof(md) && fgets(line, line_buf_len, md)) {
+        line[min(line_buf_len, strnlen(line, line_buf_len))-1] = '\0'; // erase newline
         headers.push_back(string(line));
     }
 

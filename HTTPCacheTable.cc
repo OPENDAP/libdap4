@@ -852,7 +852,7 @@ void HTTPCacheTable::parse_headers(HTTPCacheTable::CacheEntry *entry, unsigned l
 	    else if (value == "must-revalidate")
 		entry->must_revalidate = true;
 	    else if (value.find("max-age") != string::npos) {
-		string max_age = value.substr(value.find("=" + 1));
+		string max_age = value.substr(value.find("=") + 1);
 		entry->max_age = parse_time(max_age.c_str());
 	    }
 	}
