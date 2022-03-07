@@ -90,7 +90,7 @@ public:
     }
 
     void test_date_time_str_4() {
-        DBG(cerr << "date_time_str(" << nullptr << "): " << date_time_str(nullptr) << endl);
+        DBG(cerr << "date_time_str(nullptr): " << date_time_str(nullptr) << endl);
         CPPUNIT_ASSERT_MESSAGE("date_time_str(726974999) should return a string", date_time_str(nullptr) == "");
     }
 
