@@ -82,11 +82,15 @@ public:
         CPPUNIT_ASSERT_MESSAGE("date_time_str(726974999) should return a string", date_time_str(&t) == "Thu, 01 Jan 1970 00:00:00 GMT");
     }
 
-    // Tricky, in localtime, 0 it before 1 Jan 1970
+    // Tricky, in localtime, 0 it before 1 Jan 1970 (Wed, 31 Dec 1969 17:00:00), but we don't test
+    // the value since this test has to run in any time zone.
     void test_date_time_str_3() {
         time_t t = 0;
         DBG(cerr << "date_time_str(" << t << ", true): " << date_time_str(&t, true) << endl);
-        CPPUNIT_ASSERT_MESSAGE("date_time_str(0, true) should return a string", date_time_str(&t, true) == "Wed, 31 Dec 1969 17:00:00");
+        // No 'GMT' because 'true' == localtime. If we're in us mountain time zone, look at the
+        // returned value, else, test that there's no GMT on the end
+        CPPUNIT_ASSERT_MESSAGE("date_time_str(0, true) should return a string",
+                               date_time_str(&t, true).find("GMT") == string::npos);
     }
 
     void test_date_time_str_4() {
@@ -95,9 +99,9 @@ public:
     }
 
     void test_date_time_str_5() {
-        time_t t = 0xFFFFFFFF;
-        DBG(cerr << "date_time_str(" << t << "): " << date_time_str(&t) << endl);
-        CPPUNIT_ASSERT_MESSAGE("date_time_str(726974999) should return a string", date_time_str(&t) == "Sun, 07 Feb 2106 06:28:15 GMT");
+        time_t t = 0x7FFFFFFF;  // unix time is unsigned
+        DBG(cerr << "date_time_str(" << t << "): " << date_time_str(&t) << endl); // 2147183648Fri Jan 15 2038 15:54:08 GMT+0000
+        CPPUNIT_ASSERT_MESSAGE("date_time_str(726974999) should return a string", date_time_str(&t) == "Tue, 19 Jan 2038 03:14:07 GMT");
     }
 
     void test_parse_time_1() {
