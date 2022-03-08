@@ -49,21 +49,8 @@ class generalUtilTest: public TestFixture {
 private:
 
 public:
-    generalUtilTest()
-    {
-    }
-    ~generalUtilTest()
-    {
-    }
-
-    void setUp()
-    {
-    }
-
-    void tearDown()
-    {
-    }
-
+    generalUtilTest() = default;
+    ~generalUtilTest() = default;
     CPPUNIT_TEST_SUITE (generalUtilTest);
 
     CPPUNIT_TEST (octal_to_hex_test);
@@ -84,8 +71,7 @@ public:
     CPPUNIT_TEST (glob_test_2);
     CPPUNIT_TEST (glob_test_3);
 
-    CPPUNIT_TEST_SUITE_END()
-    ;
+    CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
     void glob_test_1()

@@ -32,7 +32,6 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
-//#include <string>
 #include <ctype.h>
 
 #ifndef TM_IN_SYS_TIME
@@ -44,15 +43,19 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <string>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 
 #include "util_mit.h"
 
-using std::cerr;
-using std::endl;
-using std::string;
-
 #include "debug.h"
+
+#define _REENTRANT 1
+#define MAX_TIME_STR_LEN 40 // one larger than the max rfc850 strlen. jhrg 3/7/22
+
+using namespace std;
 
 namespace libdap {
 
@@ -80,6 +83,7 @@ static const char * wkdays[7] =
 #define TOUPPER(c) toupper((int) (c))
 #endif
 
+#if 0
 static int
 strncasecomp(const char *a, const char *b, int n)
 {
@@ -96,6 +100,7 @@ strncasecomp(const char *a, const char *b, int n)
     /*NOTREACHED*/
     return -1; // silence gcc
 }
+#endif
 
 static int
 make_month(char * s, char ** ends)
@@ -106,17 +111,34 @@ make_month(char * s, char ** ends)
         int i;
         *ends = ptr + 3;
         for (i = 0; i < 12; i++)
-            if (!strncasecomp(months[i], ptr, 3)) return i;
+            if (!strncasecmp(months[i], ptr, 3)) return i;
     }
     return 0;
 }
 
+#if !defined(HAVE_TIMEGM) && defined(HAVE_MKTIME)
+static time_t
+offset_from_utc()
+{
+    // Compute offset between localtime and GMT.
+    time_t offset;
+    time_t now = time(0);
+#ifdef _REENTRANT
+    struct tm gmt, local;
+    offset = mktime(gmtime_r(&now, &gmt)) - mktime(localtime_r(&now, &local));
+#else
+    offset = mktime(gmtime(&now)) - mktime(localtime(&now));
+#endif // _REENTRANT
+    return offset;
+}
+#endif
+
 /** Parse a string in GMT format to a local time time_t representation
     Four formats are accepted:
- Wkd, 00 Mon 0000 00:00:00 GMT  (rfc1123)
- Weekday, 00-Mon-00 00:00:00 GMT  (rfc850)
- Wkd Mon 00 00:00:00 0000 GMT  (ctime)
- 1*DIGIT     (delta-seconds)
+         Wkd, 00 Mon 0000 00:00:00 GMT  (rfc1123)
+         Weekday, 00-Mon-00 00:00:00 GMT  (rfc850)
+         Wkd Mon 00 00:00:00 0000 GMT  (ctime)
+         1*DIGIT     (delta-seconds)
 
     Copied from libwww. 09/19/02 jhrg
 
@@ -124,7 +146,9 @@ make_month(char * s, char ** ends)
     @param expand If the time is given in delta seconds, adjust it to seconds
     since midnight 1 Jan 1970 if this is true. If false, simply convert the
     string to a time_t and return. The default value is true.
-    @return The time in seconds since midnight 1 Jan 1970. */
+    @return The time in seconds since midnight 1 Jan 1970. Return 0 if
+    an error is detected.
+    */
 time_t
 parse_time(const char * str, bool expand)
 {
@@ -138,11 +162,9 @@ parse_time(const char * str, bool expand)
         s++;    /* or: Thu, 10 Jan 1993 01:29:59 GMT */
         while (*s && *s == ' ') s++;
         if (strchr(s, '-')) {         /* First format */
-            DBG(cerr << "Format...... Weekday, 00-Mon-00 00:00:00 GMT"
-                << endl);
-            if ((int)strlen(s) < 18) {
-                DBG(cerr << "ERROR....... Not a valid time format \""
-                    << s << "\"" << endl);
+            DBG(cerr << "Format...... Weekday, 00-Mon-00 00:00:00 GMT" << endl);
+            if ((int)strnlen(s, MAX_TIME_STR_LEN) < 18) {
+                DBG(cerr << "ERROR....... Not a valid time format \"" << s << "\"" << endl);
                 return 0;
             }
             tm.tm_mday = strtol(s, &s, 10);
@@ -154,11 +176,10 @@ parse_time(const char * str, bool expand)
             tm.tm_min = strtol(s, &s, 10);
             ++s;
             tm.tm_sec = strtol(s, &s, 10);
-
         }
         else {         /* Second format */
             DBG(cerr << "Format...... Wkd, 00 Mon 0000 00:00:00 GMT" << endl);
-            if ((int)strlen(s) < 20) {
+            if ((int)strnlen(s, MAX_TIME_STR_LEN) < 20) {
                 DBG(cerr << "ERROR....... Not a valid time format \""
                     << s << "\"" << endl);
                 return 0;
@@ -174,19 +195,17 @@ parse_time(const char * str, bool expand)
         }
     }
     else if (isdigit((int) *str)) {
-
         if (strchr(str, 'T')) { /* ISO (limited format) date string */
             DBG(cerr << "Format...... YYYY.MM.DDThh:mmStzWkd" << endl);
             s = (char *) str;
             while (*s && *s == ' ') s++;
-            if ((int)strlen(s) < 21) {
-                DBG(cerr << "ERROR....... Not a valid time format \""
-                    << s << "\"" << endl);
+            if ((int)strnlen(s, MAX_TIME_STR_LEN) < 21) {
+                DBG(cerr << "ERROR....... Not a valid time format \"" << s << "\"" << endl);
                 return 0;
             }
             tm.tm_year = strtol(s, &s, 10) - 1900;
             ++s;
-            tm.tm_mon  = strtol(s, &s, 10);
+            tm.tm_mon  = strtol(s, &s, 10); tm.tm_mon--; // tm_mon is zero-based
             ++s;
             tm.tm_mday = strtol(s, &s, 10);
             ++s;
@@ -195,23 +214,19 @@ parse_time(const char * str, bool expand)
             tm.tm_min  = strtol(s, &s, 10);
             ++s;
             tm.tm_sec  = strtol(s, &s, 10);
-
         }
         else {         /* delta seconds */
             t = expand ? time(NULL) + atol(str) : atol(str);
-
             return t;
         }
-
     }
     else {       /* Try the other format:  Wed Jun  9 01:29:59 1993 GMT */
         DBG(cerr << "Format...... Wkd Mon 00 00:00:00 0000 GMT" << endl);
         s = (char *) str;
         while (*s && *s == ' ') s++;
         DBG(cerr << "Trying...... The Wrong time format: " << s << endl);
-        if ((int)strlen(s) < 24) {
-            DBG(cerr << "ERROR....... Not a valid time format \""
-                << s << "\"" << endl);
+        if ((int)strnlen(s, MAX_TIME_STR_LEN) < 24) {
+            DBG(cerr << "ERROR....... Not a valid time format \"" << s << "\"" << endl);
             return 0;
         }
         tm.tm_mon = make_month(s, &s);
@@ -223,12 +238,13 @@ parse_time(const char * str, bool expand)
         tm.tm_sec = strtol(s, &s, 10);
         tm.tm_year = strtol(s, &s, 10) - 1900;
     }
+
     if (tm.tm_sec  < 0  ||  tm.tm_sec  > 59  ||
         tm.tm_min  < 0  ||  tm.tm_min  > 59  ||
         tm.tm_hour < 0  ||  tm.tm_hour > 23  ||
         tm.tm_mday < 1  ||  tm.tm_mday > 31  ||
         tm.tm_mon  < 0  ||  tm.tm_mon  > 11  ||
-        tm.tm_year < 70  ||  tm.tm_year > 120) {
+        tm.tm_year < 70  ||  tm.tm_year > 138) {        // Unix time will break iin 2038
         DBG(cerr << "ERROR....... Parsed illegal time" << endl);
         return 0;
     }
@@ -236,37 +252,13 @@ parse_time(const char * str, bool expand)
     /* Let mktime decide whether we have DST or not */
     tm.tm_isdst = -1;
 
-#ifdef HAVE_TIMEGM
-
-    t = timegm(&tm);
-
+#if defined(HAVE_TIMEGM)
+    return timegm(&tm);
+#elif defined(HAVE_MKTIME)
+    return mktime(&tm) + offset_from_utc();
 #else
-
-#ifdef HAVE_MKTIME
-
-    // Compute offset between localtime and GMT.
-    time_t offset;
-    time_t now = time(0);
-#ifdef _REENTRANT
-    struct tm gmt, local;
-    offset = mktime(gmtime_r(&now, &gmt)) - mktime(localtime_r(&now, &local));
-#else
-    offset = mktime(gmtime(&now)) - mktime(localtime(&now));
-#endif
-
-    t = mktime(&tm) + offset;
-
-#else
-
 #error "Neither mktime nor timegm defined"
-
-#endif /* HAVE_TIMEGM */
-#endif /* HAVE_MKTIME */
-
-    DBG(cerr << "Time string. " << str << " parsed to " << t
-        << " calendar time or \"" << ctime(&t) << "\" in local time" << endl);
-
-    return t;
+#endif // HAVE_TIMEGM OR HAVE_MKTIME
 }
 
 /** Given a time in seconds since midnight 1 Jan 1970, return the RFC 1123
@@ -280,31 +272,29 @@ parse_time(const char * str, bool expand)
 
 string date_time_str(time_t *calendar, bool local)
 {
-    char buf[40];
+    if (!calendar) return "";
+
+    char buf[MAX_TIME_STR_LEN];
 
 #ifdef HAVE_STRFTIME
     if (local) {
-        /*
-        ** Solaris 2.3 has a bug so we _must_ use reentrant version
-        ** Thomas Maslen <tmaslen@verity.com>
-        */
-#if defined(_REENTRANT) || defined(SOLARIS)
+#if defined(_REENTRANT)  || defined(SOLARIS)
         struct tm loctime;
         localtime_r(calendar, &loctime);
-        strftime(buf, 40, "%a, %d %b %Y %H:%M:%S", &loctime);
+        strftime(buf, MAX_TIME_STR_LEN, "%a, %d %b %Y %H:%M:%S", &loctime);
 #else
         struct tm *loctime = localtime(calendar);
-        strftime(buf, 40, "%a, %d %b %Y %H:%M:%S", loctime);
+        strftime(buf, MAX_TIME_STR_LEN, "%a, %d %b %Y %H:%M:%S", loctime);
 #endif /* SOLARIS || _REENTRANT */
     }
     else {
-#if defined(_REENTRANT) || defined(SOLARIS)
+#if defined(_REENTRANT)  || defined(SOLARIS)
         struct tm gmt;
         gmtime_r(calendar, &gmt);
-        strftime(buf, 40, "%a, %d %b %Y %H:%M:%S GMT", &gmt);
+        strftime(buf, MAX_TIME_STR_LEN, "%a, %d %b %Y %H:%M:%S GMT", &gmt);
 #else
         struct tm *gmt = gmtime(calendar);
-        strftime(buf, 40, "%a, %d %b %Y %H:%M:%S GMT", gmt);
+        strftime(buf, MAX_TIME_STR_LEN, "%a, %d %b %Y %H:%M:%S GMT", gmt);
 #endif /* SOLARIS || _REENTRANT */
     }
 
@@ -314,7 +304,7 @@ string date_time_str(time_t *calendar, bool local)
 #if defined(_REENTRANT)
         struct tm loctime;
         localtime_r(calendar, &loctime);
-        snprintf(buf, 40, "%s, %02d %s %04d %02d:%02d:%02d",
+        snprintf(buf, MAX_TIME_STR_LEN, "%s, %02d %s %04d %02d:%02d:%02d",
                 wkdays[loctime.tm_wday],
                 loctime.tm_mday,
                 months[loctime.tm_mon],
@@ -323,24 +313,24 @@ string date_time_str(time_t *calendar, bool local)
                 loctime.tm_min,
                 loctime.tm_sec);
 #else
-    struct tm *loctime = localtime(calendar);
-    if (!loctime)
-    	return "";
-    snprintf(buf, 40, "%s, %02d %s %04d %02d:%02d:%02d",
-            wkdays[loctime->tm_wday],
-            loctime->tm_mday,
-            months[loctime->tm_mon],
-            loctime->tm_year + 1900,
-            loctime->tm_hour,
-            loctime->tm_min,
-            loctime->tm_sec);
+        struct tm *loctime = localtime(calendar);
+        if (!loctime)
+            return "";
+        snprintf(buf, MAX_TIME_STR_LEN, "%s, %02d %s %04d %02d:%02d:%02d",
+                wkdays[loctime->tm_wday],
+                loctime->tm_mday,
+                months[loctime->tm_mon],
+                loctime->tm_year + 1900,
+                loctime->tm_hour,
+                loctime->tm_min,
+                loctime->tm_sec);
 #endif /* _REENTRANT */
     }
     else {
 #if defined(_REENTRANT) || defined(SOLARIS)
         struct tm gmt;
         gmtime_r(calendar, &gmt);
-        snprintf(buf, 40, "%s, %02d %s %04d %02d:%02d:%02d GMT",
+        snprintf(buf, MAX_TIME_STR_LEN, "%s, %02d %s %04d %02d:%02d:%02d GMT",
                 wkdays[gmt.tm_wday],
                 gmt.tm_mday,
                 months[gmt.tm_mon],
@@ -352,7 +342,7 @@ string date_time_str(time_t *calendar, bool local)
     struct tm *gmt = gmtime(calendar);
     if (!gmt)
     	return "";
-    snprintf(buf, 40, "%s, %02d %s %04d %02d:%02d:%02d GMT",
+    snprintf(buf, MAX_TIME_STR_LEN, "%s, %02d %s %04d %02d:%02d:%02d GMT",
             wkdays[gmt->tm_wday],
             gmt->tm_mday,
             months[gmt->tm_mon],
@@ -360,7 +350,7 @@ string date_time_str(time_t *calendar, bool local)
             gmt->tm_hour,
             gmt->tm_min,
             gmt->tm_sec);
-#endif
+#endif // defined(_REENTRANT) || defined(SOLARIS)
     }
 #endif
     return string(buf);

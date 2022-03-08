@@ -153,6 +153,9 @@ parse_error(const string & msg, const int line_num, const char *context)
     parse_error(msg.c_str(), line_num, context);
 }
 
+#if 0
+// Remove this since it is not used and contains a potential (low level) vulnerability.
+// jhrg 3/7/22
 void save_str(char *dst, const char *src, const int line_num)
 {
     if (strlen(src) >= ID_MAX)
@@ -163,6 +166,7 @@ void save_str(char *dst, const char *src, const int line_num)
     strncpy(dst, src, ID_MAX);
     dst[ID_MAX - 1] = '\0';     /* in case ... */
 }
+#endif
 
 void save_str(string & dst, const char *src, const int)
 {
