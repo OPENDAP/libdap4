@@ -546,15 +546,16 @@ string systime()
     time_t TimBin;
 
     if (time(&TimBin) == (time_t) -1)
-        return string("time() error");
+        return {"time() error"};
     else {
-        char *ctime_value = ctime(&TimBin);
-        if (ctime_value) {
+        char ctime_value[32];
+        const char *ret = ctime_r(&TimBin, ctime_value);
+        if (ret) {
             string TimStr = ctime_value;
             return TimStr.substr(0, TimStr.size() - 2); // remove the \n
         }
         else
-            return "Unknown";
+            return {"Unknown"};
     }
 }
 
@@ -1130,7 +1131,8 @@ int glob(const char *c, const char *s)
         case '\\':
             /* Force literal match of next char. */
 
-            if (!*c || *s++ != *c++) return i/*1*/;
+            if (!*c || *s != *c) { return i/*1*/; }
+            else { s++; c++; }
             break;
 
         default:
@@ -1184,7 +1186,7 @@ bool pathname_ok(const string &path, bool strict)
 #if 0
     string::size_type len = path.length();
 #endif
-    int result;
+    unsigned long result;
     if (strict)
         result = strict_name.match(path);
     else
