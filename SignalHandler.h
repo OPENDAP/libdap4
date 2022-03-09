@@ -104,10 +104,10 @@ public:
     static SignalHandler *instance();
 
     ///
-    virtual ~SignalHandler() {}
+    virtual ~SignalHandler() = default;
 
     EventHandler *register_handler(int signum, EventHandler *eh,
-                                   bool override = false);
+                                   bool ignore_by_default = false);
 
     EventHandler *remove_handler(int signum);
 };

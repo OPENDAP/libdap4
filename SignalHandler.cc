@@ -148,7 +148,7 @@ SignalHandler::instance()
     SIG_IGN. Default is false.
     @return A pointer to the old EventHandler or null. */
 EventHandler *
-SignalHandler::register_handler(int signum, EventHandler *eh, bool override)
+SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_default)
 {
     // Check first for improper use.
     switch (signum) {
@@ -204,7 +204,7 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool override)
     // handler more than once. We want to make sure that the dispatcher is
     // not installed as the 'old handler' because that results in an infinite
     // loop. 02/10/04 jhrg
-    if (override)
+    if (ignore_by_default)
         SignalHandler::d_old_handlers[signum] = SIG_IGN;
     else if (osa.sa_handler != dispatcher)
         SignalHandler::d_old_handlers[signum] = osa.sa_handler;
