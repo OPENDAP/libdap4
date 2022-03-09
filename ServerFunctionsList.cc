@@ -134,7 +134,7 @@ bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) c
     std::pair <SFLCIter, SFLCIter> ret;
     ret = d_func_list.equal_range(name);
     for (SFLCIter it = ret.first; it != ret.second; ++it) {
-        if (name == it->first) {
+        if (name == it->first && it->second->get_bool_func()) {
             *f = it->second->get_bool_func();
             return true;
         }
@@ -172,7 +172,7 @@ bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
     std::pair <SFLCIter, SFLCIter> ret;
     ret = d_func_list.equal_range(name);
     for (SFLCIter it = ret.first; it != ret.second; ++it) {
-        if (name == it->first) {
+        if (name == it->first && it->second->get_btp_func()) {
             *f = it->second->get_btp_func();
             return true;
         }
@@ -209,7 +209,7 @@ bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
     std::pair <SFLCIter, SFLCIter> ret;
     ret = d_func_list.equal_range(name);
     for (SFLCIter it = ret.first; it != ret.second; ++it) {
-        if (name == it->first) {
+        if (name == it->first && it->second->get_proj_func()) {
             *f = it->second->get_proj_func();
             return true;
         }
@@ -233,7 +233,7 @@ bool ServerFunctionsList::find_function(const string &name, D4Function *f) const
     std::pair <SFLCIter, SFLCIter> ret;
     ret = d_func_list.equal_range(name);
     for (SFLCIter it = ret.first; it != ret.second; ++it) {
-        if (name == it->first) {
+        if (name == it->first && it->second->get_d4_function()) {
             *f = it->second->get_d4_function();
             return true;
         }
