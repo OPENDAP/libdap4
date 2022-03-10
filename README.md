@@ -1,4 +1,5 @@
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
+
 ### Updated for version 3.20.9 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5807905.svg)](https://doi.org/10.5281/zenodo.5807905)
 * Started migrating from (deprecated) auto_ptr to C++11 unique_ptr
 * Migrated use of regex functions from outdfated GNU implementation 
