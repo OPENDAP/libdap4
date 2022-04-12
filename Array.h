@@ -165,12 +165,12 @@ public:
             c_size = size;
         }
 
-        dimension(D4Dimension *d);
+        explicit dimension(D4Dimension *d);
     };
 
+private:
     D4Maps *d_maps;
 
-private:
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
 
     void update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims);

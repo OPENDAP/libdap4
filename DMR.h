@@ -94,11 +94,11 @@ protected:
 public:
     DMR();
     DMR(const DMR &dmr);
-    DMR(D4BaseTypeFactory *factory, const std::string &name = "");
+    explicit DMR(D4BaseTypeFactory *factory, const std::string &name = "");
 
     DMR(D4BaseTypeFactory *factory, DDS &dds);
 
-    virtual ~DMR();
+    ~DMR() override;
 
     DMR &operator=(const DMR &rhs);
 
@@ -222,7 +222,7 @@ public:
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
 
-    virtual void dump(std::ostream &strm) const ;
+    void dump(std::ostream &strm) const override;
 };
 
 } // namespace libdap

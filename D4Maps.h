@@ -109,7 +109,7 @@ public:
     D4Maps &operator=(const D4Maps &rhs);
 
     /**
-     * Add a map. This does not test for duplicate names or Array pointers;
+     * Add a map. This does not test for duplicate names or Array pointers.
      * It assumes that the caller has done that!
      */
     void add_map(D4Map *map) {

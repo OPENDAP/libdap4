@@ -138,11 +138,11 @@ private:
 
     // These are non-empty only for DAP4 variables. Added 9/27/12 jhrg
 
-protected:
     // These were/are used for DAP2 CEs, but not for DAP4 ones
     bool d_in_selection; // Is the variable in the selection?
     bool d_is_synthesized; // true if the variable is synthesized
 
+protected:
     void m_duplicate(const BaseType &bt);
 
 public:
@@ -153,14 +153,14 @@ public:
     BaseType(const string &n, const string &d, const Type &t, bool is_dap4 = false);
 
     BaseType(const BaseType &copy_from);
-    virtual ~BaseType();
+    ~BaseType() override;
 
     virtual string toString();
 
     virtual void transform_to_dap4(D4Group *root, Constructor *container);
     virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
 
-    virtual void dump(ostream &strm) const ;
+    void dump(ostream &strm) const override;
 
     BaseType &operator=(const BaseType &rhs);
 
@@ -278,7 +278,7 @@ public:
         no name is given, the function returns the first (only)
         variable. For example, an Array has only one variable, while a
         Structure can have many. */
-    virtual BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = 0);
+    virtual BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = nullptr);
     virtual BaseType *var(const string &name, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part = nil);

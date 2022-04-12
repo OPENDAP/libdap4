@@ -65,6 +65,7 @@ D4EnumDef::is_valid_enum_value(long long value)
     }
 }
 
+#if 0
 // Note that in order for this to work the second argument must not be a reference.
 // jhrg 8/20/13
 static bool
@@ -72,12 +73,15 @@ enum_def_name_eq(D4EnumDef *d, const string name)
 {
     return d->name() == name;
 }
+#endif
 
 D4EnumDef *
 D4EnumDefs::find_enum_def(const string &name)
 {
-    D4EnumDefIter d = find_if(d_enums.begin(), d_enums.end(), bind2nd(ptr_fun(enum_def_name_eq), name));
-    return (d != d_enums.end()) ? *d: 0;
+    auto d = find_if(d_enums.begin(), d_enums.end(),
+                     [name](const D4EnumDef *d) { return name == d->name(); });
+
+    return (d != d_enums.end()) ? *d: nullptr;
 }
 
 void D4EnumDef::print_value(XMLWriter &xml, const D4EnumDef::tuple &tuple) const
