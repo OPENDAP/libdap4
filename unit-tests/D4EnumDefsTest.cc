@@ -30,6 +30,7 @@
 
 //#define DODS_DEBUG
 
+#include "dods-limits.h"
 #include "D4EnumDefs.h"
 #include "XMLWriter.h"
 #include "debug.h"
@@ -177,7 +178,7 @@ public:
     }
 
     // D4EnumDef::is_valid_enum_value(long long value)
-    void test_is_valid_enum_value()
+    void test_is_valid_enum_value_1()
     {
         // e is an enum that holds a Byte
         // e2 is an enum for int32 values
@@ -187,7 +188,25 @@ public:
         CPPUNIT_ASSERT_MESSAGE("-1 Should be a valid byte value", !e.is_valid_enum_value(-1));
     }
 
-CPPUNIT_TEST_SUITE (D4EnumDefsTest);
+    void test_is_valid_enum_value_2()
+    {
+        CPPUNIT_ASSERT_MESSAGE("-1 Should be a valid int32 enum value", e2.is_valid_enum_value(-1));
+        CPPUNIT_ASSERT_MESSAGE("-65536 Should be a valid int32 enum value", e2.is_valid_enum_value(-65536));
+        CPPUNIT_ASSERT_MESSAGE("65536 Should be a valid int32 enum value", e2.is_valid_enum_value(-65536));
+    }
+
+    void test_is_valid_enum_value_3()
+    {
+        CPPUNIT_ASSERT_MESSAGE("DODS_INT_MIN Should be a valid int32 enum value", e2.is_valid_enum_value(DODS_INT_MIN));
+        CPPUNIT_ASSERT_MESSAGE("DODS_INT_MAX Should be a valid int32 enum value", e2.is_valid_enum_value(DODS_INT_MAX));
+    }
+
+    void test_is_valid_enum_value_4()
+    {
+        CPPUNIT_ASSERT_MESSAGE("DODS_UINT_MAX Should not be a valid int32 enum value", !e2.is_valid_enum_value(DODS_UINT_MAX));
+    }
+
+    CPPUNIT_TEST_SUITE (D4EnumDefsTest);
 
     CPPUNIT_TEST (test_print_empty);
     CPPUNIT_TEST (test_print_enum_values_only);
@@ -198,7 +217,10 @@ CPPUNIT_TEST_SUITE (D4EnumDefsTest);
     CPPUNIT_TEST (test_print_assignment);
     CPPUNIT_TEST (test_print_copy_ctor);
 
-    CPPUNIT_TEST (test_is_valid_enum_value);
+    CPPUNIT_TEST (test_is_valid_enum_value_1);
+    CPPUNIT_TEST (test_is_valid_enum_value_2);
+    CPPUNIT_TEST (test_is_valid_enum_value_3);
+    CPPUNIT_TEST (test_is_valid_enum_value_4);
 
     CPPUNIT_TEST_SUITE_END();
 };
