@@ -176,7 +176,18 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    CPPUNIT_TEST_SUITE (D4EnumDefsTest);
+    // D4EnumDef::is_valid_enum_value(long long value)
+    void test_is_valid_enum_value()
+    {
+        // e is an enum that holds a Byte
+        // e2 is an enum for int32 values
+
+        CPPUNIT_ASSERT_MESSAGE("255 Should be a valid byte value", e.is_valid_enum_value(255));
+        CPPUNIT_ASSERT_MESSAGE("0 Should be a valid byte value", e.is_valid_enum_value(0));
+        CPPUNIT_ASSERT_MESSAGE("-1 Should be a valid byte value", !e.is_valid_enum_value(-1));
+    }
+
+CPPUNIT_TEST_SUITE (D4EnumDefsTest);
 
     CPPUNIT_TEST (test_print_empty);
     CPPUNIT_TEST (test_print_enum_values_only);
@@ -186,6 +197,8 @@ public:
     CPPUNIT_TEST (test_print_insert_enum);
     CPPUNIT_TEST (test_print_assignment);
     CPPUNIT_TEST (test_print_copy_ctor);
+
+    CPPUNIT_TEST (test_is_valid_enum_value);
 
     CPPUNIT_TEST_SUITE_END();
 };

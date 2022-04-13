@@ -79,7 +79,7 @@ D4EnumDef *
 D4EnumDefs::find_enum_def(const string &name)
 {
     auto d = find_if(d_enums.begin(), d_enums.end(),
-                     [name](const D4EnumDef *d) { return name == d->name(); });
+                     [name](const D4EnumDef *def) { return name == def->name(); });
 
     return (d != d_enums.end()) ? *d: nullptr;
 }
