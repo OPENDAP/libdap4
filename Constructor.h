@@ -43,14 +43,13 @@ class D4StreamUnMarshaller;
 class Constructor: public BaseType
 {
 private:
-    Constructor();  // No default ctor.
+    void m_duplicate(const Constructor &s);
 
 protected:
     std::vector<BaseType *> d_vars;
 
-    void m_duplicate(const Constructor &s);
-    BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
-    BaseType *m_exact_match(const string &name, btp_stack *s = 0);
+    BaseType *m_leaf_match(const string &name, btp_stack *s = nullptr);
+    BaseType *m_exact_match(const string &name, btp_stack *s = nullptr);
 
     Constructor(const string &name, const Type &type, bool is_dap4 = false);
     Constructor(const string &name, const string &d, const Type &type, bool is_dap4 = false);
@@ -58,32 +57,32 @@ protected:
     Constructor(const Constructor &copy_from);
 
 public:
+    Constructor() = delete;
+
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
     typedef std::vector<BaseType *>::reverse_iterator Vars_riter ;
 
-    virtual ~Constructor();
+    ~Constructor() override;
 
     Constructor &operator=(const Constructor &rhs);
-    virtual void transform_to_dap4(D4Group *root, Constructor *dest);
+    void transform_to_dap4(D4Group *root, Constructor *dest) override;
 
-    virtual std::string FQN() const;
+    std::string FQN() const override;
 
-    virtual int element_count(bool leaves = false);
+    int element_count(bool leaves = false) override;
 
-    virtual void set_send_p(bool state);
-    virtual void set_read_p(bool state);
+    void set_send_p(bool state) override;
+    void set_read_p(bool state) override;
 
-    virtual unsigned int width(bool constrained = false) const;
-#if 0
-    virtual unsigned int width(bool constrained);
-#endif
-    // TODO Rewrite these methods to use the back pointers and keep this
-    // for older code.
+    unsigned int width(bool constrained = false) const override;
+
     /// btp_stack no longer needed; use back pointers (BaseType::get_parent())
-    virtual BaseType *var(const string &name, bool exact_match = true, btp_stack *s = 0);
     /// @deprecated
-    virtual BaseType *var(const string &n, btp_stack &s);
+    BaseType *var(const string &name, bool exact_match = true, btp_stack *s = nullptr) override;
+    /// btp_stack no longer needed; use back pointers (BaseType::get_parent())
+    /// @deprecated
+    BaseType *var(const string &n, btp_stack &s) override;
 
     Vars_iter var_begin();
     Vars_iter var_end();
@@ -99,66 +98,60 @@ public:
       */
     const vector<BaseType*> &variables() const { return d_vars; }
 
-    virtual void add_var(BaseType *bt, Part part = nil);
-    virtual void add_var_nocopy(BaseType *bt, Part part = nil);
+    void add_var(BaseType *bt, Part part = nil) override;
+    void add_var_nocopy(BaseType *bt, Part part = nil) override;
 
     virtual void del_var(const string &name);
     virtual void del_var(Vars_iter i);
 
-    virtual bool read();
+    bool read() override;
 
     // DAP2
-    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+    void intern_data(ConstraintEvaluator &eval, DDS &dds) override;
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
+    bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) override;
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void compute_checksum(Crc32 &checksum) override;
+    void intern_data() override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
     // Do not store values in memory as for C; users work with the C++ objects
-    virtual unsigned int val2buf(void *, bool) {
+    unsigned int val2buf(void *, bool) override {
         throw InternalErr(__FILE__, __LINE__, "Never use this method; see the programmer's guide documentation.");
     }
-    virtual unsigned int buf2val(void **) {
+    unsigned int buf2val(void **) override {
         throw InternalErr(__FILE__, __LINE__, "Never use this method; see the programmer's guide documentation.");
     }
 
     virtual bool is_linear();
-    virtual void set_in_selection(bool state);
 
-    virtual void print_decl(ostream &out, string space = "    ",
-                            bool print_semi = true,
-                            bool constraint_info = false,
-                            bool constrained = false);
+    void set_in_selection(bool state) override;
 
-    virtual void print_xml(ostream &out, string space = "    ",
-                           bool constrained = false);
+    void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
+                            bool constrained = false) override;
 
-    void print_dap4(XMLWriter &xml, bool constrained = false);
+    void print_xml(ostream &out, string space = "    ", bool constrained = false) override;
 
-    virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
+    void print_dap4(XMLWriter &xml, bool constrained = false) override;
 
-    virtual void print_decl(FILE *out, string space = "    ",
-                            bool print_semi = true,
-                            bool constraint_info = false,
-                            bool constrained = false);
-    virtual void print_xml(FILE *out, string space = "    ",
-                           bool constrained = false);
+    void print_xml_writer(XMLWriter &xml, bool constrained = false) override;
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
+                            bool constrained = false) override;
+    void print_xml(FILE *out, string space = "    ", bool constrained = false) override;
 
-    virtual bool check_semantics(string &msg, bool all = false);
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
-    virtual void transfer_attributes(AttrTable *at);
+    bool check_semantics(string &msg, bool all = false) override;
+
+    void transfer_attributes(AttrTable *at) override;
+
     static AttrTable *make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars);
 
-    virtual void dump(ostream &strm) const ;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap

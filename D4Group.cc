@@ -290,6 +290,11 @@ D4Group::find_dim(const string &path)
 	return (grp == 0) ? 0: grp->find_dim(lpath);
 }
 
+/**
+ * @brief Given a path to an Array that is also a Map, get that Array.
+ * @param path The path to the Map. May be a FQN or a path relative to this group.
+ * @return A pointer to the Array or nullptr if the Map cannot be found.
+ */
 Array *
 D4Group::find_map_source(const string &path)
 {
@@ -301,6 +306,11 @@ D4Group::find_map_source(const string &path)
 	return 0;
 }
 
+/**
+ * @brief Get the Map Array named by the path
+ * @param path The path to the Map. May be a FQN or a path relative to this group.
+ * @return A pinter to the variable named by the path
+ */
 BaseType *
 D4Group::m_find_map_source_helper(const string &path)
 {
@@ -320,7 +330,7 @@ D4Group::m_find_map_source_helper(const string &path)
 		return var(lpath);
 	}
 
-	// name looks like foo/bar/baz where foo an bar must be groups
+	// name looks like foo/bar/baz where foo and bar must be groups
 	string grp_name = lpath.substr(0, pos);
 	lpath = lpath.substr(pos + 1);
 

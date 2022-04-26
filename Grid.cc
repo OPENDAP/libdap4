@@ -35,8 +35,6 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG
-
 #include <sstream>
 #include <functional>
 #include <algorithm>
@@ -65,13 +63,7 @@ namespace libdap {
 void
 Grid::m_duplicate(const Grid &s)
 {
-    // TODO revisit this code once/if the class is switched from using it's
-    // own vars to those in Constructor. jhrg 4/3/13
-
-	// copy the weak pointer - Constructor will take care of copying
-	// the 'strong' pointers.
-	//d_array_var = s.d_array_var;
-	d_is_array_set = s.d_is_array_set;
+    d_is_array_set = s.d_is_array_set;
 }
 
 /** The Grid constructor requires only the name of the variable
@@ -143,10 +135,10 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
     vector<Array*> d4_map_arrays;
 
     // We do the Map Arrays first because some people expect to see them
-    // delclared prior to the coverage array the utilizes them - even though that
+    // declared prior to the coverage array the utilizes them - even though that
     // is not a requirement of DAP4 I did it here to make people happier.
 	// We add the maps arrays to the current container if needed and make a
-    // a vector of them so we can add D4Map objects to our Precious down
+    // vector of them so that we can add D4Map objects to our Precious down
     // below.
 	for (Map_iter i = map_begin(), e = map_end(); i != e; ++i) {
 	    DBG(cerr << __func__ << "() - Processing Map Array:  '"<< (*i)->name() << "' ("<< (void *)(*i)<< ")" << endl;);
@@ -155,7 +147,7 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
 	    // the same name is good enough. The point here is to be sure to only use the
 	    // existing maps. This is an important issue when there are multiple Grids in the same
 	    // dataset that utilize the same Map arrays data.
-        Array *the_map_array;;
+        Array *the_map_array;
         Array *container_map_array = static_cast<Array*>(container->var((*i)->name()));
         if(!container_map_array){
             DBG(cerr << __func__ << "() - No Map Array '" << (*i)->name() << "' present in the current DAP4 container ("<<container->name()<< ":"<<(void*)container<< "). Let's fix that..." << endl;);
