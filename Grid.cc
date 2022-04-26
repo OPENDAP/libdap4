@@ -143,7 +143,7 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
     vector<Array*> d4_map_arrays;
 
     // We do the Map Arrays first because some people expect to see them
-    // delclared prior to the coverage array the utilizes them - even though that
+    // declared prior to the coverage array the utilizes them - even though that
     // is not a requirement of DAP4 I did it here to make people happier.
 	// We add the maps arrays to the current container if needed and make a
     // a vector of them so we can add D4Map objects to our Precious down

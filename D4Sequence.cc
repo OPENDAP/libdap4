@@ -449,10 +449,14 @@ D4Sequence::row_value(size_t row)
     return d_values[row];
 }
 
+#if 0
+
 static bool base_type_name_eq(BaseType *btp, const string name)
 {
     return btp->name() == name;
 }
+
+#endif
 
 /** @brief Get the BaseType pointer to the named variable of a given row.
  @param row Read from <i>row</i> in the sequence.
@@ -463,10 +467,15 @@ BaseType *
 D4Sequence::var_value(size_t row_num, const string &name)
 {
     D4SeqRow *row = row_value(row_num);
-    if (!row) return 0;
+    if (!row) return nullptr;
 
+#if 0
     D4SeqRow::iterator elem = find_if(row->begin(), row->end(), bind2nd(ptr_fun(base_type_name_eq), name));
-    return (elem != row->end()) ? *elem : 0;
+#endif
+    D4SeqRow::iterator elem = find_if(row->begin(), row->end(),
+                                       [name](BaseType *btp) -> bool { return btp->name() == name; });
+
+    return (elem != row->end()) ? *elem : nullptr;
 }
 
 /** @brief Get the BaseType pointer to the $i^{th}$ variable of <i>row</i>.

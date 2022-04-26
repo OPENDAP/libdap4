@@ -49,8 +49,8 @@ protected:
     std::vector<BaseType *> d_vars;
 
     void m_duplicate(const Constructor &s);
-    BaseType *m_leaf_match(const string &name, btp_stack *s = 0);
-    BaseType *m_exact_match(const string &name, btp_stack *s = 0);
+    BaseType *m_leaf_match(const string &name, btp_stack *s = nullptr);
+    BaseType *m_exact_match(const string &name, btp_stack *s = nullptr);
 
     Constructor(const string &name, const Type &type, bool is_dap4 = false);
     Constructor(const string &name, const string &d, const Type &type, bool is_dap4 = false);
@@ -75,9 +75,7 @@ public:
     virtual void set_read_p(bool state);
 
     virtual unsigned int width(bool constrained = false) const;
-#if 0
-    virtual unsigned int width(bool constrained);
-#endif
+
     // TODO Rewrite these methods to use the back pointers and keep this
     // for older code.
     /// btp_stack no longer needed; use back pointers (BaseType::get_parent())
