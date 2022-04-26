@@ -34,6 +34,7 @@
 
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 #include "crc.h"
 
@@ -109,8 +110,10 @@ Constructor::~Constructor()
         delete *i++;
     }
 #endif
+#if 1
     for (auto var: d_vars)
         delete var;
+#endif
 }
 
 Constructor &
@@ -422,6 +425,12 @@ void
 Constructor::del_var(const string &n)
 {
 	// TODO remove_if? find_if?
+#if 0
+    auto first_to_remove = std::stable_partition(d_vars.begin(), d_vars.end(),
+                                               [n](BaseType* v)bool { return v->name() == n; });
+    std::for_each(first_to_remove, d_vars.end(), [](BaseType* v){ delete v; });
+    vec.erase(first_to_remove, d_vars.end());
+#endif
 
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->name() == n) {
