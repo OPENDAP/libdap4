@@ -473,8 +473,10 @@ bool Constructor::read()
 	DBG(cerr << "Entering  Constructor::read..." << endl);
     if (!read_p()) {
         for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-            (*i)->read();
+            if ((*i)->send_p() || (*i)->is_in_selection())
+                (*i)->read();
         }
+        // Set read_p for child and the Constructor itself
         set_read_p(true);
     }
 
@@ -550,6 +552,9 @@ Constructor::compute_checksum(Crc32 &)
 void
 Constructor::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator & eval*/)
 {
+    // I do not think this method should call read() as is the case for the DAP2
+    // intern_data() method. Let the read() method specializations and BaseType::intern_data()
+    // handle that task. jhrg 4/25/22
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->send_p()) {
             (*i)->intern_data(/*checksum, dmr, eval*/);
