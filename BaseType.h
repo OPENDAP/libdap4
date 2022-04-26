@@ -160,7 +160,7 @@ public:
     virtual void transform_to_dap4(D4Group *root, Constructor *container);
     virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
 
-    virtual void dump(ostream &strm) const ;
+    void dump(ostream &strm) const override;
 
     BaseType &operator=(const BaseType &rhs);
 
@@ -278,7 +278,7 @@ public:
         no name is given, the function returns the first (only)
         variable. For example, an Array has only one variable, while a
         Structure can have many. */
-    virtual BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = 0);
+    virtual BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = nullptr);
     virtual BaseType *var(const string &name, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part = nil);

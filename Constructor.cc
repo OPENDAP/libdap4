@@ -29,12 +29,10 @@
 // Authors:
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
-
 #include "config.h"
 
 #include <string>
 #include <sstream>
-#include <algorithm>
 
 #include "crc.h"
 
@@ -69,62 +67,23 @@ Constructor::m_duplicate(const Constructor &c)
 	// Moved from Grid::m_duplicate. jhrg 4/3/13
 	d_vars.clear(); // [mjohnson 10 Sep 2009]
 
-	Vars_citer i = c.d_vars.begin();
+    for (auto var: c.d_vars) {
+        BaseType *btp = var->ptr_duplicate();
+        btp->set_parent(this);
+        d_vars.push_back(btp);
+    }
+
+#if 0
+    Vars_citer i = c.d_vars.begin();
 	while (i != c.d_vars.end()) {
 		BaseType *btp = (*i++)->ptr_duplicate();
 		btp->set_parent(this);
 		d_vars.push_back(btp);
 	}
+#endif
 }
 
 // Public member functions
-
-Constructor::Constructor(const string &name, const Type &type, bool is_dap4)
-        : BaseType(name, type, is_dap4)
-{}
-
-/** Server-side constructor that takes the name of the variable to be
- * created, the dataset name from which this variable is being created, and
- * the type of data being stored in the Constructor. This is a protected
- * constructor, available only to derived classes of Constructor
- *
- * @param name string containing the name of the variable to be created
- * @param dataset string containing the name of the dataset from which this
- * variable is being created
- * @param type type of data being stored
- */
-Constructor::Constructor(const string &name, const string &dataset, const Type &type, bool is_dap4)
-        : BaseType(name, dataset, type, is_dap4)
-{}
-
-Constructor::Constructor(const Constructor &rhs) : BaseType(rhs), d_vars(0)
-{
-    m_duplicate(rhs);
-}
-
-Constructor::~Constructor()
-{
-#if 0
-    Vars_iter i = d_vars.begin();
-    while (i != d_vars.end()) {
-        delete *i++;
-    }
-#endif
-#if 1
-    for (auto var: d_vars)
-        delete var;
-#endif
-}
-
-Constructor &
-Constructor::operator=(const Constructor &rhs)
-{
-    if (this == &rhs)
-        return *this;
-    BaseType::operator=(rhs);
-    m_duplicate(rhs);
-    return *this;
-}
 
 // A public method, but just barely...
 // TODO Understand what this method does. What is dest? Is it the parent-to-be
@@ -140,14 +99,7 @@ Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
         // to the root object. For example, this happens in
         // Grid with the Map Arrays - ndp - 05/08/17
         if (!d4_var) {
-            DBG(cerr << __func__ << "() - Transforming variable: '" <<
-                (*i)->name() << "'" << endl; );
             (*i)->transform_to_dap4(root /*group*/, dest /*container*/);
-        }
-        else {
-            DBG(cerr << __func__ << "() - Skipping variable: " <<
-                d4_var->type_name() << " " << d4_var->name() << " because a variable with" <<
-                " this name already exists in the root group." << endl; );
         }
     }
     dest->attributes()->transform_to_dap4(get_attr_table());
@@ -418,36 +370,51 @@ Constructor::add_var_nocopy(BaseType *bt, Part)
     d_vars.push_back(bt);
 }
 
-/** Remove an element from a Constructor.
-
-    @param n name of the variable to remove */
+/**
+ * @brief Remove an element from a Constructor.
+ * @note New version. There is a subtle change in that this version will
+ * remove all variables in this Constructor with name 'n' while the old
+ * version would just remove the first variable.
+ * @param n name of the variable to remove
+ */
 void
 Constructor::del_var(const string &n)
 {
-	// TODO remove_if? find_if?
 #if 0
-    auto first_to_remove = std::stable_partition(d_vars.begin(), d_vars.end(),
-                                               [n](BaseType* v)bool { return v->name() == n; });
-    std::for_each(first_to_remove, d_vars.end(), [](BaseType* v){ delete v; });
-    vec.erase(first_to_remove, d_vars.end());
+    // I'm not sure this is better than the old way, but it does avoid
+    // direct manipulation of the iterators. jhrg 4/25/22
+    auto first_to_remove = stable_partition(d_vars.begin(), d_vars.end(),
+                                            [n](BaseType* v) { return v->name() != n; });
+    for_each(first_to_remove, d_vars.end(), [](BaseType* v){ delete v; });
+    d_vars.erase(first_to_remove, d_vars.end());
 #endif
 
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+    for (auto i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->name() == n) {
-            d_vars.erase(i);
             delete *i;
+            d_vars.erase(i);
             return;
         }
     }
 }
 
+/**
+ * @brief Delete the BaseType* and erase the iterator .
+ * @note It is OK to call this with an iterator that points to nullptr.
+ * @param i The iterator that points to the BaseType.
+ */
 void
 Constructor::del_var(Vars_iter i)
 {
+    delete *i;
+    d_vars.erase(i);
+
+#if 0
     if (*i != nullptr) {
-        d_vars.erase(i);
         delete *i;
+        d_vars.erase(i);
     }
+#endif
 }
 
 /** @brief simple implementation of read that iterates through vars
@@ -669,6 +636,8 @@ Constructor::print_xml(ostream &out, string space, bool constrained)
     out << xml.get_doc();
 }
 
+#if 0
+
 class PrintFieldXMLWriter : public unary_function<BaseType *, void>
 {
     XMLWriter &d_xml;
@@ -683,6 +652,8 @@ public:
         btp->print_xml_writer(d_xml, d_constrained);
     }
 };
+
+#endif
 
 void
 Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
@@ -702,9 +673,16 @@ Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
     if (!is_dap4() && get_attr_table().get_size() > 0)
         get_attr_table().print_xml_writer(xml);
 
+#if 0
     bool has_variables = (var_begin() != var_end());
-    if (has_variables)
-        for_each(var_begin(), var_end(), PrintFieldXMLWriter(xml, constrained));
+#endif
+    if (!d_vars.empty())
+        for_each(d_vars.begin(), d_vars.end(),
+                 [&xml, constrained](BaseType *btp) { btp->print_xml_writer(xml, constrained); });
+
+#if 0
+    for_each(var_begin(), var_end(), PrintFieldXMLWriter(xml, constrained));
+#endif
 
     if (is_dap4())
         attributes()->print_dap4(xml);
@@ -712,6 +690,8 @@ Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
 }
+
+#if 0
 
 class PrintDAP4FieldXMLWriter : public unary_function<BaseType *, void>
 {
@@ -726,6 +706,8 @@ public:
     }
 };
 
+#endif
+
 void
 Constructor::print_dap4(XMLWriter &xml, bool constrained)
 {
@@ -739,9 +721,16 @@ Constructor::print_dap4(XMLWriter &xml, bool constrained)
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    bool has_variables = (var_begin() != var_end());
-    if (has_variables)
+#if 0
+    bool has_variables = !d_vars.empty(); //var_begin() != var_end());
+#endif
+    if (!d_vars.empty())
+        for_each(d_vars.begin(), d_vars.end(),
+                 [&xml, constrained](BaseType *btp) { btp->print_dap4(xml, constrained); });
+
+#if 0
         for_each(var_begin(), var_end(), PrintDAP4FieldXMLWriter(xml, constrained));
+#endif
 
     attributes()->print_dap4(xml);
 
@@ -822,33 +811,32 @@ Constructor::make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars)
     if (!dropped_vars->empty()) {
         dv_table = new AttrTable;
         dv_table->set_name("dap4:dropped_members");
+
         vector<BaseType *>::iterator dvIter = dropped_vars->begin();
         vector<BaseType *>::iterator dvEnd = dropped_vars->end();
         unsigned int i = 0;
         for (; dvIter != dvEnd; dvIter++, i++) {
             BaseType *bt = (*dvIter);
+
             AttrTable *bt_attr_table = new AttrTable(bt->get_attr_table());
             bt_attr_table->set_name(bt->name());
             string type_name = bt->type_name();
+
             if (bt->is_vector_type()) {
                 Array *array = dynamic_cast <Array *>(bt);
-                if (array) {
+                if (array) {    // This is always true - only an Array is_vector_type(). jhrg 4/25/22
                     type_name = array->prototype()->type_name();
-                    DBG(cerr << __func__ << "() - The variable " << bt->name() << " is an Array of '" << type_name
-                             << "'" << endl;);
                     Array::Dim_iter d_iter = array->dim_begin();
                     Array::Dim_iter end = array->dim_end();
                     for (; d_iter < end; d_iter++) {
 
                         ostringstream dim_size;
                         dim_size << (*d_iter).size;
-                        bt_attr_table->append_attr(
-                                "array_dimensions",
-                                AttrType_to_String(Attr_uint32),
-                                dim_size.str());
+                        bt_attr_table->append_attr("array_dimensions", AttrType_to_String(Attr_uint32), dim_size.str());
                     }
                 }
             }
+
             bt_attr_table->append_attr("dap4:type", "String", type_name);
             dv_table->append_container(bt_attr_table, bt_attr_table->get_name());
             // Clear entry now that we're done.
