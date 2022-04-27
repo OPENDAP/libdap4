@@ -16,17 +16,13 @@
 #include "run_tests_cppunit.h"
 #include "test_config.h"
 
-
 using std::cerr;
 using std::endl;
 using std::ostringstream;
 
 using namespace CppUnit;
 
-int test_variable_sleep_interval = 0; // Used in Test* classes for testing
-// timeouts.
-
-
+int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeouts.
 
 string ExpectedPrint1(
     "Structure {\n\
@@ -44,8 +40,8 @@ string ExpectedPrint2(
 class structT: public CppUnit::TestFixture {
 
     CPPUNIT_TEST_SUITE (structT);
-    CPPUNIT_TEST (structT_test);CPPUNIT_TEST_SUITE_END( )
-    ;
+    CPPUNIT_TEST (structT_test);
+    CPPUNIT_TEST_SUITE_END( );
 
 private:
     /* TEST PRIVATE DATA */
@@ -60,7 +56,7 @@ public:
     void tearDown()
     {
         delete factory;
-        factory = 0;
+        factory = nullptr;
     }
 
     void structT_test()
@@ -111,7 +107,7 @@ public:
             CPPUNIT_FAIL("Too many variables");
         }
         else if (viter == s.var_end() && n != varnames.end()) {
-            CPPUNIT_FAIL("Too few varialbes");
+            CPPUNIT_FAIL("Too few variables");
         }
 
         int num_elems = s.element_count();
