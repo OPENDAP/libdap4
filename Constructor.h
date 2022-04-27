@@ -132,10 +132,10 @@ public:
     void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
     // Do not store values in memory as for C; users work with the C++ objects for this class
-    virtual unsigned int val2buf(void *, bool) override {
+    unsigned int val2buf(void *, bool) override {
         throw InternalErr(__FILE__, __LINE__, "Never use this method; see the programmer's guide documentation.");
     }
-    virtual unsigned int buf2val(void **) override {
+    unsigned int buf2val(void **) override {
         throw InternalErr(__FILE__, __LINE__, "Never use this method; see the programmer's guide documentation.");
     }
 

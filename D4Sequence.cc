@@ -257,26 +257,6 @@ bool D4Sequence::read_next_instance(bool filter)
 void D4Sequence::intern_data()
 {
     read_sequence_values(true);
-
-#if 0
-    // Read the data values, then serialize.
-    while (read_next_instance(true /*filter*/)) {
-        D4SeqRow *row = new D4SeqRow;
-        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
-            if ((*i)->send_p()) {
-                // store the variable's value.
-                row->push_back((*i)->ptr_duplicate());
-                // the copy should have read_p true to prevent the serialize() call
-                // below in the nested for loops from triggering a second call to
-                // read().
-                row->back()->set_read_p(true);
-            }
-        }
-        d_values.push_back(row);
-    }
-
-    set_length(d_values.size());
-#endif
 }
 
 /**
@@ -472,8 +452,8 @@ D4Sequence::var_value(size_t row_num, const string &name)
 #if 0
     D4SeqRow::iterator elem = find_if(row->begin(), row->end(), bind2nd(ptr_fun(base_type_name_eq), name));
 #endif
-    D4SeqRow::iterator elem = find_if(row->begin(), row->end(),
-                                       [name](BaseType *btp) -> bool { return btp->name() == name; });
+    auto elem = find_if(row->begin(), row->end(),
+                        [name](const BaseType *btp)  { return btp->name() == name; });
 
     return (elem != row->end()) ? *elem : nullptr;
 }
