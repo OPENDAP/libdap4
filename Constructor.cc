@@ -72,15 +72,6 @@ Constructor::m_duplicate(const Constructor &c)
         btp->set_parent(this);
         d_vars.push_back(btp);
     }
-
-#if 0
-    Vars_citer i = c.d_vars.begin();
-	while (i != c.d_vars.end()) {
-		BaseType *btp = (*i++)->ptr_duplicate();
-		btp->set_parent(this);
-		d_vars.push_back(btp);
-	}
-#endif
 }
 
 // Public member functions
@@ -126,11 +117,6 @@ Constructor::element_count(bool leaves)
         return d_vars.size();
     else {
         int i = 0;
-#if 0
-        for (Vars_iter j = d_vars.begin(); j != d_vars.end(); j++) {
-            i += (*j)->element_count(leaves);
-        }
-#endif
         for (auto var: d_vars) {
             i += var->element_count(leaves);
         }
@@ -141,9 +127,6 @@ Constructor::element_count(bool leaves)
 void
 Constructor::set_send_p(bool state)
 {
-#if 0
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++)
-#endif
     for (auto var: d_vars) {
         var->set_send_p(state);
     }
@@ -161,20 +144,6 @@ Constructor::set_read_p(bool state)
     BaseType::set_read_p(state);
 }
 
-#if 0
-// TODO Recode to use width(bool). Bur see comments in BaseType.h
-unsigned int
-Constructor::width()
-{
-    unsigned int sz = 0;
-
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        sz += (*i)->width();
-    }
-
-    return sz;
-}
-#endif
 /** This version of width simply returns the same thing as width() for simple
     types and Arrays. For Structure it returns the total size if constrained
     is false, or the size of the elements in the current projection if true.
@@ -380,15 +349,6 @@ Constructor::add_var_nocopy(BaseType *bt, Part)
 void
 Constructor::del_var(const string &n)
 {
-#if 0
-    // I'm not sure this is better than the old way, but it does avoid
-    // direct manipulation of the iterators. jhrg 4/25/22
-    auto first_to_remove = stable_partition(d_vars.begin(), d_vars.end(),
-                                            [n](BaseType* v) { return v->name() != n; });
-    for_each(first_to_remove, d_vars.end(), [](BaseType* v){ delete v; });
-    d_vars.erase(first_to_remove, d_vars.end());
-#endif
-
     for (auto i = d_vars.begin(); i != d_vars.end(); i++) {
         if ((*i)->name() == n) {
             delete *i;
@@ -408,13 +368,6 @@ Constructor::del_var(Vars_iter i)
 {
     delete *i;
     d_vars.erase(i);
-
-#if 0
-    if (*i != nullptr) {
-        delete *i;
-        d_vars.erase(i);
-    }
-#endif
 }
 
 /** @brief simple implementation of read that iterates through vars
@@ -503,7 +456,6 @@ Constructor::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator & eval
         }
     }
 }
-
 
 /**
  * @brief Serialize a Constructor
@@ -636,25 +588,6 @@ Constructor::print_xml(ostream &out, string space, bool constrained)
     out << xml.get_doc();
 }
 
-#if 0
-
-class PrintFieldXMLWriter : public unary_function<BaseType *, void>
-{
-    XMLWriter &d_xml;
-    bool d_constrained;
-public:
-    PrintFieldXMLWriter(XMLWriter &x, bool c)
-            : d_xml(x), d_constrained(c)
-    {}
-
-    void operator()(BaseType *btp)
-    {
-        btp->print_xml_writer(d_xml, d_constrained);
-    }
-};
-
-#endif
-
 void
 Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
 {
@@ -673,16 +606,9 @@ Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
     if (!is_dap4() && get_attr_table().get_size() > 0)
         get_attr_table().print_xml_writer(xml);
 
-#if 0
-    bool has_variables = (var_begin() != var_end());
-#endif
     if (!d_vars.empty())
         for_each(d_vars.begin(), d_vars.end(),
                  [&xml, constrained](BaseType *btp) { btp->print_xml_writer(xml, constrained); });
-
-#if 0
-    for_each(var_begin(), var_end(), PrintFieldXMLWriter(xml, constrained));
-#endif
 
     if (is_dap4())
         attributes()->print_dap4(xml);
@@ -690,23 +616,6 @@ Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
 }
-
-#if 0
-
-class PrintDAP4FieldXMLWriter : public unary_function<BaseType *, void>
-{
-    XMLWriter &d_xml;
-    bool d_constrained;
-public:
-    PrintDAP4FieldXMLWriter(XMLWriter &x, bool c) : d_xml(x), d_constrained(c) {}
-
-    void operator()(BaseType *btp)
-    {
-        btp->print_dap4(d_xml, d_constrained);
-    }
-};
-
-#endif
 
 void
 Constructor::print_dap4(XMLWriter &xml, bool constrained)
@@ -721,16 +630,9 @@ Constructor::print_dap4(XMLWriter &xml, bool constrained)
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-#if 0
-    bool has_variables = !d_vars.empty(); //var_begin() != var_end());
-#endif
     if (!d_vars.empty())
         for_each(d_vars.begin(), d_vars.end(),
                  [&xml, constrained](BaseType *btp) { btp->print_dap4(xml, constrained); });
-
-#if 0
-        for_each(var_begin(), var_end(), PrintDAP4FieldXMLWriter(xml, constrained));
-#endif
 
     attributes()->print_dap4(xml);
 
@@ -791,7 +693,6 @@ Constructor::set_in_selection(bool state)
     BaseType::set_in_selection(state);
 }
 
-
 void Constructor::transfer_attributes(AttrTable *at_container)
 {
     AttrTable *at = at_container->get_attr_table(name());
@@ -846,7 +747,6 @@ Constructor::make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars)
 
     return dv_table;
 }
-
 
 /** @brief dumps information about this object
  *
