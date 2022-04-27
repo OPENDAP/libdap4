@@ -51,46 +51,6 @@ using namespace std;
 
 namespace libdap {
 
-#if 0
-// Keep this stuff around in case we decide to switch back to sentinels
-
-static const unsigned char end_of_sequence = 0xA5;// binary pattern 1010 0101
-static const unsigned char start_of_instance = 0x5A;// binary pattern 0101 1010
-
-static void
-write_end_of_sequence(Marshaller &m)
-{
-    m.put_opaque( (char *)&end_of_sequence, 1 );
-}
-
-static void
-write_start_of_instance(Marshaller &m)
-{
-    m.put_opaque( (char *)&start_of_instance, 1 );
-}
-
-static unsigned char
-read_marker(UnMarshaller &um)
-{
-    unsigned char marker;
-    um.get_opaque( (char *)&marker, 1 );
-
-    return marker;
-}
-
-static bool
-is_start_of_instance(unsigned char marker)
-{
-    return (marker == start_of_instance);
-}
-
-static bool
-is_end_of_sequence(unsigned char marker)
-{
-    return (marker == end_of_sequence);
-}
-#endif
-
 // Private member functions
 
 // A reminder of these type defs
@@ -257,26 +217,6 @@ bool D4Sequence::read_next_instance(bool filter)
 void D4Sequence::intern_data()
 {
     read_sequence_values(true);
-
-#if 0
-    // Read the data values, then serialize.
-    while (read_next_instance(true /*filter*/)) {
-        D4SeqRow *row = new D4SeqRow;
-        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
-            if ((*i)->send_p()) {
-                // store the variable's value.
-                row->push_back((*i)->ptr_duplicate());
-                // the copy should have read_p true to prevent the serialize() call
-                // below in the nested for loops from triggering a second call to
-                // read().
-                row->back()->set_read_p(true);
-            }
-        }
-        d_values.push_back(row);
-    }
-
-    set_length(d_values.size());
-#endif
 }
 
 /**
@@ -449,13 +389,6 @@ D4Sequence::row_value(size_t row)
     return d_values[row];
 }
 
-#if 0
-static bool base_type_name_eq(BaseType *btp, const string name)
-{
-    return btp->name() == name;
-}
-#endif
-
 /** @brief Get the BaseType pointer to the named variable of a given row.
  @param row Read from <i>row</i> in the sequence.
  @param name Return <i>name</i> from <i>row</i>.
@@ -467,11 +400,9 @@ D4Sequence::var_value(size_t row_num, const string &name)
     D4SeqRow *row = row_value(row_num);
     if (!row) return nullptr;
 
-#if 0
-    D4SeqRow::iterator elem = find_if(row->begin(), row->end(), bind2nd(ptr_fun(base_type_name_eq), name));
-#endif
     auto elem = find_if(row->begin(), row->end(),
-                        [name](const BaseType *btp) { return name == btp->name(); });
+                        [name](const BaseType *btp)  { return btp->name() == name; });
+
     return (elem != row->end()) ? *elem : nullptr;
 }
 

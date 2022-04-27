@@ -51,24 +51,38 @@ protected:
     BaseType *m_leaf_match(const string &name, btp_stack *s = nullptr);
     BaseType *m_exact_match(const string &name, btp_stack *s = nullptr);
 
-    Constructor(const string &name, const Type &type, bool is_dap4 = false);
-    Constructor(const string &name, const string &d, const Type &type, bool is_dap4 = false);
+    Constructor(const string &name, const Type &type, bool is_dap4 = false)
+        : BaseType(name, type, is_dap4) { }
+    Constructor(const string &name, const string &dataset, const Type &type, bool is_dap4 = false)
+        : BaseType(name, dataset, type, is_dap4) { }
 
-    Constructor(const Constructor &copy_from);
+    Constructor(const Constructor &copy_from) : BaseType(copy_from) {
+        m_duplicate(copy_from);
+    }
 
 public:
-    Constructor() = delete;
-
     typedef std::vector<BaseType *>::const_iterator Vars_citer ;
     typedef std::vector<BaseType *>::iterator Vars_iter ;
     typedef std::vector<BaseType *>::reverse_iterator Vars_riter ;
 
-    ~Constructor() override;
+    Constructor() = delete;     // Why? jhrg 4/25/22
 
-    Constructor &operator=(const Constructor &rhs);
+    ~Constructor() override {
+        for (auto var: d_vars)
+            delete var;
+    }
+
+    Constructor &operator=(const Constructor &rhs) {
+        if (this == &rhs)
+            return *this;
+        BaseType::operator=(rhs);
+        m_duplicate(rhs);
+        return *this;
+    }
+
     void transform_to_dap4(D4Group *root, Constructor *dest) override;
 
-    std::string FQN() const override;
+    std::string FQN() const override ;
 
     int element_count(bool leaves = false) override;
 
@@ -78,8 +92,8 @@ public:
     unsigned int width(bool constrained = false) const override;
 
     /// btp_stack no longer needed; use back pointers (BaseType::get_parent())
-    /// @deprecated
     BaseType *var(const string &name, bool exact_match = true, btp_stack *s = nullptr) override;
+
     /// btp_stack no longer needed; use back pointers (BaseType::get_parent())
     /// @deprecated
     BaseType *var(const string &n, btp_stack &s) override;
@@ -117,7 +131,7 @@ public:
     void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false) override;
     void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    // Do not store values in memory as for C; users work with the C++ objects
+    // Do not store values in memory as for C; users work with the C++ objects for this class
     unsigned int val2buf(void *, bool) override {
         throw InternalErr(__FILE__, __LINE__, "Never use this method; see the programmer's guide documentation.");
     }
@@ -130,7 +144,7 @@ public:
     void set_in_selection(bool state) override;
 
     void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                            bool constrained = false) override;
+                    bool constrained = false) override;
 
     void print_xml(ostream &out, string space = "    ", bool constrained = false) override;
 
@@ -139,7 +153,7 @@ public:
     void print_xml_writer(XMLWriter &xml, bool constrained = false) override;
 
     void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                            bool constrained = false) override;
+                    bool constrained = false) override;
     void print_xml(FILE *out, string space = "    ", bool constrained = false) override;
 
     void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
@@ -148,7 +162,6 @@ public:
     bool check_semantics(string &msg, bool all = false) override;
 
     void transfer_attributes(AttrTable *at) override;
-
     static AttrTable *make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars);
 
     void dump(ostream &strm) const override;
