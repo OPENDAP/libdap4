@@ -43,11 +43,11 @@ class D4StreamUnMarshaller;
 class Constructor: public BaseType
 {
 private:
+    void m_duplicate(const Constructor &s);
 
 protected:
     std::vector<BaseType *> d_vars;
 
-    void m_duplicate(const Constructor &s);
     BaseType *m_leaf_match(const string &name, btp_stack *s = nullptr);
     BaseType *m_exact_match(const string &name, btp_stack *s = nullptr);
 
@@ -91,10 +91,10 @@ public:
 
     unsigned int width(bool constrained = false) const override;
 
-    // TODO Rewrite these methods to use the back pointers and keep this
-    // for older code.
     /// btp_stack no longer needed; use back pointers (BaseType::get_parent())
     BaseType *var(const string &name, bool exact_match = true, btp_stack *s = nullptr) override;
+
+    /// btp_stack no longer needed; use back pointers (BaseType::get_parent())
     /// @deprecated
     BaseType *var(const string &n, btp_stack &s) override;
 
@@ -140,6 +140,7 @@ public:
     }
 
     virtual bool is_linear();
+
     void set_in_selection(bool state) override;
 
     void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
@@ -163,7 +164,7 @@ public:
     void transfer_attributes(AttrTable *at) override;
     static AttrTable *make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars);
 
-    void dump(ostream &strm) const  override;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap

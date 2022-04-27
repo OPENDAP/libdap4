@@ -138,11 +138,11 @@ private:
 
     // These are non-empty only for DAP4 variables. Added 9/27/12 jhrg
 
-protected:
     // These were/are used for DAP2 CEs, but not for DAP4 ones
     bool d_in_selection; // Is the variable in the selection?
     bool d_is_synthesized; // true if the variable is synthesized
 
+protected:
     void m_duplicate(const BaseType &bt);
 
 public:
@@ -153,7 +153,7 @@ public:
     BaseType(const string &n, const string &d, const Type &t, bool is_dap4 = false);
 
     BaseType(const BaseType &copy_from);
-    virtual ~BaseType();
+    ~BaseType() override;
 
     virtual string toString();
 

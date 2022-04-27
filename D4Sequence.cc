@@ -430,12 +430,10 @@ D4Sequence::row_value(size_t row)
 }
 
 #if 0
-
 static bool base_type_name_eq(BaseType *btp, const string name)
 {
     return btp->name() == name;
 }
-
 #endif
 
 /** @brief Get the BaseType pointer to the named variable of a given row.
