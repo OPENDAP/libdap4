@@ -33,6 +33,7 @@
 
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 #include "crc.h"
 
@@ -360,13 +361,10 @@ Constructor::add_var_nocopy(BaseType *bt, Part)
 void
 Constructor::del_var(const string &n)
 {
-    for (auto i = d_vars.begin(); i != d_vars.end(); i++) {
-        if ((*i)->name() == n) {
-            delete *i;
-            d_vars.erase(i);
-            return;
-        }
-    }
+    auto to_remove = stable_partition(d_vars.begin(), d_vars.end(),
+                                      [n](BaseType* btp){ return btp->name() != n; });
+    for_each(to_remove, d_vars.end(), [](BaseType* btp){ delete btp; });
+    d_vars.erase(to_remove, d_vars.end());
 }
 
 /**
