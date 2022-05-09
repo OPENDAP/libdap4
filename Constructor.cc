@@ -33,6 +33,7 @@
 
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 #include "crc.h"
 
@@ -134,6 +135,17 @@ Constructor::set_send_p(bool state)
     BaseType::set_send_p(state);
 }
 
+/**
+ * @brief Set the 'read_p' property for the Constructor and its members
+ *
+ * This method sets read_p for all of the Constructor. The read() method
+ * is much more selective and only sets read_p for the Constructor itself,
+ * leaving the value of the property of the members up to their read()
+ * methods. Calling this with false will clear the property of all the
+ * member variables.
+ *
+ * @param state Set the read_p property to this state.
+ */
 void
 Constructor::set_read_p(bool state)
 {
@@ -349,13 +361,10 @@ Constructor::add_var_nocopy(BaseType *bt, Part)
 void
 Constructor::del_var(const string &n)
 {
-    for (auto i = d_vars.begin(); i != d_vars.end(); i++) {
-        if ((*i)->name() == n) {
-            delete *i;
-            d_vars.erase(i);
-            return;
-        }
-    }
+    auto to_remove = stable_partition(d_vars.begin(), d_vars.end(),
+                                      [n](BaseType* btp){ return btp->name() != n; });
+    for_each(to_remove, d_vars.end(), [](BaseType* btp){ delete btp; });
+    d_vars.erase(to_remove, d_vars.end());
 }
 
 /**
@@ -370,18 +379,26 @@ Constructor::del_var(Vars_iter i)
     d_vars.erase(i);
 }
 
-/** @brief simple implementation of read that iterates through vars
- *  and calls read on them
+/**
+ * @brief Read the elements of Constructor marked for transmission
  *
- * @return returns false to signify all has been read
+ * Iterate over the top level members of the Constructor and read all
+ * of them that have the 'send_p' property set to true. Assume the
+ * read() methods correctly set the 'read_p' property. Once done,
+ * set 'read_p' for the Constructor itself (but not for the members,
+ * that is left up to their individual read() methods).
+ *
+ * @return returns false; the return value is a relic.
  */
 bool Constructor::read()
 {
     if (!read_p()) {
         for (auto var: d_vars) {
-            var->read();
+            if (var->send_p())
+                var->read();
         }
-        set_read_p(true);
+        // Set read_p for the Constructor
+        BaseType::set_read_p(true);
     }
 
     return false;
@@ -448,7 +465,7 @@ Constructor::compute_checksum(Crc32 &)
 }
 
 void
-Constructor::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator & eval*/)
+Constructor::intern_data()
 {
     for (auto var: d_vars) {
         if (var->send_p()) {
@@ -483,13 +500,6 @@ Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
 	// sequence instance is missing...
     if (!read_p())
         read();  // read() throws Error
-
-#if 0
-    // place holder for now. There may be no need for this; only Array and Seq?
-    // jhrg 9/6/13
-    if (filter && !eval.eval_selection(dmr, dataset()))
-        return true;
-#endif
 
     for (auto var: d_vars) {
         if (var->send_p()) {
@@ -665,9 +675,6 @@ Constructor::check_semantics(string &msg, bool all)
     and Sequences the conditions are more complex. The implementation
     provided by this class always returns false. Other classes should
     override this implementation.
-
-    @todo Change the name to is_flattenable or something like that. 05/16/03
-    jhrg
 
     @brief Check to see whether this variable can be printed simply.
     @return True if the instance can be printed as a single table of
