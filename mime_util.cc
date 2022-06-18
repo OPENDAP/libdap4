@@ -914,12 +914,12 @@ void parse_mime_header(const string &header, string &name, string &value)
     size_t length = header.length() + 1;
     vector<char> s(length);
     //char s[line_length];
-    iss.getline(&s[0], length, ':');
-    name = &s[0];
+    iss.getline(s.data(), length, ':');
+    name = s.data();
 
     iss.ignore(length, ' ');
-    iss.getline(&s[0], length);
-    value = &s[0];
+    iss.getline(s.data(), length);
+    value = s.data();
 
     downcase(name);
     downcase(value);

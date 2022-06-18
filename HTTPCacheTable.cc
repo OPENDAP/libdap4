@@ -514,7 +514,7 @@ HTTPCacheTable::create_location(HTTPCacheTable::CacheEntry *entry)
     // mkstemp uses the storage passed to it; must be writable and local.
     // char *templat = new char[hash_dir.size() + 1];
     vector<char> templat(hash_dir.size() + 1);
-    strncpy(&templat[0], hash_dir.c_str(), hash_dir.size() + 1);
+    strncpy(templat.data(), hash_dir.c_str(), hash_dir.size() + 1);
 
     // Open truncated for update. NB: mkstemp() returns a file descriptor.
     // man mkstemp says "... The file is opened with the O_EXCL flag,
@@ -524,14 +524,14 @@ HTTPCacheTable::create_location(HTTPCacheTable::CacheEntry *entry)
     // Make sure that temp files are accessible only by the owner.
     umask(077);
 #endif
-    int fd = MKSTEMP(&templat[0]); // fd mode is 666 or 600 (Unix)
+    int fd = MKSTEMP(templat.data()); // fd mode is 666 or 600 (Unix)
     if (fd < 0) {
         // delete[] templat; templat = 0;
         // close(fd); Calling close() when fd is < 0 is a bad idea! jhrg 7/2/15
         throw Error(internal_error, "The HTTP Cache could not create a file to hold the response; it will not be cached.");
     }
 
-    entry->cachename = &templat[0];
+    entry->cachename = templat.data();
     // delete[] templat; templat = 0;
     close(fd);
 }

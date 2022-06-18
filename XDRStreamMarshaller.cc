@@ -261,7 +261,7 @@ void XDRStreamMarshaller::put_str(const string &val)
     vector<char> str_buf(size);
 
     try {
-        xdrmem_create(&str_sink, &str_buf[0], size, XDR_ENCODE);
+        xdrmem_create(&str_sink, str_buf.data(), size, XDR_ENCODE);
 
         if (!xdr_setpos(&str_sink, 0))
             throw Error(
@@ -281,7 +281,7 @@ void XDRStreamMarshaller::put_str(const string &val)
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
 
-        d_out.write(&str_buf[0], bytes_written);
+        d_out.write(str_buf.data(), bytes_written);
 
         xdr_destroy(&str_sink);
     }
@@ -386,7 +386,7 @@ void XDRStreamMarshaller::put_vector_end()
     if (pad) {
         vector<char> padding(4, 0); // 4 zeros
 
-        d_out.write(&padding[0], pad);
+        d_out.write(padding.data(), pad);
         if (d_out.fail()) throw Error("Network I/O Error. Could not send vector data padding");
     }
 }

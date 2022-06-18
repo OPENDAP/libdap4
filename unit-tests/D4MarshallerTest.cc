@@ -88,7 +88,7 @@ class D4MarshallerTest: public CppUnit::TestFixture {
         if (!in) throw Error("Could not open file: " + file);
 
         vector<char> fbuf(len);
-        in.read(&fbuf[0], len);
+        in.read(fbuf.data(), len);
         if (!in) {
             ostringstream oss("Could not read ");
             oss << len << " bytes from file.";
@@ -259,7 +259,7 @@ public:
 
             dsm.reset_checksum();
 
-            dsm.put_opaque_dap4(reinterpret_cast<char*>(&buf[0]), 32768);
+            dsm.put_opaque_dap4(reinterpret_cast<char*>(buf.data()), 32768);
             dsm.put_checksum();
             DBG(cerr << "test_opaque: checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
@@ -285,7 +285,7 @@ public:
 
             dsm.reset_checksum();
 
-            dsm.put_vector(reinterpret_cast<char*>(&buf1[0]), 32768);
+            dsm.put_vector(reinterpret_cast<char*>(buf1.data()), 32768);
             dsm.put_checksum();
             DBG(cerr << "test_vector: checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
@@ -294,7 +294,7 @@ public:
             for (int i = 0; i < 32768; ++i)
                 buf2[i] = i % (1 << 9);
 
-            dsm.put_vector(reinterpret_cast<char*>(&buf2[0]), 32768, sizeof(dods_int32));
+            dsm.put_vector(reinterpret_cast<char*>(buf2.data()), 32768, sizeof(dods_int32));
             dsm.put_checksum();
             DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
@@ -303,7 +303,7 @@ public:
             for (int i = 0; i < 32768; ++i)
                 buf3[i] = i % (1 << 9);
 
-            dsm.put_vector_float64(reinterpret_cast<char*>(&buf3[0]), 32768);
+            dsm.put_vector_float64(reinterpret_cast<char*>(buf3.data()), 32768);
             dsm.put_checksum();
             DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
 
@@ -327,7 +327,7 @@ public:
 
             dsm.reset_checksum();
 
-            dsm.put_varying_vector(reinterpret_cast<char*>(&buf1[0]), 32768);
+            dsm.put_varying_vector(reinterpret_cast<char*>(buf1.data()), 32768);
             dsm.put_checksum();
             DBG(cerr << "test_varying_vector: first checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
@@ -336,7 +336,7 @@ public:
             for (int i = 0; i < 32768; ++i)
             buf2[i] = i % (1 << 9);
 
-            dsm.put_varying_vector(reinterpret_cast<char*>(&buf2[0]), 32768, sizeof(dods_int32));
+            dsm.put_varying_vector(reinterpret_cast<char*>(buf2.data()), 32768, sizeof(dods_int32));
             dsm.put_checksum();
             DBG(cerr << "second checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
@@ -345,7 +345,7 @@ public:
             for (int i = 0; i < 32768; ++i)
             buf3[i] = i % (1 << 9);
 
-            dsm.put_varying_vector(reinterpret_cast<char*>(&buf3[0]), 32768, sizeof(dods_float64), dods_float64_c);
+            dsm.put_varying_vector(reinterpret_cast<char*>(buf3.data()), 32768, sizeof(dods_float64), dods_float64_c);
             dsm.put_checksum();
             DBG(cerr << "third checksum: " << dsm.get_checksum() << endl);
 
