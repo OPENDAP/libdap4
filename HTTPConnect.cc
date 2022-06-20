@@ -790,19 +790,19 @@ get_temp_file(FILE *&stream) throw(Error)
 
     vector<char> pathname(dods_temp.length() + 1);
 
-    strncpy(&pathname[0], dods_temp.c_str(), dods_temp.length());
+    strncpy(pathname.data(), dods_temp.c_str(), dods_temp.length());
 
-    DBG(cerr << "pathanme: " << &pathname[0] << " (" << dods_temp.length() + 1 << ")" << endl);
+    DBG(cerr << "pathanme: " << pathname.data() << " (" << dods_temp.length() + 1 << ")" << endl);
 
     // Open truncated for update. NB: mkstemp() returns a file descriptor.
 #if defined(WIN32) || defined(TEST_WIN32_TEMPS)
-    stream = fopen(_mktemp(&pathname[0]), "w+b");
+    stream = fopen(_mktemp(pathname.data()), "w+b");
 #else
     // Make sure that temp files are accessible only by the owner.
     int mask = umask(077);
     if (mask < 0)
         throw Error("Could not set the file creation mask: " + string(strerror(errno)));
-    int fd = mkstemp(&pathname[0]);
+    int fd = mkstemp(pathname.data());
     if (fd < 0)
         throw Error("Could not create a temporary file to store the response: " + string(strerror(errno)));
 
@@ -813,7 +813,7 @@ get_temp_file(FILE *&stream) throw(Error)
     if (!stream)
     	throw Error("Failed to open a temporary file for the data values (" + dods_temp + ")");
 
-    dods_temp = &pathname[0];
+    dods_temp = pathname.data();
     return dods_temp;
 }
 

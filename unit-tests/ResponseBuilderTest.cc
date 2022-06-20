@@ -109,7 +109,7 @@ static void parse_datadds_response(istream &in, string &prolog, vector<char> &bl
     in.seekg(pos, in.beg);
 
     blob.reserve(length);
-    in.read(&blob[0], length);
+    in.read(blob.data(), length);
 }
 
 namespace libdap {
