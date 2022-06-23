@@ -26,11 +26,13 @@ AC_DEFUN([OX_RHEL8_TIRPC], [
 AS_IF([test -f /etc/redhat-release && grep -q '8\.' /etc/redhat-release],
     dnl if this is RHEL8, then we need the tirpc library on CPPFLAGS and LDFLAGS
     [
-        AC_MSG_NOTICE([Found a RHEL 8 or equivalent system])
+        AC_MSG_NOTICE([Found a RHEL 8 or equivalent system...])
         AS_IF([grep -q -v tirpc <<< $CPPFLAGS || grep -q -v tirpc <<< $LDFLAGS],
         dnl if either CPPFLAGS or LDFLAGS lack 'tirpc', error
         [
-            AC_MSG_ERROR([The BES on Redhat Linux 8 requires the tirpc library be included on CPPFLAGS and LDFLAGS])
+            AC_MSG_ERROR([Libdap4 on Redhat Linux 8 requires the tirpc library be included on CPPFLAGS and LDFLAGS])
+        ],
+        [AC_MSG_NOTICE([and CPPFLAGS and LDFLAGS are set])
         ])
     ],
     [
