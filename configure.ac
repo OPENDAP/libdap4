@@ -457,6 +457,11 @@ AC_SUBST([XML2_CFLAGS])
 dnl End old version of XML2 configuration. jhrg 8/31/20
 dnl ********
 
+dnl Check for the RHEL 8 requirement libtirpc and its headers.
+dnl jhrg 6/23/22
+
+OX_RHEL8_TIRPC
+
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[PTHREAD_LIBS="-lpthread"],
 	[AC_MSG_ERROR([I could not find pthreads])])
