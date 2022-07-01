@@ -1,3 +1,12 @@
+News for version 3.20.10
+
+- Support for RHEL8
+- Fix for bugs in the ce parser around inverted indices. 
+- Fix for libdap4 github issue 147:  Grid::get_map_iter() was off by one
+- Improvements to DAP4 api.
+- Fixed various memory leaks.
+- Replaced instances of &vector[0] with vector.data()  (RHEL8)
+
 News for version 3.20.9
 
  Started migrating from (deprecated) auto_ptr to C++11 unique_ptr
