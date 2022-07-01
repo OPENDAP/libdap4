@@ -1,3 +1,9 @@
+
+#	
+# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+# libdap version 3.20.10
+#
+
 2022-06-27  James Gallagher  <jgallagher@opendap.org>
 
 	Rhel 8 tirpc (#191)
@@ -164,7 +170,10 @@
 	Removed auto_ptr vestiges
 	Fix for parallel clean issue in distclean
 	Added tests for the DAP2 and DAP4 fix for inverted index values.
+#	
+# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # libdap version 3.20.9
+#
 
 2021-12-17  ndp-opendap  <ndp@opendap.org>
 
