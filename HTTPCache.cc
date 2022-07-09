@@ -1028,10 +1028,10 @@ HTTPCache::read_metadata(const string &cachename, vector<string> &headers)
                           "Could not open named cache entry meta data file.");
     }
 
-    const unsigned long line_buf_len = 1024;
+    const size_t line_buf_len = 1024;
     char line[line_buf_len];
     while (!feof(md) && fgets(line, line_buf_len, md)) {
-        line[min(line_buf_len, strnlen(line, line_buf_len))-1] = '\0'; // erase newline
+        line[std::min(line_buf_len, strnlen(line, line_buf_len))-1] = '\0'; // erase newline
         headers.push_back(string(line));
     }
 
