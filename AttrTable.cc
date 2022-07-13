@@ -1060,10 +1060,12 @@ const string double_quote = "\"";
 
 static void write_string_attribute_for_das(ostream &out, const string &value, const string &term)
 {
-    if (is_quoted(value))
-        out << value << term;
+
+    string esc_value = escattr(value);
+    if (is_quoted(esc_value))
+        out << esc_value << term;
     else
-        out << double_quote << value << double_quote << term;
+        out << double_quote << esc_value << double_quote << term;
 }
 
 #if 0

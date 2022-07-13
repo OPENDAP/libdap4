@@ -367,7 +367,7 @@ esc2underscore(string s)
 string
 escattr(string s)
 {
-    const string printable = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"";
+    const string printable = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"\n\t\r";
     const string ESC = "\\";
     const string DOUBLE_ESC = ESC + ESC;
     const string QUOTE = "\"";
