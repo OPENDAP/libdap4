@@ -419,16 +419,19 @@ D4Group::request_size(bool constrained)
         else {
             size += (*v)->width(constrained);
         }
-
         ++v;
     }
+    size = size / 1024; // Make into kilobytes
 
     // groups
-    groupsIter g = d_groups.begin();
-    while (g != d_groups.end())
-        size += (*g++)->request_size(constrained);
+    //groupsIter g = d_groups.begin();
+    //while (g != d_groups.end())
+    //    size += (*g++)->request_size(constrained);
 
-    return size / 1024;
+    for(auto grp : d_groups)
+        size += grp->request_size_kb(constrained);
+
+    return size ;
 }
 
 /**
@@ -458,12 +461,17 @@ uint64_t D4Group::request_size_kb(bool constrained)
         }
         ++v;
     }
+    size = size / 1024; // Make into kilobytes
     // groups
-    groupsIter g = d_groups.begin();
-    while (g != d_groups.end())
-        size += (*g++)->request_size(constrained);
+    // auto g = d_groups.begin();
+    // while (g != d_groups.end())
+    //     size += (*g++)->request_size_kb(constrained);
 
-    return size / 1024;
+    for(auto grp : d_groups)
+        size += grp->request_size_kb(constrained);
+
+
+    return size;
 }
 
 
