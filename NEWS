@@ -1,3 +1,8 @@
+News for version 3.20.11
+
+- Fixed bug in computation of request_size_kb()
+- Fixed type issue in HTTPCache.cc (#192)
+
 News for version 3.20.10
 
 - Support for RHEL8

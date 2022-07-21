@@ -1,5 +1,10 @@
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
+##Updated for version 3.20.11 
+
+* Fixed bug in computation of request_size_kb()
+* Fixed type issue in HTTPCache.cc (#192)
+
 ##Updated for version 3.20.10 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6789103.svg)](https://doi.org/10.5281/zenodo.6789103)
 
 * Support for RHEL8

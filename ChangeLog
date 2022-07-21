@@ -1,3 +1,23 @@
+#	
+# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+# libdap version 3.20.11
+#
+
+2022-07-19  ndp-opendap  <ndp@opendap.org>
+
+	Fixed bug in computation of request_size_kb()
+
+2022-07-09  Nathan Potter  <ndp@opendap.org>
+
+	Fixing type issue in HTTPCache.cc (#192)
+
+2022-07-01  ndp-opendap  <ndp@opendap.org>
+
+	Adding DOI to README.md [skip ci]
+
+	Updating LIBDAP_TRAVIS_BUILD_OFFSET to 1018 for re;ease 3.20.10
+
+	Preparing release 3.20.10, Hyrax-1.16.6
 
 #	
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
