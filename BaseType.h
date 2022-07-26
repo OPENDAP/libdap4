@@ -200,18 +200,38 @@ public:
     virtual string dataset() const ;
 
     /**
-     * @brief How many elements are in this variable.
+     * @brief How many elements are in this variable? Uses -1 in places
      * @todo change the return type to int64_t
      * @return The number of elements; 1 for scalars
+     * @deprecated Use length_ll() instead
      */
     virtual int length() const { return 1; }
 
+    /** @brief Get the number of elements in this variable
+     * This version of the function deprecates length() which is limited to
+     * 32-bit sizes. The field uses -1 as a sentinel value indicating that
+     * a Vector/Array holds no values yet (as opposed to zero values). For
+     * types not derived from Vector, there is always one element.
+     * @return The number of elements in this variable
+     */
+    virtual int64_t length_ll() const { return 1; }
+
     /**
-     * @brief Set the number of elements for this variable
+     * @brief Set the number of elements for this variable. use -1 to indicate nothing set.
+     * @see Vector
      * @todo change param type to int64_t
      * @param l The number of elements
+     * @deprecated Use set_length_ll() instead
      */
     virtual void set_length(int) { }
+
+    /** @brief Set the number of elements in this variable
+    * This version of the function deprecates set_length() which is limited to
+    * 32-bit sizes. The field uses -1 as a sentinel value indicating that
+    * the Vector/Array holds no values.
+    * @param l The number of elements in the variable
+    */
+    virtual void set_length_ll(int64_t) { }
 
     virtual bool is_simple_type() const;
     virtual bool is_vector_type() const;
@@ -291,6 +311,7 @@ public:
     virtual bool ops(BaseType *b, int op);
     virtual bool d4_ops(BaseType *b, int op);
 
+    /// @todo change return type to uint64_t
     virtual unsigned int width(bool constrained = false) const;
 
     virtual void print_decl(FILE *out, string space = "    ",

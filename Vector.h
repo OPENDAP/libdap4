@@ -80,12 +80,17 @@ namespace libdap
 class Vector: public BaseType
 {
 private:
-    int d_length = -1;  		// number of elements in the vector
-    BaseType *d_proto = nullptr;  // element prototype for the Vector
+    // Add d_length_ll. This uses -1 as a sentinel value. jhrg 7/25/22
+    // If we decide to add a bool for 'no values yet' do that as a
+    // separate refactor. jhrg 7/25/22
+    int64_t d_length_ll = -1;  	// number of elements in the vector
+
+    int d_length = -1;  		    // number of elements in the vector
+    BaseType *d_proto = nullptr;    // element prototype for the Vector
 
     // _buf was a pointer to void; delete[] complained. 6/4/2001 jhrg
     char *d_buf = nullptr;   		// storage for cardinal data
-    vector<string> d_str;		// special storage for strings. jhrg 2/11/05
+    vector<string> d_str;		    // special storage for strings. jhrg 2/11/05
     vector<BaseType *> d_compound_buf; 	// storage for data in compound types (e.g., Structure)
 
     // the number of elements we have allocated memory to store.
@@ -95,12 +100,8 @@ private:
 
     friend class MarshallerTest;
 
-    /*
-     * Made these template methods private because they can't be
-     * overridden anyways (because c++...) - ndp 08/14/2015
-     *
-     */
-
+    // Made these template methods private because they can't be
+    // overridden anyways (because c++...) - ndp 08/14/2015
     template <typename T> void value_worker(T *v) const;
     template <typename T> void value_worker(vector<unsigned int> *indices, T *b) const;
 
@@ -178,7 +179,23 @@ public:
 
     virtual int length() const;
 
+    /** @brief Get the number of elements in this Vector/Array
+     * This version of the function deprecates length() which is limited to
+     * 32-bit sizes. The field uses -1 as a sentinel value indicating that
+     * the Vector/Array holds no values yet (as opposed to zero values).
+     * @return The number of elements in this Vector/Array
+     */
+    virtual int64_t length_ll() const { return d_length_ll; }
+
     virtual void set_length(int l);
+
+    /** @brief Set the number of elements in this Vector/Array
+     * This version of the function deprecates set_length() which is limited to
+     * 32-bit sizes. The field uses -1 as a sentinel value indicating that
+     * the Vector/Array holds no values.
+     * @param l The number of elements in the Vector/Array
+     */
+    virtual void set_length_ll(int64_t l) { d_length_ll = l; }
 
     // DAP2
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
