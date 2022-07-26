@@ -180,8 +180,9 @@ public:
     /** @brief Returns the number of elements in the vector.
      * Note that some child classes of Vector use the length of -1 as a flag value.
      * @return Tthe number of elements in the vector
-     * @deprecated
+     * @deprecated Use length_ll() instead
      */
+    // FIXME temp hack jhrg 7/25/22
     virtual int length() const { return d_length; }
 
     /** @brief Get the number of elements in this Vector/Array
@@ -195,8 +196,9 @@ public:
     /** @brief Sets the length of the vector.
      * This function does not allocate any new space.
      * @param l The number of elements
-     * @deprecated
+     * @deprecated Use set_length_ll() instead
      */
+    // FIXME temp hack jhrg 7/25/22
     virtual void set_length(int l) { d_length = l; }
 
     /** @brief Set the number of elements in this Vector/Array
