@@ -205,6 +205,7 @@ public:
      * @return The number of elements; 1 for scalars
      * @deprecated Use length_ll() instead
      */
+    // FIXME temp hack jhrg 7/25/22
     virtual int length() const { return 1; }
 
     /** @brief Get the number of elements in this variable
@@ -223,6 +224,7 @@ public:
      * @param l The number of elements
      * @deprecated Use set_length_ll() instead
      */
+    // FIXME temp hack jhrg 7/25/22
     virtual void set_length(int) { }
 
     /** @brief Set the number of elements in this variable

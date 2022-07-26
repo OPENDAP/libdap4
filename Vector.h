@@ -177,7 +177,12 @@ public:
 
     virtual unsigned int width(bool constrained = false) const;
 
-    virtual int length() const;
+    /** @brief Returns the number of elements in the vector.
+     * Note that some child classes of Vector use the length of -1 as a flag value.
+     * @return Tthe number of elements in the vector
+     * @deprecated
+     */
+    virtual int length() const { return d_length; }
 
     /** @brief Get the number of elements in this Vector/Array
      * This version of the function deprecates length() which is limited to
@@ -187,7 +192,12 @@ public:
      */
     virtual int64_t length_ll() const { return d_length_ll; }
 
-    virtual void set_length(int l);
+    /** @brief Sets the length of the vector.
+     * This function does not allocate any new space.
+     * @param l The number of elements
+     * @deprecated
+     */
+    virtual void set_length(int l) { d_length = l; }
 
     /** @brief Set the number of elements in this Vector/Array
      * This version of the function deprecates set_length() which is limited to

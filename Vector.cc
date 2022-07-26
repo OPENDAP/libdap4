@@ -541,6 +541,8 @@ unsigned int Vector::width(bool constrained) const
     return length() * d_proto->width(constrained);
 }
 
+#if 0
+
 /** Returns the number of elements in the vector. Note that some
  child classes of Vector use the length of -1 as a flag value.
 
@@ -556,6 +558,8 @@ void Vector::set_length(int l)
 {
     d_length = l;
 }
+
+#endif
 
 /** Resizes a Vector.  If the input length is greater than the
  current length of the Vector, new memory is allocated (the
