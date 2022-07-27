@@ -296,6 +296,7 @@ BaseType::dump(ostream &strm) const
     strm << DapIndent::LMarg << "read_p: " << d_is_read << endl ;
     strm << DapIndent::LMarg << "send_p: " << d_is_send << endl ;
     strm << DapIndent::LMarg << "synthesized_p: " << d_is_synthesized << endl ;
+    strm << DapIndent::LMarg << "d_is_dap4: " << d_is_dap4 << endl;
     strm << DapIndent::LMarg << "parent: " << (void *)d_parent << endl ;
     strm << DapIndent::LMarg << "attributes: " << endl ;
     DapIndent::Indent() ;

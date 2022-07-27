@@ -1964,11 +1964,13 @@ void *Vector::value()
  */
 void Vector::add_var(BaseType * v, Part /*p*/)
 {
-#if 0
-	// Why doesn't this work?  tried all 3 variants. jhrg 8/14/13
-	Vector::add_var_nocopy(v->ptr_duplicate(), p);
-	add_var_nocopy(v->ptr_duplicate(), p);
-	add_var_nocopy(v->ptr_duplicate());
+#if 1
+    if (v)
+	    Vector::add_var_nocopy(v->ptr_duplicate());
+    else {
+        delete d_proto;
+        d_proto = nullptr;
+    }
 #else
 	// Delete the current template variable
     if (d_proto) {
@@ -2004,17 +2006,12 @@ void Vector::add_var(BaseType * v, Part /*p*/)
 
 void Vector::add_var_nocopy(BaseType * v, Part)
 {
-	// Delete the current template variable
-    if (d_proto) {
-        delete d_proto;
-        d_proto = 0;
-    }
+	// Delete the current template variable, if it exists
+    delete d_proto;
+    d_proto = nullptr;
 
     // if 'v' is null, just set _var to null and exit.
-    if (!v) {
-        d_proto = 0;
-    }
-    else {
+    if (v) {
         d_proto = v;
 
         // If 'v' has a name, use it as the name of the array. If it *is*

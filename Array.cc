@@ -115,11 +115,10 @@ void Array::update_length(int)
 /** Build an array with a name and an element type. The name may be omitted,
  which will create a nameless variable. The template (element type) pointer
  may also be omitted, but if it is omitted when the Array is created, it
- \e must be added (with \c add_var()) before \c read() or \c deserialize()
- is called.
+ \e must be added (with \c add_var() od add_var_nocopy()) before \c read()
+ or \c deserialize() is called.
 
- @todo Force the Array::add_var() method to be used to add \e v.
- This version of add_var() calls Vector::add_var().
+ This version of add_var() calls Array::add_var().
 
  @param n A string containing the name of the variable to be
  created.
@@ -130,14 +129,15 @@ void Array::update_length(int)
 Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */) :
     Vector(n, 0, dods_array_c, is_dap4), d_maps(0)
 {
-    add_var(v); // Vector::add_var() stores null if v is null
+    Array::add_var(v);
+    if (v)
+        set_is_dap4(v->is_dap4());
 }
 
 /** Build an array on the server-side with a name, a dataset name from which
  this Array is being created, and an element type.
 
- @todo Force the Array::add_var() method to be used to add \e v.
- This version of add_var() calls Vector::add_var().
+ This version of add_var() calls Array::add_var().
 
  @param n A string containing the name of the variable to be created.
  @param d A string containing the name of the dataset from which this
@@ -149,7 +149,9 @@ Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */) :
 Array::Array(const string &n, const string &d, BaseType *v, bool is_dap4 /* default:false */) :
     Vector(n, d, 0, dods_array_c, is_dap4), d_maps(0)
 {
-    add_var(v); // Vector::add_var() stores null if v is null
+    Array::add_var(v);
+    if (v)
+        set_is_dap4(v->is_dap4());
 }
 
 /** @brief The Array copy constructor. */
