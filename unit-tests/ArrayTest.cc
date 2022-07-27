@@ -38,6 +38,7 @@
 #include "Int64.h"
 #include "Float32.h"
 #include "Str.h"
+#include "D4Enum.h"
 #include "Structure.h"
 #include "D4Dimensions.h"
 
@@ -140,6 +141,8 @@ public:
     CPPUNIT_TEST (cons_test);
     CPPUNIT_TEST (test_is_dap4_1);
     CPPUNIT_TEST (test_is_dap4_2);
+    CPPUNIT_TEST (test_is_dap4_3);
+    CPPUNIT_TEST (test_is_dap4_4);
     CPPUNIT_TEST (assignment_test_1);
     CPPUNIT_TEST (assignment_test_2);
     CPPUNIT_TEST (assignment_test_3);
@@ -169,6 +172,30 @@ public:
         DBG(d_cardinal->dump(cerr));
         CPPUNIT_ASSERT_MESSAGE("This Array should not register as DAP4", !d_cardinal->is_dap4());
     }
+
+    void test_is_dap4_3() {
+        // An array Enum is always DAP4, even when the underlying type of the enum is not
+        D4Enum enum16("", dods_int16_c);
+        unique_ptr<Array> enum_array_dap4(new Array("Array_of_Enum", &enum16));
+        enum_array_dap4->append_dim(4, "dimension");
+        dods_int16 buffer16[4] = { 0, 1, 2, 3 };
+        enum_array_dap4->val2buf(buffer16);
+
+        DBG(enum_array_dap4->dump(cerr));
+        CPPUNIT_ASSERT_MESSAGE("This Array should register as DAP4", enum_array_dap4->is_dap4());
+    }
+
+    void test_is_dap4_4() {
+        D4Enum enum64("", dods_int64_c);
+        unique_ptr<Array> enum_array_dap4(new Array("Array_of_Enum", &enum64));
+        enum_array_dap4->append_dim(4, "dimension");
+        dods_int64 buffer64[4] = { 0, 1, 2, 3 };
+        enum_array_dap4->val2buf(buffer64);
+
+        DBG(enum_array_dap4->dump(cerr));
+        CPPUNIT_ASSERT_MESSAGE("This Array should register as DAP4", enum_array_dap4->is_dap4());
+    }
+
 
     void assignment_test_1()
     {
