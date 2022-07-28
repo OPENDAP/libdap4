@@ -794,9 +794,11 @@ bool Sequence::serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m
 void Sequence::intern_data(ConstraintEvaluator &eval, DDS &dds)
 {
     DBG(cerr << "Sequence::intern_data - for " << name() << endl); DBG2(cerr << "    intern_data, values: " << &d_values << endl);
+    if (is_dap4())
+        throw Error("A method usable only with DAP2 variables was called on a DAP4 variable.", __FILE__, __LINE__);
 
     // Why use a stack instead of return values? We need the stack because
-    // Sequences nested three of more levels deep will loose the middle
+    // Sequences nested three of more levels deep will lose the middle
     // instances when the intern_data_parent_part_two() code is run.
     sequence_values_stack_t sequence_values_stack;
 

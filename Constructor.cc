@@ -407,6 +407,9 @@ bool Constructor::read()
 void
 Constructor::intern_data(ConstraintEvaluator & eval, DDS & dds)
 {
+    if (is_dap4())
+        throw Error("A method usable only with DAP2 variables was called on a DAP4 variable.", __FILE__, __LINE__);
+
     if (!read_p())
         read();          // read() throws Error and InternalErr
 

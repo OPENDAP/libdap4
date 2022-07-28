@@ -415,6 +415,10 @@ public:
         clear the memory use to hold the data values, so the caller should
         make sure to delete the DDS or the variable as soon as possible.
 
+        @note This version of the method is specific to DAP2. It will throw
+        an exception if called on a variable where the is_dap4 property is
+        true.
+
         @param eval Use this as the constraint expression evaluator.
         @param dds The Data Descriptor Structure object corresponding
         to this dataset. See <i>The DODS User Manual</i> for
@@ -500,7 +504,7 @@ public:
      */
     virtual void compute_checksum(Crc32 &checksum) = 0;
 
-    virtual void intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/);
+    virtual void intern_data();
 
     /**
      * @brief The DAP4 serialization method.

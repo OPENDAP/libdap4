@@ -57,12 +57,11 @@ private:
     Array *d_structure = nullptr;
     Array *d_card_dap4 = nullptr;
 
-    Int16 *d_int16;
-    Str *d_str;
-    Structure *d_struct;
+    Int16 *d_int16 = nullptr;
+    Str *d_str = nullptr;
+    Structure *d_struct = nullptr;
 
     string svalues[4] = {"0 String", "1 String", "2 String", "3 String" };
-    // char a[1024];
     
 public:
     ArrayTest() = default;
@@ -195,7 +194,6 @@ public:
         DBG(enum_array_dap4->dump(cerr));
         CPPUNIT_ASSERT_MESSAGE("This Array should register as DAP4", enum_array_dap4->is_dap4());
     }
-
 
     void assignment_test_1()
     {

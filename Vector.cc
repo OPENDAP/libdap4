@@ -601,6 +601,9 @@ void Vector::vec_resize(int l)
 void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 {
     DBG(cerr << "Vector::intern_data: " << name() << endl);
+    if (is_dap4())
+        throw Error("A method usable only with DAP2 variables was called on a DAP4 variable.", __FILE__, __LINE__);
+
     if (!read_p())
         read(); // read() throws Error and InternalErr
 
@@ -653,7 +656,7 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 /** @brief Serialize a Vector.
 
- This uses the Marshaler class to encode each element of a cardinal
+ This uses the Marshaller class to encode each element of a cardinal
  array. For Arrays of Str and Url types, send the element count over
  as a prefix to the data so that deserialize will know how many elements
  to read.
