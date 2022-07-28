@@ -139,7 +139,7 @@ private:
 
     // Use this to control if ptr_duplicate(), ..., copy the filter clauses.
     // Because the values of a child sequence are held in copies of the Seq
-    // object they clauses will bound to the 'master' instance will be copied
+    // object they clauses will be bound to the 'master' instance will be copied
     // but the copies will never be used. This field can be used to control
     // that. ...purely an optimization.
     bool d_copy_clauses;

@@ -332,9 +332,7 @@ Constructor::add_var(BaseType *bt, Part)
     // he/she wishes. The policy is: "If it is allocated outside, it is
     // deallocated outside, if it is allocated inside, it is deallocated
     // inside"
-    BaseType *btp = bt->ptr_duplicate();
-    btp->set_parent(this);
-    d_vars.push_back(btp);
+    add_var_nocopy(bt->ptr_duplicate());
 }
 
 /** Adds an element to a Constructor.
@@ -349,6 +347,10 @@ Constructor::add_var_nocopy(BaseType *bt, Part)
 
     bt->set_parent(this);
     d_vars.push_back(bt);
+
+    // Update the is_dap4 property
+    if (bt->is_dap4())
+        set_is_dap4(true);
 }
 
 /**
