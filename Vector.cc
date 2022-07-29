@@ -38,14 +38,9 @@
 #include <cstring>
 #include <cassert>
 
-//#define DODS_DEBUG 1
-
 #include <sstream>
 #include <vector>
 #include <algorithm>
-#include <typeinfo>
-
-#include <stdint.h>
 
 #include "crc.h"
 
@@ -60,8 +55,8 @@
 
 #include "Type.h"
 #include "dods-datatypes.h"
+#include "dods-limits.h"
 #include "escaping.h"
-#include "util.h"
 #include "debug.h"
 #include "InternalErr.h"
 #include "DapIndent.h"
@@ -76,6 +71,7 @@ namespace libdap {
 void Vector::m_duplicate(const Vector & v)
 {
     d_length = v.d_length;
+    d_length_ll = v.d_length_ll;
 
     // _var holds the type of the elements. That is, it holds a BaseType
     // which acts as a template for the type of each element.
@@ -413,6 +409,38 @@ void Vector::set_read_p(bool state)
     BaseType::set_read_p(state);
 }
 
+/**
+ * @brief Sets the length of the vector.
+ * This function does not allocate any new space.
+ *
+ * This updated version can accept sizes that are too big for a DAP2
+ * Array, but if that happens, a flag is set.
+ * @param l The number of elements
+ * @deprecated Use set_length_ll() instead
+ */
+void Vector::set_length(int64_t l)
+{
+    Vector::set_length_ll(l);
+}
+
+/**
+ * @brief Set the number of elements in this Vector/Array
+ * This version of the function deprecates set_length() which is limited to
+ * 32-bit sizes. The field uses -1 as a sentinel value indicating that
+ * the Vector/Array holds no values.
+ * @param l The number of elements in the Vector/Array
+ */
+void Vector::set_length_ll(int64_t l)
+{
+    d_length_ll = l;
+    if (l <= DODS_INT_MAX)
+        d_length = l;
+    else {
+        d_length = -1;
+        d_too_big_for_dap2 = true;
+    }
+}
+
 /** Returns a copy of the template array element. If the Vector contains
  simple data types, the template will contain the value of the last
  vector element accessed with the <code>Vector::var(int i)</code> function,
@@ -667,6 +695,14 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
+    // Add protection against calling this with DAP4 types. Technically not needed,
+    // but the 'Unknown Datatype' message is not very useful. jhrg 7/28/22
+    if (is_dap4())
+        throw Error("A method usable only with DAP2 variables was called on a DAP4 variable.", __FILE__, __LINE__);
+
+    if (d_too_big_for_dap2)
+        throw Error("Trying to send a variable that is too large for DAP2.", __FILE__, __LINE__);
+
     // Added to streamline zero-length arrays. Not needed for correct function,
     // but explicitly handling this case here makes the code easier to follow.
     // In libdap::Vector::val2buf() there is a test that will catch the zero-length
@@ -763,6 +799,9 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
 {
     unsigned int num;
     unsigned i = 0;
+
+    if (is_dap4())
+        throw Error("A method usable only with DAP2 variables was called on a DAP4 variable.", __FILE__, __LINE__);
 
     switch (d_proto->type()) {
         case dods_byte_c:
@@ -960,7 +999,7 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter /*= false*/)
     if (filter && !eval.eval_selection(dmr, dataset()))
         return true;
 #endif
-    int64_t num = length();	// The constrained length in elements
+    int64_t num = length_ll();	// The constrained length in elements
 
     DBG(cerr << __func__ << ", num: " << num << endl);
 

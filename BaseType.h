@@ -225,7 +225,7 @@ public:
      * @deprecated Use set_length_ll() instead
      */
     // FIXME temp hack jhrg 7/25/22
-    virtual void set_length(int) { }
+    virtual void set_length(int64_t) { }
 
     /** @brief Set the number of elements in this variable
     * This version of the function deprecates set_length() which is limited to
@@ -470,32 +470,6 @@ public:
 	@see DDS */
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
 
-#if 0
-    /**
-     * Provide a way to get the old behavior of serialize() - calling this
-     * method will serialize the BaseType object's data but _not_ delete its
-     * data storage.
-     *
-     * @note This method's behavior differs only for Array (i.e. Vector), Sequence,
-     * D4Sequence and D4Opaque types; the other types do not use dynamic memory to
-     * hold data values.
-     *
-     * @param eval Use this as the constraint expression evaluator.
-     * @param dds The Data Descriptor Structure object corresponding
-     * to this dataset. See <i>The DODS User Manual</i> for
-     * information about this structure.
-     * @param m A marshaller used to serialize data types
-     * @param ce_eval A boolean value indicating whether to evaluate
-     * the DODS constraint expression that may accompany this
-     * @return This method always returns true. Older versions used
-     * the return value to signal success or failure.
-     * @param
-     */
-    virtual bool serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) {
-        return serialize(eval, dds, m, ce_eval);
-    }
-#endif
-
     /**
      * @brief include the data for this variable in the checksum
      * DAP4 includes a checksum with every data response. This method adds the
@@ -520,30 +494,6 @@ public:
      * @exception Error or InternalErr
      */
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
-
-#if 0
-    /**
-     * @brief Variation on the DAP4 serialization method - retain data after serialization
-     * Serialize a variable's values for DAP4. This does not write the DMR
-     * persistent representation but does write that part of the binary
-     * data blob that holds a variable's data. Once a variable's data are
-     * serialized, that memory is reclaimed (by calling BaseType::clear_local_data())
-     *
-     * @note This version does not delete the storage of Array, D4Sequence or
-     * D4Opaque variables, as it the case with serialize(). For other types,
-     * this method and serialize have the same beavior (since those types do
-     * not us dynamic memory to hold data values).
-     *
-     * @param m
-     * @param dmr
-     * @param eval
-     * @param filter True if there is one variable that should be 'filtered'
-     * @exception Error or InternalErr
-     */
-    virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false) {
-        serialize(m, dmr, filter);
-    }
-#endif
 
     /** Receives data from the network connection identified by the
 	<tt>source</tt> parameter. The data is put into the class data

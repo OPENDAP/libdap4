@@ -98,6 +98,8 @@ private:
     // or the capacity of d_str for strings or capacity of _vec.
     unsigned int d_capacity = 0;
 
+    bool d_too_big_for_dap2 = false;    /// Conditionally set to true in set_length_ll()
+
     friend class MarshallerTest;
 
     // Made these template methods private because they can't be
@@ -126,7 +128,7 @@ public:
     virtual ~Vector();
 
     Vector &operator=(const Vector &rhs);
-    virtual BaseType *ptr_duplicate() = 0;
+    // FIXME BaseType *ptr_duplicate() = 0 override;
 
     /**
      * Provide access to internal data. Callers cannot delete this
@@ -161,21 +163,17 @@ public:
         return d_compound_buf;
     }
 
-#if 0
-    virtual bool is_dap2_only_type();
-#endif
-
     virtual BaseType *prototype() const { return d_proto; }
 
-    virtual void set_name(const std::string& name);
+    void set_name(const std::string& name) override;
 
-    virtual int element_count(bool leaves);
+    int element_count(bool leaves) override;
 
-    virtual void set_send_p(bool state);
+    void set_send_p(bool state) override;
 
-    virtual void set_read_p(bool state);
+    void set_read_p(bool state) override;
 
-    virtual unsigned int width(bool constrained = false) const;
+    unsigned int width(bool constrained = false) const override;
 
     /** @brief Returns the number of elements in the vector.
      * Note that some child classes of Vector use the length of -1 as a flag value.
@@ -183,7 +181,7 @@ public:
      * @deprecated Use length_ll() instead
      */
     // FIXME temp hack jhrg 7/25/22
-    virtual int length() const { return d_length; }
+    int length() const override { return d_length; }
 
     /** @brief Get the number of elements in this Vector/Array
      * This version of the function deprecates length() which is limited to
@@ -191,50 +189,32 @@ public:
      * the Vector/Array holds no values yet (as opposed to zero values).
      * @return The number of elements in this Vector/Array
      */
-    virtual int64_t length_ll() const { return d_length_ll; }
+    int64_t length_ll() const override { return d_length_ll; }
 
-    /** @brief Sets the length of the vector.
-     * This function does not allocate any new space.
-     * @param l The number of elements
-     * @deprecated Use set_length_ll() instead
-     */
-    // FIXME temp hack jhrg 7/25/22
-    virtual void set_length(int l) { d_length = l; }
+    void set_length(int64_t l) override;
 
-    /** @brief Set the number of elements in this Vector/Array
-     * This version of the function deprecates set_length() which is limited to
-     * 32-bit sizes. The field uses -1 as a sentinel value indicating that
-     * the Vector/Array holds no values.
-     * @param l The number of elements in the Vector/Array
-     */
-    virtual void set_length_ll(int64_t l) { d_length_ll = l; }
+    void set_length_ll(int64_t l) override;
 
     // DAP2
-    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-#if 0
-    virtual bool serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-#endif
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+    void intern_data(ConstraintEvaluator &eval, DDS &dds) override;
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
+    bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) override;
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void intern_data(/*Crc32 &checksum*/);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
-#if 0
-    virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
-#endif
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void compute_checksum(Crc32 &checksum) override;
+    void intern_data(/*Crc32 &checksum*/) override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
+    unsigned int val2buf(void *val, bool reuse = false) override;
+    unsigned int buf2val(void **val) override;
 
     void set_vec(unsigned int i, BaseType *val);
     void set_vec_nocopy(unsigned int i, BaseType * val);
 
     void vec_resize(int l);
 
-    virtual void clear_local_data();
+    void clear_local_data() override;
 
     virtual unsigned int get_value_capacity() const;
     virtual void reserve_value_capacity(unsigned int numElements);
@@ -294,16 +274,17 @@ public:
 
     virtual void *value();
 
-    virtual BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = 0);
-    virtual BaseType *var(const string &name, btp_stack &s);
+    BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = 0) override;
+    BaseType *var(const string &name, btp_stack &s) override;
+
     virtual BaseType *var(unsigned int i);
 
-    virtual void add_var(BaseType *v, Part p = nil);
-    virtual void add_var_nocopy(BaseType *v, Part p = nil);
+    void add_var(BaseType *v, Part p = nil) override;
+    void add_var_nocopy(BaseType *v, Part p = nil) override;
 
-    virtual bool check_semantics(string &msg, bool all = false);
+    bool check_semantics(string &msg, bool all = false) override;
 
-    virtual void dump(ostream &strm) const ;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
