@@ -246,7 +246,7 @@ Grid::add_var(BaseType *bt, Part part)
         throw InternalErr(__FILE__, __LINE__, "Passing NULL pointer as variable to be added.");
 
     if (bt->is_dap4())
-        throw Error("A method usable only with DAP2 variables was called on a DAP4 variable.", __FILE__, __LINE__);
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (").append(name()).append(")."), __FILE__, __LINE__);
 
     if (part == array && d_is_array_set/*get_array()*/) {
       // Avoid leaking memory...  Function is add, not set, so it is an error to call again for the array part.
@@ -315,7 +315,7 @@ Grid::add_var_nocopy(BaseType *bt, Part part)
         throw InternalErr(__FILE__, __LINE__, "Passing NULL pointer as variable to be added.");
 
     if (bt->is_dap4())
-        throw Error("A method usable only with DAP2 variables was called on a DAP4 variable.", __FILE__, __LINE__);
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (").append(name()).append(")."), __FILE__, __LINE__);
 
     if (part == array && d_is_array_set/*get_array()*/) {
       // Avoid leaking memory...  Function is add, not set, so it is an error to call again for the array part.

@@ -908,7 +908,7 @@ BaseType::intern_data(ConstraintEvaluator &, DDS &/*dds*/)
     dds.timeout_on();
 #endif
     if (is_dap4())
-        throw Error("A method usable only with DAP2 variables was called on a DAP4 variable.", __FILE__, __LINE__);
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (").append(name()).append(")."), __FILE__, __LINE__);
 
     DBG2(cerr << "BaseType::intern_data: " << name() << endl);
     if (!read_p())

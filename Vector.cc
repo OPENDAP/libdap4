@@ -630,7 +630,7 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
 {
     DBG(cerr << "Vector::intern_data: " << name() << endl);
     if (is_dap4())
-        throw Error("A method usable only with DAP2 variables was called on a DAP4 variable.", __FILE__, __LINE__);
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (").append(name()).append(")."), __FILE__, __LINE__);
 
     if (!read_p())
         read(); // read() throws Error and InternalErr
@@ -698,7 +698,7 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
     // Add protection against calling this with DAP4 types. Technically not needed,
     // but the 'Unknown Datatype' message is not very useful. jhrg 7/28/22
     if (is_dap4())
-        throw Error("A method usable only with DAP2 variables was called on a DAP4 variable.", __FILE__, __LINE__);
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (").append(name()).append(")."), __FILE__, __LINE__);
 
     if (d_too_big_for_dap2)
         throw Error("Trying to send a variable that is too large for DAP2.", __FILE__, __LINE__);
@@ -801,7 +801,7 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
     unsigned i = 0;
 
     if (is_dap4())
-        throw Error("A method usable only with DAP2 variables was called on a DAP4 variable.", __FILE__, __LINE__);
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (").append(name()).append(")."), __FILE__, __LINE__);
 
     switch (d_proto->type()) {
         case dods_byte_c:
