@@ -28,11 +28,16 @@
 
 #include <iostream>
 #include <sstream>
+
+#if 0
+
 #include <iomanip>
 
 #include <stdint.h>
 
 #include "crc.h"
+
+#endif
 
 #include "BaseType.h"
 #include "Array.h"
@@ -46,6 +51,7 @@
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
+#include "escaping.h"
 #include "util.h"
 #include "debug.h"
 
@@ -664,6 +670,84 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
             throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
     }
 }
+
+void
+D4Group::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained)
+{
+    ostringstream oss;
+    print_decl(oss, space, print_semi, constraint_info, constrained);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+}
+
+void
+D4Group::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    out << space << type_name() << " {\n" ;
+    for (auto var: d_vars) {
+        var->print_decl(out, space + "    ", true, constraint_info, constrained);
+    }
+
+    for (auto grp: d_groups) {
+        grp->print_decl(out, space + "    ", true, constraint_info, constrained);
+    }
+
+    out << space << "} " << id2www(name()) ;
+
+    if (constraint_info) { // Used by test drivers only.
+        if (send_p())
+            out << ": Send True";
+        else
+            out << ": Send False";
+    }
+
+    if (print_semi)
+        out << ";\n" ;
+}
+
+void
+D4Group::print_val(FILE *out, string space, bool print_decl_p)
+{
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+}
+
+void
+D4Group::print_val(ostream &out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+        print_decl(out, space, false);
+        out << " = " ;
+    }
+
+    out << "{ " ;
+    bool padding_needed = false;    // Add padding - which is complex with the two parts. jhrg 8/5/22
+    for (Vars_citer i = d_vars.begin(), e = d_vars.end(); i != e; i++, (void)(i != e && out << ", ")) {
+        (*i)->print_val(out, "", false);
+        padding_needed = true;
+    }
+
+    if (padding_needed)
+        out << " ";
+
+    padding_needed = false;
+    for (auto grp: d_groups) {
+        grp->print_val(out, "", false);
+        padding_needed = true;
+    }
+
+    if (padding_needed)
+        out << " }";
+    else
+        out << "}" ;
+
+    if (print_decl_p)
+        out << ";\n" ;
+}
+
 #if 0
 /** @brief DAP4 to DAP2 transform
  *

@@ -325,7 +325,7 @@ public:
         CPPUNIT_ASSERT_MESSAGE("Looking for a variable that is not there.", its_not_there == nullptr);
 
         // Test finding a group (not a thing in a group). jhrg 8/3/22
-        auto bv_gc_3 = root->find_var("/child/");
+        auto bv_gc_3 = root->find_var("/child");
         CPPUNIT_ASSERT_MESSAGE("Looking for /child/", bv_gc_3 == child);
 
         auto bv_gc_4 = root->find_var("/child/g_child_2");
