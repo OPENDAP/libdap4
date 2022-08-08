@@ -38,8 +38,6 @@
 #include <cstring>
 #include <cassert>
 
-//#define DODS_DEBUG 1
-
 #include <sstream>
 #include <vector>
 #include <algorithm>
