@@ -274,7 +274,7 @@ public:
 
     virtual void *value();
 
-    BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = 0) override;
+    BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = nullptr) override;
     BaseType *var(const string &name, btp_stack &s) override;
 
     virtual BaseType *var(unsigned int i);

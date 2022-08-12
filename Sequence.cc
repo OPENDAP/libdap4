@@ -241,7 +241,12 @@ static inline void delete_rows(BaseTypeRow *bt_row_ptr)
 
 Sequence::~Sequence()
 {
-    clear_local_data();
+    try {
+        Sequence::clear_local_data();   // make the call explicit in a destructor
+    }
+    catch (const std::exception &e) {
+        // It's hard to know what to do - Log it when we can, but that can fail, too.
+    }
 }
 
 void Sequence::clear_local_data()

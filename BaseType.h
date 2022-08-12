@@ -225,7 +225,7 @@ public:
      * @deprecated Use set_length_ll() instead
      */
     // FIXME temp hack jhrg 7/25/22
-    virtual void set_length(int64_t) { }
+    virtual void set_length(int64_t) { /* empty since the length of a BaseType is always one element. jhrg 8/12/22 */ }
 
     /** @brief Set the number of elements in this variable
     * This version of the function deprecates set_length() which is limited to
@@ -233,7 +233,7 @@ public:
     * the Vector/Array holds no values.
     * @param l The number of elements in the variable
     */
-    virtual void set_length_ll(int64_t) { }
+    virtual void set_length_ll(int64_t) { /* empty since the length of a BaseType is always one element. jhrg 8/12/22 */ }
 
     virtual bool is_simple_type() const;
     virtual bool is_vector_type() const;
@@ -544,8 +544,7 @@ public:
 	@param print_decl_p A boolean value controlling whether the
 	variable declaration is printed as well as the value. */
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
+    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
 
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS
@@ -561,8 +560,7 @@ public:
 	function, and controls the leading spaces of the output.
 	@param print_decl_p A boolean value controlling whether the
 	variable declaration is printed as well as the value. */
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true) = 0;
+    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true) = 0;
     //@}
 };
 

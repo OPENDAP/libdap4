@@ -297,15 +297,16 @@ Vector::Vector(const Vector & rhs) : BaseType(rhs)
 
 Vector::~Vector()
 {
-    DBG2(cerr << "Entering ~Vector (" << this << ")" << endl);
-
     delete d_proto;
     d_proto = nullptr;
 
     // Clears all buffers
-    clear_local_data();
-
-    DBG2(cerr << "Exiting ~Vector" << endl);
+    try {
+        Vector::clear_local_data();
+    }
+    catch (const std::exception &e) {
+        // It's hard to know what to do - Log it when we can, but that can fail, too.
+    }
 }
 
 Vector & Vector::operator=(const Vector & rhs)
@@ -435,7 +436,7 @@ void Vector::set_length_ll(int64_t l)
 {
     d_length_ll = l;
     if (l <= DODS_INT_MAX)
-        d_length = l;
+        d_length = (int)l;
     else {
         d_length = -1;
         d_too_big_for_dap2 = true;
@@ -464,7 +465,7 @@ BaseType *Vector::var(const string &n, bool exact, btp_stack *s)
     string name = www2id(n);
     DBG2(cerr << "Vector::var: Looking for " << name << endl);
 
-    if (name == "" || d_proto->name() == name) {
+    if (name.empty() || d_proto->name() == name) {
         if (s)
             s->push(this);
         return d_proto;

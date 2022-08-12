@@ -57,7 +57,7 @@ public:
     bool get_series_values() { return d_series_values; }
 
     void set_length(int64_t len) { d_len = len; }
-    virtual int length() const { return d_len; }
+    virtual int length() const { return (int)d_len; }
 };
 
 #endif // _testsequence_h

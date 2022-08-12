@@ -127,11 +127,11 @@ void Array::update_length(int)
  @brief Array constructor
  */
 Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */) :
-    Vector(n, 0, dods_array_c, is_dap4), d_maps(0)
+    Vector(n, nullptr, dods_array_c, is_dap4)
 {
     Array::add_var(v);
     if (v)
-        set_is_dap4(v->is_dap4());
+        BaseType::set_is_dap4(v->is_dap4());
 }
 
 /** Build an array on the server-side with a name, a dataset name from which
@@ -147,11 +147,11 @@ Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */) :
  @brief Array constructor
  */
 Array::Array(const string &n, const string &d, BaseType *v, bool is_dap4 /* default:false */) :
-    Vector(n, d, 0, dods_array_c, is_dap4), d_maps(0)
+    Vector(n, d, nullptr, dods_array_c, is_dap4)
 {
     Array::add_var(v);
     if (v)
-        set_is_dap4(v->is_dap4());
+        BaseType::set_is_dap4(v->is_dap4());
 }
 
 /** @brief The Array copy constructor. */
