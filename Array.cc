@@ -310,6 +310,7 @@ Array::transform_to_dap2(AttrTable *)
             Grid *g = new Grid(name());
             dest = g;
             Array *grid_array = static_cast<Array *>(ptr_duplicate());
+            grid_array->set_is_dap4(false);
             g->set_array(grid_array);
 
             // Fix for HK-403. jhrg 6/17/19
@@ -334,6 +335,7 @@ Array::transform_to_dap2(AttrTable *)
                         if (d2_map_array->dimensions() != 1)
                             throw Error(internal_error, "DAP2 array from D4Map Array conversion has more than 1 dimension.");
 
+                        d2_map_array->set_is_dap4(false);
                         g->add_map(d2_map_array, false);
                         AttrTable at = d2_map_array->get_attr_table();
                         DBG( cerr << __func__ << "() - " <<
