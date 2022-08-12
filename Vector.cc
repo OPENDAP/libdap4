@@ -41,6 +41,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <typeinfo>
 
 #include "crc.h"
 
