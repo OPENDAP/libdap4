@@ -184,7 +184,7 @@ void TestArray::output_values(std::ostream &out)
     for (Dim_iter i = dim_begin(); i != dim_end() && index < dimensions(true); ++i)
         shape[index++] = dimension_size(i, true);
 
-    m_print_array(out, 0, dimensions(true), &shape[0]);
+    m_print_array(out, 0, dimensions(true), shape.data());
 
     //delete[] shape;
     //shape = 0;
@@ -207,7 +207,7 @@ void TestArray::m_build_special_values()
         for (int i = 0; i < array_len; ++i) {
             lat_data[i] = -89 + (180 / array_len) * (i + 1);
         }
-        libdap::set_array_using_double(this, &lat_data[0], array_len);
+        libdap::set_array_using_double(this, lat_data.data(), array_len);
     }
     else if (name().find("lat") != string::npos) {
         int array_len = length();
@@ -216,7 +216,7 @@ void TestArray::m_build_special_values()
         for (int i = 0; i < array_len; ++i) {
             lat_data[i] = 90 - (180 / array_len) * (i + 1);
         }
-        libdap::set_array_using_double(this, &lat_data[0], array_len);
+        libdap::set_array_using_double(this, lat_data.data(), array_len);
     }
     else if (name().find("lon") != string::npos) {
         int array_len = length();
@@ -225,7 +225,7 @@ void TestArray::m_build_special_values()
         for (int i = 0; i < array_len; ++i) {
             lon_data[i] = (360 / array_len) * (i + 1);
         }
-        libdap::set_array_using_double(this, &lon_data[0], array_len);
+        libdap::set_array_using_double(this, lon_data.data(), array_len);
     }
     else {
         throw InternalErr(__FILE__, __LINE__, "Unrecognized name");

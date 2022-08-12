@@ -13,7 +13,7 @@ dnl in the RPM spec file. The build number is not part of the pkg config
 dnl 'pc' files and tarball for the source. See
 dnl libdap4/travis/travis_libdap_build_offset.sh for info about setting the
 dnl base value for the build number. jhrg 3/22/21
-AC_INIT(libdap, 3.20.9, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.20.11, opendap-tech@opendap.org)
 
 dnl As an alternative, we can...
 dnl Read the version number from the file VERSION. The file must contain
@@ -104,9 +104,9 @@ dnl increment AGE, set REVISION to 0.
 dnl Interfaces removed or changed (BAD, breaks upward compatibility):
 dnl ==> Increment CURRENT, set AGE and REVISION to 0.
 
-DAPLIB_CURRENT=27
-DAPLIB_REVISION=5
-DAPLIB_AGE=0
+DAPLIB_CURRENT=28
+DAPLIB_REVISION=1
+DAPLIB_AGE=1
 
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_REVISION)
@@ -456,6 +456,11 @@ AC_SUBST([XML2_CFLAGS])
 
 dnl End old version of XML2 configuration. jhrg 8/31/20
 dnl ********
+
+dnl Check for the RHEL 8 requirement libtirpc and its headers.
+dnl jhrg 6/23/22
+
+OX_RHEL8_TIRPC
 
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[PTHREAD_LIBS="-lpthread"],

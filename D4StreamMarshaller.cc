@@ -142,7 +142,7 @@ void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int widt
 
     char *buf = new char[size];
     XDR xdr;
-    xdrmem_create(&xdr, &buf[0], size, XDR_ENCODE);
+    xdrmem_create(&xdr, buf.data(), size, XDR_ENCODE);
     try {
         if(!xdr_array(&xdr, &val, (unsigned int *)&num, size, width, XDRUtils::xdr_coder(type)))
             throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 array");
@@ -154,14 +154,14 @@ void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int widt
         static bool twiddle_bytes = !is_host_big_endian();
         if (twiddle_bytes) {
             if (width == 4) {
-                dods_float32 *lbuf = reinterpret_cast<dods_float32*>(&buf[0]);
+                dods_float32 *lbuf = reinterpret_cast<dods_float32*>(buf.data());
                 while (num--) {
                     dods_int32 *i = reinterpret_cast<dods_int32*>(lbuf++);
                     *i = bswap_32(*i);
                 }
             }
             else { // width == 8
-                dods_float64 *lbuf = reinterpret_cast<dods_float64*>(&buf[0]);
+                dods_float64 *lbuf = reinterpret_cast<dods_float64*>(buf.data());
                 while (num--) {
                     dods_int64 *i = reinterpret_cast<dods_int64*>(lbuf++);
                     *i = bswap_64(*i);
@@ -177,7 +177,7 @@ void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int widt
         // The child thread will delete buf when it's done
         xdr_destroy(&xdr);
 #else
-        d_out.write(&buf[0], size);
+        d_out.write(buf.data(), size);
         xdr_destroy(&xdr);
         delete [] buf;
 #endif

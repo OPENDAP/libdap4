@@ -301,7 +301,7 @@ public:
             D4StreamUnMarshaller dsm(in, 0);
 
             vector<unsigned char> buf1(32768);
-            dsm.get_vector(reinterpret_cast<char*>(&buf1[0]), 32768);
+            dsm.get_vector(reinterpret_cast<char*>(buf1.data()), 32768);
             for (int i = 0; i < 32768; ++i)
                 CPPUNIT_ASSERT(buf1[i] == i % (1 << 7));
             string ck = dsm.get_checksum_str();
@@ -309,7 +309,7 @@ public:
             CPPUNIT_ASSERT(ck == "199ad7f5" || ck == "199ad7f5");
 
             vector<dods_int32> buf2(32768);
-            dsm.get_vector(reinterpret_cast<char*>(&buf2[0]), 32768, sizeof(dods_int32));
+            dsm.get_vector(reinterpret_cast<char*>(buf2.data()), 32768, sizeof(dods_int32));
             for (int i = 0; i < 32768; ++i)
                 CPPUNIT_ASSERT(buf2[i] == i % (1 << 9));
             ck = dsm.get_checksum_str();
@@ -317,7 +317,7 @@ public:
             CPPUNIT_ASSERT(ck == "5c1bf29f" || ck == "8efd2d3d");
 
             vector<dods_float64> buf3(32768);
-            dsm.get_vector_float64(reinterpret_cast<char*>(&buf3[0]), 32768);
+            dsm.get_vector_float64(reinterpret_cast<char*>(buf3.data()), 32768);
             for (int i = 0; i < 32768; ++i) {
                 if (buf3[i] != i % (1 << 9)) cerr << "buf3[" << i << "]: " << buf3[i] << endl;
                 CPPUNIT_ASSERT(buf3[i] == i % (1 << 9));

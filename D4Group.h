@@ -142,9 +142,15 @@ public:
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
 
-    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
-    //virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool is_root);
+    void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
+                    bool constrained = false) override;
+    void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
+                    bool constrained = false) override;
 
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+
+    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
 };
 
 } /* namespace libdap */

@@ -59,7 +59,7 @@ private:
     {
         string stuff = "";
         char line[256];
-        while (!feof(res) && !ferror(res) && fgets(&line[0], 256, res) != 0)
+        while (!feof(res) && !ferror(res) && fgets(line.data(), 256, res) != 0)
             stuff += line;
 
         return stuff;

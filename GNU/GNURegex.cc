@@ -85,9 +85,9 @@ Regex::init(const char *t)
         vector<char> msg(msg_len+1);
         //char *msg = new char[msg_len+1];
         DBG( cerr << "Regex::init() - Calling regerror() again..." << endl);
-        regerror(result, static_cast<regex_t*>(d_preg), &msg[0], msg_len);
+        regerror(result, static_cast<regex_t*>(d_preg), msg.data(), msg_len);
         DBG( cerr << "Regex::init() - Throwing libdap::Error" << endl);
-        throw Error(string("Regex error: ") + string(&msg[0]));
+        throw Error(string("Regex error: ") + string(msg.data()));
         //delete[] msg;
         //throw e;
     }

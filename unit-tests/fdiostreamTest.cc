@@ -195,7 +195,7 @@ public:
         FILE *fp = fopen(fdiostream_txt.c_str(), "r");
         CPPUNIT_ASSERT("read_test_file_ptr fopen fdiostream.txt" && fp != NULL);
         char word[7];
-        int num = fread(&word[0], 1, 6, fp);
+        int num = fread(word.data(), 1, 6, fp);
         word[6] = '\0';
         DBG(cerr << "first word (" << num << "): " << word << endl);
         CPPUNIT_ASSERT(string(word) == "Output");
@@ -221,7 +221,7 @@ public:
         FILE *fp = fopen(fdiostream_txt.c_str(), "r");
         CPPUNIT_ASSERT("read_test_file_ptr_2 fopen fdiostream.txt" && fp != NULL);
         char word[7];
-        int num = fread(&word[0], 1, 6, fp);
+        int num = fread(word.data(), 1, 6, fp);
         word[6] = '\0';
         DBG(cerr << "first word (" << num << "): " << word << endl);
         CPPUNIT_ASSERT(string(word) == "Output");

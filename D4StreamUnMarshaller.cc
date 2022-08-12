@@ -293,7 +293,7 @@ D4StreamUnMarshaller::get_opaque_dap4( vector<uint8_t> &val )
 	d_in.read(reinterpret_cast<char*>(&len), sizeof(len));
 
     val.resize(len);
-    d_in.read(reinterpret_cast<char*>(&val[0]), len);
+    d_in.read(reinterpret_cast<char*>(val.data()), len);
 }
 
 void
@@ -309,10 +309,10 @@ void D4StreamUnMarshaller::m_deserialize_reals(char *val, int64_t num, int width
     // char *buf = (char*)malloc(size); jhrg 7/23/13
     vector<char> buf(size);
     XDR xdr;
-    xdrmem_create(&xdr, &buf[0], size, XDR_DECODE);
+    xdrmem_create(&xdr, buf.data(), size, XDR_DECODE);
     try {
         xdr_setpos(&d_source, 0);
-        d_in.read(&buf[0], size);
+        d_in.read(buf.data(), size);
 
         if(!xdr_array(&xdr, &val, (unsigned int *)&num, size, width, XDRUtils::xdr_coder(type)))
             throw InternalErr(__FILE__, __LINE__, "Error deserializing a Float64 array");
