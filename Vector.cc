@@ -304,7 +304,7 @@ Vector::~Vector()
     try {
         Vector::clear_local_data();
     }
-    catch (const std::exception &e) {
+    catch (const std::exception &) {
         // It's hard to know what to do - Log it when we can, but that can fail, too.
     }
 }

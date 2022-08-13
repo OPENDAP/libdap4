@@ -244,7 +244,7 @@ Sequence::~Sequence()
     try {
         Sequence::clear_local_data();   // make the call explicit in a destructor
     }
-    catch (const std::exception &e) {
+    catch (const std::exception &) {
         // It's hard to know what to do - Log it when we can, but that can fail, too.
     }
 }
