@@ -177,7 +177,7 @@ public:
 
     /** @brief Returns the number of elements in the vector.
      * Note that some child classes of Vector use the length of -1 as a flag value.
-     * @return Tthe number of elements in the vector
+     * @return The number of elements in the vector
      * @deprecated Use length_ll() instead
      */
     // FIXME temp hack jhrg 7/25/22
