@@ -79,6 +79,7 @@ public:
     // This method returned a D4Group * previously. jhrg 11/17/16
     virtual BaseType *ptr_duplicate();
 
+    // TODO Wire up the new D4Dimensions object to have this group as its parent. jhrg 8/22/22
     /// Get the dimensions defined for this Group
     D4Dimensions *dims() {
     	// If not built yet, make one and set this as parent.
