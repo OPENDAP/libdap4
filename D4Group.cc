@@ -24,17 +24,20 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
-
 #include <cassert>
 
 #include <iostream>
 #include <sstream>
+
+#if 0
+
 #include <iomanip>
 
 #include <stdint.h>
 
 #include "crc.h"
+
+#endif
 
 #include "BaseType.h"
 #include "Array.h"
@@ -48,6 +51,8 @@
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
+#include "escaping.h"
+#include "util.h"
 #include "debug.h"
 
 /**
@@ -366,10 +371,10 @@ D4Group::find_enum_def(const string &path)
 }
 
 /**
- * Find a variable using it's FUlly Qualified Name (FQN). The leading '/' is optional.
+ * Find a variable using its Fully Qualified Name (FQN). The leading '/' is optional.
  *
  * @param path The FQN to the variable
- * @return A BaseType* to the variable of null if it was not found
+ * @return A BaseType* to the variable or null if it was not found
  * @see BaseType::FQN()
  */
 BaseType *
@@ -387,8 +392,15 @@ D4Group::find_var(const string &path)
 
     string::size_type pos = lpath.find('/');
     if (pos == string::npos) {
-        // name looks like 'bar' or bar.baz; lookup in the Constructor that's part of the Group
-    	return var(lpath);
+        // New behavior to accommodate cases where the path ends in a group - the
+        // CE is being used to request all the variables in a Group. So, first check
+        // if this is the name of a Group and if so, return that. Otherwise, look in
+        // the Group's Constructor for a matching variable. jhrg 8/3/22
+        D4Group *grp = find_child_grp(lpath);
+        if (grp != nullptr)
+            return grp;
+        else
+    	    return var(lpath);
     }
 
     // name looks like foo/bar/baz where foo and bar must be groups
@@ -396,7 +408,12 @@ D4Group::find_var(const string &path)
     lpath = lpath.substr(pos + 1);
 
     D4Group *grp = find_child_grp(grp_name);
-    return (grp == 0) ? 0 : grp->find_var(lpath);
+    if (grp == nullptr)
+        return nullptr;
+    else if (lpath.empty())
+        return grp;
+    else
+        return grp->find_var(lpath);
 }
 
 /** Compute the size of all of the variables in this group and it's children,
@@ -424,10 +441,6 @@ D4Group::request_size(bool constrained)
     size = size / 1024; // Make into kilobytes
 
     // groups
-    //groupsIter g = d_groups.begin();
-    //while (g != d_groups.end())
-    //    size += (*g++)->request_size(constrained);
-
     for(auto grp : d_groups)
         size += grp->request_size_kb(constrained);
 
@@ -657,6 +670,84 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
             throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
     }
 }
+
+void
+D4Group::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained)
+{
+    ostringstream oss;
+    print_decl(oss, space, print_semi, constraint_info, constrained);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+}
+
+void
+D4Group::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    out << space << type_name() << " {\n" ;
+    for (auto var: d_vars) {
+        var->print_decl(out, space + "    ", true, constraint_info, constrained);
+    }
+
+    for (auto grp: d_groups) {
+        grp->print_decl(out, space + "    ", true, constraint_info, constrained);
+    }
+
+    out << space << "} " << id2www(name()) ;
+
+    if (constraint_info) { // Used by test drivers only.
+        if (send_p())
+            out << ": Send True";
+        else
+            out << ": Send False";
+    }
+
+    if (print_semi)
+        out << ";\n" ;
+}
+
+void
+D4Group::print_val(FILE *out, string space, bool print_decl_p)
+{
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+}
+
+void
+D4Group::print_val(ostream &out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+        print_decl(out, space, false);
+        out << " = " ;
+    }
+
+    out << "{ " ;
+    bool padding_needed = false;    // Add padding - which is complex with the two parts. jhrg 8/5/22
+    for (Vars_citer i = d_vars.begin(), e = d_vars.end(); i != e; i++, (void)(i != e && out << ", ")) {
+        (*i)->print_val(out, "", false);
+        padding_needed = true;
+    }
+
+    if (padding_needed)
+        out << " ";
+
+    padding_needed = false;
+    for (auto grp: d_groups) {
+        grp->print_val(out, "", false);
+        padding_needed = true;
+    }
+
+    if (padding_needed)
+        out << " }";
+    else
+        out << "}" ;
+
+    if (print_decl_p)
+        out << ";\n" ;
+}
+
 #if 0
 /** @brief DAP4 to DAP2 transform
  *

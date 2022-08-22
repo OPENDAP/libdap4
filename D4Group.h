@@ -79,6 +79,7 @@ public:
     // This method returned a D4Group * previously. jhrg 11/17/16
     virtual BaseType *ptr_duplicate();
 
+    // TODO Wire up the new D4Dimensions object to have this group as its parent. jhrg 8/22/22
     /// Get the dimensions defined for this Group
     D4Dimensions *dims() {
     	// If not built yet, make one and set this as parent.
@@ -142,9 +143,15 @@ public:
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
 
-    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
-    //virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool is_root);
+    void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
+                    bool constrained = false) override;
+    void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
+                    bool constrained = false) override;
 
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+
+    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
 };
 
 } /* namespace libdap */

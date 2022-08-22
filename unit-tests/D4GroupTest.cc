@@ -35,18 +35,12 @@
 #include "Byte.h"
 #include "Int64.h"
 #include "Structure.h"
-
 #include "XMLWriter.h"
 #include "debug.h"
 
 #include "testFile.h"
 #include "run_tests_cppunit.h"
 #include "test_config.h"
-
-
-
-
-
 
 using namespace CppUnit;
 using namespace std;
@@ -281,7 +275,7 @@ public:
         load_group_with_scalars(root);
         load_group_with_stuff(root);
 
-        D4Group *child = new D4Group("child");
+        auto child = new D4Group("child");
         load_group_with_scalars(child);
         load_group_with_stuff(child);
         root->add_group(child);
@@ -291,7 +285,7 @@ public:
         // Used add_group() and not add_group_nocopy()
         delete child;
 
-        BaseType *btp = root->find_var("/b");
+        auto btp = root->find_var("/b");
         DBG(cerr << "btp: " << btp << ", name:" << btp->name() << endl);
         DBG(cerr << "btp->parent: " << btp->get_parent() << ", name:" << btp->get_parent()->name() << endl);
         CPPUNIT_ASSERT(btp && btp->name() == "b");
@@ -306,9 +300,9 @@ public:
 
     void test_find_var_2()
     {
-        D4Group *child = new D4Group("child");
-        D4Group *g_child_1 = new D4Group("g_child_1");
-        D4Group *g_child_2 = new D4Group("g_child_2");
+        auto child = new D4Group("child");
+        auto g_child_1 = new D4Group("g_child_1");
+        auto g_child_2 = new D4Group("g_child_2");
 
         load_group_with_scalars(g_child_1);
         load_group_with_stuff(g_child_2);
@@ -322,17 +316,22 @@ public:
         g_child_2->add_var_nocopy(new Byte("byte_var_gc_2"));
 
         auto bv_gc_1 = root->find_var("/child/g_child_1/byte_var_gc_1");
-        CPPUNIT_ASSERT(bv_gc_1);
+        CPPUNIT_ASSERT_MESSAGE("Looking for a variable in /child/g_child_1", bv_gc_1);
 
         auto bv_gc_2 = root->find_var("/child/g_child_2/byte_var_gc_2");
-        CPPUNIT_ASSERT(bv_gc_2);
+        CPPUNIT_ASSERT_MESSAGE("Looking for a variable in /child/g_child_2", bv_gc_2);
 
         auto its_not_there = root->find_var("/child/g_child_2/byte_var_gc_1");
-        CPPUNIT_ASSERT(its_not_there == nullptr);
-        // grp1 = new D4Group("Joey");
-        // grp1->dims()->add_dim_nocopy(new D4Dimension("lat", 1024));
-        // grp1->add_var_nocopy(new Byte("byte_var"));
+        CPPUNIT_ASSERT_MESSAGE("Looking for a variable that is not there.", its_not_there == nullptr);
+
+        // Test finding a group (not a thing in a group). jhrg 8/3/22
+        auto bv_gc_3 = root->find_var("/child");
+        CPPUNIT_ASSERT_MESSAGE("Looking for /child/", bv_gc_3 == child);
+
+        auto bv_gc_4 = root->find_var("/child/g_child_2");
+        CPPUNIT_ASSERT_MESSAGE("Looking for /child/g_child_2", bv_gc_4 == g_child_2);
     }
+
     void test_print_everything()
     {
         load_group_with_scalars(root);
@@ -445,8 +444,6 @@ public:
         DBG(cerr << "test_fqn_4: " << btp->FQN() << endl);
         CPPUNIT_ASSERT(btp && btp->FQN() == "/child/p.c.b");
     }
-
-
 
     CPPUNIT_TEST_SUITE (D4GroupTest);
 

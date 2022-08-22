@@ -640,5 +640,16 @@ DMR_PARSE_CE([vol_1_ce_12.xml], [temp[[nasty]]], [vol_1_ce_12.xml.parse_ce_1])
 DMR_PARSE_CE([vol_1_ce_12.xml], [temp[[d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1]]],
     [vol_1_ce_12.xml.parse_ce_2])
 
-# Test revered array indices
+# Test reversed array indices
 DMR_PARSE_CE([test_array_4.xml], [b[[2:1]][[2:3]] ], [test_array_4.xml.error.base], [pass])
+
+# Test projections that only name groups
+DMR_TRANS_CE([vol_1_ce_2.xml], [/inst2], [vol_1_ce_2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([vol_1_ce_2.xml], [inst2], [vol_1_ce_2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([vol_1_ce_2.xml], [/inst2/Point], [vol_1_ce_2.xml.2.trans_base], [pass])
+
+DMR_TRANS_CE([vol_1_ce_13.xml], [/inst2], [vol_1_ce_13.xml.1.trans_base], [pass])
+DMR_TRANS_CE([vol_1_ce_13.xml], [/inst2/inst3], [vol_1_ce_13.xml.2.trans_base], [pass])
+
+DMR_TRANS_CE([vol_1_ce_13.xml], [/attr_only_global], [vol_1_ce_13.xml.3.trans_base], [pass])
+DMR_TRANS_CE([vol_1_ce_13.xml], [/inst2/attr_only], [vol_1_ce_13.xml.4.trans_base], [pass])
