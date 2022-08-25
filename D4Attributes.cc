@@ -559,14 +559,17 @@ D4Attribute::print_dap4(XMLWriter &xml) const
         // Need to escape special characters that xml doesn't allow. Note: the XML escaping is
         // not the same as the das string escaping. See escattr_xml in the escaping.cc for details.
         // KY 08-22-22
- 
+#if 0 
         D4AttributeCIter i = d_values.begin();//value_begin();
+#endif
+        auto i = d_values.begin();
         while (i != d_values.end()) {
             if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Value") < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write value element");
-
+#if 0
+            if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) (*i++).c_str()) < 0)
+#endif
             string s = escattr_xml(*i++);
-            //if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) (*i++).c_str()) < 0)
             if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) s.c_str()) < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write attribute value");
 

@@ -1063,7 +1063,7 @@ static void write_string_attribute_for_das(ostream &out, const string &value, co
 
     string esc_value = escattr(value);
 
-    // The value is already escaped so the if(is_quoted) check is not necessary. KY 2022-08-22
+    // The value is already escaped so the following check is not necessary. KY 2022-08-22
 #if 0
     if (is_quoted(esc_value))
         out << esc_value << term;

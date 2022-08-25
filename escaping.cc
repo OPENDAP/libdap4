@@ -413,7 +413,7 @@ escattr_xml(string s)
     // will be added to many Nullterm string. Note: we have to search the '\0' character like
     // the code below. Put the '\0' inside the string "printable" still doesn't recongize the '\0' as a printable character.
     // KY 2022-08-22
-    while ((ind = s.find_first_not_of(printable, ind)) != s.npos) {
+    while ((ind = s.find_first_not_of(printable, ind)) != string::npos) {
         if (s[ind] != null_char) 
             s.replace(ind, 1, ESC + octstring(s[ind]));
         else 
