@@ -1060,10 +1060,16 @@ const string double_quote = "\"";
 
 static void write_string_attribute_for_das(ostream &out, const string &value, const string &term)
 {
-    if (is_quoted(value))
-        out << value << term;
+
+    string esc_value = escattr(value);
+
+    // The value is already escaped so the following check is not necessary. KY 2022-08-22
+#if 0
+    if (is_quoted(esc_value))
+        out << esc_value << term;
     else
-        out << double_quote << value << double_quote << term;
+#endif
+    out << double_quote << esc_value << double_quote << term;
 }
 
 #if 0
@@ -1470,6 +1476,22 @@ void AttrTable::print_xml_writer(XMLWriter &xml)
                 // code. jhrg
                 if (xmlTextWriterWriteRaw(xml.get_writer(), (const xmlChar*) get_attr(i, 0).c_str()) < 0)
                     throw InternalErr(__FILE__, __LINE__, "Could not write OtherXML value");
+            }
+            // Need to escape special characters that xml doesn't allow. Note: the XML escaping is
+            // not the same as the das string escaping. See escattr_xml in the escaping.cc for details.
+            // KY 08-22-22
+            else if (get_attr_type(i) == Attr_string || get_attr_type(i) == Attr_url) {
+                for (unsigned j = 0; j < get_attr_num(i); ++j) {
+                    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "value") < 0)
+                        throw InternalErr(__FILE__, __LINE__, "Could not write value element");
+
+                    string s = escattr_xml(get_attr(i,j));
+                    if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) s.c_str()) < 0)
+                        throw InternalErr(__FILE__, __LINE__, "Could not write attribute value");
+
+                    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+                        throw InternalErr(__FILE__, __LINE__, "Could not end value element");
+                }
             }
             else {
                 for (unsigned j = 0; j < get_attr_num(i); ++j) {
