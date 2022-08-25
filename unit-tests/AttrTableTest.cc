@@ -296,9 +296,13 @@ public:
         ostringstream oss;
         t->print(oss, "");
         //FILE2string(sof, of, t->print(of, ""));
+        // Now the string attribute is escaped. So the output of '"' becomes
+        // '/"'. We need to reflect this change in the comparision. KY 2022-08-24
         string attrs = "String long%20name \"first\";\n\
-String longer%20name \"second test\";";
+String longer%20name \"\\\"second test\\\"\";";
+ 
         //CPPUNIT_ASSERT(sof.find(attrs) != string::npos);
+        // With the escaping 
         CPPUNIT_ASSERT(oss.str().find(attrs) != string::npos);
         delete t;
         t = 0;
