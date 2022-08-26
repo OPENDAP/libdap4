@@ -1,5 +1,20 @@
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
+##Updated for version 3.20.11 
+
+* Fixed bug in computation of request_size_kb()
+* Fixed type issue in HTTPCache.cc (#192)
+
+##Updated for version 3.20.10 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6789103.svg)](https://doi.org/10.5281/zenodo.6789103)
+
+* Support for RHEL8
+* Fix for bugs in the ce parser around inverted indices. 
+* Fix for libdap4 github issue 147:  Grid::get_map_iter() was off by one
+* Improvements to DAP4 api.
+* Fixed various memory leaks.
+* Replaced instances of &vector[0] with vector.data()  (RHEL8)
+
+
 ### Updated for version 3.20.9 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5807905.svg)](https://doi.org/10.5281/zenodo.5807905)
 * Started migrating from (deprecated) auto_ptr to C++11 unique_ptr
 * Migrated use of regex functions from outdfated GNU implementation 

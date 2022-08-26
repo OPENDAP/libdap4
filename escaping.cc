@@ -367,7 +367,7 @@ esc2underscore(string s)
 string
 escattr(string s)
 {
-    const string printable = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"";
+    const string printable = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"\n\t\r";
     const string ESC = "\\";
     const string DOUBLE_ESC = ESC + ESC;
     const string QUOTE = "\"";
@@ -394,6 +394,35 @@ escattr(string s)
 
     return s;
 }
+
+/** Escape non-printable characters and quotes from an HDF attribute.
+    @param s The attribute to modify.
+    @return The modified attribute. */
+string
+escattr_xml(string s)
+{
+    const string printable = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"\n\t\r";
+
+    const string ESC = "\\";
+    const char null_char='\0';
+
+    string::size_type ind = 0;
+
+    // Unlike escaping the special characters for DAS, we don't need to handle quote or double quote. 
+    // However, we would like to treate NULL as a printable character. Otherwise, a '\000'
+    // will be added to many Nullterm string. Note: we have to search the '\0' character like
+    // the code below. Put the '\0' inside the string "printable" still doesn't recongize the '\0' as a printable character.
+    // KY 2022-08-22
+    while ((ind = s.find_first_not_of(printable, ind)) != string::npos) {
+        if (s[ind] != null_char) 
+            s.replace(ind, 1, ESC + octstring(s[ind]));
+        else 
+            ind++;
+    }
+
+    return s;
+}
+
 
 /** Un-escape special characters, quotes and backslashes from an HDF
     attribute.

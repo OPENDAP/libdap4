@@ -68,8 +68,7 @@ env:
   # GIT_UID travis-ci-opendap
   - secure: "g+SL53aSnULaToAu+HJO86Ljr6//j+aVSlVh7ROj6h80PDVmSW0xyiLUQRkA24vMrQqNY/rj6+qAXgVGORCPs2JBGcKjELzLr30eNDXfUNOjB+0actXI8sKD8I3eTZMHawOpedtk9v884Z+iQJauh04tD70sUMBp/WpCp+mXgQE="
   # GIT_PSWD travis-ci-opendap
-  - secure: "tWdPVVe+22hRx5LP4jhwG4LVxrWXnW2fBR+S05kiBwnsNI7YS5Lq2uOANJ/z8T1tPE2+hq5ErWKTkOqRsMMLg1Y/TUX5Vd+718oVGiSf/Iz3HWCBakxgCuyq5ejzCZWKJxBqmoTigBCWIyzMV7S+BCjjqZV2DxGzXY5kSg7uG3A="
-
+  - secure: "Oi3LunWs6lnFSW83d8z1llVBGIfUx3E+0d6wRAnkO0Q3muTMr8zm/bmaBt7XxnUQ3uKjRp9Uwkqtt7jJDHfTMeO5mXqYz018mc+PxwPmfFk6mnCQVbu1fk2tDRFbKYBPxILk0lvkShqzfKJJ9g/5b1IBJ/oxZAErf21qMqi1IHU="
   # DOCKER_HUB_UID for our DockerHub account
   - secure: "PsI4sAD6i7dPfsYRof05Ya0GmuE9j3/gpULUNrIOGYc2wbLlApqhkUoznqeOaXGB3O+kM1Mxah6ft4PyYcuLZ0xM0H7ulT3mz+clqXuH9ssgGoDt/Ye5PJiFWNOQlRvWd7F9NNtVSBikjWN4ujalUqby2cSThBizkOXhZYe3CzM="
   # DOCKER_HUB_PSWD for our DockerHub account

@@ -1,4 +1,199 @@
+#	
+# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+# libdap version 3.20.11
+#
+
+2022-07-19  ndp-opendap  <ndp@opendap.org>
+
+	Fixed bug in computation of request_size_kb()
+
+2022-07-09  Nathan Potter  <ndp@opendap.org>
+
+	Fixing type issue in HTTPCache.cc (#192)
+
+2022-07-01  ndp-opendap  <ndp@opendap.org>
+
+	Adding DOI to README.md [skip ci]
+
+	Updating LIBDAP_TRAVIS_BUILD_OFFSET to 1018 for re;ease 3.20.10
+
+	Preparing release 3.20.10, Hyrax-1.16.6
+
+#	
+# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+# libdap version 3.20.10
+#
+
+2022-06-27  James Gallagher  <jgallagher@opendap.org>
+
+	Rhel 8 tirpc (#191)
+	Added a test for the correct configuration of tirpc on rhel 8
+	Added more messages to OX_RHEL8_TIRPC macro
+
+2022-06-20  James Gallagher  <jgallagher@opendap.org>
+
+	Replaced instances of &vector[0] with vector.data() (#190)
+	There are two cases where the pattern was used with strings
+	where .data() won't work and is not needed (working with char[]
+	and whre &char[0] will always work).
+
+2022-06-14  ndp-opendap  <ndp@opendap.org>
+
+	Trigger TravisCI
+
+2022-05-24  James Gallagher  <jgallagher@opendap.org>
+
+	Removed extra header (#189)
+
+2022-05-09  James Gallagher  <jgallagher@opendap.org>
+
+	Fix Constructor::read() (#188)
+	Fix Constructor::read()
+
+2022-04-27  James Gallagher  <jgallagher@opendap.org>
+
+	Constructor refactor (#187)
+	Constructor refactor
+
+2022-04-26  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed some warnings about bind2nd(), etc. (#186)
+	Fixed some warnings about bind2nd(), etc.
+
+2022-03-10  James Gallagher  <jgallagher@opendap.org>
+
+	Edit to README - trigger a travis build
+
+2022-03-09  James Gallagher  <jgallagher@opendap.org>
+
+	Fix for for the last merge that only shows up in the bes (#185)
+	The ServerFunctionList was flagged by sonarscan but my fix contained a logic flaw.
+	The libdap tests didn't uncover that, but tests in the BES did. This fixes the logic flaw.
+
+	a small set of improvements (#184)
+
+2022-03-08  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed memory issues in the client-side cache in libdap (#183)
+	Fixed memory issues in the client-side cache in libdap
+
+2022-03-04  James Gallagher  <jgallagher@opendap.org>
+
+	Unit test improvement (#182)
+	Modified unit-tests so they all use a template for main()
+	This reduces the code by 52 tests times 40 lines of code or
+	about 2k LOC. It also fixes many small errors that crept into
+	the tests as various parts were copied incorrectly or mistakenly
+	edited.
+
+2022-02-21  James Gallagher  <jgallagher@opendap.org>
+	    Kodi N  <kneumiller@opendap.org>
+	    James Gallager  <jgallager@opendap.org>
+
+	Leak fixes (#181)
+	Fixed an issue in Vector where assignment leaked d_proto.
+	If the destination Vector already had an object pointer assigned
+	to d_proto then both operator=() and the copy ctor would leak
+	that pointer.
+	Minor changes to marshT and Array.cc
+
+2022-02-18  James Gallagher  <jgallagher@opendap.org>
+
+	One more version. (#180)
+
+2022-02-18  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #179 from OPENDAP/d4a-erase-lkeak-fix
+	Fixed the leak I hope...
+
+2022-02-18  James Gallagher  <jgallagher@opendap.org>
+
+	New new version of erase.
+	Also some more hacking for leak detection
+
+2022-02-17  James Gallagher  <jgallagher@opendap.org>
+
+	Added some notes about leak detection in unit-tests/Makefile.am
+	I also changed how two of the tests are built, so they link with
+	the static archive since this seems to cause the linker to choose
+	the locally-built library (where linking dynamically did not).
+
+	Addressed a 'code smell'
+
+	Fixed the leak I hope...
+
+2022-02-16  James Gallagher  <jgallagher@opendap.org>
+
+	Added an erase method to D4Attributes (#178)
+	Added an erase method to D4Attributes
+	Switched from explicit for-loop to erase(remove_if())
+	Added the algorithm header to D4Attributes.cc
+
+	Fixed all the remaining operator=() implementations (#177)
+
+	Removed commented code [skip ci]
+
+	Fixed the issue with operator=() reported by sonar scan (#176)
+
+2022-02-15  James Gallagher  <jgallagher@opendap.org>
+
+	Fix for libdap4 github issue 147:  Grid::get_map_iter() was off by one (#175)
+	Fix for libdap4 github issue 147:  Grid::get_map_iter() was off by one
+	Added tests for the affected method as well as some related methods in Grid.
+
+2022-02-13  James Gallagher  <jgallagher@opendap.org>
+
+	Dds dmr refactor (#171)
+	I refactored DDS and DMR to remove old code and provide better iterator access
+	DDS: New way of accessing the 'vars' vector makes range-based for
+	loops possible.
+	I removed old code that was excluded with the pre processor.
+	Old code n configure.ac was removed.
+	Now DAP4 builds by default and the only form of the DDX that is supported
+	is the 3.2 version
+	Added tests for the new DDS::variables() method that returns a const & to vars.
+
+2022-02-11  James Gallagher  <jgallagher@opendap.org>
+
+	Added caching and a wait for the quality gate test (#174)
+
+	Removed excess lines in README.md and triggered a master build
+
+	New way of implementing assignment should avoid slicing (#173)
+	* New way of implementing assignment should avoid slicing
+	* Comments editing and unused code removed
+	[skip ci]
+
+2022-02-10  James Gallagher  <jgallagher@opendap.org>
+
+	Build libdap RPMs on CentOS-Stream8 (#172)
+	Build libdap RPMs on CentOS-Stream8
+	Removed the github workflows - no sense using their machines
+
+2022-02-04  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed an error in the recent fix for inverted array index values
+	In DAP2 we changed array slicing so that [*] means all values of
+	the array. In the code, we replace the * with stop value of -1 so that
+	syntax like [7:*] can be used to get all the values from i position
+	7 to the end of the dimension for a particular array. The stop == -1 was
+	breaking the fix I added to test if start is > stop. I hacked a change
+	in to special case the -1 vaule of stop. A better approach would be
+	to handle this in the parser to read the end value of the dimension,
+	but we don't have that information handy in the DAP2 parser (the DAP4
+	parser is much better about this sort of thing).
+
+	Fix HYRAX-540 - array index values where start is > stop break the server (#170)
+	Fixed ticket https://bugs.earthdata.nasa.gov/browse/HYRAX-540 for DAP2 and DAP4
+	Other fixes in this PR:
+	The DAP4 ce parser was accepting negative array indices; fixed.
+	Removed auto_ptr vestiges
+	Fix for parallel clean issue in distclean
+	Added tests for the DAP2 and DAP4 fix for inverted index values.
+#	
+# -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # libdap version 3.20.9
+#
 
 2021-12-17  ndp-opendap  <ndp@opendap.org>
 

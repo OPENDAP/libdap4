@@ -38,8 +38,6 @@
 #include <cstring>
 #include <cassert>
 
-//#define DODS_DEBUG 1
-
 #include <sstream>
 #include <vector>
 #include <algorithm>
@@ -1738,7 +1736,7 @@ bool Vector::set_value(string *val, int sz)
 template<typename T>
 bool Vector::set_value_worker(vector<T> &v, int sz)
 {
-    return set_value(&v[0], sz);
+    return set_value(v.data(), sz);
 }
 
 bool Vector::set_value(vector<dods_byte> &val, int sz)

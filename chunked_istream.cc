@@ -241,8 +241,8 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
 			// small to hold the error message. At this point, there's not much reason
 			// to optimize transport efficiency, however.
 			std::vector<char> message(chunk_size);
-			d_is.read(&message[0], chunk_size);
-			d_error_message = string(&message[0], chunk_size);
+			d_is.read(message.data(), chunk_size);
+			d_error_message = string(message.data(), chunk_size);
 			// leave the buffer and gptr(), ..., in a consistent state (empty)
 			setg(d_buffer, d_buffer, d_buffer);
 	    }
