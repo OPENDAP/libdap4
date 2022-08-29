@@ -292,14 +292,14 @@ Str::esc_string_variable_value(string s)
 
     // escape \ with a second backslash
     string::size_type ind = 0;
-    while ((ind = s.find(ESC, ind)) != s.npos) {
+    while ((ind = s.find(ESC, ind)) != string::npos) {
         s.replace(ind, 1, DOUBLE_ESC);
         ind += DOUBLE_ESC.length();
     }
 
     // escape " with backslash
     ind = 0;
-    while ((ind = s.find(QUOTE, ind)) != s.npos) {
+    while ((ind = s.find(QUOTE, ind)) != string::npos) {
         s.replace(ind, 1, ESCQUOTE);
         ind += ESCQUOTE.length();
     }
