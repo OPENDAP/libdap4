@@ -59,8 +59,7 @@ const unsigned int max_str_len = DODS_USHRT_MAX - 1;
     @see Url
     */
 
-class Str: public BaseType
-{
+class Str: public BaseType {
 protected:
     string d_buf;
 
@@ -97,6 +96,8 @@ public:
 
     virtual bool set_value(const string &value);
     virtual string value() const;
+
+    static string esc_string_variable_value(string s);
 
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
