@@ -166,6 +166,13 @@ public:
 
     virtual BaseType *prototype() const { return d_proto; }
 
+    /**
+     *
+     * @param btp
+     * @return The previous template, calling code is responsible for the returned BaseType lifecycle.
+     */
+    virtual BaseType *set_prototype( BaseType *btp) {  BaseType *orig = d_proto; d_proto = btp; return orig; }
+
     virtual void set_name(const std::string& name);
 
     virtual int element_count(bool leaves);

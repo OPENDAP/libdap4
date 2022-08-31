@@ -189,6 +189,10 @@ protected:
     unsigned int print_array(ostream &out, unsigned int index,
                              unsigned int dims, unsigned int shape[]);
 
+    std::vector<dimension> &shape(){
+        return _shape;
+    }
+
 public:
     /** A constant iterator used to access the various dimensions of an
         Array.
