@@ -286,7 +286,7 @@ Str::print_val(FILE *out, string space, bool print_decl_p)
  * @return The modified value.
  */
 string
-Str::esc_string_variable_value(string s)
+Str::esc_string_variable_value(const string &s)
 {
     return escattr(s);
 }
