@@ -278,33 +278,17 @@ Str::print_val(FILE *out, string space, bool print_decl_p)
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-/** Escape non-printable characters and quotes from an HDF attribute.
-    @param s The attribute to modify.
-    @return The modified attribute. */
+/**
+ * @brief Escape non-printable characters and quotes from a Str variable value.
+ * The value printed is used mostly for debugging and for other diagnostics. Strings
+ * an non-printable characters are escaped using a backslash.
+ * @param s The value to modify.
+ * @return The modified value.
+ */
 string
 Str::esc_string_variable_value(string s)
 {
-    const string printable = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"\n\t\r";
-    const string ESC = "\\";
-    const string DOUBLE_ESC = ESC + ESC;
-    const string QUOTE = "\"";
-    const string ESCQUOTE = ESC + QUOTE;
-
-    // escape \ with a second backslash
-    string::size_type ind = 0;
-    while ((ind = s.find(ESC, ind)) != string::npos) {
-        s.replace(ind, 1, DOUBLE_ESC);
-        ind += DOUBLE_ESC.length();
-    }
-
-    // escape " with backslash
-    ind = 0;
-    while ((ind = s.find(QUOTE, ind)) != string::npos) {
-        s.replace(ind, 1, ESCQUOTE);
-        ind += ESCQUOTE.length();
-    }
-
-    return s;
+    return escattr(s);
 }
 
 void
