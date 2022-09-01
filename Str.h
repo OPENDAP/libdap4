@@ -97,7 +97,7 @@ public:
     virtual bool set_value(const string &value);
     virtual string value() const;
 
-    static string esc_string_variable_value(string s);
+    virtual string esc_string_variable_value(const string &s);
 
     virtual void print_val(FILE *out, string space = "",
                            bool print_decl_p = true);
