@@ -47,7 +47,7 @@ cat libdap4-snapshot  >&2
 git commit -am \
 "libdap4: Triggering BES build for snapshot production.
 Build Version Matrix:
-  ${LIBDAP4_SNAPSHOT}
+${LIBDAP4_SNAPSHOT}
 ";
 
 git push https://$GIT_UID:$GIT_PSWD@github.com/opendap/bes --all;
