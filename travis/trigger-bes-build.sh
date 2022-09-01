@@ -42,5 +42,12 @@ echo "${LIBDAP4_SNAPSHOT}" > libdap4-snapshot
 
 cat libdap4-snapshot  >&2
 
-git commit -am "${LIBDAP4_SNAPSHOT} Triggering BES build for snapshots.";
+# Bounding the commit message with the " character allows use to include
+# new line stuff for easy commit message readability later.
+git commit -am \
+"libdap4: Triggering BES build for snapshot production.
+Build Version Matrix:
+  ${LIBDAP4_SNAPSHOT}
+";
+
 git push https://$GIT_UID:$GIT_PSWD@github.com/opendap/bes --all;
