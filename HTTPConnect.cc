@@ -1027,8 +1027,7 @@ HTTPConnect::set_accept_deflate(bool deflate)
     else {
         vector<string>::iterator i;
         i = remove_if(d_request_headers.begin(), d_request_headers.end(),
-                      bind2nd(equal_to<string>(),
-                              string("Accept-Encoding: deflate, gzip, compress")));
+                      [](const string &header) { return header == "Accept-Encoding: deflate, gzip, compress";});
         d_request_headers.erase(i, d_request_headers.end());
     }
 }

@@ -200,18 +200,40 @@ public:
     virtual string dataset() const ;
 
     /**
-     * @brief How many elements are in this variable.
+     * @brief How many elements are in this variable? Uses -1 in places
      * @todo change the return type to int64_t
      * @return The number of elements; 1 for scalars
+     * @deprecated Use length_ll() instead
      */
+    // FIXME temp hack jhrg 7/25/22
     virtual int length() const { return 1; }
 
+    /** @brief Get the number of elements in this variable
+     * This version of the function deprecates length() which is limited to
+     * 32-bit sizes. The field uses -1 as a sentinel value indicating that
+     * a Vector/Array holds no values yet (as opposed to zero values). For
+     * types not derived from Vector, there is always one element.
+     * @return The number of elements in this variable
+     */
+    virtual int64_t length_ll() const { return 1; }
+
     /**
-     * @brief Set the number of elements for this variable
+     * @brief Set the number of elements for this variable. use -1 to indicate nothing set.
+     * @see Vector
      * @todo change param type to int64_t
      * @param l The number of elements
+     * @deprecated Use set_length_ll() instead
      */
-    virtual void set_length(int) { }
+    // FIXME temp hack jhrg 7/25/22
+    virtual void set_length(int64_t) { /* empty since the length of a BaseType is always one element. jhrg 8/12/22 */ }
+
+    /** @brief Set the number of elements in this variable
+    * This version of the function deprecates set_length() which is limited to
+    * 32-bit sizes. The field uses -1 as a sentinel value indicating that
+    * the Vector/Array holds no values.
+    * @param l The number of elements in the variable
+    */
+    virtual void set_length_ll(int64_t) { /* empty since the length of a BaseType is always one element. jhrg 8/12/22 */ }
 
     virtual bool is_simple_type() const;
     virtual bool is_vector_type() const;
@@ -291,6 +313,7 @@ public:
     virtual bool ops(BaseType *b, int op);
     virtual bool d4_ops(BaseType *b, int op);
 
+    /// @todo change return type to uint64_t
     virtual unsigned int width(bool constrained = false) const;
 
     virtual void print_decl(FILE *out, string space = "    ",
@@ -392,6 +415,10 @@ public:
         clear the memory use to hold the data values, so the caller should
         make sure to delete the DDS or the variable as soon as possible.
 
+        @note This version of the method is specific to DAP2. It will throw
+        an exception if called on a variable where the is_dap4 property is
+        true.
+
         @param eval Use this as the constraint expression evaluator.
         @param dds The Data Descriptor Structure object corresponding
         to this dataset. See <i>The DODS User Manual</i> for
@@ -443,32 +470,6 @@ public:
 	@see DDS */
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
 
-#if 0
-    /**
-     * Provide a way to get the old behavior of serialize() - calling this
-     * method will serialize the BaseType object's data but _not_ delete its
-     * data storage.
-     *
-     * @note This method's behavior differs only for Array (i.e. Vector), Sequence,
-     * D4Sequence and D4Opaque types; the other types do not use dynamic memory to
-     * hold data values.
-     *
-     * @param eval Use this as the constraint expression evaluator.
-     * @param dds The Data Descriptor Structure object corresponding
-     * to this dataset. See <i>The DODS User Manual</i> for
-     * information about this structure.
-     * @param m A marshaller used to serialize data types
-     * @param ce_eval A boolean value indicating whether to evaluate
-     * the DODS constraint expression that may accompany this
-     * @return This method always returns true. Older versions used
-     * the return value to signal success or failure.
-     * @param
-     */
-    virtual bool serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) {
-        return serialize(eval, dds, m, ce_eval);
-    }
-#endif
-
     /**
      * @brief include the data for this variable in the checksum
      * DAP4 includes a checksum with every data response. This method adds the
@@ -477,7 +478,7 @@ public:
      */
     virtual void compute_checksum(Crc32 &checksum) = 0;
 
-    virtual void intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/);
+    virtual void intern_data();
 
     /**
      * @brief The DAP4 serialization method.
@@ -493,30 +494,6 @@ public:
      * @exception Error or InternalErr
      */
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
-
-#if 0
-    /**
-     * @brief Variation on the DAP4 serialization method - retain data after serialization
-     * Serialize a variable's values for DAP4. This does not write the DMR
-     * persistent representation but does write that part of the binary
-     * data blob that holds a variable's data. Once a variable's data are
-     * serialized, that memory is reclaimed (by calling BaseType::clear_local_data())
-     *
-     * @note This version does not delete the storage of Array, D4Sequence or
-     * D4Opaque variables, as it the case with serialize(). For other types,
-     * this method and serialize have the same beavior (since those types do
-     * not us dynamic memory to hold data values).
-     *
-     * @param m
-     * @param dmr
-     * @param eval
-     * @param filter True if there is one variable that should be 'filtered'
-     * @exception Error or InternalErr
-     */
-    virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false) {
-        serialize(m, dmr, filter);
-    }
-#endif
 
     /** Receives data from the network connection identified by the
 	<tt>source</tt> parameter. The data is put into the class data
@@ -567,8 +544,7 @@ public:
 	@param print_decl_p A boolean value controlling whether the
 	variable declaration is printed as well as the value. */
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
+    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
 
     /** Prints the value of the variable, with its declaration. This
 	function is primarily intended for debugging DODS
@@ -584,8 +560,7 @@ public:
 	function, and controls the leading spaces of the output.
 	@param print_decl_p A boolean value controlling whether the
 	variable declaration is printed as well as the value. */
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true) = 0;
+    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true) = 0;
     //@}
 };
 

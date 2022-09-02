@@ -115,11 +115,10 @@ void Array::update_length(int)
 /** Build an array with a name and an element type. The name may be omitted,
  which will create a nameless variable. The template (element type) pointer
  may also be omitted, but if it is omitted when the Array is created, it
- \e must be added (with \c add_var()) before \c read() or \c deserialize()
- is called.
+ \e must be added (with \c add_var() od add_var_nocopy()) before \c read()
+ or \c deserialize() is called.
 
- @todo Force the Array::add_var() method to be used to add \e v.
- This version of add_var() calls Vector::add_var().
+ This version of add_var() calls Array::add_var().
 
  @param n A string containing the name of the variable to be
  created.
@@ -128,16 +127,17 @@ void Array::update_length(int)
  @brief Array constructor
  */
 Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */) :
-    Vector(n, 0, dods_array_c, is_dap4), d_maps(0)
+    Vector(n, nullptr, dods_array_c, is_dap4)
 {
-    add_var(v); // Vector::add_var() stores null if v is null
+    Array::add_var(v);
+    if (v)
+        BaseType::set_is_dap4(v->is_dap4());
 }
 
 /** Build an array on the server-side with a name, a dataset name from which
  this Array is being created, and an element type.
 
- @todo Force the Array::add_var() method to be used to add \e v.
- This version of add_var() calls Vector::add_var().
+ This version of add_var() calls Array::add_var().
 
  @param n A string containing the name of the variable to be created.
  @param d A string containing the name of the dataset from which this
@@ -147,9 +147,11 @@ Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */) :
  @brief Array constructor
  */
 Array::Array(const string &n, const string &d, BaseType *v, bool is_dap4 /* default:false */) :
-    Vector(n, d, 0, dods_array_c, is_dap4), d_maps(0)
+    Vector(n, d, nullptr, dods_array_c, is_dap4)
 {
-    add_var(v); // Vector::add_var() stores null if v is null
+    Array::add_var(v);
+    if (v)
+        BaseType::set_is_dap4(v->is_dap4());
 }
 
 /** @brief The Array copy constructor. */
@@ -308,6 +310,7 @@ Array::transform_to_dap2(AttrTable *)
             Grid *g = new Grid(name());
             dest = g;
             Array *grid_array = static_cast<Array *>(ptr_duplicate());
+            grid_array->set_is_dap4(false);
             g->set_array(grid_array);
 
             // Fix for HK-403. jhrg 6/17/19
@@ -332,6 +335,7 @@ Array::transform_to_dap2(AttrTable *)
                         if (d2_map_array->dimensions() != 1)
                             throw Error(internal_error, "DAP2 array from D4Map Array conversion has more than 1 dimension.");
 
+                        d2_map_array->set_is_dap4(false);
                         g->add_map(d2_map_array, false);
                         AttrTable at = d2_map_array->get_attr_table();
                         DBG( cerr << __func__ << "() - " <<
