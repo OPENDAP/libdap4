@@ -16,9 +16,14 @@ language: cpp
 
 compiler: gcc         # Could add clang
 
+# Build only 'master,' 'main,' or '.*-test-deploy' branches. This is used down in the
+# "stages" section where we assume the build process is only run for branches that
+# match those patterns. jhrg 8/22/22
 branches:
   only:
   - master
+  - main
+  - /^(.*-test-deploy)$/
 
 # This cache is used to speed up sonar scan runs. See https://docs.travis-ci.com/user/caching.
 # Each branch gets its own cache. jhrg 2/11/22
@@ -96,13 +101,12 @@ before_script:
 
 stages:
   - name: build
-    if:  branch = master
   - name: scan
-    if: branch = master
+    if: branch = master OR branch = main
   - name: package
-    if:  branch = master
   - name: hyrax-bes-trigger
-    if: branch = master AND type != pull_request
+    if: type != pull_request OR branch =~ ^(.*-test-deploy)$
+    # Was "if: branch = master AND type != pull_request" jhrg 8/22/22
 
 jobs:
   include:
@@ -224,7 +228,8 @@ deploy:
   skip_cleanup: true
   local_dir: $TRAVIS_BUILD_DIR/package
   on:
-    # Change 'master' to 'travis' to test deployment
-    branch: master
+    all_branches: true
+    # Was "branch: master". Now supports the *-test-deploy feature and also
+    # using 'main' as the branch name. jhrg 8/22/22
     condition: $LIBDAP_BUILD =~ ^main|srddist|centos7|centos-stream8$
     # Removed 'centos6|' jhrg 10/23/20

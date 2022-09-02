@@ -169,7 +169,7 @@ public:
     };
 
 private:
-    D4Maps *d_maps;
+    D4Maps *d_maps = nullptr;
 
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
 

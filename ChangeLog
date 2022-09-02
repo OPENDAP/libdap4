@@ -1,3 +1,110 @@
+## -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+##  libdap4-3.20.11-32
+##  hyrax-1.16.8-25
+##
+
+2022-09-01  ndp-opendap  <ndp@opendap.org>
+	
+	Refining commit message format
+	
+	Reformatted automated commit message forBES build trigger.
+	
+2022-08-31  James Gallagher  <jgallagher@opendap.org>
+	
+	Undo the change to Str::print_val() (#200)
+	Undo the change to Str::print_val()
+	
+	Added test-deploy to libdap4 (#202)
+	
+2022-08-30  James Gallagher  <jgallagher@opendap.org>
+	
+	Fixed how Str variables are printed. (#199)
+	Fixed how Str variables are printed.
+	String variables were printed using the Attribute escaping 
+	code. This lead to odd
+	behavior when that code was updated to correct years-long 
+	issues that we had been
+	papering over. I added new code to Str.cc to escape the Str and 
+	Url class' values.
+	Note that this is really only used by things like getdap & 
+	getdap4 and in test code.
+	
+2022-08-25  kyang2014  <kyang2014@users.noreply.github.com>
+	
+	Merge pull request #198 from OPENDAP/hyrax-708-esc-das
+	Hyrax 708 esc das
+	
+2022-08-25  myang6  <myang6@hdfgroup.org>
+	
+	reduce several sonar cloud smells
+	
+	HYRAX-708, 1) Unescape the special characters when parsing DAS 
+	from a file. 2) Update tests. 3) Make DmrRoundTrip and DmrToDap2 tests 
+	temporarily no-op. Will re-visit them later.
+	
+2022-08-23  myang6  <myang6@hdfgroup.org>
+	
+	HYRAX-708, update the das baseline files to reflect the 
+	escaping of the special characters for string attributes.
+	
+2022-08-22  James Gallagher  <jgallagher@opendap.org>
+	
+	Addedd comment about D4Group dims()
+	[skip ci]
+	
+2022-08-22  myang6  <myang6@hdfgroup.org>
+	
+	Merge branch 'master' into hyrax-708-esc-das
+	
+	HYRAX-708, update the escaping functions for DAP4 XML, DAP2 XML 
+	AND DAS. Temporarily turn off two DAS tests that contain the special 
+	characters.
+	
+2022-08-17  ndp-opendap  <ndp@opendap.org>
+	
+	Updating trtavis-ci-opendap github credentials
+	
+2022-08-12  myang6  <myang6@hdfgroup.org>
+	
+	Merge branch 'master' into hyrax-708-esc-das
+	
+2022-08-08  James Gallagher  <jgallagher@opendap.org>
+	
+	Modify D4Group::find_var() so it can find D4Groups (#194)
+	Modify D4Group::find_var() so it can find D4Groups
+	When a path in a CE specifies a Group, we should be returning 
+	all the
+	variables in that Group. Right now libdap just throws an 
+	exception. Once
+	find_var() returns the BaseType* to the Group, we should be set 
+	to mark
+	all of the Group's variables as part of the projection.
+	Added print_val and print_decl methods to D4Group.
+	This will make it easy(ier) to add tests for the new 'all vars
+	in a group' feature/fix.
+	Added tests for the 'Group projection' feature/fix
+	Now projection works for Groups and nested groups both and 
+	without
+	member variables. That is, for normal groups (ones with child
+	variables) naming the group in a CE results in all the 
+	variables in
+	that group and its child groups being included in the response. 
+	For
+	Groups that only contain attributes, naming the group in the CE 
+	will
+	cause that group to be included in the dap (i.e., data) 
+	response. This
+	dubious behavior is ... well, dubious. But modulo the 
+	correctness of
+	attributes in the face of a constraint, it does work.
+	See DMRTest 243 - 249 plus some of the D4GroupTest unit tests.
+	
+2022-07-21  ndp-opendap  <ndp@opendap.org>
+	
+	Updating build offset for TravisCI
+	
+	Preparing release 3.20.11, Hyrax-1.16.8
+ 
 #	
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 # libdap version 3.20.11

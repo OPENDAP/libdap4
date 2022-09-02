@@ -208,9 +208,7 @@ int main(int argc, char *argv[])
 
     bool get_dmr = false;
     bool get_dap4_data = false;
-    bool cexpr = false;
     bool verbose = false;
-    bool multi = false;
     bool accept_deflate = false;
     bool print_rows = false;
     bool mime_headers = true;
@@ -218,7 +216,7 @@ int main(int argc, char *argv[])
     int times = 1;
     int dap_client_major = 4;
     int dap_client_minor = 0;
-    string expr = "";
+    string expr;
     bool compute_size = false;
 
 #ifdef WIN32
@@ -246,7 +244,6 @@ int main(int argc, char *argv[])
                 report_errors = true;
                 break;
             case 'm':
-                multi = true;
                 times = atoi(optarg);
                 break;
             case 'z':
@@ -259,7 +256,6 @@ int main(int argc, char *argv[])
                 mime_headers = false;
                 break;
             case 'c':
-                cexpr = true;
                 expr = optarg;
                 break;
             case 'h':

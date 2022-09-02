@@ -80,12 +80,17 @@ namespace libdap
 class Vector: public BaseType
 {
 private:
-    int d_length = -1;  		// number of elements in the vector
-    BaseType *d_proto = nullptr;  // element prototype for the Vector
+    // Add d_length_ll. This uses -1 as a sentinel value. jhrg 7/25/22
+    // If we decide to add a bool for 'no values yet' do that as a
+    // separate refactor. jhrg 7/25/22
+    int64_t d_length_ll = -1;  	// number of elements in the vector
+
+    int d_length = -1;  		    // number of elements in the vector
+    BaseType *d_proto = nullptr;    // element prototype for the Vector
 
     // _buf was a pointer to void; delete[] complained. 6/4/2001 jhrg
     char *d_buf = nullptr;   		// storage for cardinal data
-    vector<string> d_str;		// special storage for strings. jhrg 2/11/05
+    vector<string> d_str;		    // special storage for strings. jhrg 2/11/05
     vector<BaseType *> d_compound_buf; 	// storage for data in compound types (e.g., Structure)
 
     // the number of elements we have allocated memory to store.
@@ -93,14 +98,12 @@ private:
     // or the capacity of d_str for strings or capacity of _vec.
     unsigned int d_capacity = 0;
 
+    bool d_too_big_for_dap2 = false;    /// Conditionally set to true in set_length_ll()
+
     friend class MarshallerTest;
 
-    /*
-     * Made these template methods private because they can't be
-     * overridden anyways (because c++...) - ndp 08/14/2015
-     *
-     */
-
+    // Made these template methods private because they can't be
+    // overridden anyways (because c++...) - ndp 08/14/2015
     template <typename T> void value_worker(T *v) const;
     template <typename T> void value_worker(vector<unsigned int> *indices, T *b) const;
 
@@ -125,7 +128,7 @@ public:
     virtual ~Vector();
 
     Vector &operator=(const Vector &rhs);
-    virtual BaseType *ptr_duplicate() = 0;
+    // FIXME BaseType *ptr_duplicate() = 0 override;
 
     /**
      * Provide access to internal data. Callers cannot delete this
@@ -160,10 +163,6 @@ public:
         return d_compound_buf;
     }
 
-#if 0
-    virtual bool is_dap2_only_type();
-#endif
-
     virtual BaseType *prototype() const { return d_proto; }
 
     /**
@@ -173,46 +172,56 @@ public:
      */
     virtual BaseType *set_prototype( BaseType *btp) {  BaseType *orig = d_proto; d_proto = btp; return orig; }
 
-    virtual void set_name(const std::string& name);
+    void set_name(const std::string& name) override;
 
-    virtual int element_count(bool leaves);
+    int element_count(bool leaves) override;
 
-    virtual void set_send_p(bool state);
+    void set_send_p(bool state) override;
 
-    virtual void set_read_p(bool state);
+    void set_read_p(bool state) override;
 
-    virtual unsigned int width(bool constrained = false) const;
+    unsigned int width(bool constrained = false) const override;
 
-    virtual int length() const;
+    /** @brief Returns the number of elements in the vector.
+     * Note that some child classes of Vector use the length of -1 as a flag value.
+     * @return The number of elements in the vector
+     * @deprecated Use length_ll() instead
+     */
+    // FIXME temp hack jhrg 7/25/22
+    int length() const override { return d_length; }
 
-    virtual void set_length(int l);
+    /** @brief Get the number of elements in this Vector/Array
+     * This version of the function deprecates length() which is limited to
+     * 32-bit sizes. The field uses -1 as a sentinel value indicating that
+     * the Vector/Array holds no values yet (as opposed to zero values).
+     * @return The number of elements in this Vector/Array
+     */
+    int64_t length_ll() const override { return d_length_ll; }
+
+    void set_length(int64_t l) override;
+
+    void set_length_ll(int64_t l) override;
 
     // DAP2
-    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-#if 0
-    virtual bool serialize_no_release(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-#endif
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+    void intern_data(ConstraintEvaluator &eval, DDS &dds) override;
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
+    bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) override;
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void intern_data(/*Crc32 &checksum*/);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
-#if 0
-    virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
-#endif
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void compute_checksum(Crc32 &checksum) override;
+    void intern_data(/*Crc32 &checksum*/) override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
+    unsigned int val2buf(void *val, bool reuse = false) override;
+    unsigned int buf2val(void **val) override;
 
     void set_vec(unsigned int i, BaseType *val);
     void set_vec_nocopy(unsigned int i, BaseType * val);
 
     void vec_resize(int l);
 
-    virtual void clear_local_data();
+    void clear_local_data() override;
 
     virtual unsigned int get_value_capacity() const;
     virtual void reserve_value_capacity(unsigned int numElements);
@@ -272,16 +281,17 @@ public:
 
     virtual void *value();
 
-    virtual BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = 0);
-    virtual BaseType *var(const string &name, btp_stack &s);
+    BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = nullptr) override;
+    BaseType *var(const string &name, btp_stack &s) override;
+
     virtual BaseType *var(unsigned int i);
 
-    virtual void add_var(BaseType *v, Part p = nil);
-    virtual void add_var_nocopy(BaseType *v, Part p = nil);
+    void add_var(BaseType *v, Part p = nil) override;
+    void add_var_nocopy(BaseType *v, Part p = nil) override;
 
-    virtual bool check_semantics(string &msg, bool all = false);
+    bool check_semantics(string &msg, bool all = false) override;
 
-    virtual void dump(ostream &strm) const ;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
