@@ -31,10 +31,13 @@ git config --global user.email "npotter@opendap.org"
 
 echo "New snapshot of libdap4 has been pushed. Triggering a BES build..."
 
-libdap4_version_num=$(cat ./libdap_VERSION)
+export libdap4_version_num=$(cat ./libdap_VERSION)
 echo "libdap4_version_num: ${libdap4_version_num}"  >&2
 
-LIBDAP4_SNAPSHOT="libdap4-${libdap4_version_num} $(date \"+%FT%T%z\")"
+export time_now=$(date "+%FT%T%z")
+echo "time_now: ${time_now}"  >&2
+
+LIBDAP4_SNAPSHOT="libdap4-${libdap4_version_num} ${time_now}"
 echo "libdap4-snapshot record: ${LIBDAP4_SNAPSHOT}"  >&2
 
 echo "Tagging libdap with version ${libdap4_version_num}"
