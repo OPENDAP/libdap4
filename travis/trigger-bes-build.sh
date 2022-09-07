@@ -62,4 +62,4 @@ Build Version Matrix:
 ${LIBDAP4_SNAPSHOT}
 ";
 
-git push https://$GIT_UID:$GIT_PSWD@github.com/OPENDAP/bes --all;
+git push "https://${GIT_UID}:${GIT_PSWD}@github.com/OPENDAP/bes" --all;
