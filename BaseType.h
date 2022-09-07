@@ -316,6 +316,8 @@ public:
     /// @todo change return type to uint64_t
     virtual unsigned int width(bool constrained = false) const;
 
+    virtual int64_t width_ll(bool constrained = false) const;
+
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,

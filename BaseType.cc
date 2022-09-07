@@ -1285,15 +1285,34 @@ BaseType::d4_ops(BaseType *, int)
  * @brief How many bytes does this variable use
  * Return the number of bytes of storage this variable uses. For scalar types,
  * this is pretty simple (an int32 uses 4 bytes, etc.). For arrays and Constructors,
- * it is a bit more complex. Note that a scalar String variable uses sizeof(String*)
+ * it is a bit more complex. Note that a scalar String variable uses sizeof(std::string*)
  * bytes, not the length of the string value. The width() of a String array returns
- * the number of elements in the array times sizeof(String*).
+ * the number of elements in the array times sizeof(std::string*).
  *
  * @param constrained Should the current constraint be taken into account?
  * @return Bytes of storage
+ * @deprecated
+ * @see width_ll()
  */
 unsigned int
 BaseType::width(bool /* constrained */) const
+{
+    throw InternalErr(__FILE__, __LINE__, "not implemented");
+}
+
+/**
+ * @brief How many bytes does this variable use
+ * Return the number of bytes of storage this variable uses. For scalar types,
+ * this is pretty simple (an int32 uses 4 bytes, etc.). For arrays and Constructors,
+ * it is a bit more complex. Note that a scalar String variable uses sizeof(std::string*)
+ * bytes, not the length of the string value. The width_ll() of a String array returns
+ * the number of elements in the array times sizeof(std::string*).
+ *
+ * @param constrained Should the current constraint be taken into account?
+ * @return Bytes of storage, as a 64-bit integer
+ */
+int64_t
+BaseType::width_ll(bool /* constrained */) const
 {
     throw InternalErr(__FILE__, __LINE__, "not implemented");
 }
