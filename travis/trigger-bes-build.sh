@@ -43,7 +43,6 @@ echo "libdap4-snapshot record: ${LIBDAP4_SNAPSHOT}"  >&2
 echo "Tagging libdap with version ${libdap4_version_num}"
 git tag -m "libdap4-${libdap4_version_num}" -a "${libdap4_version_num}"
 git push "https://${GIT_UID}:${GIT_PSWD}@github.com/OPENDAP/libdap4.git" "${libdap4_version_num}"
-# git push origin "${libdap4_version_num}"
 
 git clone --depth 1 https://github.com/opendap/bes
 
