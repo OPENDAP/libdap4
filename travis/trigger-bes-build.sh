@@ -26,14 +26,22 @@
 
 set -e
 
-echo "New CentOS-7 snapshot of libdap4 has been pushed. Triggering a BES build..."
-
-LIBDAP4_SNAPSHOT="libdap4-`cat ./libdap_VERSION` `date \"+%FT%T%z\"`"
-echo "libdap4-snapshot record: ${LIBDAP_SNAPSHOT}"  >&2
-
-git clone --depth 1 https://github.com/opendap/bes
 git config --global user.name "The-Robot-Travis"
 git config --global user.email "npotter@opendap.org"
+
+echo "New snapshot of libdap4 has been pushed. Triggering a BES build..."
+
+libdap4_version_num=$(cat ./libdap_VERSION)
+echo "libdap4_version_num: ${libdap4_version_num}"  >&2
+
+LIBDAP4_SNAPSHOT="libdap4-${libdap4_version_num} $(date \"+%FT%T%z\")"
+echo "libdap4-snapshot record: ${LIBDAP4_SNAPSHOT}"  >&2
+
+echo "Tagging libdap with version ${libdap4_version_num}"
+git tag -m "libdap4-${libdap4_version_num}" -a "${libdap4_version_num}"
+git push origin "${libdap4_version_num}"
+
+git clone --depth 1 https://github.com/opendap/bes
 
 cd bes
 git checkout master
