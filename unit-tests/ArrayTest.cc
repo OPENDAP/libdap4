@@ -35,8 +35,10 @@
 
 #include "Array.h"
 #include "Int16.h"
+#include "Int64.h"
 #include "Float32.h"
 #include "Str.h"
+#include "D4Enum.h"
 #include "Structure.h"
 #include "D4Dimensions.h"
 
@@ -50,13 +52,16 @@ namespace libdap {
 
 class ArrayTest: public TestFixture {
 private:
-    Array *d_cardinal, *d_string, *d_structure;
-    Int16 *d_int16;
-    Str *d_str;
-    Structure *d_struct;
+    Array *d_cardinal = nullptr;
+    Array *d_string = nullptr;
+    Array *d_structure = nullptr;
+    Array *d_card_dap4 = nullptr;
+
+    Int16 *d_int16 = nullptr;
+    Str *d_str = nullptr;
+    Structure *d_struct = nullptr;
 
     string svalues[4] = {"0 String", "1 String", "2 String", "3 String" };
-    char a[1024];
     
 public:
     ArrayTest() = default;
@@ -71,20 +76,20 @@ public:
         d_cardinal->append_dim(4, "dimension");
         dods_int16 buffer[4] = { 0, 1, 2, 3 };
         d_cardinal->val2buf(buffer);
-#ifdef DODS_DEBUG
-        for (int i = 0; i < 4; ++i)
-        cerr << "buffer[" << i << "]: " << buffer[i] << endl;
-#endif
+
+        // Added to test if Arrays with DAP4 protos will have is_dap4() == true. jhrg 7/27/22
+        Int64 i64("");
+        d_card_dap4 = new Array("Array_of_Int64", &i64);
+        d_card_dap4->append_dim(4, "dimension");
+        dods_int64 buffer64[4] = { 0, 1, 2, 3 };
+        d_card_dap4->val2buf(buffer64);
+
 
         d_str = new Str("Str");
         d_string = new Array("Array_of_String", d_str);
         d_string->append_dim(4, "dimension");
         string sbuffer[4] = { "0 String", "1 String", "2 String", "3 String" };
         d_string->val2buf(sbuffer);
-#ifdef DODS_DEBUG
-        for (int i = 0; i < 4; ++i)
-        cerr << "sbuffer[" << i << "]: " << sbuffer[i] << endl;
-#endif
 
         d_struct = new Structure("Structure");
         d_struct->add_var(d_int16);
@@ -133,6 +138,10 @@ public:
     CPPUNIT_TEST_SUITE (ArrayTest);
 
     CPPUNIT_TEST (cons_test);
+    CPPUNIT_TEST (test_is_dap4_1);
+    CPPUNIT_TEST (test_is_dap4_2);
+    CPPUNIT_TEST (test_is_dap4_3);
+    CPPUNIT_TEST (test_is_dap4_4);
     CPPUNIT_TEST (assignment_test_1);
     CPPUNIT_TEST (assignment_test_2);
     CPPUNIT_TEST (assignment_test_3);
@@ -151,6 +160,39 @@ public:
     {
         Array a1 = Array("a", "b", d_int16, true);
         CPPUNIT_ASSERT(a1.name() == "a");
+    }
+
+    void test_is_dap4_1() {
+        DBG(d_card_dap4->dump(cerr));
+        CPPUNIT_ASSERT_MESSAGE("This Array should register as DAP4", d_card_dap4->is_dap4());
+    }
+
+    void test_is_dap4_2() {
+        DBG(d_cardinal->dump(cerr));
+        CPPUNIT_ASSERT_MESSAGE("This Array should not register as DAP4", !d_cardinal->is_dap4());
+    }
+
+    void test_is_dap4_3() {
+        // An array Enum is always DAP4, even when the underlying type of the enum is not
+        D4Enum enum16("", dods_int16_c);
+        unique_ptr<Array> enum_array_dap4(new Array("Array_of_Enum", &enum16));
+        enum_array_dap4->append_dim(4, "dimension");
+        dods_int16 buffer16[4] = { 0, 1, 2, 3 };
+        enum_array_dap4->val2buf(buffer16);
+
+        DBG(enum_array_dap4->dump(cerr));
+        CPPUNIT_ASSERT_MESSAGE("This Array should register as DAP4", enum_array_dap4->is_dap4());
+    }
+
+    void test_is_dap4_4() {
+        D4Enum enum64("", dods_int64_c);
+        unique_ptr<Array> enum_array_dap4(new Array("Array_of_Enum", &enum64));
+        enum_array_dap4->append_dim(4, "dimension");
+        dods_int64 buffer64[4] = { 0, 1, 2, 3 };
+        enum_array_dap4->val2buf(buffer64);
+
+        DBG(enum_array_dap4->dump(cerr));
+        CPPUNIT_ASSERT_MESSAGE("This Array should register as DAP4", enum_array_dap4->is_dap4());
     }
 
     void assignment_test_1()

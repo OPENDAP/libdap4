@@ -148,16 +148,14 @@ int main(int argc, char *argv[])
     bool get_ddx = false;
     bool build_ddx = false;
     bool get_version = false;
-    bool cexpr = false;
     bool verbose = false;
-    bool multi = false;
     bool accept_deflate = false;
     bool print_rows = false;
     bool mime_headers = true;
     int times = 1;
     int dap_client_major = 2;
     int dap_client_minor = 0;
-    string expr = "";
+    string expr;
 
 #ifdef WIN32
     _setmode(_fileno(stdout), _O_BINARY);
@@ -196,11 +194,9 @@ int main(int argc, char *argv[])
             dods_keep_temps = 1;
             break;              // keep_temp is in Connect.cc
         case 'c':
-            cexpr = true;
             expr = getopt.optarg;
             break;
         case 'm':
-            multi = true;
             times = atoi(getopt.optarg);
             break;
         case 'B':

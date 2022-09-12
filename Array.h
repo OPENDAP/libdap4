@@ -169,7 +169,7 @@ public:
     };
 
 private:
-    D4Maps *d_maps;
+    D4Maps *d_maps = nullptr;
 
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
 
@@ -188,6 +188,10 @@ protected:
 
     unsigned int print_array(ostream &out, unsigned int index,
                              unsigned int dims, unsigned int shape[]);
+
+    std::vector<dimension> &shape(){
+        return _shape;
+    }
 
 public:
     /** A constant iterator used to access the various dimensions of an
