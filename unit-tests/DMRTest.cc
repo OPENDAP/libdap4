@@ -59,12 +59,6 @@
 #include "run_tests_cppunit.h"
 #include "test_config.h"
 
-
-
-
-#undef DBG
-#define DBG(x) do { if (debug) {x;} } while(false)
-
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
@@ -115,16 +109,18 @@ public:
             BaseTypeFactory factory;
             DDS dds(&factory, dds_file);
             dds.parse(prefix + dds_file);
-            DBG(cerr << "SOURCE DDS: " << endl; dds.print(cerr));
+            DBG(cerr << "SOURCE DDS: " << endl);
+            DBG(dds.print(cerr));
 
             if (!das_file.empty()) {
                 DAS das;
                 das.parse(prefix + das_file);
                 dds.transfer_attributes(&das);
-                DBG(cerr << "SOURCE DAS: " << endl; das.print(cerr));
+                DBG(cerr << "SOURCE DAS: " << endl);
+                DBG(das.print(cerr));
 
-                DBG(cerr << "dds.print_das(): " << endl; dds.print_das(cerr));
-                // DBG(cerr << "dds.print_xml(): " << endl; dds.print_xml(cerr,false,"blob_foo"));
+                DBG(cerr << "dds.print_das(): " << endl)
+                DBG(dds.print_das(cerr));
             }
 
             D4BaseTypeFactory d4_factory;

@@ -58,6 +58,8 @@ class D4Map {
 
 public:
     D4Map() : d_name(""), d_array(0), d_parent(0) { }
+    ///@breif Copy constructor - caller must set the 'array' member separately.
+    //D4Map(const D4Map &m) : d_name(m.d_name), d_array(nullptr), d_parent(m.d_parent) { }
     D4Map(const string &name, Array *array, Array *parent = 0) : d_name(name), d_array(array), d_parent(parent) { }
 
 	virtual ~D4Map() { }
@@ -92,9 +94,17 @@ private:
 
 	void m_duplicate(const D4Maps &maps) {
 		d_parent = maps.d_parent;
-		for (D4MapsCIter ci = maps.d_maps.begin(), ce = maps.d_maps.end(); ci != ce; ++ci) {
+#if 0
+        for (D4MapsCIter ci = maps.d_maps.begin(), ce = maps.d_maps.end(); ci != ce; ++ci) {
 			d_maps.push_back(new D4Map(**ci));
 		}
+#endif
+        d_maps.resize(0);
+        d_maps.reserve(maps.size());
+        for (auto const &map: d_maps) {
+            auto new_map = new D4Map(*map);
+            d_maps.emplace_back(new_map);
+        }
 	}
 
 public:
