@@ -28,6 +28,8 @@
 #include <string>
 #include <vector>
 
+#include "Array.h"
+
 using namespace std;
 
 namespace libdap {
@@ -98,13 +100,21 @@ private:
         for (D4MapsCIter ci = maps.d_maps.begin(), ce = maps.d_maps.end(); ci != ce; ++ci) {
 			d_maps.push_back(new D4Map(**ci));
 		}
-#endif
-        d_maps.resize(0);
+#else
         d_maps.reserve(maps.size());
-        for (auto const &map: d_maps) {
+        for (auto const map: maps.d_maps) {
+            assert(!map->array()->FQN().empty());
+            assert(!map->parent()->FQN().empty());
+
+            string source_array_fqn = map->array()->FQN();
+            string source_parent_fqn = map->parent()->FQN();
+
             auto new_map = new D4Map(*map);
+            assert(new_map->name() == map->name());
+
             d_maps.emplace_back(new_map);
         }
+#endif
 	}
 
 public:
