@@ -39,11 +39,11 @@ class XMLWriter;
 
 /**
  * A 'Map' in DAP4 is an Array in the dataset that is used to provide the
- * domain values for a Coverage (aka a Grid). These Maps are a more
+ * domain values for a Coverage (aka a DAP2 Grid). These Maps are a more
  * general case of the DAP2 'Map vectors' because a DAP4 Map can have N
  * dimensions.
  *
- * Because the Maps can be shared by any or all of the Arrays in a dataset,
+ * Because the Maps can be shared by many of the Arrays in a dataset,
  * they also correspond to the NetCDF/CF notion of a Shared Dimension.
  *
  * In this implementation of the D4Map, each Map has a name and two weak
@@ -52,31 +52,58 @@ class XMLWriter;
  * each Array has it's own collection of these D4Map objects. This makes
  * processing constraints possible (because it is possible to write
  * different constraints for two arrays that share Maps).
+ *
+ * Second try. Including these 'weak' pointers lead to a paradox because
+ * the pointers don't exist when making deep copies of the Array. In that
+ * case the parent and source Array (the array that holds the Map's data)
+ * cannot be found because the Array that holds the Maps _does not yet exist_.
+ * It's being copied and the source object holds pointers to objects that
+ * are not reliable - the source Array is being copied because it's maybe
+ * going to be deleted!
+ *
+ * I removed the parent pointer from the D4Map object and added a pathname
+ * to the source Array. So, now we can set _either_ the weak pointer to
+ * the source array _or_ the pathname to the source array. The former is
+ * used when building the Array (as would be done in a handler) and the
+ * latter is used during a deep copy (where even though the pointer to the
+ * source Array will soon be invalid, the pathname won't be).
  */
 class D4Map {
     std::string d_name;
-    Array *d_array;		// the actual map data; weak pointer
-    Array *d_parent;	// what array holds this map; weak pointer
+    std::string d_array_path; ///< The data source for the Map's values
+    Array *d_array = nullptr;   // the actual map data; cached weak pointer
 
 public:
-    D4Map() : d_name(""), d_array(0), d_parent(0) { }
-    ///@breif Copy constructor - caller must set the 'array' member separately.
-    //D4Map(const D4Map &m) : d_name(m.d_name), d_array(nullptr), d_parent(m.d_parent) { }
-    D4Map(const string &name, Array *array, Array *parent = 0) : d_name(name), d_array(array), d_parent(parent) { }
-
-	virtual ~D4Map() { }
+    D4Map() = default;
+    ///@{
+    /// Special constructors for object creation and deep copy
+    D4Map(std::string name, Array *array)
+            : d_name(std::move(name)), d_array(array) { }
+    D4Map(std::string name, std::string array)
+            : d_name(std::move(name)), d_array_path(std::move(array)) { }
+    ///@}
+	virtual ~D4Map() = default;
 
 	const string& name() const { return d_name; }
 	void set_name(const string& name) { d_name = name; }
 
-	const Array* array() const { return d_array; }
-	void set_array(Array* array) { d_array = array; }
+    const std::string &get_array_path() const { return d_array_path; }
+    ///@note We can set the path even if the referenced Array does not yet exist!
+    void set_array_path(const std::string &array) { d_array_path = array; }
 
-	/**
-	 * @brief The Array that holds this Map
-	 */
-	const Array* parent() const { return d_parent; }
-	void set_parent(Array* parent) { d_parent = parent; }
+    ///@{
+    /// Ways to get the Array that holds a Map's values.
+
+    ///@brief This will always return the correct pointer for a valid data set.
+    Array* array(D4Group *root);
+    ///@brief Only use this accessor in code that can deal with a nullptr return!
+    Array* array() const { return d_array; }
+    ///@}
+
+    void set_array(Array *array) {
+        d_array = array;
+        d_array_path = array->FQN();
+    }
 
 	virtual void print_dap4(XMLWriter &xml);
 };
@@ -94,33 +121,21 @@ private:
 	vector<D4Map*> d_maps;
 	Array *d_parent;	// Array these Maps belong to; weak pointer
 
+    ///@brief Used by the const copy ctor; we only know the source Array path is valid.
 	void m_duplicate(const D4Maps &maps) {
 		d_parent = maps.d_parent;
-#if 0
-        for (D4MapsCIter ci = maps.d_maps.begin(), ce = maps.d_maps.end(); ci != ce; ++ci) {
-			d_maps.push_back(new D4Map(**ci));
-		}
-#else
         d_maps.reserve(maps.size());
         for (auto const map: maps.d_maps) {
-            assert(!map->array()->FQN().empty());
-            assert(!map->parent()->FQN().empty());
-
-            string source_array_fqn = map->array()->FQN();
-            string source_parent_fqn = map->parent()->FQN();
-
-            auto new_map = new D4Map(*map);
-            assert(new_map->name() == map->name());
-
-            d_maps.emplace_back(new_map);
+            d_maps.emplace_back(new D4Map(map->name(), map->get_array_path()));
         }
-#endif
 	}
 
 public:
     D4Maps() {}
     D4Maps(Array* parent) : d_parent(parent) { }
     D4Maps(const D4Maps &maps) { m_duplicate(maps); }
+    // Build valid Maps for a true deep copy of a whole dataset
+    //D4Maps(const D4Maps *maps, Array *parent, D4Group *root);
     virtual ~D4Maps() {
     	for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i)
     		delete *i;
@@ -134,19 +149,18 @@ public:
      */
     void add_map(D4Map *map) {
     	d_maps.push_back(map);
-    	// if the Map parent is not set, do so now
-    	if (!d_maps.back()->parent())
-    		d_maps.back()->set_parent(d_parent);
     }
 
     void remove_map(D4Map *map) {
+        // TODO Refactor this to use erase() and find_if(). There is no reason
+        //  to code an explicit loop like this in C++11. jhrg 9/16/22
         for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i) {
             /* && (*i)->parent() == map->parent() */
             // Don't test if the map->parent() matches - we only care about the name and array.
             // This method is intended for processing CE array slices that are edge cases and
             // is only called from code where we know map->parent() matches *i->parent().
             // jhrg 4/12/16
-            if ((*i)->name() == map->name() && (*i)->array() == map->array()) {
+            if ((*i)->name() == map->name()) {
                 d_maps.erase(i);
                 break;
             }

@@ -264,6 +264,8 @@ public:
     virtual void set_parent(BaseType *parent);
     virtual BaseType *get_parent() const;
 
+    virtual BaseType *get_ancestor();
+
     virtual void transfer_attributes(AttrTable *at);
 
     // I put this comment here because the version in BaseType.cc does not

@@ -258,11 +258,16 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
                 // jhrg 4/12/16
                 if (!a->maps()->empty()) {
                     for (D4Maps::D4MapsIter m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ++m) {
+#if 0
                         if ((*m)->array() == 0)
                             throw Error(malformed_expr,
                                 "An array with Maps was found, but one of the Maps was not defined correctly.");
+#endif
+                        auto root = dynamic_cast<D4Group*>(a->get_ancestor());
+                        if (!root)
+                            throw InternalErr(__FILE__, __LINE__, "Expected a valid ancestor Group.");
+                        auto *map = (*m)->array(root);
 
-                        Array *map = const_cast<Array*>((*m)->array()); // Array lacks const iterator support
                         // Added a test to ensure 'dim' is not null. This could be the case if
                         // execution gets here and the index *i was not empty. jhrg 4/18/17
                         if (dim && array_uses_shared_dimension(map, dim)) {
