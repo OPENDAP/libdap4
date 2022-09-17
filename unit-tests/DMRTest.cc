@@ -67,20 +67,11 @@ class DMRTest: public TestFixture {
 private:
 
 public:
-    DMRTest()
-    {
-    }
-    ~DMRTest()
-    {
-    }
+    DMRTest() = default;
+    ~DMRTest() = default;
 
-    void setUp()
-    {
-    }
-
-    void tearDown()
-    {
-    }
+    // void setUp()
+    // void tearDown()
 
     bool re_match(Regex &r, const string &s)
     {
@@ -119,7 +110,7 @@ public:
                 DBG(cerr << "SOURCE DAS: " << endl);
                 DBG(das.print(cerr));
 
-                DBG(cerr << "dds.print_das(): " << endl)
+                DBG(cerr << "dds.print_das(): " << endl);
                 DBG(dds.print_das(cerr));
             }
 
@@ -155,7 +146,7 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-CPPUNIT_TEST_SUITE (DMRTest);
+    CPPUNIT_TEST_SUITE (DMRTest);
 
     CPPUNIT_TEST(test_dmr_from_dds_1);
     CPPUNIT_TEST(test_dmr_from_dds_2);
@@ -172,8 +163,7 @@ CPPUNIT_TEST_SUITE (DMRTest);
     CPPUNIT_TEST(test_copy_ctor_3);
     CPPUNIT_TEST(test_copy_ctor_4);
 
-    CPPUNIT_TEST_SUITE_END()
-    ;
+    CPPUNIT_TEST_SUITE_END();
 
     // Test a DDS with simple scalar types and no attributes
     void test_dmr_from_dds_1()
@@ -245,12 +235,14 @@ CPPUNIT_TEST_SUITE (DMRTest);
         string dmr_src = string(xml.get_doc());
         DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
 
+        delete dmr;
+
         XMLWriter xml2;
         dmr_2->print_dap4(xml2);
         string dmr_dest = string(xml2.get_doc());
         DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
 
-        delete dmr;
+        // delete dmr;
         delete dmr_2;
         CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
@@ -294,12 +286,13 @@ CPPUNIT_TEST_SUITE (DMRTest);
         string dmr_src = string(xml.get_doc());
         DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
 
+        delete dmr;
+
         XMLWriter xml2;
         dmr_2->print_dap4(xml2);
         string dmr_dest = string(xml2.get_doc());
         DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
 
-        delete dmr;
         delete dmr_2;
         CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
@@ -325,12 +318,13 @@ CPPUNIT_TEST_SUITE (DMRTest);
         string dmr_src = string(xml.get_doc());
         DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
 
+        delete dmr;
+
         XMLWriter xml2;
         dmr_2->print_dap4(xml2);
         string dmr_dest = string(xml2.get_doc());
         DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
 
-        delete dmr;
         delete dmr_2;
         CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
