@@ -298,7 +298,7 @@ public:
         D4Maps::D4MapsIter m = b1->maps()->map_begin(); // there's only one map...
         CPPUNIT_ASSERT((*m)->name() == "/x");
         CPPUNIT_ASSERT((*m)->array() == x);
-        CPPUNIT_ASSERT((*m)->parent() == b1);
+        // 'parent' is no longer in the class. jhrg 9/16/22 CPPUNIT_ASSERT((*m)->parent() == b1);
     }
 
     CPPUNIT_TEST_SUITE (D4ParserSax2Test);

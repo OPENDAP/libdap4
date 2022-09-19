@@ -203,7 +203,10 @@ Grid::transform_to_dap4(D4Group *root, Constructor *container)
         Array *the_map_array = *d4aItr;
         // Here we use the Map Array that we saved the Map
         // name and Map Array reference for our map.
-        D4Map *d4_map = new D4Map(the_map_array->FQN(), the_map_array, coverage); // bind the 'map' to the coverage
+        // Removed this line in favor of the following one while re-working the D4Maps design.
+        // jhrg 9/16/22
+        // D4Map *d4_map = new D4Map(the_map_array->FQN(), the_map_array, coverage); // bind the 'map' to the coverage
+        D4Map *d4_map = new D4Map(the_map_array->FQN(), the_map_array);
         coverage->maps()->add_map(d4_map);    // bind the coverage to the map
         // Clear the vector entry to ensure that ~Array doesn't
         // get called when the (stack declared) vector goes out of scope.

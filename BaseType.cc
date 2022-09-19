@@ -750,6 +750,15 @@ BaseType::get_parent() const
     return d_parent;
 }
 
+BaseType *
+BaseType::get_ancestor()
+{
+    if (d_parent)
+        return d_parent->get_ancestor();
+    else
+        return this;
+}
+
 // Documented in the header file.
 BaseType *
 BaseType::var(const string &/*name*/, bool /*exact_match*/, btp_stack */*s*/)

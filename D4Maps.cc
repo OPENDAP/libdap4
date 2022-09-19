@@ -26,11 +26,25 @@
 
 #include "XMLWriter.h"
 #include "InternalErr.h"
+#include "D4Group.h"
 #include "Array.h"
 #include "D4Dimensions.h"
 #include "D4Maps.h"
 
 using namespace libdap;
+
+Array* D4Map::array(D4Group *root)
+{
+    if (d_array)
+        return d_array;
+    else {
+        d_array = dynamic_cast<Array*>(root->find_var(d_array_path));
+        if (!d_array)
+            throw InternalErr(__FILE__, __LINE__,
+                              std::string("Failed to find an array at: ").append(d_array_path));
+        return d_array;
+    }
+}
 
 void
 D4Map::print_dap4(XMLWriter &xml)
