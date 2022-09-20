@@ -569,7 +569,7 @@ D4Attribute::print_dap4(XMLWriter &xml) const
 #if 0
             if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) (*i++).c_str()) < 0)
 #endif
-            string s = escattr_xml(*i++);
+            string s = (get_utf8_str_flag())?(*i++):escattr_xml(*i++);
             if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) s.c_str()) < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write attribute value");
 

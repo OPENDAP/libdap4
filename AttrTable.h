@@ -158,6 +158,8 @@ public:
 
         bool is_global; // use this to mark non-container attributes. see below.
 
+        bool is_utf8_str =false;
+
         // If type == Attr_container, use attributes to read the contained
         // table, otherwise use attr to read the vector of values.
         AttrTable *attributes;
@@ -283,6 +285,9 @@ public:
 				     const string &value);
     virtual unsigned int append_attr(const string &name, const string &type,
 				     vector<string> *values);
+    virtual unsigned int append_attr(const string &name, const string &type,
+				     const string &value, bool is_utf8_str);
+
 
     virtual AttrTable *append_container(const string &name);
     virtual AttrTable *append_container(AttrTable *at, const string &name);
