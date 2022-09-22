@@ -118,11 +118,6 @@ Byte & Byte::operator=(const Byte & rhs)
     return *this;
 }
 
-unsigned int Byte::width(bool) const
-{
-    return sizeof(dods_byte);
-}
-
 /** Serialize the contents of member _BUF (the object's internal
     buffer, used to hold data) and write the result to stdout. If
     FLUSH is true, write the contents of the output buffer to the
@@ -198,7 +193,7 @@ Byte::deserialize(D4StreamUnMarshaller &um, DMR &)
 unsigned int Byte::val2buf(void *val, bool)
 {
     // Jose Garcia
-    // This method is public therefore and I believe it has being designed
+    // This method is public therefore, and I believe it has being designed
     // to be use by read which must be implemented on the surrogate library,
     // thus if the pointer val is NULL, is an Internal Error.
     if (!val)

@@ -64,7 +64,16 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual unsigned int width(bool constrained = false) const;
+    unsigned int width(bool constrained = false) const override
+    {
+        return sizeof(dods_int8);
+    }
+
+    int64_t width_ll(bool constrained = false) const override
+    {
+        return sizeof(dods_int8);
+    }
+
 
     // DAP4
     virtual void compute_checksum(Crc32 &checksum);

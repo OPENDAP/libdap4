@@ -519,7 +519,6 @@ BaseType *Vector::var(const string & n, btp_stack & s)
  @see BaseType::var */
 BaseType *Vector::var(unsigned int i)
 {
-
     switch (d_proto->type()) {
         case dods_byte_c:
         case dods_char_c:
@@ -556,40 +555,6 @@ BaseType *Vector::var(unsigned int i)
             throw Error ("Vector::var: Unrecognized type");
     }
 }
-
-/** Returns the number of bytes needed to hold the entire
- array.  This is equal to \c length() (the number of elements in
- in the array) times the width of each
- element.
-
- @brief Returns the width of the data, in bytes. */
-unsigned int Vector::width(bool constrained) const
-{
-    // Jose Garcia
-	assert(d_proto);
-
-    return length() * d_proto->width(constrained);
-}
-
-#if 0
-
-/** Returns the number of elements in the vector. Note that some
- child classes of Vector use the length of -1 as a flag value.
-
- @see Vector::append_dim */
-int Vector::length() const
-{
-    return d_length;
-}
-
-/** Sets the length of the vector.  This function does not allocate
- any new space. */
-void Vector::set_length(int l)
-{
-    d_length = l;
-}
-
-#endif
 
 /** Resizes a Vector.  If the input length is greater than the
  current length of the Vector, new memory is allocated (the

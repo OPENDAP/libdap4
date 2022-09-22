@@ -173,14 +173,36 @@ public:
 
     void set_read_p(bool state) override;
 
-    unsigned int width(bool constrained = false) const override;
+    /** Returns the number of bytes needed to hold the entire
+        array.  This is equal to \c length() (the number of elements in
+        in the array) times the width of each
+        element.
+
+        @brief Returns the width of the data, in bytes.
+        @deprecated Use width_ll() instead */
+    unsigned int width(bool constrained = false) const override
+    {
+        // Jose Garcia
+        assert(d_proto);
+
+        return length() * d_proto->width(constrained);
+    }
+
+    /**
+     * @brief Return the number of bytes needed to hold the array data
+     * @param constrained If true, return the number of bytes given the current constraint
+     * @return The number of bytes needed to hold the array data, as a 64-bit integer
+     */
+    int64_t width_ll(bool constrained = false) const override
+    {
+        return length_ll() * d_proto->width(constrained);
+    }
 
     /** @brief Returns the number of elements in the vector.
      * Note that some child classes of Vector use the length of -1 as a flag value.
      * @return The number of elements in the vector
      * @deprecated Use length_ll() instead
      */
-    // FIXME temp hack jhrg 7/25/22
     int length() const override { return d_length; }
 
     /** @brief Get the number of elements in this Vector/Array

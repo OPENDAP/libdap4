@@ -102,12 +102,6 @@ UInt64::operator=(const UInt64 &rhs)
     return *this;
 }
 
-unsigned int
-UInt64::width(bool) const
-{
-    return sizeof(dods_uint64);
-}
-
 void
 UInt64::compute_checksum(Crc32 &checksum)
 {
