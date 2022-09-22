@@ -824,7 +824,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
                 parent_attr_table->append_container(at, at->get_name());
             }
             else {
-                parent_attr_table->append_attr((*i)->name, AttrType_to_String((*i)->type), (*i)->attr);
+                parent_attr_table->append_attr((*i)->name, AttrType_to_String((*i)->type), (*i)->attr,(*i)->is_utf8_str);
             }
         }
         delete group_attrs;

@@ -635,7 +635,7 @@ void Grid::transfer_attributes(AttrTable *at_container)
 	            if (at->get_attr_type(at_p) == Attr_container)
 					get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)), at->get_name(at_p));
 				else
-					get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
+					get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p),(*at_p)->is_utf8_str);
 			}
 
 			at_p++;
