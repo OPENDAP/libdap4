@@ -413,7 +413,8 @@ unsigned int AttrTable::append_attr(const string &name, const string &type, vect
  @return Returns the length of the added attribute value.
  @param name The name of the attribute to add or modify.
  @param type The type of the attribute to add or modify.
- @param value The value to add to the attribute table. */
+ @param value The value to add to the attribute table. 
+ @param is_utf8_str The flag to indicate if this is a utf8 string. */
 unsigned int AttrTable::append_attr(const string &name, const string &type, const string &value, bool is_utf8_str)
 {
     DBG(cerr << "Entering AttrTable::append_attr" << endl);
@@ -452,6 +453,66 @@ unsigned int AttrTable::append_attr(const string &name, const string &type, cons
         return e->attr->size(); // return the length of the attr vector
     }
 }
+
+/** This version of append_attr() takes a vector<string> of values.
+ If the given name already refers to an attribute, and the attribute has
+ values, append the new values to the existing ones.
+
+ The function throws an Error if the attribute is a container,
+ or if the type of the input value does not match the existing attribute's
+ type. Use <tt>append_container()</tt> to add container attributes.
+
+ This method performs a simple search for <tt>name</tt> in this attribute
+ table only; sub-tables are not searched and the dot notation is not
+ recognized.
+
+ @brief Add an attribute to the table.
+ @return Returns the length of the added attribute value.
+ @param name The name of the attribute to add or modify.
+ @param type The type of the attribute to add or modify.
+ @param values A vector of values. Note: The vector is COPIED, not stored. 
+ @param is_utf8_str The flag to indicate if this is a utf8 string. */
+
+unsigned int AttrTable::append_attr(const string &name, const string &type, vector<string> *values, bool is_utf8_str)
+{
+    DBG(cerr << "Entering AttrTable::append_attr(..., vector)" << endl);
+#if WWW_ENCODING
+    string lname = www2id(name);
+#else
+    string lname = remove_space_encoding(name);
+#endif
+    Attr_iter iter = simple_find(lname);
+
+    // If the types don't match OR this attribute is a container, calling
+    // this mfunc is an error!
+    if (iter != attr_map.end() && ((*iter)->type != String_to_AttrType(type)))
+        throw Error(string("An attribute called `") + name + string("' already exists but is of a different type"));
+    if (iter != attr_map.end() && (get_type(iter) == "Container"))
+        throw Error(string("An attribute called `") + name + string("' already exists but is a container."));
+
+    if (iter != attr_map.end()) { // Must be new attribute values; add.
+        vector<string>::iterator i = values->begin();
+        while (i != values->end())
+            (*iter)->attr->push_back(*i++);
+         (*iter)->is_utf8_str = is_utf8_str;
+        return (*iter)->attr->size();
+    }
+    else { // Must be a completely new attribute; add it
+        entry *e = new entry;
+
+        e->name = lname;
+        e->is_alias = false;
+        e->type = String_to_AttrType(type); // Record type using standard names.
+        e->is_utf8_str = is_utf8_str;
+        e->attr = new vector<string> (*values);
+
+        attr_map.push_back(e);
+
+        return e->attr->size(); // return the length of the attr vector
+    }
+}
+
+
 /** Create and append an attribute container to this AttrTable. If this
  attribute table already contains an attribute container called
  <tt>name</tt> an exception is thrown. Return a pointer to the new container.

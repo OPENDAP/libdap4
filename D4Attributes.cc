@@ -253,6 +253,7 @@ D4Attributes::transform_to_dap4(AttrTable &at)
         }
         case Attr_string: {
             D4Attribute *a = new D4Attribute(name, attr_str_c);
+            a->set_utf8_str_flag((*i)->is_utf8_str);
             a->add_value_vector(*at.get_attr_vector(i));
             add_attribute_nocopy(a);
             break;
@@ -339,7 +340,7 @@ void D4Attributes::transform_attrs_to_dap2(AttrTable *d2_attr_table)
         }
         default: {
             for (D4Attribute::D4AttributeIter vi = (*i)->value_begin(), ve = (*i)->value_end(); vi != ve; vi++) {
-                d2_attr_table->append_attr(name, d2_attr_type_name, *vi);
+                d2_attr_table->append_attr(name, d2_attr_type_name, *vi,(*i)->get_utf8_str_flag());
             }
 
             break;

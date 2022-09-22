@@ -287,7 +287,9 @@ public:
 				     vector<string> *values);
     virtual unsigned int append_attr(const string &name, const string &type,
 				     const string &value, bool is_utf8_str);
-
+    virtual unsigned int append_attr(const string &name, const string &type,
+				     vector<string> *values, bool is_utf8_str);
+ 
 
     virtual AttrTable *append_container(const string &name);
     virtual AttrTable *append_container(AttrTable *at, const string &name);
