@@ -1177,7 +1177,7 @@ const string double_quote = "\"";
 static void write_string_attribute_for_das(ostream &out, const string &value, const string &term, bool is_utf8_str)
 {
 
-    string esc_value = (is_utf8_str)?value:escattr(value);
+    string esc_value = is_utf8_str?value:escattr(value);
 #if 0
     string esc_value = escattr(value);
 #endif
@@ -1315,11 +1315,25 @@ void AttrTable::simple_print(ostream &out, string pad, Attr_iter i, bool derefer
         out << pad << get_type(i) << " " << add_space_encoding(get_name(i)) << " ";
 #endif
         vector<string> *sxp = (*i)->attr;
+
         vector<string>::iterator last = sxp->end() - 1;
         for (vector<string>::iterator i_s = sxp->begin(); i_s != last; ++i_s) {
             write_string_attribute_for_das(out, *i_s, ", ",(*i)->is_utf8_str);
         }
         write_string_attribute_for_das(out, *last, ";\n",(*i)->is_utf8_str);
+
+        // The following code is intended to replace the code above. 
+        // However, it causes the obscure test failure at HDF5 handler's t_big_str.h5 DAS test.
+        // it also causes the 17th etc NcML tests failed.
+        // Leave here and may check this later. KY 2022-09-22
+#if 0
+        for (const auto &attr:(*sxp)) {
+            if (attr != (*sxp).back())  
+                write_string_attribute_for_das(out, attr, ", ",(*i)->is_utf8_str);
+            else 
+                write_string_attribute_for_das(out, attr, ";\n",(*i)->is_utf8_str);
+        }
+#endif
     }
         break;
 
