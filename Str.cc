@@ -118,13 +118,13 @@ Str::operator=(const Str &rhs)
 int
 Str::length() const
 {
-    return d_buf.length();
+    return (int)d_buf.length();
 }
 
-unsigned int
-Str::width(bool) const
+int64_t
+Str::length_ll() const
 {
-    return sizeof(string);
+    return (int64_t)d_buf.length();
 }
 
 bool

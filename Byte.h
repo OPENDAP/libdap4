@@ -73,12 +73,12 @@ public:
 
     Byte &operator=(const Byte &rhs);
 
-    unsigned int width(bool constrained = false) const override
+    unsigned int width(bool = false) const override
     {
         return sizeof(dods_byte);
     }
 
-    int64_t width_ll(bool constrained = false) const override
+    int64_t width_ll(bool = false) const override
     {
         return sizeof(dods_byte);
     }

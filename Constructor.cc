@@ -162,6 +162,7 @@ Constructor::set_read_p(bool state)
 
     @param constrained If true, return the size after applying a constraint.
     @return  The number of bytes used by the variable.
+    @deprecated Use width_ll()
  */
 unsigned int
 Constructor::width(bool constrained) const
@@ -175,6 +176,29 @@ Constructor::width(bool constrained) const
         }
         else {
             sz += var->width(constrained);
+        }
+    }
+
+    return sz;
+}
+
+/**
+ * @brief Get the width of the Constructor's fields
+ * @param constrained If true, return the constrained size
+ * @return The number of bytes needed to store the values of this instance
+ */
+int64_t
+Constructor::width_ll(bool constrained) const
+{
+    int64_t sz = 0;
+
+    for (auto var: d_vars) {
+        if (constrained) {
+            if (var->send_p())
+                sz += var->width_ll(constrained);
+        }
+        else {
+            sz += var->width_ll(constrained);
         }
     }
 

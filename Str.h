@@ -77,11 +77,20 @@ public:
 
     virtual BaseType *ptr_duplicate();
 
-    virtual unsigned int width(bool constrained = false) const;
+    unsigned int width(bool = false) const override
+    {
+        return sizeof(string);
+    }
+
+    int64_t width_ll(bool = false) const override
+    {
+        return sizeof(string);
+    }
 
     // Return the length of the stored string or zero if no string has been
     // stored in the instance's internal buffer.
-    virtual int length() const;
+    int length() const override;
+    int64_t length_ll() const override;
 
     // DAP2
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
