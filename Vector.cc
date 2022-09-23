@@ -171,35 +171,40 @@ bool Vector::m_is_cardinal_type() const
  * If _buf already exists, this DELETES IT and creates a new one.
  * So don't use this if you want to keep the original _buf data around.
  * This also sets the valueCapacity().
- * @param numEltsOfType the number of elements of the cardinal type in var()
+ * @param num_elements the number of elements of the cardinal type in var()
  that we want storage for.
  * @return the size of the buffer created.
  * @exception if the Vector's type is not cardinal type.
  */
-unsigned int Vector::m_create_cardinal_data_buffer_for_type(unsigned int numEltsOfType)
+int64_t Vector::m_create_cardinal_data_buffer_for_type(int64_t num_elements)
 {
     // Make sure we HAVE a _var, or we cannot continue.
     if (!d_proto) {
-        throw InternalErr(__FILE__, __LINE__, "create_cardinal_data_buffer_for_type: Logic error: _var is null!");
+        throw InternalErr(__FILE__, __LINE__,
+                          "create_cardinal_data_buffer_for_type: Logic error: _var is null!");
     }
 
     // Make sure we only do this for the correct data types.
     if (!m_is_cardinal_type()) {
-        throw InternalErr(__FILE__, __LINE__, "create_cardinal_data_buffer_for_type: incorrectly used on Vector whose type was not a cardinal (simple data types).");
+        throw InternalErr(__FILE__, __LINE__,
+                          "create_cardinal_data_buffer_for_type: incorrectly used on Vector whose type was not a cardinal (simple data types).");
     }
+
+    // Handle this special case where this is an array that holds no values
+    if (num_elements == 0)
+        return 0;
 
     m_delete_cardinal_data_buffer();
 
-    // Handle this special case where this is an array that holds no values
-    if (numEltsOfType == 0)
-        return 0;
-
     // Actually new up the array with enough bytes to hold numEltsOfType of the actual type.
+#if 0
     unsigned int bytesPerElt = d_proto->width();
     unsigned int bytesNeeded = bytesPerElt * numEltsOfType;
+#endif
+    int64_t bytesNeeded = d_proto->width_ll() * num_elements;
     d_buf = new char[bytesNeeded];
 
-    d_capacity = numEltsOfType;
+    d_capacity = (unsigned int)num_elements;
     return bytesNeeded;
 }
 
@@ -536,7 +541,7 @@ BaseType *Vector::var(unsigned int i)
         case dods_float32_c:
         case dods_float64_c:
             // Transfer the ith value to the BaseType *d_proto
-            d_proto->val2buf(d_buf + (i * d_proto->width()));
+            d_proto->val2buf(d_buf + (i * (uint64_t)d_proto->width_ll()));
             return d_proto;
 
         case dods_str_c:
@@ -659,7 +664,6 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
  NB: Arrays of cardinal types must already be in BUF (in the local machine's
  representation) <i>before</i> this call is made.
  */
-
 bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
 {
     // Add protection against calling this with DAP4 types. Technically not needed,
@@ -700,7 +704,8 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
         case dods_uint32_c:
         case dods_float32_c:
         case dods_float64_c:
-            m.put_vector(d_buf, num, d_proto->width(), *this);
+            assert((int)d_proto->width_ll() == d_proto->width_ll());
+            m.put_vector(d_buf, num, (int)d_proto->width_ll(), *this);
             status = true;
 
             break;
@@ -790,12 +795,9 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
                 throw InternalErr(__FILE__, __LINE__, "The server sent declarations and data with mismatched sizes for the variable '" + name() + "'.");
 
             if (!d_buf || !reuse) {
-                // Make d_buf be large enough for length() elements of _var->type()
+                // Make d_buf be large enough for length_ll() elements of _var->type()
             	// m_create...() deletes the old buffer.
-                m_create_cardinal_data_buffer_for_type(length());
-                DBG(cerr << "Vector::deserialize: allocating "
-                        << width() << " bytes for an array of "
-                        << length() << " " << d_proto->type_name() << endl);
+                m_create_cardinal_data_buffer_for_type(length_ll());
             }
 
             // Added to accommodate zero-length arrays.
@@ -807,11 +809,10 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
 
             if (d_proto->type() == dods_byte_c)
                 um.get_vector((char **) &d_buf, num, *this);
-            else
-                um.get_vector((char **) &d_buf, num, d_proto->width(), *this);
-
-            DBG(cerr << "Vector::deserialize: read " << num << " elements\n");
-
+            else {
+                assert((int)d_proto->width_ll() == d_proto->width_ll());
+                um.get_vector((char **) &d_buf, num, d_proto->width_ll(), *this);
+            }
             break;
 
         case dods_str_c:
@@ -831,7 +832,6 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
                 string str;
                 um.get_str(str);
                 d_str[i] = str;
-
             }
 
             break;
@@ -888,13 +888,13 @@ void Vector::compute_checksum(Crc32 &checksum)
         case dods_float64_c:
 
         case dods_enum_c:
-        	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * d_proto->width());
+        	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length_ll() * d_proto->width_ll());
         	break;
 
         case dods_str_c:
         case dods_url_c:
         	for (int64_t i = 0, e = length(); i < e; ++i)
-        		checksum.AddData(reinterpret_cast<const uint8_t*>(d_str[i].data()), d_str[i].length());
+        		checksum.AddData(reinterpret_cast<const uint8_t*>(d_str[i].data()), d_str[i].size());
             break;
 
         case dods_opaque_c:
@@ -988,14 +988,14 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter /*= false*/)
         case dods_uint32_c:
         case dods_int64_c:
         case dods_uint64_c:
-        	m.put_vector(d_buf, num, d_proto->width());
+        	m.put_vector(d_buf, num, (int)d_proto->width_ll());
         	break;
 
         case dods_enum_c:
-        	if (d_proto->width() == 1)
+        	if (d_proto->width_ll() == 1)
         		m.put_vector(d_buf, num);
         	else
-        		m.put_vector(d_buf, num, d_proto->width());
+        		m.put_vector(d_buf, num, (int)d_proto->width_ll());
         	break;
 
         case dods_float32_c:
@@ -1063,7 +1063,7 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
         case dods_char_c:
         case dods_int8_c:
         case dods_uint8_c:
-        	um.get_vector((char *)d_buf, length());
+        	um.get_vector((char *)d_buf, length_ll());
         	break;
 
         case dods_int16_c:
@@ -1072,27 +1072,27 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
         case dods_uint32_c:
         case dods_int64_c:
         case dods_uint64_c:
-        	um.get_vector((char *)d_buf, length(), d_proto->width());
+        	um.get_vector((char *)d_buf, length_ll(), d_proto->width_ll());
         	break;
 
         case dods_enum_c:
-        	if (d_proto->width() == 1)
-        		um.get_vector((char *)d_buf, length());
+        	if (d_proto->width_ll() == 1)
+        		um.get_vector((char *)d_buf, length_ll());
         	else
-        		um.get_vector((char *)d_buf, length(), d_proto->width());
+        		um.get_vector((char *)d_buf, length_ll(), d_proto->width_ll());
         	break;
 
         case dods_float32_c:
-            um.get_vector_float32((char *)d_buf, length());
+            um.get_vector_float32((char *)d_buf, length_ll());
             break;
 
         case dods_float64_c:
-        	um.get_vector_float64((char *)d_buf, length());
+        	um.get_vector_float64((char *)d_buf, length_ll());
             break;
 
         case dods_str_c:
         case dods_url_c: {
-        	int64_t len = length();
+        	int64_t len = length_ll();
             d_str.resize((len > 0) ? len : 0); // Fill with NULLs
             d_capacity = len; // capacity is number of strings we can fit.
 
@@ -1196,9 +1196,9 @@ unsigned int Vector::val2buf(void *val, bool reuse)
             if (!d_buf || !reuse)
                 m_create_cardinal_data_buffer_for_type(length());
 
-            // width(true) returns the size in bytes given the constraint
+            // width_ll(true) returns the size in bytes given the constraint
             if (d_buf)
-                memcpy(d_buf, val, width(true));
+                memcpy(d_buf, val, (uint64_t)width_ll(true));
             break;
 
         case dods_str_c:
@@ -1218,7 +1218,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 
     }
 
-    return width(true);
+    return (unsigned int)width_ll(true);
 }
 
 /**
@@ -1266,7 +1266,7 @@ unsigned int Vector::buf2val(void **val)
     if (!val)
         throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
 
-    unsigned int wid = static_cast<unsigned int> (width(true /* constrained */));
+    int64_t wid = width_ll(true /* constrained */);
 
     // This is the width computed using length(). The
     // length() property is changed when a projection
@@ -1294,8 +1294,8 @@ unsigned int Vector::buf2val(void **val)
             if (!*val)
                 *val = new char[wid];
 
-            memcpy(*val, d_buf, wid);
-            return wid;
+            memcpy(*val, d_buf, (uint64_t)wid);
+            return (unsigned int)wid;
 
         case dods_str_c:
         case dods_url_c: {
@@ -1307,14 +1307,12 @@ unsigned int Vector::buf2val(void **val)
             for (int i = 0; i < d_length; ++i)
                 *(static_cast<string *> (*val) + i) = d_str[i];
 
-            return width();
+            return (unsigned int)width_ll();
         }
 
         default:
             throw InternalErr(__FILE__, __LINE__, "Vector::buf2val: bad type");
     }
-
-    //return wid;
 }
 
 /** Sets an element of the vector to a given value.  If the type of
@@ -1586,9 +1584,9 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 				throw InternalErr(__FILE__, __LINE__, funcName + "Logic error: rowMajorData._buf was unexpectedly null!");
 			}
 			// memcpy the data into this, taking care to do ptr arithmetic on bytes and not sizeof(element)
-			int varWidth = d_proto->width();
+			int64_t varWidth = d_proto->width_ll();
 			char* pFromBuf = rowMajorData.d_buf;
-			int numBytesToCopy = rowMajorData.width(true);
+			int64_t numBytesToCopy = rowMajorData.width_ll(true);
 			char* pIntoBuf = d_buf + (startElement * varWidth);
 			memcpy(pIntoBuf, pFromBuf, numBytesToCopy);
 			break;
@@ -1616,7 +1614,7 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 	} // switch (_var->type())
 
 	// This is how many elements we copied.
-	return (unsigned int) rowMajorData.length();
+	return (unsigned int) rowMajorData.length_ll();
 }
 
 /**
@@ -1948,9 +1946,9 @@ void Vector::value(vector<string> &b) const
  buffer's pointer. The caller must delete the storage. */
 void *Vector::value()
 {
-    void *buffer = new char[width(true)];
+    void *buffer = new char[width_ll(true)];
 
-    memcpy(buffer, d_buf, width(true));
+    memcpy(buffer, d_buf, width_ll(true));
 
     return buffer;
 }

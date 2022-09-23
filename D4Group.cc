@@ -416,77 +416,56 @@ D4Group::find_var(const string &path)
         return grp->find_var(lpath);
 }
 
-/** Compute the size of all of the variables in this group and it's children,
+/**
+ * Compute the size of all of the variables in this group and its children,
  * in kilobytes
  *
  * @param constrained Should the current constraint be taken into account?
  * @return The size in kilobytes
+ * @deprecated Use request_size_kb() instead.
  */
 long
 D4Group::request_size(bool constrained)
 {
-    long long size = 0;
-    // variables
-    Constructor::Vars_iter v = var_begin();
-    while (v != var_end()) {
-        if (constrained) {
-            if ((*v)->send_p())
-                size += (*v)->width(constrained);
-        }
-        else {
-            size += (*v)->width(constrained);
-        }
-        ++v;
-    }
-    size = size / 1024; // Make into kilobytes
-
-    // groups
-    for(auto grp : d_groups)
-        size += grp->request_size_kb(constrained);
-
-    return size ;
+    return (long) request_size_kb(constrained);
 }
 
 /**
  * @brief Get the estimated size of a response in kilobytes.
- * This method looks at the variables in the DDS and computes
- * the number of bytes in the response.
  *
- *  @note This version of the method does a poor job with Sequences. A better
- *  implementation would look at row-constraint-based limitations and use them
- *  for size computations. If a row-constraint is missing, return an error.
+ * This method looks at the variables in the DMR and computes
+ * the number of kilobytes in the response.
  *
- *  @param constrained Should the size of the whole DDS be used or should the
- *  current constraint be taken into account?
+ * @note This version of the method does a poor job with Sequences. A better
+ * implementation would look at row-constraint-based limitations and use them
+ * for size computations. If a row-constraint is missing, return an error.
+ *
+ * @param constrained Should the size of the whole DMR be used or should the
+ * current constraint be taken into account?
+ * @return The size in kilobytes
  */
 uint64_t D4Group::request_size_kb(bool constrained)
 {
     uint64_t size = 0;
     // variables
-    Constructor::Vars_iter v = var_begin();
-    while (v != var_end()) {
+    for (auto &btp: d_vars) {
         if (constrained) {
-            if ((*v)->send_p())
-                size += (*v)->width(constrained);
+            if (btp->send_p())
+                size += btp->width_ll(constrained);
         }
         else {
-            size += (*v)->width(constrained);
+            size += btp->width_ll(constrained);
         }
-        ++v;
     }
-    size = size / 1024; // Make into kilobytes
-    // groups
-    // auto g = d_groups.begin();
-    // while (g != d_groups.end())
-    //     size += (*g++)->request_size_kb(constrained);
 
+    size = size / 1024; // Make into kilobytes
+
+    // All the child groups
     for(auto grp : d_groups)
         size += grp->request_size_kb(constrained);
 
-
     return size;
 }
-
 
 void
 D4Group::set_read_p(bool state)

@@ -110,15 +110,13 @@ private:
     template <typename T> bool set_value_worker(T *v, int sz);
     template <typename T> bool set_value_worker(vector<T> &v, int sz);
 
-protected:
+    bool m_is_cardinal_type() const;
+    int64_t m_create_cardinal_data_buffer_for_type(int64_t num_elements);
+    void m_delete_cardinal_data_buffer();
+    template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int num_elements);
+
     // This function copies the private members of Vector.
     void m_duplicate(const Vector &v);
-
-    bool m_is_cardinal_type() const;
-    unsigned int m_create_cardinal_data_buffer_for_type(unsigned int numEltsOfType);
-    void m_delete_cardinal_data_buffer();
-
-    template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int numElts);
 
 public:
     Vector(const string &n, BaseType *v, const Type &t, bool is_dap4 = false);
@@ -202,7 +200,7 @@ public:
      */
     int64_t width_ll(bool constrained = false) const override
     {
-        return length_ll() * d_proto->width(constrained);
+        return length_ll() * d_proto->width_ll(constrained);
     }
 
     /** @brief Returns the number of elements in the vector.
