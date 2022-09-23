@@ -80,7 +80,7 @@ void Array::_duplicate(const Array &a)
 
     // Deep copy the Maps if they are being used.
     if (a.d_maps) {
-        d_maps = new D4Maps(*(a.d_maps));
+        d_maps = new D4Maps(*a.d_maps);
     }
     else {
         d_maps = 0;
@@ -249,6 +249,9 @@ bool Array::is_dap2_grid()
     bool is_grid = false;
     if (this->is_dap4()) {
         DBG( cerr << __func__ << "() - Array '"<< name() << "' is DAP4 object!" << endl);
+        auto root = dynamic_cast<D4Group*>(this->get_ancestor());
+        if (!root)
+            throw InternalErr(__FILE__, __LINE__, string("Could not get the root group for ").append(this->name()));
         D4Maps *d4_maps = this->maps();
         is_grid = d4_maps->size(); // It can't be a grid if there are no maps...
         if (is_grid) {
@@ -258,7 +261,7 @@ bool Array::is_dap2_grid()
             D4Maps::D4MapsIter e = d4_maps->map_end();
             while (i != e) {
                 DBG( cerr << __func__ << "() - Map '"<< (*i)->array()->name() << " has " << (*i)->array()->_shape.size() << " dimension(s)." << endl);
-                if ((*i)->array()->_shape.size() > 1) {
+                if ((*i)->array(root)->_shape.size() > 1) {
                     is_grid = false;
                     i = e;
                 }
@@ -317,13 +320,16 @@ Array::transform_to_dap2(AttrTable *)
             attributes()->transform_attrs_to_dap2(&grid_array->get_attr_table());
 
             // Process the Map Arrays.
+            auto root = dynamic_cast<D4Group*>(this->get_ancestor());
+            if (!root)
+                throw InternalErr(__FILE__, __LINE__, string("Could not get the root group for ").append(this->name()));
             D4Maps *d4_maps = this->maps();
             vector<BaseType *> dropped_maps;
             D4Maps::D4MapsIter miter = d4_maps->map_begin();
             D4Maps::D4MapsIter end = d4_maps->map_end();
             for (; miter != end; miter++) {
                 D4Map *d4_map = (*miter);
-                Array *d4_map_array = const_cast<Array*>(d4_map->array());
+                Array *d4_map_array = const_cast<Array*>(d4_map->array(root));
                 vector<BaseType *> *d2_result = d4_map_array->transform_to_dap2(&(g->get_attr_table()));
                 if (d2_result) {
                     if (d2_result->size() > 1)

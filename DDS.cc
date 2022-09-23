@@ -1140,7 +1140,7 @@ void fillConstructorAttrTable(AttrTable *at, BaseType *bt){
                 else {
                     vector<string>* pAttrTokens = arrayAT.get_attr_vector(atIter);
                     // append_attr makes a copy of the vector, so we don't have to do so here.
-                    at->append_attr(childName, AttrType_to_String(type), pAttrTokens);
+                    at->append_attr(childName, AttrType_to_String(type), pAttrTokens,(*atIter)->is_utf8_str);
                 }
             }
 
@@ -1178,7 +1178,7 @@ void DDS::get_das(DAS *das)
         }
         else {
             // This must be a top level attribute outside a container.  jhrg 4/6/18
-            global->append_attr(d_attr.get_name(i), d_attr.get_type(i), d_attr.get_attr_vector(i));
+            global->append_attr(d_attr.get_name(i), d_attr.get_type(i), d_attr.get_attr_vector(i),(*i)->is_utf8_str);
         }
     }
 

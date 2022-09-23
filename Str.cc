@@ -39,18 +39,23 @@
 #include <sstream>
 
 #include "Byte.h"
+#if 0
 #include "Int16.h"
 #include "UInt16.h"
 #include "Int32.h"
 #include "UInt32.h"
 #include "Float32.h"
 #include "Float64.h"
+#endif
 #include "Str.h"
 #include "Url.h"
+
+#if 0
 #include "Array.h"
 #include "Structure.h"
 #include "Sequence.h"
 #include "Grid.h"
+#endif
 
 #include "DDS.h"
 #include "Marshaller.h"
@@ -61,7 +66,10 @@
 #include "D4StreamUnMarshaller.h"
 
 #include "util.h"
+
+#if 0
 #include "parser.h"
+#endif
 #include "Operators.h"
 #include "InternalErr.h"
 #include "escaping.h"
@@ -270,15 +278,29 @@ Str::print_val(FILE *out, string space, bool print_decl_p)
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
+/**
+ * @brief Escape non-printable characters and quotes from a Str variable value.
+ * The value printed is used mostly for debugging and for other diagnostics. Strings
+ * an non-printable characters are escaped using a backslash.
+ * @param s The value to modify.
+ * @return The modified value.
+ */
+string
+Str::esc_string_variable_value(const string &s)
+{
+    return escattr(s);
+}
+
 void
 Str::print_val(ostream &out, string space, bool print_decl_p)
 {
     if (print_decl_p) {
         print_decl(out, space, false);
-	out << " = \"" << escattr(d_buf) << "\";\n" ;
+	    out << " = \"" << esc_string_variable_value(d_buf) << "\";" << endl;
     }
-    else
-	out << "\"" << escattr(d_buf) << "\"" ;
+    else {
+        out << "\"" << esc_string_variable_value(d_buf) << "\"";
+    }
 }
 
 bool
@@ -290,7 +312,7 @@ Str::ops(BaseType *b, int op)
         // Since the read method is virtual and implemented outside
         // libdap++ if we cannot read the data that is the problem
         // of the user or of whoever wrote the surrogate library
-        // implemeting read therefore it is an internal error.
+        // implementing read therefore it is an internal error.
         throw InternalErr(__FILE__, __LINE__, "This value was not read!");
     }
 
@@ -300,7 +322,7 @@ Str::ops(BaseType *b, int op)
         // Since the read method is virtual and implemented outside
         // libdap++ if we cannot read the data that is the problem
         // of the user or of whoever wrote the surrogate library
-        // implemeting read therefore it is an internal error.
+        // implementing read therefore it is an internal error.
         throw InternalErr(__FILE__, __LINE__, "Argument value was not read!");
     }
 

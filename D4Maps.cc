@@ -26,9 +26,25 @@
 
 #include "XMLWriter.h"
 #include "InternalErr.h"
+#include "D4Group.h"
+#include "Array.h"
+#include "D4Dimensions.h"
 #include "D4Maps.h"
 
 using namespace libdap;
+
+Array* D4Map::array(D4Group *root)
+{
+    if (d_array)
+        return d_array;
+    else {
+        d_array = dynamic_cast<Array*>(root->find_var(d_array_path));
+        if (!d_array)
+            throw InternalErr(__FILE__, __LINE__,
+                              std::string("Failed to find an array at: ").append(d_array_path));
+        return d_array;
+    }
+}
 
 void
 D4Map::print_dap4(XMLWriter &xml)
@@ -36,7 +52,8 @@ D4Map::print_dap4(XMLWriter &xml)
 	if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Map") < 0)
 		throw InternalErr(__FILE__, __LINE__, "Could not write Map element");
 
-	if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
+	if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name",
+                                    (const xmlChar*)(d_array ? d_array->FQN().c_str(): d_name.c_str())) < 0)
 		throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
 	if (xmlTextWriterEndElement(xml.get_writer()) < 0)

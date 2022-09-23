@@ -546,8 +546,7 @@ Constructor::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 }
 
 void
-Constructor::print_decl(FILE *out, string space, bool print_semi,
-                        bool constraint_info, bool constrained)
+Constructor::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained)
 {
     ostringstream oss;
     print_decl(oss, space, print_semi, constraint_info, constrained);
@@ -555,8 +554,7 @@ Constructor::print_decl(FILE *out, string space, bool print_semi,
 }
 
 void
-Constructor::print_decl(ostream &out, string space, bool print_semi,
-                        bool constraint_info, bool constrained)
+Constructor::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained)
 {
     if (constrained && !send_p())
         return;

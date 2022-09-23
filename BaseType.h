@@ -260,6 +260,8 @@ public:
     virtual void set_parent(BaseType *parent);
     virtual BaseType *get_parent() const;
 
+    virtual BaseType *get_ancestor();
+
     virtual void transfer_attributes(AttrTable *at);
 
     // I put this comment here because the version in BaseType.cc does not
@@ -335,20 +337,6 @@ public:
 
     /** @name Abstract Methods */
     //@{
-#if 0
-    /** Return the number of bytes that are required to hold the
-	instance's value. In the case of simple types such as Int32,
-	this is the size of one Int32 (four bytes). For a String or
-	Url type, <tt>width(bool constrained = false)</tt> returns the number of bytes needed
-	for a <tt>String *</tt> variable, not the bytes needed for all
-	the characters, since that value cannot be determined from
-	type information alone. For Structure, and other constructor
-	types size() returns the number of bytes needed to store
-	pointers to the C++ objects.
-
-	@brief Returns the size of the class instance data. */
-    virtual unsigned int width(bool constrained = false) = 0;
-#endif
     /** Reads the class data into the memory referenced by <i>val</i>.
 	The caller should either allocate enough storage to <i>val</i>
 	to hold the class data or set \c *val to null. If <i>*val</i>

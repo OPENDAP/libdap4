@@ -674,7 +674,7 @@ void BaseType::transfer_attributes(AttrTable *at_container) {
             }
             else {
                 DBG(cerr << __func__ << "() - Adding Attribute '" << at->get_name(at_p) << endl);
-                get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
+                get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p),(*at_p)->is_utf8_str);
             }
             at_p++;
         }
@@ -748,6 +748,15 @@ BaseType *
 BaseType::get_parent() const
 {
     return d_parent;
+}
+
+BaseType *
+BaseType::get_ancestor()
+{
+    if (d_parent)
+        return d_parent->get_ancestor();
+    else
+        return this;
 }
 
 // Documented in the header file.

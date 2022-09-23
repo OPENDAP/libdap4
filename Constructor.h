@@ -82,7 +82,7 @@ public:
 
     void transform_to_dap4(D4Group *root, Constructor *dest) override;
 
-    std::string FQN() const override ;
+    std::string FQN() const override;
 
     int element_count(bool leaves = false) override;
 

@@ -10,7 +10,7 @@ AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2
 AM_CXXFLAGS = -Wall -W -Wcast-align -Wno-deprecated-register -Wno-inconsistent-missing-override
 
 if COMPILER_IS_GCC
-AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-deprecated-register
+AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-deprecated-register -Wno-inconsistent-missing-override
 endif
 
 # These are not used by automake but are often useful for certain types of

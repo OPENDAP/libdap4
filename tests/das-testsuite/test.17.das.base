@@ -2,7 +2,7 @@ Attributes {
     test {
         test_dods_errors {
             Byte b "this is not a byte";
-            String b_explanation "`"this is not a byte"' is not a Byte value.";
+            String b_explanation "`\"this is not a byte\"' is not a Byte value.";
             Byte c -256;
             String c_explanation "`-256' is not a Byte value.";
             Byte e 2550;

@@ -59,12 +59,6 @@
 #include "run_tests_cppunit.h"
 #include "test_config.h"
 
-
-
-
-#undef DBG
-#define DBG(x) do { if (debug) {x;} } while(false)
-
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
@@ -73,20 +67,11 @@ class DMRTest: public TestFixture {
 private:
 
 public:
-    DMRTest()
-    {
-    }
-    ~DMRTest()
-    {
-    }
+    DMRTest() = default;
+    ~DMRTest() = default;
 
-    void setUp()
-    {
-    }
-
-    void tearDown()
-    {
-    }
+    // void setUp()
+    // void tearDown()
 
     bool re_match(Regex &r, const string &s)
     {
@@ -115,16 +100,18 @@ public:
             BaseTypeFactory factory;
             DDS dds(&factory, dds_file);
             dds.parse(prefix + dds_file);
-            DBG(cerr << "SOURCE DDS: " << endl; dds.print(cerr));
+            DBG(cerr << "SOURCE DDS: " << endl);
+            DBG(dds.print(cerr));
 
             if (!das_file.empty()) {
                 DAS das;
                 das.parse(prefix + das_file);
                 dds.transfer_attributes(&das);
-                DBG(cerr << "SOURCE DAS: " << endl; das.print(cerr));
+                DBG(cerr << "SOURCE DAS: " << endl);
+                DBG(das.print(cerr));
 
-                DBG(cerr << "dds.print_das(): " << endl; dds.print_das(cerr));
-                // DBG(cerr << "dds.print_xml(): " << endl; dds.print_xml(cerr,false,"blob_foo"));
+                DBG(cerr << "dds.print_das(): " << endl);
+                DBG(dds.print_das(cerr));
             }
 
             D4BaseTypeFactory d4_factory;
@@ -159,7 +146,7 @@ public:
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-CPPUNIT_TEST_SUITE (DMRTest);
+    CPPUNIT_TEST_SUITE (DMRTest);
 
     CPPUNIT_TEST(test_dmr_from_dds_1);
     CPPUNIT_TEST(test_dmr_from_dds_2);
@@ -176,8 +163,7 @@ CPPUNIT_TEST_SUITE (DMRTest);
     CPPUNIT_TEST(test_copy_ctor_3);
     CPPUNIT_TEST(test_copy_ctor_4);
 
-    CPPUNIT_TEST_SUITE_END()
-    ;
+    CPPUNIT_TEST_SUITE_END();
 
     // Test a DDS with simple scalar types and no attributes
     void test_dmr_from_dds_1()
@@ -249,12 +235,14 @@ CPPUNIT_TEST_SUITE (DMRTest);
         string dmr_src = string(xml.get_doc());
         DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
 
+        delete dmr;
+
         XMLWriter xml2;
         dmr_2->print_dap4(xml2);
         string dmr_dest = string(xml2.get_doc());
         DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
 
-        delete dmr;
+        // delete dmr;
         delete dmr_2;
         CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
@@ -298,12 +286,13 @@ CPPUNIT_TEST_SUITE (DMRTest);
         string dmr_src = string(xml.get_doc());
         DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
 
+        delete dmr;
+
         XMLWriter xml2;
         dmr_2->print_dap4(xml2);
         string dmr_dest = string(xml2.get_doc());
         DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
 
-        delete dmr;
         delete dmr_2;
         CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
@@ -329,12 +318,13 @@ CPPUNIT_TEST_SUITE (DMRTest);
         string dmr_src = string(xml.get_doc());
         DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
 
+        delete dmr;
+
         XMLWriter xml2;
         dmr_2->print_dap4(xml2);
         string dmr_dest = string(xml2.get_doc());
         DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
 
-        delete dmr;
         delete dmr_2;
         CPPUNIT_ASSERT(dmr_src == dmr_dest);
 

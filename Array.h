@@ -102,7 +102,17 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
     \endverbatim
 
     @note Arrays use zero-based indexing.
+
     @note This class is used for both DAP2 and DAP4.
+
+    @note An interesting 'feature' of the DAP4 Array is that its Maps are added
+    after construction. None of the Array constructors build the Maps, but the
+    copy ctor is _supposed_ to copy it correctly. The original design has pointers
+    for the parent and the source of the Map's value, but the actual 'parent'
+    array is the object being constructed, so it does not exist! I have thus replaced
+    the pointers with paths. Use the dataset's root group find_var() method to
+    get the objects. The root group can be found using the new BaseType::get_ancestor()
+    method. jhrg 9/16/22
 
     @brief A multidimensional array of identical data types.
     @see Grid
@@ -178,7 +188,7 @@ private:
     friend class ArrayTest;
     friend class D4Group;
 
-    bool is_dap2_grid();
+
 
 protected:
     void _duplicate(const Array &a);
@@ -188,6 +198,10 @@ protected:
 
     unsigned int print_array(ostream &out, unsigned int index,
                              unsigned int dims, unsigned int shape[]);
+
+    std::vector<dimension> &shape(){
+        return _shape;
+    }
 
 public:
     /** A constant iterator used to access the various dimensions of an
@@ -213,6 +227,7 @@ public:
     Array &operator=(const Array &rhs);
     virtual BaseType *ptr_duplicate();
 
+    bool is_dap2_grid();
     virtual void transform_to_dap4(D4Group *root, Constructor *container);
     virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
 

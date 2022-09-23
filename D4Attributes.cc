@@ -33,6 +33,7 @@
 #include "AttrTable.h"
 
 #include "util.h"
+#include "escaping.h"
 #include "debug.h"
 #include "DapIndent.h"
 
@@ -252,6 +253,7 @@ D4Attributes::transform_to_dap4(AttrTable &at)
         }
         case Attr_string: {
             D4Attribute *a = new D4Attribute(name, attr_str_c);
+            a->set_utf8_str_flag((*i)->is_utf8_str);
             a->add_value_vector(*at.get_attr_vector(i));
             add_attribute_nocopy(a);
             break;
@@ -338,7 +340,7 @@ void D4Attributes::transform_attrs_to_dap2(AttrTable *d2_attr_table)
         }
         default: {
             for (D4Attribute::D4AttributeIter vi = (*i)->value_begin(), ve = (*i)->value_end(); vi != ve; vi++) {
-                d2_attr_table->append_attr(name, d2_attr_type_name, *vi);
+                d2_attr_table->append_attr(name, d2_attr_type_name, *vi,(*i)->get_utf8_str_flag());
             }
 
             break;
@@ -552,6 +554,33 @@ D4Attribute::print_dap4(XMLWriter &xml) const
             throw InternalErr(__FILE__, __LINE__, "Could not write OtherXML value");
         break;
 
+    case attr_url_c:
+    case attr_str_c: {
+
+        // Need to escape special characters that xml doesn't allow. Note: the XML escaping is
+        // not the same as the das string escaping. See escattr_xml in the escaping.cc for details.
+        // KY 08-22-22
+#if 0 
+        D4AttributeCIter i = d_values.begin();//value_begin();
+#endif
+        auto i = d_values.begin();
+        while (i != d_values.end()) {
+            if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Value") < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write value element");
+#if 0
+            if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) (*i++).c_str()) < 0)
+#endif
+            string s = (get_utf8_str_flag())?(*i++):escattr_xml(*i++);
+            if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) s.c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute value");
+
+            if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not end value element");
+        }
+        break;
+    }
+
+       
     default: {
         // Assume only valid types make it into instances
         D4AttributeCIter i = d_values.begin();//value_begin();
