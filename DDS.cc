@@ -522,16 +522,17 @@ int DDS::get_request_size(bool constrained)
 uint64_t DDS::get_request_size_kb(bool constrained)
 {
     uint64_t req_size = 0;
-    for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
+    for (auto &btp: vars) {
         if (constrained) {
-            if ((*i)->send_p())
-                req_size += (*i)->width(constrained);
+            if (btp->send_p())
+                req_size += btp->width_ll(constrained);
         }
         else {
-            req_size += (*i)->width(constrained);
+            req_size += btp->width_ll(constrained);
         }
     }
-    return req_size/1024;
+
+    return req_size / 1024;
 }
 
 
