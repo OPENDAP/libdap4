@@ -35,6 +35,8 @@
 #ifndef _vector_h
 #define _vector_h 1
 
+#include <cassert>
+
 #ifndef _basetype_h
 #include "BaseType.h"
 #endif
