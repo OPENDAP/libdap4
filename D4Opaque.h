@@ -59,7 +59,15 @@ public:
 
     virtual void clear_local_data();
 
-    virtual unsigned int width(bool = false) const { return sizeof(vector<uint8_t>); }
+    unsigned int width(bool = false) const override
+    {
+        return sizeof(vector<uint8_t>);
+    }
+
+    int64_t width_ll(bool = false) const override
+    {
+        return sizeof(vector<uint8_t>);
+    }
 
     // Return the length of the stored data or zero if no string has been
     // stored in the instance's internal buffer.

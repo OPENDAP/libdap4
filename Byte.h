@@ -73,7 +73,15 @@ public:
 
     Byte &operator=(const Byte &rhs);
 
-    virtual unsigned int width(bool constrained = false) const;
+    unsigned int width(bool = false) const override
+    {
+        return sizeof(dods_byte);
+    }
+
+    int64_t width_ll(bool = false) const override
+    {
+        return sizeof(dods_byte);
+    }
 
     virtual BaseType *ptr_duplicate();
 

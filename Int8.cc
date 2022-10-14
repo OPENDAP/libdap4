@@ -104,12 +104,6 @@ Int8::operator=(const Int8 &rhs)
     return *this;
 }
 
-unsigned int
-Int8::width(bool) const
-{
-    return sizeof(dods_int8);
-}
-
 void
 Int8::compute_checksum(Crc32 &checksum)
 {

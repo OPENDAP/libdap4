@@ -78,7 +78,16 @@ public:
     virtual ~Int32();
 
     virtual BaseType *ptr_duplicate();
-    virtual unsigned int width(bool constrained = false) const;
+
+    unsigned int width(bool = false) const override
+    {
+        return sizeof(dods_int32);
+    }
+
+    int64_t width_ll(bool = false) const override
+    {
+        return sizeof(dods_int32);
+    }
 
     //DAP2
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);

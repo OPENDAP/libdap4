@@ -128,12 +128,6 @@ Int64::operator=(const Int64 &rhs)
     return *this;
 }
 
-unsigned int
-Int64::width(bool) const
-{
-    return sizeof(dods_int64);
-}
-
 void
 Int64::compute_checksum(Crc32 &checksum)
 {

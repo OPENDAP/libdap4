@@ -166,7 +166,15 @@ public:
      *
      * @return The number of bytes used by a value.
      */
-    virtual unsigned int width(bool /* constrained */ = false) const { return /*sizeof(int64_t);*/ m_type_width();}
+    unsigned int width(bool /* constrained */ = false) const override
+    {
+        return (int)m_type_width();
+    }
+
+    int64_t width_ll(bool /* constrained */ = false) const override
+    {
+        return (int64_t)m_type_width();
+    }
 
     // DAP4
     virtual void compute_checksum(Crc32 &checksum);

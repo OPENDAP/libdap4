@@ -72,7 +72,16 @@ public:
     Int16 &operator=(const Int16 &rhs);
 
     virtual BaseType *ptr_duplicate();
-    virtual unsigned int width(bool constrained = false) const;
+
+    unsigned int width(bool = false) const override
+    {
+        return sizeof(dods_int16);
+    }
+
+    int64_t width_ll(bool = false) const override
+    {
+        return sizeof(dods_int16);
+    }
 
     // DAP2
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);

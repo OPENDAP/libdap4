@@ -201,11 +201,9 @@ public:
 
     /**
      * @brief How many elements are in this variable? Uses -1 in places
-     * @todo change the return type to int64_t
      * @return The number of elements; 1 for scalars
      * @deprecated Use length_ll() instead
      */
-    // FIXME temp hack jhrg 7/25/22
     virtual int length() const { return 1; }
 
     /** @brief Get the number of elements in this variable
@@ -220,11 +218,9 @@ public:
     /**
      * @brief Set the number of elements for this variable. use -1 to indicate nothing set.
      * @see Vector
-     * @todo change param type to int64_t
      * @param l The number of elements
      * @deprecated Use set_length_ll() instead
      */
-    // FIXME temp hack jhrg 7/25/22
     virtual void set_length(int64_t) { /* empty since the length of a BaseType is always one element. jhrg 8/12/22 */ }
 
     /** @brief Set the number of elements in this variable
@@ -315,8 +311,9 @@ public:
     virtual bool ops(BaseType *b, int op);
     virtual bool d4_ops(BaseType *b, int op);
 
-    /// @todo change return type to uint64_t
     virtual unsigned int width(bool constrained = false) const;
+
+    virtual int64_t width_ll(bool constrained = false) const;
 
     virtual void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
@@ -340,20 +337,6 @@ public:
 
     /** @name Abstract Methods */
     //@{
-#if 0
-    /** Return the number of bytes that are required to hold the
-	instance's value. In the case of simple types such as Int32,
-	this is the size of one Int32 (four bytes). For a String or
-	Url type, <tt>width(bool constrained = false)</tt> returns the number of bytes needed
-	for a <tt>String *</tt> variable, not the bytes needed for all
-	the characters, since that value cannot be determined from
-	type information alone. For Structure, and other constructor
-	types size() returns the number of bytes needed to store
-	pointers to the C++ objects.
-
-	@brief Returns the size of the class instance data. */
-    virtual unsigned int width(bool constrained = false) = 0;
-#endif
     /** Reads the class data into the memory referenced by <i>val</i>.
 	The caller should either allocate enough storage to <i>val</i>
 	to hold the class data or set \c *val to null. If <i>*val</i>

@@ -1307,4 +1307,10 @@ BaseType::width(bool /* constrained */) const
     throw InternalErr(__FILE__, __LINE__, "not implemented");
 }
 
+int64_t
+BaseType::width_ll(bool /* constrained */) const
+{
+    throw InternalErr(__FILE__, __LINE__, "not implemented");
+}
+
 } // namespace libdap

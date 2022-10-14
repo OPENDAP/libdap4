@@ -90,6 +90,7 @@ public:
     void set_read_p(bool state) override;
 
     unsigned int width(bool constrained = false) const override;
+    int64_t width_ll(bool constrained = false) const override;
 
     /// btp_stack no longer needed; use back pointers (BaseType::get_parent())
     BaseType *var(const string &name, bool exact_match = true, btp_stack *s = nullptr) override;

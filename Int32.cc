@@ -120,12 +120,6 @@ Int32::operator=(const Int32 &rhs)
     return *this;
 }
 
-unsigned int
-Int32::width(bool) const
-{
-    return sizeof(dods_int32);
-}
-
 bool
 Int32::serialize(ConstraintEvaluator &eval, DDS &dds,
                  Marshaller &m, bool ce_eval)

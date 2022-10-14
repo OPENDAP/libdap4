@@ -111,12 +111,6 @@ UInt32::operator=(const UInt32 &rhs)
     return *this;
 }
 
-unsigned int
-UInt32::width(bool) const
-{
-    return sizeof(dods_uint32);
-}
-
 bool
 UInt32::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {

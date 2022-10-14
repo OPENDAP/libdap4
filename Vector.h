@@ -35,6 +35,8 @@
 #ifndef _vector_h
 #define _vector_h 1
 
+#include <cassert>
+
 #ifndef _basetype_h
 #include "BaseType.h"
 #endif
@@ -110,15 +112,13 @@ private:
     template <typename T> bool set_value_worker(T *v, int sz);
     template <typename T> bool set_value_worker(vector<T> &v, int sz);
 
-protected:
+    bool m_is_cardinal_type() const;
+    int64_t m_create_cardinal_data_buffer_for_type(int64_t num_elements);
+    void m_delete_cardinal_data_buffer();
+    template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int num_elements);
+
     // This function copies the private members of Vector.
     void m_duplicate(const Vector &v);
-
-    bool m_is_cardinal_type() const;
-    unsigned int m_create_cardinal_data_buffer_for_type(unsigned int numEltsOfType);
-    void m_delete_cardinal_data_buffer();
-
-    template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int numElts);
 
 public:
     Vector(const string &n, BaseType *v, const Type &t, bool is_dap4 = false);
@@ -166,11 +166,11 @@ public:
     virtual BaseType *prototype() const { return d_proto; }
 
     /**
-     *
+     * @brief Change the Vector/Array element type
      * @param btp
      * @return The previous template, calling code is responsible for the returned BaseType lifecycle.
      */
-    virtual BaseType *set_prototype( BaseType *btp) {  BaseType *orig = d_proto; d_proto = btp; return orig; }
+    virtual BaseType *set_prototype(BaseType *btp) {  BaseType *orig = d_proto; d_proto = btp; return orig; }
 
     void set_name(const std::string& name) override;
 
@@ -180,14 +180,36 @@ public:
 
     void set_read_p(bool state) override;
 
-    unsigned int width(bool constrained = false) const override;
+    /** Returns the number of bytes needed to hold the entire
+        array.  This is equal to \c length() (the number of elements in
+        in the array) times the width of each
+        element.
+
+        @brief Returns the width of the data, in bytes.
+        @deprecated Use width_ll() instead */
+    unsigned int width(bool constrained = false) const override
+    {
+        // Jose Garcia
+        assert(d_proto);
+
+        return length() * d_proto->width(constrained);
+    }
+
+    /**
+     * @brief Return the number of bytes needed to hold the array data
+     * @param constrained If true, return the number of bytes given the current constraint
+     * @return The number of bytes needed to hold the array data, as a 64-bit integer
+     */
+    int64_t width_ll(bool constrained = false) const override
+    {
+        return length_ll() * d_proto->width_ll(constrained);
+    }
 
     /** @brief Returns the number of elements in the vector.
      * Note that some child classes of Vector use the length of -1 as a flag value.
      * @return The number of elements in the vector
      * @deprecated Use length_ll() instead
      */
-    // FIXME temp hack jhrg 7/25/22
     int length() const override { return d_length; }
 
     /** @brief Get the number of elements in this Vector/Array
