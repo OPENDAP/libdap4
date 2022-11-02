@@ -109,6 +109,13 @@ check-local:
 	@echo ""
 endif
 
+# If cppunit exists and big array test option are chosen, turn on BigArrayTest.
+if CPPUNIT
+if USE_BA
+UNIT_TESTS +=BigArrayTest
+endif
+endif
+
 # making these link statically makes them easier to debug and to use
 # with OSX's leaks tool. It also seems to force the linker to use the
 # locally built copy of the library and not the installed copy.
@@ -244,4 +251,7 @@ DmrToDap2Test_SOURCES = DmrToDap2Test.cc $(TEST_SRC)
 D4FilterClauseTest_SOURCES = D4FilterClauseTest.cc
 
 D4SequenceTest_SOURCES = D4SequenceTest.cc $(TEST_SRC)
+
+BigArrayTest_SOURCES = BigArrayTest.cc $(TEST_SRC)
+
 D4SequenceTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)

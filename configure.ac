@@ -503,6 +503,16 @@ AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
       [AC_MSG_NOTICE([Not building Address Sanitizer version])
        AM_CONDITIONAL([USE_ASAN], [false])])
 
+dnl An optional big array(>4GB) unit test. Since it is resource consuming, turn it off by default.
+AC_ARG_ENABLE([batest], 
+    [AS_HELP_STRING([--enable-batest], [The big array unit test is turned on.  (default: no)])])
+           
+AS_IF([test x$enable_batest = xyes ],
+      [AC_MSG_NOTICE([Adding big array unit test])
+       AM_CONDITIONAL([USE_BA], [true])],
+      [AC_MSG_NOTICE([Not adding big array unit test])
+       AM_CONDITIONAL([USE_BA], [false])])
+
 AC_ARG_ENABLE([leaks],
     [AS_HELP_STRING([--enable-leaks], [Run unit tests on OSX using the 'leaks' if available (default: no)])])
 
@@ -529,6 +539,7 @@ AS_IF([test x$enable_developer = xyes],
       [AC_MSG_NOTICE([Not building developer version])
        AM_CONDITIONAL([BUILD_DEVELOPER], [false])
        AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])])
+
 
 AC_ARG_ENABLE([coverage],
     [AS_HELP_STRING([--enable-coverage], [Build so tests emit coverage data and enable coverage target (default: no)])])
