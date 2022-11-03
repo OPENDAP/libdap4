@@ -123,6 +123,7 @@ public:
     void tearDown()
     {
         delete d_cardinal;
+        delete d_card_dap4;
         delete d_string;
         delete d_structure;
     }

@@ -179,6 +179,7 @@ public:
             if (is_alias) // alias copies the pointers.
                 return;
             if (type == Attr_container) {
+cout <<"delete attributes "<<std::endl;
                 delete attributes; attributes = 0;
             }
             else {
