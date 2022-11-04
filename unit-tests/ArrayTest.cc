@@ -221,13 +221,13 @@ public:
     void assignment_test_3()
     {
         // Array copies the proto pointer and manages the storage
-#if 0       
         unique_ptr<Float32> f32(new Float32("float_proto"));
         Array a1 = Array("a", f32.get());
-#endif
+#if 0
         auto f32_ptr = new Float32("float_proto");
         Array a1 = Array("a", f32_ptr);
 	delete f32_ptr;
+#endif
 	
         CPPUNIT_ASSERT_MESSAGE("The type of a1.var() should be dods_float32", a1.var()->type() == dods_float32_c);
         a1 = *d_cardinal;
@@ -250,15 +250,25 @@ public:
         Array a1 = Array("a", d_int16);
         string expected_name[2] = {"dim_b", "myDim"};
         int j = 0;
+#if 0
         D4Dimensions *dims = new D4Dimensions();
         D4Dimension *d = new D4Dimension("dim_b", 2, dims);
+#endif 
+        unique_ptr<D4Dimensions> dims(new D4Dimensions());
+        D4Dimension *d = new D4Dimension("dim_b", 2, dims.get());
+#if 0
+        //unique_ptr<D4Dimension> d(new D4Dimension("dim_b",2,dims.get()));
+#endif
+
         a1.prepend_dim(2, "dim_a");
         a1.prepend_dim(d);
         a1.rename_dim("dim_a", "myDim");
         for (Array::Dim_iter i = a1.dim_begin(); i != a1.dim_end(); i++, j++) {
             CPPUNIT_ASSERT(a1.dimension_name(i) == expected_name[j]);
         }
-        delete dims;
+#if 0
+        //delete dims;
+#endif
         delete d;
     }
 
