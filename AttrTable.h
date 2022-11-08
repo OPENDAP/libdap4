@@ -179,8 +179,6 @@ public:
             if (is_alias) // alias copies the pointers.
                 return;
             if (type == Attr_container) {
-                if (attributes) 
-                    attributes->erase();
                 delete attributes; attributes = 0;
             }
             else {

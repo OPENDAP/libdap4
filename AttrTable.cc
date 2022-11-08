@@ -910,9 +910,7 @@ AttrTable::Attr_iter AttrTable::del_attr_table(Attr_iter iter)
 #if NEW_DEL_ATTR_TABLE_BEHAVIOR
         delete e->attributes;
 #endif
-#if 0
         e->attributes = 0;
-#endif        
     }
 
     delete e;
