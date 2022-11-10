@@ -26,6 +26,7 @@
 #ifndef ddx_parser_h
 #define ddx_parser_h
 
+#include <string.h>
 #include <string>
 #include <map>
 #include <stack>
@@ -110,6 +111,8 @@ private:
         parser_unknown,
         parser_error
     };
+
+    xmlSAXHandler ddx_sax_parser;
 
     BaseTypeFactory *d_factory;
 
@@ -197,7 +200,10 @@ private:
     BaseType *factory(Type t, const string &name);
 
     // Common cleanup code for intern() and intern_stream()
-    void cleanup_parse(xmlParserCtxtPtr &context);
+#if 0
+    //void cleanup_parse(xmlParserCtxtPtr &context);
+#endif
+    void cleanup_parse();
 
     /** @name Parser Actions
 
@@ -238,8 +244,23 @@ public:
         error_msg(""), ctxt(0), dds(0), blob_href(0),
         dods_attr_name(""), dods_attr_type(""),
         char_data(""), root_ns("")
-    {}
+    {
+        memset( &ddx_sax_parser, 0, sizeof(xmlSAXHandler) );
 
+        ddx_sax_parser.getEntity = &DDXParser::ddx_get_entity;
+        ddx_sax_parser.startDocument = &DDXParser::ddx_start_document;
+        ddx_sax_parser.endDocument = &DDXParser::ddx_end_document;
+        ddx_sax_parser.characters = &DDXParser::ddx_get_characters;
+        ddx_sax_parser.ignorableWhitespace = &DDXParser::ddx_ignoreable_whitespace;
+        ddx_sax_parser.cdataBlock = &DDXParser::ddx_get_cdata;
+        ddx_sax_parser.warning = &DDXParser::ddx_fatal_error;
+        ddx_sax_parser.error = &DDXParser::ddx_fatal_error;
+        ddx_sax_parser.fatalError = &DDXParser::ddx_fatal_error;
+        ddx_sax_parser.initialized = XML_SAX2_MAGIC;
+        ddx_sax_parser.startElementNs = &DDXParser::ddx_sax2_start_element;
+        ddx_sax_parser.endElementNs = &DDXParser::ddx_sax2_end_element;
+    
+    }
     void intern(const string &document, DDS *dest_dds, string &cid);
     void intern_stream(FILE *in, DDS *dds, string &cid, const string &boundary = "");
     void intern_stream(istream &in, DDS *dds, string &cid, const string &boundary = "");
