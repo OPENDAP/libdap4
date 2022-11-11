@@ -59,6 +59,8 @@ private:
 
     Int16 *d_int16 = nullptr;
     Byte *d_uint8 = nullptr;
+    uint64_t num_eles;
+    vector<unsigned char>buf_int8;
 
     
 public:
@@ -68,47 +70,25 @@ public:
 
     void setUp()
     {
-        d_int16 = new Int16("Int16");
-        DBG(cerr << "d_int16: " << d_int16 << endl);
-        d_cardinal = new Array("Array_of_Int16", d_int16);
-        uint64_t num_eles=1024*1024*1024*4;
-        auto d4_dim = new D4Dimension("dimension",num_eles);
-        d_cardinal->append_dim(d4_dim);
-        vector<short> buffer;
-        buffer.resize(num_eles);
-        buffer[0]=-32768;
-        buffer[num_eles-1]=32767;
-        d_cardinal->set_value((dods_int16*)buffer.data(),num_eles);
-        delete d4_dim;
-        delete d_int16;
-        d_int16 = 0;
+        num_eles=1024*1024*1024;
+        num_eles = num_eles*5;
+        //num_eles = 2;
+        buf_int8.resize(num_eles);
 
 #if 0
-        d_int16 = new Int16("Int16");
-
-        DBG(cerr << "d_int16: " << d_int16 << endl);
-        d_cardinal = new Array("Array_of_Int16", d_int16);
-        uint64_t num_eles=1024*1024*1024*4;
-        d_cardinal->append_dim(4, "dimension");
-        dods_int16 buffer[4] = { 0, 1, 2, 3 };
-        d_cardinal->val2buf(buffer);
-
-        // Added to test if Arrays with DAP4 protos will have is_dap4() == true. jhrg 7/27/22
-        Int64 i64("");
-        d_card_dap4 = new Array("Array_of_Int64", &i64);
-        d_card_dap4->append_dim(4, "dimension");
-        dods_int64 buffer64[4] = { 0, 1, 2, 3 };
-        d_card_dap4->val2buf(buffer64);
-
-        delete d_int16;
-        d_int16 = 0;
+        auto d4_dim_byte = new D4Dimension("dimension",num_eles);
+        d_cardinal_byte->append_dim(d4_dim_byte);
+        vector<unsigned char> buffer_u8;
+        buffer_u8.resize(num_eles);
+        d_cardinal_byte->val2buf(buffer_u8.data());
+        delete d4_dim_byte;
+        delete d_uint8;
 #endif
+ 
     }
 
     void tearDown()
     {
-        delete d_cardinal;
-        delete d_card_dap4;
     }
 
 
@@ -117,17 +97,6 @@ public:
     CPPUNIT_TEST (cons_test);
 #if 0
     CPPUNIT_TEST (test_is_dap4_1);
-    CPPUNIT_TEST (test_is_dap4_2);
-    CPPUNIT_TEST (test_is_dap4_3);
-    CPPUNIT_TEST (test_is_dap4_4);
-    CPPUNIT_TEST (assignment_test_1);
-    CPPUNIT_TEST (assignment_test_2);
-    CPPUNIT_TEST (assignment_test_3);
-    CPPUNIT_TEST (prepend_dim_test);
-    CPPUNIT_TEST (prepend_dim_2_test);
-    CPPUNIT_TEST (clear_dims_test);
-    CPPUNIT_TEST (error_handling_test);
-    CPPUNIT_TEST (error_handling_2_test);
     CPPUNIT_TEST (duplicate_cardinal_test);
 #endif
 
@@ -135,8 +104,15 @@ public:
 
     void cons_test()
     {
-        Array a1 = Array("a", "b", d_int16, true);
-        CPPUNIT_ASSERT(a1.name() == "a");
+
+        unique_ptr<Byte> d_uint8(new Byte("Byte"));
+        Array d_ar_uint8 = Array("Byte_array",d_uint8.get());
+        unique_ptr<D4Dimension> d4_dim_byte(new D4Dimension("dimension",num_eles));
+        d_ar_uint8.append_dim(d4_dim_byte.get());
+        d_ar_uint8.val2buf(buf_int8.data());
+        
+
+        //CPPUNIT_ASSERT(a1.name() == "a");
     }
 
     void test_is_dap4_1() {
