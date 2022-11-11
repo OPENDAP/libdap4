@@ -71,6 +71,24 @@ public:
         d_int16 = new Int16("Int16");
         DBG(cerr << "d_int16: " << d_int16 << endl);
         d_cardinal = new Array("Array_of_Int16", d_int16);
+        uint64_t num_eles=1024*1024*1024*4;
+        auto d4_dim = new D4Dimension("dimension",num_eles);
+        d_cardinal->append_dim(d4_dim);
+        vector<short> buffer;
+        buffer.resize(num_eles);
+        buffer[0]=-32768;
+        buffer[num_eles-1]=32767;
+        d_cardinal->set_value((dods_int16*)buffer.data(),num_eles);
+        delete d4_dim;
+        delete d_int16;
+        d_int16 = 0;
+
+#if 0
+        d_int16 = new Int16("Int16");
+
+        DBG(cerr << "d_int16: " << d_int16 << endl);
+        d_cardinal = new Array("Array_of_Int16", d_int16);
+        uint64_t num_eles=1024*1024*1024*4;
         d_cardinal->append_dim(4, "dimension");
         dods_int16 buffer[4] = { 0, 1, 2, 3 };
         d_cardinal->val2buf(buffer);
@@ -84,6 +102,7 @@ public:
 
         delete d_int16;
         d_int16 = 0;
+#endif
     }
 
     void tearDown()
