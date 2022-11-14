@@ -47,7 +47,6 @@ namespace libdap {
 
 class BigArrayTest: public TestFixture {
 private:
-    Byte *d_uint8 = nullptr;
     uint64_t num_eles;
     vector<unsigned char>buf_int8;
 
@@ -107,10 +106,6 @@ public:
 
         // Retrieve the array value via buf2val
         d4_ar_uint8.buf2val(&d4_ar_val_ptr);
-#if 0
-        cout<<"the first value buf2val is "<<(int)(d4_ar_val[0]) <<endl;
-        cout<<"the middle value buf2val is "<<(int)(d4_ar_val[num_eles/2]) <<endl;
-#endif
         DBG(cerr<<"DAP4 buf2val: The first value is "<<(int)(d4_ar_val[0]) <<endl);
         DBG(cerr<<"DAP4 buf2val: The middle value is "<<(int)(d4_ar_val[num_eles/2]) <<endl);
         DBG(cerr<<"DAP4 buf2val: The last value is "<<(int)(d4_ar_val[num_eles-1]) <<endl);
@@ -136,10 +131,6 @@ public:
 
         // Retrieve the array value via value()
         d4_ar_uint8.value(d4_ar_val.data());
-#if 0
-        cout<<"the first value via value() is "<<(int)(d4_ar_val[0]) <<endl;
-        cout<<"the middle value via value() is "<<(int)(d4_ar_val[num_eles/2]) <<endl;
-#endif
         DBG(cerr<<"DAP4 value(): The first value is "<<(int)(d4_ar_val[0]) <<endl);
         DBG(cerr<<"DAP4 value(): The middle value is "<<(int)(d4_ar_val[num_eles/2]) <<endl);
         DBG(cerr<<"DAP4 value(): The last value is "<<(int)(d4_ar_val[num_eles-1]) <<endl);
@@ -164,10 +155,6 @@ public:
 
         // Retrieve the array value via value()
         d_ar_uint8.value(d_ar_val.data());
-#if 0
-        cout<<"the first value buf2val is "<<(int)(d_ar_val[0]) <<endl;
-        cout<<"the middle value buf2val is "<<(int)(d_ar_val[num_eles/2]) <<endl;
-#endif
         DBG(cerr<<"DAP2 value() via set_value(): The first value is "<<(int)(d_ar_val[0]) <<endl);
         DBG(cerr<<"DAP2 value() via set_value(): The middle value is "<<(int)(d_ar_val[num_eles/2]) <<endl);
         DBG(cerr<<"DAP2 value() via set_value(): The last value is "<<(int)(d_ar_val[num_eles-1]) <<endl);
