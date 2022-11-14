@@ -35,10 +35,6 @@
 
 #include "Array.h"
 #include "Byte.h"
-#include "Int16.h"
-#include "Float32.h"
-#include "Int64.h"
-#include "D4Enum.h"
 #include "D4Dimensions.h"
 
 #include "run_tests_cppunit.h"
@@ -64,24 +60,20 @@ public:
     void setUp()
     {
         num_eles=1024*1024*1024;
-        //num_eles=num_eles*2;
         num_eles = num_eles*5;
+
+        // Uncomment this #if 0 block to test a trivial small array case.
+#if 0
         num_eles = 4;
+#endif 
         buf_int8.resize(num_eles);
         buf_int8[0] = 0;
-        //cout<<"buf_int8 0 is "<<(int)(buf_int8[0]) <<endl;
         buf_int8[num_eles/2] = 128;
         buf_int8[num_eles-1] = 255;
 
-#if 0
-        auto d4_dim_byte = new D4Dimension("dimension",num_eles);
-        d_cardinal_byte->append_dim(d4_dim_byte);
-        vector<unsigned char> buffer_u8;
-        buffer_u8.resize(num_eles);
-        d_cardinal_byte->val2buf(buffer_u8.data());
-        delete d4_dim_byte;
-        delete d_uint8;
-#endif
+        DBG(cerr<<"Input buffer: The first value is "<<(int)(buf_int8[0]) <<endl);
+        DBG(cerr<<"Input buffer: The middle value is "<<(int)(buf_int8[num_eles/2]) <<endl);
+        DBG(cerr<<"Input buffer: The last value is "<<(int)(buf_int8[num_eles-1]) <<endl);
  
     }
 
@@ -105,17 +97,24 @@ public:
         Array d4_ar_uint8 = Array("Byte_array",d_uint8.get());
         unique_ptr<D4Dimension> d4_dim_byte(new D4Dimension("dimension",num_eles));
         d4_ar_uint8.append_dim(d4_dim_byte.get());
+
+        // Set the array value via val2buf
         d4_ar_uint8.val2buf(buf_int8.data());
-        cout<<"the first value is "<<(int)(buf_int8[0]) <<endl;
-        cout<<"the middle value is "<<(int)(buf_int8[num_eles/2]) <<endl;
+
         vector<unsigned char>d4_ar_val;
         d4_ar_val.resize(num_eles);
-
-        // The following doesn't work for 64-bit integer
         void* d4_ar_val_ptr = (void*)(d4_ar_val.data());    
+
+        // Retrieve the array value via buf2val
         d4_ar_uint8.buf2val(&d4_ar_val_ptr);
+#if 0
         cout<<"the first value buf2val is "<<(int)(d4_ar_val[0]) <<endl;
         cout<<"the middle value buf2val is "<<(int)(d4_ar_val[num_eles/2]) <<endl;
+#endif
+        DBG(cerr<<"DAP4 buf2val: The first value is "<<(int)(d4_ar_val[0]) <<endl);
+        DBG(cerr<<"DAP4 buf2val: The middle value is "<<(int)(d4_ar_val[num_eles/2]) <<endl);
+        DBG(cerr<<"DAP4 buf2val: The last value is "<<(int)(d4_ar_val[num_eles-1]) <<endl);
+
         CPPUNIT_ASSERT(buf_int8[0] == d4_ar_val[0]);
         CPPUNIT_ASSERT(buf_int8[num_eles/2] == d4_ar_val[num_eles/2]);
         CPPUNIT_ASSERT(buf_int8[num_eles-1] == d4_ar_val[num_eles-1]);
@@ -128,16 +127,23 @@ public:
         Array d4_ar_uint8 = Array("Byte_array",d_uint8.get());
         unique_ptr<D4Dimension> d4_dim_byte(new D4Dimension("dimension",num_eles));
         d4_ar_uint8.append_dim(d4_dim_byte.get());
+
+        // Set the array value via val2buf
         d4_ar_uint8.val2buf(buf_int8.data());
-        cout<<"the first value is "<<(int)(buf_int8[0]) <<endl;
-        cout<<"the middle value is "<<(int)(buf_int8[num_eles/2]) <<endl;
+
         vector<unsigned char>d4_ar_val;
         d4_ar_val.resize(num_eles);
 
-        // The following doesn't work for 64-bit integer
+        // Retrieve the array value via value()
         d4_ar_uint8.value(d4_ar_val.data());
-        cout<<"the first value buf2val is "<<(int)(d4_ar_val[0]) <<endl;
-        cout<<"the middle value buf2val is "<<(int)(d4_ar_val[num_eles/2]) <<endl;
+#if 0
+        cout<<"the first value via value() is "<<(int)(d4_ar_val[0]) <<endl;
+        cout<<"the middle value via value() is "<<(int)(d4_ar_val[num_eles/2]) <<endl;
+#endif
+        DBG(cerr<<"DAP4 value(): The first value is "<<(int)(d4_ar_val[0]) <<endl);
+        DBG(cerr<<"DAP4 value(): The middle value is "<<(int)(d4_ar_val[num_eles/2]) <<endl);
+        DBG(cerr<<"DAP4 value(): The last value is "<<(int)(d4_ar_val[num_eles-1]) <<endl);
+
         CPPUNIT_ASSERT(buf_int8[0] == d4_ar_val[0]);
         CPPUNIT_ASSERT(buf_int8[num_eles/2] == d4_ar_val[num_eles/2]);
         CPPUNIT_ASSERT(buf_int8[num_eles-1] == d4_ar_val[num_eles-1]);
@@ -149,43 +155,28 @@ public:
         Array d_ar_uint8 = Array("Byte_array",d_uint8.get());
         d_ar_uint8.append_dim(2);
         d_ar_uint8.append_dim(num_eles/2);
+
+        // Set the array value via set_value()
         d_ar_uint8.set_value((dods_byte *)buf_int8.data(),num_eles);
-        cout<<"the first value is "<<(int)(buf_int8[0]) <<endl;
-        cout<<"the middle value is "<<(int)(buf_int8[num_eles/2]) <<endl;
+
         vector<unsigned char>d_ar_val;
         d_ar_val.resize(num_eles);
+
+        // Retrieve the array value via value()
         d_ar_uint8.value(d_ar_val.data());
+#if 0
         cout<<"the first value buf2val is "<<(int)(d_ar_val[0]) <<endl;
         cout<<"the middle value buf2val is "<<(int)(d_ar_val[num_eles/2]) <<endl;
+#endif
+        DBG(cerr<<"DAP2 value() via set_value(): The first value is "<<(int)(d_ar_val[0]) <<endl);
+        DBG(cerr<<"DAP2 value() via set_value(): The middle value is "<<(int)(d_ar_val[num_eles/2]) <<endl);
+        DBG(cerr<<"DAP2 value() via set_value(): The last value is "<<(int)(d_ar_val[num_eles-1]) <<endl);
+
         CPPUNIT_ASSERT(buf_int8[0] == d_ar_val[0]);
         CPPUNIT_ASSERT(buf_int8[num_eles/2] == d_ar_val[num_eles/2]);
         CPPUNIT_ASSERT(buf_int8[num_eles-1] == d_ar_val[num_eles-1]);
  
     }
-#if 0
-
-    void error_handling_test()
-    {
-        Array a1 = Array("a", d_int16);
-        Array::Dim_iter i = a1.dim_begin();
-        string msg;
-        CPPUNIT_ASSERT_THROW(a1.dimension_name(i), InternalErr);
-        CPPUNIT_ASSERT(!a1.check_semantics(msg));
-    }
-
-    void error_handling_2_test()
-    {
-        Array a1 = Array("a", d_int16);
-        a1.append_dim(2, "dim_a");
-        Array::Dim_iter i = a1.dim_begin();
-        CPPUNIT_ASSERT(a1.dimension_size(i) == 2);
-        CPPUNIT_ASSERT_THROW(a1.add_constraint(i, 2, 1, 1), Error);
-        CPPUNIT_ASSERT_THROW(a1.add_constraint(i, 0, 1, 2), Error);
-        CPPUNIT_ASSERT_THROW(a1.add_constraint(i, 0, 3, 1), Error);
-    }
-
-
-#endif
 
 };
 
