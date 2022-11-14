@@ -49,31 +49,29 @@ using namespace std;
 
 namespace libdap {
 
-class ArrayTest: public TestFixture {
+class BigArrayTest: public TestFixture {
 private:
-    Array *d_cardinal = nullptr;
-    Array *d_card_dap4 = nullptr;
-
-    Array *d_cardinal_byte = nullptr;
-    Array *d_card_dap4_byte = nullptr;
-
-    Int16 *d_int16 = nullptr;
     Byte *d_uint8 = nullptr;
     uint64_t num_eles;
     vector<unsigned char>buf_int8;
 
     
 public:
-    ArrayTest() = default;
+    BigArrayTest() = default;
 
-    ~ArrayTest() = default;
+    ~BigArrayTest() = default;
 
     void setUp()
     {
         num_eles=1024*1024*1024;
+        //num_eles=num_eles*2;
         num_eles = num_eles*5;
-        //num_eles = 2;
+        num_eles = 4;
         buf_int8.resize(num_eles);
+        buf_int8[0] = 0;
+        //cout<<"buf_int8 0 is "<<(int)(buf_int8[0]) <<endl;
+        buf_int8[num_eles/2] = 128;
+        buf_int8[num_eles-1] = 255;
 
 #if 0
         auto d4_dim_byte = new D4Dimension("dimension",num_eles);
@@ -92,137 +90,79 @@ public:
     }
 
 
-    CPPUNIT_TEST_SUITE (ArrayTest);
+    CPPUNIT_TEST_SUITE (BigArrayTest);
 
-    CPPUNIT_TEST (cons_test);
-#if 0
-    CPPUNIT_TEST (test_is_dap4_1);
-    CPPUNIT_TEST (duplicate_cardinal_test);
-#endif
+    CPPUNIT_TEST (dap4_val2buf_buf2val);
+    CPPUNIT_TEST (dap4_val2buf_value);
+    CPPUNIT_TEST (dap2_set_value);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void cons_test()
+    void dap4_val2buf_buf2val()
     {
 
         unique_ptr<Byte> d_uint8(new Byte("Byte"));
-        Array d_ar_uint8 = Array("Byte_array",d_uint8.get());
+        Array d4_ar_uint8 = Array("Byte_array",d_uint8.get());
         unique_ptr<D4Dimension> d4_dim_byte(new D4Dimension("dimension",num_eles));
-        d_ar_uint8.append_dim(d4_dim_byte.get());
-        d_ar_uint8.val2buf(buf_int8.data());
-        
+        d4_ar_uint8.append_dim(d4_dim_byte.get());
+        d4_ar_uint8.val2buf(buf_int8.data());
+        cout<<"the first value is "<<(int)(buf_int8[0]) <<endl;
+        cout<<"the middle value is "<<(int)(buf_int8[num_eles/2]) <<endl;
+        vector<unsigned char>d4_ar_val;
+        d4_ar_val.resize(num_eles);
 
-        //CPPUNIT_ASSERT(a1.name() == "a");
+        // The following doesn't work for 64-bit integer
+        void* d4_ar_val_ptr = (void*)(d4_ar_val.data());    
+        d4_ar_uint8.buf2val(&d4_ar_val_ptr);
+        cout<<"the first value buf2val is "<<(int)(d4_ar_val[0]) <<endl;
+        cout<<"the middle value buf2val is "<<(int)(d4_ar_val[num_eles/2]) <<endl;
+        CPPUNIT_ASSERT(buf_int8[0] == d4_ar_val[0]);
+        CPPUNIT_ASSERT(buf_int8[num_eles/2] == d4_ar_val[num_eles/2]);
+        CPPUNIT_ASSERT(buf_int8[num_eles-1] == d4_ar_val[num_eles-1]);
     }
 
-    void test_is_dap4_1() {
-        DBG(d_card_dap4->dump(cerr));
-        CPPUNIT_ASSERT_MESSAGE("This Array should register as DAP4", d_card_dap4->is_dap4());
-    }
-
-    void test_is_dap4_2() {
-        DBG(d_cardinal->dump(cerr));
-        CPPUNIT_ASSERT_MESSAGE("This Array should not register as DAP4", !d_cardinal->is_dap4());
-    }
-
-    void test_is_dap4_3() {
-        // An array Enum is always DAP4, even when the underlying type of the enum is not
-        D4Enum enum16("", dods_int16_c);
-        unique_ptr<Array> enum_array_dap4(new Array("Array_of_Enum", &enum16));
-        enum_array_dap4->append_dim(4, "dimension");
-        dods_int16 buffer16[4] = { 0, 1, 2, 3 };
-        enum_array_dap4->val2buf(buffer16);
-
-        DBG(enum_array_dap4->dump(cerr));
-        CPPUNIT_ASSERT_MESSAGE("This Array should register as DAP4", enum_array_dap4->is_dap4());
-    }
-
-    void test_is_dap4_4() {
-        D4Enum enum64("", dods_int64_c);
-        unique_ptr<Array> enum_array_dap4(new Array("Array_of_Enum", &enum64));
-        enum_array_dap4->append_dim(4, "dimension");
-        dods_int64 buffer64[4] = { 0, 1, 2, 3 };
-        enum_array_dap4->val2buf(buffer64);
-
-        DBG(enum_array_dap4->dump(cerr));
-        CPPUNIT_ASSERT_MESSAGE("This Array should register as DAP4", enum_array_dap4->is_dap4());
-    }
-
-    void assignment_test_1()
+    void dap4_val2buf_value()
     {
-        // Are fields from the object copied by the assignment
-        Array a1 = Array("a", d_int16);
-        a1.append_dim(17, "bob");
-        CPPUNIT_ASSERT(a1.dimension_size(a1.dim_begin()) == 17);
-        a1 = *d_cardinal;
-        CPPUNIT_ASSERT(a1.dimension_size(a1.dim_begin()) == 4);
+
+        unique_ptr<Byte> d_uint8(new Byte("Byte"));
+        Array d4_ar_uint8 = Array("Byte_array",d_uint8.get());
+        unique_ptr<D4Dimension> d4_dim_byte(new D4Dimension("dimension",num_eles));
+        d4_ar_uint8.append_dim(d4_dim_byte.get());
+        d4_ar_uint8.val2buf(buf_int8.data());
+        cout<<"the first value is "<<(int)(buf_int8[0]) <<endl;
+        cout<<"the middle value is "<<(int)(buf_int8[num_eles/2]) <<endl;
+        vector<unsigned char>d4_ar_val;
+        d4_ar_val.resize(num_eles);
+
+        // The following doesn't work for 64-bit integer
+        d4_ar_uint8.value(d4_ar_val.data());
+        cout<<"the first value buf2val is "<<(int)(d4_ar_val[0]) <<endl;
+        cout<<"the middle value buf2val is "<<(int)(d4_ar_val[num_eles/2]) <<endl;
+        CPPUNIT_ASSERT(buf_int8[0] == d4_ar_val[0]);
+        CPPUNIT_ASSERT(buf_int8[num_eles/2] == d4_ar_val[num_eles/2]);
+        CPPUNIT_ASSERT(buf_int8[num_eles-1] == d4_ar_val[num_eles-1]);
     }
 
-    void assignment_test_2()
+    void dap2_set_value()
     {
-        // Self-assignment; are objects changed by the assignment?
-        Array a1 = Array("a", d_int16);
-        Array *before = &a1;
-        a1 = a1;
-        Array *after = &a1;
-        CPPUNIT_ASSERT_MESSAGE("The pointers should be the same", before == after);
+        unique_ptr<Byte> d_uint8(new Byte("Byte"));
+        Array d_ar_uint8 = Array("Byte_array",d_uint8.get());
+        d_ar_uint8.append_dim(2);
+        d_ar_uint8.append_dim(num_eles/2);
+        d_ar_uint8.set_value((dods_byte *)buf_int8.data(),num_eles);
+        cout<<"the first value is "<<(int)(buf_int8[0]) <<endl;
+        cout<<"the middle value is "<<(int)(buf_int8[num_eles/2]) <<endl;
+        vector<unsigned char>d_ar_val;
+        d_ar_val.resize(num_eles);
+        d_ar_uint8.value(d_ar_val.data());
+        cout<<"the first value buf2val is "<<(int)(d_ar_val[0]) <<endl;
+        cout<<"the middle value buf2val is "<<(int)(d_ar_val[num_eles/2]) <<endl;
+        CPPUNIT_ASSERT(buf_int8[0] == d_ar_val[0]);
+        CPPUNIT_ASSERT(buf_int8[num_eles/2] == d_ar_val[num_eles/2]);
+        CPPUNIT_ASSERT(buf_int8[num_eles-1] == d_ar_val[num_eles-1]);
+ 
     }
-
-    // This tests that the assignment operator defined in Array correctly copies
-    // information held in a parent class (Vector). jhrg 2/9/22
-    void assignment_test_3()
-    {
-        // Array copies the proto pointer and manages the storage
-#if 0       
-        unique_ptr<Float32> f32(new Float32("float_proto"));
-        Array a1 = Array("a", f32.get());
-#endif
-        auto f32_ptr = new Float32("float_proto");
-        Array a1 = Array("a", f32_ptr);
-	delete f32_ptr;
-	
-        CPPUNIT_ASSERT_MESSAGE("The type of a1.var() should be dods_float32", a1.var()->type() == dods_float32_c);
-        a1 = *d_cardinal;
-        CPPUNIT_ASSERT_MESSAGE("The type of a1.var() should now be dods_int16_c", a1.var()->type() == dods_int16_c);
-    }
-
-    void prepend_dim_test()
-    {
-        Array a1 = Array("a", d_int16);
-        Array::Dim_iter i = a1.dim_begin();
-        CPPUNIT_ASSERT(a1.dimension_size(i) == 0);
-        a1.prepend_dim(2, "dim_a");
-        i = a1.dim_begin();
-        CPPUNIT_ASSERT(a1.dimension_size(i) == 2);
-        a1.prepend_dim(3, "dim_b");
-    }
-
-    void prepend_dim_2_test()
-    {
-        Array a1 = Array("a", d_int16);
-        string expected_name[2] = {"dim_b", "myDim"};
-        int j = 0;
-        D4Dimensions *dims = new D4Dimensions();
-        D4Dimension *d = new D4Dimension("dim_b", 2, dims);
-        a1.prepend_dim(2, "dim_a");
-        a1.prepend_dim(d);
-        a1.rename_dim("dim_a", "myDim");
-        for (Array::Dim_iter i = a1.dim_begin(); i != a1.dim_end(); i++, j++) {
-            CPPUNIT_ASSERT(a1.dimension_name(i) == expected_name[j]);
-        }
-        delete dims;
-        delete d;
-    }
-
-    void clear_dims_test()
-    {
-        Array a1 = Array("a", d_int16);
-        a1.prepend_dim(2, "dim_a");
-        a1.prepend_dim(3, "dim_b");
-        a1.clear_all_dims();
-        Array::Dim_iter i = a1.dim_begin();
-        CPPUNIT_ASSERT(a1.dimension_size(i) == 0);
-    }
+#if 0
 
     void error_handling_test()
     {
@@ -245,40 +185,15 @@ public:
     }
 
 
-    void duplicate_cardinal_test()
-    {
-        Array::Dim_iter i = d_cardinal->dim_begin();
-        CPPUNIT_ASSERT(d_cardinal->dimension_size(i) == 4);
-        dods_int16 *b = new dods_int16[4];
-        d_cardinal->buf2val((void**) &b);
-        for (int i = 0; i < 4; ++i) {
-            CPPUNIT_ASSERT(b[i] == i);
-            DBG(cerr << "b[" << i << "]: " << b[i] << endl);
-        }
-        delete[] b;
-        b = 0;
-
-        Array a = *d_cardinal;
-        i = a.dim_begin();
-        CPPUNIT_ASSERT(a.dimension_size(i) == 4);
-
-        dods_int16 *b2 = new dods_int16[4];
-        d_cardinal->buf2val((void**) &b2);
-        for (int i = 0; i < 4; ++i) {
-            CPPUNIT_ASSERT(b2[i] == i);
-            DBG(cerr << "b2[" << i << "]: " << b2[i] << endl);
-        }
-        delete[] b2;
-        b2 = 0;
-    }
+#endif
 
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (ArrayTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (BigArrayTest);
 
 } // namespace libdap
 
 int main(int argc, char *argv[])
 {
-    return run_tests<libdap::ArrayTest>(argc, argv) ? 0: 1;
+    return run_tests<libdap::BigArrayTest>(argc, argv) ? 0: 1;
 }
