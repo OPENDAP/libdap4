@@ -30,6 +30,7 @@
 
 #include <cstring>
 #include <cstdarg>
+#include <fstream>
 
 #include "BaseType.h"
 #include "Byte.h"
@@ -1017,13 +1018,12 @@ void DDXParser::ddx_fatal_error(void * p, const char *msg, ...)
 
 //@}
 
-void DDXParser::cleanup_parse(xmlParserCtxtPtr & context)
+void DDXParser::cleanup_parse()
 {
-    bool wellFormed = context->wellFormed;
-    bool valid = context->valid;
+    bool wellFormed = ctxt->wellFormed;
+    bool valid = ctxt->valid;
 
-    context->sax = NULL;
-    xmlFreeParserCtxt(context);
+    xmlFreeParserCtxt(ctxt);
 
     // If there's an error, there may still be items on the stack at the
     // end of the parse.
@@ -1066,34 +1066,15 @@ void DDXParser::intern_stream(istream &in, DDS *dest_dds, string &cid, const str
     int res = in.gcount();
     if (res > 0) {
         chars[4]='\0';
-        xmlParserCtxtPtr context = xmlCreatePushParserCtxt(NULL, NULL, chars, res, "stream");
+        ctxt = xmlCreatePushParserCtxt(&ddx_sax_parser, this, chars, res, "stream");
 
-        if (!context)
+        if (!ctxt)
             throw DDXParseFailed("Error parsing DDX response: Input does not look like XML");
 
-        ctxt = context;         // need ctxt for error messages
         dds = dest_dds;         // dump values here
         blob_href = &cid; 	// cid goes here
 
-        xmlSAXHandler ddx_sax_parser;
-        memset( &ddx_sax_parser, 0, sizeof(xmlSAXHandler) );
-
-        ddx_sax_parser.getEntity = &DDXParser::ddx_get_entity;
-        ddx_sax_parser.startDocument = &DDXParser::ddx_start_document;
-        ddx_sax_parser.endDocument = &DDXParser::ddx_end_document;
-        ddx_sax_parser.characters = &DDXParser::ddx_get_characters;
-        ddx_sax_parser.ignorableWhitespace = &DDXParser::ddx_ignoreable_whitespace;
-        ddx_sax_parser.cdataBlock = &DDXParser::ddx_get_cdata;
-        ddx_sax_parser.warning = &DDXParser::ddx_fatal_error;
-        ddx_sax_parser.error = &DDXParser::ddx_fatal_error;
-        ddx_sax_parser.fatalError = &DDXParser::ddx_fatal_error;
-        ddx_sax_parser.initialized = XML_SAX2_MAGIC;
-        ddx_sax_parser.startElementNs = &DDXParser::ddx_sax2_start_element;
-        ddx_sax_parser.endElementNs = &DDXParser::ddx_sax2_end_element;
-
-        context->sax = &ddx_sax_parser;
-        context->userData = this;
-        context->validate = true;
+        ctxt->validate = true;
 
         in.getline(chars, size);	// chars has size+1 elements
         res = in.gcount();
@@ -1115,12 +1096,13 @@ void DDXParser::intern_stream(istream &in, DDS *dest_dds, string &cid, const str
         // the bool 'terminate.'
         xmlParseChunk(ctxt, chars, 0, 1);
 
-        cleanup_parse(context);
+        cleanup_parse();
     }
     else {
         throw DDXParseFailed("Error parsing DDX response: Could not read from input stream.");
     }
 }
+
 
 /** @brief Read the DDX from a stream instead of a file.
     @see DDXParser::intern(). */
@@ -1136,34 +1118,15 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid, const string
     int res = fread(chars, 1, 4, in);
     if (res > 0) {
         chars[4]='\0';
-        xmlParserCtxtPtr context = xmlCreatePushParserCtxt(NULL, NULL, chars, res, "stream");
+        ctxt = xmlCreatePushParserCtxt(&ddx_sax_parser, this, chars, res, "stream");
 
-        if (!context)
+        if (!ctxt)
             throw DDXParseFailed("Error parsing DDX response: Input does not look like XML");
 
-        ctxt = context;         // need ctxt for error messages
         dds = dest_dds;         // dump values here
         blob_href = &cid; 	// cid goes here
 
-        xmlSAXHandler ddx_sax_parser;
-        memset( &ddx_sax_parser, 0, sizeof(xmlSAXHandler) );
-
-        ddx_sax_parser.getEntity = &DDXParser::ddx_get_entity;
-        ddx_sax_parser.startDocument = &DDXParser::ddx_start_document;
-        ddx_sax_parser.endDocument = &DDXParser::ddx_end_document;
-        ddx_sax_parser.characters = &DDXParser::ddx_get_characters;
-        ddx_sax_parser.ignorableWhitespace = &DDXParser::ddx_ignoreable_whitespace;
-        ddx_sax_parser.cdataBlock = &DDXParser::ddx_get_cdata;
-        ddx_sax_parser.warning = &DDXParser::ddx_fatal_error;
-        ddx_sax_parser.error = &DDXParser::ddx_fatal_error;
-        ddx_sax_parser.fatalError = &DDXParser::ddx_fatal_error;
-        ddx_sax_parser.initialized = XML_SAX2_MAGIC;
-        ddx_sax_parser.startElementNs = &DDXParser::ddx_sax2_start_element;
-        ddx_sax_parser.endElementNs = &DDXParser::ddx_sax2_end_element;
-
-        context->sax = &ddx_sax_parser;
-        context->userData = this;
-        context->validate = true;
+        ctxt->validate = true;
 
 
         while ((fgets(chars, size, in) != 0) && !is_boundary(chars, boundary)) {
@@ -1174,7 +1137,7 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid, const string
         // the bool 'terminate.'
         xmlParseChunk(ctxt, chars, 0, 1);
 
-        cleanup_parse(context);
+        cleanup_parse();
     }
     else {
         throw DDXParseFailed("Error parsing DDX response: Could not read from input file.");
@@ -1195,15 +1158,27 @@ void DDXParser::intern_stream(FILE *in, DDS *dest_dds, string &cid, const string
     read or parsed. */
 void DDXParser::intern(const string & document, DDS * dest_dds, string &cid)
 {
-    // Create the context pointer explicitly so that we can store a pointer
+
+    ifstream ifs;
+    ifs.open(document);
+    if (ifs.good()) {
+        intern_stream(ifs,dest_dds,cid,"");
+    }
+    ifs.close();
+}
+
+#if 0
+void DDXParser::intern(const string & document, DDS * dest_dds, string &cid)
+{
+    // Create the ctxt pointer explicitly so that we can store a pointer
     // to it in the DDXParser instance. This provides a way to generate our
     // own error messages *with* line numbers. The messages are pretty
     // meaningless otherwise. This means that we use an interface from the
     // 'parser internals' header, and not the 'parser' header. However, this
     // interface is also used in one of the documented examples, so it's
     // probably pretty stable. 06/02/03 jhrg
-    xmlParserCtxtPtr context = xmlCreateFileParserCtxt(document.c_str());
-    if (!context)
+    ctxt = xmlCreateFileParserCtxt(document.c_str());
+    if (!ctxt)
         throw
         DDXParseFailed(string
                        ("Could not initialize the parser with the file: '")
@@ -1211,31 +1186,13 @@ void DDXParser::intern(const string & document, DDS * dest_dds, string &cid)
 
     dds = dest_dds;             // dump values here
     blob_href = &cid;
-    ctxt = context;             // need ctxt for error messages
 
-    xmlSAXHandler ddx_sax_parser;
-    memset( &ddx_sax_parser, 0, sizeof(xmlSAXHandler) );
+    ctxt->validate = false;
 
-    ddx_sax_parser.getEntity = &DDXParser::ddx_get_entity;
-    ddx_sax_parser.startDocument = &DDXParser::ddx_start_document;
-    ddx_sax_parser.endDocument = &DDXParser::ddx_end_document;
-    ddx_sax_parser.characters = &DDXParser::ddx_get_characters;
-    ddx_sax_parser.ignorableWhitespace = &DDXParser::ddx_ignoreable_whitespace;
-    ddx_sax_parser.cdataBlock = &DDXParser::ddx_get_cdata;
-    ddx_sax_parser.warning = &DDXParser::ddx_fatal_error;
-    ddx_sax_parser.error = &DDXParser::ddx_fatal_error;
-    ddx_sax_parser.fatalError = &DDXParser::ddx_fatal_error;
-    ddx_sax_parser.initialized = XML_SAX2_MAGIC;
-    ddx_sax_parser.startElementNs = &DDXParser::ddx_sax2_start_element;
-    ddx_sax_parser.endElementNs = &DDXParser::ddx_sax2_end_element;
+    xmlParseDocument(ctxt);
 
-    context->sax = &ddx_sax_parser;
-    context->userData = this;
-    context->validate = false;
-
-    xmlParseDocument(context);
-
-    cleanup_parse(context);
+    cleanup_parse();
 }
+#endif
 
 } // namespace libdap
