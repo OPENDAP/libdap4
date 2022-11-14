@@ -82,8 +82,6 @@ public:
 
     CPPUNIT_TEST_SUITE (DDXParserTest);
 
-// Temporarily turn off these tests because of memory leaks. KY 2022-11-03
-#if 0
     CPPUNIT_TEST (other_xml_parse_test1);
     CPPUNIT_TEST (other_xml_parse_test2);
     CPPUNIT_TEST (other_xml_parse_test3);
@@ -106,22 +104,19 @@ public:
     // FILE I/O tests
     CPPUNIT_TEST (top_level_simple_types_test_file_stream);
     CPPUNIT_TEST (structure_test_file_ptr);
-#endif
 
-#if 0
     // All of these fail; maybe because on OSX 10.9 something about
     // libxml2 is odd. Investigate. jhrg 2/4/14
     // FIXME
+    // The following C++ Stream I/O tests work on MacOS 11, we will turn on
+    // and see if it can pass other MacOS. KY 11/10/22
 
     // C++ Stream I/O tests
     CPPUNIT_TEST(top_level_simple_types_test_cpp_stream);
     CPPUNIT_TEST(structure_test_cpp_stream);
     CPPUNIT_TEST(sequence_test_cpp_stream);
     CPPUNIT_TEST(grid_test_cpp_stream);
-#endif
     // Error tests
-// Temporarily turn off these tests because of memory leaks. KY 2022-11-03
-#if 0
     CPPUNIT_TEST (unknown_tag_test);
     CPPUNIT_TEST (bad_nesting_test);
     CPPUNIT_TEST (unknown_end_tag_test);
@@ -129,7 +124,6 @@ public:
     CPPUNIT_TEST (simple_type_missing_attribute_test);
     CPPUNIT_TEST (array_missing_dimension_test);
     CPPUNIT_TEST (array_missing_dimension_stream_read_test);
-#endif
 
     CPPUNIT_TEST_SUITE_END();
 
