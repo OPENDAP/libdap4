@@ -617,8 +617,8 @@ DMR_TRANS_SERIES_CE([names_with_spaces.dmr], [/u], [names_with_spaces.dmr.1.tran
 DMR_TRANS_SERIES_CE([names_with_spaces.dmr], [/inst2/u], [names_with_spaces.dmr.2.trans_base], [xfail])
 DMR_TRANS_SERIES_CE([names_with_spaces.dmr], [/inst2/Point.x], [names_with_spaces.dmr.3.trans_base], [xfail])
 
-DMR_TRANS_SERIES_CE([names_with_spaces2.dmr], [/inst2/\"Point Break\".x], [names_with_spaces2.dmr.1.trans_base], [xfail])
-DMR_TRANS_SERIES_CE([names_with_spaces2.dmr], [/inst2/Point%20Break.x], [names_with_spaces2.dmr.1.trans_base], [xfail])
+DMR_TRANS_SERIES_CE([names_with_spaces2.dmr], [/inst2/Point Break.x], [names_with_spaces2.dmr.1.trans_base], [xfail])
+DMR_TRANS_SERIES_CE([names_with_spaces2.dmr], [/inst2/Point%20Break.x], [names_with_spaces2.dmr.1.trans_base], [pass])
 DMR_TRANS_SERIES_CE([names_with_spaces2.dmr], [/inst2/\"Point%20Break\".x], [names_with_spaces2.dmr.1.trans_base], [xfail])
 
 DMR_TRANS_SERIES_CE([names_with_spaces3.dmr], [/inst2/\"New Group\"/x], [names_with_spaces3.dmr.1.trans_base], [xfail])

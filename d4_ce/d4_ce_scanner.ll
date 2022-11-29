@@ -92,8 +92,8 @@ typedef libdap::D4CEParser::token token;
    of a WORD.
    jhrg 4/29/16 */
    
-WORD    [-+a-zA-Z0-9_%*\\!~@][-+a-zA-Z0-9_%*\\#]* 
-
+/*WORD    [-+a-zA-Z0-9_%*\\!~@][-+a-zA-Z0-9_%*\\#]* */
+WORD    ([-+a-zA-Z0-9_%*\\!~@][-+a-zA-Z0-9_%*\\#]*)|([-+a-zA-Z0-9_%*\\!~@][-+a-zA-Z0-9_%*\\# ]+[-+a-zA-Z0-9_%*\\#])
 %{
 // Code run each time a pattern is matched
 #define YY_USER_ACTION loc->columns(yyleng);
