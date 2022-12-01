@@ -77,7 +77,7 @@ public:
     D4Group &operator=(const D4Group &rhs);
 
     // This method returned a D4Group * previously. jhrg 11/17/16
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
     // TODO Wire up the new D4Dimensions object to have this group as its parent. jhrg 8/22/22
     /// Get the dimensions defined for this Group
@@ -87,7 +87,7 @@ public:
         return d_dims;
     }
 
-    virtual std::string FQN() const;
+    std::string FQN() const override;
 
     D4Dimension *find_dim(const string &path);
 
@@ -133,15 +133,15 @@ public:
     long request_size(bool constrained);
     uint64_t request_size_kb(bool constrained);
 
-    virtual void set_send_p(bool state);
-    virtual void set_read_p(bool state);
+    void set_send_p(bool state) override;
+    void set_read_p(bool state) override;
 
     // DAP4
-    virtual void intern_data();
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void intern_data() override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    void print_dap4(XMLWriter &xml, bool constrained = false);
+    void print_dap4(XMLWriter &xml, bool constrained = false) override;
 
     void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
                     bool constrained = false) override;
@@ -151,7 +151,7 @@ public:
     void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
     void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
-    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 };
 
 } /* namespace libdap */

@@ -48,13 +48,13 @@ namespace libdap
 
 class UInt64: public BaseType
 {
-	virtual unsigned int val2buf(void *val, bool)  {
+	virtual unsigned int val2buf(void *val, bool)  override {
     	set_value(*reinterpret_cast<dods_uint64*>(val));
     	return sizeof(dods_uint64);
     }
     //virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
-    unsigned int buf2val(void **);
-    virtual void print_val(FILE *, string, bool) { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
+    unsigned int buf2val(void **) override;
+    virtual void print_val(FILE *, string, bool)  override { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
 
 protected:
     dods_uint64 d_buf;
@@ -69,7 +69,7 @@ public:
 
     UInt64 &operator=(const UInt64 &rhs);
 
-    virtual BaseType *ptr_duplicate() ;
+    BaseType *ptr_duplicate() override;
 
     unsigned int width(bool = false) const override
     {
@@ -82,20 +82,20 @@ public:
     }
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void compute_checksum(Crc32 &checksum) override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
     virtual dods_uint64 value() const;
     virtual bool set_value(dods_uint64 val);
 
-    virtual void print_val(ostream &out, string space = "",  bool print_decl_p = true);
+    void print_val(ostream &out, string space = "",  bool print_decl_p = true) override;
 
-    virtual bool ops(BaseType *b, int op);
-    virtual bool d4_ops(BaseType *b, int op);
-    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
+    bool ops(BaseType *b, int op) override;
+    bool d4_ops(BaseType *b, int op) override;
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 
-    virtual void dump(ostream &strm) const ;
+    void dump(ostream &strm) const  override;
 };
 
 } // namespace libdap
