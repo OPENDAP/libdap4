@@ -48,13 +48,13 @@ namespace libdap
 
 class UInt64: public BaseType
 {
-	virtual unsigned int val2buf(void *val, bool)  override {
+	unsigned int val2buf(void *val, bool)  override {
     	set_value(*reinterpret_cast<dods_uint64*>(val));
     	return sizeof(dods_uint64);
     }
     //virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
     unsigned int buf2val(void **) override;
-    virtual void print_val(FILE *, string, bool)  override { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
+    void print_val(FILE *, string, bool)  override { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
 
 protected:
     dods_uint64 d_buf;
