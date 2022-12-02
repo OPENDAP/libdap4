@@ -115,7 +115,7 @@ public:
     virtual D4EnumDef *enumeration() const { return d_enum_def; }
     virtual void set_enumeration(D4EnumDef *enum_def);
 
-    virtual BaseType *ptr_duplicate() { return new D4Enum(*this); }
+    BaseType *ptr_duplicate() override{ return new D4Enum(*this); }
 
     Type element_type() { return d_element_type; }
     void set_element_type(Type type) { d_element_type = type; }
@@ -177,22 +177,22 @@ public:
     }
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void compute_checksum(Crc32 &checksum) override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
-    virtual void print_xml_writer(XMLWriter &xml, bool constrained);
+    void print_xml_writer(XMLWriter &xml, bool constrained) override;
 
-    virtual bool ops(BaseType *b, int op);
+    bool ops(BaseType *b, int op) override;
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 
     unsigned int val2buf(void *, bool);
     unsigned int buf2val(void **);
 
-    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 
 };
 

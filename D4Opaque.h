@@ -55,7 +55,7 @@ public:
 
     D4Opaque &operator=(const D4Opaque &rhs);
 
-    virtual BaseType *ptr_duplicate() {  return new D4Opaque(*this); }
+    BaseType *ptr_duplicate() override {  return new D4Opaque(*this); }
 
     virtual void clear_local_data();
 
@@ -74,41 +74,41 @@ public:
     virtual int length() const { return d_buf.size(); }
 
     // DAP2
-    virtual bool serialize(ConstraintEvaluator &, DDS &, Marshaller &, bool = true) {
+    bool serialize(ConstraintEvaluator &, DDS &, Marshaller &, bool = true) override {
     	throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
     }
-    virtual bool deserialize(UnMarshaller &, DDS *, bool = false) {
+    bool deserialize(UnMarshaller &, DDS *, bool = false) override {
     	throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
     }
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
+    void compute_checksum(Crc32 &checksum) override ;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
 #if 0
     virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
 #endif
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
+    unsigned int val2buf(void *val, bool reuse = false) override;
+    unsigned int buf2val(void **val) override;
 
     virtual bool set_value(const dods_opaque &value);
     virtual dods_opaque value() const;
 
-    virtual void print_val(FILE *, std::string = "", bool = true)  {
+    void print_val(FILE *, std::string = "", bool = true)  override {
     	throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
     }
-    virtual void print_val(std::ostream &out, std::string space = "", bool print_decl_p = true);
+    void print_val(std::ostream &out, std::string space = "", bool print_decl_p = true) override;
 
     //virtual void print_dap4(XMLWriter &xml, bool constrained = false);
 
-    virtual bool ops(BaseType *, int) {
+    bool ops(BaseType *, int)  override {
         throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
     }
 
-    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 
-    virtual void dump(std::ostream &strm) const ;
+    void dump(std::ostream &strm) const override;
 
 };
 

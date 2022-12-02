@@ -74,7 +74,7 @@ public:
 
     Str &operator=(const Str &rhs);
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
     unsigned int width(bool = false) const override
     {
@@ -92,31 +92,31 @@ public:
     int64_t length_ll() const override;
 
     // DAP2
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
+    bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) override;
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void compute_checksum(Crc32 &checksum) override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
+    unsigned int val2buf(void *val, bool reuse = false) override;
+    unsigned int buf2val(void **val) override;
 
     virtual bool set_value(const string &value);
     virtual string value() const;
 
     virtual string esc_string_variable_value(const string &s);
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    void print_val(FILE *out, string space = "",
+                           bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "",
+                           bool print_decl_p = true) override;
 
-    virtual bool ops(BaseType *b, int op);
-    virtual bool d4_ops(BaseType *b, int op);
+    bool ops(BaseType *b, int op) override;
+    bool d4_ops(BaseType *b, int op) override;
 
-    virtual void dump(ostream &strm) const ;
+    void dump(ostream &strm) const  override;
 };
 
 } // namespace libdap
