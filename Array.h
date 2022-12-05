@@ -142,7 +142,7 @@ public:
     	// pointer; it is shared between the array and the Group where the
     	// Dimension is defined. To keep Array manageable to implement, size
     	// will be set here using the value from 'dim' if it is not null.
-        int size;  ///< The unconstrained dimension size.
+        unsigned long long  size;  ///< The unconstrained dimension size.
         string name;    ///< The name of this dimension.
 
         D4Dimension *dim; ///< If not null, a weak pointer to the D4Dimension
@@ -155,10 +155,10 @@ public:
         // from a sliced sdim.
         bool use_sdim_for_slice; ///< Used to control printing the DMR in data responses
 
-        int start;  ///< The constraint start index
-        int stop;  ///< The constraint end index
-        int stride;  ///< The constraint stride
-        int c_size;  ///< Size of dimension once constrained
+        unsigned long long  start;  ///< The constraint start index
+        unsigned long long  stop;  ///< The constraint end index
+        unsigned long long  stride;  ///< The constraint stride
+        unsigned long long  c_size;  ///< Size of dimension once constrained
 
         dimension() : size(0), name(""), dim(0), use_sdim_for_slice(false) {
             // this information changes with each constraint expression
@@ -248,6 +248,7 @@ public:
     virtual void clear_constraint(); // deprecated
 
     virtual void update_length(int size = 0); // should be used internally only
+    virtual void update_length_ll(unsigned long long size = 0); // should be used internally only
 
     Dim_iter dim_begin() ;
     Dim_iter dim_end() ;

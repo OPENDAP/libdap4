@@ -204,7 +204,7 @@ int64_t Vector::m_create_cardinal_data_buffer_for_type(int64_t num_elements)
     int64_t bytesNeeded = d_proto->width_ll() * num_elements;
     d_buf = new char[bytesNeeded];
 
-    d_capacity = (unsigned int)num_elements;
+    d_capacity = (unsigned long long)num_elements;
     return bytesNeeded;
 }
 
@@ -220,7 +220,7 @@ void Vector::m_delete_cardinal_data_buffer()
  *
  */
 template<class CardType>
-void Vector::m_set_cardinal_values_internal(const CardType* fromArray, int numElts)
+void Vector::m_set_cardinal_values_internal(const CardType* fromArray, int64_t numElts)
 {
     if (numElts < 0) {
         throw InternalErr(__FILE__, __LINE__, "Logic error: Vector::set_cardinal_values_internal() called with negative numElts!");
@@ -228,7 +228,7 @@ void Vector::m_set_cardinal_values_internal(const CardType* fromArray, int numEl
     if (!fromArray) {
         throw InternalErr(__FILE__, __LINE__, "Logic error: Vector::set_cardinal_values_internal() called with null fromArray!");
     }
-    set_length(numElts);
+    set_length_ll(numElts);
     m_create_cardinal_data_buffer_for_type(numElts);
     if (d_buf)
         memcpy(d_buf, fromArray, numElts * sizeof(CardType));
@@ -1194,7 +1194,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 #endif
             // First time or no reuse (free'd above)
             if (!d_buf || !reuse)
-                m_create_cardinal_data_buffer_for_type(length());
+                m_create_cardinal_data_buffer_for_type(length_ll());
 
             // width_ll(true) returns the size in bytes given the constraint
             if (d_buf)
@@ -1677,14 +1677,30 @@ bool Vector::set_value_worker(T *v, int sz)
     if (!v || !types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
         return false;
 
+    m_set_cardinal_values_internal(v, (int64_t)sz);
+    return true;
+}
+
+template <typename T>
+bool Vector::set_value_worker(T *v, int64_t sz)
+{
+    if (!v || !types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
+        return false;
+
     m_set_cardinal_values_internal(v, sz);
     return true;
+}
+
+bool Vector::set_value(dods_byte *val, int64_t  sz)
+{
+    return set_value_worker(val, sz);
 }
 
 bool Vector::set_value(dods_byte *val, int sz)
 {
     return set_value_worker(val, sz);
 }
+
 bool Vector::set_value(dods_int8 *val, int sz)
 {
     return set_value_worker(val, sz);
@@ -1908,7 +1924,8 @@ void Vector::value_worker(T *v) const
     // Only copy if v is not null and the proto's  type matches.
     // For Enums, use the element type since type == dods_enum_c.
     if (v && types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
-        memcpy(v, d_buf, length() * sizeof(T));
+        memcpy(v, d_buf, length_ll() * sizeof(T));
+        //memcpy(v, d_buf, length() * sizeof(T));
 }
 void Vector::value(dods_byte *b) const    { value_worker(b); }
 void Vector::value(dods_int8 *b) const    { value_worker(b); }

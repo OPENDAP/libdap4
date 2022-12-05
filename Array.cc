@@ -109,6 +109,15 @@ void Array::update_length(int)
     set_length(length);
 }
 
+void Array::update_length_ll(unsigned long long)
+{
+    unsigned long long length = 1;
+    for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
+        length *= (*i).c_size;
+    }
+
+    set_length_ll(length);
+}
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new - The dtor for Vector will delete this object.
 
@@ -533,7 +542,7 @@ void Array::append_dim(D4Dimension *dim)
     dimension d(/*dim->size(), www2id(dim->name()),*/dim);
     _shape.push_back(d);
 
-    update_length();
+    update_length_ll();
 }
 
 /** Creates a new OUTER dimension (slowest varying in rowmajor)

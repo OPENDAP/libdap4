@@ -98,7 +98,7 @@ private:
     // the number of elements we have allocated memory to store.
     // This should be either the sizeof(buf)/width(bool constrained = false) for cardinal data
     // or the capacity of d_str for strings or capacity of _vec.
-    unsigned int d_capacity = 0;
+    unsigned long long d_capacity = 0;
 
     bool d_too_big_for_dap2 = false;    /// Conditionally set to true in set_length_ll()
 
@@ -110,12 +110,13 @@ private:
     template <typename T> void value_worker(vector<unsigned int> *indices, T *b) const;
 
     template <typename T> bool set_value_worker(T *v, int sz);
+    template <typename T> bool set_value_worker(T *v, int64_t sz);
     template <typename T> bool set_value_worker(vector<T> &v, int sz);
 
     bool m_is_cardinal_type() const;
     int64_t m_create_cardinal_data_buffer_for_type(int64_t num_elements);
     void m_delete_cardinal_data_buffer();
-    template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int num_elements);
+    template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int64_t num_elements);
 
     // This function copies the private members of Vector.
     void m_duplicate(const Vector &v);
@@ -252,6 +253,7 @@ public:
     virtual unsigned int set_value_slice_from_row_major_vector(const Vector& rowMajorData, unsigned int startElement);
 
 
+    virtual bool set_value(dods_byte *val, int64_t sz);
     virtual bool set_value(dods_byte *val, int sz);
     virtual bool set_value(dods_int8 *val, int sz);
     virtual bool set_value(dods_int16 *val, int sz);

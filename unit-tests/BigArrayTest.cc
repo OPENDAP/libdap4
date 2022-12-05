@@ -62,9 +62,9 @@ public:
         num_eles = num_eles*5;
 
         // Uncomment this #if 0 block to test a trivial small array case.
-#if 0
+//#if 0
         num_eles = 4;
-#endif 
+//#endif 
         buf_int8.resize(num_eles);
         buf_int8[0] = 0;
         buf_int8[num_eles/2] = 128;
@@ -93,13 +93,15 @@ public:
     {
 
         unique_ptr<Byte> d_uint8(new Byte("Byte"));
-        Array d4_ar_uint8 = Array("Byte_array",d_uint8.get());
+        Array d4_ar_uint8 = Array("Byte_array",d_uint8.get(),true);
         unique_ptr<D4Dimension> d4_dim_byte(new D4Dimension("dimension",num_eles));
         d4_ar_uint8.append_dim(d4_dim_byte.get());
 
+        DBG(cerr<<"Before testing val2buf() " <<endl);
         // Set the array value via val2buf
         d4_ar_uint8.val2buf(buf_int8.data());
 
+        DBG(cerr<<"Pass testing val2buf() " <<endl);
         vector<unsigned char>d4_ar_val;
         d4_ar_val.resize(num_eles);
         void* d4_ar_val_ptr = (void*)(d4_ar_val.data());    
@@ -148,7 +150,7 @@ public:
         d_ar_uint8.append_dim(num_eles/2);
 
         // Set the array value via set_value()
-        d_ar_uint8.set_value((dods_byte *)buf_int8.data(),num_eles);
+        d_ar_uint8.set_value((dods_byte *)buf_int8.data(),(int64_t)num_eles);
 
         vector<unsigned char>d_ar_val;
         d_ar_val.resize(num_eles);
