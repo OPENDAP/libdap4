@@ -130,12 +130,10 @@ public:
         string dd(":dods_digest@");
         string page("test.opendap.org/basic/page.txt");
 
-
         localhost_pw_url = "http://"+u+dt+page;
         DBG(cerr << prolog << "localhost_pw_url: " << localhost_pw_url<< endl);
 
         localhost_digest_pw_url = "http://"+u+dd+page;
-
         DBG(cerr << prolog << "localhost_digest_pw_url: " << localhost_digest_pw_url<< endl);
 
         netcdf_das_url = "http://test.opendap.org/dap/data/nc/fnoc1.nc.das";
