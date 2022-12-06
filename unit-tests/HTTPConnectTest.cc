@@ -105,11 +105,13 @@ public:
 
     void setUp()
     {
+        DBG(cerr << endl);
         DBG(cerr << prolog << "Setting the DODS_CONF env var" << endl);
         setenv("DODS_CONF", "cache-testsuite/dodsrc", 1);
         http = new HTTPConnect(RCReader::instance());
 
         localhost_url = "http://test.opendap.org/test-304.html";
+        DBG(cerr << prolog << "localhost_url: " << localhost_url<< endl);
 
         // Two request header values that will generate a 304 response to the
         // above URL. The values below much match the etag and last-modified
@@ -119,12 +121,20 @@ public:
         // etag = "\"a10df-157-139c2680\"";
         // etag = "\"2a008e-157-3fbcd139c2680\"";
         // etag = "\"181893-157-3fbcd139c2680\""; // On 10/13/14 we moved to a new httpd and the etag value changed.
-        etag ="\"157-3df1e87884680\""; // New httpd service, new etag, ndp - 01/11/21
+        // etag ="\"157-3df1e87884680\""; // New httpd service, new etag, ndp - 01/11/21
+        etag = "\"157-3df0e26958000\"";// New httpd (dockerized), new etag. ndp - 12/06/22
+        DBG(cerr << prolog << "etag: " << etag<< endl);
         lm = "Wed, 13 Jul 2005 19:32:26 GMT";
+        DBG(cerr << prolog << "lm: " << lm<< endl);
 
         localhost_pw_url = "http://jimg:dods_test@test.opendap.org/basic/page.txt";
+        DBG(cerr << prolog << "localhost_pw_url: " << localhost_pw_url<< endl);
+
         localhost_digest_pw_url = "http://jimg:dods_digest@test.opendap.org/digest/page.txt";
+        DBG(cerr << prolog << "localhost_digest_pw_url: " << localhost_digest_pw_url<< endl);
+
         netcdf_das_url = "http://test.opendap.org/dap/data/nc/fnoc1.nc.das";
+        DBG(cerr << prolog << "netcdf_das_url: " << netcdf_das_url<< endl);
     }
 
     void tearDown()
@@ -182,22 +192,28 @@ public:
             vector<string> request_h;
 
             // First test using a time with if-modified-since
+            DBG(cerr << prolog << "If-Modified-Since test. BEGIN " << endl);
             request_h.push_back(string("If-Modified-Since: ") + lm);
             status = http->read_url(localhost_url, dump, resp_h, &request_h);
             DBG(cerr << prolog << "If modified since test. Returned http status: " << status << endl);
+            DBG(cerr << prolog << "Response Headers: " << endl);
             DBG(copy(resp_h->begin(), resp_h->end(), ostream_iterator<string>(cerr, "\n")));
             DBG(cerr << endl);
             CPPUNIT_ASSERT(status == 304);
+            DBG(cerr << prolog << "If-Modified-Since test. END " << endl);
 
             // Now test an etag
+            DBG(cerr << prolog << "ETag (If-None_Match) test. BEGIN (etag:" << etag << ")"<< endl);
             resp_h->clear();
             request_h.clear();
             request_h.push_back(string("If-None-Match: ") + etag);
             status = http->read_url(localhost_url, dump, resp_h, &request_h);
-            DBG(cerr << prolog << "If none match test. Returned http status: " << status << endl);
+            DBG(cerr << prolog << "ETag (If-None_Match) test. Returned http status: " << status << endl);
+            DBG(cerr << prolog << "Response Headers: " << endl);
             DBG(copy(resp_h->begin(), resp_h->end(), ostream_iterator<string>(cerr, "\n")));
             DBG(cerr << endl);
             CPPUNIT_ASSERT(status == 304);
+            DBG(cerr << prolog << "ETag test. END " << endl);
 
             // now test a combined etag and time4
             resp_h->clear();
