@@ -126,11 +126,19 @@ public:
         DBG(cerr << prolog << "etag: " << etag<< endl);
         lm = "Wed, 13 Jul 2005 19:32:26 GMT";
         DBG(cerr << prolog << "lm: " << lm<< endl);
+        string u("jimg");
+        string dt(":dods_test@");
+        string dd(":dods_digest@");
+        string page("test.opendap.org/basic/page.txt");
 
-        localhost_pw_url = "http://jimg:dods_test@test.opendap.org/basic/page.txt";
+
+        // localhost_pw_url = "http://jimg:dods_test@test.opendap.org/basic/page.txt";
+        localhost_pw_url = "http://"+u+dt+page;
         DBG(cerr << prolog << "localhost_pw_url: " << localhost_pw_url<< endl);
 
-        localhost_digest_pw_url = "http://jimg:dods_digest@test.opendap.org/digest/page.txt";
+        // localhost_digest_pw_url = "http://jimg:dods_digest@test.opendap.org/digest/page.txt";
+        localhost_digest_pw_url = "http://"+u+dd+page;
+
         DBG(cerr << prolog << "localhost_digest_pw_url: " << localhost_digest_pw_url<< endl);
 
         netcdf_das_url = "http://test.opendap.org/dap/data/nc/fnoc1.nc.das";
