@@ -1,2 +1,2 @@
-dods_digest
-dods_test
+http://jimg:dods_digest@test.opendap.org/digest/page.txt
+http://jimg:dods_test@test.opendap.org/basic/page.txt
