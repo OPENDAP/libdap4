@@ -50,7 +50,7 @@ namespace libdap {
 
 class HTTPConnectTest: public TestFixture {
 private:
-    HTTPConnect * http;
+    HTTPConnect * http{};
     string localhost_url, localhost_pw_url, localhost_digest_pw_url;
     string etag;
     string lm;
@@ -66,13 +66,12 @@ protected:
 
     struct REMatch: public unary_function<const string &, bool> {
         Regex &d_re;
-        REMatch(Regex &re) :
+        explicit REMatch(Regex &re) :
             d_re(re)
         {
         }
-        ~REMatch()
-        {
-        }
+        ~REMatch() = default;
+
         bool operator()(const string &str)
         {
             const char *s = str.c_str();
@@ -85,7 +84,7 @@ protected:
     class HeaderMatch: public unary_function<const string &, bool> {
         const string &d_header;
     public:
-        HeaderMatch(const string &header) :
+        explicit HeaderMatch(const string &header) :
             d_header(header)
         {
         }
@@ -96,14 +95,14 @@ protected:
     };
 
 public:
-    HTTPConnectTest()
+    HTTPConnectTest(): http(nullptr)
     {
     }
-    ~HTTPConnectTest()
+    ~HTTPConnectTest() override
     {
     }
 
-    void setUp()
+    void setUp() override
     {
         DBG(cerr << endl);
         DBG(cerr << prolog << "Setting the DODS_CONF env var" << endl);
@@ -132,11 +131,9 @@ public:
         string page("test.opendap.org/basic/page.txt");
 
 
-        // localhost_pw_url = "http://jimg:dods_test@test.opendap.org/basic/page.txt";
         localhost_pw_url = "http://"+u+dt+page;
         DBG(cerr << prolog << "localhost_pw_url: " << localhost_pw_url<< endl);
 
-        // localhost_digest_pw_url = "http://jimg:dods_digest@test.opendap.org/digest/page.txt";
         localhost_digest_pw_url = "http://"+u+dd+page;
 
         DBG(cerr << prolog << "localhost_digest_pw_url: " << localhost_digest_pw_url<< endl);
@@ -151,7 +148,7 @@ public:
         // this here make valgrind think there are leaks.
         http->d_http_cache->delete_instance();
         delete http;
-        http = 0;
+        http = nullptr;
         unsetenv("DODS_CONF");
     }
 
@@ -234,12 +231,12 @@ public:
             CPPUNIT_ASSERT(status == 304);
 
             delete resp_h;
-            resp_h = 0;
+            resp_h = nullptr;
 
         }
         catch (Error & e) {
             delete resp_h;
-            resp_h = 0;
+            resp_h = nullptr;
             CPPUNIT_FAIL(prolog + "Error: " + e.get_error_message());
         }
     }
@@ -247,7 +244,7 @@ public:
     void fetch_url_test_1()
     {
         DBG(cerr << "Entering fetch_url_test 1" << endl);
-        HTTPResponse *stuff = 0;
+        HTTPResponse *stuff = nullptr;
         char c;
         try {
             stuff = http->fetch_url(localhost_url);
@@ -255,17 +252,17 @@ public:
                 fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
                     && !feof(stuff->get_stream()));
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
 
         }
         catch (InternalErr & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
         }
         catch (Error & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -275,7 +272,7 @@ public:
         catch (...) {
             cerr << "Caught unknown exception" << endl;
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             throw;
         }
     }
@@ -283,7 +280,7 @@ public:
     void fetch_url_test_1_cpp()
     {
         DBG(cerr << "Entering fetch_url_test 1" << endl);
-        HTTPResponse *stuff = 0;
+        HTTPResponse *stuff = nullptr;
         http->set_use_cpp_streams(true);
         char c;
         try {
@@ -321,7 +318,7 @@ public:
     void fetch_url_test_2()
     {
         DBG(cerr << "Entering fetch_url_test 2" << endl);
-        HTTPResponse *stuff = 0;
+        HTTPResponse *stuff = nullptr;
         char c;
         try {
             stuff = http->fetch_url(netcdf_das_url);
@@ -333,16 +330,16 @@ public:
                 fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
                     && !feof(stuff->get_stream()));
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
         }
         catch (InternalErr & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
         }
         catch (Error & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -351,7 +348,7 @@ public:
         // entries
         catch (...) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             throw;
         }
     }
@@ -361,7 +358,7 @@ public:
         DBG(cerr << "Entering fetch_url_test 2" << endl);
         http->set_use_cpp_streams(true);
 
-        HTTPResponse *stuff = 0;
+        HTTPResponse *stuff = nullptr;
         char c;
 
         try {
@@ -372,16 +369,16 @@ public:
                 *(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() && !stuff->get_cpp_stream()->eof());
 
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
         }
         catch (InternalErr & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
         }
         catch (Error & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -390,7 +387,7 @@ public:
         // entries
         catch (...) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             throw;
         }
     }
@@ -398,7 +395,7 @@ public:
     void fetch_url_test_3()
     {
         DBG(cerr << "Entering fetch_url_test 3" << endl);
-        HTTPResponse *stuff = 0;
+        HTTPResponse *stuff = nullptr;
         char c;
         try {
             stuff = http->fetch_url("file:///etc/passwd");
@@ -406,16 +403,16 @@ public:
                 fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
                     && !feof(stuff->get_stream()));
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
         }
         catch (InternalErr & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
         }
         catch (Error & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -424,7 +421,7 @@ public:
         // entries
         catch (...) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             throw;
         }
     }
@@ -434,7 +431,7 @@ public:
         DBG(cerr << "Entering fetch_url_test 3" << endl);
         http->set_use_cpp_streams(true);
 
-        HTTPResponse *stuff = 0;
+        HTTPResponse *stuff = nullptr;
         char c;
         try {
             stuff = http->fetch_url("file:///etc/passwd");
@@ -444,16 +441,16 @@ public:
                 *(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() && !stuff->get_cpp_stream()->eof());
 
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
         }
         catch (InternalErr & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
         }
         catch (Error & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -462,7 +459,7 @@ public:
         // entries
         catch (...) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             throw;
         }
     }
@@ -470,7 +467,7 @@ public:
     void fetch_url_test_4()
     {
         DBG(cerr << "Entering fetch_url_test 4" << endl);
-        HTTPResponse *stuff = 0;
+        HTTPResponse *stuff = nullptr;
         char c;
         try {
             string url = (string) "file://" + TEST_SRC_DIR + "/test_config.h";
@@ -479,16 +476,16 @@ public:
                 fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
                     && !feof(stuff->get_stream()));
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
         }
         catch (InternalErr & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
         }
         catch (Error & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -497,7 +494,7 @@ public:
         // entries
         catch (...) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             throw;
         }
     }
@@ -507,7 +504,7 @@ public:
         DBG(cerr << "Entering fetch_url_test_4_cpp" << endl);
         http->set_use_cpp_streams(true);
 
-        HTTPResponse *stuff = 0;
+        HTTPResponse *stuff = nullptr;
         char c;
         try {
             string url = (string) "file://" + TEST_SRC_DIR + "/test_config.h";
@@ -518,16 +515,16 @@ public:
                 *(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() && !stuff->get_cpp_stream()->eof());
 
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
         }
         catch (InternalErr & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
         }
         catch (Error & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -536,14 +533,14 @@ public:
         // entries
         catch (...) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             throw;
         }
     }
 
     void get_response_headers_test()
     {
-        HTTPResponse *r = 0;
+        HTTPResponse *r = nullptr;
 
         try {
             r = http->fetch_url(netcdf_das_url);
@@ -560,23 +557,23 @@ public:
             CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(protocol_header)) != h->end());
 
             delete r;
-            r = 0;
+            r = nullptr;
         }
         catch (InternalErr & e) {
             delete r;
-            r = 0;
+            r = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr exception from get_response_headers: " + e.get_error_message());
         }
         catch (...) {
             delete r;
-            r = 0;
+            r = nullptr;
             throw;
         }
     }
 
     void server_version_test()
     {
-        Response *r = 0;
+        Response *r = nullptr;
         Regex protocol("^[0-9]+\\.[0-9]+$");
         try {
             r = http->fetch_url(netcdf_das_url);
@@ -585,16 +582,16 @@ public:
 
             CPPUNIT_ASSERT(re_match(protocol, r->get_protocol().c_str()));
             delete r;
-            r = 0;
+            r = nullptr;
         }
         catch (InternalErr & e) {
             delete r;
-            r = 0;
+            r = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr exception from server_version: " + e.get_error_message());
         }
         catch (...) {
             delete r;
-            r = 0;
+            r = nullptr;
             throw;
         }
 
@@ -602,17 +599,17 @@ public:
 
     void type_test()
     {
-        Response *r = 0;
+        Response *r = nullptr;
         try {
             r = http->fetch_url(netcdf_das_url);
             DBG(cerr << "r->get_type(): " << r->get_type() << endl);
             CPPUNIT_ASSERT(r->get_type() == dods_das);
             delete r;
-            r = 0;
+            r = nullptr;
         }
         catch (InternalErr & e) {
             delete r;
-            r = 0;
+            r = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr exception from type(): " + e.get_error_message());
         }
 
@@ -629,11 +626,11 @@ public:
                 fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
                     && !feof(stuff->get_stream()));
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
         }
         catch (InternalErr & e) {
             delete stuff;
-            stuff = 0;
+            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErrexception from output: " + e.get_error_message());
         }
     }
@@ -649,7 +646,7 @@ public:
             http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), true);
             DBG(cerr << "Instantiate the cache" << endl);
 
-            CPPUNIT_ASSERT(http->d_http_cache != 0);
+            CPPUNIT_ASSERT(http->d_http_cache != nullptr);
             http->d_http_cache->set_cache_enabled(true);
             DBG(cerr << "Enable the cache" << endl);
 
@@ -678,7 +675,7 @@ public:
             http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), true);
             DBG(cerr << "Instantiate the cache" << endl);
 
-            CPPUNIT_ASSERT(http->d_http_cache != 0);
+            CPPUNIT_ASSERT(http->d_http_cache != nullptr);
             http->d_http_cache->set_cache_enabled(true);
             DBG(cerr << "Enable the cache" << endl);
 
