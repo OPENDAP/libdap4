@@ -638,6 +638,35 @@ D4Attributes::print_dap4(XMLWriter &xml) const
     }
 }
 
+
+bool D4Attribute::is_dap4_type()
+{
+    bool has_d4_attr = false;
+    switch(type()){
+        case attr_int8_c:
+        case attr_int64_c:
+        case attr_uint64_c:
+            has_d4_attr=true;
+            break;
+        case attr_container_c:
+            has_d4_attr = attributes()->has_dap4_types();
+            break;
+        default:
+            break;
+    }
+    return has_d4_attr;
+}
+
+
+bool D4Attributes::has_dap4_types()
+{
+    bool has_d4_attr = false;
+    for (auto attr: attributes()) {
+        has_d4_attr |= attr->is_dap4_type();
+    }
+    return has_d4_attr;
+}
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and then displays information

@@ -90,6 +90,8 @@ public:
 
     D4Attributes *attributes();
 
+    bool is_dap4_type();
+
     void print_dap4(XMLWriter &xml) const;
 
     virtual void dump(ostream &strm) const;
@@ -162,6 +164,8 @@ public:
       * @return A const reference to the vector of D4Attribute pointers.
       */
     const vector<D4Attribute*> &attributes() const { return d_attrs; }
+
+    bool has_dap4_types();
 
     void print_dap4(XMLWriter &xml) const;
 
