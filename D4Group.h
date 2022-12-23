@@ -138,7 +138,7 @@ public:
     void set_send_p(bool state) override;
     void set_read_p(bool state) override;
 
-    virtual bool is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory) override;
+    bool is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory) override;
 
     // DAP4
     void intern_data() override;

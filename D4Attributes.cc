@@ -658,7 +658,7 @@ bool D4Attribute::is_dap4_type()
 }
 
 
-bool D4Attributes::has_dap4_types()
+bool D4Attributes::has_dap4_types() const
 {
     bool has_d4_attr = false;
     for (auto attr: attributes()) {

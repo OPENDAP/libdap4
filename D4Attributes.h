@@ -165,7 +165,7 @@ public:
       */
     const vector<D4Attribute*> &attributes() const { return d_attrs; }
 
-    bool has_dap4_types();
+    bool has_dap4_types() const;
 
     void print_dap4(XMLWriter &xml) const;
 
