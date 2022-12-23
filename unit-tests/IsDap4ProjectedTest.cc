@@ -832,9 +832,6 @@ CPPUNIT_TEST_SUITE( IsDap4ProjectedTest );
         CPPUNIT_TEST(test_is_dap4_projected_struct_int8);
         CPPUNIT_TEST(test_is_dap4_projected_struct_byte);
 
-        //CPPUNIT_TEST(test_is_dap4_projected_dds_int8);
-        //CPPUNIT_TEST(test_is_dap4_projected_dds_byte);
-
         CPPUNIT_TEST(test_is_dap4_projected_attr_true);
         CPPUNIT_TEST(test_is_dap4_projected_attr_false);
 
@@ -844,16 +841,11 @@ CPPUNIT_TEST_SUITE( IsDap4ProjectedTest );
         CPPUNIT_TEST(test_is_dap4_projected_attr_struct_true);
         CPPUNIT_TEST(test_is_dap4_projected_attr_struct_false);
 
-        // CPPUNIT_TEST(test_is_dap4_projected_attr_dds_true);
-        //CPPUNIT_TEST(test_is_dap4_projected_attr_dds_false);
-
         ///////////////////////////////////////////////////////
         /// DMR/DAP4 Tests
 
         CPPUNIT_TEST(test_is_dap4_projected_dmr_ddsint8);
         CPPUNIT_TEST(test_is_dap4_projected_dmr_ddsbyte);
-
-        //CPPUNIT_TEST(test_is_dap4_projected_dmr_ddsarray);
 
         CPPUNIT_TEST(test_is_dap4_projected_dmr_int8);
         CPPUNIT_TEST(test_is_dap4_projected_dmr_int64);
