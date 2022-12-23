@@ -1314,15 +1314,15 @@ BaseType::width_ll(bool /* constrained */) const
 }
 
 
-bool BaseType::is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_variable_inventory){
-    bool has_d4 = false;
+bool BaseType::is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory){
+    bool has_projected_dap4 = false;
     if(send_p()) {
-        has_d4 = is_dap4() || attributes()->has_dap4_types();
-        if (has_d4) {
-            projected_dap4_variable_inventory.emplace_back(this);
+        has_projected_dap4 = attributes()->has_dap4_types();
+        if (has_projected_dap4) {
+            projected_dap4_inventory.emplace_back(this);
         }
     }
-    return has_d4;
+    return has_projected_dap4;
 }
 
 

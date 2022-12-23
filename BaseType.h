@@ -550,7 +550,7 @@ public:
     virtual void print_val(ostream &out, string space = "", bool print_decl_p = true) = 0;
     //@}
 
-    virtual bool is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_variable_inventory);
+    virtual bool is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory);
 
 };
 

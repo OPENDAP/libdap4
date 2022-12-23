@@ -33,6 +33,7 @@
 #include <cstdint>
 
 #include "DapObj.h"
+#include "BaseType.h"
 
 namespace libdap
 {
@@ -219,6 +220,8 @@ public:
     D4Group *root();
 
     virtual DDS *getDDS();
+
+    virtual bool is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory);
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
 

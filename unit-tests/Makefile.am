@@ -95,7 +95,7 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
 	D4EnumDefsTest D4GroupTest D4ParserSax2Test D4AttributesTest D4EnumTest \
 	chunked_iostream_test D4AsyncDocTest DMRTest D4FilterClauseTest \
-	D4SequenceTest DmrRoundTripTest DmrToDap2Test
+	D4SequenceTest DmrRoundTripTest DmrToDap2Test IsDap4ProjectedTest
 
 else
 UNIT_TESTS =
@@ -255,3 +255,5 @@ D4SequenceTest_SOURCES = D4SequenceTest.cc $(TEST_SRC)
 BigArrayTest_SOURCES = BigArrayTest.cc $(TEST_SRC)
 
 D4SequenceTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
+
+IsDap4ProjectedTest_SOURCES = IsDap4ProjectedTest.cc
