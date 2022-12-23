@@ -777,10 +777,19 @@ public:
         CPPUNIT_ASSERT(result == true);
 
         DBG(cerr << prolog << "              inv.size(): " << inv.size() << endl);
-        CPPUNIT_ASSERT(inv.size() == 1);
+        CPPUNIT_ASSERT(inv.size() == 2);
 
         DBG(cerr << prolog << "       inv.at(0)->name(): " << inv.at(0)->name() << endl);
         CPPUNIT_ASSERT(inv.at(0)->name() == "int8");
+
+        DBG(cerr << prolog << "       inv.at(0)->type_name(): " << inv.at(0)->type_name() << endl);
+        CPPUNIT_ASSERT(inv.at(0)->type() == dods_int8_c);
+
+        DBG(cerr << prolog << "       inv.at(1)->name(): " << inv.at(1)->name() << endl);
+        CPPUNIT_ASSERT(inv.at(1)->name() == "subgroup");
+
+        DBG(cerr << prolog << "       inv.at(1)->type_name(): " << inv.at(1)->type_name() << endl);
+        CPPUNIT_ASSERT(inv.at(1)->type() == dods_group_c);
     }
 
     /**

@@ -881,7 +881,8 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
  // @TODO What is the correct behavior for Group?
  //   Do we set has_projected_dap4=true and add the Group to the inventory
  //   if this->send_p() is true, even if all of the projected members contain only DAP2 stuff?
- //   Or is the Group "transparent" and only add the projected content from the children?
+ //   Or is the Group "transparent" and we only add it when children have projected dap4
+ //   content?
 bool D4Group::is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory){
 
     bool has_projected_dap4 = false;
