@@ -786,8 +786,12 @@ bool Constructor::is_dap4_projected(std::vector<libdap::BaseType *> &projected_d
 {
     bool has_projected_dap4 = false;
 
-    for (const auto var: variables()) {
-        has_projected_dap4 |= var->is_dap4_projected(projected_dap4_inventory);
+    if(send_p()) {
+        has_projected_dap4 = attributes()->has_dap4_types();
+
+        for (const auto var: variables()) {
+            has_projected_dap4 |= var->is_dap4_projected(projected_dap4_inventory);
+        }
     }
 
     return has_projected_dap4;

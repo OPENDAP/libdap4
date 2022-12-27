@@ -2044,7 +2044,7 @@ bool Vector::check_semantics(string & msg, bool)
 /**
  * @brief When send_p() is true this object pointer is added to projected_dap4_inventory and returns true.
  * @param projected_dap4_inventory
- * @return True when sned_p() is true, false otherwise
+ * @return True when send_p() is true, false otherwise
  */
 bool Vector::is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory){
 
@@ -2053,7 +2053,6 @@ bool Vector::is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_i
     // @TODO Can one subset a vector of structure by selecting the members of the structure?
     //   Because if that's allowed, then this assessment of is_dap4_projected will need to changed
     if(send_p()){
-
         has_projected_dap4 = d_proto->is_dap4() || attributes()->has_dap4_types();
         if(has_projected_dap4) {
             projected_dap4_inventory.emplace_back(this);

@@ -301,6 +301,7 @@ public:
         CPPUNIT_ASSERT(result == false);
 
         array->set_send_p(true);
+        structure.set_send_p(true);
         result = structure.is_dap4_projected(inv);
         DBG(cerr << prolog << "structure.is_dap4_projected(): " << truth(result) << endl);
         CPPUNIT_ASSERT(result == true);
