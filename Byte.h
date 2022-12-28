@@ -83,31 +83,31 @@ public:
         return sizeof(dods_byte);
     }
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
     // DAP2
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval);
-    virtual bool deserialize(UnMarshaller &um, DDS *, bool);
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval) override;
+    bool deserialize(UnMarshaller &um, DDS *, bool) override;
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void compute_checksum(Crc32 &checksum) override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
+    unsigned int val2buf(void *val, bool reuse = false) override;
+    unsigned int buf2val(void **val) override;
 
     virtual bool set_value(const dods_byte value);
     virtual dods_byte value() const;
 
-    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
-    virtual bool ops(BaseType *b, int op);
-    virtual bool d4_ops(BaseType *b, int op);
-    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
+    bool ops(BaseType *b, int op) override;
+    bool d4_ops(BaseType *b, int op) override;
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 
-    virtual void dump(ostream &strm) const ;
+    void dump(ostream &strm) const  override;
 };
 
 } // namespace libdap

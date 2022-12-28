@@ -51,6 +51,8 @@
 using namespace CppUnit;
 using namespace std;
 
+#define prolog string("HTTPCacheTest::").append(__func__).append("() - ")
+
 #ifdef WIN32
 #define F_OK 0
 #define W_OK 2
@@ -126,6 +128,8 @@ public:
 
     void setUp()
     {
+        DBG(cerr << endl);
+
         // Called before every test.
         DBG2(cerr << "Entering HTTPCacheTest::setUp... " << endl);
         hc = new HTTPCache("cache-testsuite/dods_cache/", true);
@@ -527,29 +531,40 @@ public:
     {
         try {
             delete hc;
-            hc = 0;
+            hc = nullptr;
             unique_ptr<HTTPCache> gc(new HTTPCache("cache-testsuite/gc_cache", true));
-            DBG(cerr << "get_cache_root: " << gc->get_cache_root() << endl);
+            DBG(cerr << prolog << "gc->get_cache_root(): " << gc->get_cache_root() << endl);
 
             HTTPResponse *rs = http_conn->fetch_url(localhost_url);
-            gc->cache_response(localhost_url, time(0), *(rs->get_headers()), rs->get_stream());
+            DBG(cerr << prolog << "Retrieved: " << localhost_url << endl);
+            gc->cache_response(localhost_url, time(nullptr), *(rs->get_headers()), rs->get_stream());
             CPPUNIT_ASSERT(gc->is_url_in_cache(localhost_url));
             delete rs;
-            rs = 0;
+            rs = nullptr;
+            DBG(cerr << prolog << "Cached: " << localhost_url << endl);
 
             rs = http_conn->fetch_url(expired);
-            gc->cache_response(expired, time(0), *(rs->get_headers()), rs->get_stream());
+            DBG(cerr << prolog << "Retrieved: " << expired << endl);
+            gc->cache_response(expired, time(nullptr), *(rs->get_headers()), rs->get_stream());
             CPPUNIT_ASSERT(gc->is_url_in_cache(expired));
             delete rs;
-            rs = 0;
+            rs = nullptr;
+            DBG(cerr << prolog << "Cached: " << expired << endl);
 
-            sleep(2);
+            unsigned int nap_time = 2;
+            DBG(cerr << prolog << "Sleeping: " << nap_time << " seconds..." << endl);
+            sleep(nap_time);
+            DBG(cerr << prolog << "Awake." << endl);
 
             gc->perform_garbage_collection();
+            DBG(cerr << prolog << "gc->perform_garbage_collection() completed." << endl);
             gc->d_http_cache_table->cache_index_write();
+            DBG(cerr << prolog << "gc->d_http_cache_table->cache_index_write() completed." << endl);
 
+            bool expired_is_in_cache=gc->is_url_in_cache(expired);
+            DBG(cerr << prolog << "expired_is_in_cache: " << (expired_is_in_cache?"true":"false") << endl);
             CPPUNIT_ASSERT(
-                !gc->is_url_in_cache(expired) && "This may fail if sleep is not long enough before gc above");
+                    !expired_is_in_cache && "This may fail if sleep is not long enough before gc above");
         }
         catch (Error &e) {
             cerr << "Exception: " << e.get_error_message() << endl;
@@ -668,11 +683,14 @@ public:
 #endif
     }
 
+#define IF_NONE_MATCH "If-None-Match: "
+#define IF_MODIFIED_SINCE "If-Modified-Since: "
+
     void get_conditional_response_headers_test()
     {
         try {
             unique_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/header_cache", true));
-            DBG(cerr << "get_cache_root: " << c->get_cache_root() << endl);
+            DBG(cerr << prolog << "c->get_cache_root(): " << c->get_cache_root() << endl);
 
             CPPUNIT_ASSERT(c->get_cache_root() == "cache-testsuite/header_cache/");
             if (!c->is_url_in_cache(localhost_url)) {
@@ -689,16 +707,35 @@ public:
             }
             CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
+            bool found_it = false;
             vector<string> h = c->get_conditional_request_headers(localhost_url);
+            DBG(cerr << prolog <<  "Number of headers: " << h.size() << endl);
             DBG(copy(h.begin(), h.end(), ostream_iterator<string>(cout, "\n")));
-            DBG(cerr << "if none match location: " << h[0].find("If-None-Match: ") << endl);
-            // I know what the strings should start with...
-            CPPUNIT_ASSERT(h[0].find("If-None-Match: ") == 0);
+            for(const auto &hdr: h){
+                // I know what the strings should start with...
+                auto index = hdr.find(IF_NONE_MATCH);
+                DBG(cerr << prolog << IF_NONE_MATCH << " location: " << index << endl);
+                if(index == 0){
+                    found_it = true;
+                    break;
+                }
+            }
+            CPPUNIT_ASSERT(found_it && "Located If-None-Match header.");
 
+            found_it = false;
             h = c->get_conditional_request_headers(expired);
-            DBG(cerr << "Number of headers: " << h.size() << endl);
+            DBG(cerr << prolog <<  "Number of headers: " << h.size() << endl);
             DBG(copy(h.begin(), h.end(), ostream_iterator<string>(cout, "\n")));
-            CPPUNIT_ASSERT(h[0].find("If-Modified-Since: ") == 0);
+            for(const auto &hdr: h){
+                // I know what the strings should start with...
+                auto index = hdr.find(IF_MODIFIED_SINCE);
+                DBG(cerr << prolog << IF_MODIFIED_SINCE << " location: " << index << endl);
+                if(index == 0){
+                    found_it = true;
+                    break;
+                }
+            }
+            CPPUNIT_ASSERT(found_it && "Located If-Modified-Since header.");
         }
         catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
