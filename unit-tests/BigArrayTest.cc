@@ -47,7 +47,7 @@ namespace libdap {
 
 class BigArrayTest: public TestFixture {
 private:
-    uint64_t num_eles;
+    int64_t num_eles;
     vector<unsigned char>buf_int8;
 
     
@@ -86,6 +86,12 @@ public:
     CPPUNIT_TEST (dap4_val2buf_buf2val);
     CPPUNIT_TEST (dap4_val2buf_value);
     CPPUNIT_TEST (dap2_set_value);
+    
+    CPPUNIT_TEST (dap4_constraint_whole);
+    CPPUNIT_TEST (dap4_constraint_big_start);
+    CPPUNIT_TEST (dap4_constraint_big_stride);
+    CPPUNIT_TEST (dap2_constraint_whole);
+    CPPUNIT_TEST (dap2_constraint_start_stride);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -150,7 +156,7 @@ public:
         d_ar_uint8.append_dim(num_eles/2);
 
         // Set the array value via set_value()
-        d_ar_uint8.set_value((dods_byte *)buf_int8.data(),(int64_t)num_eles);
+        d_ar_uint8.set_value_ll((dods_byte *)buf_int8.data(),(int64_t)num_eles);
 
         vector<unsigned char>d_ar_val;
         d_ar_val.resize(num_eles);
@@ -166,6 +172,304 @@ public:
         CPPUNIT_ASSERT(buf_int8[num_eles-1] == d_ar_val[num_eles-1]);
  
     }
+
+    void dap4_constraint_whole() 
+    {
+        unique_ptr<Byte> d_uint8(new Byte("Byte"));
+        Array d4_ar_uint8 = Array("Byte_array",d_uint8.get());
+
+        unique_ptr<D4Dimension> d4_dim_byte(new D4Dimension("dimension",num_eles));
+        // Set the constraint with the whole range.
+        d4_dim_byte.get()->set_constraint(0,1,num_eles-1);
+
+        d4_ar_uint8.append_dim(d4_dim_byte.get());
+        Array::Dim_iter diter = d4_ar_uint8.dim_begin();
+        d4_ar_uint8.add_constraint(diter, d4_dim_byte.get());
+
+        int64_t a_d4_dim_size = d4_ar_uint8.dimension_size_ll(diter,true);
+        DBG(cerr<<"DAP4 a_d4_dim_size: dimension size  "<<(long long)(a_d4_dim_size) <<endl);
+
+        int64_t a_d4_dim_start = d4_ar_uint8.dimension_start_ll(diter,true);
+        DBG(cerr<<"DAP4 a_d4_dim_start: dimension start  "<<(long long)(a_d4_dim_start) <<endl);
+
+        int64_t a_d4_dim_stride = d4_ar_uint8.dimension_stride_ll(diter,true);
+        DBG(cerr<<"DAP4 a_d4_dim_stride: dimension stride  "<<(long long)(a_d4_dim_stride) <<endl);
+
+        int64_t a_d4_dim_stop = d4_ar_uint8.dimension_stop_ll(diter,true);
+        DBG(cerr<<"DAP4 a_d4_dim_stop: dimension stop  "<<(long long)(a_d4_dim_stop) <<endl);
+
+        CPPUNIT_ASSERT(a_d4_dim_size == num_eles);
+        CPPUNIT_ASSERT(a_d4_dim_start == 0);
+        CPPUNIT_ASSERT(a_d4_dim_stride == 1);
+        CPPUNIT_ASSERT(a_d4_dim_stop == num_eles-1);
+
+        // Set the array value via val2buf
+        d4_ar_uint8.val2buf(buf_int8.data());
+
+        vector<unsigned char>d4_ar_val;
+        d4_ar_val.resize(num_eles);
+
+        // Retrieve the array value via value()
+        d4_ar_uint8.value(d4_ar_val.data());
+        DBG(cerr<<"DAP4 constraint value(): The first value is "<<(int)(d4_ar_val[0]) <<endl);
+        DBG(cerr<<"DAP4 constraint value(): The middle value is "<<(int)(d4_ar_val[num_eles/2]) <<endl);
+        DBG(cerr<<"DAP4 constraint value(): The last value is "<<(int)(d4_ar_val[num_eles-1]) <<endl);
+
+        CPPUNIT_ASSERT(buf_int8[0] == d4_ar_val[0]);
+        CPPUNIT_ASSERT(buf_int8[num_eles/2] == d4_ar_val[num_eles/2]);
+        CPPUNIT_ASSERT(buf_int8[num_eles-1] == d4_ar_val[num_eles-1]);
+
+    }
+
+    void dap4_constraint_big_start() 
+    {
+        unique_ptr<Byte> d_uint8(new Byte("Byte"));
+        Array d4_ar_uint8 = Array("Byte_array",d_uint8.get());
+
+        unique_ptr<D4Dimension> d4_dim_byte(new D4Dimension("dimension",num_eles));
+        // Set the constraint for the last two values.
+        d4_dim_byte.get()->set_constraint(num_eles-2,1,num_eles-1);
+
+        d4_ar_uint8.append_dim(d4_dim_byte.get());
+        Array::Dim_iter diter = d4_ar_uint8.dim_begin();
+        d4_ar_uint8.add_constraint(diter, d4_dim_byte.get());
+
+        int64_t a_d4_dim_size = d4_ar_uint8.dimension_size_ll(diter,true);
+        DBG(cerr<<"DAP4 a_d4_dim_size: dimension size  "<<(long long)(a_d4_dim_size) <<endl);
+
+        int64_t a_d4_dim_start = d4_ar_uint8.dimension_start_ll(diter,true);
+        DBG(cerr<<"DAP4 a_d4_dim_start: dimension start  "<<(long long)(a_d4_dim_start) <<endl);
+
+        int64_t a_d4_dim_stride = d4_ar_uint8.dimension_stride_ll(diter,true);
+        DBG(cerr<<"DAP4 a_d4_dim_stride: dimension stride  "<<(long long)(a_d4_dim_stride) <<endl);
+
+        int64_t a_d4_dim_stop = d4_ar_uint8.dimension_stop_ll(diter,true);
+        DBG(cerr<<"DAP4 a_d4_dim_stop: dimension stop  "<<(long long)(a_d4_dim_stop) <<endl);
+
+        CPPUNIT_ASSERT(a_d4_dim_size == 2);
+        CPPUNIT_ASSERT(a_d4_dim_start == num_eles-2);
+        CPPUNIT_ASSERT(a_d4_dim_stride == 1);
+        CPPUNIT_ASSERT(a_d4_dim_stop == num_eles-1);
+
+
+        // Set the array value via val2buf
+        vector<unsigned char>t_buf_int8;
+
+        // We only check the last two values.
+        t_buf_int8.resize(2);
+        t_buf_int8[0] = 1;
+        t_buf_int8[1] = 255;
+        d4_ar_uint8.val2buf(t_buf_int8.data());
+
+        vector<unsigned char>d4_ar_val;
+        d4_ar_val.resize(2);
+
+        // Retrieve the array value via value()
+        d4_ar_uint8.value(d4_ar_val.data());
+
+        DBG(cerr<<"DAP4 constraint value(): The first value is "<<(int)(d4_ar_val[0]) <<endl);
+        DBG(cerr<<"DAP4 constraint value(): The second value is "<<(int)(d4_ar_val[1]) <<endl);
+
+        CPPUNIT_ASSERT(t_buf_int8[0] == d4_ar_val[0]);
+        CPPUNIT_ASSERT(t_buf_int8[1] == d4_ar_val[1]);
+
+    }
+
+    void dap4_constraint_big_stride() 
+    {
+        unique_ptr<Byte> d_uint8(new Byte("Byte"));
+        Array d4_ar_uint8 = Array("Byte_array",d_uint8.get());
+
+        unique_ptr<D4Dimension> d4_dim_byte(new D4Dimension("dimension",num_eles));
+        // Set the constraint for the last two values.
+        d4_dim_byte.get()->set_constraint(0,num_eles-2,num_eles-1);
+
+        d4_ar_uint8.append_dim(d4_dim_byte.get());
+        Array::Dim_iter diter = d4_ar_uint8.dim_begin();
+        d4_ar_uint8.add_constraint(diter, d4_dim_byte.get());
+
+        int64_t a_d4_dim_size = d4_ar_uint8.dimension_size_ll(diter,true);
+        DBG(cerr<<"DAP4 a_d4_dim_size: dimension size  "<<(long long)(a_d4_dim_size) <<endl);
+
+        int64_t a_d4_dim_start = d4_ar_uint8.dimension_start_ll(diter,true);
+        DBG(cerr<<"DAP4 a_d4_dim_start: dimension start  "<<(long long)(a_d4_dim_start) <<endl);
+
+        int64_t a_d4_dim_stride = d4_ar_uint8.dimension_stride_ll(diter,true);
+        DBG(cerr<<"DAP4 a_d4_dim_stride: dimension stride  "<<(long long)(a_d4_dim_stride) <<endl);
+
+        int64_t a_d4_dim_stop = d4_ar_uint8.dimension_stop_ll(diter,true);
+        DBG(cerr<<"DAP4 a_d4_dim_stop: dimension stop  "<<(long long)(a_d4_dim_stop) <<endl);
+
+        CPPUNIT_ASSERT(a_d4_dim_size == 2);
+        CPPUNIT_ASSERT(a_d4_dim_start == 0);
+        CPPUNIT_ASSERT(a_d4_dim_stride == num_eles-2);
+        CPPUNIT_ASSERT(a_d4_dim_stop == num_eles-1);
+
+
+        // Set the array value via val2buf
+        vector<unsigned char>t_buf_int8;
+
+        // We only check the last two values.
+        t_buf_int8.resize(2);
+        t_buf_int8[0] = 1;
+        t_buf_int8[1] = 255;
+        d4_ar_uint8.val2buf(t_buf_int8.data());
+
+        vector<unsigned char>d4_ar_val;
+        d4_ar_val.resize(2);
+
+        // Retrieve the array value via value()
+        d4_ar_uint8.value(d4_ar_val.data());
+
+        DBG(cerr<<"DAP4 constraint value(): The first value is "<<(int)(d4_ar_val[0]) <<endl);
+        DBG(cerr<<"DAP4 constraint value(): The second value is "<<(int)(d4_ar_val[1]) <<endl);
+
+        CPPUNIT_ASSERT(t_buf_int8[0] == d4_ar_val[0]);
+        CPPUNIT_ASSERT(t_buf_int8[1] == d4_ar_val[1]);
+
+    }
+
+
+    void dap2_constraint_whole() {
+
+        unique_ptr<Byte> d_uint8(new Byte("Byte"));
+        Array d_ar_uint8 = Array("Byte_array",d_uint8.get());
+        d_ar_uint8.append_dim_ll(num_eles);
+
+        Array::Dim_iter diter = d_ar_uint8.dim_begin();
+        d_ar_uint8.add_constraint_ll(diter,0,1,num_eles-1);
+
+        int64_t d_ar_dim_size = d_ar_uint8.dimension_size_ll(diter,true);
+        DBG(cerr<<"DAP2 d_ar_dim_size: dimension size  "<<(long long)(d_ar_dim_size) <<endl);
+
+        int64_t d_ar_dim_start = d_ar_uint8.dimension_start_ll(diter,true);
+        DBG(cerr<<"DAP2 d_ar_dim_start: dimension start  "<<(long long)(d_ar_dim_start) <<endl);
+
+        int64_t d_ar_dim_stride = d_ar_uint8.dimension_stride_ll(diter,true);
+        DBG(cerr<<"DAP2 d_ar_dim_stride: dimension stride  "<<(long long)(d_ar_dim_stride) <<endl);
+
+        int64_t d_ar_dim_stop = d_ar_uint8.dimension_stop_ll(diter,true);
+        DBG(cerr<<"DAP2 d_ar_dim_stop: dimension stop  "<<(long long)(d_ar_dim_stop) <<endl);
+
+        CPPUNIT_ASSERT(d_ar_dim_size == num_eles);
+        CPPUNIT_ASSERT(d_ar_dim_start == 0);
+        CPPUNIT_ASSERT(d_ar_dim_stride == 1);
+        CPPUNIT_ASSERT(d_ar_dim_stop == num_eles-1);
+
+
+        // Set the array value via set_value()
+        d_ar_uint8.set_value_ll((dods_byte *)buf_int8.data(),(int64_t)num_eles);
+
+        vector<unsigned char>d_ar_val;
+        d_ar_val.resize(num_eles);
+
+        // Retrieve the array value via value()
+        d_ar_uint8.value(d_ar_val.data());
+        DBG(cerr<<"DAP2 value() via set_value(): The first value is "<<(int)(d_ar_val[0]) <<endl);
+        DBG(cerr<<"DAP2 value() via set_value(): The middle value is "<<(int)(d_ar_val[num_eles/2]) <<endl);
+        DBG(cerr<<"DAP2 value() via set_value(): The last value is "<<(int)(d_ar_val[num_eles-1]) <<endl);
+
+        CPPUNIT_ASSERT(buf_int8[0] == d_ar_val[0]);
+        CPPUNIT_ASSERT(buf_int8[num_eles/2] == d_ar_val[num_eles/2]);
+        CPPUNIT_ASSERT(buf_int8[num_eles-1] == d_ar_val[num_eles-1]);
+ 
+    }
+
+    void dap2_constraint_start_stride() {
+
+        unique_ptr<Byte> d_uint8(new Byte("Byte"));
+        Array d_ar_uint8 = Array("Byte_array",d_uint8.get());
+        d_ar_uint8.append_dim_ll(num_eles);
+
+        Array::Dim_iter diter = d_ar_uint8.dim_begin();
+
+        // Big start value
+        d_ar_uint8.add_constraint_ll(diter,num_eles-2,1,num_eles-1);
+
+        int64_t d_ar_dim_size = d_ar_uint8.dimension_size_ll(diter,true);
+        DBG(cerr<<"DAP2 Big_start_constraint d_ar_dim_size: dimension size  "<<(long long)(d_ar_dim_size) <<endl);
+
+        int64_t d_ar_dim_start = d_ar_uint8.dimension_start_ll(diter,true);
+        DBG(cerr<<"DAP2 Big_start_constraint d_ar_dim_start: dimension start  "<<(long long)(d_ar_dim_start) <<endl);
+
+        int64_t d_ar_dim_stride = d_ar_uint8.dimension_stride_ll(diter,true);
+        DBG(cerr<<"DAP2 Big_start_constraint d_ar_dim_stride: dimension stride  "<<(long long)(d_ar_dim_stride) <<endl);
+
+        int64_t d_ar_dim_stop = d_ar_uint8.dimension_stop_ll(diter,true);
+        DBG(cerr<<"DAP2 Big_start_constraint d_ar_dim_stop: dimension stop  "<<(long long)(d_ar_dim_stop) <<endl);
+
+        CPPUNIT_ASSERT(d_ar_dim_size == 2);
+        CPPUNIT_ASSERT(d_ar_dim_start == num_eles-2);
+        CPPUNIT_ASSERT(d_ar_dim_stride == 1);
+        CPPUNIT_ASSERT(d_ar_dim_stop == num_eles-1);
+
+        // Reset constraint
+        d_ar_uint8.reset_constraint();
+
+        d_ar_dim_size = d_ar_uint8.dimension_size_ll(diter,true);
+        DBG(cerr<<"DAP2 reset_constraint d_ar_dim_size: dimension size  "<<(long long)(d_ar_dim_size) <<endl);
+
+        d_ar_dim_start = d_ar_uint8.dimension_start_ll(diter,true);
+        DBG(cerr<<"DAP2 reset_constraint d_ar_dim_start: dimension start  "<<(long long)(d_ar_dim_start) <<endl);
+
+        d_ar_dim_stride = d_ar_uint8.dimension_stride_ll(diter,true);
+        DBG(cerr<<"DAP2 reset_constraint d_ar_dim_stride: dimension stride  "<<(long long)(d_ar_dim_stride) <<endl);
+
+        d_ar_dim_stop = d_ar_uint8.dimension_stop_ll(diter,true);
+        DBG(cerr<<"DAP2 reset_constraint d_ar_dim_stop: dimension stop  "<<(long long)(d_ar_dim_stop) <<endl);
+
+        CPPUNIT_ASSERT(d_ar_dim_size == num_eles);
+        CPPUNIT_ASSERT(d_ar_dim_start == 0);
+        CPPUNIT_ASSERT(d_ar_dim_stride == 1);
+        CPPUNIT_ASSERT(d_ar_dim_stop == num_eles-1);
+
+        // Big stride value
+        d_ar_uint8.add_constraint_ll(diter,0,num_eles-2,num_eles-1);
+
+        d_ar_dim_size = d_ar_uint8.dimension_size_ll(diter,true);
+        DBG(cerr<<"DAP2 Big_stride_constraint d_ar_dim_size: dimension size  "<<(long long)(d_ar_dim_size) <<endl);
+
+        d_ar_dim_start = d_ar_uint8.dimension_start_ll(diter,true);
+        DBG(cerr<<"DAP2 Big_stride_constraint d_ar_dim_start: dimension start  "<<(long long)(d_ar_dim_start) <<endl);
+
+        d_ar_dim_stride = d_ar_uint8.dimension_stride_ll(diter,true);
+        DBG(cerr<<"DAP2 Big_stride_constraint d_ar_dim_stride: dimension stride  "<<(long long)(d_ar_dim_stride) <<endl);
+
+        d_ar_dim_stop = d_ar_uint8.dimension_stop_ll(diter,true);
+        DBG(cerr<<"DAP2 Big_stride_constraint d_ar_dim_stop: dimension stop  "<<(long long)(d_ar_dim_stop) <<endl);
+
+        CPPUNIT_ASSERT(d_ar_dim_size == 2);
+        CPPUNIT_ASSERT(d_ar_dim_start == 0);
+        CPPUNIT_ASSERT(d_ar_dim_stride == num_eles-2);
+        CPPUNIT_ASSERT(d_ar_dim_stop == num_eles-1);
+
+
+        // Set the array value via set_value_ll() 
+        vector<unsigned char>t_buf_int8;
+
+        // We only check the last two values.
+        t_buf_int8.resize(2);
+        t_buf_int8[0] = 1;
+        t_buf_int8[1] = 255;
+
+        d_ar_uint8.set_value_ll((dods_byte *)t_buf_int8.data(),2);
+
+        vector<unsigned char>d_ar_val;
+        d_ar_val.resize(2);
+
+        // Retrieve the array value via value()
+        d_ar_uint8.value(d_ar_val.data());
+
+        DBG(cerr<<"DAP2 big stride constraint value(): The first value is "<<(int)(d_ar_val[0]) <<endl);
+        DBG(cerr<<"DAP2 big stride constraint value(): The second value is "<<(int)(d_ar_val[1]) <<endl);
+
+        CPPUNIT_ASSERT(t_buf_int8[0] == d_ar_val[0]);
+        CPPUNIT_ASSERT(t_buf_int8[1] == d_ar_val[1]);
+
+
+ 
+    }
+
 
 };
 

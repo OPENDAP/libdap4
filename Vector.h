@@ -253,7 +253,7 @@ public:
     virtual unsigned int set_value_slice_from_row_major_vector(const Vector& rowMajorData, unsigned int startElement);
 
 
-    virtual bool set_value(dods_byte *val, int64_t sz);
+    virtual bool set_value_ll(dods_byte *val, int64_t sz);
     virtual bool set_value(dods_byte *val, int sz);
     virtual bool set_value(dods_int8 *val, int sz);
     virtual bool set_value(dods_int16 *val, int sz);

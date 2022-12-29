@@ -1691,7 +1691,7 @@ bool Vector::set_value_worker(T *v, int64_t sz)
     return true;
 }
 
-bool Vector::set_value(dods_byte *val, int64_t  sz)
+bool Vector::set_value_ll(dods_byte *val, int64_t  sz)
 {
     return set_value_worker(val, sz);
 }

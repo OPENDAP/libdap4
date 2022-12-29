@@ -101,13 +101,14 @@ void Array::_duplicate(const Array &a)
  */
 void Array::update_length(int)
 {
-    int length = 1;
+    unsigned long long  length = 1;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
         length *= (*i).c_size;
     }
 
-    set_length(length);
+    set_length_ll(length);
 }
+
 
 void Array::update_length_ll(unsigned long long)
 {
@@ -537,12 +538,21 @@ void Array::append_dim(int size, const string &name)
     update_length();
 }
 
+void Array::append_dim_ll(int64_t size, const string &name)
+{
+    dimension d(size, www2id(name));
+    _shape.push_back(d);
+
+    update_length();
+}
+
 void Array::append_dim(D4Dimension *dim)
 {
     dimension d(/*dim->size(), www2id(dim->name()),*/dim);
     _shape.push_back(d);
 
-    update_length_ll();
+    //update_length_ll();
+    update_length();
 }
 
 /** Creates a new OUTER dimension (slowest varying in rowmajor)
@@ -658,6 +668,46 @@ void Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 {
     dimension &d = *i;
 
+
+// if stop is -1, set it to the array's max element index
+// jhrg 12/20/12
+    // Check if d.size is greater than INT_MAX, if yes, the following block needs to be re-worked. STOP
+    if (stop == -1) {
+        if (d.size >DODS_INT_MAX)  {
+            // The total size of this dimension is greater than the maximum 32-bit integer. 
+            throw Error(malformed_expr,
+                  "The dimension size is too large. use add_constraint_ll()");
+        }
+        else 
+            stop = d.size - 1;
+    }
+
+// Check for bad constraints.
+// Jose Garcia
+// Usually invalid data for a constraint is the user's mistake
+// because they build a wrong URL in the client side.
+    if (start >= d.size || stop >= d.size || stride > d.size || stride <= 0) throw Error(malformed_expr, array_sss);
+
+    if (((stop - start) / stride + 1) > d.size) throw Error(malformed_expr, array_sss);
+
+    d.start = start;
+    d.stop = stop;
+    d.stride = stride;
+
+    d.c_size = (stop - start) / stride + 1;
+
+    DBG(cerr << "add_constraint: c_size = " << d.c_size << endl);
+
+    update_length();
+
+    d.use_sdim_for_slice = false;
+}
+
+void Array::add_constraint_ll(Dim_iter i, int64_t start, int64_t stride, int64_t stop)
+{
+    dimension &d = *i;
+
+
 // if stop is -1, set it to the array's max element index
 // jhrg 12/20/12
     if (stop == -1) stop = d.size - 1;
@@ -682,12 +732,11 @@ void Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 
     d.use_sdim_for_slice = false;
 }
-
 void Array::add_constraint(Dim_iter i, D4Dimension *dim)
 {
     dimension &d = *i;
 
-    if (dim->constrained()) add_constraint(i, dim->c_start(), dim->c_stride(), dim->c_stop());
+    if (dim->constrained()) add_constraint_ll(i, dim->c_start(), dim->c_stride(), dim->c_stop());
 
     dim->set_used_by_projected_var(true);
 
@@ -745,10 +794,22 @@ int Array::dimension_size(Dim_iter i, bool constrained)
     int size = 0;
 
     if (!_shape.empty()) {
-        if (constrained)
-            size = (*i).c_size;
-        else
-            size = (*i).size;
+        if (constrained) {
+            if ((*i).c_size >DODS_INT_MAX) {
+                throw Error(malformed_expr,
+                          "The dimension size is too large. Use dimension_size_ll()");
+            }
+            else 
+                size = (*i).c_size;
+        }
+        else {
+            if ((*i).size >DODS_INT_MAX) {
+                throw Error(malformed_expr,
+                          "The dimension size is too large. Use dimension_size_ll()");
+            }
+            else 
+                size = (*i).size;
+        }
     }
 
     return size;
@@ -774,6 +835,10 @@ int Array::dimension_size(Dim_iter i, bool constrained)
  */
 int Array::dimension_start(Dim_iter i, bool /*constrained*/)
 {
+    if ((*i).start > DODS_INT_MAX) {
+        throw Error(malformed_expr,
+                   "The dimension start value is too large. Use dimension_start_ll()");
+    }
     return (!_shape.empty()) ? (*i).start : 0;
 }
 
@@ -797,6 +862,10 @@ int Array::dimension_start(Dim_iter i, bool /*constrained*/)
  */
 int Array::dimension_stop(Dim_iter i, bool /*constrained*/)
 {
+    if ((*i).stop > DODS_INT_MAX) {
+        throw Error(malformed_expr,
+                   "The dimension stop value is too large. Use dimension_stop_ll()");
+    }
     return (!_shape.empty()) ? (*i).stop : 0;
 }
 
@@ -820,6 +889,38 @@ int Array::dimension_stop(Dim_iter i, bool /*constrained*/)
  is TRUE and the dimension is not selected.
  */
 int Array::dimension_stride(Dim_iter i, bool /*constrained*/)
+{
+    if ((*i).stride > DODS_INT_MAX) {
+        throw Error(malformed_expr,
+                   "The dimension stride value is too large. Use dimension_stride_ll()");
+    }
+    return (!_shape.empty()) ? (*i).stride : 0;
+}
+
+int64_t Array::dimension_size_ll(Dim_iter i, bool constrained)
+{
+    int64_t size = 0;
+
+    if (!_shape.empty()) {
+        if (constrained) 
+            size = (*i).c_size;
+        else 
+            size = (*i).size;
+    }
+    return size;
+}
+
+int64_t Array::dimension_start_ll(Dim_iter i, bool /*constrained*/)
+{
+    return (!_shape.empty()) ? (*i).start : 0;
+}
+
+int64_t Array::dimension_stop_ll(Dim_iter i, bool /*constrained*/)
+{
+    return (!_shape.empty()) ? (*i).stop : 0;
+}
+
+int64_t Array::dimension_stride_ll(Dim_iter i, bool /*constrained*/)
 {
     return (!_shape.empty()) ? (*i).stride : 0;
 }
