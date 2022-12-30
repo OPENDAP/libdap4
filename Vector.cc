@@ -522,6 +522,7 @@ BaseType *Vector::var(const string & n, btp_stack & s)
  maintained and should not be deleted or referenced. Extract the value
  right after the method returns.
  @see BaseType::var */
+#if 0
 BaseType *Vector::var(unsigned int i)
 {
     switch (d_proto->type()) {
@@ -560,6 +561,52 @@ BaseType *Vector::var(unsigned int i)
             throw Error ("Vector::var: Unrecognized type");
     }
 }
+#endif
+
+BaseType *Vector::var(unsigned int i)
+{
+    return var_ll(i);
+}
+
+BaseType *Vector::var_ll(uint64_t i)
+{
+    switch (d_proto->type()) {
+        case dods_byte_c:
+        case dods_char_c:
+        case dods_int8_c:
+        case dods_uint8_c:
+        case dods_int16_c:
+        case dods_uint16_c:
+        case dods_int32_c:
+        case dods_uint32_c:
+        case dods_int64_c:
+        case dods_uint64_c:
+
+        case dods_enum_c:
+
+        case dods_float32_c:
+        case dods_float64_c:
+            // Transfer the ith value to the BaseType *d_proto
+            d_proto->val2buf(d_buf + (i * (uint64_t)d_proto->width_ll()));
+            return d_proto;
+
+        case dods_str_c:
+        case dods_url_c:
+            d_proto->val2buf(&d_str[i]);
+            return d_proto;
+
+        case dods_opaque_c:
+        case dods_array_c:
+        case dods_structure_c:
+        case dods_sequence_c:
+        case dods_grid_c:
+            return d_compound_buf[i];
+
+        default:
+            throw Error ("Vector::var: Unrecognized type");
+    }
+}
+
 
 /** Resizes a Vector.  If the input length is greater than the
  current length of the Vector, new memory is allocated (the
@@ -1682,7 +1729,7 @@ bool Vector::set_value_worker(T *v, int sz)
 }
 
 template <typename T>
-bool Vector::set_value_worker(T *v, int64_t sz)
+bool Vector::set_value_ll_worker(T *v, int64_t sz)
 {
     if (!v || !types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
         return false;
@@ -1691,10 +1738,6 @@ bool Vector::set_value_worker(T *v, int64_t sz)
     return true;
 }
 
-bool Vector::set_value_ll(dods_byte *val, int64_t  sz)
-{
-    return set_value_worker(val, sz);
-}
 
 bool Vector::set_value(dods_byte *val, int sz)
 {
@@ -1738,6 +1781,49 @@ bool Vector::set_value(dods_float64 *val, int sz)
     return set_value_worker(val, sz);
 }
 
+bool Vector::set_value_ll(dods_byte *val, int64_t  sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+
+bool Vector::set_value_ll(dods_int8 *val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(dods_int16 *val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(dods_uint16 *val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(dods_int32 *val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(dods_uint32 *val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(dods_int64 *val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(dods_uint64 *val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(dods_float32 *val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(dods_float64 *val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+
+
 /**
  * @brief set the value of a string or url array
  * @param val An array of string objects
@@ -1762,11 +1848,35 @@ bool Vector::set_value(string *val, int sz)
     }
 }
 
+bool Vector::set_value_ll(string *val, int64_t sz)
+{
+    if ((var()->type() == dods_str_c || var()->type() == dods_url_c) && val) {
+        d_str.resize(sz);
+        d_capacity_ll = sz;
+        for (int64_t t = 0; t < sz; t++) {
+            d_str[t] = val[t];
+        }
+        set_length_ll(sz);
+        set_read_p(true);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 template<typename T>
 bool Vector::set_value_worker(vector<T> &v, int sz)
 {
     return set_value(v.data(), sz);
 }
+
+template<typename T>
+bool Vector::set_value_ll_worker(vector<T> &v, int64_t sz)
+{
+    return set_value(v.data(), sz);
+}
+
 
 bool Vector::set_value(vector<dods_byte> &val, int sz)
 {
@@ -1809,6 +1919,47 @@ bool Vector::set_value(vector<dods_float64> &val, int sz)
     return set_value_worker(val, sz);
 }
 
+bool Vector::set_value_ll(vector<dods_byte> &val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(vector<dods_int8> &val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(vector<dods_int16> &val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(vector<dods_uint16> &val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(vector<dods_int32> &val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(vector<dods_uint32> &val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(vector<dods_int64> &val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(vector<dods_uint64> &val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(vector<dods_float32> &val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+bool Vector::set_value_ll(vector<dods_float64> &val, int64_t sz)
+{
+    return set_value_ll_worker(val, sz);
+}
+
 
 /** @brief set the value of a string or url array */
 bool Vector::set_value(vector<string> &val, int sz)
@@ -1827,6 +1978,24 @@ bool Vector::set_value(vector<string> &val, int sz)
         return false;
     }
 }
+
+bool Vector::set_value_ll(vector<string> &val, int64_t sz)
+{
+    if (var()->type() == dods_str_c || var()->type() == dods_url_c) {
+        d_str.resize(sz);
+        d_capacity_ll = sz;
+        for (int64_t t = 0; t < sz; t++) {
+            d_str[t] = val[t];
+        }
+        set_length_ll(sz);
+        set_read_p(true);
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 //@}
 
 //@{
@@ -1875,6 +2044,36 @@ void Vector::value_worker(vector<unsigned int> *indices, T *b) const
         b[i] = reinterpret_cast<T*>(d_buf )[currentIndex]; // I like this version - and it works!
     }
 }
+
+template <typename T>
+void Vector::value_ll_worker(vector<uint64_t> *indices, T *b) const
+{
+   // unsigned long currentIndex;
+#if 0
+    // Iterator version. Not tested, jhrg 8/14/13
+    for (vector<unsigned int>::iterator i = indices->begin(), e = indices->end(); i != e; ++i) {
+        unsigned long currentIndex = *i;
+        if(currentIndex > (unsigned int)length()){
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i - subsetIndex->begin() <<  "] = " << currentIndex << " references a value that is " <<
+                    "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
+            throw Error(s.str());
+        }
+        b[i - indices->begin()] = reinterpret_cast<T*>(d_buf )[currentIndex];
+    }
+#endif
+    for (uint64_t i = 0, e = indices->size(); i < e; ++i) {
+        uint64_t currentIndex = (*indices)[i];
+        if (currentIndex > (uint64_t)length_ll()) {
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
+                    "outside the bounds of the internal storage [ length_ll()= " << length_ll() << " ] name: '" << name() << "'. ";
+            throw Error(s.str());
+        }
+        b[i] = reinterpret_cast<T*>(d_buf )[currentIndex]; // I like this version - and it works!
+    }
+}
+
 void Vector::value(vector<unsigned int> *indices, dods_byte *b) const    { value_worker(indices, b); }
 void Vector::value(vector<unsigned int> *indices, dods_int8 *b) const    { value_worker(indices, b); }
 void Vector::value(vector<unsigned int> *indices, dods_int16 *b) const   { value_worker(indices, b); }
@@ -1885,6 +2084,18 @@ void Vector::value(vector<unsigned int> *indices, dods_int64 *b) const   { value
 void Vector::value(vector<unsigned int> *indices, dods_uint64 *b) const  { value_worker(indices, b); }
 void Vector::value(vector<unsigned int> *indices, dods_float32 *b) const { value_worker(indices, b); }
 void Vector::value(vector<unsigned int> *indices, dods_float64 *b) const { value_worker(indices, b); }
+
+void Vector::value_ll(vector<uint64_t> *indices, dods_byte *b) const    { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_int8 *b) const    { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_int16 *b) const   { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_uint16 *b) const  { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_int32 *b) const   { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_uint32 *b) const  { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_int64 *b) const   { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_uint64 *b) const  { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_float32 *b) const { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_float64 *b) const { value_ll_worker(indices, b); }
+
 
 #if 0
 template void Vector::value(vector<unsigned int> *indices, dods_byte *b) const;
@@ -1917,6 +2128,25 @@ void Vector::value(vector<unsigned int> *subsetIndex, vector<string> &b) const
         }
     }
 }
+
+void Vector::value_ll(vector<uint64_t> *subsetIndex, vector<string> &b) const
+{
+    uint64_t currentIndex;
+
+    if (d_proto->type() == dods_str_c || d_proto->type() == dods_url_c){
+        for(uint64_t i=0; i<subsetIndex->size() ;++i){
+            currentIndex = (*subsetIndex)[i] ;
+            if(currentIndex > (uint64_t)length_ll()){
+                stringstream s;
+                s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
+                        "outside the bounds of the internal storage [ length_ll()= " << length_ll() << " ] name: '" << name() << "'. ";
+                throw Error(s.str());
+            }
+            b[i] = d_str[currentIndex];
+        }
+    }
+}
+
 
 template <typename T>
 void Vector::value_worker(T *v) const
