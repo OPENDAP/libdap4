@@ -115,6 +115,7 @@ void Vector::m_duplicate(const Vector & v)
         val2buf(v.d_buf); // store v's value in this's _BUF.
 
     d_capacity = v.d_capacity;
+    d_capacity_ll = v.d_capacity_ll;
 }
 
 /**
@@ -447,6 +448,18 @@ void Vector::set_length_ll(int64_t l)
         d_too_big_for_dap2 = true;
     }
 }
+
+void Vector::set_value_capacity(uint64_t l)
+{
+    d_capacity_ll = l;
+    if (l <= DODS_UINT_MAX)
+        d_capacity = (unsigned int)l;
+    else {
+        d_capacity = -1;
+        //d_too_big_for_dap2 = true;
+    }
+}
+
 
 /** Returns a copy of the template array element. If the Vector contains
  simple data types, the template will contain the value of the last
@@ -1467,6 +1480,10 @@ unsigned int Vector::get_value_capacity() const
     return d_capacity;
 }
 
+uint64_t Vector::get_value_capacity_ll() const
+{
+    return d_capacity_ll;
+}
 /**
  * Allocate enough memory for the Vector to contain
  * numElements data elements of the Vector's type.

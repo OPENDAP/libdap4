@@ -229,6 +229,7 @@ public:
 
     void set_length_ll(int64_t l) override;
 
+
     // DAP2
     void intern_data(ConstraintEvaluator &eval, DDS &dds) override;
     bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
@@ -250,7 +251,11 @@ public:
 
     void clear_local_data() override;
 
+
     virtual unsigned int get_value_capacity() const;
+    virtual uint64_t get_value_capacity_ll() const;
+
+    void set_value_capacity(uint64_t l);
     virtual void reserve_value_capacity(unsigned int numElements);
     virtual void reserve_value_capacity();
 

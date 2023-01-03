@@ -1306,10 +1306,10 @@ void Array::print_xml_writer_core(XMLWriter &xml, bool constrained, string tag)
 
  @brief Print the value given the current constraint.
  */
-unsigned int Array::print_array(FILE *out, unsigned int index, unsigned int dims, unsigned int shape[])
+uint64_t  Array::print_array(FILE *out, uint64_t index, unsigned int dims, uint64_t shape[])
 {
     ostringstream oss;
-    unsigned int i = print_array(oss, index, dims, shape);
+    uint64_t i = print_array(oss, index, dims, shape);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 
     return i;
@@ -1326,15 +1326,15 @@ unsigned int Array::print_array(FILE *out, unsigned int index, unsigned int dims
 
  @brief Print the value given the current constraint.
  */
-unsigned int Array::print_array(ostream &out, unsigned int index, unsigned int dims, unsigned int shape[])
+uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, uint64_t shape[])
 {
     if (dims == 1) {
         out << "{";
 
         // Added test in case this method is passed an array with no elements. jhrg 1/27/16
         if (shape[0] >= 1) {
-            for (unsigned i = 0; i < shape[0] - 1; ++i) {
-                var(index++)->print_val(out, "", false);
+            for (uint64_t i = 0; i < shape[0] - 1; ++i) {
+                var_ll(index++)->print_val(out, "", false);
                 out << ", ";
             }
             var(index++)->print_val(out, "", false);
@@ -1358,7 +1358,7 @@ unsigned int Array::print_array(ostream &out, unsigned int index, unsigned int d
         // may look a little odd (e.g., x[4][0] will print as { {}, {}, {}, {} })
         // but it's not wrong and this is really for debugging mostly. jhrg 1/28/16
         if (shape[0] > 0) {
-            for (unsigned i = 0; i < shape[0] - 1; ++i) {
+            for (uint64_t i = 0; i < shape[0] - 1; ++i) {
                 index = print_array(out, index, dims - 1, shape + 1);
                 out << ",";
             }
@@ -1392,7 +1392,7 @@ void Array::print_val(ostream &out, string space, bool print_decl_p)
         out << " = ";
     }
 
-    unsigned int *shape = new unsigned int[dimensions(true)];
+    uint64_t *shape = new uint64_t[dimensions(true)];
     unsigned int index = 0;
     for (Dim_iter i = _shape.begin(); i != _shape.end() && index < dimensions(true); ++i)
         shape[index++] = dimension_size(i, true);

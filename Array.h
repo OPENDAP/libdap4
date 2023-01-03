@@ -193,11 +193,18 @@ private:
 protected:
     void _duplicate(const Array &a);
 
+#if 0
     unsigned int print_array(FILE *out, unsigned int index,
                              unsigned int dims, unsigned int shape[]);
 
     unsigned int print_array(ostream &out, unsigned int index,
                              unsigned int dims, unsigned int shape[]);
+#endif
+    uint64_t print_array(FILE *out, uint64_t index,
+                             unsigned int dims, uint64_t shape[]);
+
+    uint64_t print_array(ostream &out, uint64_t index,
+                             unsigned int dims, uint64_t shape[]);
 
     std::vector<dimension> &shape(){
         return _shape;
