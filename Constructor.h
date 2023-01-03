@@ -112,7 +112,7 @@ public:
       * @return A const reference to the vector of BaseType pointers.
       */
     const vector<BaseType*> &variables() const { return d_vars; }
-    bool is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory) override;
+
     bool is_dap4_projected(std::vector<std::string> &inventory) override;
 
     void add_var(BaseType *bt, Part part = nil) override;

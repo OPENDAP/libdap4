@@ -427,25 +427,6 @@ DMR::print_dap4(XMLWriter &xml, bool constrained)
         throw InternalErr(__FILE__, __LINE__, "Could not end the top-level Group element");
 }
 
-/**
- * @brief Scans the inventory of projected variables and their attributes for projected DAP4 types.
- * As it locates projected DAP4 types it adds them to the supplied vector projected_dap4_inventory
- * @param projected_dap4_variable_inventory
- * @return
- */
-bool DMR::is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory)
-{
-    bool has_dap4 = root()->attributes()->has_dap4_types();
-
-    for(const auto var : root()->variables()){
-        has_dap4 |= var->is_dap4_projected(projected_dap4_inventory);
-    }
-    for(const auto grp: root()->groups()){
-        has_dap4 |= grp->is_dap4_projected(projected_dap4_inventory);
-    }
-    return has_dap4;
-
-}
 
 /**
  * @brief Scans the inventory of projected variables and their attributes for projected DAP4 types.

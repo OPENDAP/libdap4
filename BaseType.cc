@@ -1314,17 +1314,6 @@ BaseType::width_ll(bool /* constrained */) const
 }
 
 
-bool BaseType::is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory){
-    bool has_projected_dap4 = false;
-    if(send_p()) {
-        has_projected_dap4 = attributes()->has_dap4_types();
-        if (has_projected_dap4) {
-            projected_dap4_inventory.emplace_back(this);
-        }
-    }
-    return has_projected_dap4;
-}
-
 /**
  * @brief When send_p() is true this object pointer is added to inventory and returns true.
  * @param inventory

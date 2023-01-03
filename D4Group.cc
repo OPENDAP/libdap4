@@ -874,46 +874,6 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
  * Evaluate the Group to see if dap4 content has been projected, and add that content to
  * the inventory when identified.
  *
- *
- * @param projected_dap4_inventory
- * @return
- */
-// @TODO What is the correct behavior for Group?
-//   Do we set has_projected_dap4=true and add the Group to the inventory
-//   if this->send_p() is true, even if all of the projected members contain only DAP2 stuff?
-//   Or is the Group "transparent" and we only add it when children have projected dap4
-//   content?
-bool D4Group::is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory){
-
-    bool has_projected_dap4 = false;
-    if(send_p()) {
-
-        has_projected_dap4 = attributes()->has_dap4_types();
-
-        for (const auto var: variables()) {
-            has_projected_dap4 |= var->is_dap4_projected(projected_dap4_inventory);
-        }
-        for (const auto grp: groups()) {
-            has_projected_dap4 |= grp->is_dap4_projected(projected_dap4_inventory);
-        }
-#if 1
-        if(has_projected_dap4) {
-            projected_dap4_inventory.emplace_back(this);
-        }
-#else
-        has_projected_dap4 = true;
-        projected_dap4_inventory.emplace_back(this);
-#endif
-    }
-    return has_projected_dap4;
-
-}
-
-/**
- * Evaluate the Group to see if dap4 content has been projected, and add that content to
- * the inventory when identified.
- *
- *
  * @param projected_dap4_inventory
  * @return
  */

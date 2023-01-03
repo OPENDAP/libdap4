@@ -233,19 +233,6 @@ Int8::transform_to_dap2(AttrTable *parent_attr_table)
     return vec;
 }
 
-/**
- * @brief When send_p() is true this object pointer is added to projected_dap4_inventory and returns true.
- * @param projected_dap4_inventory
- * @return True when sned_p() is true, false otherwise
- */
-bool Int8::is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory)
-{
-    if(send_p()) {
-        projected_dap4_inventory.emplace_back(this);
-        return true;
-    }
-    return false;
-}
 
 /**
  * @brief When send_p() is true this object pointer is added to projected_dap4_inventory and returns true.

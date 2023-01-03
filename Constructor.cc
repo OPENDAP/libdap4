@@ -782,23 +782,6 @@ Constructor::make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars)
     return dv_table;
 }
 
-bool Constructor::is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory)
-{
-    bool has_projected_dap4 = false;
-
-    if(send_p()) {
-        has_projected_dap4 = attributes()->has_dap4_types();
-
-        for (const auto var: variables()) {
-            has_projected_dap4 |= var->is_dap4_projected(projected_dap4_inventory);
-        }
-    }
-
-    return has_projected_dap4;
-
-}
-
-
 
 /**
  * @brief When send_p() is true this object pointer is added to projected_dap4_inventory and returns true.

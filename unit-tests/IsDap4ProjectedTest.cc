@@ -80,8 +80,8 @@ public:
      * tests if dap4 variables returns true
      */
     void test_is_dap4_projected_int8() {
-        vector<BaseType *> inv;
-        Int8 var("int8");
+        vector<string> inv;
+        Int8 var("ivar");
         var.set_send_p(true);
 
         bool is_projected = var.is_dap4_projected(inv);
@@ -91,8 +91,8 @@ public:
         DBG(cerr << prolog << "             inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "      inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "int8");
+        DBG(cerr << prolog << "      inv.at(0)->name(): " << inv.at(0)<< endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 ivar");
     }
 
     /**
@@ -100,8 +100,8 @@ public:
      * tests if non-dap4 variables returns false
      */
     void test_is_dap4_projected_byte() {
-        vector<BaseType *> inv;
-        Byte var("byte");
+        vector<string> inv;
+        Byte var("bvar");
         var.set_send_p(true);
 
         bool is_projected = var.is_dap4_projected(inv);
