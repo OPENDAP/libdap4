@@ -551,6 +551,7 @@ public:
     //@}
 
     virtual bool is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory);
+    virtual bool is_dap4_projected(std::vector<string> &projected_dap4_inventory);
 
 };
 

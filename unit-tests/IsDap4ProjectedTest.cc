@@ -34,6 +34,7 @@
 #include "Int8.h"
 #include "Int64.h"
 #include "Byte.h"
+#include "Float32.h"
 #include "Array.h"
 #include "Structure.h"
 #include "D4Attributes.h"
@@ -116,20 +117,31 @@ public:
      * tests if array containing dap4 vars returns true
      */
     void test_is_dap4_projected_array_int8() {
-        Int8 template_var("int8");
-        Array var("array", &template_var);
-        var.set_send_p(true);
-        vector<BaseType *> inv;
+        Int8 pvar("pvar");
+        Array avar("avar", &pvar);
+        avar.append_dim(5, "dim0");
+        avar.append_dim(10, "dim1");
+        avar.append_dim(15, "dim2");
+        avar.set_send_p(true);
 
-        bool is_projected = var.is_dap4_projected(inv);
+        // void Array::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained)
+
+        if(debug) {
+            cerr << prolog;
+            avar.print_decl(cerr, " ", false, false, true);
+            cerr << endl;
+        }
+        vector<string> inv;
+
+        bool is_projected = avar.is_dap4_projected(inv);
         DBG(cerr << prolog << "array.is_dap4_projected(): " << truth(is_projected) << endl);
         CPPUNIT_ASSERT(is_projected == true);
 
         DBG(cerr << prolog << "               inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "        inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "int8");
+        DBG(cerr << prolog << "        inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 pvar[dim0=5][dim1=10][dim2=15]");
     }
 
     /**
@@ -140,7 +152,7 @@ public:
         Byte var("byte");
         Array array("array", &var);
         array.set_send_p(false);
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool is_projected = array.is_dap4_projected(inv);
         DBG(cerr << prolog << "array.is_dap4_projected(): " << truth(is_projected) << endl);
@@ -155,24 +167,25 @@ public:
      * test if struct containing dap4 vars returns true
      */
     void test_is_dap4_projected_struct_int8() {
-        Structure structure("struct");
-        auto *array = new Array("array", new Int8("int8"));
-        structure.add_var_nocopy(array);
-        structure.set_send_p(true);
-        array->set_send_p(true);
-        vector<BaseType *> inv;
+        Structure svar("svar");
+        auto *avar = new Array("avar", new Int8("pvar"));
+        avar->append_dim(1, "dim0");
+        avar->append_dim(2, "dim1");
+        avar->append_dim(3, "dim2");
+        svar.add_var_nocopy(avar);
+        svar.set_send_p(true);
+        avar->set_send_p(true);
+        vector<string> inv;
 
-        bool result = structure.is_dap4_projected(inv);
+        bool result = svar.is_dap4_projected(inv);
         DBG(cerr << prolog << "structure.is_dap4_projected(): " << truth(result) << endl);
         CPPUNIT_ASSERT(result == true);
 
         DBG(cerr << prolog << "                   inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "            inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "int8");
-        DBG(cerr << prolog << "       inv.at(0)->type_name(): " << inv.at(0)->type_name() << endl);
-        CPPUNIT_ASSERT( inv.at(0)->type() == dods_array_c );
+        DBG(cerr << prolog << "            inv.at(0)->name(): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 svar.pvar[dim0=1][dim1=2][dim2=3]");
     }
 
     /**
@@ -183,7 +196,7 @@ public:
         Structure structure("struct");
         auto *array = new Array("array", new Byte("byte"));
         structure.add_var_nocopy(array);
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = structure.is_dap4_projected(inv);
         DBG(cerr << prolog << "structure.is_dap4_projected(): " << truth(result) << endl);
@@ -199,10 +212,10 @@ public:
      * test if a basic var with dap4 attribute returns true
      */
     void test_is_dap4_projected_attr_true() {
-        Byte byte("byte");
+        Byte byte("bvar");
         auto *d4a = new D4Attribute("d4a", attr_int8_c);
         byte.attributes()->add_attribute(d4a);
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = byte.is_dap4_projected(inv);
         DBG(cerr << prolog << "byte.is_dap4_projected(): " << truth(result) << endl);
@@ -216,8 +229,8 @@ public:
         DBG(cerr << prolog << "              inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "       inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "byte");
+        DBG(cerr << prolog << "       inv.at(0)->name(): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 bvar@d4a");
     }
 
     /**
@@ -228,7 +241,7 @@ public:
         Byte byte("byte");
         auto *d4a = new D4Attribute("d4a", attr_byte_c);
         byte.attributes()->add_attribute(d4a);
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = byte.is_dap4_projected(inv);
         DBG(cerr << prolog << "byte.is_dap4_projected(): " << truth(result) << endl);
@@ -243,26 +256,26 @@ public:
     * test if an array with dap4 attribute returns true
     */
     void test_is_dap4_projected_attr_array_true() {
-        Byte byte("byte");
-        Array array("array", &byte);
+        Byte bvar("bvar");
+        Array avar("avar", &bvar);
         D4Attribute *d4a = new D4Attribute("d4a", attr_int8_c);
-        array.attributes()->add_attribute(d4a);
-        vector<BaseType *> inv;
+        avar.attributes()->add_attribute(d4a);
+        vector<string> inv;
 
-        bool result = array.is_dap4_projected(inv);
+        bool result = avar.is_dap4_projected(inv);
         DBG(cerr << prolog << "array.is_dap4_projected(): " << truth(result) << endl);
         CPPUNIT_ASSERT(result == false);
 
-        array.set_send_p(true);
-        result = array.is_dap4_projected(inv);
+        avar.set_send_p(true);
+        result = avar.is_dap4_projected(inv);
         DBG(cerr << prolog << "array.is_dap4_projected(): " << truth(result) << endl);
         CPPUNIT_ASSERT(result == true);
 
         DBG(cerr << prolog << "               inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "        inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "byte");
+        DBG(cerr << prolog << "        inv.at(0)->name(): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 bvar@d4a");
     }
 
     /**
@@ -274,7 +287,7 @@ public:
         Array array("array", &byte);
         auto *d4a = new D4Attribute("d4a", attr_byte_c);
         array.attributes()->add_attribute(d4a);
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = array.is_dap4_projected(inv);
         DBG(cerr << prolog << "array.is_dap4_projected(): " << truth(result) << endl);
@@ -289,28 +302,28 @@ public:
     * test if a struct with dap4 attribute returns true
     */
     void test_is_dap4_projected_attr_struct_true() {
-        Structure structure("struct");
-        auto *array = new Array("array", new Byte("byte"));
+        Structure svar("svar");
+        auto *avar = new Array("avar", new Byte("byte"));
         auto *d4a = new D4Attribute("d4a", attr_int8_c);
-        array->attributes()->add_attribute(d4a);
-        structure.add_var_nocopy(array);
-        vector<BaseType *> inv;
+        avar->attributes()->add_attribute(d4a);
+        svar.add_var_nocopy(avar);
+        vector<string> inv;
 
-        bool result = structure.is_dap4_projected(inv);
+        bool result = svar.is_dap4_projected(inv);
         DBG(cerr << prolog << "structure.is_dap4_projected(): " << truth(result) << endl);
         CPPUNIT_ASSERT(result == false);
 
-        array->set_send_p(true);
-        structure.set_send_p(true);
-        result = structure.is_dap4_projected(inv);
+        avar->set_send_p(true);
+        svar.set_send_p(true);
+        result = svar.is_dap4_projected(inv);
         DBG(cerr << prolog << "structure.is_dap4_projected(): " << truth(result) << endl);
         CPPUNIT_ASSERT(result == true);
 
         DBG(cerr << prolog << "                   inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "            inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "byte");
+        DBG(cerr << prolog << "            inv.at(0)->name(): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 svar.byte@d4a");
     }
 
     /**
@@ -323,7 +336,7 @@ public:
         D4Attribute *d4a = new D4Attribute("d4a", attr_byte_c);
         array->attributes()->add_attribute(d4a);
         structure.add_var_nocopy(array);
-        vector<BaseType *> inv;
+        vector<string > inv;
 
         bool result = structure.is_dap4_projected(inv);
         DBG(cerr << prolog << "structure.is_dap4_projected(): " << truth(result) << endl);
@@ -348,17 +361,17 @@ public:
      * test if DMR containing dap4 var [Int8] returns true
      */
     void test_is_dap4_projected_dmr_ddsint8() {
-        Int8 *int8 = new Int8("int8");
-        int8->set_send_p(true);
+        Int8 *ivar = new Int8("ivar");
+        ivar->set_send_p(true);
 
         BaseTypeFactory f;
         DDS *dds = new DDS(&f);
-        dds->add_var_nocopy(int8);
+        dds->add_var_nocopy(ivar);
 
         D4BaseTypeFactory f4;
         DMR *dmr = new DMR(&f4, *dds);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
         CPPUNIT_ASSERT(result == true);
@@ -366,8 +379,8 @@ public:
         DBG(cerr << prolog << "              inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "       inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "int8");
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 /ivar");
 
     }
 
@@ -386,7 +399,7 @@ public:
         D4BaseTypeFactory f4;
         DMR *dmr = new DMR(&f4, *dds);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -402,16 +415,16 @@ public:
      * test if DMR containing a dap4 int8 var returns true
      */
     void test_is_dap4_projected_dmr_int8() {
-        Int8 *int8 = new Int8("int8");
-        int8->set_send_p(true);
+        Int8 *ivar = new Int8("ivar");
+        ivar->set_send_p(true);
 
         D4BaseTypeFactory f4;
         DMR *dmr = new DMR(&f4, "test");
 
         D4Group *d4g = dmr->root();
-        d4g->add_var_nocopy(int8);
+        d4g->add_var_nocopy(ivar);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -420,8 +433,8 @@ public:
         DBG(cerr << prolog << "              inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "       inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "int8");
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 /ivar");
     }
 
     /**
@@ -429,13 +442,13 @@ public:
      * test if DMR containing a dap4 int64 var returns true
      */
     void test_is_dap4_projected_dmr_int64() {
-        auto *int64 = new Int64("int64");
-        int64->set_send_p(true);
+        auto *ivar = new Int64("iVar");
+        ivar->set_send_p(true);
         D4BaseTypeFactory f4;
         DMR *dmr = new DMR(&f4, "test");
         D4Group *d4g = dmr->root();
-        d4g->add_var_nocopy(int64);
-        vector<BaseType *> inv;
+        d4g->add_var_nocopy(ivar);
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
 
@@ -445,8 +458,8 @@ public:
         DBG(cerr << prolog << "              inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "       inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "int64");
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int64 /iVar");
 
     }
 
@@ -465,7 +478,7 @@ public:
         D4Group *d4g = dmr->root();
         d4g->add_var_nocopy(byte);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -480,16 +493,16 @@ public:
      * tests if a dmr with an array containing a dap4 vars returns true
      */
     void test_is_dap4_projected_dmr_array_int8() {
-        Array *array = new Array("array", new Int8("int8"));
-        array->set_send_p(true);
+        Array *avar = new Array("avar", new Int8("ivar"));
+        avar->set_send_p(true);
 
         D4BaseTypeFactory f4;
         DMR *dmr = new DMR(&f4, "test");
 
         D4Group *d4g = dmr->root();
-        d4g->add_var_nocopy(array);
+        d4g->add_var_nocopy(avar);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -498,8 +511,8 @@ public:
         DBG(cerr << prolog << "              inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "       inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "int8");
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 /ivar");
 
     }
 
@@ -517,7 +530,7 @@ public:
         D4Group *d4g = dmr->root();
         d4g->add_var_nocopy(array);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -532,18 +545,18 @@ public:
      * test if a dmr with a struct containing dap4 vars returns true
      */
     void test_is_dap4_projected_dmr_struct_int8() {
-        Structure structure("struct");
-        Array *array = new Array("array", new Int8("int8"));
-        structure.add_var_nocopy(array);
-        structure.set_send_p(true);
+        Structure svar("svar");
+        Array *avar = new Array("avar", new Int8("ivar"));
+        svar.add_var_nocopy(avar);
+        svar.set_send_p(true);
 
         D4BaseTypeFactory f4;
         DMR *dmr = new DMR(&f4, "test");
 
         D4Group *d4g = dmr->root();
-        d4g->add_var_nocopy(&structure);
+        d4g->add_var_nocopy(&svar);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -552,8 +565,8 @@ public:
         DBG(cerr << prolog << "              inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "       inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "int8");
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 /svar.ivar");
     }
 
     /**
@@ -572,7 +585,7 @@ public:
         D4Group *d4g = dmr->root();
         d4g->add_var_nocopy(array);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -588,18 +601,18 @@ public:
      * test if a dmr holding a basic var with dap4 attribute returns true
      */
     void test_is_dap4_projected_dmr_attr_true() {
-        Byte byte("byte");
+        Byte bvar("bvar");
         D4Attribute *d4a = new D4Attribute("d4a", attr_int8_c);
-        byte.attributes()->add_attribute(d4a);
-        byte.set_send_p(true);
+        bvar.attributes()->add_attribute(d4a);
+        bvar.set_send_p(true);
 
         D4BaseTypeFactory f4;
         DMR *dmr = new DMR(&f4, "test");
 
         D4Group *d4g = dmr->root();
-        d4g->add_var_nocopy(&byte);
+        d4g->add_var_nocopy(&bvar);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -608,8 +621,8 @@ public:
         DBG(cerr << prolog << "              inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "       inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "byte");
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 /bvar@d4a");
     }
 
     /**
@@ -628,7 +641,7 @@ public:
         D4Group *d4g = dmr->root();
         d4g->add_var_nocopy(&byte);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
         CPPUNIT_ASSERT(result == false);
@@ -642,19 +655,19 @@ public:
     * test if a dmr holding an array with dap4 attribute returns true
     */
     void test_is_dap4_projected_dmr_attr_array_true() {
-        Byte byte("byte");
-        Array array("array", &byte);
+        Byte bvar("bvar");
+        Array avar("avar", &bvar);
         D4Attribute *d4a = new D4Attribute("d4a", attr_int8_c);
-        array.attributes()->add_attribute(d4a);
-        array.set_send_p(true);
+        avar.attributes()->add_attribute(d4a);
+        avar.set_send_p(true);
 
         D4BaseTypeFactory f4;
         DMR *dmr = new DMR(&f4, "test");
 
         D4Group *d4g = dmr->root();
-        d4g->add_var_nocopy(&array);
+        d4g->add_var_nocopy(&avar);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -663,8 +676,8 @@ public:
         DBG(cerr << prolog << "              inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "       inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "byte");
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 /bvar@d4a");
     }
 
     /**
@@ -684,7 +697,7 @@ public:
         D4Group *d4g = dmr->root();
         d4g->add_var_nocopy(&array);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -699,20 +712,21 @@ public:
     * test if a dmr holding a struct with dap4 attribute returns true
     */
     void test_is_dap4_projected_dmr_attr_struct_true() {
-        Structure structure("struct");
-        Array *array = new Array("array", new Byte("byte"));
+        Structure svar("svar");
+        Array *avar = new Array("avar", new Byte("bvar"));
+        avar->append_dim(7,"");
         D4Attribute *d4a = new D4Attribute("d4a", attr_int8_c);
-        array->attributes()->add_attribute(d4a);
-        structure.add_var_nocopy(array);
-        structure.set_send_p(true);
+        avar->attributes()->add_attribute(d4a);
+        svar.add_var_nocopy(avar);
+        svar.set_send_p(true);
 
         D4BaseTypeFactory f4;
         DMR *dmr = new DMR(&f4, "test");
 
         D4Group *d4g = dmr->root();
-        d4g->add_var_nocopy(&structure);
+        d4g->add_var_nocopy(&svar);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -721,8 +735,8 @@ public:
         DBG(cerr << prolog << "              inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "       inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "byte");
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 /svar.bvar@d4a");
 
     }
 
@@ -744,7 +758,7 @@ public:
         D4Group *d4g = dmr->root();
         d4g->add_var_nocopy(&structure);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -763,15 +777,15 @@ public:
         DMR *dmr = new DMR(&f4, "test");
         D4Group *rootg = dmr->root();
 
-        Int8 int8("int8");
+        Int8 ivar("ivar");
         D4Group *subd4g = new D4Group("subgroup");
-        subd4g->add_var_nocopy(&int8);
+        subd4g->add_var_nocopy(&ivar);
         rootg->add_group_nocopy(subd4g);
 
-        int8.set_send_p(true);
+        ivar.set_send_p(true);
         subd4g->set_send_p(true);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
@@ -780,38 +794,33 @@ public:
         DBG(cerr << prolog << "              inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 2);
 
-        DBG(cerr << prolog << "       inv.at(0)->name(): " << inv.at(0)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->name() == "int8");
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Group /subgroup/");
 
-        DBG(cerr << prolog << "       inv.at(0)->type_name(): " << inv.at(0)->type_name() << endl);
-        CPPUNIT_ASSERT(inv.at(0)->type() == dods_int8_c);
+        DBG(cerr << prolog << "       inv.at(1)->name(): " << inv.at(1) << endl);
+        CPPUNIT_ASSERT(inv.at(1) == "Int8 /subgroup/ivar");
 
-        DBG(cerr << prolog << "       inv.at(1)->name(): " << inv.at(1)->name() << endl);
-        CPPUNIT_ASSERT(inv.at(1)->name() == "subgroup");
-
-        DBG(cerr << prolog << "       inv.at(1)->type_name(): " << inv.at(1)->type_name() << endl);
-        CPPUNIT_ASSERT(inv.at(1)->type() == dods_group_c);
     }
 
     /**
     * dmr subgroup variable test - false
     * test if a dmr holding a subgroup with no dap4 vars returns false
     */
-    void test_is_dap4_projected_dmr_subgroup_false() {
-        Byte byte("byte");
-        byte.set_send_p(true);
+    void test_is_dap4_projected_dmr_subgroup_true_too() {
+        Byte bvar("bvar");
+        bvar.set_send_p(true);
 
         D4BaseTypeFactory f4;
         DMR *dmr = new DMR(&f4, "test");
 
         D4Group *subd4g = new D4Group("subgroup");
-        subd4g->add_var_nocopy(&byte);
+        subd4g->add_var_nocopy(&bvar);
         subd4g->set_send_p(true);
 
         D4Group *d4g = dmr->root();
         d4g->add_group_nocopy(subd4g);
 
-        vector<BaseType *> inv;
+        vector<string> inv;
 
         // @TODO What is the correct response here?
         //   Because the child group subd4g is marked to send.
@@ -819,13 +828,64 @@ public:
         //   and that's DAP4. The test came in expecting that this would
         //   be not projected.
 
+        bool result = dmr->is_dap4_projected(inv);
+        DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
+        CPPUNIT_ASSERT(result == true);
+
+        DBG(cerr << prolog << "             inv.size(): " << inv.size() << endl);
+        CPPUNIT_ASSERT(inv.size() == 1);
+
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Group /subgroup/");
+    }
+
+    /**
+    * dmr subgroup variable test - false
+    * test if a dmr holding a subgroup with no dap4 vars returns false
+    */
+    void test_is_dap4_projected_nested_group_array_attr() {
+        Float32 a_proto("fvar");
+        Array *avar = new Array("avar", &a_proto);
+        D4Attribute *d4a = new D4Attribute("d4a", attr_int8_c);
+        avar->attributes()->add_attribute(d4a);
+        avar->set_send_p(true);
+
+        D4BaseTypeFactory f4;
+        DMR *dmr = new DMR(&f4, "test");
+
+        D4Group *bgroup = new D4Group("b_grp");
+        D4Group *cgroup = new D4Group("c_grp");
+        cgroup->add_var_nocopy(avar);
+        cgroup->set_send_p(true);
+        bgroup->add_group_nocopy(cgroup);
+        bgroup->set_send_p(true);
+
+        D4Group *d4g = dmr->root();
+        d4g->add_group_nocopy(bgroup);
+
+        vector<string> inv;
+
+        // @TODO What is the correct response here?
+        //   Because the child group subd4g is marked to send.
+        //   And even if it only contains DAP2 things, it's still a Group,
+        //   and that's DAP4. The test came in expecting that this would
+        //   be not projected.
 
         bool result = dmr->is_dap4_projected(inv);
         DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
-        CPPUNIT_ASSERT(result == false);
+        CPPUNIT_ASSERT(result == true);
 
-        DBG(cerr << prolog << "             inv.empty(): " << truth(inv.empty()) << endl);
-        CPPUNIT_ASSERT(inv.empty() == true);
+        DBG(cerr << prolog << "             inv.size(): " << inv.size() << endl);
+        CPPUNIT_ASSERT(inv.size() == 3);
+
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Group /b_grp/");
+
+        DBG(cerr << prolog << "       inv.at(1): " << inv.at(1) << endl);
+        CPPUNIT_ASSERT(inv.at(1) == "Group /b_grp/c_grp/");
+
+        DBG(cerr << prolog << "       inv.at(2): " << inv.at(2) << endl);
+        CPPUNIT_ASSERT(inv.at(2) == "Int8 /b_grp/c_grp/fvar@d4a");
     }
 
     ///////////////////////////////////////////////////////
@@ -877,7 +937,8 @@ CPPUNIT_TEST_SUITE( IsDap4ProjectedTest );
         CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_struct_false);
 
         CPPUNIT_TEST(test_is_dap4_projected_dmr_subgroup_true);
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_subgroup_false);
+        CPPUNIT_TEST(test_is_dap4_projected_dmr_subgroup_true_too);
+        CPPUNIT_TEST(test_is_dap4_projected_nested_group_array_attr);
 
     CPPUNIT_TEST_SUITE_END();
 };

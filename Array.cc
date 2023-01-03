@@ -1315,6 +1315,36 @@ bool Array::check_semantics(string &msg, bool)
     return sem;
 }
 
+
+
+/**
+ * @brief When send_p() is true this object pointer is added to projected_dap4_inventory and returns true.
+ * @param inventory
+ * @return True when send_p() is true, false otherwise
+ */
+bool Array::is_dap4_projected(std::vector<std::string> &inventory)
+{
+    bool has_projected_dap4 = false;
+    if(send_p()) {
+        has_projected_dap4 = attributes()->has_dap4_types(FQN(),inventory);
+        if(prototype()->is_dap4()) {
+            has_projected_dap4 = true;
+            stringstream entry;
+            entry << prototype()->type_name() << " " << FQN();
+            for(auto itr=dim_begin(); itr!=dim_end(); itr++){
+                entry << "[";
+                string dim_name = dimension_name(itr);
+                if(!dim_name.empty()){
+                    entry << dim_name << "=";
+                }
+                entry <<  dimension_size(itr,true) << "]";
+            }
+            inventory.emplace_back(entry.str());
+        }
+    }
+    return has_projected_dap4;
+}
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and information about this

@@ -286,6 +286,25 @@ bool UInt64::is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_i
     return false;
 }
 
+/**
+ * @brief When send_p() is true this object pointer is added to projected_dap4_inventory and returns true.
+ * @param inventory
+ * @return True when sned_p() is true, false otherwise
+ */
+bool UInt64::is_dap4_projected(std::vector<string> &inventory)
+{
+    bool has_projected_dap4 = false;
+    if(send_p()) {
+        has_projected_dap4 = true;
+        attributes()->has_dap4_types(FQN(), inventory);
+        string entry;
+        entry += type_name() + " " + FQN();
+        inventory.emplace_back(entry);
+    }
+    return has_projected_dap4;
+}
+
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and information about this

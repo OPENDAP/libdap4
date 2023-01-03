@@ -667,6 +667,43 @@ bool D4Attributes::has_dap4_types() const
     return has_d4_attr;
 }
 
+bool D4Attribute::is_dap4_type(std::string path, std::vector<std::string> &inventory)
+{
+    bool has_d4_attr = false;
+    switch(type()){
+        case attr_int8_c:
+        case attr_int64_c:
+        case attr_uint64_c:
+            has_d4_attr=true;
+            break;
+        case attr_container_c:
+            has_d4_attr = attributes()->has_dap4_types(path,inventory);
+            break;
+        default:
+            break;
+    }
+    return has_d4_attr;
+}
+
+
+bool D4Attributes::has_dap4_types(std::string path, std::vector<std::string> &inventory) const
+{
+    bool has_d4_attr = false;
+    for (auto attr: attributes()) {
+        string attr_fqn = path + "@" + attr->name();
+        bool is_d4_attr = attr->is_dap4_type(attr_fqn, inventory);
+        if(is_d4_attr){
+            string entry;
+            entry += D4AttributeTypeToString(attr->type()) + " " + attr_fqn;
+            inventory.emplace_back(entry);
+        }
+        has_d4_attr |= is_d4_attr;
+    }
+    return has_d4_attr;
+
+
+}
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and then displays information

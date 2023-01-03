@@ -90,6 +90,7 @@ public:
     std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 
     bool is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory) override;
+    bool is_dap4_projected(std::vector<std::string> &inventory) override;
 
     void dump(ostream &strm) const  override;
 };

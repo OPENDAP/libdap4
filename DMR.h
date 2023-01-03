@@ -222,6 +222,7 @@ public:
     virtual DDS *getDDS();
 
     virtual bool is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inventory);
+    virtual bool is_dap4_projected(std::vector<string> &inventory);
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
 

@@ -302,6 +302,7 @@ public:
 
     virtual bool check_semantics(string &msg, bool all = false);
 
+    bool is_dap4_projected(std::vector<std::string> &projected_dap4_inventory) override;
 
     virtual void dump(ostream &strm) const ;
 };

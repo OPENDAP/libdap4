@@ -248,6 +248,23 @@ bool Int8::is_dap4_projected(std::vector<libdap::BaseType *> &projected_dap4_inv
 }
 
 /**
+ * @brief When send_p() is true this object pointer is added to projected_dap4_inventory and returns true.
+ * @param projected_dap4_inventory
+ * @return True when sned_p() is true, false otherwise
+ */
+bool Int8::is_dap4_projected(std::vector<std::string> &inventory)
+{
+    if(send_p()) {
+        attributes()->has_dap4_types(FQN(), inventory);
+        string entry;
+        entry += type_name() + " " + FQN();
+        inventory.emplace_back(entry);
+        return true;
+    }
+    return false;
+}
+
+/**
  * @brief dumps information about this object
  *
  * Displays the pointer value of this instance and information about this
