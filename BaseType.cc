@@ -1315,9 +1315,10 @@ BaseType::width_ll(bool /* constrained */) const
 
 
 /**
- * @brief When send_p() is true this object pointer is added to inventory and returns true.
+ * When send_p() is true and the attributes contain dap4 data types then
+ *   a description of the instance is added to the inventory and true is returned.
  * @param inventory
- * @return True when send_p() is true, false otherwise
+ * @return True when send_p() is true and the attributes contain dap4 data types, false otherwise
  */
 bool BaseType::is_dap4_projected(std::vector<string> &inventory)
 {

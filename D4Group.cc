@@ -871,11 +871,9 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
 }
 
 /**
- * Evaluate the Group to see if dap4 content has been projected, and add that content to
- * the inventory when identified.
- *
- * @param projected_dap4_inventory
- * @return
+ * When send_p() is true a description of the instance is added to the inventory and true is returned.
+ * @param inventory
+ * @return True when send_p() is true, false otherwise
  */
 bool D4Group::is_dap4_projected(std::vector<std::string> &inventory)
 {

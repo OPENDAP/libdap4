@@ -640,34 +640,34 @@ D4Attributes::print_dap4(XMLWriter &xml) const
 
 
 /**
- * @TODO
+ * Returns true if this Attribute is a dap4 type.
  * @param path
  * @param inventory
- * @return
+ * @return True of the attribute is a dap4 type, false otherwise
  */
 bool D4Attribute::is_dap4_type(std::string path, std::vector<std::string> &inventory)
 {
-    bool has_d4_attr = false;
+    bool ima_d4_attr = false;
     switch(type()){
         case attr_int8_c:
         case attr_int64_c:
         case attr_uint64_c:
-            has_d4_attr=true;
+            ima_d4_attr=true;
             break;
         case attr_container_c:
-            has_d4_attr = attributes()->has_dap4_types(path,inventory);
+            ima_d4_attr = attributes()->has_dap4_types(path,inventory);
             break;
         default:
             break;
     }
-    return has_d4_attr;
+    return ima_d4_attr;
 }
 
 /**
- * @TODO
+ * Checks the child Attributes for ones with dap4 types and, when found, adds a description of each to the inventory
  * @param path
  * @param inventory
- * @return
+ * @return true when dap4 types are found, false otherwise.
  */
 bool D4Attributes::has_dap4_types(std::string path, std::vector<std::string> &inventory) const
 {

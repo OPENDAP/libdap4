@@ -784,9 +784,10 @@ Constructor::make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars)
 
 
 /**
- * @brief When send_p() is true this object pointer is added to projected_dap4_inventory and returns true.
+ * When send_p() is true and the attributes or variables contain dap4 data types then
+ *   a description of the instance is added to the inventory and true is returned.
  * @param inventory
- * @return True when send_p() is true, false otherwise
+ * @return True when send_p() is true and this object contains dap4 types variables or attributes, false otherwise
  */
 bool Constructor::is_dap4_projected(std::vector<std::string> &inventory)
 {

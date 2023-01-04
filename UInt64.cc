@@ -274,9 +274,9 @@ UInt64::transform_to_dap2(AttrTable *)
 
 
 /**
- * @brief When send_p() is true this object pointer is added to projected_dap4_inventory and returns true.
+ * When send_p() is true a description of the instance is added to the inventory and true is returned.
  * @param inventory
- * @return True when sned_p() is true, false otherwise
+ * @return True when send_p() is true, false otherwise
  */
 bool UInt64::is_dap4_projected(std::vector<string> &inventory)
 {
