@@ -436,7 +436,7 @@ DMR::print_dap4(XMLWriter &xml, bool constrained)
  */
 bool DMR::is_dap4_projected(std::vector<string> &inventory)
 {
-    bool has_dap4 = root()->attributes()->has_dap4_types();
+    bool has_dap4 = root()->attributes()->has_dap4_types(root()->FQN(),inventory);
 
     for(const auto var : root()->variables()){
         has_dap4 |= var->is_dap4_projected(inventory);

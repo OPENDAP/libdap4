@@ -888,6 +888,52 @@ public:
         CPPUNIT_ASSERT(inv.at(2) == "Int8 /b_grp/c_grp/fvar@d4a");
     }
 
+    /**
+     * dmr global dap4 attribute test.
+     * true
+     * test if a dmr with a dap4 attribute in the root group
+     */
+    void test_is_dap4_projected_global_d4_attr() {
+        Float32 a_proto("fvar");
+        Array *avar = new Array("avar", &a_proto);
+        avar->set_send_p(true);
+
+        D4BaseTypeFactory f4;
+        DMR *dmr = new DMR(&f4, "test");
+
+        D4Group *bgroup = new D4Group("b_grp");
+        D4Group *cgroup = new D4Group("c_grp");
+        cgroup->add_var_nocopy(avar);
+        cgroup->set_send_p(true);
+        bgroup->add_group_nocopy(cgroup);
+        bgroup->set_send_p(true);
+
+        D4Group *root_grp = dmr->root();
+        root_grp->add_group_nocopy(bgroup);
+
+        D4Attribute *d4a = new D4Attribute("d4a", attr_int8_c);
+        root_grp->attributes()->add_attribute_nocopy(d4a);
+
+        vector<string> inv;
+
+        bool result = dmr->is_dap4_projected(inv);
+        DBG(cerr << prolog << "dmr->is_dap4_projected(): " << truth(result) << endl);
+        CPPUNIT_ASSERT(result == true);
+
+        DBG(cerr << prolog << "      inv.size(): " << inv.size() << endl);
+        CPPUNIT_ASSERT(inv.size() == 3);
+
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 /@d4a");
+
+        DBG(cerr << prolog << "       inv.at(1): " << inv.at(1) << endl);
+        CPPUNIT_ASSERT(inv.at(1) == "Group /b_grp/");
+
+        DBG(cerr << prolog << "       inv.at(2): " << inv.at(2) << endl);
+        CPPUNIT_ASSERT(inv.at(2) == "Group /b_grp/c_grp/");
+
+    }
+
     ///////////////////////////////////////////////////////
     /// DDS/DAP2 Tests
 
@@ -939,6 +985,7 @@ CPPUNIT_TEST_SUITE( IsDap4ProjectedTest );
         CPPUNIT_TEST(test_is_dap4_projected_dmr_subgroup_true);
         CPPUNIT_TEST(test_is_dap4_projected_dmr_subgroup_true_too);
         CPPUNIT_TEST(test_is_dap4_projected_nested_group_array_attr);
+        CPPUNIT_TEST(test_is_dap4_projected_global_d4_attr);
 
     CPPUNIT_TEST_SUITE_END();
 };
