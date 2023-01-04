@@ -639,34 +639,12 @@ D4Attributes::print_dap4(XMLWriter &xml) const
 }
 
 
-bool D4Attribute::is_dap4_type()
-{
-    bool has_d4_attr = false;
-    switch(type()){
-        case attr_int8_c:
-        case attr_int64_c:
-        case attr_uint64_c:
-            has_d4_attr=true;
-            break;
-        case attr_container_c:
-            has_d4_attr = attributes()->has_dap4_types();
-            break;
-        default:
-            break;
-    }
-    return has_d4_attr;
-}
-
-
-bool D4Attributes::has_dap4_types() const
-{
-    bool has_d4_attr = false;
-    for (auto attr: attributes()) {
-        has_d4_attr |= attr->is_dap4_type();
-    }
-    return has_d4_attr;
-}
-
+/**
+ * @TODO
+ * @param path
+ * @param inventory
+ * @return
+ */
 bool D4Attribute::is_dap4_type(std::string path, std::vector<std::string> &inventory)
 {
     bool has_d4_attr = false;
@@ -685,7 +663,12 @@ bool D4Attribute::is_dap4_type(std::string path, std::vector<std::string> &inven
     return has_d4_attr;
 }
 
-
+/**
+ * @TODO
+ * @param path
+ * @param inventory
+ * @return
+ */
 bool D4Attributes::has_dap4_types(std::string path, std::vector<std::string> &inventory) const
 {
     bool has_d4_attr = false;
