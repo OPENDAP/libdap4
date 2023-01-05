@@ -277,9 +277,7 @@ bool Int64::is_dap4_projected(std::vector<string> &inventory)
     if(send_p()) {
         has_projected_dap4 = true;
         attributes()->has_dap4_types(FQN(), inventory);
-        string entry;
-        entry += type_name() + " " + FQN();
-        inventory.emplace_back(entry);
+        inventory.emplace_back(type_name() + " " + FQN());
     }
     return has_projected_dap4;
 }

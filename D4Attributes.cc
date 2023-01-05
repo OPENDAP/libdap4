@@ -655,7 +655,7 @@ bool D4Attribute::is_dap4_type(std::string path, std::vector<std::string> &inven
             ima_d4_attr=true;
             break;
         case attr_container_c:
-            ima_d4_attr = attributes()->has_dap4_types(path,inventory);
+            ima_d4_attr = attributes()->has_dap4_types(path ,inventory);
             break;
         default:
             break;
@@ -669,18 +669,16 @@ bool D4Attribute::is_dap4_type(std::string path, std::vector<std::string> &inven
  * @param inventory
  * @return true when dap4 types are found, false otherwise.
  */
-bool D4Attributes::has_dap4_types(std::string path, std::vector<std::string> &inventory) const
+bool D4Attributes::has_dap4_types(const std::string &path, std::vector<std::string> &inventory) const
 {
     bool has_d4_attr = false;
     for (auto attr: attributes()) {
         string attr_fqn = path + "@" + attr->name();
-        bool is_d4_attr = attr->is_dap4_type(attr_fqn, inventory);
-        if(is_d4_attr){
-            string entry;
-            entry += D4AttributeTypeToString(attr->type()) + " " + attr_fqn;
-            inventory.emplace_back(entry);
+        bool isa_d4_attr = attr->is_dap4_type(attr_fqn, inventory);
+        if(isa_d4_attr){
+            inventory.emplace_back(D4AttributeTypeToString(attr->type()) + " " + attr_fqn);
         }
-        has_d4_attr |= is_d4_attr;
+        has_d4_attr |= isa_d4_attr;
     }
     return has_d4_attr;
 

@@ -1325,13 +1325,6 @@ bool BaseType::is_dap4_projected(std::vector<string> &inventory)
     bool has_projected_dap4 = false;
     if(send_p()) {
         has_projected_dap4 = attributes()->has_dap4_types(FQN(), inventory);
-#if 0
-        if (has_projected_dap4) {
-            string entry;
-            entry += type_name() + " " + FQN();
-            inventory.emplace_back(entry);
-        }
-#endif
     }
     return has_projected_dap4;
 }
