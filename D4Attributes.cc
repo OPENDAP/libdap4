@@ -645,7 +645,7 @@ D4Attributes::print_dap4(XMLWriter &xml) const
  * @param inventory
  * @return True of the attribute is a dap4 type, false otherwise
  */
-bool D4Attribute::is_dap4_type(std::string path, std::vector<std::string> &inventory)
+bool D4Attribute::is_dap4_type(const std::string &path, std::vector<std::string> &inventory)
 {
     bool ima_d4_attr = false;
     switch(type()){
