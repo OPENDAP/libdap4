@@ -1316,6 +1316,24 @@ bool Array::check_semantics(string &msg, bool)
 }
 
 
+/**
+ * Makes the square bracket representation, with dimension names where available, of
+ * the array's dimensions, ex: [5][lat=100][lon=200]
+ * @param a The array to examine
+ * @return The square bracket representation of the array's dimensions
+ */
+string get_dims_decl(Array &a) {
+    stringstream sqr_brkty_stuff;
+    for(auto itr=a.dim_begin(); itr!=a.dim_end(); itr++){
+        sqr_brkty_stuff << "[";
+        string dim_name = a.dimension_name(itr);
+        if(!dim_name.empty()){
+            sqr_brkty_stuff << dim_name << "=";
+        }
+        sqr_brkty_stuff << a.dimension_size(itr,true) << "]";
+    }
+    return sqr_brkty_stuff.str();
+}
 
 /**
  * When send_p() is true and the attributes or variables have dap4 data types then
@@ -1330,17 +1348,7 @@ bool Array::is_dap4_projected(std::vector<std::string> &inventory)
         has_projected_dap4 = attributes()->has_dap4_types(FQN(),inventory);
         if(prototype()->is_dap4()) {
             has_projected_dap4 = true;
-            stringstream entry;
-            entry << prototype()->type_name() << " " << FQN();
-            for(auto itr=dim_begin(); itr!=dim_end(); itr++){
-                entry << "[";
-                string dim_name = dimension_name(itr);
-                if(!dim_name.empty()){
-                    entry << dim_name << "=";
-                }
-                entry <<  dimension_size(itr,true) << "]";
-            }
-            inventory.emplace_back(entry.str());
+            inventory.emplace_back(prototype()->type_name() + " " + FQN() + get_dims_decl(*this));
         }
     }
     return has_projected_dap4;

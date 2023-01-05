@@ -681,8 +681,6 @@ bool D4Attributes::has_dap4_types(const std::string &path, std::vector<std::stri
         has_d4_attr |= isa_d4_attr;
     }
     return has_d4_attr;
-
-
 }
 
 /** @brief dumps information about this object
