@@ -152,7 +152,7 @@ public:
      * test if array containing no dap4 vars returns false
      */
     void test_is_dap4_projected_array_byte() {
-        Byte var("byte");
+        Byte var("bvar");
         Array array("array", &var);
         array.set_send_p(false);
 
@@ -199,8 +199,8 @@ public:
      */
     void test_is_dap4_projected_struct_byte() {
         Structure svar("svar");
-        auto *array = new Array("array", new Byte("byte"));
-        svar.add_var_nocopy(array);
+        auto *avar = new Array("avar", new Byte("bvar"));
+        svar.add_var_nocopy(avar);
 
         vector<string> inv;
         bool result = svar.is_dap4_projected(inv);
@@ -542,9 +542,9 @@ public:
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
-        auto array = new Array("array", new Byte("byte"));
-        array->set_send_p(true);
-        dmr->root()->add_var_nocopy(array);
+        auto avar = new Array("avar", new Byte("bvar"));
+        avar->set_send_p(true);
+        dmr->root()->add_var_nocopy(avar);
 
         vector<string> inv;
         bool result = dmr->is_dap4_projected(inv);
@@ -651,7 +651,7 @@ public:
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
-        auto bvar = new Byte("byte");
+        auto bvar = new Byte("bvar");
         auto d4a = new D4Attribute("d4a", attr_byte_c);
         bvar->attributes()->add_attribute_nocopy(d4a);
         bvar->set_send_p(true);
