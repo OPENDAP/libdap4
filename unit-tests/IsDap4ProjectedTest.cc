@@ -172,7 +172,8 @@ public:
      */
     void test_is_dap4_projected_struct_int8() {
         Structure svar("svar");
-        auto *avar = new Array("avar", new Int8("pvar"));
+        Int8 pvar("pvar");
+        auto *avar = new Array("avar", &pvar);
         avar->append_dim(1, "dim0");
         avar->append_dim(2, "dim1");
         avar->append_dim(3, "dim2");
@@ -199,7 +200,8 @@ public:
      */
     void test_is_dap4_projected_struct_byte() {
         Structure svar("svar");
-        auto *avar = new Array("avar", new Byte("bvar"));
+        Byte bvar("bvar");
+        auto *avar = new Array("avar", &bvar);
         svar.add_var_nocopy(avar);
 
         vector<string> inv;
@@ -266,8 +268,8 @@ public:
     */
     void test_is_dap4_projected_attr_array_true() {
 
-        auto bvar = new Byte("bvar");
-        auto avar = unique_ptr<Array>(new Array("avar", bvar));
+        Byte bvar("bvar");
+        auto avar = unique_ptr<Array>(new Array("avar", &bvar));
         avar->append_dim(10,"dim1");
 
         auto d4a = new D4Attribute("d4a", attr_int8_c);
@@ -298,8 +300,8 @@ public:
     */
     void test_is_dap4_projected_attr_array_false() {
 
-        auto bvar = new Byte("bvar");
-        auto avar = unique_ptr<Array>(new Array("avar", bvar));
+        Byte bvar("bvar");
+        auto avar = unique_ptr<Array>(new Array("avar", &bvar));
 
         auto *d4a = new D4Attribute("d4a", attr_byte_c);
         avar->attributes()->add_attribute_nocopy(d4a);
@@ -321,7 +323,8 @@ public:
     void test_is_dap4_projected_attr_struct_true() {
         auto svar = unique_ptr<Structure>(new Structure("svar"));
 
-        auto avar = new Array("avar", new Byte("bvar"));
+        Byte bvar("bvar");
+        auto avar = new Array("avar", &bvar);
         auto d4a = new D4Attribute("d4a", attr_int8_c);
         avar->attributes()->add_attribute_nocopy(d4a);
         svar->add_var_nocopy(avar);
@@ -352,7 +355,8 @@ public:
     void test_is_dap4_projected_attr_struct_false() {
         auto svar = unique_ptr<Structure>(new Structure("svar"));
 
-        auto avar = new Array("avar", new Byte("bvar"));
+        Byte bvar("bvar");
+        auto avar = new Array("avar", &bvar);
         auto d4a = new D4Attribute("d4a", attr_byte_c);
         avar->attributes()->add_attribute_nocopy(d4a);
         svar->add_var_nocopy(avar);
@@ -516,7 +520,8 @@ public:
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
-        auto avar = new Array("avar", new Int8("ivar"));
+        Int8 ivar("ivar");
+        auto avar = new Array("avar", &ivar);
         avar->set_send_p(true);
         dmr->root()->add_var_nocopy(avar);
 
@@ -542,7 +547,8 @@ public:
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
-        auto avar = new Array("avar", new Byte("bvar"));
+        Byte bvar("bvar");
+        auto avar = new Array("avar", &bvar);
         avar->set_send_p(true);
         dmr->root()->add_var_nocopy(avar);
 
@@ -564,7 +570,8 @@ public:
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
-        auto avar = new Array("avar", new Int8("ivar"));
+        Int8 ivar("ivar");
+        auto avar = new Array("avar", &ivar);
         avar->append_dim(10,"dim1");
         avar->append_dim(20,"");
         avar->set_send_p(true);
@@ -596,7 +603,8 @@ public:
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
-        auto avar = new Array("avar", new Byte("bvar"));
+        Byte bvar("bvar");
+        auto avar = new Array("avar", &bvar);
         avar->append_dim(10,"dim1");
         avar->set_send_p(true);
 
@@ -675,8 +683,8 @@ public:
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
-        auto bvar = new Byte("bvar");
-        auto avar = new Array("avar", bvar);
+        Byte bvar("bvar");
+        auto avar = new Array("avar", &bvar);
         auto d4a = new D4Attribute("d4a", attr_int8_c);
         avar->attributes()->add_attribute_nocopy(d4a);
         avar->set_send_p(true);
@@ -703,8 +711,8 @@ public:
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
-        auto bvar = new Byte("bvar");
-        auto avar = new Array("avar", bvar);
+        Byte bvar("bvar");
+        auto avar = new Array("avar", &bvar);
         auto d4a = new D4Attribute("d4a", attr_byte_c);
         avar->attributes()->add_attribute_nocopy(d4a);
         avar->set_send_p(true);
@@ -729,7 +737,8 @@ public:
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
         auto d4a = new D4Attribute("d4a", attr_int8_c);
-        auto avar = new Array("avar", new Byte("bvar"));
+        Byte bvar("bvar");
+        auto avar = new Array("avar", &bvar);
         avar->append_dim(7,"");
         avar->attributes()->add_attribute_nocopy(d4a);
 
@@ -761,7 +770,8 @@ public:
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
         auto d4a = new D4Attribute("d4a", attr_byte_c);
-        auto avar = new Array("avar", new Byte("bvar"));
+        Byte bvar("bvar");
+        auto avar = new Array("avar", &bvar);
         avar->attributes()->add_attribute_nocopy(d4a);
         avar->set_send_p(true);
 
@@ -849,8 +859,8 @@ public:
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
-        auto a_proto = new Float32("fvar");
-        auto avar = new Array("avar", a_proto);
+        Float32 a_proto("fvar");
+        auto avar = new Array("avar", &a_proto);
         auto d4a = new D4Attribute("d4a", attr_int8_c);
         avar->attributes()->add_attribute_nocopy(d4a);
         avar->set_send_p(true);
@@ -892,8 +902,8 @@ public:
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
-        auto a_proto = new Float32("fvar");
-        auto avar = new Array("avar", a_proto);
+        Float32 a_proto("fvar");
+        auto avar = new Array("avar", &a_proto);
         avar->set_send_p(true);
 
         auto cgroup = new D4Group("c_grp");
@@ -936,8 +946,8 @@ public:
         D4BaseTypeFactory f4;
         DMR dmr(&f4, "test");
 
-        auto a_proto = new Float32("fvar");
-        auto avar = new Array("avar", a_proto);
+        Float32 a_proto("fvar");
+        auto avar = new Array("avar", &a_proto);
         avar->set_send_p(true);
 
         auto cgroup = new D4Group("c_grp");
