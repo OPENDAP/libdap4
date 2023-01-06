@@ -2051,11 +2051,17 @@ bool Vector::check_semantics(string & msg, bool)
 bool Vector::is_dap4_projected(std::vector<std::string> &inventory)
 {
     bool has_projected_dap4 = false;
-
-    // @TODO Can one subset a vector of structure by selecting the members of the structure?
-    //   Because if that's allowed, then this assessment of is_dap4_projected will need to changed
     if(send_p()) {
-        has_projected_dap4 = d_proto->is_dap4() || attributes()->has_dap4_types(FQN(),inventory);
+        if(d_proto->is_constructor_type()){
+            has_projected_dap4 = d_proto->is_dap4_projected(inventory) || attributes()->has_dap4_types(FQN(),inventory);
+        }
+        else {
+            has_projected_dap4 = prototype()->is_dap4();
+            if(has_projected_dap4) {
+                inventory.emplace_back(prototype()->type_name() + " " + FQN());
+            }
+            has_projected_dap4 |= attributes()->has_dap4_types(FQN(), inventory);
+        }
         if(has_projected_dap4) {
             inventory.emplace_back(type_name() + " " + FQN());
         }

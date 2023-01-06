@@ -1345,13 +1345,19 @@ bool Array::is_dap4_projected(std::vector<std::string> &inventory)
 {
     bool has_projected_dap4 = false;
     if(send_p()) {
-        has_projected_dap4 = attributes()->has_dap4_types(FQN(),inventory);
-        if(prototype()->is_dap4()) {
-            has_projected_dap4 = true;
-            inventory.emplace_back(prototype()->type_name() + " " + FQN() + get_dims_decl(*this));
+        if(prototype()->is_constructor_type()){
+            has_projected_dap4 = prototype()->is_dap4_projected(inventory) || attributes()->has_dap4_types(FQN(),inventory);
+        }
+        else {
+            has_projected_dap4 = prototype()->is_dap4();
+            if(has_projected_dap4) {
+                inventory.emplace_back(prototype()->type_name() + " " + FQN() + get_dims_decl(*this));
+            }
+            has_projected_dap4 |= attributes()->has_dap4_types(FQN(), inventory);
         }
     }
     return has_projected_dap4;
+
 }
 
 /** @brief dumps information about this object
