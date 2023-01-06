@@ -205,7 +205,10 @@ int64_t Vector::m_create_cardinal_data_buffer_for_type(int64_t num_elements)
     int64_t bytesNeeded = d_proto->width_ll() * num_elements;
     d_buf = new char[bytesNeeded];
 
+#if 0
     d_capacity = (unsigned long long)num_elements;
+#endif
+    set_value_capacity((uint64_t)num_elements);
     return bytesNeeded;
 }
 
@@ -215,6 +218,7 @@ void Vector::m_delete_cardinal_data_buffer()
 	delete[] d_buf;
 	d_buf = nullptr;
 	d_capacity = 0;
+        d_capacity_ll = 0;
 }
 
 /** Helper to reduce cut and paste in the virtual's.
@@ -455,8 +459,8 @@ void Vector::set_value_capacity(uint64_t l)
     if (l <= DODS_UINT_MAX)
         d_capacity = (unsigned int)l;
     else {
-        d_capacity = -1;
-        //d_too_big_for_dap2 = true;
+        d_capacity = 0;
+        d_too_big_for_dap2 = true;
     }
 }
 
@@ -639,9 +643,29 @@ void Vector::vec_resize(int l)
     // be used when resize() is used. Using capacity() creates problems as noted in the
     // comment in set_vec_nocopy(). jhrg 5/19/17
     d_compound_buf.resize(l, 0); // Fill with NULLs
+#if 0
     d_capacity = d_compound_buf.size(); // size in terms of number of elements.
+#endif
+    set_value_capacity(d_compound_buf.size());
+    
 }
 
+void Vector::vec_resize_ll(int64_t l)
+{
+    // I added this check, which alters the behavior of the method. jhrg 8/14/13
+    if (m_is_cardinal_type())
+        throw InternalErr(__FILE__, __LINE__, "Vector::vec_resize() is applicable to compound types only");
+
+    // Use resize() since other parts of the code use operator[]. Note that size() should
+    // be used when resize() is used. Using capacity() creates problems as noted in the
+    // comment in set_vec_nocopy(). jhrg 5/19/17
+    d_compound_buf.resize(l, 0); // Fill with NULLs
+#if 0
+    d_capacity = d_compound_buf.size(); // size in terms of number of elements.
+#endif
+    set_value_capacity(d_compound_buf.size());
+    
+}
 /** @brief read data into a variable for later use
 
  Most uses of a variable are to either serialize its data to a stream of
@@ -886,7 +910,10 @@ bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
                 throw InternalErr(__FILE__, __LINE__, "The client sent declarations and data with mismatched sizes.");
 
             d_str.resize((num > 0) ? num : 0); // Fill with NULLs
+#if 0
             d_capacity = num; // capacity is number of strings we can fit.
+#endif 
+            set_value_capacity((uint64_t)num);
 
             for (i = 0; i < num; ++i) {
                 string str;
@@ -1152,10 +1179,14 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 
         case dods_str_c:
         case dods_url_c: {
-        	int64_t len = length_ll();
+            int64_t len = length_ll();
             d_str.resize((len > 0) ? len : 0); // Fill with NULLs
+            if (len < 0) 
+                throw InternalErr(__FILE__,__LINE__,"The number of string length is less than 0 ");
+#if 0
             d_capacity = len; // capacity is number of strings we can fit.
-
+#endif
+            set_value_capacity(len);
             for (int64_t i = 0; i < len; ++i) {
                 um.get_str(d_str[i]);
             }
@@ -1214,6 +1245,7 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
  incoming data, and it is <i>not</i> reallocated.  If FALSE, new
  storage is allocated.  If the internal buffer has not been
  allocated at all, this argument has no effect. */
+#if 0
 unsigned int Vector::val2buf(void *val, bool reuse)
 {
     // Jose Garcia
@@ -1263,13 +1295,24 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 
         case dods_str_c:
         case dods_url_c:
+        {
             // Assume val points to an array of C++ string objects. Copy
             // them into the vector<string> field of this object.
             // Note: d_length is the number of elements in the Vector
+#if 0
             d_str.resize(d_length);
             d_capacity = d_length;
             for (int i = 0; i < d_length; ++i)
                 d_str[i] = *(static_cast<string *> (val) + i);
+#endif
+            int64_t str_len = length_ll();
+            if (str_len <0) 
+                throw InternalErr(__FILE__,__LINE__,"The number of string length is less than 0 ");
+            d_str.resize(str_len);
+            set_value_capacity(str_len);
+            for (int64_t i = 0; i < str_len; ++i)
+                d_str[i] = *(static_cast<string *> (val) + i);
+          }
 
             break;
 
@@ -1280,6 +1323,92 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 
     return (unsigned int)width_ll(true);
 }
+#endif
+
+unsigned int Vector::val2buf(void *val, bool reuse) {
+
+    auto ret_value = (unsigned int) val2buf_ll(val,reuse);
+    return ret_value;
+}
+
+uint64_t Vector::val2buf_ll(void *val, bool reuse)
+{
+    // Jose Garcia
+
+    // Added for zero-length arrays - support in the handlers. jhrg 1/29/16
+    if (!val && length() == 0)
+        return 0;
+
+    // I *think* this method has been mainly designed to be use by read which
+    // is implemented in the surrogate library. Passing NULL as a pointer to
+    // this method will be an error of the creator of the surrogate library.
+    // Even though I recognize the fact that some methods inside libdap++ can
+    // call val2buf, I think by now no coding bugs such as misusing val2buf
+    // will be in libdap++, so it will be an internal error from the
+    // surrogate library.
+    if (!val)
+        throw InternalErr(__FILE__, __LINE__, "The incoming pointer does not contain any data.");
+
+    switch (d_proto->type()) {
+        case dods_byte_c:
+        case dods_char_c:
+        case dods_int8_c:
+        case dods_uint8_c:
+        case dods_int16_c:
+        case dods_uint16_c:
+        case dods_int32_c:
+        case dods_uint32_c:
+        case dods_int64_c:
+        case dods_uint64_c:
+
+        case dods_enum_c:
+
+        case dods_float32_c:
+        case dods_float64_c:
+#if 0
+        	if (d_buf && !reuse)
+                m_delete_cardinal_data_buffer();
+#endif
+            // First time or no reuse (free'd above)
+            if (!d_buf || !reuse)
+                m_create_cardinal_data_buffer_for_type(length_ll());
+
+            // width_ll(true) returns the size in bytes given the constraint
+            if (d_buf)
+                memcpy(d_buf, val, (uint64_t)width_ll(true));
+            break;
+
+        case dods_str_c:
+        case dods_url_c:
+        {
+            // Assume val points to an array of C++ string objects. Copy
+            // them into the vector<string> field of this object.
+            // Note: d_length is the number of elements in the Vector
+#if 0
+            d_str.resize(d_length);
+            d_capacity = d_length;
+            for (int i = 0; i < d_length; ++i)
+                d_str[i] = *(static_cast<string *> (val) + i);
+#endif
+            int64_t str_len = length_ll();
+            if (str_len <0) 
+                throw InternalErr(__FILE__,__LINE__,"The number of string length is less than 0 ");
+            d_str.resize(str_len);
+            set_value_capacity(str_len);
+            for (int64_t i = 0; i < str_len; ++i)
+                d_str[i] = *(static_cast<string *> (val) + i);
+          }
+
+            break;
+
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Vector::val2buf: bad type");
+
+    }
+
+    return (unsigned int)width_ll(true);
+}
+
 
 /**
  @brief Copies data from the Vector buffer.
@@ -1375,6 +1504,63 @@ unsigned int Vector::buf2val(void **val)
     }
 }
 
+uint64_t Vector::buf2val_ll(void **val)
+{
+    // Jose Garcia
+    // The same comment in Vector::val2buf applies here!
+    if (!val)
+        throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
+
+    int64_t wid = width_ll(true /* constrained */);
+
+    // This is the width computed using length(). The
+    // length() property is changed when a projection
+    // constraint is applied. Thus, this is the number of
+    // bytes in the buffer given the current constraint.
+
+    switch (d_proto->type()) {
+        case dods_byte_c:
+        case dods_char_c:
+        case dods_int8_c:
+        case dods_uint8_c:
+        case dods_int16_c:
+        case dods_uint16_c:
+        case dods_int32_c:
+        case dods_uint32_c:
+        case dods_int64_c:
+        case dods_uint64_c:
+
+        case dods_enum_c:
+
+        case dods_float32_c:
+        case dods_float64_c:
+            if (!d_buf)
+                throw InternalErr(__FILE__, __LINE__, "Vector::buf2val: Logic error: called when cardinal type data buffer was empty!");
+            if (!*val)
+                *val = new char[wid];
+
+            memcpy(*val, d_buf, (uint64_t)wid);
+            return (uint64_t)wid;
+
+        case dods_str_c:
+        case dods_url_c: {
+        	if (d_str.empty())
+        		throw InternalErr(__FILE__, __LINE__, "Vector::buf2val: Logic error: called when string data buffer was empty!");
+            if (!*val)
+                *val = new string[d_length_ll];
+
+            for (int64_t i = 0; i < d_length_ll; ++i)
+                *(static_cast<string *> (*val) + i) = d_str[i];
+
+            return (uint64_t)width_ll();
+        }
+
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Vector::buf2val: bad type");
+    }
+}
+
+
 /** Sets an element of the vector to a given value.  If the type of
  the input and the type of the Vector do not match, an error
  condition is returned.
@@ -1396,6 +1582,11 @@ unsigned int Vector::buf2val(void **val)
  array.
  @see Vector::buf2val */
 void Vector::set_vec(unsigned int i, BaseType * val)
+{
+	Vector::set_vec_nocopy(i, val->ptr_duplicate());
+}
+
+void Vector::set_vec_ll(uint64_t i, BaseType * val)
 {
 	Vector::set_vec_nocopy(i, val->ptr_duplicate());
 }
@@ -1439,6 +1630,35 @@ void Vector::set_vec_nocopy(unsigned int i, BaseType * val)
     d_compound_buf[i] = val;
 }
 
+void Vector::set_vec_nocopy_ll(uint64_t i, BaseType * val)
+{
+    // Jose Garcia
+    // This is a public method which allows users to set the elements
+    // of *this* vector. Passing an invalid index, a NULL pointer or
+    // mismatching the vector type are internal errors.
+    if (i >= static_cast<uint64_t> (length_ll()))
+        throw InternalErr(__FILE__, __LINE__, "Invalid data: index too large.");
+    if (!val)
+        throw InternalErr(__FILE__, __LINE__, "Invalid data: null pointer to BaseType object.");
+    if (val->type() != d_proto->type())
+        throw InternalErr(__FILE__, __LINE__, "invalid data: type of incoming object does not match *this* vector type.");
+
+    // This code originally used capacity() instead of size(), but that was an error.
+    // Use capacity() when using reserve() and size() when using resize(). Mixing
+    // capacity() with resize() leaves holes in the data, where (pointer) values are
+    // filled with nulls during successive calls to resize(). The resize() heuristic
+    // remembers previous calls on a given vector<> and allocates larger than requested
+    // blocks of memory on successive calls, which has the strange affect of erasing
+    // values already in the vector in the parts just added.
+    // jhrg 5/18/17
+    if (i >= d_compound_buf.size()) {
+        vec_resize(d_compound_buf.size() + 100);
+    }
+
+    d_compound_buf[i] = val;
+}
+
+
 /**
  * Remove any read or set data in the private data of this Vector,
  * setting read_p() to false.
@@ -1465,6 +1685,7 @@ void Vector::clear_local_data()
     d_str.resize(0);
 
     d_capacity = 0;
+    d_capacity_ll = 0;
     set_read_p(false);
 }
 
@@ -1523,7 +1744,10 @@ void Vector::reserve_value_capacity(unsigned int numElements)
             // Make sure the d_str has enough room for all the strings.
             // Technically not needed, but it will speed things up for large arrays.
             d_str.reserve(numElements);
+#if 0
             d_capacity = numElements;
+#endif
+            set_value_capacity(numElements);
             break;
 
         case dods_array_c:
@@ -1535,7 +1759,10 @@ void Vector::reserve_value_capacity(unsigned int numElements)
         case dods_grid_c:
             // not clear anyone will go this path, but best to be complete.
             d_compound_buf.reserve(numElements);
+#if 0
             d_capacity = numElements;
+#endif
+            set_value_capacity(numElements);
             break;
 
         default:
@@ -1554,6 +1781,83 @@ void Vector::reserve_value_capacity()
     // Use the current length of the vector as the reserve amount.
     reserve_value_capacity(length());
 }
+/**
+ * Allocate enough memory for the Vector to contain
+ * numElements data elements of the Vector's type.
+ * Must be used before set_value_slice_from_row_major_vector
+ * to ensure memory exists.
+ * @param numElements  the number of elements of the Vector's type
+ *                     to preallocate storage for.
+ * @exception if the memory cannot be allocated
+ */
+void Vector::reserve_value_capacity_ll(uint64_t numElements)
+{
+    if (!d_proto) {
+        throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Logic error: _var is null!");
+    }
+    switch (d_proto->type()) {
+        case dods_byte_c:
+        case dods_char_c:
+        case dods_int8_c:
+        case dods_uint8_c:
+        case dods_int16_c:
+        case dods_uint16_c:
+        case dods_int32_c:
+        case dods_uint32_c:
+        case dods_int64_c:
+        case dods_uint64_c:
+
+        case dods_enum_c:
+
+        case dods_float32_c:
+        case dods_float64_c:
+            // Make _buf be the right size and set _capacity
+            m_create_cardinal_data_buffer_for_type(numElements);
+            break;
+
+        case dods_str_c:
+        case dods_url_c:
+            // Make sure the d_str has enough room for all the strings.
+            // Technically not needed, but it will speed things up for large arrays.
+            d_str.reserve(numElements);
+#if 0
+            d_capacity = numElements;
+#endif
+            set_value_capacity(numElements);
+            break;
+
+        case dods_array_c:
+            throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Arrays not supported!");
+
+        case dods_opaque_c:
+        case dods_structure_c:
+        case dods_sequence_c:
+        case dods_grid_c:
+            // not clear anyone will go this path, but best to be complete.
+            d_compound_buf.reserve(numElements);
+#if 0
+            d_capacity = numElements;
+#endif
+            set_value_capacity(numElements);
+            break;
+
+        default:
+            throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Unknown type!");
+    } // switch
+
+}
+
+/**
+ * Make sure there's storage allocated for the current length()
+ * of the Vector.
+ * Same as reserveValueCapacity(length())
+ */
+void Vector::reserve_value_capacity_ll()
+{
+    // Use the current length of the vector as the reserve amount.
+    reserve_value_capacity_ll(length_ll());
+}
+
 
 /**
  * Copy rowMajorData.length() elements currently in a rowMajorData buffer
@@ -1583,8 +1887,8 @@ void Vector::reserve_value_capacity()
  * @return the number of elements added, such that:
  *         startElement + the return value is the next "free" element.
  */
-unsigned int
-Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsigned int startElement)
+uint64_t
+Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, uint64_t startElement)
 {
 	static const string funcName = "set_value_slice_from_row_major_vector:";
 
@@ -1603,15 +1907,15 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 	}
 
 	// Check this otherwise the static_cast<unsigned int> below will do the wrong thing.
-	if (rowMajorData.length() < 0) {
+	if (rowMajorData.length_ll() < 0) {
 		throw InternalErr(__FILE__, __LINE__,
 				funcName
-						+ "Logic error: the Vector to copy data from has length() < 0 and was probably not initialized!");
+						+ "Logic error: the Vector to copy data from has length_ll() < 0 and was probably not initialized!");
 	}
 
 	// The read-in capacity had better be at least the length (the amount we will copy) or we'll memcpy into bad memory
 	// I imagine we could copy just the capacity rather than throw, but I really think this implies a problem to be addressed.
-	if (rowMajorData.get_value_capacity() < static_cast<unsigned int>(rowMajorData.length())) {
+	if (rowMajorData.get_value_capacity_ll() < static_cast<uint64_t>(rowMajorData.length_ll())) {
 		throw InternalErr(__FILE__, __LINE__,
 				funcName
 						+ "Logic error: the Vector to copy from has a data capacity less than its length, can't copy!");
@@ -1619,7 +1923,7 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 
 	// Make sure there's enough room in this Vector to store all the elements requested.  Again,
 	// better to throw than just copy what we can since it implies a logic error that needs to be solved.
-	if (d_capacity < (startElement + rowMajorData.length())) {
+	if (d_capacity_ll < (startElement + rowMajorData.length_ll())) {
 		throw InternalErr(__FILE__, __LINE__,
 				funcName + "Logic error: the capacity of this Vector cannot hold all the data in the from Vector!");
 	}
@@ -1659,7 +1963,7 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 		case dods_str_c:
 		case dods_url_c:
 			// Strings need to be copied directly
-			for (unsigned int i = 0; i < static_cast<unsigned int>(rowMajorData.length()); ++i) {
+			for (uint64_t i = 0; i < static_cast<uint64_t>(rowMajorData.length_ll()); ++i) {
 				d_str[startElement + i] = rowMajorData.d_str[i];
 			}
 			break;
@@ -1678,7 +1982,7 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
 	} // switch (_var->type())
 
 	// This is how many elements we copied.
-	return (unsigned int) rowMajorData.length_ll();
+	return (uint64_t) rowMajorData.length_ll();
 }
 
 /**
@@ -1852,7 +2156,10 @@ bool Vector::set_value(string *val, int sz)
 {
     if ((var()->type() == dods_str_c || var()->type() == dods_url_c) && val) {
         d_str.resize(sz);
+#if 0
         d_capacity = sz;
+#endif
+        set_value_capacity(sz);
         for (int t = 0; t < sz; t++) {
             d_str[t] = val[t];
         }
@@ -1869,7 +2176,10 @@ bool Vector::set_value_ll(string *val, int64_t sz)
 {
     if ((var()->type() == dods_str_c || var()->type() == dods_url_c) && val) {
         d_str.resize(sz);
+#if 0
         d_capacity_ll = sz;
+#endif
+        set_value_capacity(sz);
         for (int64_t t = 0; t < sz; t++) {
             d_str[t] = val[t];
         }

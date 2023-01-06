@@ -244,10 +244,18 @@ public:
     unsigned int val2buf(void *val, bool reuse = false) override;
     unsigned int buf2val(void **val) override;
 
+    uint64_t val2buf_ll(void *val, bool reuse = false);
+    uint64_t buf2val_ll(void **val);
+
+
     void set_vec(unsigned int i, BaseType *val);
     void set_vec_nocopy(unsigned int i, BaseType * val);
 
+    void set_vec_ll(uint64_t i, BaseType *val);
+    void set_vec_nocopy_ll(uint64_t i, BaseType * val);
+
     void vec_resize(int l);
+    void vec_resize_ll(int64_t l);
 
     void clear_local_data() override;
 
@@ -258,8 +266,12 @@ public:
     void set_value_capacity(uint64_t l);
     virtual void reserve_value_capacity(unsigned int numElements);
     virtual void reserve_value_capacity();
+    virtual void reserve_value_capacity_ll(uint64_t numElements);
+    virtual void reserve_value_capacity_ll();
 
-    virtual unsigned int set_value_slice_from_row_major_vector(const Vector& rowMajorData, unsigned int startElement);
+
+    //virtual unsigned int set_value_slice_from_row_major_vector(const Vector& rowMajorData, unsigned int startElement);
+    virtual uint64_t set_value_slice_from_row_major_vector(const Vector& rowMajorData, uint64_t startElement);
 
     virtual bool set_value(dods_byte *val, int sz);
     virtual bool set_value(dods_int8 *val, int sz);
