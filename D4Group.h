@@ -109,6 +109,8 @@ public:
 
     BaseType *find_var(const string &name);
 
+    const vector<D4Group*> &groups() const { return d_groups; }
+
     /// Get an iterator to the start of the values
     groupsIter grp_begin() { return d_groups.begin(); }
 
@@ -135,6 +137,8 @@ public:
 
     void set_send_p(bool state) override;
     void set_read_p(bool state) override;
+
+    bool is_dap4_projected(std::vector<std::string> &inventory) override;
 
     // DAP4
     void intern_data() override;

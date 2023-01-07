@@ -48,6 +48,8 @@
 #include <string>
 
 #include "AttrTable.h"
+#include "D4AttributeType.h"
+#include "D4Attributes.h"
 
 #include "InternalErr.h"
 
@@ -547,6 +549,9 @@ public:
 	variable declaration is printed as well as the value. */
     virtual void print_val(ostream &out, string space = "", bool print_decl_p = true) = 0;
     //@}
+
+    virtual bool is_dap4_projected(std::vector<string> &projected_dap4_inventory);
+
 };
 
 } // namespace libdap

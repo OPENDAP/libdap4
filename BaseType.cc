@@ -1313,4 +1313,21 @@ BaseType::width_ll(bool /* constrained */) const
     throw InternalErr(__FILE__, __LINE__, "not implemented");
 }
 
+
+/**
+ * When send_p() is true and the attributes contain dap4 data types then
+ *   a description of the instance is added to the inventory and true is returned.
+ * @param inventory is a value-result parameter
+ * @return True when send_p() is true and the attributes contain dap4 data types, false otherwise
+ */
+bool BaseType::is_dap4_projected(std::vector<string> &inventory)
+{
+    bool has_projected_dap4 = false;
+    if(send_p()) {
+        has_projected_dap4 = attributes()->has_dap4_types(FQN(), inventory);
+    }
+    return has_projected_dap4;
+}
+
+
 } // namespace libdap

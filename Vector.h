@@ -313,6 +313,8 @@ public:
 
     bool check_semantics(string &msg, bool all = false) override;
 
+    bool is_dap4_projected(std::vector<std::string> &projected_dap4_inventory) override;
+
     void dump(ostream &strm) const override;
 };
 

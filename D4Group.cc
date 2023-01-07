@@ -870,5 +870,38 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
     return results;
 }
 
+/**
+ * When send_p() is true a description of the instance is added to the inventory and true is returned.
+ * @param inventory is a value-result parameter
+ * @return True when send_p() is true, false otherwise
+ */
+bool D4Group::is_dap4_projected(std::vector<std::string> &inventory)
+{
+    bool has_projected_dap4 = false;
+    if(send_p()) {
+        // Groups are a dap4 thing, so if the Group is projected...
+        has_projected_dap4 = true;
+        inventory.emplace_back(type_name() + " " + FQN());
+
+        // Even tho this Group is a projected dap4 variable we still need to
+        // generate an inventory of it's dap4 attributes and projected dap4 child variables
+        // and groups.
+
+        //Inventory the Group's dap4 attributes
+        has_projected_dap4 |= attributes()->has_dap4_types(FQN(), inventory);
+
+        // Process the child variables.
+        for (const auto var: variables()) {
+            has_projected_dap4 |= var->is_dap4_projected(inventory);
+        }
+        // Process the child Groups.
+        for (const auto grp: groups()) {
+            has_projected_dap4 |= grp->is_dap4_projected(inventory);
+        }
+    }
+    return has_projected_dap4;
+
+}
+
 
 } /* namespace libdap */

@@ -782,6 +782,26 @@ Constructor::make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars)
     return dv_table;
 }
 
+
+/**
+ * When send_p() is true and the attributes or variables contain dap4 data types then
+ *   a description of the instance is added to the inventory and true is returned.
+ * @param inventory is a value-result parameter
+ * @return True when send_p() is true and this object contains dap4 types variables or attributes, false otherwise
+ */
+bool Constructor::is_dap4_projected(std::vector<std::string> &inventory)
+{
+    bool has_projected_dap4 = false;
+    if(send_p()) {
+        has_projected_dap4 = attributes()->has_dap4_types(FQN(),inventory);
+        for (const auto var: variables()) {
+            has_projected_dap4 |= var->is_dap4_projected(inventory);
+        }
+    }
+    return has_projected_dap4;
+}
+
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and information about this

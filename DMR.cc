@@ -428,6 +428,26 @@ DMR::print_dap4(XMLWriter &xml, bool constrained)
 }
 
 
+/**
+ * @brief Scans the inventory of projected variables and their attributes for projected DAP4 types.
+ * As it locates projected DAP4 types it adds a description of each to the vector inventory
+ * @param inventory
+ * @return true when dap4 types have been requested, false otherwise.
+ */
+bool DMR::is_dap4_projected(std::vector<string> &inventory)
+{
+    bool has_dap4 = root()->attributes()->has_dap4_types(root()->FQN(),inventory);
+
+    for(const auto var : root()->variables()){
+        has_dap4 |= var->is_dap4_projected(inventory);
+    }
+    for(const auto grp: root()->groups()){
+        has_dap4 |= grp->is_dap4_projected(inventory);
+    }
+    return has_dap4;
+
+}
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and then calls parent dump
