@@ -672,7 +672,7 @@ bool D4Attribute::is_dap4_type(const std::string &path, std::vector<std::string>
 bool D4Attributes::has_dap4_types(const std::string &path, std::vector<std::string> &inventory) const
 {
     bool has_d4_attr = false;
-    for (auto attr: attributes()) {
+    for (const auto attr: attributes()) {
         string attr_fqn = path + "@" + attr->name();
         bool isa_d4_attr = attr->is_dap4_type(attr_fqn, inventory);
         if(isa_d4_attr){
