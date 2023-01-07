@@ -268,7 +268,7 @@ Int64::transform_to_dap2(AttrTable *)
 
 /**
  * When send_p() is true a description of the instance is added to the inventory and true is returned.
- * @param projected_dap4_inventory
+ * @param inventory is a value-result parameter
  * @return True when send_p() is true, false otherwise
  */
 bool Int64::is_dap4_projected(std::vector<string> &inventory)

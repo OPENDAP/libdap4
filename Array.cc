@@ -1338,7 +1338,7 @@ string get_dims_decl(Array &a) {
 /**
  * When send_p() is true and the attributes or variables have dap4 data types then
  *   a description of the instance is added to the inventory and true is returned.
- * @param inventory
+ * @param inventory is a value-result parameter
  * @return True when send_p() is true, false otherwise
  */
 bool Array::is_dap4_projected(std::vector<std::string> &inventory)

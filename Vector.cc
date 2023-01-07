@@ -2045,7 +2045,7 @@ bool Vector::check_semantics(string & msg, bool)
 /**
  * When send_p() is true and the attributes and/or the prototype variable is/has dap4 data type(s) then
  *   a description of the instance is added to the inventory and true is returned.
- * @param inventory
+ * @param inventory is a value-result parameter
  * @return True when send_p() is true and prototype variable is/contains dap4 typed variables and/or attributes, false otherwise
  */
 bool Vector::is_dap4_projected(std::vector<std::string> &inventory)
