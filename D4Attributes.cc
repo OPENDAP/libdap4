@@ -638,6 +638,51 @@ D4Attributes::print_dap4(XMLWriter &xml) const
     }
 }
 
+
+/**
+ * Returns true if this Attribute is a dap4 type.
+ * @param path
+ * @param inventory
+ * @return True of the attribute is a dap4 type, false otherwise
+ */
+bool D4Attribute::is_dap4_type(const std::string &path, std::vector<std::string> &inventory)
+{
+    bool ima_d4_attr = false;
+    switch(type()){
+        case attr_int8_c:
+        case attr_int64_c:
+        case attr_uint64_c:
+            ima_d4_attr=true;
+            break;
+        case attr_container_c:
+            ima_d4_attr = attributes()->has_dap4_types(path ,inventory);
+            break;
+        default:
+            break;
+    }
+    return ima_d4_attr;
+}
+
+/**
+ * Checks the child Attributes for ones with dap4 types and, when found, adds a description of each to the inventory
+ * @param path
+ * @param inventory
+ * @return true when dap4 types are found, false otherwise.
+ */
+bool D4Attributes::has_dap4_types(const std::string &path, std::vector<std::string> &inventory) const
+{
+    bool has_d4_attr = false;
+    for (const auto attr: attributes()) {
+        string attr_fqn = path + "@" + attr->name();
+        bool isa_d4_attr = attr->is_dap4_type(attr_fqn, inventory);
+        if(isa_d4_attr){
+            inventory.emplace_back(D4AttributeTypeToString(attr->type()) + " " + attr_fqn);
+        }
+        has_d4_attr |= isa_d4_attr;
+    }
+    return has_d4_attr;
+}
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and then displays information

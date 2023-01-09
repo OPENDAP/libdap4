@@ -1435,6 +1435,51 @@ bool Array::check_semantics(string &msg, bool)
     return sem;
 }
 
+
+/**
+ * Makes the square bracket representation, with dimension names where available, of
+ * the array's dimensions, ex: [5][lat=100][lon=200]
+ * @param a The array to examine
+ * @return The square bracket representation of the array's dimensions
+ */
+string get_dims_decl(Array &a) {
+    stringstream sqr_brkty_stuff;
+    for(auto itr=a.dim_begin(); itr!=a.dim_end(); itr++){
+        sqr_brkty_stuff << "[";
+        string dim_name = a.dimension_name(itr);
+        if(!dim_name.empty()){
+            sqr_brkty_stuff << dim_name << "=";
+        }
+        sqr_brkty_stuff << a.dimension_size(itr,true) << "]";
+    }
+    return sqr_brkty_stuff.str();
+}
+
+/**
+ * When send_p() is true and the attributes or variables have dap4 data types then
+ *   a description of the instance is added to the inventory and true is returned.
+ * @param inventory is a value-result parameter
+ * @return True when send_p() is true, false otherwise
+ */
+bool Array::is_dap4_projected(std::vector<std::string> &inventory)
+{
+    bool has_projected_dap4 = false;
+    if(send_p()) {
+        if(prototype()->is_constructor_type()){
+            has_projected_dap4 = prototype()->is_dap4_projected(inventory) || attributes()->has_dap4_types(FQN(),inventory);
+        }
+        else {
+            has_projected_dap4 = prototype()->is_dap4();
+            if(has_projected_dap4) {
+                inventory.emplace_back(prototype()->type_name() + " " + FQN() + get_dims_decl(*this));
+            }
+            has_projected_dap4 |= attributes()->has_dap4_types(FQN(), inventory);
+        }
+    }
+    return has_projected_dap4;
+
+}
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and information about this

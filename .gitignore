@@ -185,6 +185,9 @@ unit-tests/Int8Test
 unit-tests/UInt16Test
 unit-tests/UInt32Test
 unit-tests/UInt64Test
+unit-tests/GridTest
+unit-tests/IsDap4ProjectedTest
+unit-tests/util_mitTest
 
 
 unit-tests/chunked-io/

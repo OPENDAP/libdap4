@@ -2615,6 +2615,39 @@ bool Vector::check_semantics(string & msg, bool)
     return BaseType::check_semantics(msg);
 }
 
+
+/**
+ * When send_p() is true and the attributes and/or the prototype variable is/has dap4 data type(s) then
+ *   a description of the instance is added to the inventory and true is returned.
+ * @param inventory is a value-result parameter
+ * @return True when send_p() is true and prototype variable is/contains dap4 typed variables and/or attributes, false otherwise
+ */
+bool Vector::is_dap4_projected(std::vector<std::string> &inventory)
+{
+    bool has_projected_dap4 = false;
+    if(send_p()) {
+        if(d_proto->is_constructor_type()){
+            has_projected_dap4 = d_proto->is_dap4_projected(inventory) || attributes()->has_dap4_types(FQN(),inventory);
+        }
+        else {
+            has_projected_dap4 = prototype()->is_dap4();
+            if(has_projected_dap4) {
+                inventory.emplace_back(prototype()->type_name() + " " + FQN());
+            }
+            has_projected_dap4 |= attributes()->has_dap4_types(FQN(), inventory);
+        }
+        if(has_projected_dap4) {
+            inventory.emplace_back(type_name() + " " + FQN());
+        }
+    }
+    return has_projected_dap4;
+}
+
+
+
+
+
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and information about this
