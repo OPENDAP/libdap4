@@ -62,6 +62,7 @@ bool D4ConstraintEvaluator::parse(const std::string &expr)
     d_expr = expr;	// set for error messages. See the %initial-action section of .yy
 
     DBG(cerr << "Entering D4ConstraintEvaluator::parse: "  << endl);
+    DBG(cerr << "Entering D4ConstraintEvaluator::expr: "  << expr <<endl);
     std::istringstream iss(expr);
     D4CEScanner scanner(iss);
     D4CEParser parser(scanner, *this /* driver */);
@@ -213,13 +214,22 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
             throw Error(malformed_expr, "The index constraint for '" + btp->name() + "' does not match its rank.");
 
         Array::Dim_iter d = a->dim_begin();
+
+        DBG(cerr << "dimension size " << a->dimension_size_ll(d,false) << endl);
+
         for (vector<index>::iterator i = d_indexes.begin(), e = d_indexes.end(); i != e; ++i) {
+#if 0
             if ((*i).stride > (unsigned long long) (a->dimension_stop(d, false) - a->dimension_start(d, false)) + 1)
+#endif
+            if ((*i).stride > (unsigned long long) (a->dimension_stop_ll(d, false) - a->dimension_start_ll(d, false)) + 1)
                 throw Error(malformed_expr,
                     "For '" + btp->name()
                         + "', the index stride value is greater than the number of elements in the Array");
             if (!(*i).rest
+                && ((*i).stop) > (unsigned long long) (a->dimension_stop_ll(d, false) - a->dimension_start_ll(d, false)) + 1)
+#if 0
                 && ((*i).stop) > (unsigned long long) (a->dimension_stop(d, false) - a->dimension_start(d, false)) + 1)
+#endif
                 throw Error(malformed_expr,
                     "For '" + btp->name()
                         + "', the index stop value is greater than the number of elements in the Array");
@@ -244,8 +254,12 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
                 // an Array when some of the Array's dimensions don't use Shared Dimensions
                 // but others do.
 
+                DBG(cerr << "Entering: LOCAL D4 constraint" <<  endl);
                 // First apply the constraint to the Array's dimension
+#if 0
                 a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
+#endif
+                a->add_constraint_ll(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
 
                 // Then, if the Array has Maps, scan those Maps for any that use dimensions
                 // that match the name of this particular dimension. If any such Maps are found

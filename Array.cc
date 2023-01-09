@@ -668,6 +668,10 @@ void Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 {
     dimension &d = *i;
 
+    DBG(cerr << "add_constraint: d_size = " << d.size << endl);
+    DBG(cerr << "add_constraint: start = " << start << endl);
+    DBG(cerr << "add_constraint: stop = " << stop << endl);
+    DBG(cerr << "add_constraint: stride = " << stride << endl);
 
 // if stop is -1, set it to the array's max element index
 // jhrg 12/20/12
@@ -706,6 +710,11 @@ void Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 void Array::add_constraint_ll(Dim_iter i, int64_t start, int64_t stride, int64_t stop)
 {
     dimension &d = *i;
+    DBG(cerr << "add_constraint_ll: d_size = " << d.size << endl);
+    DBG(cerr << "add_constraint_ll: start = " << start << endl);
+    DBG(cerr << "add_constraint_ll: stop = " << stop << endl);
+    DBG(cerr << "add_constraint_ll: stride = " << stride << endl);
+
 
 
 // if stop is -1, set it to the array's max element index
@@ -735,6 +744,7 @@ void Array::add_constraint_ll(Dim_iter i, int64_t start, int64_t stride, int64_t
 void Array::add_constraint(Dim_iter i, D4Dimension *dim)
 {
     dimension &d = *i;
+    DBG(cerr << "add_constraint d4dimension: stride = " << dim->c_stride() << endl);
 
     if (dim->constrained()) add_constraint_ll(i, dim->c_start(), dim->c_stride(), dim->c_stop());
 
