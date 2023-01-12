@@ -2044,7 +2044,10 @@ bool Vector::set_value_worker(T *v, int sz)
 {
     if (!v || !types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
         return false;
-
+#if 0
+cerr<<"coming to set_value_worker "<<endl;
+cerr<<"sz is "<<sz<<endl;
+#endif
     m_set_cardinal_values_internal(v, (int64_t)sz);
     return true;
 }
@@ -2054,7 +2057,11 @@ bool Vector::set_value_ll_worker(T *v, int64_t sz)
 {
     if (!v || !types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
         return false;
-
+#if 0
+cerr<<"coming to set_value_ll_worker "<<endl;
+cerr<<"sz is "<<sz<<endl;
+#endif
+ 
     m_set_cardinal_values_internal(v, sz);
     return true;
 }
@@ -2062,6 +2069,9 @@ bool Vector::set_value_ll_worker(T *v, int64_t sz)
 
 bool Vector::set_value(dods_byte *val, int sz)
 {
+#if 0
+cerr<<"coming to set_value dods_byte again"<<endl;
+#endif
     return set_value_worker(val, sz);
 }
 
@@ -2104,6 +2114,9 @@ bool Vector::set_value(dods_float64 *val, int sz)
 
 bool Vector::set_value_ll(dods_byte *val, int64_t  sz)
 {
+#if 0
+cerr<<"coming to set_value_ll dods_byte "<<endl;
+#endif
     return set_value_ll_worker(val, sz);
 }
 
