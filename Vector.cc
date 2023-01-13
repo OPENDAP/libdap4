@@ -659,7 +659,7 @@ void Vector::vec_resize_ll(int64_t l)
     // Use resize() since other parts of the code use operator[]. Note that size() should
     // be used when resize() is used. Using capacity() creates problems as noted in the
     // comment in set_vec_nocopy(). jhrg 5/19/17
-    d_compound_buf.resize(l, 0); // Fill with NULLs
+    d_compound_buf.resize(l, nullptr); // Fill with NULLs
 #if 0
     d_capacity = d_compound_buf.size(); // size in terms of number of elements.
 #endif
@@ -1588,7 +1588,7 @@ void Vector::set_vec(unsigned int i, BaseType * val)
 
 void Vector::set_vec_ll(uint64_t i, BaseType * val)
 {
-	Vector::set_vec_nocopy(i, val->ptr_duplicate());
+	Vector::set_vec_nocopy_ll(i, val->ptr_duplicate());
 }
 
 /**
@@ -1652,7 +1652,7 @@ void Vector::set_vec_nocopy_ll(uint64_t i, BaseType * val)
     // values already in the vector in the parts just added.
     // jhrg 5/18/17
     if (i >= d_compound_buf.size()) {
-        vec_resize(d_compound_buf.size() + 100);
+        vec_resize_ll(d_compound_buf.size() + 100);
     }
 
     d_compound_buf[i] = val;
@@ -2345,7 +2345,6 @@ bool Vector::set_value_ll(vector<string> &val, int64_t sz)
 template <typename T>
 void Vector::value_worker(vector<unsigned int> *indices, T *b) const
 {
-   // unsigned long currentIndex;
 #if 0
     // Iterator version. Not tested, jhrg 8/14/13
     for (vector<unsigned int>::iterator i = indices->begin(), e = indices->end(); i != e; ++i) {
@@ -2374,7 +2373,6 @@ void Vector::value_worker(vector<unsigned int> *indices, T *b) const
 template <typename T>
 void Vector::value_ll_worker(vector<uint64_t> *indices, T *b) const
 {
-   // unsigned long currentIndex;
 #if 0
     // Iterator version. Not tested, jhrg 8/14/13
     for (vector<unsigned int>::iterator i = indices->begin(), e = indices->end(); i != e; ++i) {
@@ -2481,7 +2479,6 @@ void Vector::value_worker(T *v) const
     // For Enums, use the element type since type == dods_enum_c.
     if (v && types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
         memcpy(v, d_buf, length_ll() * sizeof(T));
-        //memcpy(v, d_buf, length() * sizeof(T));
 }
 void Vector::value(dods_byte *b) const    { value_worker(b); }
 void Vector::value(dods_int8 *b) const    { value_worker(b); }

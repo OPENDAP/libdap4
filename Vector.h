@@ -270,7 +270,6 @@ public:
     virtual void reserve_value_capacity_ll();
 
 
-    //virtual unsigned int set_value_slice_from_row_major_vector(const Vector& rowMajorData, unsigned int startElement);
     virtual uint64_t set_value_slice_from_row_major_vector(const Vector& rowMajorData, uint64_t startElement);
 
     virtual bool set_value(dods_byte *val, int sz);

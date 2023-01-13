@@ -113,8 +113,9 @@ void Array::update_length(int)
 void Array::update_length_ll(unsigned long long)
 {
     unsigned long long length = 1;
-    for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
-        length *= (*i).c_size;
+    //for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
+    for (const auto &i:_shape) {
+        length *= i.c_size;
     }
 
     set_length_ll(length);
@@ -551,7 +552,6 @@ void Array::append_dim(D4Dimension *dim)
     dimension d(/*dim->size(), www2id(dim->name()),*/dim);
     _shape.push_back(d);
 
-    //update_length_ll();
     update_length();
 }
 
@@ -1347,7 +1347,7 @@ uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, uin
                 var_ll(index++)->print_val(out, "", false);
                 out << ", ";
             }
-            var(index++)->print_val(out, "", false);
+            var_ll(index++)->print_val(out, "", false);
         }
 
         out << "}";
@@ -1402,7 +1402,7 @@ void Array::print_val(ostream &out, string space, bool print_decl_p)
         out << " = ";
     }
 
-    uint64_t *shape = new uint64_t[dimensions(true)];
+    auto shape = new uint64_t[dimensions(true)];
     unsigned int index = 0;
     for (Dim_iter i = _shape.begin(); i != _shape.end() && index < dimensions(true); ++i)
         shape[index++] = dimension_size(i, true);
