@@ -62,9 +62,9 @@ public:
         num_eles = num_eles*5;
 
         // Uncomment this #if 0 block to test a trivial small array case.
-//#if 0
+#if 0
         num_eles = 4;
-//#endif 
+#endif 
         buf_int8.resize(num_eles);
         buf_int8[0] = 0;
         buf_int8[num_eles/2] = 128;
@@ -83,19 +83,19 @@ public:
 
     CPPUNIT_TEST_SUITE (BigArrayTest);
 
-    CPPUNIT_TEST (dap4_val2buf_buf2val);
-    CPPUNIT_TEST (dap4_val2buf_value);
-    CPPUNIT_TEST (dap2_set_value);
+    CPPUNIT_TEST (val2buf_buf2val_with_d4dim);
+    CPPUNIT_TEST (val2buf_value_with_d4dim);
+    CPPUNIT_TEST (set_value_with_dim);
     
-    CPPUNIT_TEST (dap4_constraint_whole);
-    CPPUNIT_TEST (dap4_constraint_big_start);
-    CPPUNIT_TEST (dap4_constraint_big_stride);
-    CPPUNIT_TEST (dap2_constraint_whole);
-    CPPUNIT_TEST (dap2_constraint_start_stride);
+    CPPUNIT_TEST (constraint_whole_with_d4dim);
+    CPPUNIT_TEST (constraint_big_start_with_d4dim);
+    CPPUNIT_TEST (constraint_big_stride_with_d4dim);
+    CPPUNIT_TEST (constraint_whole_with_dim);
+    CPPUNIT_TEST (constraint_start_stride_with_dim);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void dap4_val2buf_buf2val()
+    void val2buf_buf2val_with_d4dim()
     {
 
         unique_ptr<Byte> d_uint8(new Byte("Byte"));
@@ -123,7 +123,7 @@ public:
         CPPUNIT_ASSERT(buf_int8[num_eles-1] == d4_ar_val[num_eles-1]);
     }
 
-    void dap4_val2buf_value()
+    void val2buf_value_with_d4dim()
     {
 
         unique_ptr<Byte> d_uint8(new Byte("Byte"));
@@ -148,7 +148,7 @@ public:
         CPPUNIT_ASSERT(buf_int8[num_eles-1] == d4_ar_val[num_eles-1]);
     }
 
-    void dap2_set_value()
+    void set_value_with_dim()
     {
         unique_ptr<Byte> d_uint8(new Byte("Byte"));
         Array d_ar_uint8 = Array("Byte_array",d_uint8.get());
@@ -173,7 +173,7 @@ public:
  
     }
 
-    void dap4_constraint_whole() 
+    void constraint_whole_with_d4dim() 
     {
         unique_ptr<Byte> d_uint8(new Byte("Byte"));
         Array d4_ar_uint8 = Array("Byte_array",d_uint8.get());
@@ -221,7 +221,7 @@ public:
 
     }
 
-    void dap4_constraint_big_start() 
+    void constraint_big_start_with_d4dim() 
     {
         unique_ptr<Byte> d_uint8(new Byte("Byte"));
         Array d4_ar_uint8 = Array("Byte_array",d_uint8.get());
@@ -275,7 +275,7 @@ public:
 
     }
 
-    void dap4_constraint_big_stride() 
+    void constraint_big_stride_with_d4dim() 
     {
         unique_ptr<Byte> d_uint8(new Byte("Byte"));
         Array d4_ar_uint8 = Array("Byte_array",d_uint8.get());
@@ -330,7 +330,7 @@ public:
     }
 
 
-    void dap2_constraint_whole() {
+    void constraint_whole_with_dim() {
 
         unique_ptr<Byte> d_uint8(new Byte("Byte"));
         Array d_ar_uint8 = Array("Byte_array",d_uint8.get());
@@ -375,7 +375,7 @@ public:
  
     }
 
-    void dap2_constraint_start_stride() {
+    void constraint_start_stride_with_dim() {
 
         unique_ptr<Byte> d_uint8(new Byte("Byte"));
         Array d_ar_uint8 = Array("Byte_array",d_uint8.get());
