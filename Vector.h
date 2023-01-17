@@ -99,6 +99,7 @@ private:
     // This should be either the sizeof(buf)/width(bool constrained = false) for cardinal data
     // or the capacity of d_str for strings or capacity of _vec.
     unsigned int d_capacity = 0;
+    uint64_t d_capacity_ll = 0;
 
     bool d_too_big_for_dap2 = false;    /// Conditionally set to true in set_length_ll()
 
@@ -107,15 +108,19 @@ private:
     // Made these template methods private because they can't be
     // overridden anyways (because c++...) - ndp 08/14/2015
     template <typename T> void value_worker(T *v) const;
+    template <typename T> void value_ll_worker(T *v) const;
     template <typename T> void value_worker(vector<unsigned int> *indices, T *b) const;
+    template <typename T> void value_ll_worker(vector<uint64_t> *indices, T *b) const;
 
     template <typename T> bool set_value_worker(T *v, int sz);
+    template <typename T> bool set_value_ll_worker(T *v, int64_t sz);
     template <typename T> bool set_value_worker(vector<T> &v, int sz);
+    template <typename T> bool set_value_ll_worker(vector<T> &v, int64_t sz);
 
     bool m_is_cardinal_type() const;
     int64_t m_create_cardinal_data_buffer_for_type(int64_t num_elements);
     void m_delete_cardinal_data_buffer();
-    template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int num_elements);
+    template <class CardType> void m_set_cardinal_values_internal(const CardType* fromArray, int64_t num_elements);
 
     // This function copies the private members of Vector.
     void m_duplicate(const Vector &v);
@@ -224,6 +229,7 @@ public:
 
     void set_length_ll(int64_t l) override;
 
+
     // DAP2
     void intern_data(ConstraintEvaluator &eval, DDS &dds) override;
     bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
@@ -238,19 +244,33 @@ public:
     unsigned int val2buf(void *val, bool reuse = false) override;
     unsigned int buf2val(void **val) override;
 
+    uint64_t val2buf_ll(void *val, bool reuse = false);
+    uint64_t buf2val_ll(void **val);
+
+
     void set_vec(unsigned int i, BaseType *val);
     void set_vec_nocopy(unsigned int i, BaseType * val);
 
+    void set_vec_ll(uint64_t i, BaseType *val);
+    void set_vec_nocopy_ll(uint64_t i, BaseType * val);
+
     void vec_resize(int l);
+    void vec_resize_ll(int64_t l);
 
     void clear_local_data() override;
 
+
     virtual unsigned int get_value_capacity() const;
+    virtual uint64_t get_value_capacity_ll() const;
+
+    void set_value_capacity(uint64_t l);
     virtual void reserve_value_capacity(unsigned int numElements);
     virtual void reserve_value_capacity();
+    virtual void reserve_value_capacity_ll(uint64_t numElements);
+    virtual void reserve_value_capacity_ll();
 
-    virtual unsigned int set_value_slice_from_row_major_vector(const Vector& rowMajorData, unsigned int startElement);
 
+    virtual uint64_t set_value_slice_from_row_major_vector(const Vector& rowMajorData, uint64_t startElement);
 
     virtual bool set_value(dods_byte *val, int sz);
     virtual bool set_value(dods_int8 *val, int sz);
@@ -265,6 +285,18 @@ public:
     virtual bool set_value(string *val, int sz);
 
 
+    virtual bool set_value_ll(dods_byte *val, int64_t sz);
+    virtual bool set_value_ll(dods_int8 *val, int64_t sz);
+    virtual bool set_value_ll(dods_int16 *val, int64_t sz);
+    virtual bool set_value_ll(dods_uint16 *val, int64_t sz);
+    virtual bool set_value_ll(dods_int32 *val, int64_t sz);
+    virtual bool set_value_ll(dods_uint32 *val, int64_t sz);
+    virtual bool set_value_ll(dods_int64 *val, int64_t sz);
+    virtual bool set_value_ll(dods_uint64 *val, int64_t sz);
+    virtual bool set_value_ll(dods_float32 *val, int64_t sz);
+    virtual bool set_value_ll(dods_float64 *val, int64_t sz);
+    virtual bool set_value_ll(string *val, int64_t sz);
+
     virtual bool set_value(vector<dods_byte> &val, int sz);
     virtual bool set_value(vector<dods_int8> &val, int sz);
     virtual bool set_value(vector<dods_int16> &val, int sz);
@@ -276,6 +308,20 @@ public:
     virtual bool set_value(vector<dods_float32> &val, int sz);
     virtual bool set_value(vector<dods_float64> &val, int sz);
     virtual bool set_value(vector<string> &val, int sz);
+
+    virtual bool set_value_ll(vector<dods_byte> &val, int64_t sz);
+    virtual bool set_value_ll(vector<dods_int8> &val, int64_t sz);
+    virtual bool set_value_ll(vector<dods_int16> &val, int64_t sz);
+    virtual bool set_value_ll(vector<dods_uint16> &val, int64_t sz);
+    virtual bool set_value_ll(vector<dods_int32> &val, int64_t sz);
+    virtual bool set_value_ll(vector<dods_uint32> &val, int64_t sz);
+    virtual bool set_value_ll(vector<dods_int64> &val, int64_t sz);
+    virtual bool set_value_ll(vector<dods_uint64> &val, int64_t sz);
+    virtual bool set_value_ll(vector<dods_float32> &val, int64_t sz);
+    virtual bool set_value_ll(vector<dods_float64> &val, int64_t sz);
+    virtual bool set_value_ll(vector<string> &val, int64_t sz);
+
+
 
     virtual void value(dods_byte *b) const;
     virtual void value(dods_int8 *b) const;
@@ -301,12 +347,26 @@ public:
     virtual void value(vector<unsigned int> *indices, dods_float64 *b) const;
     virtual void value(vector<unsigned int> *index, vector<string> &b) const;
 
+    virtual void value_ll(vector<uint64_t> *indices, dods_byte *b) const;
+    virtual void value_ll(vector<uint64_t> *indices, dods_int8 *b) const;
+    virtual void value_ll(vector<uint64_t> *indices, dods_int16 *b) const;
+    virtual void value_ll(vector<uint64_t> *indices, dods_uint16 *b) const;
+    virtual void value_ll(vector<uint64_t> *indices, dods_int32 *b) const;
+    virtual void value_ll(vector<uint64_t> *indices, dods_uint32 *b) const;
+    virtual void value_ll(vector<uint64_t> *indices, dods_int64 *b) const;
+    virtual void value_ll(vector<uint64_t> *indices, dods_uint64 *b) const;
+    virtual void value_ll(vector<uint64_t> *indices, dods_float32 *b) const;
+    virtual void value_ll(vector<uint64_t> *indices, dods_float64 *b) const;
+    virtual void value_ll(vector<uint64_t> *index, vector<string> &b) const;
+
+
     virtual void *value();
 
     BaseType *var(const string &name = "", bool exact_match = true, btp_stack *s = nullptr) override;
     BaseType *var(const string &name, btp_stack &s) override;
 
     virtual BaseType *var(unsigned int i);
+    virtual BaseType *var_ll(uint64_t i);
 
     void add_var(BaseType *v, Part p = nil) override;
     void add_var_nocopy(BaseType *v, Part p = nil) override;
