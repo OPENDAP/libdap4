@@ -101,7 +101,7 @@ void Array::_duplicate(const Array &a)
  */
 void Array::update_length(int)
 {
-    unsigned long long  length = 1;
+    uint64_t  length = 1;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
         length *= (*i).c_size;
     }
@@ -540,9 +540,13 @@ void Array::append_dim(int size, const string &name)
 
 void Array::append_dim_ll(int64_t size, const string &name)
 {
+
+#if 0
     dimension d(size, www2id(name));
     _shape.push_back(d);
+#endif
 
+    _shape.emplace_back(size,www2id(name));
     update_length();
 }
 
