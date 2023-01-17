@@ -113,7 +113,6 @@ void Array::update_length(int)
 void Array::update_length_ll(unsigned long long)
 {
     unsigned long long length = 1;
-    //for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
     for (const auto &i:_shape) {
         length *= i.c_size;
     }
