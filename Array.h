@@ -142,7 +142,7 @@ public:
     	// pointer; it is shared between the array and the Group where the
     	// Dimension is defined. To keep Array manageable to implement, size
     	// will be set here using the value from 'dim' if it is not null.
-        int size;  ///< The unconstrained dimension size.
+        int64_t  size;  ///< The unconstrained dimension size.
         string name;    ///< The name of this dimension.
 
         D4Dimension *dim; ///< If not null, a weak pointer to the D4Dimension
@@ -155,10 +155,10 @@ public:
         // from a sliced sdim.
         bool use_sdim_for_slice; ///< Used to control printing the DMR in data responses
 
-        int start;  ///< The constraint start index
-        int stop;  ///< The constraint end index
-        int stride;  ///< The constraint stride
-        int c_size;  ///< Size of dimension once constrained
+        int64_t start;  ///< The constraint start index
+        int64_t  stop;  ///< The constraint end index
+        int64_t  stride;  ///< The constraint stride
+        int64_t  c_size;  ///< Size of dimension once constrained
 
         dimension() : size(0), name(""), dim(0), use_sdim_for_slice(false) {
             // this information changes with each constraint expression
@@ -168,7 +168,7 @@ public:
             c_size = size;
         }
 
-        dimension(unsigned long s, string n) : size(s), name(n), dim(0), use_sdim_for_slice(false) {
+        dimension(int64_t s, string n) : size(s), name(n), dim(0), use_sdim_for_slice(false) {
             start = 0;
             stop = size - 1;
             stride = 1;
@@ -193,11 +193,18 @@ private:
 protected:
     void _duplicate(const Array &a);
 
+#if 0
     unsigned int print_array(FILE *out, unsigned int index,
                              unsigned int dims, unsigned int shape[]);
 
     unsigned int print_array(ostream &out, unsigned int index,
                              unsigned int dims, unsigned int shape[]);
+#endif
+    uint64_t print_array(FILE *out, uint64_t index,
+                             unsigned int dims, uint64_t shape[]);
+
+    uint64_t print_array(ostream &out, uint64_t index,
+                             unsigned int dims, uint64_t shape[]);
 
     std::vector<dimension> &shape(){
         return _shape;
@@ -235,6 +242,7 @@ public:
     void add_var_nocopy(BaseType *v, Part p = nil);
 
     void append_dim(int size, const string &name = "");
+    void append_dim_ll(int64_t size, const string &name = "");
     void append_dim(D4Dimension *dim);
     void prepend_dim(int size, const string& name = "");
     void prepend_dim(D4Dimension *dim);
@@ -242,12 +250,14 @@ public:
     void rename_dim(const string &oldName = "", const string &newName = "");
 
     virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
+    virtual void add_constraint_ll(Dim_iter i, int64_t start, int64_t stride, int64_t stop);
     virtual void add_constraint(Dim_iter i, D4Dimension *dim);
     virtual void reset_constraint();
 
     virtual void clear_constraint(); // deprecated
 
     virtual void update_length(int size = 0); // should be used internally only
+    virtual void update_length_ll(unsigned long long size = 0); // should be used internally only
 
     Dim_iter dim_begin() ;
     Dim_iter dim_end() ;
@@ -256,6 +266,12 @@ public:
     virtual int dimension_start(Dim_iter i, bool constrained = false);
     virtual int dimension_stop(Dim_iter i, bool constrained = false);
     virtual int dimension_stride(Dim_iter i, bool constrained = false);
+
+    virtual int64_t dimension_size_ll(Dim_iter i, bool constrained = false);
+    virtual int64_t dimension_start_ll(Dim_iter i, bool constrained = false);
+    virtual int64_t dimension_stop_ll(Dim_iter i, bool constrained = false);
+    virtual int64_t dimension_stride_ll(Dim_iter i, bool constrained = false);
+
     virtual string dimension_name(Dim_iter i);
     virtual D4Dimension *dimension_D4dim(Dim_iter i);
 
