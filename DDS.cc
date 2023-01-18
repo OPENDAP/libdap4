@@ -1537,6 +1537,24 @@ DDS::mark_all(bool state)
         (*i)->set_send_p(state);
 }
 
+bool DDS::is_dap4_projected(std::vector<string> &inventory)
+{
+    bool has_dap4 = false;
+    // In the DMR version of this method we handle the Global Attributes like this:
+    // has_dap4 = attributes()->has_dap4_types(root()->FQN(),inventory);
+    // But here they get managed by the D4Attributes.cc function
+    //     AttrType get_dap2_AttrType(D4AttributeType d4_type)
+    // Which will throw an exception if a D4 type is encountered in the (global) attributes
+
+    for(const auto var : variables()){
+        has_dap4 |= var->is_dap4_projected(inventory);
+    }
+
+    return has_dap4;
+
+}
+
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and then calls parent dump
