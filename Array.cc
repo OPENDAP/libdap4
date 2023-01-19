@@ -1408,7 +1408,7 @@ void Array::print_val(ostream &out, string space, bool print_decl_p)
     auto shape = new uint64_t[dimensions(true)];
     unsigned int index = 0;
     for (Dim_iter i = _shape.begin(); i != _shape.end() && index < dimensions(true); ++i)
-        shape[index++] = dimension_size(i, true);
+        shape[index++] = dimension_size_ll(i, true);
 
     print_array(out, 0, dimensions(true), shape);
 
@@ -1453,7 +1453,7 @@ string get_dims_decl(Array &a) {
         if(!dim_name.empty()){
             sqr_brkty_stuff << dim_name << "=";
         }
-        sqr_brkty_stuff << a.dimension_size(itr,true) << "]";
+        sqr_brkty_stuff << a.dimension_size_ll(itr,true) << "]";
     }
     return sqr_brkty_stuff.str();
 }
