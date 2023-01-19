@@ -1020,6 +1020,35 @@ public:
 
     }
 
+    /**
+ * DMR Int8 variable test - true
+ * test if DMR containing dap4 var [Int8] returns true
+ */
+    void test_dds_with_dap4_global_attr() {
+
+        Byte *bvar = new Byte("bvar");
+        bvar->set_send_p(true);
+
+        BaseTypeFactory f;
+        auto dds = unique_ptr<DDS>(new DDS(&f, "test_dds"));
+        dds->add_var_nocopy(bvar);
+        auto count = dds->get_attr_table().append_attr("ima_d4thing","Int8","0");
+
+        vector<string> inv;
+        bool result = dds->is_dap4_projected(inv);
+
+        DBG(cerr << prolog << "dds->is_dap4_projected(): " << truth(result) << endl);
+        CPPUNIT_ASSERT(result == true);
+
+        DBG(cerr << prolog << "              inv.size(): " << inv.size() << endl);
+        CPPUNIT_ASSERT(inv.size() == 1);
+
+        DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
+        CPPUNIT_ASSERT(inv.at(0) == "Int8 /@ima_d4thing");
+
+    }
+
+
     ///////////////////////////////////////////////////////
     /// DDS/DAP2 Tests
 
@@ -1074,6 +1103,7 @@ CPPUNIT_TEST_SUITE( IsDap4ProjectedTest );
         CPPUNIT_TEST(test_is_dap4_projected_global_d4_attr);
         CPPUNIT_TEST(alternate_test);
         CPPUNIT_TEST(test_is_dap4_projected_array_of_struct_with_d4);
+        CPPUNIT_TEST(test_dds_with_dap4_global_attr);
 
     CPPUNIT_TEST_SUITE_END();
 };
