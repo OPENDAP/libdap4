@@ -1472,7 +1472,8 @@ bool Array::is_dap4_projected(std::vector<std::string> &inventory)
             has_projected_dap4 = prototype()->is_dap4_projected(inventory) || attributes()->has_dap4_types(FQN(),inventory);
         }
         else {
-            has_projected_dap4 = prototype()->is_dap4();
+            Type type = prototype()->type();
+            has_projected_dap4 = (type == libdap::dods_int8_c ) || (type == dods_uint64_c) || (type == dods_int64_c);
             if(has_projected_dap4) {
                 inventory.emplace_back(prototype()->type_name() + " " + FQN() + get_dims_decl(*this));
             }

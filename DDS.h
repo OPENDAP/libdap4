@@ -405,6 +405,8 @@ public:
 
     void tag_nested_sequences();
 
+    bool is_dap4_projected(std::vector<string> &inventory);
+
     virtual void dump(ostream &strm) const ;
 };
 

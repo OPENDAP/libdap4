@@ -1537,6 +1537,21 @@ DDS::mark_all(bool state)
         (*i)->set_send_p(state);
 }
 
+/**
+ *
+ * @param inventory
+ * @return
+ */
+bool DDS::is_dap4_projected(std::vector<string> &inventory)
+{
+    bool has_dap4 = d_attr.has_dap4_types("/", inventory);
+    for(const auto var : variables()){
+        has_dap4 |= var->is_dap4_projected(inventory);
+    }
+    return has_dap4;
+}
+
+
 /** @brief dumps information about this object
  *
  * Displays the pointer value of this instance and then calls parent dump

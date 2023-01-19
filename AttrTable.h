@@ -90,7 +90,18 @@ enum AttrType {
     Attr_float64,
     Attr_string,
     Attr_url,
-    Attr_other_xml
+    Attr_other_xml,
+
+    // Added for DAP4
+    Attr_int8,
+    Attr_uint8,
+
+    Attr_int64,
+    Attr_uint64,
+
+    Attr_enum,
+    Attr_opaque
+
 };
 
 string AttrType_to_String(const AttrType at);
@@ -228,6 +239,31 @@ public:
             }
             return *this;
         }
+
+        /**
+         * Returns true if this Attribute is a dap4 type.
+         * @param path
+         * @param inventory
+         * @return True of the attribute is a dap4 type, false otherwise
+         */
+        bool is_dap4_type(const std::string &path, std::vector<std::string> &inventory) const
+        {
+            bool ima_d4_attr = false;
+            switch(type){
+                case Attr_int8:
+                case Attr_int64:
+                case Attr_uint64:
+                    ima_d4_attr=true;
+                    break;
+                case Attr_container:
+                    ima_d4_attr = attributes->has_dap4_types(path ,inventory);
+                    break;
+                default:
+                    break;
+            }
+            return ima_d4_attr;
+        }
+
     };
 
     typedef std::vector<entry *>::const_iterator Attr_citer ;
@@ -334,6 +370,9 @@ public:
 			    const string &name);
     virtual bool attr_alias(const string &alias, const string &name);
 
+    bool has_dap4_types(const std::string &path, std::vector<std::string> &inventory) const;
+    bool is_dap4_type(const std::string &path, std::vector<std::string> &inventory) const;
+
     virtual void print(FILE *out, string pad = "    ",
 		       bool dereference = false);
     virtual void print(ostream &out, string pad = "    ",
@@ -349,7 +388,9 @@ public:
     void print_dap4(XMLWriter &xml);
 
     virtual void dump(ostream &strm) const ;
+
 };
+
 
 
 string remove_space_encoding(const string &s);
