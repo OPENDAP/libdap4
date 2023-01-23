@@ -232,14 +232,14 @@ public:
     virtual ~Array();
 
     Array &operator=(const Array &rhs);
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
     bool is_dap2_grid();
-    virtual void transform_to_dap4(D4Group *root, Constructor *container);
-    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
+    void transform_to_dap4(D4Group *root, Constructor *container) override;
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 
-    void add_var(BaseType *v, Part p = nil);
-    void add_var_nocopy(BaseType *v, Part p = nil);
+    void add_var(BaseType *v, Part p = nil) override;
+    void add_var_nocopy(BaseType *v, Part p = nil) override;
 
     void append_dim(int size, const string &name = "");
     void append_dim_ll(int64_t size, const string &name = "");
@@ -279,19 +279,19 @@ public:
 
     virtual D4Maps *maps();
 
-    virtual void print_dap4(XMLWriter &xml, bool constrained = false);
+    void print_dap4(XMLWriter &xml, bool constrained = false) override;
 
     // These are all DAP2 output methods
 
-    virtual void print_decl(ostream &out, string space = "    ",
+    void print_decl(ostream &out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
-                            bool constrained = false);
+                            bool constrained = false) override;
 
-    virtual void print_xml(ostream &out, string space = "    ",
-                           bool constrained = false);
+    void print_xml(ostream &out, string space = "    ",
+                           bool constrained = false) override;
 
-    virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
+    void print_xml_writer(XMLWriter &xml, bool constrained = false) override;
     virtual void print_xml_writer_core(XMLWriter &out, bool constrained, string tag);
     virtual void print_as_map_xml_writer(XMLWriter &xml, bool constrained);
 
@@ -302,25 +302,26 @@ public:
     virtual void print_as_map_xml(ostream &out, string space = "    ",
                                   bool constrained = false);
 
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    void print_val(ostream &out, string space = "",
+                           bool print_decl_p = true) override;
 
-    virtual void print_xml(FILE *out, string space = "    ",
-                           bool constrained = false);
+    void print_xml(FILE *out, string space = "    ",
+                           bool constrained = false) override;
     virtual void print_as_map_xml(FILE *out, string space = "    ",
                                   bool constrained = false);
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-    virtual void print_decl(FILE *out, string space = "    ",
+    void print_val(FILE *out, string space = "",
+                           bool print_decl_p = true) override;
+    void print_decl(FILE *out, string space = "    ",
                             bool print_semi = true,
                             bool constraint_info = false,
-                            bool constrained = false);
+                            bool constrained = false) override;
 
-    virtual bool check_semantics(string &msg, bool all = false);
+    bool check_semantics(string &msg, bool all = false) override;
+ 
 
     bool is_dap4_projected(std::vector<std::string> &projected_dap4_inventory) override;
 
-    virtual void dump(ostream &strm) const ;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
