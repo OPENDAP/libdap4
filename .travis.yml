@@ -150,18 +150,6 @@ jobs:
     - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
 
   - stage: package
-    name: "centos7 rpms"
-    script:
-      - export LIBDAP_BUILD=centos7
-      # $prefix = $HOME/install which is /home/travis/install here but /root/install in the image.
-      # For this image, prefix is already set.
-      - mkdir -p $prefix/rpmbuild
-      - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
-          --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-          --env os=centos7 --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
-          opendap/centos7_hyrax_builder:1.7 /root/travis/travis/build-rpm.sh
-
-  - stage: package
     name: "centos stream8 rpms"
     script:
       - export LIBDAP_BUILD=centos-stream8
@@ -211,8 +199,6 @@ before_deploy:
   # Build the binary used by downstream Travis BES builds
   - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz
                                                --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
-  # CentOS-7 distribution prep
-  - if test "$LIBDAP_BUILD" = "centos7"; then ./travis/rpm-to-package-dir.sh "el7"; fi
   # CentOS-Stream8 distribution prep
   - if test "$LIBDAP_BUILD" = "centos-stream8"; then ./travis/rpm-to-package-dir.sh "el8"; fi
   # Src dist distribution prep
@@ -231,5 +217,6 @@ deploy:
     all_branches: true
     # Was "branch: master". Now supports the *-test-deploy feature and also
     # using 'main' as the branch name. jhrg 8/22/22
-    condition: $LIBDAP_BUILD =~ ^main|srddist|centos7|centos-stream8$
+    condition: $LIBDAP_BUILD =~ ^main|srddist|centos-stream8$
     # Removed 'centos6|' jhrg 10/23/20
+    # Removed 'centos7|' jhrg 01/27/23
