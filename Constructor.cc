@@ -31,6 +31,7 @@
 
 #include "config.h"
 
+#include <cstdint>
 #include <string>
 #include <sstream>
 #include <algorithm>
