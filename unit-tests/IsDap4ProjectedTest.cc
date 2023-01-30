@@ -1021,14 +1021,19 @@ public:
  */
     void test_dds_with_dap4_global_attr() {
 
-        //Byte *bvar = new Byte("bvar");
-        Byte bvar("bvar");
-        bvar.set_send_p(true);
+        auto bvar = new Byte("bvar");
+        bvar->set_send_p(true);
 
         BaseTypeFactory f;
+        // These container variables don't need to be pointers. The things they contain
+        // do, however. jhrg 1/30/23
         // auto dds = unique_ptr<DDS>(new DDS(&f, "test_dds"));
         DDS dds(&f, "test_dds");
-        dds.add_var_nocopy(&bvar);
+        dds.add_var_nocopy(bvar);
+
+        // Add an attribute that is a DAP4 type (Int8). NB: we don't care about the return
+        // value here. jhrg 1/30/23
+        (void) dds.get_attr_table().append_attr("ima_d4thing","Int8","0");
 
         vector<string> inv;
         bool result = dds.is_dap4_projected(inv);
