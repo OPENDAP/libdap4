@@ -83,11 +83,10 @@ getdap4_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
-EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	\
+EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	    \
 	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec.in libdap.spec VCPP	\
-	dods-datatypes-static.h xdr-datatypes-static.h		\
-	dap-config-pkgconfig $(LEX_YACC_EXTRA) OSX_Resources	\
-	getdap.man1 dap-config.man1 getdap4.man1
+	dods-datatypes-static.h xdr-datatypes-static.h dap-config-pkgconfig     \
+	$(LEX_YACC_EXTRA) getdap.man1 dap-config.man1 getdap4.man1
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
@@ -111,7 +110,7 @@ docs: ${DOXYGEN_CONF}
 gh-docs:
 	./build-gh-docs.sh
 
-# Build a compile_commands.json.tmp file for use with CLion. This will emable
+# Build a compile_commands.json.tmp file for use with CLion. This will enable
 # reasonable use for all the source that's compiled using either 'all' or
 # 'check' but other targets will have to be added by hand. See the compiledb
 # github site (https://github.com/nickdiego/compiledb) for more info.
