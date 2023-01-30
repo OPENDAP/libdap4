@@ -52,13 +52,11 @@ using namespace std;
 
 #define prolog std::string("D4ToolsTests::").append(__func__).append("() - ")
 
-string truth(bool v){ return (v?"true":"false"); }
+string truth(bool v) { return (v ? "true" : "false"); }
 
 namespace libdap {
 
 class IsDap4ProjectedTest: public CppUnit::TestFixture {
-
-private:
 
 public:
 
@@ -66,7 +64,7 @@ public:
     IsDap4ProjectedTest() = default;
 
     // Called at the end of the test
-    ~IsDap4ProjectedTest() = default;
+    ~IsDap4ProjectedTest() override = default;
 
     void setUp() override {
         DBG(cerr << endl);
@@ -120,13 +118,12 @@ public:
      * tests if array containing dap4 vars returns true
      */
     void test_is_dap4_projected_array_int8() {
-        Array avar("avar", new Int8("pvar"));
+        Int8 pvar("pvar");
+        Array avar("avar", &pvar);
         avar.append_dim(5, "dim0");
         avar.append_dim(10, "dim1");
         avar.append_dim(15, "dim2");
         avar.set_send_p(true);
-
-        // void Array::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained)
 
         if(debug) {
             cerr << prolog;
@@ -291,7 +288,6 @@ public:
 
         DBG(cerr << prolog << "        inv.at(0)->name(): " << inv.at(0) << endl);
         CPPUNIT_ASSERT(inv.at(0) == "Int8 bvar@d4a");
-
     }
 
     /**
@@ -980,7 +976,6 @@ public:
 
         DBG(cerr << prolog << "       inv.at(2): " << inv.at(2) << endl);
         CPPUNIT_ASSERT(inv.at(2) == "Group /b_grp/c_grp/");
-
     }
 
 
@@ -993,13 +988,14 @@ public:
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
 
-        auto svar_proto = new Structure("svar");
+        // auto svar_proto = new Structure("svar");
+        Structure svar_proto("svar");
         auto fvar =  new Float32("fvar");
-        svar_proto->add_var_nocopy(fvar);
+        svar_proto.add_var_nocopy(fvar);
         auto d4var = new UInt64("d4var");
-        svar_proto->add_var_nocopy(d4var);
+        svar_proto.add_var_nocopy(d4var);
 
-        auto avar = new Array("avar", svar_proto);
+        auto avar = new Array("avar", &svar_proto);
         avar->append_dim(10,"dim1");
         avar->append_dim(20,"");
         avar->set_send_p(true);
@@ -1017,7 +1013,6 @@ public:
 
         DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
         CPPUNIT_ASSERT(inv.at(0) == "UInt64 /svar.d4var");
-
     }
 
     /**
@@ -1026,16 +1021,22 @@ public:
  */
     void test_dds_with_dap4_global_attr() {
 
-        Byte *bvar = new Byte("bvar");
+        auto bvar = new Byte("bvar");
         bvar->set_send_p(true);
 
         BaseTypeFactory f;
-        auto dds = unique_ptr<DDS>(new DDS(&f, "test_dds"));
-        dds->add_var_nocopy(bvar);
-        auto count = dds->get_attr_table().append_attr("ima_d4thing","Int8","0");
+        // These container variables don't need to be pointers. The things they contain
+        // do, however. jhrg 1/30/23
+        // auto dds = unique_ptr<DDS>(new DDS(&f, "test_dds"));
+        DDS dds(&f, "test_dds");
+        dds.add_var_nocopy(bvar);
+
+        // Add an attribute that is a DAP4 type (Int8). NB: we don't care about the return
+        // value here. jhrg 1/30/23
+        (void) dds.get_attr_table().append_attr("ima_d4thing","Int8","0");
 
         vector<string> inv;
-        bool result = dds->is_dap4_projected(inv);
+        bool result = dds.is_dap4_projected(inv);
 
         DBG(cerr << prolog << "dds->is_dap4_projected(): " << truth(result) << endl);
         CPPUNIT_ASSERT(result == true);
@@ -1045,14 +1046,12 @@ public:
 
         DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
         CPPUNIT_ASSERT(inv.at(0) == "Int8 /@ima_d4thing");
-
     }
-
 
     ///////////////////////////////////////////////////////
     /// DDS/DAP2 Tests
 
-CPPUNIT_TEST_SUITE( IsDap4ProjectedTest );
+    CPPUNIT_TEST_SUITE( IsDap4ProjectedTest );
 
         CPPUNIT_TEST(test_is_dap4_projected_int8);
         CPPUNIT_TEST(test_is_dap4_projected_byte);

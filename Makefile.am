@@ -7,18 +7,9 @@ aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
 AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS) $(TIRPC_CFLAGS)
-AM_CXXFLAGS = -Wall -W -Wcast-align -Wno-deprecated-register -Wno-inconsistent-missing-override
+AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align -Wno-deprecated-register -Wno-inconsistent-missing-override
 
-if COMPILER_IS_GCC
-AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-deprecated-register -Wno-inconsistent-missing-override
-endif
-
-# These are not used by automake but are often useful for certain types of
-# debugging. The best way to use these is to run configure as:
-# ./configure --disable-shared CXXFLAGS=...
-# or ./configure --enable-developer --disable-shared
-# the --disable-shared is not required, but it seems to help with debuggers.
-CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align 
+CXXFLAGS_DEBUG = -g3 -O0
 
 # Build using the Address sanitizer (gcc 4.8+ and clang 3.3+).
 # See: https://github.com/google/sanitizers/wiki/AddressSanitizer
@@ -28,9 +19,9 @@ ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 endif
 
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXX11_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
+AM_CXXFLAGS += -g -O2 -DNDEBUG
 endif
 
 AM_LDFLAGS =
@@ -92,11 +83,10 @@ getdap4_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
 LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
-EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	\
+EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	    \
 	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec.in libdap.spec VCPP	\
-	dods-datatypes-static.h xdr-datatypes-static.h		\
-	dap-config-pkgconfig $(LEX_YACC_EXTRA) OSX_Resources	\
-	getdap.man1 dap-config.man1 getdap4.man1
+	dods-datatypes-static.h xdr-datatypes-static.h dap-config-pkgconfig     \
+	$(LEX_YACC_EXTRA) getdap.man1 dap-config.man1 getdap4.man1
 
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
@@ -120,7 +110,7 @@ docs: ${DOXYGEN_CONF}
 gh-docs:
 	./build-gh-docs.sh
 
-# Build a compile_commands.json.tmp file for use with CLion. This will emable
+# Build a compile_commands.json.tmp file for use with CLion. This will enable
 # reasonable use for all the source that's compiled using either 'all' or
 # 'check' but other targets will have to be added by hand. See the compiledb
 # github site (https://github.com/nickdiego/compiledb) for more info.
@@ -159,49 +149,6 @@ deb: dist
 	( cd ../ && tar xzf @PACKAGE@_@PACKAGE_VERSION@.orig.tar.gz )
 	( cp -r debian/ ../@PACKAGE@-@PACKAGE_VERSION@ )
 	( cd ../@PACKAGE@-@PACKAGE_VERSION@ && debuild -us -uc )
-
-###########################################################################
-
-# Build OS/X Packages. The strange operations with configure and make
-# are there so that the values built into dap-config will match the mac
-# osx install dirs and not the temp directory used to build the packages
-
-PACKAGEMAKER=/Developer/usr/bin/packagemaker
-PKG_CONF_FLAGS=
-
-clean-pkg:
-	-rm -rf mac_osx @PACKAGE@-@PACKAGE_VERSION@.pkg
-
-pkg-build: clean-pkg
-	./configure --prefix=$(prefix) --disable-dependency-tracking $(PKG_CONF_FLAGS)
-	make clean all
-	DESTDIR=`pwd`/mac_osx make install
-
-pkg-main: pkg-build
-	./OSX_Resources/update_mac_package_contents.pl README.md
-	cat ./OSX_Resources/Info.plist.proto | \
-	   sed -e "s^_PREFIX_^/usr/local/servers/hyrax-1.8.8^g" \
-	       -e "s^_FULL_VERSION_^@PACKAGE_VERSION@^g" \
-	       -e "s^_MAJOR_VERSION_^@PACKAGE_MAJOR_VERSION@^g" \
-	       -e "s^_MINOR_VERSION_^@PACKAGE_MINOR_VERSION@^g" \
-	       > foo
-	mv foo ./OSX_Resources/Info.plist
-	${PACKAGEMAKER} --root mac_osx --id org.opendap.@PACKAGE@ \
-	    --title "@PACKAGE@ @PACKAGE_VERSION@" --version @PACKAGE_VERSION@ \
-	    --out @PACKAGE@-@PACKAGE_VERSION@.pkg --resources OSX_Resources
-
-# 	   sed -e "s^_PREFIX_^$(prefix)^g" 
-
-pkg-dmg: pkg-main
-	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
-	-rm -rf @PACKAGE@-@PACKAGE_VERSION@.dmg
-	mkdir @PACKAGE@-@PACKAGE_VERSION@
-	cp -r @PACKAGE@-@PACKAGE_VERSION@.pkg @PACKAGE@-@PACKAGE_VERSION@
-	cp README.md README.* NEWS @PACKAGE@-@PACKAGE_VERSION@
-	dropdmg -i --sanitize-for-servers --format zlib @PACKAGE@-@PACKAGE_VERSION@
-	-rm -rf @PACKAGE@-@PACKAGE_VERSION@
-
-pkg: pkg-main 
 
 #############################################################################
 # Library sources

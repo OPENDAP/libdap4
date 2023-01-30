@@ -31,11 +31,11 @@ if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 endif
 
-# See note in d4_function about CXX11_FLAG. jhrg 4/5/19
+# See note in d4_function about CXX_STD_FLAG. jhrg 4/5/19
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXX11_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+AM_CXXFLAGS += $(CXX_STD_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
+AM_CXXFLAGS += -g -O2 $(CXX_STD_FLAG)
 endif
 
 AM_LDFLAGS =

@@ -132,7 +132,7 @@ jobs:
     script:
     - export LIBDAP_BUILD=distcheck
     - autoreconf --force --install --verbose
-    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
+    - ./configure --disable-dependency-tracking --prefix=$prefix
     - make distcheck -j7
 
   - stage: scan
@@ -140,7 +140,7 @@ jobs:
     script:
     - export LIBDAP_BUILD=sonar
     - autoreconf --force --install --verbose
-    - ./configure --disable-dependency-tracking  --prefix=$prefix --enable-developer --enable-coverage
+    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-coverage
     - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
     # Run these commands in bw-output?
     - make check -j7
@@ -185,6 +185,9 @@ jobs:
       - autoreconf --force --install --verbose
       - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
       - ./travis/trigger-bes-build.sh
+
+after_script:
+  - ./travis/upload-test-results.sh
 
 before_deploy:
   # This part of the before_deploy action copies the built distributions named with version numbers
