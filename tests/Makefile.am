@@ -4,14 +4,10 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU -I$(top_srcdir)/d4_ce \
--I$(top_srcdir)/d4_function $(XML2_CFLAGS) $(CURL_CFLAGS) $(TIRPC_CFLAGS)
-AM_CXXFLAGS = -Wall -W -Wcast-align -Wno-inconsistent-missing-override
+    -I$(top_srcdir)/d4_function $(XML2_CFLAGS) $(CURL_CFLAGS) $(TIRPC_CFLAGS)
+AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align -Wno-inconsistent-missing-override
 
-if COMPILER_IS_GCC
-AM_CXXFLAGS += -Wall -W -Wcast-align
-endif
-
-CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align
+CXXFLAGS_DEBUG = -g3 -O0
 
 # If valgrind is present, add valgrind targets.
 # @VALGRIND_CHECK_RULES@
@@ -21,9 +17,9 @@ ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 endif
 
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXX11_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
+AM_CXXFLAGS += -g -O2 -DNDEBUG
 endif
 
 AM_LDFLAGS =
@@ -32,7 +28,7 @@ include $(top_srcdir)/coverage.mk
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 check_PROGRAMS = das-test dds-test expr-test dmr-test
 
-# This will use automake's test envokation code. It's better to use
+# This will use automake's test invocation code. It's better to use
 # our own so we can pass in flags for autotest, esp --jobs=N to get
 # the autotest tests to run in parallel. See check-local: below.
 

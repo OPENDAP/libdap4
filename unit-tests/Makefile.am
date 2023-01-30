@@ -8,9 +8,9 @@ AUTOMAKE_OPTIONS = foreign
 # Headers in 'tests' are used by the arrayT unit tests.
 
 AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests \
-$(CURL_CFLAGS) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
+    $(CURL_CFLAGS) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_LDADD = $(XML2_LIBS)
-AM_CXXFLAGS = $(CXX11_FLAG)
+AM_CXXFLAGS = $(CXX_STD_FLAG)
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-self-assign-overloaded
@@ -21,7 +21,7 @@ AM_CPPFLAGS += $(CPPUNIT_CFLAGS)
 AM_LDADD += $(CPPUNIT_LIBS)
 endif
 
-CXXFLAGS_DEBUG = -g3 -O0 -Wall -Wcast-align
+CXXFLAGS_DEBUG = -g3 -O0
 
 if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
