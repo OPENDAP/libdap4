@@ -2,11 +2,7 @@
 dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.63)
-
-dnl AC_PREREQ([2.68]); Fails on CentOS 6. jhrg 3/26/19
-dnl m4_pattern_forbid([^_?(gl_[A-Z]|AX_|BISON_)])
-dnl m4_pattern_allow([^BISON_USE_NLS$])
+AC_PREREQ([2.71])
 
 dnl Set the version number here. Set the build number using --with-build
 dnl The version info is put in the VERSION file. The build number is used
@@ -15,7 +11,7 @@ dnl 'pc' files and tarball for the source. See
 dnl libdap4/travis/travis_libdap_build_offset.sh for info about setting the
 dnl base value for the build number. jhrg 3/22/21
 
-AC_INIT(libdap, 3.20.11, opendap-tech@opendap.org)
+AC_INIT([libdap],[3.20.11],[opendap-tech@opendap.org])
 
 dnl As an alternative, we can...
 dnl Read the version number from the file VERSION. The file must contain
@@ -26,7 +22,7 @@ dnl But, this requires that the NEWS file have the version number AND build
 dnl number somewhere in the first 15 lines or the dist target will fail.
 dnl jhrg 3/17/21
 dnl https://stackoverflow.com/questions/8559456/read-a-version-number-from-a-file-in-configure-ac
-dnl AC_INIT([libdap], m4_normalize(m4_include([VERSION])), [opendap-tech@opendap.org])
+dnl AC_INIT([libdap],[m4_normalize(m4_include(VERSION))],[opendap-tech@opendap.org])
 
 dnl Provide a way to pass in a build number. This is used by CI/CD systems to record
 dnl each build. The version number is set by the value in AC_INIT (see above). For
@@ -34,8 +30,7 @@ dnl people building the source, it's not customary to supply a build number (i.e
 dnl if you're building the code for your own use, a build number seems like overkill).
 dnl jhrg 3/16/21
 AC_ARG_WITH([build],
-            [AC_HELP_STRING([--with-build=<number>],
-             [Inject the integer build number (default is to not define a build number)])],
+            [AS_HELP_STRING([--with-build=<number>],[Inject the integer build number (default is to not define a build number)])],
             [build_number=${withval}], [build_number=])
 
 dnl If a build number is given and valid (it must be an integer), use it. If it's
@@ -151,13 +146,9 @@ AC_PROG_CC
 dnl Call this gnulib macro right after a working C Compiler is found
 gl_EARLY
 
-dnl echo "CC = $CC"
 AS_IF([test "x$CC" = xgcc],
       [AM_CONDITIONAL([COMPILER_IS_GCC],[true])],
       [AM_CONDITIONAL([COMPILER_IS_GCC],[false])])
-
-dnl AC_PROG_YACC
-dnl AC_PROG_LEX
 
 dnl Here we test for both C++11 and 14, but our code nominally requires 14.
 dnl We can use the C++11 test and CXX_STD_FLAG to build with 11 if we add a
@@ -176,11 +167,11 @@ AS_IF([test -z "$CXX_STD_FLAG"],
 
 AC_SUBST(CXX_STD_FLAG)
 
-AM_PROG_LEX
+AM_PROG_LEX(noyywrap)
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_LIBTOOL
+LT_INIT
 
 dnl We really need bison and not yacc. If you use AC_PROG_YACC, the resulting 
 dnl Makefile will call bison -y which doesn't know how to make the parsers 
@@ -197,11 +188,11 @@ AS_VERSION_COMPARE(["$bison_version"], ["3.0"],
 	[ ],
 	[ ])
 
-AC_MSG_RESULT([found vesion $bison_version])
+AC_MSG_RESULT([found version $bison_version])
 
 dnl Checks for header files.
 AC_HEADER_DIRENT
-AC_HEADER_STDC
+
 AC_HEADER_SYS_WAIT
 
 AC_CHECK_HEADERS_ONCE([fcntl.h malloc.h memory.h stddef.h stdlib.h string.h strings.h unistd.h pthread.h])
@@ -219,7 +210,7 @@ AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_CHECK_MEMBERS([struct stat.st_blksize])
-AC_HEADER_TIME
+
 AC_STRUCT_TM
 AC_C_VOLATILE
 AC_C_BIGENDIAN
@@ -233,8 +224,7 @@ AC_SUBST([ac_word_order])
 DODS_CHECK_SIZES
 
 AC_ARG_ENABLE([runtime-endian-check],
-    [AC_HELP_STRING([--enable-runtime-endian-check], 
-                    [Enable runtime tests for big- or little-endian byte order (default is NO)])])
+    [AS_HELP_STRING([--enable-runtime-endian-check],[Enable runtime tests for big- or little-endian byte order (default is NO)])])
 
 AS_IF([test "x$enable_runtime_endian_check" = "xyes"], [
     dnl Do the stuff needed for enabling the feature
@@ -252,7 +242,7 @@ gl_MODULES(regex btyeswap)
 
 gl_INIT
 
-AC_ARG_WITH([curl], [AC_HELP_STRING([--with-curl=pfx], [curl/libcurl prefix; overrides other tests including pkgconfig])],
+AC_ARG_WITH([curl], [AS_HELP_STRING([--with-curl=pfx],[curl/libcurl prefix; overrides other tests including pkgconfig])],
             with_curl_prefix="$withval", with_curl_prefix="")
 
 dnl I wrote these checks because we need the *-config scripts to build, so 
@@ -317,8 +307,7 @@ dnl ******** new version, breaks the bes package step ********
 dnl jhrg 8/31/20
 dnl
 dnl AC_ARG_WITH(xml2,
-dnl     [AC_HELP_STRING([--with-xml2=PFX],
-dnl         [Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.])],
+dnl     [AS_HELP_STRING([--with-xml2=PFX],[dnl         Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.])],
 dnl     [with_xml2_prefix="$withval"],
 dnl     [with_xml2_prefix=""])
 dnl
@@ -584,6 +573,8 @@ AC_CONFIG_FILES([Makefile
                  gl/Makefile
                  d4_ce/Makefile
                  d4_function/Makefile
+
+                 http_dap/Makefile
                  
                  tests/Makefile
                  tests/atlocal

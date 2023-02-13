@@ -68,10 +68,10 @@ private:
 
 protected:
     /** @name Suppressed default methods */
-    //@{
+    /// @{
     Response(const Response &);
     Response &operator=(const Response &);
-    //@}
+    /// @}
 
 public:
     Response() : d_stream(0), d_cpp_stream(0), d_type(unknown_type),  d_version("dods/0.0"), d_protocol("2.0"),
@@ -101,7 +101,7 @@ public:
     }
 
     /** @name getters */
-    //@{
+    ///@{
     virtual int get_status() const {  return d_status; }
     virtual FILE *get_stream() const { return d_stream; }
     virtual std::istream *get_cpp_stream() const { return d_cpp_stream; }
@@ -109,10 +109,10 @@ public:
     virtual ObjectType get_type() const { return d_type; }
     virtual std::string get_version() const { return d_version; }
     virtual std::string get_protocol() const { return d_protocol; }
-    //@}
+    ///@}
 
     /** @name setters */
-    //@{
+    ///@{
     virtual void set_status(int s) { d_status = s; }
 
     virtual void set_stream(FILE *s) { d_stream = s; }
@@ -121,7 +121,7 @@ public:
     virtual void set_type(ObjectType o) { d_type = o; }
     virtual void set_version(const std::string &v) { d_version = v; }
     virtual void set_protocol(const std::string &p) { d_protocol = p; }
-    //@}
+    ///@}
 };
 
 } // namespace libdap

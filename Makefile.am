@@ -1,4 +1,3 @@
-# Build libdap, libtest-types.a, getdap, getdap4
 
 AUTOMAKE_OPTIONS = foreign check-news subdir-objects
 ACLOCAL_AMFLAGS = -I conf -I gl/m4
@@ -6,7 +5,8 @@ ACLOCAL_AMFLAGS = -I conf -I gl/m4
 aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
-AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU $(XML2_CFLAGS) $(TIRPC_CFLAGS)
+AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU  \
+    $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align -Wno-deprecated-register -Wno-inconsistent-missing-override
 
 CXXFLAGS_DEBUG = -g3 -O0
@@ -27,8 +27,8 @@ endif
 AM_LDFLAGS =
 include $(top_srcdir)/coverage.mk
 
-SUBDIRS = gl d4_ce d4_function . unit-tests tests
-DIST_SUBDIRS = gl d4_ce d4_function unit-tests tests
+SUBDIRS = gl d4_ce d4_function http_dap . unit-tests tests
+# DIST_SUBDIRS = gl d4_ce d4_function http_da unit-tests tests
 
 noinst_LTLIBRARIES = libparsers.la
 
@@ -59,10 +59,10 @@ libdap_la_CPPFLAGS = $(AM_CPPFLAGS)
 libdap_la_LIBADD = $(XML2_LIBS) $(PTHREAD_LIBS) gl/libgnu.la d4_ce/libd4_ce_parser.la \
 d4_function/libd4_function_parser.la libparsers.la $(CRYPTO_LIBS)
 
-libdapclient_la_SOURCES = $(CLIENT_SRC) $(DAP4_CLIENT_HDR) $(DAP4_CLIENT_SRC)
+libdapclient_la_SOURCES = $(CLIENT_SRC) $(DAP4_CLIENT_HDR)
 libdapclient_la_LDFLAGS = -version-info $(CLIENTLIB_VERSION)
-libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
-libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la $(PTHREAD_LIBS)
+libdapclient_la_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS) -I$(top_srcdir)/http_dap
+libdapclient_la_LIBADD = $(CURL_LIBS) libdap.la http_dap/libhttp_dap.la $(PTHREAD_LIBS)
 
 libdapserver_la_SOURCES = $(SERVER_SRC)
 libdapserver_la_LDFLAGS = -version-info $(SERVERLIB_VERSION)
@@ -74,11 +74,11 @@ noinst_HEADERS = config_dap.h
 
 getdap_SOURCES = getdap.cc
 getdap_LDADD = libdapclient.la libdap.la
-getdap_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
+getdap_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/http_dap $(CURL_CFLAGS)
 
 getdap4_SOURCES = getdap4.cc
 getdap4_LDADD = libdapclient.la libdap.la
-getdap4_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
+getdap4_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/http_dap $(CURL_CFLAGS)
 
 LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
@@ -109,15 +109,6 @@ docs: ${DOXYGEN_CONF}
 .PHONY: gh-docs 
 gh-docs:
 	./build-gh-docs.sh
-
-# Build a compile_commands.json.tmp file for use with CLion. This will enable
-# reasonable use for all the source that's compiled using either 'all' or
-# 'check' but other targets will have to be added by hand. See the compiledb
-# github site (https://github.com/nickdiego/compiledb) for more info.
-# jhrg 9/25/19
-.PHONY: compiledb
-compiledb:
-	make -nwk all check | compiledb
 
 # cccc computes metrics like Lines of code and McCabe. It's available
 # on the web...
@@ -189,10 +180,9 @@ Operators.h: ce_expr.tab.hh
 # Operators.h is included in with the source to prevent it from bing installed
 # with the other headers. It includes one of the built grammar file headers.
 
-CLIENT_SRC = RCReader.cc Connect.cc HTTPConnect.cc HTTPCache.cc	\
-	util_mit.cc ResponseTooBigErr.cc HTTPCacheTable.cc
+CLIENT_SRC = RCReader.cc Connect.cc D4Connect.cc util_mit.cc
 
-DAP4_CLIENT_SRC = D4Connect.cc
+# HTTPCacheTable.cc HTTPConnect.cc HTTPCache.cc ResponseTooBigErr.cc
 
 SERVER_SRC = DODSFilter.cc Ancillary.cc
 # ResponseBuilder.cc ResponseCache.cc
@@ -230,15 +220,16 @@ endif
 xdr-datatypes.h: xdr-datatypes-config.h
 	cp -p $< xdr-datatypes.h
 
-CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		\
-	HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h		\
-	Response.h HTTPResponse.h HTTPCacheResponse.h PipeResponse.h	\
-	StdinResponse.h SignalHandlerRegisteredErr.h			\
-	ResponseTooBigErr.h Resource.h HTTPCacheTable.h HTTPCacheMacros.h
+CLIENT_HDR = RCReader.h Connect.h Resource.h D4Connect.h Response.h \
+    StdinResponse.h SignalHandlerRegisteredErr.h
 
-DAP4_CLIENT_HDR = D4Connect.h
+# Removed jhrg 2/13/23 PipeResponse.h HTTPConnect.h HTTPCache.h
+# HTTPCacheDisconnectedMode.h HTTPCacheInterruptHandler.h
+# HTTPResponse.h HTTPCacheResponse.h
+# ResponseTooBigErr.h HTTPCacheTable.h HTTPCacheMacros.h
 
 SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
+
 #	ResponseBuilder.h ResponseCache.h
 
 ############################################################################
