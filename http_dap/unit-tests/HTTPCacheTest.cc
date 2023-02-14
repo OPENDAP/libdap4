@@ -97,10 +97,10 @@ public:
 
         expired = "http://test.opendap.org/cgi-bin/expires.sh";
 
-        h.push_back("ETag: jhrgjhrgjhrg");
-        h.push_back("Last-Modified: Sat, 05 Nov 1994 08:49:37 GMT");
-        h.push_back("Expires: Mon, 07 Nov 1994 08:49:37 GMT");
-        h.push_back("Date: Sun, 06 Nov 1994 08:49:37 GMT");
+        h.emplace_back("ETag: jhrgjhrgjhrg");
+        h.emplace_back("Last-Modified: Sat, 05 Nov 1994 08:49:37 GMT");
+        h.emplace_back("Expires: Mon, 07 Nov 1994 08:49:37 GMT");
+        h.emplace_back("Date: Sun, 06 Nov 1994 08:49:37 GMT");
         DBG2(cerr << "exiting." << endl);
     }
 
@@ -486,13 +486,13 @@ public:
         vector<string>::iterator i, j;
         for (i = cached_headers.begin(), j = headers->begin(); i != cached_headers.end() && j != headers->end();
             ++i, ++j) {
-            string ch = (*i).substr(0, (*i).find(": "));
+            string cached_header = (*i).substr(0, (*i).find(": "));
             // Skip over headers that won't be cached. jhrg 7/4/05
             while (is_hop_by_hop_header(*j))
                 ++j;
-            string h = (*j).substr(0, (*j).find(": "));
-            DBG(cerr << "cached: " << ch << ", header: " << h << endl);
-            CPPUNIT_ASSERT(ch == h);
+            string header = (*j).substr(0, (*j).find(": "));
+            DBG(cerr << "cached: " << cached_header << ", header: " << header << endl);
+            CPPUNIT_ASSERT(cached_header == header);
         }
 
 #ifdef DODS_DEBUG
@@ -582,8 +582,9 @@ public:
             CPPUNIT_ASSERT(pc->is_url_in_cache(localhost_url));
             delete rs;
             rs = 0;
-
+#if 0
             string expired = "http://test.opendap.org/cgi-bin/expires.sh";
+#endif
             now = time(0);
             rs = http_conn->fetch_url(expired);
             pc->cache_response(expired, now, *(rs->get_headers()), rs->get_stream());
