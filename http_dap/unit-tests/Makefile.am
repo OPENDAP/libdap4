@@ -1,15 +1,17 @@
 
 # Tests
 
+SUBDIR = cache-testsuite
+
 AUTOMAKE_OPTIONS = foreign
 
 # Headers in 'tests' are used by the arrayT unit tests.
 
-AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests \
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU -I$(top_srcdir)/http_dap \
     $(CURL_CFLAGS) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS = $(CXX_STD_FLAG)
 
-AM_LDADD = ../libdap.la
+AM_LDADD = $(top_builddir)/libdapclient.la $(top_builddir)/libdap.la
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-self-assign-overloaded
@@ -102,8 +104,8 @@ AM_LDFLAGS += -static
 
 HTTPCacheTest_SOURCES = HTTPCacheTest.cc
 HTTPCacheTest_CPPFLAGS = $(AM_CPPFLAGS)
-HTTPCacheTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+HTTPCacheTest_LDADD = $(AM_LDADD)
 
 HTTPConnectTest_SOURCES = HTTPConnectTest.cc
 HTTPConnectTest_CPPFLAGS = $(AM_CPPFLAGS)
-HTTPConnectTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+HTTPConnectTest_LDADD = $(AM_LDADD)

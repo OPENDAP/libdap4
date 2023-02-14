@@ -576,6 +576,7 @@ AC_CONFIG_FILES([Makefile
 
                  http_dap/Makefile
                  http_dap/unit-tests/Makefile
+                 http_dap/unit-tests/cache-testsuite/Makefile
 
                  tests/Makefile
                  tests/atlocal

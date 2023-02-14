@@ -60,9 +60,9 @@ using namespace std;
 
 namespace libdap {
 
-inline static int file_size(string name)
+inline static int file_size(const string &name)
 {
-    struct stat s;
+    struct stat s{0};
     stat(name.c_str(), &s);
     return s.st_size;
 }
@@ -75,19 +75,16 @@ inline static int file_size(string name)
 
 class HTTPCacheTest: public TestFixture {
 private:
-    HTTPCache *hc;
-    HTTPConnect *http_conn;
+    HTTPCache *hc = nullptr;
+    HTTPConnect *http_conn = nullptr;
     string index_file_line;
     string localhost_url;
     string expired;
     int hash_value;
     vector<string> h;
 
-protected:
-
 public:
-    HTTPCacheTest() :
-        hc(0), http_conn(0)
+    HTTPCacheTest()
     {
         putenv((char*) "DODS_CONF=./cache-testsuite/dodsrc");
         http_conn = new HTTPConnect(RCReader::instance());
@@ -141,7 +138,7 @@ public:
         // Called after every test.
         DBG2(cerr << "Entering HTTPCacheTest::tearDown... " << endl);
         delete hc;
-        hc = 0;
+        hc = nullptr;
         DBG2(cerr << "exiting tearDown" << endl);
     }
 

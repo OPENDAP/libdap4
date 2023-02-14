@@ -1,0 +1,12 @@
+
+# The contents of this file may be moot, but without it, valgrind returns 
+# an error and the cleanup.sh script here is not run, leading to failed tests.
+
+{
+   find
+   Memcheck:Leak
+   fun:malloc
+   obj:/usr/bin/find
+   ...
+}
+
