@@ -575,7 +575,8 @@ AC_CONFIG_FILES([Makefile
                  d4_function/Makefile
 
                  http_dap/Makefile
-                 
+                 http_dap/unit-tests/Makefile
+
                  tests/Makefile
                  tests/atlocal
                  

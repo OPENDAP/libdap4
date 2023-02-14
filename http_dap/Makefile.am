@@ -1,6 +1,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+SUBDIRS = . unit-tests
+
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(srcdir) -I$(top_srcdir) -I$(top_srcdir)/GNU
 AM_CXXFLAGS =

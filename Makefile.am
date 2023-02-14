@@ -5,8 +5,7 @@ ACLOCAL_AMFLAGS = -I conf -I gl/m4
 aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
-AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU  \
-    $(XML2_CFLAGS) $(TIRPC_CFLAGS)
+AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU -I$(top_srcdir)/http_dap $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align -Wno-deprecated-register -Wno-inconsistent-missing-override
 
 CXXFLAGS_DEBUG = -g3 -O0
