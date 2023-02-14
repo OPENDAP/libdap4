@@ -26,24 +26,15 @@
 #ifndef http_cache_interrupt_handler_h
 #define http_cache_interrupt_handler_h
 
-#include <signal.h>
-
-#include <cassert>
+#include <csignal>
 #include <iostream>
 #include <algorithm>
 
 #include "HTTPCache.h"
 #include "EventHandler.h"
-#include "debug.h"
 
 namespace libdap
 {
-
-static void
-unlink_file(const string &f)
-{
-    unlink(f.c_str());
-}
 
 /** Handle SIGINT for HTTPCache. When the cache is in use and the process is
     sent SIGINT, we must make sure that the cache is left in a consistent
@@ -56,16 +47,12 @@ unlink_file(const string &f)
     @author James Gallagher <jgallagher@opendap.org> */
 class HTTPCacheInterruptHandler : public EventHandler
 {
-private:
-
 public:
     ///
-    HTTPCacheInterruptHandler()
-    {}
+    HTTPCacheInterruptHandler() = default;
 
     ///
-    virtual ~HTTPCacheInterruptHandler()
-    {}
+    ~HTTPCacheInterruptHandler() override = default;
 
     /** Handle SIGINT. This handler first deletes any files opened but not
     added to the cache index files and then calls
@@ -74,17 +61,11 @@ public:
     @param signum We know it is SIGINT; included here as a check and only
     when NDEBUG is not defined.
     @return Never returns. */
-    virtual void handle_signal(int signum)
+    void handle_signal(int /*signum*/) override
     {
-        assert(signum == SIGINT);
-        DBG(cerr << "Inside the HTTPCacheInterruptHandler." << endl);
+        std::vector<std::string> *of = &HTTPCache::_instance->d_open_files;
 
-        vector<string> *of = &HTTPCache::_instance->d_open_files;
-
-        DBG(copy(of->begin(), of->end(),
-                 ostream_iterator<string>(cerr, "\n")));
-
-        for_each(of->begin(), of->end(), unlink_file);
+        std::for_each(of->begin(), of->end(), [](const std::string &file) { unlink(file.c_str()); } );
 
         HTTPCache::delete_instance();
     }

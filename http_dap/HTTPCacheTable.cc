@@ -25,16 +25,6 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG
-
-// TODO: Remove unneeded includes.
-
-#include <pthread.h>
-#include <limits.h>
-#include <unistd.h>   // for stat
-#include <sys/types.h>  // for stat and mkdir
-#include <sys/stat.h>
-
 #include <cstring>
 #include <cerrno>
 
@@ -44,38 +34,23 @@
 #include <iterator>
 #include <set>
 
+#include <pthread.h>
+#include <unistd.h>   // for stat
+#include <sys/stat.h>
+
 #include "Error.h"
 #include "InternalErr.h"
-#include "ResponseTooBigErr.h"
-#ifndef WIN32
-#include "SignalHandler.h"
-#endif
-#include "HTTPCacheInterruptHandler.h"
+
 #include "HTTPCacheTable.h"
 #include "HTTPCacheMacros.h"
 
-#include "util_mit.h"
+#include "util_mit.h"   // for parse_time()
 #include "debug.h"
 
-#ifdef WIN32
-#include <direct.h>
-#include <time.h>
-#include <fcntl.h>
-#define MKDIR(a,b) _mkdir((a))
-#define REMOVE(a) do { \
-		int s = remove((a)); \
-		if (s != 0) \
-			throw InternalErr(__FILE__, __LINE__, "Cache error; could not remove file: " + long_to_string(s)); \
-	} while(0);
-#define MKSTEMP(a) _open(_mktemp((a)),_O_CREAT,_S_IREAD|_S_IWRITE)
-#define DIR_SEPARATOR_CHAR '\\'
-#define DIR_SEPARATOR_STR "\\"
-#else
 #define MKDIR(a,b) mkdir((a), (b))
 #define MKSTEMP(a) mkstemp((a))
 #define DIR_SEPARATOR_CHAR '/'
 #define DIR_SEPARATOR_STR "/"
-#endif
 
 #define CACHE_META ".meta"
 #define CACHE_INDEX ".index"

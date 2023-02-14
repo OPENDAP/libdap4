@@ -32,35 +32,22 @@
 
 #include <sys/stat.h>
 
-#ifdef WIN32
-#include <io.h>
-#endif
-
 #include <string>
 #include <vector>
-#include <functional>
 #include <algorithm>
 #include <sstream>
-#include <fstream>
 #include <iterator>
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
 
-//#define DODS_DEBUG2
-//#define HTTP_TRACE
-//#define DODS_DEBUG
-
 #undef USE_GETENV
-
 
 #include "debug.h"
 #include "mime_util.h"
-#include "media_types.h"
 #include "GNURegex.h"
 #include "HTTPCache.h"
 #include "HTTPConnect.h"
-#include "RCReader.h"
 #include "HTTPResponse.h"
 #include "HTTPCacheResponse.h"
 
@@ -126,22 +113,19 @@ static string
 http_status_to_string(int status)
 {
     if (status >= CLIENT_ERR_MIN && status <= CLIENT_ERR_MAX)
-        return string(http_client_errors[status - CLIENT_ERR_MIN]);
+        return {http_client_errors[status - CLIENT_ERR_MIN]};
     else if (status >= SERVER_ERR_MIN && status <= SERVER_ERR_MAX)
-        return string(http_server_errors[status - SERVER_ERR_MIN]);
+        return {http_server_errors[status - SERVER_ERR_MIN]};
     else
-        return string("Unknown Error: This indicates a problem with libdap++.\nPlease report this to support@opendap.org.");
+        return {"Unknown Error: This indicates a problem with libdap++.\nPlease report this to support@opendap.org."};
 }
 
 static ObjectType
 determine_object_type(const string &header_value)
 {
-    // DAP4 Data: application/vnd.opendap.dap4.data
-    // DAP4 DMR: application/vnd.opendap.dap4.dataset-metadata+xml
-
     string::size_type plus = header_value.find('+');
     string base_type;
-    string type_extension = "";
+    string type_extension;
     if (plus != string::npos) {
         base_type= header_value.substr(0, plus);
         type_extension = header_value.substr(plus+1);
@@ -175,14 +159,13 @@ determine_object_type(const string &header_value)
 
 class ParseHeader : public unary_function<const string &, void>
 {
-    ObjectType type;  // What type of object is in the stream?
-    string server;  // Server's version string.
-    string protocol;            // Server's protocol version.
-    string location;            // Url returned by server
+    ObjectType type = unknown_type; // What type of object is in the stream?
+    string server = "dods/0.0";     // Server's version string.
+    string protocol = "2.0";        // Server's protocol version.
+    string location;                // Url returned by server
 
 public:
-    ParseHeader() : type(unknown_type), server("dods/0.0"), protocol("2.0")
-    { }
+    ParseHeader() = default;
 
     void operator()(const string &line)
     {
@@ -220,22 +203,19 @@ public:
         }
     }
 
-    ObjectType get_object_type()
-    {
+    ObjectType get_object_type() const {
         return type;
     }
 
-    string get_server()
-    {
+    string get_server() const {
         return server;
     }
 
-    string get_protocol()
-    {
+    string get_protocol() const {
         return protocol;
     }
 
-    string get_location() {
+    string get_location() const {
 	   return location;
     }
 };
@@ -285,19 +265,25 @@ curl_debug(CURL *, curl_infotype info, char *msg, size_t size, void  *)
 
     switch (info) {
     case CURLINFO_TEXT:
-        cerr << "Text: " << message; break;
+        cerr << "Text: " << message;
+        break;
     case CURLINFO_HEADER_IN:
-        cerr << "Header in: " << message; break;
+        cerr << "Header in: " << message;
+        break;
     case CURLINFO_HEADER_OUT:
-        cerr << "Header out: " << message; break;
+        cerr << "Header out: " << message;
+        break;
     case CURLINFO_DATA_IN:
     	if (www_trace_extensive)
-    		cerr << "Data in: " << message; break;
+    		cerr << "Data in: " << message;
+        break;
     case CURLINFO_DATA_OUT:
     	if (www_trace_extensive)
-    		cerr << "Data out: " << message; break;
+    		cerr << "Data out: " << message;
+        break;
     case CURLINFO_END:
-        cerr << "End: " << message; break;
+        cerr << "End: " << message;
+        break;
 #ifdef CURLINFO_SSL_DATA_IN
     case CURLINFO_SSL_DATA_IN:
         cerr << "SSL Data in: " << message; break;
@@ -308,7 +294,8 @@ curl_debug(CURL *, curl_infotype info, char *msg, size_t size, void  *)
 #endif
     default:
     	if (www_trace_extensive)
-    		cerr << "Curl info: " << message; break;
+    		cerr << "Curl info: " << message;
+        break;
     }
     return 0;
 }
@@ -362,7 +349,7 @@ HTTPConnect::www_lib_init()
     curl_easy_setopt(d_curl, CURLOPT_FAILONERROR, 0);
 
     // This means libcurl will use Basic, Digest, GSS Negotiate, or NTLM,
-    // choosing the the 'safest' one supported by the server.
+    // choosing the 'safest' one supported by the server.
     // This requires curl 7.10.6 which is still in pre-release. 07/25/03 jhrg
     curl_easy_setopt(d_curl, CURLOPT_HTTPAUTH, (long)CURLAUTH_ANY);
 
@@ -391,7 +378,7 @@ HTTPConnect::www_lib_init()
     // expiration date) here so that session-based SSO systems will work as
     // expected.
     if (!d_cookie_jar.empty()) {
-	DBG(cerr << "Setting the cookie jar to: " << d_cookie_jar << endl);
+	    DBG(cerr << "Setting the cookie jar to: " << d_cookie_jar << endl);
         curl_easy_setopt(d_curl, CURLOPT_COOKIEJAR, d_cookie_jar.c_str());
         curl_easy_setopt(d_curl, CURLOPT_COOKIESESSION, 1);
     }
@@ -408,21 +395,18 @@ HTTPConnect::www_lib_init()
 
 class BuildHeaders : public unary_function<const string &, void>
 {
-    struct curl_slist *d_cl;
+    struct curl_slist *d_cl = nullptr;
 
 public:
-    BuildHeaders() : d_cl(0)
-    {}
+    BuildHeaders() = default;
 
     void operator()(const string &header)
     {
-        DBG(cerr << "Adding '" << header.c_str() << "' to the header list."
-            << endl);
+        DBG(cerr << "Adding '" << header.c_str() << "' to the header list." << endl);
         d_cl = curl_slist_append(d_cl, header.c_str());
     }
 
-    struct curl_slist *get_headers()
-    {
+    struct curl_slist *get_headers() {
         return d_cl;
     }
 };
@@ -446,19 +430,7 @@ HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs
 {
     curl_easy_setopt(d_curl, CURLOPT_URL, url.c_str());
 
-#ifdef WIN32
-    //  See the curl documentation for CURLOPT_FILE (aka CURLOPT_WRITEDATA)
-    //  and the CURLOPT_WRITEFUNCTION option.  Quote: "If you are using libcurl as
-    //  a win32 DLL, you MUST use the CURLOPT_WRITEFUNCTION option if you set the
-    //  CURLOPT_WRITEDATA option or you will experience crashes".  At the root of
-    //  this issue is that one should not pass a FILE * to a windows DLL.  Close
-    //  inspection of libcurl yields that their default write function when using
-    //  the CURLOPT_WRITEDATA is just "fwrite".
     curl_easy_setopt(d_curl, CURLOPT_WRITEDATA, stream);
-    curl_easy_setopt(d_curl, CURLOPT_WRITEFUNCTION, &fwrite);
-#else
-    curl_easy_setopt(d_curl, CURLOPT_WRITEDATA, stream);
-#endif
 
     DBG(copy(d_request_headers.begin(), d_request_headers.end(),
              ostream_iterator<string>(cerr, "\n")));
@@ -482,7 +454,7 @@ HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs
     // Assume username:password present *and* assume it's an HTTP URL; it *is*
     // HTTPConnect, after all. 7 is position after "http://"; the second arg
     // to substr() is the sub string length.
-    if (at_sign != url.npos)
+    if (at_sign != string::npos)
         d_upstring = url.substr(7, at_sign - 7);
 
     if (!d_upstring.empty())

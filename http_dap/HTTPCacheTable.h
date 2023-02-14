@@ -59,23 +59,7 @@
 #include "debug.h"
 #endif
 
- //long_to_string(code));
-#define LOCK(m) do { \
-	int code = pthread_mutex_lock((m)); \
-	if (code != 0) \
-		throw InternalErr(__FILE__, __LINE__, string("Mutex lock: ") + strerror(code)); \
-    } while(0);
 
-//+ long_to_string(code));
-#define UNLOCK(m) do { \
-	int code = pthread_mutex_unlock((m)); \
-	if (code != 0) \
-		throw InternalErr(__FILE__, __LINE__, string("Mutex unlock: ") + strerror(code)); \
-    } while(0);
-
-#define TRYLOCK(m) pthread_mutex_trylock((m))
-#define INIT(m) pthread_mutex_init((m), 0)
-#define DESTROY(m) pthread_mutex_destroy((m))
 
 //using namespace std;
 

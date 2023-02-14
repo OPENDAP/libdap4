@@ -26,28 +26,26 @@
 #ifndef _http_cache_h
 #define _http_cache_h
 
-#include <pthread.h>
-
-#ifdef WIN32
-#include <io.h>   // stat for win32? 09/05/02 jhrg
-#endif
-
 #include <string>
 #include <vector>
-#include <map>
+//#include <map>
 
-#include "HTTPCacheTable.h" // included for macros
+#include <pthread.h>
+
+// #include "HTTPCacheTable.h" // included for macros
 
 #include "HTTPCacheDisconnectedMode.h"
-//using namespace std;
+#include "HTTPCacheMacros.h"
+
+#include "debug.h"
 
 namespace libdap
 {
 
-class HTTPCacheTabe;
+class HTTPCacheTable;
 
 // This function is exported so the test code can use it too.
-bool is_hop_by_hop_header(const string &header);
+bool is_hop_by_hop_header(const std::string &header);
 
 /** Implements a multi-process MT-safe HTTP 1.1 compliant (mostly) cache.
 
@@ -89,13 +87,13 @@ bool is_hop_by_hop_header(const string &header);
     get_conditional_request_headers() would only lock when an entry is in use
     for writing. But I haven't done that.)
 
-	@todo Update documentation: get_cache_response() now also serves as 
+	Update documentation: get_cache_response() now also serves as
 	is_url_in_cache() and is_url_valid() should only be called after a locked
 	cached response is accessed using get_cached_response(). These lock the
 	cache for reading. The methods cache_response() and update_response()
 	lock an entry for writing.
 	
-	@todo Check that the lock-for-write and lock-for-read work together since
+	Check that the lock-for-write and lock-for-read work together since
 	it's possible that an entry in use might have a stream of readers and never
 	free the 'read-lock' thus blocking a writer.
 	
@@ -103,7 +101,7 @@ bool is_hop_by_hop_header(const string &header);
 class HTTPCache
 {
 private:
-    string d_cache_root;
+    std::string d_cache_root;
     FILE *d_locked_open_file; // Lock for single process use.
 
     bool d_cache_enabled;
@@ -113,12 +111,12 @@ private:
     bool d_always_validate;
 
     unsigned long d_total_size; // How much can we store?
-    unsigned long d_folder_size; // How much of that is meta data?
+    unsigned long d_folder_size; // How much of that is metadata?
     unsigned long d_gc_buffer; // How much memory needed as buffer?
     unsigned long d_max_entry_size; // Max individual entry size.
     int d_default_expiration;
 
-    vector<string> d_cache_control;
+    std::vector<std::string> d_cache_control;
     // these are values read from a request-directive Cache-Control header.
     // Not to be confused with values read from the response or a cached
     // response (e.g., CacheEntry has a max_age field, too). These fields are
@@ -133,7 +131,7 @@ private:
     HTTPCacheTable *d_http_cache_table;
 
     // d_open_files is used by the interrupt handler to clean up
-    vector<string> d_open_files;
+    std::vector<std::string> d_open_files;
 
     static HTTPCache *_instance;
 
@@ -147,25 +145,25 @@ private:
     HTTPCache();
     HTTPCache &operator=(const HTTPCache &);
 
-    HTTPCache(string cache_root, bool force);
+    HTTPCache(std::string cache_root, bool force);
 
     static void delete_instance(); // Run by atexit (hence static)
     
-    void set_cache_root(const string &root = "");
-    void create_cache_root(const string &cache_root);
+    void set_cache_root(const std::string &root = "");
+    void create_cache_root(const std::string &cache_root);
     
     // These will go away when the cache can be used by multiple processes.
     bool get_single_user_lock(bool force = false);
     void release_single_user_lock();
     
-    bool is_url_in_cache(const string &url);
+    bool is_url_in_cache(const std::string &url);
 
     // I made these four methods so they could be tested by HTTPCacheTest.
     // Otherwise they would be static functions. jhrg 10/01/02
-    void write_metadata(const string &cachename, const vector<string> &headers);
-    void read_metadata(const string &cachename, vector<string> &headers);
-    int write_body(const string &cachename, const FILE *src);
-    FILE *open_body(const string &cachename);
+    void write_metadata(const std::string &cachename, const std::vector<std::string> &headers);
+    void read_metadata(const std::string &cachename, std::vector<std::string> &headers);
+    int write_body(const std::string &cachename, const FILE *src);
+    FILE *open_body(const std::string &cachename);
 
     bool stopGC() const;
     bool startGC() const;
@@ -176,10 +174,10 @@ private:
     void hits_gc();
 
 public:
-    static HTTPCache *instance(const string &cache_root, bool force = false);
+    static HTTPCache *instance(const std::string &cache_root, bool force = false);
     virtual ~HTTPCache();
 
-    string get_cache_root() const;
+    std::string get_cache_root() const;
 
     void set_cache_enabled(bool mode);
     bool is_cache_enabled() const;
@@ -202,37 +200,37 @@ public:
     void set_always_validate(bool validate);
     bool get_always_validate() const;
 
-    void set_cache_control(const vector<string> &cc);
-    vector<string> get_cache_control();
+    void set_cache_control(const std::vector<std::string> &cc);
+    std::vector<std::string> get_cache_control();
 
     void lock_cache_interface() {
-    	DBG(cerr << "Locking interface... ");
+    	DBG(std::cerr << "Locking interface... ");
     	LOCK(&d_cache_mutex);
-    	DBGN(cerr << "Done" << endl);
+    	DBGN(std::cerr << "Done" << std::endl);
     }    	
     void unlock_cache_interface() {
-    	DBG(cerr << "Unlocking interface... " );
+    	DBG(std::cerr << "Unlocking interface... " );
     	UNLOCK(&d_cache_mutex);
-    	DBGN(cerr << "Done" << endl);
+    	DBGN(std::cerr << "Done" << std::endl);
     }
     
     // This must lock for writing
-    bool cache_response(const string &url, time_t request_time,
-                        const vector<string> &headers, const FILE *body);
-    void update_response(const string &url, time_t request_time,
-                         const vector<string> &headers);
+    bool cache_response(const std::string &url, time_t request_time,
+                        const std::vector<std::string> &headers, const FILE *body);
+    void update_response(const std::string &url, time_t request_time,
+                         const std::vector<std::string> &headers);
 
     // This is separate from get_cached_response() because often an invalid
     // cache entry just needs a header update. That is best left to the HTTP
     // Connection code.
-    bool is_url_valid(const string &url);
+    bool is_url_valid(const std::string &url);
     
     // Lock these for reading
-    vector<string> get_conditional_request_headers(const string &url);
-    FILE *get_cached_response(const string &url, vector<string> &headers,
-			      			  string &cacheName);
-    FILE *get_cached_response(const string &url, vector<string> &headers);
-    FILE *get_cached_response(const string &url);
+    std::vector<std::string> get_conditional_request_headers(const std::string &url);
+    FILE *get_cached_response(const std::string &url, std::vector<std::string> &headers,
+			      			  std::string &cacheName);
+    FILE *get_cached_response(const std::string &url, std::vector<std::string> &headers);
+    FILE *get_cached_response(const std::string &url);
 
     void release_cached_response(FILE *response);
 

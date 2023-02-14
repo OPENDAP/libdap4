@@ -39,9 +39,8 @@
 
 #include "HTTPCache.h"
 #include "HTTPConnect.h"	// Used to generate a response to cache.
-#ifndef WIN32			// Signals are exquisitely non-portable.
+#include "HTTPCacheTable.h"
 #include "SignalHandler.h"	// Needed to clean up this singleton.
-#endif
 #include "RCReader.h"		// ditto
 
 #include "debug.h"

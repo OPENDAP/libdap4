@@ -47,13 +47,12 @@
 #include "Error.h"
 #include "InternalErr.h"
 #include "ResponseTooBigErr.h"
-#ifndef WIN32
-#include "SignalHandler.h"
-#endif
+
 #include "HTTPCacheInterruptHandler.h"
 #include "HTTPCacheTable.h"
 #include "HTTPCache.h"
 #include "HTTPCacheMacros.h"
+#include "SignalHandler.h"
 #include "SignalHandlerRegisteredErr.h"
 
 #include "util_mit.h"
