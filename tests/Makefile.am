@@ -4,13 +4,11 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU -I$(top_srcdir)/d4_ce \
-    -I$(top_srcdir)/d4_function $(XML2_CFLAGS) $(CURL_CFLAGS) $(TIRPC_CFLAGS)
+    -I$(top_srcdir)/d4_function -I$(top_srcdir)/http_dap $(XML2_CFLAGS) \
+     $(CURL_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align -Wno-inconsistent-missing-override
 
 CXXFLAGS_DEBUG = -g3 -O0
-
-# If valgrind is present, add valgrind targets.
-# @VALGRIND_CHECK_RULES@
 
 if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
