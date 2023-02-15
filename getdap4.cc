@@ -400,14 +400,13 @@ int main(int argc, char *argv[])
                     try {
                         HTTPResponse *r = http.fetch_url(url_string);
                         if (verbose) {
-                            vector <string> *headers = r->get_headers();
-                            copy(headers->begin(), headers->end(), ostream_iterator<string>(cout, "\n"));
+                            vector <string> &headers = r->get_headers();
+                            copy(headers.begin(), headers.end(), ostream_iterator<string>(cout, "\n"));
                         }
                         if (!read_data(r->get_stream())) {
                             continue;
                         }
                         delete r;
-                        r = 0;
                     }
                     catch (Error &e) {
                         cerr << e.get_error_message() << endl;

@@ -95,12 +95,8 @@ protected:
     };
 
 public:
-    HTTPConnectTest(): http(nullptr)
-    {
-    }
-    ~HTTPConnectTest() override
-    {
-    }
+    HTTPConnectTest(): http(nullptr) { }
+    ~HTTPConnectTest() override = default;
 
     void setUp() override
     {
@@ -182,7 +178,7 @@ public:
 
     void read_url_test()
     {
-        vector<string> *resp_h = new vector<string>;
+        vector<string> resp_h;
 
         try {
             DBG(cerr << prolog << "BEGIN" << endl);
@@ -197,44 +193,38 @@ public:
             // First test using a time with if-modified-since
             DBG(cerr << prolog << "If-Modified-Since test. BEGIN " << endl);
             request_h.push_back(string("If-Modified-Since: ") + lm);
-            status = http->read_url(localhost_url, dump, resp_h, &request_h);
+            status = http->read_url(localhost_url, dump, resp_h, request_h);
             DBG(cerr << prolog << "If modified since test. Returned http status: " << status << endl);
             DBG(cerr << prolog << "Response Headers: " << endl);
-            DBG(copy(resp_h->begin(), resp_h->end(), ostream_iterator<string>(cerr, "\n")));
+            DBG(copy(resp_h.begin(), resp_h.end(), ostream_iterator<string>(cerr, "\n")));
             DBG(cerr << endl);
             CPPUNIT_ASSERT(status == 304);
             DBG(cerr << prolog << "If-Modified-Since test. END " << endl);
 
             // Now test an etag
             DBG(cerr << prolog << "ETag (If-None_Match) test. BEGIN (etag:" << etag << ")"<< endl);
-            resp_h->clear();
+            resp_h.clear();
             request_h.clear();
             request_h.push_back(string("If-None-Match: ") + etag);
-            status = http->read_url(localhost_url, dump, resp_h, &request_h);
+            status = http->read_url(localhost_url, dump, resp_h, request_h);
             DBG(cerr << prolog << "ETag (If-None_Match) test. Returned http status: " << status << endl);
             DBG(cerr << prolog << "Response Headers: " << endl);
-            DBG(copy(resp_h->begin(), resp_h->end(), ostream_iterator<string>(cerr, "\n")));
+            DBG(copy(resp_h.begin(), resp_h.end(), ostream_iterator<string>(cerr, "\n")));
             DBG(cerr << endl);
             CPPUNIT_ASSERT(status == 304);
             DBG(cerr << prolog << "ETag test. END " << endl);
 
             // now test a combined etag and time4
-            resp_h->clear();
+            resp_h.clear();
             request_h.clear();
             request_h.push_back(string("If-None-Match: ") + etag);
             request_h.push_back(string("If-Modified-Since: ") + lm);
-            status = http->read_url(localhost_url, dump, resp_h, &request_h);
+            status = http->read_url(localhost_url, dump, resp_h, request_h);
             DBG(cerr << prolog << "Combined test. Returned http status: " << status << endl);
-            DBG(copy(resp_h->begin(), resp_h->end(), ostream_iterator<string>(cerr, "\n")));
+            DBG(copy(resp_h.begin(), resp_h.end(), ostream_iterator<string>(cerr, "\n")));
             CPPUNIT_ASSERT(status == 304);
-
-            delete resp_h;
-            resp_h = nullptr;
-
         }
-        catch (Error & e) {
-            delete resp_h;
-            resp_h = nullptr;
+        catch (const Error & e) {
             CPPUNIT_FAIL(prolog + "Error: " + e.get_error_message());
         }
     }
@@ -538,34 +528,25 @@ public:
 
     void get_response_headers_test()
     {
-        HTTPResponse *r = nullptr;
-
         try {
-            r = http->fetch_url(netcdf_das_url);
-            vector<string> *h = r->get_headers();
+            unique_ptr<HTTPResponse> r(http->fetch_url(netcdf_das_url));
+            vector<string> &h = r->get_headers();
 
-            DBG(copy(h->begin(), h->end(), ostream_iterator<string>(cerr, "\n")));
+            DBG(copy(h.begin(), h.end(), ostream_iterator<string>(cerr, "\n")));
 
             // Should get five or six headers back.
             Regex header("X.*-Server: .*/.*");
 
-            CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(header)) != h->end());
+            CPPUNIT_ASSERT(find_if(h.begin(), h.end(), REMatch(header)) != h.end());
 
             Regex protocol_header("X.*DAP: .*");	// Matches both XDAP and X-DAP
-            CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(protocol_header)) != h->end());
-
-            delete r;
-            r = nullptr;
+            CPPUNIT_ASSERT(find_if(h.begin(), h.end(), REMatch(protocol_header)) != h.end());
         }
         catch (InternalErr & e) {
-            delete r;
-            r = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr exception from get_response_headers: " + e.get_error_message());
         }
         catch (...) {
-            delete r;
-            r = nullptr;
-            throw;
+            CPPUNIT_FAIL("No idea what exception was thrown from get_response_headers");
         }
     }
 
@@ -737,29 +718,25 @@ public:
     void read_url_password_test()
     {
         FILE *dump = fopen("/dev/null", "w");
-        vector<string> *resp_h = new vector<string>;
+        vector<string> resp_h;
         long status = http->read_url(localhost_pw_url, dump, resp_h);
 
         DBG(cerr << endl << http->d_upstring << endl);
         CPPUNIT_ASSERT(http->d_upstring == "jimg:dods_test");
         DBG(cerr << "Status: " << status << endl);
         CPPUNIT_ASSERT(status == 200);
-        delete resp_h;
-        resp_h = 0;
     }
 
     void read_url_password_test2()
     {
         FILE *dump = fopen("/dev/null", "w");
-        vector<string> *resp_h = new vector<string>;
+        vector<string> resp_h;
         long status = http->read_url(localhost_digest_pw_url, dump, resp_h);
 
         DBG(cerr << endl << http->d_upstring << endl);
         CPPUNIT_ASSERT(http->d_upstring == "jimg:dods_digest");
         DBG(cerr << "Status: " << status << endl);
         CPPUNIT_ASSERT(status == 200);
-        delete resp_h;
-        resp_h = 0;
     }
 };
 

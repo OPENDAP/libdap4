@@ -95,35 +95,33 @@ private:
     bool d_use_cpp_streams;	// Build HTTPResponse objects using fstream and not FILE*
 
     void www_lib_init();
-    long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs,
-                  const vector<string> *headers = 0);
+    long read_url(const string &url, FILE *stream, vector<string> &resp_hdrs, const vector<string> &headers);
+    long read_url(const string &url, FILE *stream, vector<string> &resp_hdrs);
 
     HTTPResponse *plain_fetch_url(const string &url);
     HTTPResponse *caching_fetch_url(const string &url);
 
     bool url_uses_proxy_for(const string &url);
-    bool url_uses_no_proxy_for(const string &url) throw();
+    bool url_uses_no_proxy_for(const string &url) noexcept;
 
     void extract_auth_info(string &url);
 
-    friend size_t save_raw_http_header(void *ptr, size_t size, size_t nmemb,
-                                       void *http_connect);
+    friend size_t save_raw_http_header(void *ptr, size_t size, size_t nmemb, void *http_connect);
     friend class HTTPConnectTest;
     friend class ParseHeader;
 
-protected:
-    /** @name Suppress default methods
-    These methods are not supported and are implemented here as protected
-    methods to suppress the C++-supplied default versions (which will
-    break this object). */
-    //@{
-    HTTPConnect();
-	HTTPConnect(const HTTPConnect &);
-	HTTPConnect &operator=(const HTTPConnect &);
-    //@}
-
 public:
     HTTPConnect(RCReader *rcr, bool use_cpp = false);
+
+    /** @name Suppress default methods
+     These methods are not supported and are implemented here as protected
+     methods to suppress the C++-supplied default versions (which will
+     break this object). */
+    ///@{
+    HTTPConnect() = delete;
+    HTTPConnect(const HTTPConnect &) = delete;
+    HTTPConnect &operator=(const HTTPConnect &)= delete;
+    ///@}
 
     virtual ~HTTPConnect();
 
@@ -153,7 +151,7 @@ public:
     }
 
     /** Return the current state of the HTTP cache. */
-    bool is_cache_enabled() { return (d_http_cache) ? d_http_cache->is_cache_enabled() : false; }
+    bool is_cache_enabled() const { return (d_http_cache) ? d_http_cache->is_cache_enabled() : false; }
 
     HTTPResponse *fetch_url(const string &url);
 };

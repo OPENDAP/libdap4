@@ -1301,8 +1301,7 @@ struct HeaderLess: binary_function<const string&, const string&, bool>
     @exception Error Thrown if the \c url is not in the cache. */
 
 void
-HTTPCache::update_response(const string &url, time_t request_time,
-                           const vector<string> &headers)
+HTTPCache::update_response(const string &url, time_t request_time, const vector<string> &headers)
 {
     lock_cache_interface();
 

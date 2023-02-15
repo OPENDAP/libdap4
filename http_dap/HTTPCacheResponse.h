@@ -46,22 +46,21 @@ class HTTPCacheResponse : public HTTPResponse
 private:
     HTTPCache *d_cache;  // pointer to singleton instance
 
-protected:
-    /** @name Suppressed default methods */
-    //@{
-    HTTPCacheResponse();
-    HTTPCacheResponse(const HTTPCacheResponse &rs);
-    HTTPCacheResponse &operator=(const HTTPCacheResponse &);
-    //@}
-
 public:
+    /** @name Suppressed default methods */
+    ///@{
+    HTTPCacheResponse() = delete;
+    HTTPCacheResponse(const HTTPCacheResponse &rs) = delete;
+    HTTPCacheResponse &operator=(const HTTPCacheResponse &) = delete;
+    ///@}
+
     /** Build a Response object. Instances of this class are used to
     represent responses from a local HTTP/1.1 cache. The stream and
     headers pointer are passed to the parent (HTTPResponse); there's no
     temporary file for the parent to manage since the body is read from a
     file managed by the cache subsystem. This class releases the lock on
     the cache entry when the destructor is called. */
-    HTTPCacheResponse(FILE *s, int status_code, vector<string> *headers, HTTPCache *c)
+    HTTPCacheResponse(FILE *s, int status_code, const vector<string> &headers, HTTPCache *c)
             : HTTPResponse(s, status_code, headers, ""), d_cache(c)
     {}
 
@@ -71,18 +70,16 @@ public:
     temporary file for the parent to manage since the body is read from a
     file managed by the cache subsystem. This class releases the lock on
     the cache entry when the destructor is called. */
-    HTTPCacheResponse(FILE *s, int status_code, vector<string> *headers,
+    HTTPCacheResponse(FILE *s, int status_code, const vector<string> &headers,
 	    const string &file_name, HTTPCache *c)
             : HTTPResponse(s, status_code, headers, file_name), d_cache(c)
     {}
 
     /** Free the cache entry lock. Call the parent's destructor. */
-    virtual ~HTTPCacheResponse()
+    ~HTTPCacheResponse() override
     {
-        DBG(cerr << "Freeing HTTPCache resources... ");
         set_file(""); // This keeps ~HTTPResponse() from removing the cache entry.
         d_cache->release_cached_response(get_stream());
-        DBGN(cerr << endl);
     }
 };
 

@@ -576,18 +576,16 @@ HTTPCacheTable::get_locked_entry_from_cache_table(int hash, const string &url) /
     DBG(cerr << "url: " << url << "; hash: " << hash << endl);
     DBG(cerr << "d_cache_table: " << hex << d_cache_table << dec << endl);
     if (d_cache_table[hash]) {
-	CacheEntries *cp = d_cache_table[hash];
-	for (CacheEntriesIter i = cp->begin(); i != cp->end(); ++i) {
-	    // Must test *i because perform_garbage_collection may have
-	    // removed this entry; the CacheEntry will then be null.
-	    if ((*i) && (*i)->url == url) {
-		(*i)->lock_read_response(); // Lock the response
-		return *i;
-	    }
-	}
+        for (auto entry: *d_cache_table[hash]) {
+            // Must test entry because perform_garbage_collection may have
+            // removed this entry; the CacheEntry will then be null.
+            if (entry && entry->url == url) {
+                entry->lock_read_response(); // Lock the response
+                return entry;
+            }
+        }
     }
-
-    return 0;
+    return nullptr;
 }
 
 /** Get a pointer to a CacheEntry from the cache table. Providing a way to

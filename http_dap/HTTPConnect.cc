@@ -239,7 +239,7 @@ static size_t
 save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *resp_hdrs)
 {
     DBG2(cerr << "Inside the header parser." << endl);
-    vector<string> *hdrs = static_cast<vector<string> * >(resp_hdrs);
+     auto hdrs = static_cast<vector<string> * >(resp_hdrs);
 
     // Grab the header, minus the trailing newline. Or \r\n pair.
     string complete_line;
@@ -249,7 +249,7 @@ save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *resp_hdrs)
         complete_line.assign(static_cast<char *>(ptr), size * (nmemb - 1));
 
     // Store all non-empty headers that are not HTTP status codes
-    if (complete_line != "" && complete_line.find("HTTP") == string::npos) {
+    if (!complete_line.empty() && complete_line.find("HTTP") == string::npos) {
         DBG(cerr << "Header line: " << complete_line << endl);
         hdrs->push_back(complete_line);
     }
@@ -414,19 +414,39 @@ public:
 /** Use libcurl to dereference a URL. Read the information referenced by \c
     url into the file pointed to by \c stream.
 
+    @note This version of the method does not include a vector of headers.
+
+    @param url The URL to dereference.
+    @param stream The destination for the data; the caller can assume that
+    the body of the response can be found by reading from this pointer. A
+    value/result parameter
+    @param resp_hdrs Value/result parameter for the HTTP Response Headers.
+    @return The HTTP status code.
+    @exception Error Thrown if libcurl encounters a problem; the libcurl
+    error message is stuffed into the Error object. */
+
+long
+HTTPConnect::read_url(const string &url, FILE *stream, vector<string> &resp_hdrs)
+{
+    return read_url(url, stream, resp_hdrs, vector<string>());
+}
+
+/** Use libcurl to dereference a URL. Read the information referenced by \c
+    url into the file pointed to by \c stream.
+
     @param url The URL to dereference.
     @param stream The destination for the data; the caller can assume that
     the body of the response can be found by reading from this pointer. A
     value/result parameter
     @param resp_hdrs Value/result parameter for the HTTP Response Headers.
     @param headers A pointer to a vector of HTTP request headers. Default is
-    null. These headers will be appended to the list of default headers.
+    empty. These headers will be appended to the list of default headers.
     @return The HTTP status code.
     @exception Error Thrown if libcurl encounters a problem; the libcurl
     error message is stuffed into the Error object. */
 
 long
-HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs, const vector<string> *headers)
+HTTPConnect::read_url(const string &url, FILE *stream, vector<string> &resp_hdrs, const vector<string> &headers)
 {
     curl_easy_setopt(d_curl, CURLOPT_URL, url.c_str());
 
@@ -436,16 +456,13 @@ HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs
              ostream_iterator<string>(cerr, "\n")));
 
     BuildHeaders req_hdrs;
-    req_hdrs = for_each(d_request_headers.begin(), d_request_headers.end(),
-                        req_hdrs);
-    if (headers)
-        req_hdrs = for_each(headers->begin(), headers->end(), req_hdrs);
+    req_hdrs = for_each(d_request_headers.begin(), d_request_headers.end(), req_hdrs);
+    req_hdrs = for_each(headers.begin(), headers. end(), req_hdrs);
 
     curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, req_hdrs.get_headers());
 
     // Turn off the proxy for this URL?
-    bool temporary_proxy = false;
-    if ((temporary_proxy = url_uses_no_proxy_for(url))) {
+    if (url_uses_no_proxy_for(url)) {
         DBG(cerr << "Suppress proxy for url: " << url << endl);
         curl_easy_setopt(d_curl, CURLOPT_PROXY, 0);
     }
@@ -463,7 +480,7 @@ HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs
     // Pass save_raw_http_headers() a pointer to the vector<string> where the
     // response headers may be stored. Callers can use the resp_hdrs
     // value/result parameter to get the raw response header information .
-    curl_easy_setopt(d_curl, CURLOPT_WRITEHEADER, resp_hdrs);
+    curl_easy_setopt(d_curl, CURLOPT_WRITEHEADER, &resp_hdrs);
 
     // This is the call that causes curl to go and get the remote resource and "write it down"
     // utilizing the configuration state that has been previously conditioned by various perturbations
@@ -475,9 +492,8 @@ HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp_hdrs
     curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, 0);
 
     // Reset the proxy?
-    if (temporary_proxy && !d_rcr->get_proxy_server_host().empty())
-        curl_easy_setopt(d_curl, CURLOPT_PROXY,
-                         d_rcr->get_proxy_server_host().c_str());
+    if (url_uses_no_proxy_for(url) && !d_rcr->get_proxy_server_host().empty())
+        curl_easy_setopt(d_curl, CURLOPT_PROXY, d_rcr->get_proxy_server_host().c_str());
 
     if (res != 0)
         throw Error(d_error_buffer);
@@ -634,11 +650,11 @@ HTTPConnect::fetch_url(const string &url)
     // header to the callback used to save them, but check and add it from the
     // saved state variable only if it's not there (without this a test failed
     // in HTTPCacheTest). jhrg 11/12/13
-    if (!d_content_type.empty() && find_if(stream->get_headers()->begin(), stream->get_headers()->end(),
-    									   HeaderMatch("Content-Type:")) == stream->get_headers()->end())
-        stream->get_headers()->push_back("Content-Type: " + d_content_type);
+    if (!d_content_type.empty() && find_if(stream->get_headers().begin(), stream->get_headers().end(),
+    									   HeaderMatch("Content-Type:")) == stream->get_headers().end())
+        stream->get_headers().emplace_back("Content-Type: " + d_content_type);
 
-    parser = for_each(stream->get_headers()->begin(), stream->get_headers()->end(), ParseHeader());
+    parser = for_each(stream->get_headers().begin(), stream->get_headers().end(), ParseHeader());
 
 #ifdef HTTP_TRACE
     cout << endl << endl;
@@ -832,16 +848,15 @@ HTTPConnect::caching_fetch_url(const string &url)
 {
     DBG(cerr << "Is this URL (" << url << ") in the cache?... ");
 
-    vector<string> *headers = new vector<string>;
+    vector<string> headers;
     string file_name;
-    FILE *s = d_http_cache->get_cached_response(url, *headers, file_name);
+    FILE *s = d_http_cache->get_cached_response(url, headers, file_name);
     if (!s) {
         // url not in cache; get it and cache it
         DBGN(cerr << "no; getting response and caching." << endl);
-        delete headers; headers = 0;
         time_t now = time(0);
         HTTPResponse *rs = plain_fetch_url(url);
-        d_http_cache->cache_response(url, now, *(rs->get_headers()), rs->get_stream());
+        d_http_cache->cache_response(url, now, rs->get_headers(), rs->get_stream());
 
         return rs;
     }
@@ -857,7 +872,7 @@ HTTPConnect::caching_fetch_url(const string &url)
             DBGN(cerr << "but it's not valid; validating... ");
 
             d_http_cache->release_cached_response(s); // This closes 's'
-            headers->clear();
+            headers.clear();
             vector<string> cond_hdrs = d_http_cache->get_conditional_request_headers(url);
             FILE *body = 0;
             string dods_temp = get_temp_file(body);
@@ -865,12 +880,11 @@ HTTPConnect::caching_fetch_url(const string &url)
             long http_status;
 
             try {
-                http_status = read_url(url, body, /*resp_hdrs*/headers, &cond_hdrs);
+                http_status = read_url(url, body, /*resp_hdrs*/headers, cond_hdrs);
                 rewind(body);
             }
-            catch (Error &e) {
+            catch (const Error &) {
                 close_temp(body, dods_temp);
-                delete headers;
                 throw ;
             }
 
@@ -878,8 +892,8 @@ HTTPConnect::caching_fetch_url(const string &url)
                 case 200: { // New headers and new body
                     DBGN(cerr << "read a new response; caching." << endl);
 
-                    d_http_cache->cache_response(url, now, /* *resp_hdrs*/*headers, body);
-                    HTTPResponse *rs = new HTTPResponse(body, http_status, /*resp_hdrs*/headers, dods_temp);
+                    d_http_cache->cache_response(url, now, /*resp_hdrs*/headers, body);
+                    auto rs = new HTTPResponse(body, http_status, /*resp_hdrs*/headers, dods_temp);
 
                     return rs;
                 }
@@ -888,26 +902,23 @@ HTTPConnect::caching_fetch_url(const string &url)
                     DBGN(cerr << "cached response valid; updating." << endl);
 
                     close_temp(body, dods_temp);
-                    d_http_cache->update_response(url, now, /* *resp_hdrs*/ *headers);
+                    d_http_cache->update_response(url, now, /*resp_hdrs*/headers);
                     string file_name;
-                    FILE *hs = d_http_cache->get_cached_response(url, *headers, file_name);
-                    HTTPCacheResponse *crs = new HTTPCacheResponse(hs, 304, headers, file_name, d_http_cache);
+                    FILE *hs = d_http_cache->get_cached_response(url, headers, file_name);
+                    auto crs = new HTTPCacheResponse(hs, 304, headers, file_name, d_http_cache);
                     return crs;
                 }
 
                 default: { // Oops.
                     close_temp(body, dods_temp);
                     if (http_status >= 400) {
-                	delete headers; headers = 0;
                         string msg = "Error while reading the URL: ";
                         msg += url;
-                        msg
-                        += ".\nThe OPeNDAP server returned the following message:\n";
+                        msg += ".\nThe OPeNDAP server returned the following message:\n";
                         msg += http_status_to_string(http_status);
                         throw Error(msg);
                     }
                     else {
-                	delete headers; headers = 0;
                         throw InternalErr(__FILE__, __LINE__,
                                 "Bad response from the HTTP server: " + long_to_string(http_status));
                     }
@@ -934,15 +945,14 @@ HTTPResponse *
 HTTPConnect::plain_fetch_url(const string &url)
 {
 	DBG(cerr << "Getting URL: " << url << endl);
-	FILE *stream = 0;
+	FILE *stream = nullptr;
 	string dods_temp = get_temp_file(stream);
-	vector<string> *resp_hdrs = new vector<string>;
+	vector<string> resp_hdrs;
 
 	int status = -1;
 	try {
 		status = read_url(url, stream, resp_hdrs); // Throws Error.
 		if (status >= 400) {
-			// delete resp_hdrs; resp_hdrs = 0;
 			string msg = "Error while reading the URL: ";
 			msg += url;
 			msg += ".\nThe OPeNDAP server returned the following message:\n";
@@ -950,26 +960,13 @@ HTTPConnect::plain_fetch_url(const string &url)
 			throw Error(msg);
 		}
 	}
-
-	catch (Error &e) {
-		delete resp_hdrs;
+	catch (const Error &) {
 		close_temp(stream, dods_temp);
 		throw;
 	}
 
-#if 0
-	if (d_use_cpp_streams) {
-		fclose(stream);
-		fstream *in = new fstream(dods_temp.c_str(), ios::in|ios::binary);
-		return new HTTPResponse(in, status, resp_hdrs, dods_temp);
-	}
-	else {
-#endif
 	rewind(stream);
 	return new HTTPResponse(stream, status, resp_hdrs, dods_temp);
-#if 0
-}
-#endif
 }
 
 /** Set the <em>accept deflate</em> property. If true, the DAP client
@@ -991,9 +988,7 @@ HTTPConnect::set_accept_deflate(bool deflate)
     if (d_accept_deflate) {
         if (find(d_request_headers.begin(), d_request_headers.end(),
                  "Accept-Encoding: deflate, gzip, compress") == d_request_headers.end())
-            d_request_headers.push_back(string("Accept-Encoding: deflate, gzip, compress"));
-        DBG(copy(d_request_headers.begin(), d_request_headers.end(),
-                 ostream_iterator<string>(cerr, "\n")));
+            d_request_headers.emplace_back("Accept-Encoding: deflate, gzip, compress");
     }
     else {
         vector<string>::iterator i;
@@ -1016,8 +1011,7 @@ HTTPConnect::set_xdap_protocol(int major, int minor)
 {
     // Look for, and remove if one exists, an XDAP-Accept header
     vector<string>::iterator i;
-    i = find_if(d_request_headers.begin(), d_request_headers.end(),
-                HeaderMatch("XDAP-Accept:"));
+    i = find_if(d_request_headers.begin(), d_request_headers.end(), HeaderMatch("XDAP-Accept:"));
     if (i != d_request_headers.end())
         d_request_headers.erase(i);
 

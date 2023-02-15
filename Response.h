@@ -28,11 +28,10 @@
 
 #include <cstdio>
 #include <string>
-//#include <iostream>
 #include <fstream>
 
 #include "ObjectType.h"
-#include "debug.h"
+// #include "debug.h"
 
 namespace libdap
 {

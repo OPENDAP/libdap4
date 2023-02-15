@@ -54,7 +54,7 @@ extern void close_temp(FILE *s, const string &name);
 class HTTPResponse : public Response
 {
 private:
-    std::vector<std::string> *d_headers; // Response headers
+    std::vector<std::string> d_headers; // Response headers
     std::string d_file;  // Name of a temp file that holds response body
 
 
@@ -82,11 +82,11 @@ public:
     the instance that contains it is destroyed.
     @param temp_file Name a the temporary file that holds the response
     body; this file is deleted when this instance is deleted. */
-    HTTPResponse(FILE *s, int status, std::vector<std::string> *h, const std::string &temp_file)
+    HTTPResponse(FILE *s, int status, const std::vector<std::string> &h, const std::string &temp_file)
             : Response(s, status), d_headers(h), d_file(temp_file)
     {
         DBG(cerr << "Headers: " << endl);
-        DBGN(copy(d_headers->begin(), d_headers->end(),
+        DBGN(copy(d_headers.begin(), d_headers.end(),
                   ostream_iterator<string>(cerr, "\n")));
         DBGN(cerr << "end of headers." << endl);
     }
@@ -99,11 +99,11 @@ public:
      * @param h
      * @param temp_file
      */
-    HTTPResponse(std::fstream *s, int status, std::vector<std::string> *h, const std::string &temp_file)
+    HTTPResponse(std::fstream *s, int status, const std::vector<std::string> &h, const std::string &temp_file)
             : Response(s, status), d_headers(h), d_file(temp_file)
     {
         DBG(cerr << "Headers: " << endl);
-        DBGN(copy(d_headers->begin(), d_headers->end(),
+        DBGN(copy(d_headers.begin(), d_headers.end(),
                   ostream_iterator<string>(cerr, "\n")));
         DBGN(cerr << "end of headers." << endl);
     }
@@ -115,8 +115,6 @@ public:
         if (!dods_keep_temps && !d_file.empty()) {
             (void) unlink(d_file.c_str());
         }
-
-        delete d_headers;
     }
 
     /**
@@ -134,13 +132,13 @@ public:
 
     /** @name Accessors */
     //@{
-    virtual std::vector<std::string> *get_headers() const { return d_headers; }
+    virtual std::vector<std::string> &get_headers() { return d_headers; }
     virtual std::string get_file() const { return d_file; }
     //@}
 
     /** @name Mutators */
     //@{
-    virtual void set_headers(std::vector<std::string> *h) { d_headers = h; }
+    virtual void set_headers(const std::vector<std::string> &h) { d_headers = h; }
     virtual void set_file(const std::string &n) { d_file = n; }
     //@}
 };
