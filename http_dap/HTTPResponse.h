@@ -50,24 +50,22 @@ extern void close_temp(FILE *s, const string &name);
 /** Encapsulate an http response. Instead of directly returning the FILE
     pointer from which a response is read and vector of headers, return an
     instance of this object.
-
-    @todo Maybe refactor so that the header parsing code is here and not in
-    HTTPConnect? */
+ */
 class HTTPResponse : public Response
 {
 private:
     std::vector<std::string> *d_headers; // Response headers
-    std::string d_file;  // Temp file that holds response body
+    std::string d_file;  // Name of a temp file that holds response body
 
-protected:
-    /** @name Suppressed default methods */
-    //@{
-    HTTPResponse();
-    HTTPResponse(const HTTPResponse &rs);
-    HTTPResponse &operator=(const HTTPResponse &);
-    //@}
 
 public:
+    /** @name Suppressed default methods */
+    //@{
+    HTTPResponse() = delete;
+    HTTPResponse(const HTTPResponse &rs) = delete;
+    HTTPResponse &operator=(const HTTPResponse &) = delete;
+    //@}
+
     /** Build an HTTPResponse object. An instance of this class is used to
     return an HTTP response (body and headers). If the response is really
     from a remote server, the current HTTP code stores the body in a
@@ -96,7 +94,6 @@ public:
     /**
      * @brief Build a HTTPResponse using a cpp fstream
      * When working with DAP4 responses, use C++ streams for I/0.
-     * @todo Decide on how the temp files fit into DAP4
      * @param s
      * @param status
      * @param h
@@ -114,33 +111,12 @@ public:
     /** When an instance is destroyed, free the temporary resources: the
     temp_file and headers are deleted. If the tmp file name is "", it is
     not deleted. */
-    virtual ~HTTPResponse()
-    {
-        DBG(cerr << "Freeing HTTPConnect resources (" + d_file + ")... ");
-
-        // This can always be done - if the cpp_stream is null, delete has no effect;
-        // if non-null in this class it was allocated in HTTPConnect::plain_fetch_url
-        // (or caching_fetch_url when that's implemented)
-		delete get_cpp_stream();
-		set_cpp_stream(0);
-
+    ~HTTPResponse() override {
         if (!dods_keep_temps && !d_file.empty()) {
-			if (get_stream()) {
-				close_temp(get_stream(), d_file);
-				set_stream(0);
-			}
-			else {
-			    (void) unlink(d_file.c_str());
-#if 0
-				long res = unlink(d_file.c_str());
-				if (res != 0) throw InternalErr(__FILE__, __LINE__, "!FAIL! " + long_to_string(res));
-#endif
-			}
+            (void) unlink(d_file.c_str());
         }
 
         delete d_headers;
-
-        DBGN(cerr << endl);
     }
 
     /**

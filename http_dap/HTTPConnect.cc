@@ -789,7 +789,6 @@ get_temp_file(FILE *&stream) throw(Error)
     return dods_temp;
 }
 
-
 /**
  * close temporary files - used here and in ~HTTPResponse
  * @param s

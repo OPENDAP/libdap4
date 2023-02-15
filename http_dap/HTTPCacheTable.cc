@@ -45,19 +45,17 @@
 #include "HTTPCacheMacros.h"
 
 #include "util_mit.h"   // for parse_time()
-#include "debug.h"
 
 #define MKDIR(a,b) mkdir((a), (b))
 #define MKSTEMP(a) mkstemp((a))
 #define DIR_SEPARATOR_CHAR '/'
-#define DIR_SEPARATOR_STR "/"
 
 #define CACHE_META ".meta"
 #define CACHE_INDEX ".index"
 #define CACHE_EMPTY_ETAG "@cache@"
 
-#define NO_LM_EXPIRATION 24*3600 // 24 hours
-#define MAX_LM_EXPIRATION 48*3600 // Max expiration from LM
+#define NO_LM_EXPIRATION (24*3600) // 24 hours
+#define MAX_LM_EXPIRATION (48*3600) // Max expiration from LM
 
 // If using LM to find the expiration then take 10% and no more than
 // MAX_LM_EXPIRATION.

@@ -25,12 +25,7 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG
-// #define DODS_DEBUG2
-#undef USE_GETENV
-
 #include <pthread.h>
-#include <limits.h>
 #include <unistd.h>   // for stat
 #include <sys/types.h>  // for stat and mkdir
 #include <sys/stat.h>
@@ -38,7 +33,6 @@
 #include <cstring>
 #include <cerrno>
 
-#include <iostream>
 #include <sstream>
 #include <algorithm>
 #include <iterator>
@@ -594,17 +588,8 @@ HTTPCache::set_cache_root(const string &root)
             d_cache_root += DIR_SEPARATOR_CHAR;
     }
     else {
-        // If no cache root has been indicated then look for a suitable
-        // location.
-#ifdef USE_GETENV
-        char * cr = (char *) getenv("DODS_CACHE");
-        if (!cr) cr = (char *) getenv("TMP");
-        if (!cr) cr = (char *) getenv("TEMP");
-        if (!cr) cr = (char*)CACHE_LOCATION;
-        d_cache_root = cr;
-#else
+        // If no cache root has been indicated then look for a suitable location.
         d_cache_root = CACHE_LOCATION;
-#endif
 
         if (d_cache_root[d_cache_root.size()-1] != DIR_SEPARATOR_CHAR)
             d_cache_root += DIR_SEPARATOR_CHAR;

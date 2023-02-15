@@ -140,7 +140,7 @@ public:
         DBG(cerr << prolog << "netcdf_das_url: " << netcdf_das_url<< endl);
     }
 
-    void tearDown()
+    void tearDown() override
     {
         // normal code doesn't do this - it happens at exit() but not doing
         // this here make valgrind think there are leaks.
