@@ -8,7 +8,7 @@
 #ifndef HTTPCACHEMACROS_H_
 #define HTTPCACHEMACROS_H_
 
-// #include <cerrno>
+#include <cerrno>
 #include "InternalErr.h"
 
 #define MKDIR(a,b) mkdir((a), (b))
