@@ -1,7 +1,7 @@
 
 # Tests
 
-SUBDIR = cache-testsuite
+SUBDIRS = cache-testsuite
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -55,11 +55,11 @@ check_PROGRAMS = $(UNIT_TESTS)
 # This determines what gets run by 'make check.'
 TESTS = $(UNIT_TESTS)
 
-noinst_HEADERS = test_config.h
+noinst_HEADERS = test_config.h run_tests_cppunit.h
 
 DIRS_EXTRA =
 
-EXTRA_DIST = $(DIRS_EXTRA)
+EXTRA_DIST = $(DIRS_EXTRA) test_config.h.in
 
 CLEANFILES = testout .dodsrc  *.gcda *.gcno *.gcov *.trs *.log *.file D4-xml.tar.gz *.output
 

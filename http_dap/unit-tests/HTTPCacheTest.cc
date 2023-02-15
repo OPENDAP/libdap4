@@ -23,7 +23,6 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <unistd.h>   // for access stat
-#include <sys/types.h>
 #include <sys/stat.h>
 
 #include <cstdio>     // for create_cache_root_test
@@ -41,25 +40,17 @@
 #include "HTTPConnect.h"	// Used to generate a response to cache.
 #include "HTTPCacheTable.h"
 #include "SignalHandler.h"	// Needed to clean up this singleton.
-#include "RCReader.h"		// ditto
 
-#include "debug.h"
 #include "run_tests_cppunit.h"
-#include "test_config.h"
 
 using namespace CppUnit;
 using namespace std;
 
 #define prolog string("HTTPCacheTest::").append(__func__).append("() - ")
 
-#ifdef WIN32
-#define F_OK 0
-#define W_OK 2
-#endif
-
 namespace libdap {
 
-inline static int file_size(const string &name)
+inline static uint64_t file_size(const string &name)
 {
     struct stat s{0};
     stat(name.c_str(), &s);
