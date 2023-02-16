@@ -31,10 +31,8 @@
 #include <memory>
 #include <mutex>
 
-#include <pthread.h>
-
 #include "HTTPCacheDisconnectedMode.h"
-#include "HTTPCacheMacros.h"
+// #include "HTTPCacheMacros.h"
 
 #include "debug.h"
 
@@ -136,7 +134,6 @@ private:
     time_t d_min_fresh = -1;
 
     // Lock non-const methods (also ones that use the STL).
-    // FIXME pthread_mutex_t d_cache_mutex;
     std::mutex d_cache_mutex2;
     
     std::unique_ptr<HTTPCacheTable> d_http_cache_table;
@@ -150,15 +147,6 @@ private:
     friend class HTTPCacheTest; // Unit tests
     friend class HTTPConnectTest;
     friend class HTTPCacheInterruptHandler;
-
-#if 0
-    // Private methods
-    HTTPCache(const HTTPCache &);
-    HTTPCache();
-    HTTPCache &operator=(const HTTPCache &);
-
-    HTTPCache(std::string cache_root, bool force);
-#endif
 
     static void delete_instance(); // Run by atexit (hence static)
     

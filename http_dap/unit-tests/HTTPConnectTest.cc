@@ -34,9 +34,7 @@
 
 #include "GNURegex.h"
 #include "HTTPConnect.h"
-#include "RCReader.h"
 
-#include "debug.h"
 
 #include "run_tests_cppunit.h"
 #include "test_config.h"
@@ -56,9 +54,6 @@ private:
     string lm;
     string netcdf_das_url;
 
-    // char env_data[128];
-
-protected:
     bool re_match(Regex & r, const char *s)
     {
         return r.match(s, strlen(s)) == (int) strlen(s);
@@ -138,9 +133,11 @@ public:
 
     void tearDown() override
     {
+#if 0
         // normal code doesn't do this - it happens at exit() but not doing
         // this here make valgrind think there are leaks.
         http->d_http_cache->delete_instance();
+#endif
         delete http;
         http = nullptr;
         unsetenv("DODS_CONF");

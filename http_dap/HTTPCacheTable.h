@@ -25,13 +25,7 @@
 #ifndef _http_cache_table_h
 #define _http_cache_table_h
 
-//#define DODS_DEBUG
-
-#include <pthread.h>
-
-#ifdef WIN32
-#include <io.h>   // stat for win32? 09/05/02 jhrg
-#endif
+#include <mutex>
 
 #include <cstring>
 
@@ -40,7 +34,9 @@
 #include <map>
 
 #ifndef _http_cache_h
+
 #include "HTTPCache.h"
+
 #endif
 
 #ifndef _error_h
@@ -52,16 +48,27 @@
 #endif
 
 #ifndef _util_h
+
 #include "util.h"
+
 #endif
 
 #ifndef _debug_h
 #include "debug.h"
 #endif
 
+#define CACHE_META ".meta"
+#define CACHE_INDEX ".index"
+#define CACHE_EMPTY_ETAG "@cache@"
 
+#define NO_LM_EXPIRATION (24*3600) // 24 hours
+#define MAX_LM_EXPIRATION (48*3600) // Max expiration from LM
 
-//using namespace std;
+// If using LM to find the expiration then take 10% and no more than
+// MAX_LM_EXPIRATION.
+#ifndef LM_EXPIRATION
+#define LM_EXPIRATION(t) (min((MAX_LM_EXPIRATION), static_cast<int>((t) / 10)))
+#endif
 
 namespace libdap {
 
@@ -98,30 +105,30 @@ public:
     struct CacheEntry {
     private:
         string url; // Location
-        int hash;
-        int hits; // Hit counts
+        int hash = -1;
+        int hits = 0; // Hit counts
         string cachename;
 
         string etag;
-        time_t lm; // Last modified
-        time_t expires;
-        time_t date; // From the response header.
-        time_t age;
-        time_t max_age; // From Cache-Control
+        time_t lm = -1; // Last modified
+        time_t expires = -1;
+        time_t date = -1; // From the response header.
+        time_t age = -1;
+        time_t max_age = -1; // From Cache-Control
 
-        unsigned long size; // Size of cached entity body
-        bool range; // Range is not currently supported. 10/02/02 jhrg
+        unsigned long size = 0; // Size of cached entity body
+        bool range = false; // Range is not currently supported. 10/02/02 jhrg
 
-        time_t freshness_lifetime;
-        time_t response_time;
-        time_t corrected_initial_age;
+        time_t freshness_lifetime = 0;
+        time_t response_time = 0;
+        time_t corrected_initial_age = 0;
 
-        bool must_revalidate;
-        bool no_cache; // This field is not saved in the index.
+        bool must_revalidate = false;
+        bool no_cache = false; // This field is not saved in the index.
 
-        int readers;
-        pthread_mutex_t d_response_lock; // set if being read
-        pthread_mutex_t d_response_write_lock; // set if being written
+        std::atomic<int> readers;
+        std::mutex d_response_lock; // set if being read
+        std::mutex d_response_write_lock; // set if being written
 
         // Allow HTTPCacheTable methods access and the test class, too
         friend class HTTPCacheTable;
@@ -135,109 +142,93 @@ public:
         friend class DeleteBySize;
 
     public:
-        string get_cachename()
-        {
+        string get_cachename() const {
             return cachename;
         }
-        string get_etag()
-        {
+
+        string get_etag() const {
             return etag;
         }
-        time_t get_lm()
-        {
+
+        time_t get_lm() const {
             return lm;
         }
-        time_t get_expires()
-        {
+
+        time_t get_expires() const {
             return expires;
         }
-        time_t get_max_age()
-        {
+
+        time_t get_max_age() const {
             return max_age;
         }
-        void set_size(unsigned long sz)
-        {
+
+        void set_size(unsigned long sz) {
             size = sz;
         }
-        time_t get_freshness_lifetime()
-        {
+
+        time_t get_freshness_lifetime() const {
             return freshness_lifetime;
         }
-        time_t get_response_time()
-        {
+
+        time_t get_response_time() const {
             return response_time;
         }
-        time_t get_corrected_initial_age()
-        {
+
+        time_t get_corrected_initial_age() const {
             return corrected_initial_age;
         }
-        bool get_must_revalidate()
-        {
+
+        bool get_must_revalidate() const {
             return must_revalidate;
         }
-        void set_no_cache(bool state)
-        {
+
+        void set_no_cache(bool state) {
             no_cache = state;
         }
-        bool is_no_cache()
-        {
+
+        bool is_no_cache() const {
             return no_cache;
         }
 
-        void lock_read_response()
-        {
-            DBG(cerr << "Try locking read response... (" << hex << &d_response_lock << dec << ") ");
-            int status = TRYLOCK(&d_response_lock);
-            if (status != 0 /*&& status == EBUSY*/) {
-                // If locked, wait for any writers
-                LOCK(&d_response_write_lock);
-                UNLOCK(&d_response_write_lock);
+        void lock_read_response() {
+            DBG(cerr << "Try locking read response... (");
+            // if the response_lock cannot be acquired, it might be a reader or a writer. If it is a writer, then
+            // we need to wait for the writer to finish. If it is a reader, then we don't care and increment the
+            // reader count.
+            if (d_response_lock.try_lock() == false) {
+                d_response_write_lock.lock();
+                d_response_write_lock.unlock();
             }
 
             readers++; // Record number of readers
-
             DBGN(cerr << "Done" << endl);
-
         }
 
-        void unlock_read_response()
-        {
+        void unlock_read_response() {
             readers--;
             if (readers == 0) {
-                DBG(cerr << "Unlocking read response... (" << hex << &d_response_lock << dec << ") ");
-                UNLOCK(&d_response_lock); DBGN(cerr << "Done" << endl);
+                DBG(cerr << "Unlocking read response... (");
+                d_response_lock.unlock();
+                DBGN(cerr << "Done" << endl);
             }
         }
 
-        void lock_write_response()
-        {
-            DBG(cerr << "locking write response... (" << hex << &d_response_lock << dec << ") ");
-            LOCK(&d_response_lock);
-            LOCK(&d_response_write_lock); DBGN(cerr << "Done" << endl);
+        void lock_write_response() {
+            DBG(cerr << "Locking write response... (");
+            std::lock(d_response_lock, d_response_write_lock);
+            DBGN(cerr << "Done" << endl);
         }
 
-        void unlock_write_response()
-        {
-            DBG(cerr << "Unlocking write response... (" << hex << &d_response_lock << dec << ") ");
-            UNLOCK(&d_response_write_lock);
-            UNLOCK(&d_response_lock); DBGN(cerr << "Done" << endl);
+        void unlock_write_response() {
+            DBG(cerr << "Unlocking write response... (");
+            d_response_lock.unlock();
+            d_response_write_lock.unlock();
+            DBGN(cerr << "Done" << endl);
         }
 
-        CacheEntry() :
-            url(""), hash(-1), hits(0), cachename(""), etag(""), lm(-1), expires(-1), date(-1), age(-1), max_age(-1), size(
-                0), range(false), freshness_lifetime(0), response_time(0), corrected_initial_age(0), must_revalidate(
-                false), no_cache(false), readers(0)
-        {
-            INIT(&d_response_lock);
-            INIT(&d_response_write_lock);
-        }
-        CacheEntry(const string &u) :
-            url(u), hash(-1), hits(0), cachename(""), etag(""), lm(-1), expires(-1), date(-1), age(-1), max_age(-1), size(
-                0), range(false), freshness_lifetime(0), response_time(0), corrected_initial_age(0), must_revalidate(
-                false), no_cache(false), readers(0)
-        {
-            INIT(&d_response_lock);
-            INIT(&d_response_write_lock);
+        CacheEntry() = default;
+
+        explicit CacheEntry(string u) : url(std::move(u)) {
             hash = get_hash(url);
         }
     };
@@ -266,13 +257,8 @@ private:
 
     map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
 
-    // Make these private to prevent use
-    HTTPCacheTable(const HTTPCacheTable &);
-    HTTPCacheTable &operator=(const HTTPCacheTable &);
-    HTTPCacheTable();
 
-    CacheTable &get_cache_table()
-    {
+    CacheTable &get_cache_table() {
         return d_cache_table;
     }
 
@@ -280,72 +266,85 @@ private:
 
 public:
     HTTPCacheTable(const string &cache_root, int block_size);
-    ~HTTPCacheTable();
+    HTTPCacheTable(const HTTPCacheTable &) = delete;
+    HTTPCacheTable &operator=(const HTTPCacheTable &) = delete;
+    HTTPCacheTable() = delete;
+
+    virtual ~HTTPCacheTable();
 
     //@{ @name Accessors/Mutators
-    unsigned long get_current_size() const
-    {
+    unsigned long get_current_size() const {
         return d_current_size;
     }
-    void set_current_size(unsigned long sz)
-    {
+
+    void set_current_size(unsigned long sz) {
         d_current_size = sz;
     }
 
-    unsigned int get_block_size() const
-    {
+    unsigned int get_block_size() const {
         return d_block_size;
     }
-    void set_block_size(unsigned int sz)
-    {
+
+    void set_block_size(unsigned int sz) {
         d_block_size = sz;
     }
 
-    int get_new_entries() const
-    {
+    int get_new_entries() const {
         return d_new_entries;
     }
-    void increment_new_entries()
-    {
+
+    void increment_new_entries() {
         ++d_new_entries;
     }
 
-    string get_cache_root()
-    {
+    string get_cache_root() const {
         return d_cache_root;
     }
-    void set_cache_root(const string &cr)
-    {
+
+    void set_cache_root(const string &cr) {
         d_cache_root = cr;
     }
     //@}
 
     void delete_expired_entries(time_t time = 0);
+
     void delete_by_hits(int hits);
+
     void delete_by_size(unsigned int size);
+
     void delete_all_entries();
 
     bool cache_index_delete();
+
     bool cache_index_read();
+
     CacheEntry *cache_index_parse_line(const char *line);
+
     void cache_index_write();
 
     string create_hash_directory(int hash);
+
     void create_location(CacheEntry *entry);
 
     void add_entry_to_cache_table(CacheEntry *entry);
-    void remove_cache_entry(HTTPCacheTable::CacheEntry *entry);
+
+    void remove_cache_entry(const HTTPCacheTable::CacheEntry *entry);
 
     void remove_entry_from_cache_table(const string &url);
+
     CacheEntry *get_locked_entry_from_cache_table(const string &url);
+
     CacheEntry *get_write_locked_entry_from_cache_table(const string &url);
 
     void calculate_time(HTTPCacheTable::CacheEntry *entry, int default_expiration, time_t request_time);
+
     void parse_headers(HTTPCacheTable::CacheEntry *entry, unsigned long max_entry_size, const vector<string> &headers);
 
     // These should move back to HTTPCache
     void bind_entry_to_data(CacheEntry *entry, FILE *body);
+
     void uncouple_entry_from_data(FILE *body);
+
     bool is_locked_read_responses();
 };
 

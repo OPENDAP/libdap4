@@ -36,7 +36,6 @@
 #include <mutex>
 #include <memory>
 
-#include <pthread.h>
 #include <unistd.h>   // for stat
 #include <sys/types.h>  // for stat and mkdir
 #include <sys/stat.h>
@@ -48,44 +47,26 @@
 #include "HTTPCacheInterruptHandler.h"
 #include "HTTPCacheTable.h"
 #include "HTTPCache.h"
-#include "HTTPCacheMacros.h"
-#include "SignalHandler.h"
-#include "SignalHandlerRegisteredErr.h"
+// #include "HTTPCacheMacros.h"
 
 #include "util_mit.h"
 #include "debug.h"
+
+#define CACHE_LOCATION "/tmp/"
+#define CACHE_ROOT "dods-cache/"
+
+#define CACHE_INDEX ".index"
+#define CACHE_LOCK ".lock"
+#define CACHE_META ".meta"
+#define CACHE_EMPTY_ETAG "@cache@"
+
+#define DIR_SEPARATOR_CHAR '/'
 
 using namespace std;
 
 namespace libdap {
 
-#if 0
-HTTPCache *HTTPCache::_instance = 0;
-
-// instance_mutex is used to ensure that only one instance is created.
-// That is, it protects the body of the HTTPCache::instance() method. This
-// mutex is initialized from within the static function once_init_routine()
-// and the call to that takes place using pthread_once_init() where the mutex
-// once_block is used to protect that call. All of this ensures that no matter
-// how many threads call the instance() method, only one instance is ever
-// made.
-static pthread_mutex_t instance_mutex;
-static pthread_once_t once_block = PTHREAD_ONCE_INIT;
-#endif
-
 std::unique_ptr<HTTPCache> HTTPCache::d_instance = nullptr;
-
-#if 0
-static void
-once_init_routine()
-{
-    int status;
-    status = INIT(&instance_mutex);
-
-    if (status != 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
-}
-#endif
 
 /** Get a pointer to the HTTP 1.1 compliant cache. If not already
     instantiated, this creates an instance of the HTTP cache object and
@@ -124,70 +105,10 @@ HTTPCache::instance(const string &cache_root, bool force)
                        [cache_root, force]() { d_instance.reset(new HTTPCache(cache_root, force)); });
     }
 
+    // In the original code, handlers for SIGINT, TERM and PIPE were registered
+    // so that the index file could be saved before the process exited.
+
     return d_instance.get();
-
-#if 0
-    // Original code. jhrg 2/15/23
-    int status = pthread_once(&once_block, once_init_routine);
-    if (status != 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
-
-    LOCK(&instance_mutex);
-
-    DBG(cerr << "Entering instance(); (" << hex << _instance << dec << ")" << "... ");
-
-    try {
-        if (!_instance) {
-            _instance = new HTTPCache(cache_root, force);
-
-            DBG(cerr << "New instance: " << _instance << ", cache root: "
-                << _instance->d_cache_root << endl);
-
-            atexit(delete_instance);
-
-#ifndef WIN32
-            // Register the interrupt handler. If we've already registered
-            // one, barf. If this becomes a problem, hack SignalHandler so
-            // that we can chain these handlers... 02/10/04 jhrg
-            //
-            // Technically we're leaking memory here. However, since this
-            // class is a singleton, we know that only three objects will
-            // ever be created and they will all exist until the process
-            // exits. We can let this slide... 02/12/04 jhrg
-            EventHandler *old_eh = SignalHandler::instance()->register_handler(SIGINT, new HTTPCacheInterruptHandler, true);
-            if (old_eh) {
-                SignalHandler::instance()->register_handler(SIGINT, old_eh);
-                throw SignalHandlerRegisteredErr(
-                    "Could not register event handler for SIGINT without superseding an existing one.");
-            }
-
-            old_eh = SignalHandler::instance()->register_handler(SIGPIPE, new HTTPCacheInterruptHandler, true);
-            if (old_eh) {
-                SignalHandler::instance()->register_handler(SIGPIPE, old_eh);
-                throw SignalHandlerRegisteredErr(
-                    "Could not register event handler for SIGPIPE without superseding an existing one.");
-            }
-
-            old_eh = SignalHandler::instance()->register_handler(SIGTERM, new HTTPCacheInterruptHandler, true);
-            if (old_eh) {
-                SignalHandler::instance()->register_handler(SIGTERM, old_eh);
-                throw SignalHandlerRegisteredErr(
-                    "Could not register event handler for SIGTERM without superseding an existing one.");
-            }
-#endif
-        }
-    }
-    catch (...) {
-        DBG2(cerr << "The constructor threw an Error!" << endl);
-        UNLOCK(&instance_mutex);
-        throw;
-    }
-
-    UNLOCK(&instance_mutex);
-    DBGN(cerr << "returning " << hex << _instance << dec << endl);
-
-    return _instance;
-#endif
 }
 
 /** This static method is called using atexit(). It deletes the singleton;
@@ -196,22 +117,6 @@ HTTPCache::instance(const string &cache_root, bool force)
 void
 HTTPCache::delete_instance()
 {
-#if 0
-    DBG(cerr << "Entering delete_instance()..." << endl);
-
-    if (HTTPCache::_instance) {
-        DBG(cerr << "Deleting the cache: " << HTTPCache::_instance << endl);
-        delete HTTPCache::_instance;
-        HTTPCache::_instance = 0;
-
-        //Now remove the signal handlers
-        delete SignalHandler::instance()->remove_handler(SIGINT);
-        delete SignalHandler::instance()->remove_handler(SIGPIPE);
-        delete SignalHandler::instance()->remove_handler(SIGTERM);
-    }
-
-    DBG(cerr << "Exiting delete_instance()" << endl);
-#endif
 }
 
 /** Create an instance of the HTTP 1.1 compliant cache. This initializes the
@@ -361,8 +266,8 @@ HTTPCache::expired_gc()
     }
 }
 
-/** Scan the cache for entires that are larger than max_entry_size. Also
-    start removing entires with low hit counts. Start looking for entries
+/** Scan the cache for entries that are larger than max_entry_size. Also
+    start removing entries with low hit counts. Start looking for entries
     with zero hits, then one, and so on. Stop when the method stopGC returns
     true. Locked entries are never removed.
 
@@ -411,44 +316,43 @@ void HTTPCache::too_big_gc() {
     default.
     @return True if the cache was locked for our use, False otherwise. */
 
-bool HTTPCache::get_single_user_lock(bool force) 
+bool HTTPCache::get_single_user_lock(bool force)
 {
     if (!d_locked_open_file) {
-	FILE * fp = NULL;
+        FILE *fp = NULL;
 
-	try {
-	    // It's OK to call create_cache_root if the directory already
-	    // exists.
-	    create_cache_root(d_cache_root);
-	}
-	catch (Error &e) {
-	    // We need to catch and return false because this method is
-	    // called from a ctor and throwing at this point will result in a
-	    // partially constructed object. 01/22/04 jhrg
-	    DBG(cerr << "Failure to create the cache root" << endl);
-	    return false;
-	}
+        try {
+            // It's OK to call create_cache_root if the directory already exists.
+            create_cache_root(d_cache_root);
+        }
+        catch (const Error &) {
+            // We need to catch and return false because this method is
+            // called from a ctor and throwing at this point will result in a
+            // partially constructed object. 01/22/04 jhrg
+            DBG(cerr << "Failure to create the cache root" << endl);
+            return false;
+        }
 
-	// Try to read the lock file. If we can open for reading, it exists.
-	string lock = d_cache_root + CACHE_LOCK;
-	if ((fp = fopen(lock.c_str(), "r")) != NULL) {
-	    int res = fclose(fp);
-	    if (res) {
-		DBG(cerr << "Failed to close " << (void *)fp << endl);
-	    }
-	    if (force)
-		REMOVE(lock.c_str());
-	    else
-		return false;
-	}
+        // Try to read the lock file. If we can open for reading, it exists.
+        string lock = d_cache_root + CACHE_LOCK;
+        if ((fp = fopen(lock.c_str(), "r")) != NULL) {
+            int res = fclose(fp);
+            if (res) {
+                DBG(cerr << "Failed to close " << (void *) fp << endl);
+            }
+            if (force)
+                remove(lock.c_str());
+            else
+                return false;
+        }
 
-	if ((fp = fopen(lock.c_str(), "w")) == NULL) {
-	    DBG(cerr << "Could not open for write access" << endl);
-	    return false;
-	}
+        if ((fp = fopen(lock.c_str(), "w")) == NULL) {
+            DBG(cerr << "Could not open for write access" << endl);
+            return false;
+        }
 
-	d_locked_open_file = fp;
-	return true;
+        d_locked_open_file = fp;
+        return true;
     }
 
     DBG(cerr << "locked_open_file is true" << endl);
@@ -469,7 +373,7 @@ HTTPCache::release_single_user_lock()
     }
 
     string lock = d_cache_root + CACHE_LOCK;
-    REMOVE(lock.c_str());
+    remove(lock.c_str());
 }
 
 /** @name Accessors and Mutators for various properties. */
@@ -496,31 +400,6 @@ HTTPCache::get_cache_root() const
 void
 HTTPCache::create_cache_root(const string &cache_root)
 {
-#ifdef WIN32
-    string::size_type cur = cache_root[1] == ':' ? 3 : 1;
-    typedef int mode_t;
-
-    while ((cur = cache_root.find(DIR_SEPARATOR_CHAR, cur)) != string::npos) {
-        string dir = cache_root.substr(0, cur);
-        struct stat stat_info;
-        if (stat(dir.c_str(), &stat_info) == -1) {
-            DBG2(cerr << "Cache....... Creating " << dir << endl);
-            mode_t mask = UMASK(0);
-            if (MKDIR(dir.c_str(), 0777) < 0) {
-                DBG2(cerr << "Error: can't create." << endl);
-                UMASK(mask);
-                throw Error(string("Could not create the directory for the cache. Failed when building path at ") + dir + string("."));
-            }
-            UMASK(mask);
-        }
-        else {
-            DBG2(cerr << "Cache....... Found " << dir << endl);
-        }
-        cur++;
-    }
-#else
-    // OSX and Linux
-
     // Save the mask
     mode_t mask = umask(0);
 
@@ -531,10 +410,8 @@ HTTPCache::create_cache_root(const string &cache_root)
         throw Error("Could not create the directory for the cache at '" + cache_root + "' (" + strerror(errno) + ").");
     }
 
-    // Restore themask
+    // Restore thecmask
     umask(mask);
-
-#endif
 }
 
 /** Set the cache's root directory to the given path. If no path is given,
@@ -554,7 +431,7 @@ HTTPCache::create_cache_root(const string &cache_root)
 void
 HTTPCache::set_cache_root(const string &root)
 {
-    if (root != "") {
+    if (!root.empty()) {
         d_cache_root = root;
         // cache root should end in /.
         if (d_cache_root[d_cache_root.size()-1] != DIR_SEPARATOR_CHAR)
@@ -570,7 +447,7 @@ HTTPCache::set_cache_root(const string &root)
         d_cache_root += CACHE_ROOT;
     }
 
-    // Test d_hhtp_cache_table because this method can be called before that
+    // Test d_http_cache_table because this method can be called before that
     // instance is created and also can be called later to change the cache
     // root. jhrg 05.14.08
     if (d_http_cache_table)
@@ -799,10 +676,9 @@ HTTPCache::set_cache_control(const vector<string> &cc)
 
     d_cache_control = cc;
 
-    vector<string>::const_iterator i;
-    for (i = cc.begin(); i != cc.end(); ++i) {
-        string header = (*i).substr(0, (*i).find(':'));
-        string value = (*i).substr((*i).find(": ") + 2);
+    for (auto &line: cc) {
+        string header = line.substr(0, line.find(':'));
+        string value = line.substr(line.find(": ") + 2);
         if (header != "Cache-Control") {
             throw InternalErr(__FILE__, __LINE__, "Expected cache control header not found.");
         }
@@ -810,23 +686,22 @@ HTTPCache::set_cache_control(const vector<string> &cc)
             if (value == "no-cache" || value == "no-store")
                 d_cache_enabled = false;
             else if (value.find("max-age") != string::npos) {
-                string max_age = value.substr(value.find("=") + 1);
+                string max_age = value.substr(value.find('=') + 1);
                 d_max_age = parse_time(max_age.c_str());
             }
             else if (value == "max-stale")
                 d_max_stale = 0; // indicates will take anything;
             else if (value.find("max-stale") != string::npos) {
-                string max_stale = value.substr(value.find("=") + 1);
+                string max_stale = value.substr(value.find('=') + 1);
                 d_max_stale = parse_time(max_stale.c_str());
             }
             else if (value.find("min-fresh") != string::npos) {
-                string min_fresh = value.substr(value.find("=") + 1);
+                string min_fresh = value.substr(value.find('=') + 1);
                 d_min_fresh = parse_time(min_fresh.c_str());
             }
         }
     }
 }
-
 
 /** Get the Cache-Control headers.
 
@@ -896,14 +771,13 @@ HTTPCache::write_metadata(const string &cachename, const vector<string> &headers
 
     FILE *dest = fopen(fname.c_str(), "w");
     if (!dest) {
-        throw InternalErr(__FILE__, __LINE__,
-                          "Could not open named cache entry file.");
+        throw InternalErr(__FILE__, __LINE__, "Could not open named cache entry file.");
     }
 
     vector<string>::const_iterator i;
-    for (i = headers.begin(); i != headers.end(); ++i) {
-        if (!is_hop_by_hop_header(*i)) {
-            int s = fwrite((*i).c_str(), (*i).size(), 1, dest);
+    for (auto &header: headers) /*i = headers.begin(); i != headers.end(); ++i)*/ {
+        if (!is_hop_by_hop_header(header)) {
+            size_t s = fwrite(header.c_str(), header.size(), 1, dest);
             if (s != 1) {
                 fclose(dest);
             	throw InternalErr(__FILE__, __LINE__, "could not write header: '" + (*i) + "' " + long_to_string(s));
@@ -918,8 +792,7 @@ HTTPCache::write_metadata(const string &cachename, const vector<string> &headers
 
     int res = fclose(dest);
     if (res) {
-        DBG(cerr << "HTTPCache::write_metadata - Failed to close "
-            << dest << endl);
+        DBG(cerr << "HTTPCache::write_metadata - Failed to close " << dest << endl);
     }
 
     d_open_files.pop_back();
@@ -940,8 +813,7 @@ HTTPCache::read_metadata(const string &cachename, vector<string> &headers)
 {
     FILE *md = fopen(string(cachename + CACHE_META).c_str(), "r");
     if (!md) {
-        throw InternalErr(__FILE__, __LINE__,
-                          "Could not open named cache entry meta data file.");
+        throw InternalErr(__FILE__, __LINE__, "Could not open named cache entry meta data file.");
     }
 
     const size_t line_buf_len = 1024;
@@ -953,8 +825,7 @@ HTTPCache::read_metadata(const string &cachename, vector<string> &headers)
 
     int res = fclose(md);
     if (res) {
-        DBG(cerr << "HTTPCache::read_metadata - Failed to close "
-            << md << endl);
+        DBG(cerr << "HTTPCache::read_metadata - Failed to close " << md << endl);
     }
 }
 
@@ -986,8 +857,7 @@ HTTPCache::write_body(const string &cachename, const FILE *src)
 
     FILE *dest = fopen(cachename.c_str(), "wb");
     if (!dest) {
-        throw InternalErr(__FILE__, __LINE__,
-                          "Could not open named cache entry file.");
+        throw InternalErr(__FILE__, __LINE__, "Could not open named cache entry file.");
     }
 
     // Read and write in 1k blocks; an attempt at doing this efficiently.
@@ -1007,8 +877,7 @@ HTTPCache::write_body(const string &cachename, const FILE *src)
             DBG(cerr << "HTTPCache::write_body - Failed to close/unlink "
                 << dest << endl);
         }
-        throw InternalErr(__FILE__, __LINE__,
-                          "I/O error transferring data to the cache.");
+        throw InternalErr(__FILE__, __LINE__, "I/O error transferring data to the cache.");
     }
 
     rewind(const_cast<FILE *>(src));
@@ -1039,7 +908,7 @@ HTTPCache::open_body(const string &cachename)
 
     FILE *src = fopen(cachename.c_str(), "rb"); // Read only
     if (!src)
-	throw InternalErr(__FILE__, __LINE__, "Could not open cache file.");
+	    throw InternalErr(__FILE__, __LINE__, "Could not open cache file.");
 
     return src;
 }
@@ -1113,8 +982,8 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
     catch (ResponseTooBigErr &e) {
         // Oops. Bummer. Clean up and exit.
         DBG(cerr << e.get_error_message() << endl);
-        REMOVE(entry->get_cachename().c_str());
-        REMOVE(string(entry->get_cachename() + CACHE_META).c_str());
+        remove(entry->get_cachename().c_str());
+        remove(string(entry->get_cachename() + CACHE_META).c_str());
         DBG(cerr << "Too big; deleting HTTPCacheTable::CacheEntry: " << entry << "(" << url
                  << ")" << endl);
         entry->unlock_write_response();
@@ -1377,15 +1246,15 @@ FILE * HTTPCache::get_cached_response(const string &url, vector<string> &headers
 {
     lock_guard<mutex> lock(d_cache_mutex2);
 
-    FILE *body = 0;
-    HTTPCacheTable::CacheEntry *entry = 0;
+    FILE *body = nullptr;
+    HTTPCacheTable::CacheEntry *entry = nullptr;
 
     DBG(cerr << "Getting the cached response for " << url << endl);
 
     try {
         entry = d_http_cache_table->get_locked_entry_from_cache_table(url);
         if (!entry) {
-        	return 0;
+        	return nullptr;
         }
 
         cacheName = entry->get_cachename();
@@ -1401,7 +1270,7 @@ FILE * HTTPCache::get_cached_response(const string &url, vector<string> &headers
         d_http_cache_table->bind_entry_to_data(entry, body);
     }
     catch (...) {
-        if (body != 0)
+        if (body != nullptr)
             fclose(body);
         throw;
     }
