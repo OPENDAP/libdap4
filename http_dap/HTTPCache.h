@@ -28,16 +28,26 @@
 
 #include <string>
 #include <vector>
-//#include <map>
+#include <memory>
+#include <mutex>
 
 #include <pthread.h>
-
-// #include "HTTPCacheTable.h" // included for macros
 
 #include "HTTPCacheDisconnectedMode.h"
 #include "HTTPCacheMacros.h"
 
 #include "debug.h"
+
+#define DUMP_FREQUENCY (10) // Dump index every x loads
+
+#define NO_LM_EXPIRATION (24*3600) // 24 hours
+
+#define MEGA (0x100000L)
+#define CACHE_TOTAL_SIZE (20) // Default cache size is 20M
+#define CACHE_FOLDER_PCT (10) // 10% of cache size for meta info etc.
+#define CACHE_GC_PCT (10)  // 10% of cache size free after GC
+#define MIN_CACHE_TOTAL_SIZE (5) // 5M Min cache size
+#define MAX_CACHE_ENTRY_SIZE (3) // 3M Max size of single cached entry
 
 namespace libdap
 {
@@ -102,50 +112,53 @@ class HTTPCache
 {
 private:
     std::string d_cache_root;
-    FILE *d_locked_open_file; // Lock for single process use.
+    FILE *d_locked_open_file = nullptr; // Lock for single process use.
 
-    bool d_cache_enabled;
-    bool d_cache_protected;
-    CacheDisconnectedMode d_cache_disconnected;
-    bool d_expire_ignored;
-    bool d_always_validate;
+    bool d_cache_enabled = false;
+    bool d_cache_protected = false;
+    CacheDisconnectedMode d_cache_disconnected = DISCONNECT_NONE;
+    bool d_expire_ignored = false;
+    bool d_always_validate = false;
 
-    unsigned long d_total_size; // How much can we store?
-    unsigned long d_folder_size; // How much of that is metadata?
-    unsigned long d_gc_buffer; // How much memory needed as buffer?
-    unsigned long d_max_entry_size; // Max individual entry size.
-    int d_default_expiration;
+    unsigned long d_total_size = CACHE_TOTAL_SIZE * MEGA; // How much can we store?
+    unsigned long d_folder_size = CACHE_TOTAL_SIZE / CACHE_FOLDER_PCT; // How much of that is metadata?
+    unsigned long d_gc_buffer = CACHE_TOTAL_SIZE / CACHE_GC_PCT; // How much memory needed as buffer?
+    unsigned long d_max_entry_size = MAX_CACHE_ENTRY_SIZE * MEGA; // Max individual entry size.
+    int d_default_expiration = NO_LM_EXPIRATION;
 
     std::vector<std::string> d_cache_control;
     // these are values read from a request-directive Cache-Control header.
     // Not to be confused with values read from the response or a cached
     // response (e.g., CacheEntry has a max_age field, too). These fields are
     // set when the set_cache_control method is called.
-    time_t d_max_age;
-    time_t d_max_stale;  // -1: not set, 0:any response, >0 max time.
-    time_t d_min_fresh;
+    time_t d_max_age = -1;
+    time_t d_max_stale = -1;  // -1: not set, 0:any response, >0 max time.
+    time_t d_min_fresh = -1;
 
     // Lock non-const methods (also ones that use the STL).
-    pthread_mutex_t d_cache_mutex;
+    // FIXME pthread_mutex_t d_cache_mutex;
+    std::mutex d_cache_mutex2;
     
-    HTTPCacheTable *d_http_cache_table;
+    std::unique_ptr<HTTPCacheTable> d_http_cache_table;
 
     // d_open_files is used by the interrupt handler to clean up
     std::vector<std::string> d_open_files;
 
-    static HTTPCache *_instance;
+    // FIXME static HTTPCache *_instance;
+    static std::unique_ptr<HTTPCache> d_instance;
 
     friend class HTTPCacheTest; // Unit tests
     friend class HTTPConnectTest;
-
     friend class HTTPCacheInterruptHandler;
 
+#if 0
     // Private methods
     HTTPCache(const HTTPCache &);
     HTTPCache();
     HTTPCache &operator=(const HTTPCache &);
 
     HTTPCache(std::string cache_root, bool force);
+#endif
 
     static void delete_instance(); // Run by atexit (hence static)
     
@@ -158,8 +171,8 @@ private:
     
     bool is_url_in_cache(const std::string &url);
 
-    // I made these four methods so they could be tested by HTTPCacheTest.
-    // Otherwise they would be static functions. jhrg 10/01/02
+    // I made these four methods, so they could be tested by HTTPCacheTest.
+    // Otherwise, they would be static functions. jhrg 10/01/02
     void write_metadata(const std::string &cachename, const std::vector<std::string> &headers);
     void read_metadata(const std::string &cachename, std::vector<std::string> &headers);
     int write_body(const std::string &cachename, const FILE *src);
@@ -173,8 +186,15 @@ private:
     void expired_gc();
     void hits_gc();
 
+    HTTPCache(const std::string &cache_root, bool force);
+
 public:
     static HTTPCache *instance(const std::string &cache_root, bool force = false);
+
+    HTTPCache() = delete;
+    HTTPCache(const HTTPCache &) = delete;
+    HTTPCache &operator=(const HTTPCache &) = delete;
+
     virtual ~HTTPCache();
 
     std::string get_cache_root() const;
@@ -203,6 +223,7 @@ public:
     void set_cache_control(const std::vector<std::string> &cc);
     std::vector<std::string> get_cache_control();
 
+#if 0
     void lock_cache_interface() {
     	DBG(std::cerr << "Locking interface... ");
     	LOCK(&d_cache_mutex);
@@ -213,6 +234,7 @@ public:
     	UNLOCK(&d_cache_mutex);
     	DBGN(std::cerr << "Done" << std::endl);
     }
+#endif
     
     // This must lock for writing
     bool cache_response(const std::string &url, time_t request_time,

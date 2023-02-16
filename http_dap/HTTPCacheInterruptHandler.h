@@ -63,11 +63,13 @@ public:
     @return Never returns. */
     void handle_signal(int /*signum*/) override
     {
+#if 0
         std::vector<std::string> *of = &HTTPCache::_instance->d_open_files;
 
         std::for_each(of->begin(), of->end(), [](const std::string &file) { unlink(file.c_str()); } );
 
         HTTPCache::delete_instance();
+#endif
     }
 };
 

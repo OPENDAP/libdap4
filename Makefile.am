@@ -2,6 +2,10 @@
 AUTOMAKE_OPTIONS = foreign check-news subdir-objects
 ACLOCAL_AMFLAGS = -I conf -I gl/m4
 
+clion-setup:
+	$(MAKE) $(MFKAGS) all
+	$(MAKE) $(MFKAGS) check
+
 aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
