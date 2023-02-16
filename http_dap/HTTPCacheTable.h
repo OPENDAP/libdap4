@@ -126,7 +126,7 @@ public:
         bool must_revalidate = false;
         bool no_cache = false; // This field is not saved in the index.
 
-        std::atomic<int> readers;
+        std::atomic<int> readers{0};
         std::mutex d_response_lock; // set if being read
         std::mutex d_response_write_lock; // set if being written
 
