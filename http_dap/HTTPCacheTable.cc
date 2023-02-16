@@ -210,10 +210,7 @@ void HTTPCacheTable::delete_by_size(unsigned int size) {
         if (get_cache_table()[cnt]) {
             HTTPCacheTable::CacheEntries *slot = get_cache_table()[cnt];
             for_each(slot->begin(), slot->end(), DeleteBySize(*this, size));
-            slot->erase(remove(slot->begin(), slot->end(),
-                               static_cast<HTTPCacheTable::CacheEntry *>(0)),
-                        slot->end());
-
+            slot->erase(remove(slot->begin(), slot->end(), nullptr), slot->end());
         }
     }
 }

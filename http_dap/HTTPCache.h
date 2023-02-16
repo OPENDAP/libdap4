@@ -138,15 +138,11 @@ private:
     // d_open_files is used by the interrupt handler to clean up
     std::vector<std::string> d_open_files;
 
-    // FIXME static HTTPCache *_instance;
     static std::unique_ptr<HTTPCache> d_instance;
 
     friend class HTTPCacheTest; // Unit tests
     friend class HTTPConnectTest;
-    friend class HTTPCacheInterruptHandler;
 
-    static void delete_instance(); // Run by atexit (hence static)
-    
     void set_cache_root(const std::string &root = "");
     void create_cache_root(const std::string &cache_root);
     

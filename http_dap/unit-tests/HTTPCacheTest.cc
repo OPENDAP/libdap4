@@ -232,7 +232,7 @@ public:
             remove("/root/very_silly/");
             CPPUNIT_ASSERT(!"Should not be able to do this...");
         }
-        catch (Error &e) {
+        catch (const Error &e) {
             CPPUNIT_ASSERT("This is where we want to be");
             CPPUNIT_ASSERT(access("/root/very_silly/", F_OK) != 0);
         }
@@ -297,7 +297,7 @@ public:
             hc_p->create_hash_directory(391);
             CPPUNIT_ASSERT(!"Create in bad directory");
         }
-        catch (Error &e) {
+        catch (const Error &e) {
         }
 #endif
         remove("/tmp/dods_test_cache/391");
@@ -314,7 +314,7 @@ public:
             hc_p->d_http_cache_table->create_location(e);
             CPPUNIT_ASSERT(e->cachename != "");
         }
-        catch (Error &e) {
+        catch (const Error &e) {
             CPPUNIT_ASSERT(true && "could not create entry file");
         }
         remove(e->cachename.c_str());
@@ -356,7 +356,7 @@ public:
             hc_p->d_http_cache_table->create_location(e);
             CPPUNIT_ASSERT(e->cachename != "");
         }
-        catch (Error &e) {
+        catch (const Error &e) {
             CPPUNIT_ASSERT(true && "could not create entry file");
         }
 
@@ -391,7 +391,7 @@ public:
             delete rs;
             rs = 0;
         }
-        catch (Error &e) {
+        catch (const Error &e) {
             delete rs;
             rs = 0;
             cerr << "Error: " << e.get_error_message() << endl;
@@ -493,7 +493,7 @@ public:
             CPPUNIT_ASSERT(
                     !expired_is_in_cache && "This may fail if sleep is not long enough before gc above");
         }
-        catch (Error &e) {
+        catch (const Error &e) {
             cerr << "Exception: " << e.get_error_message() << endl;
             CPPUNIT_ASSERT(false);
         }
@@ -537,7 +537,7 @@ public:
                 pc->purge_cache();
                 CPPUNIT_ASSERT(!"This call should throw Error");
             }
-            catch (Error &e) {
+            catch (const Error &e) {
                 CPPUNIT_ASSERT("Caught Error as expected");
             }
 
@@ -551,7 +551,7 @@ public:
             CPPUNIT_ASSERT(access(e2_file.c_str(), F_OK) != 0);
             CPPUNIT_ASSERT(pc->d_http_cache_table->d_current_size == 0);
         }
-        catch (Error &e) {
+        catch (const Error &e) {
             cerr << "Exception: " << e.get_error_message() << endl;
             CPPUNIT_ASSERT(false);
         }
@@ -560,9 +560,6 @@ public:
     void instance_test()
     {
         try {
-            // FIXME: Explain
-            HTTPCache::delete_instance();
-
             HTTPCache *c = HTTPCache::instance("cache-testsuite/singleton_cache", true);
             DBG(cerr << "get_cache_root: " << c->get_cache_root() << endl);
 
@@ -596,19 +593,9 @@ public:
             CPPUNIT_ASSERT(access(e1_file.c_str(), F_OK) != 0);
             CPPUNIT_ASSERT(access(e2_file.c_str(), F_OK) != 0);
         }
-        catch (Error &e) {
-            cerr << "Exception: " << e.get_error_message() << endl;
-            CPPUNIT_ASSERT(false);
+        catch (const Error &e) {
+            CPPUNIT_FAIL("Exception: " + e.get_error_message());
         }
-
-        // Call this here to simulate exiting the program. This ensures that
-        // the next test's call to instance() gets a fresh cache. The static
-        // method will still be run at exit, but that's OK since it tests the
-        // value of _instance and simply returns with it's zero.
-        HTTPCache::delete_instance();
-#ifndef WIN32
-        SignalHandler::delete_instance();
-#endif
     }
 
 #define IF_NONE_MATCH "If-None-Match: "
@@ -665,7 +652,7 @@ public:
             }
             CPPUNIT_ASSERT(found_it && "Located If-Modified-Since header.");
         }
-        catch (Error &e) {
+        catch (const Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
     }
@@ -726,7 +713,7 @@ public:
             CPPUNIT_ASSERT(find(updated_h.begin(), updated_h.end(), "XHTTPCache: 123456789") != updated_h.end());
             CPPUNIT_ASSERT(find(updated_h.begin(), updated_h.end(), "Date: <invalid date>") != updated_h.end());
         }
-        catch (Error &e) {
+        catch (const Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
     }
@@ -746,7 +733,7 @@ public:
                 delete rs;
             }
         }
-        catch (Error &e) {
+        catch (const Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
     }
@@ -798,7 +785,7 @@ public:
             delete rs;
             rs = 0;
         }
-        catch (Error &e) {
+        catch (const Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
 
@@ -809,7 +796,7 @@ public:
             unique_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
             CPPUNIT_ASSERT(!pc->is_url_in_cache(feb));
         }
-        catch (Error &e) {
+        catch (const Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
     }
