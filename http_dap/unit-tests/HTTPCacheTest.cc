@@ -189,7 +189,7 @@ public:
         g->unlock_read_response();
 
         g = hc_p->d_http_cache_table->get_locked_entry_from_cache_table("http://not.in.table/never.x");
-        CPPUNIT_ASSERT(g == 0);
+        CPPUNIT_ASSERT(g == nullptr);
     }
 
     void cache_index_write_test()
@@ -433,7 +433,7 @@ public:
         cerr << "Cached headers: ";
         std::copy(cached_headers.begin(), cached_headers.end(), out_it);
         cerr << "Headers: ";
-        std::copy(headers->begin(), headers->end(), out_it);
+        std::copy(headers.begin(), headers.end(), out_it);
 #endif
 
         CPPUNIT_ASSERT(i == cached_headers.end());

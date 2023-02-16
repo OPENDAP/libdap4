@@ -32,9 +32,6 @@
 #include <mutex>
 
 #include "HTTPCacheDisconnectedMode.h"
-// #include "HTTPCacheMacros.h"
-
-#include "debug.h"
 
 #define DUMP_FREQUENCY (10) // Dump index every x loads
 
@@ -211,19 +208,6 @@ public:
     void set_cache_control(const std::vector<std::string> &cc);
     std::vector<std::string> get_cache_control();
 
-#if 0
-    void lock_cache_interface() {
-    	DBG(std::cerr << "Locking interface... ");
-    	LOCK(&d_cache_mutex);
-    	DBGN(std::cerr << "Done" << std::endl);
-    }    	
-    void unlock_cache_interface() {
-    	DBG(std::cerr << "Unlocking interface... " );
-    	UNLOCK(&d_cache_mutex);
-    	DBGN(std::cerr << "Done" << std::endl);
-    }
-#endif
-    
     // This must lock for writing
     bool cache_response(const std::string &url, time_t request_time,
                         const std::vector<std::string> &headers, const FILE *body);

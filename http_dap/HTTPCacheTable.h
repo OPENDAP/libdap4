@@ -25,37 +25,10 @@
 #ifndef _http_cache_table_h
 #define _http_cache_table_h
 
-#include <mutex>
-
-#include <cstring>
-
 #include <string>
 #include <vector>
 #include <map>
-
-#ifndef _http_cache_h
-
-#include "HTTPCache.h"
-
-#endif
-
-#ifndef _error_h
-#include "Error.h"
-#endif
-
-#ifndef _internalerr_h
-#include "InternalErr.h"
-#endif
-
-#ifndef _util_h
-
-#include "util.h"
-
-#endif
-
-#ifndef _debug_h
-#include "debug.h"
-#endif
+#include <mutex>
 
 #define CACHE_META ".meta"
 #define CACHE_INDEX ".index"
@@ -72,7 +45,7 @@
 
 namespace libdap {
 
-int get_hash(const string &url);
+int get_hash(const std::string &url);
 
 /** The table of entries in the client-side cache. This class maintains a table
  of CacheEntries, where one instance of CacheEntry is made for
@@ -104,12 +77,12 @@ public:
      the lock counter and mutex. */
     struct CacheEntry {
     private:
-        string url; // Location
+        std::string url; // Location
         int hash = -1;
         int hits = 0; // Hit counts
-        string cachename;
+        std::string cachename;
 
-        string etag;
+        std::string etag;
         time_t lm = -1; // Last modified
         time_t expires = -1;
         time_t date = -1; // From the response header.
@@ -126,8 +99,9 @@ public:
         bool must_revalidate = false;
         bool no_cache = false; // This field is not saved in the index.
 
-        std::atomic<int> readers{0};
-        std::mutex d_response_lock; // set if being read
+        int readers = 0;
+        std::mutex d_readers_lock;
+        std::mutex d_response_read_lock; // set if being read
         std::mutex d_response_write_lock; // set if being written
 
         // Allow HTTPCacheTable methods access and the test class, too
@@ -142,11 +116,11 @@ public:
         friend class DeleteBySize;
 
     public:
-        string get_cachename() const {
+        std::string get_cachename() const {
             return cachename;
         }
 
-        string get_etag() const {
+        std::string get_etag() const {
             return etag;
         }
 
@@ -191,44 +165,37 @@ public:
         }
 
         void lock_read_response() {
-            DBG(cerr << "Try locking read response... (");
             // if the response_lock cannot be acquired, it might be a reader or a writer. If it is a writer, then
             // we need to wait for the writer to finish. If it is a reader, then we don't care and increment the
             // reader count.
-            if (d_response_lock.try_lock() == false) {
+            if (d_response_read_lock.try_lock()) {
                 d_response_write_lock.lock();
                 d_response_write_lock.unlock();
             }
-
+            std::lock_guard<std::mutex> lock(d_readers_lock);
             readers++; // Record number of readers
-            DBGN(cerr << "Done" << endl);
         }
 
         void unlock_read_response() {
+            std::lock_guard<std::mutex> lock(d_readers_lock);
             readers--;
             if (readers == 0) {
-                DBG(cerr << "Unlocking read response... (");
-                d_response_lock.unlock();
-                DBGN(cerr << "Done" << endl);
+                d_response_read_lock.unlock();
             }
         }
 
         void lock_write_response() {
-            DBG(cerr << "Locking write response... (");
-            std::lock(d_response_lock, d_response_write_lock);
-            DBGN(cerr << "Done" << endl);
+            std::lock(d_response_read_lock, d_response_write_lock);
         }
 
         void unlock_write_response() {
-            DBG(cerr << "Unlocking write response... (");
-            d_response_lock.unlock();
+            d_response_read_lock.unlock();
             d_response_write_lock.unlock();
-            DBGN(cerr << "Done" << endl);
         }
 
         CacheEntry() = default;
 
-        explicit CacheEntry(string u) : url(std::move(u)) {
+        explicit CacheEntry(std::string u) : url(std::move(u)) {
             hash = get_hash(url);
         }
     };
@@ -238,8 +205,7 @@ public:
     // Entries with matching hashes occupy successive positions in the inner
     // vector (that's how hash collisions are resolved). Search the inner
     // vector for a specific match.
-    typedef vector<CacheEntry *> CacheEntries;
-    typedef CacheEntries::iterator CacheEntriesIter;
+    typedef std::vector<CacheEntry *> CacheEntries;
 
     typedef CacheEntries **CacheTable;    // Array of pointers to CacheEntries
 
@@ -248,24 +214,24 @@ public:
 private:
     CacheTable d_cache_table;
 
-    string d_cache_root;
+    std::string d_cache_root;
     unsigned int d_block_size; // File block size.
     unsigned long d_current_size;
 
-    string d_cache_index;
+    std::string d_cache_index;
     int d_new_entries;
 
-    map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
+    std::map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
 
 
     CacheTable &get_cache_table() {
         return d_cache_table;
     }
 
-    CacheEntry *get_locked_entry_from_cache_table(int hash, const string &url); /*const*/
+    CacheEntry *get_locked_entry_from_cache_table(int hash, const std::string &url); /*const*/
 
 public:
-    HTTPCacheTable(const string &cache_root, int block_size);
+    HTTPCacheTable(const std::string &cache_root, int block_size);
     HTTPCacheTable(const HTTPCacheTable &) = delete;
     HTTPCacheTable &operator=(const HTTPCacheTable &) = delete;
     HTTPCacheTable() = delete;
@@ -297,11 +263,11 @@ public:
         ++d_new_entries;
     }
 
-    string get_cache_root() const {
+    std::string get_cache_root() const {
         return d_cache_root;
     }
 
-    void set_cache_root(const string &cr) {
+    void set_cache_root(const std::string &cr) {
         d_cache_root = cr;
     }
     //@}
@@ -322,7 +288,7 @@ public:
 
     void cache_index_write();
 
-    string create_hash_directory(int hash);
+    std::string create_hash_directory(int hash);
 
     void create_location(CacheEntry *entry);
 
@@ -330,15 +296,15 @@ public:
 
     void remove_cache_entry(const HTTPCacheTable::CacheEntry *entry);
 
-    void remove_entry_from_cache_table(const string &url);
+    void remove_entry_from_cache_table(const std::string &url);
 
-    CacheEntry *get_locked_entry_from_cache_table(const string &url);
+    CacheEntry *get_locked_entry_from_cache_table(const std::string &url);
 
-    CacheEntry *get_write_locked_entry_from_cache_table(const string &url);
+    CacheEntry *get_write_locked_entry_from_cache_table(const std::string &url);
 
     void calculate_time(HTTPCacheTable::CacheEntry *entry, int default_expiration, time_t request_time);
 
-    void parse_headers(HTTPCacheTable::CacheEntry *entry, unsigned long max_entry_size, const vector<string> &headers);
+    void parse_headers(HTTPCacheTable::CacheEntry *entry, unsigned long max_entry_size, const std::vector<std::string> &headers);
 
     // These should move back to HTTPCache
     void bind_entry_to_data(CacheEntry *entry, FILE *body);

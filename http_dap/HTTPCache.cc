@@ -47,8 +47,8 @@
 #include "HTTPCacheInterruptHandler.h"
 #include "HTTPCacheTable.h"
 #include "HTTPCache.h"
-// #include "HTTPCacheMacros.h"
 
+#include "util.h"
 #include "util_mit.h"
 #include "debug.h"
 

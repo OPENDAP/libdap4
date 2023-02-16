@@ -39,13 +39,10 @@
 
 #include "Error.h"
 #include "InternalErr.h"
-
-#include "HTTPCacheTable.h"
-// #include "HTTPCacheMacros.h"
-
+#include "debug.h"
 #include "util_mit.h"   // for parse_time()
 
-// #define DIR_SEPARATOR_CHAR '/'
+#include "HTTPCacheTable.h"
 
 const int CACHE_TABLE_SIZE = 1499;
 
