@@ -320,7 +320,7 @@ public:
 
     void uncouple_entry_from_data(FILE *body);
 
-    bool is_locked_read_responses();
+    bool is_locked_read_responses() const;
 };
 
 } // namespace libdap

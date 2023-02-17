@@ -489,7 +489,7 @@ public:
             DBG(cerr << prolog << "gc->d_http_cache_table->cache_index_write() completed." << endl);
 
             bool expired_is_in_cache=gc->is_url_in_cache(expired);
-            DBG(cerr << prolog << "expired_is_in_cache: " << (expired_is_in_cache?"true":"false") << endl);
+            DBG(cerr << prolog << "expired_is_in_cache: " << boolalpha << expired_is_in_cache << endl);
             CPPUNIT_ASSERT(
                     !expired_is_in_cache && "This may fail if sleep is not long enough before gc above");
         }
