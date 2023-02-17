@@ -198,28 +198,33 @@ public:
         explicit CacheEntry(std::string u) : url(std::move(u)) {
             hash = get_hash(url);
         }
-    };
+    };  // CacheEntry
 
     // Typedefs for CacheTable. A CacheTable is a vector of vectors of
     // CacheEntries. The outer vector is accessed using the hash value.
     // Entries with matching hashes occupy successive positions in the inner
     // vector (that's how hash collisions are resolved). Search the inner
     // vector for a specific match.
-    typedef std::vector<CacheEntry *> CacheEntries;
+    // FIXME typedef std::vector<CacheEntry *> CacheEntries;
+    using CacheEntries = std::vector<CacheEntry *>;
+    // using CacheEntries2 = std::vector<CacheEntry>;
 
-    typedef CacheEntries **CacheTable;    // Array of pointers to CacheEntries
+    // FIXME typedef CacheEntries **CacheTable;    // Array of pointers to CacheEntries
+    //using CacheTable = CacheEntries**;
+    using CacheTable = std::vector<CacheEntries>;
 
     friend class HTTPCacheTest;
 
 private:
     CacheTable d_cache_table;
+    //CacheTable2 d_cache_table2;
 
     std::string d_cache_root;
     unsigned int d_block_size; // File block size.
-    unsigned long d_current_size;
+    unsigned long d_current_size = 0;
 
     std::string d_cache_index;
-    int d_new_entries;
+    int d_new_entries = 0;
 
     std::map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
 

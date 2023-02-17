@@ -64,14 +64,18 @@ get_hash(const string &url) {
 }
 
 HTTPCacheTable::HTTPCacheTable(const string &cache_root, int block_size) :
-        d_cache_root(cache_root), d_block_size(block_size), d_current_size(0), d_new_entries(0) {
+        d_cache_root(cache_root), d_block_size(block_size) {
     d_cache_index = cache_root + CACHE_INDEX;
 
-    d_cache_table = new CacheEntries *[CACHE_TABLE_SIZE];
+    //d_cache_table = new CacheEntries *[CACHE_TABLE_SIZE];
+
+    d_cache_table.resize(CACHE_TABLE_SIZE);
 
     // Initialize the cache table.
+#if 0
     for (int i = 0; i < CACHE_TABLE_SIZE; ++i)
-        d_cache_table[i] = 0;
+        d_cache_table[i] = nullptr;
+#endif
 
     cache_index_read();
 }
