@@ -205,19 +205,14 @@ public:
     // Entries with matching hashes occupy successive positions in the inner
     // vector (that's how hash collisions are resolved). Search the inner
     // vector for a specific match.
-    // FIXME typedef std::vector<CacheEntry *> CacheEntries;
-    using CacheEntries = std::vector<CacheEntry *>;
-    // using CacheEntries2 = std::vector<CacheEntry>;
 
-    // FIXME typedef CacheEntries **CacheTable;    // Array of pointers to CacheEntries
-    //using CacheTable = CacheEntries**;
+    using CacheEntries = std::vector<CacheEntry *>;
     using CacheTable = std::vector<CacheEntries>;
 
     friend class HTTPCacheTest;
 
 private:
     CacheTable d_cache_table;
-    //CacheTable2 d_cache_table2;
 
     std::string d_cache_root;
     unsigned int d_block_size; // File block size.
@@ -228,16 +223,7 @@ private:
 
     std::map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
 
-
-#if 0
-
-    CacheTable &get_cache_table() {
-        return d_cache_table;
-    }
-
-#endif
-
-    CacheEntry *get_locked_entry_from_cache_table(int hash, const std::string &url); /*const*/
+    CacheEntry *get_locked_entry_from_cache_table(int hash, const std::string &url);
 
 public:
     HTTPCacheTable(const std::string &cache_root, int block_size);
