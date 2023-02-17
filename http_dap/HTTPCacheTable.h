@@ -229,9 +229,13 @@ private:
     std::map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
 
 
+#if 0
+
     CacheTable &get_cache_table() {
         return d_cache_table;
     }
+
+#endif
 
     CacheEntry *get_locked_entry_from_cache_table(int hash, const std::string &url); /*const*/
 

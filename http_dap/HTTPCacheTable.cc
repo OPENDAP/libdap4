@@ -91,18 +91,22 @@ delete_cache_entry(HTTPCacheTable::CacheEntry *e) {
 
 HTTPCacheTable::~HTTPCacheTable() {
     for (int i = 0; i < CACHE_TABLE_SIZE; ++i) {
-        HTTPCacheTable::CacheEntries *cp = get_cache_table()[i];
-        if (cp) {
+        HTTPCacheTable::CacheEntries cp =d_cache_table[i];
+        if (!cp.empty()) {
             // delete each entry
-            for_each(cp->begin(), cp->end(), delete_cache_entry);
+            for_each(cp.begin(), cp.end(), delete_cache_entry);
 
             // now delete the vector that held the entries
+#if 0
             delete get_cache_table()[i];
             get_cache_table()[i] = 0;
+#endif
         }
     }
 
+#if 0
     delete[] d_cache_table;
+#endif
 }
 
 /** Functor which deletes and nulls a single CacheEntry if it has expired.
@@ -138,8 +142,8 @@ public:
 void HTTPCacheTable::delete_expired_entries(time_t time) {
     // Walk through and delete all the expired entries.
     for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
-        HTTPCacheTable::CacheEntries *slot = get_cache_table()[cnt];
-        if (slot) {
+        HTTPCacheTable::CacheEntries slot = d_cache_table[cnt];
+        if (!slot.empty()) {
             for_each(slot->begin(), slot->end(), DeleteExpired(*this, time));
             slot->erase(remove(slot->begin(), slot->end(),
                                static_cast<HTTPCacheTable::CacheEntry *>(0)), slot->end());
@@ -175,8 +179,8 @@ public:
 void
 HTTPCacheTable::delete_by_hits(int hits) {
     for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
-        if (get_cache_table()[cnt]) {
-            HTTPCacheTable::CacheEntries *slot = get_cache_table()[cnt];
+        if (!d_cache_table[cnt].empty()) {
+            HTTPCacheTable::CacheEntries slot = d_cache_table[cnt];
             for_each(slot->begin(), slot->end(), DeleteByHits(*this, hits));
             slot->erase(remove(slot->begin(), slot->end(),
                                static_cast<HTTPCacheTable::CacheEntry *>(0)),
@@ -211,8 +215,8 @@ public:
 
 void HTTPCacheTable::delete_by_size(unsigned int size) {
     for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
-        if (get_cache_table()[cnt]) {
-            HTTPCacheTable::CacheEntries *slot = get_cache_table()[cnt];
+        if (!d_cache_table[cnt].empty()) {
+            HTTPCacheTable::CacheEntries *slot = d_cache_table[cnt];
             for_each(slot->begin(), slot->end(), DeleteBySize(*this, size));
             slot->erase(remove(slot->begin(), slot->end(), nullptr), slot->end());
         }
@@ -361,8 +365,8 @@ HTTPCacheTable::cache_index_write() {
     // simple as we keep it all in ASCII.
 
     for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
-        HTTPCacheTable::CacheEntries *cp = get_cache_table()[cnt];
-        if (cp)
+        HTTPCacheTable::CacheEntries cp = d_cache_table[cnt];
+        if (!cp.empty())
             for_each(cp->begin(), cp->end(), WriteOneCacheEntry(fp));
     }
 
@@ -488,10 +492,12 @@ HTTPCacheTable::add_entry_to_cache_table(CacheEntry *entry) {
     if (hash > CACHE_TABLE_SIZE - 1 || hash < 0)
         throw InternalErr(__FILE__, __LINE__, "Hash value too large!");
 
+#if 0
     if (!d_cache_table[hash])
         d_cache_table[hash] = new CacheEntries;
+#endif
 
-    d_cache_table[hash]->push_back(entry);
+    d_cache_table[hash].push_back(entry);
 
     DBG(cerr << "add_entry_to_cache_table, current_size: " << d_current_size
              << ", entry->size: " << entry->size << ", block size: " << d_block_size
@@ -525,8 +531,8 @@ HTTPCacheTable::get_locked_entry_from_cache_table(int hash, const string &url) /
 {
     DBG(cerr << "url: " << url << "; hash: " << hash << endl);
     DBG(cerr << "d_cache_table: " << hex << d_cache_table << dec << endl);
-    if (d_cache_table[hash]) {
-        for (auto entry: *d_cache_table[hash]) {
+    if (!d_cache_table[hash].empty()) {
+        for (auto entry: d_cache_table[hash]) {
             // Must test entry because perform_garbage_collection may have
             // removed this entry; the CacheEntry will then be null.
             if (entry && entry->url == url) {
@@ -547,8 +553,8 @@ HTTPCacheTable::get_locked_entry_from_cache_table(int hash, const string &url) /
 HTTPCacheTable::CacheEntry *
 HTTPCacheTable::get_write_locked_entry_from_cache_table(const string &url) {
     int hash = get_hash(url);
-    if (d_cache_table[hash]) {
-        for (auto entry: *d_cache_table[hash]) {
+    if (!d_cache_table[hash].empty()) {
+        for (auto entry: d_cache_table[hash]) {
             // Must test 'entry' (HTTPCacheTable::CacheEntry *) because
             // perform_garbage_collection may have removed this entry;
             // the CacheEntry will then be null.
@@ -617,11 +623,11 @@ public:
 void
 HTTPCacheTable::remove_entry_from_cache_table(const string &url) {
     int hash = get_hash(url);
-    if (d_cache_table[hash]) {
-        CacheEntries *cp = d_cache_table[hash];
-        for_each(cp->begin(), cp->end(), DeleteCacheEntry(this, url));
-        cp->erase(remove(cp->begin(), cp->end(), static_cast<HTTPCacheTable::CacheEntry *>(0)),
-                  cp->end());
+    if (!d_cache_table[hash].empty()) {
+        CacheEntries cp = d_cache_table[hash];
+        for_each(cp.begin(), cp.end(), DeleteCacheEntry(this, url));
+        cp.erase(remove(cp.begin(), cp.end(), static_cast<HTTPCacheTable::CacheEntry *>(0)),
+                  cp.end());
     }
 }
 
@@ -648,10 +654,10 @@ void HTTPCacheTable::delete_all_entries() {
     // Walk through the cache table and, for every entry in the cache, delete
     // it on disk and in the cache table.
     for (int cnt = 0; cnt < CACHE_TABLE_SIZE; cnt++) {
-        HTTPCacheTable::CacheEntries *slot = get_cache_table()[cnt];
-        if (slot) {
-            for_each(slot->begin(), slot->end(), DeleteUnlockedCacheEntry(*this));
-            slot->erase(remove(slot->begin(), slot->end(), static_cast<HTTPCacheTable::CacheEntry *> (0)), slot->end());
+        HTTPCacheTable::CacheEntries slot = d_cache_table[cnt];
+        if (!slot.empty()) {
+            for_each(slot.begin(), slot.end(), DeleteUnlockedCacheEntry(*this));
+            slot.erase(remove(slot.begin(), slot.end(), static_cast<HTTPCacheTable::CacheEntry *> (0)), slot.end());
         }
     }
 
