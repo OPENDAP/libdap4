@@ -109,11 +109,7 @@ public:
         friend class HTTPCacheTest;
 
         // Allow access by the functors used in HTTPCacheTable
-        friend class DeleteCacheEntry;
         friend class WriteOneCacheEntry;
-        friend class DeleteExpired;
-        friend class DeleteByHits;
-        friend class DeleteBySize;
 
     public:
         std::string get_cachename() const {
@@ -224,6 +220,11 @@ private:
     std::map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
 
     CacheEntry *get_read_locked_entry_from_cache_table(int hash, const std::string &url);
+    bool cache_index_delete();
+    bool cache_index_read();
+    CacheEntry *cache_index_parse_line(const char *line);
+    std::string create_hash_directory(int hash);
+    void remove_cache_entry(const HTTPCacheTable::CacheEntry *entry);
 
 public:
     HTTPCacheTable(const std::string &cache_root, int block_size);
@@ -268,42 +269,23 @@ public:
     //@}
 
     void delete_expired_entries(time_t time = 0);
-
     void delete_by_hits(int hits);
-
     void delete_by_size(unsigned int size);
-
     void delete_all_entries();
 
-    bool cache_index_delete();
-
-    bool cache_index_read();
-
-    CacheEntry *cache_index_parse_line(const char *line);
-
-    void cache_index_write();
-
-    std::string create_hash_directory(int hash);
-
     void create_location(CacheEntry *entry);
-
     void add_entry_to_cache_table(CacheEntry *entry);
-
-    void remove_cache_entry(const HTTPCacheTable::CacheEntry *entry);
-
+    void cache_index_write();
     void remove_entry_from_cache_table(const std::string &url);
 
     CacheEntry *get_read_locked_entry_from_cache_table(const std::string &url);
-
     CacheEntry *get_write_locked_entry_from_cache_table(const std::string &url);
 
     void calculate_time(HTTPCacheTable::CacheEntry *entry, int default_expiration, time_t request_time);
-
     void parse_headers(HTTPCacheTable::CacheEntry *entry, unsigned long max_entry_size, const std::vector<std::string> &headers);
 
     // These should move back to HTTPCache
     void bind_entry_to_data(CacheEntry *entry, FILE *body);
-
     void uncouple_entry_from_data(FILE *body);
 
     bool is_locked_read_responses() const;

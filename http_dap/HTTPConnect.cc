@@ -569,7 +569,7 @@ HTTPConnect::HTTPConnect(RCReader *rcr, bool use_cpp) : d_username(""), d_passwo
 
     // HTTPCache::instance returns a valid ptr or 0.
     if (d_rcr->get_use_cache())
-        d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root(),true);
+        d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root());
     else
         d_http_cache = 0;
 

@@ -58,9 +58,9 @@ bool is_hop_by_hop_header(const std::string &header);
     disable this cache. Use Connect::set_cache_enable(false).</i>
 
     The original design of this class was taken from the W3C libwww software, 
-    written by Henrik Frystyk Nielsen, Copyright MIT
-    1995. See the file MIT_COPYRIGHT. This software is a complete rewrite in
-    C++ with additional features useful to the DODS and OPeNDAP projects.
+    written by Henrik Frystyk Nielsen, Copyright MIT 1995. See the file
+    MIT_COPYRIGHT. This software is a complete rewrite in C++ with additional
+    features useful to the DODS and OPeNDAP projects.
 
     This cache does not implement range checking. Partial responses should
     not be cached (HFN's version did, but it doesn't mesh well with the DAP
@@ -107,7 +107,8 @@ class HTTPCache
 {
 private:
     std::string d_cache_root;
-    FILE *d_locked_open_file = nullptr; // Lock for single process use.
+    int d_cache_lock_fd = -1; // Lock for multi-process use.
+    std::string d_cache_lock_file;
 
     bool d_cache_enabled = false;
     bool d_cache_protected = false;
@@ -144,12 +145,14 @@ private:
     friend class HTTPConnectTest;
 
     void set_cache_root(const std::string &root = "");
-    void create_cache_root(const std::string &cache_root);
-    
-    // These will go away when the cache can be used by multiple processes.
-    bool get_single_user_lock(bool force = false);
-    void release_single_user_lock();
-    
+    void create_cache_root(const std::string &cache_root) const;
+
+    int m_initialize_cache_lock(const std::string &cache_lock);
+    void m_lock_cache_write(int fd);
+    void m_lock_cache_read(int fd);
+    void m_unlock_cache(int fd);
+    void m_exclusive_to_shared_lock(int fd);
+
     bool is_url_in_cache(const std::string &url);
 
     // I made these four methods, so they could be tested by HTTPCacheTest.
@@ -167,10 +170,10 @@ private:
     void expired_gc();
     void hits_gc();
 
-    HTTPCache(const std::string &cache_root, bool force);
+    HTTPCache(const std::string &cache_root);
 
 public:
-    static HTTPCache *instance(const std::string &cache_root, bool force = false);
+    static HTTPCache *instance(const std::string &cache_root);
 
     HTTPCache() = delete;
     HTTPCache(const HTTPCache &) = delete;
@@ -217,8 +220,7 @@ public:
     
     // Lock these for reading
     std::vector<std::string> get_conditional_request_headers(const std::string &url);
-    FILE *get_cached_response(const std::string &url, std::vector<std::string> &headers,
-			      			  std::string &cacheName);
+    FILE *get_cached_response(const std::string &url, std::vector<std::string> &headers, std::string &cacheName);
     FILE *get_cached_response(const std::string &url, std::vector<std::string> &headers);
     FILE *get_cached_response(const std::string &url);
 

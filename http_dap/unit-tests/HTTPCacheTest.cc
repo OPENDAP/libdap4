@@ -88,7 +88,7 @@ public:
 
     void setUp() override {
         // Here we use reset because std::make_unique<>() cannot access the private constructor. jhrg 2/15/23
-        hc_p.reset(new HTTPCache("cache-testsuite/dods_cache/", true));
+        hc_p.reset(new HTTPCache("cache-testsuite/dods_cache/"));
     }
 
     CPPUNIT_TEST_SUITE (HTTPCacheTest);
@@ -100,9 +100,12 @@ public:
     CPPUNIT_TEST (cache_index_write_test);
     CPPUNIT_TEST (create_cache_root_test);
     CPPUNIT_TEST (set_cache_root_test);
-    CPPUNIT_TEST (get_single_user_lock_test);
+    CPPUNIT_TEST (initialize_cache_lock_test);
 
+#if 0
+    // Removed release_single_user_lock() from the class
     CPPUNIT_TEST (release_single_user_lock_test);
+#endif
     CPPUNIT_TEST (create_hash_directory_test);
     CPPUNIT_TEST (create_location_test);
     CPPUNIT_TEST (parse_headers_test);
@@ -196,14 +199,14 @@ public:
     void cache_index_write_test()
     {
         try {
-            unique_ptr<HTTPCache> hc_3(new HTTPCache("cache-testsuite/dods_cache/", true));
+            unique_ptr<HTTPCache> hc_3(new HTTPCache("cache-testsuite/dods_cache/"));
             hc_3->d_http_cache_table->add_entry_to_cache_table(
                 hc_p->d_http_cache_table->cache_index_parse_line(index_file_line.c_str()));
 
             hc_3->d_http_cache_table->d_cache_index = hc_p->d_cache_root + "test_index";
             hc_3->d_http_cache_table->cache_index_write();
 
-            unique_ptr<HTTPCache> hc_4(new HTTPCache("cache-testsuite/dods_cache/", true));
+            unique_ptr<HTTPCache> hc_4(new HTTPCache("cache-testsuite/dods_cache/"));
             hc_4->d_http_cache_table->d_cache_index = hc_3->d_cache_root + "test_index";
             hc_4->d_http_cache_table->cache_index_read();
 
@@ -255,34 +258,17 @@ public:
         remove("/home/jimg/test_cache/");
     }
 
-    void get_single_user_lock_test()
+    void initialize_cache_lock_test()
     {
         hc_p->set_cache_root("/tmp/dods_test_cache");
-        hc_p->release_single_user_lock();
+        close(hc_p->d_cache_lock_fd);
 
-        CPPUNIT_ASSERT(hc_p->get_single_user_lock());
+        CPPUNIT_ASSERT(hc_p->m_initialize_cache_lock(hc_p->d_cache_root + ".lock"));
         CPPUNIT_ASSERT(access("/tmp/dods_test_cache/.lock", F_OK) == 0);
 
-        // Second time should fail
-        CPPUNIT_ASSERT(!hc_p->get_single_user_lock());
-    }
-
-    void release_single_user_lock_test()
-    {
-        hc_p->set_cache_root("/tmp/dods_test_cache");
-        remove("/tmp/dods_test_cache/.lock"); // in case prev. test fails
-        hc_p->d_locked_open_file = 0;
-
-        CPPUNIT_ASSERT(hc_p->get_single_user_lock());
-        CPPUNIT_ASSERT(access("/tmp/dods_test_cache/.lock", F_OK) == 0);
-
-        hc_p->release_single_user_lock();
-        CPPUNIT_ASSERT(hc_p->get_single_user_lock());
-        CPPUNIT_ASSERT(access("/tmp/dods_test_cache/.lock", F_OK) == 0);
-
-        CPPUNIT_ASSERT(!hc_p->get_single_user_lock());
-
-        remove("/tmp/dods_test_cache/.lock");
+        // Second time should return the same fd
+        CPPUNIT_ASSERT_NO_THROW_MESSAGE("The second call to initialize...() should return and not throw",
+                                        hc_p->m_initialize_cache_lock(hc_p->d_cache_root + ".lock"));
     }
 
     void create_hash_directory_test()
@@ -462,7 +448,7 @@ public:
     void perform_garbage_collection_test()
     {
         try {
-            unique_ptr<HTTPCache> gc(new HTTPCache("cache-testsuite/gc_cache", true));
+            unique_ptr<HTTPCache> gc(new HTTPCache("cache-testsuite/gc_cache"));
             DBG(cerr << prolog << "gc->get_cache_root(): " << gc->get_cache_root() << endl);
 
             HTTPResponse *rs = http_conn_p->fetch_url(localhost_url);
@@ -505,7 +491,7 @@ public:
     void purge_cache_and_release_cached_response_test()
     {
         try {
-            unique_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
+            unique_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache"));
             DBG(cerr << "get_cache_root: " << pc->get_cache_root() << endl);
 
             time_t now = time(0);
@@ -564,7 +550,7 @@ public:
     void instance_test()
     {
         try {
-            HTTPCache *c = HTTPCache::instance("cache-testsuite/singleton_cache", true);
+            HTTPCache *c = HTTPCache::instance("cache-testsuite/singleton_cache");
             DBG(cerr << "get_cache_root: " << c->get_cache_root() << endl);
 
             if (!c->is_url_in_cache(localhost_url)) {
@@ -609,7 +595,7 @@ public:
     void get_conditional_response_headers_test()
     {
         try {
-            unique_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/header_cache", true));
+            unique_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/header_cache"));
             DBG(cerr << prolog << "c->get_cache_root(): " << c->get_cache_root() << endl);
 
             CPPUNIT_ASSERT(c->get_cache_root() == "cache-testsuite/header_cache/");
@@ -665,7 +651,7 @@ public:
     void update_response_test()
     {
         try {
-            unique_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/singleton_cache", true));
+            unique_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/singleton_cache"));
             DBG(cerr << "get_cache_root: " << c->get_cache_root() << endl);
 
             if (!c->is_url_in_cache(localhost_url)) {
@@ -728,7 +714,7 @@ public:
     void interrupt_test()
     {
         try {
-            unique_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/singleton_cache", true));
+            unique_ptr<HTTPCache> c(new HTTPCache("cache-testsuite/singleton_cache"));
             string coads = "http://test.opendap.org/dap/data/nc/coads_climatology.nc";
             if (!c->is_url_in_cache(coads)) {
                 HTTPResponse *rs = http_conn_p->fetch_url(coads);
@@ -749,7 +735,7 @@ public:
         string jan = "http://test.opendap.org/dap/data/nc/jan.nc.dds";
         string feb = "http://test.opendap.org/dap/data/nc/feb.nc.dds";
         try {
-            unique_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
+            unique_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache"));
 #if 0
             // This broke Fedora ppc64le system with XFS system
             CPPUNIT_ASSERT(pc->d_http_cache_table->d_block_size == 4096);
@@ -798,7 +784,7 @@ public:
         // performed. The feb URL should have been deleted.
 
         try {
-            unique_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache", true));
+            unique_ptr<HTTPCache> pc(new HTTPCache("cache-testsuite/purge_cache"));
             CPPUNIT_ASSERT(!pc->is_url_in_cache(feb));
         }
         catch (const Error &e) {

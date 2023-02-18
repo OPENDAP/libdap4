@@ -27,6 +27,15 @@
 
 #include <cstring>
 #include <cerrno>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <fcntl.h>
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
 #include <sstream>
 #include <algorithm>
@@ -72,9 +81,7 @@ std::unique_ptr<HTTPCache> HTTPCache::d_instance = nullptr;
     as part of the initialization. If the cache has already been initialized,
     this method returns a pointer to that instance. Note HTTPCache uses the
     singleton pattern; A process may have only one instance of this object.
-    Also note that HTTPCache is MT-safe. However, if the \c force parameter
-    is set to true, it may be possible for two or more processes to access
-    the persistent store at the same time resulting in undefined behavior.
+    Also note that HTTPCache is MT-safe.
 
     Default values: is_cache_enabled(): true, is_cache_protected(): false,
     is_expire_ignored(): false, the total size of the cache is 20M, 2M of that
@@ -86,19 +93,14 @@ std::unique_ptr<HTTPCache> HTTPCache::d_instance = nullptr;
 
     @param cache_root The fully qualified pathname of the directory which
     will hold the cache data (i.e., the persistent store).
-    @param force Force access to the persistent store if true. By default
-    false. Use this only if you're sure no one else is using the same cache
-    root! This is included so that programs may use a cache that was
-    left in an inconsistent state.
-    @return A pointer to the HTTPCache object.
-    @exception Error thrown if the cache root cannot set. */
+    @return A pointer to the HTTPCache object. */
 
 HTTPCache *
-HTTPCache::instance(const string &cache_root, bool force) {
+HTTPCache::instance(const string &cache_root) {
     if (d_instance == nullptr) {
         static std::once_flag d_http_cache_init_once;
         std::call_once(d_http_cache_init_once,
-                       [cache_root, force]() { d_instance.reset(new HTTPCache(cache_root, force)); });
+                       [cache_root]() { d_instance.reset(new HTTPCache(cache_root)); });
     }
 
     // In the original code, handlers for SIGINT, TERM and PIPE were registered
@@ -121,9 +123,7 @@ HTTPCache::instance(const string &cache_root, bool force) {
     persistent store cannot be obtained.
     @see cache_index_read */
 
-HTTPCache::HTTPCache(const string &cache_root, bool force) {
-    // FIXME Remove? lock_guard<mutex> lock{d_cache_mutex};
-
+HTTPCache::HTTPCache(const string &cache_root) {
     // This used to throw an Error object if we could not get the
     // single user lock. However, that results in an invalid object. It's
     // better to have an instance that has default values. If we cannot get
@@ -134,20 +134,29 @@ HTTPCache::HTTPCache(const string &cache_root, bool force) {
     // work, I had to move the call to create_cache_root out of
     // set_cache_root(). 09/08/03 jhrg
 
-    set_cache_root(cache_root);
+    try {
+        set_cache_root(cache_root); // sets d_cache_root, even if cache_root is empty.
+        // It's OK to call create_cache_root if the directory already exists.
+        create_cache_root(d_cache_root);
+        string lock = d_cache_root + CACHE_LOCK;
+        d_cache_lock_fd = m_initialize_cache_lock(lock);
+        d_cache_lock_file = lock;
 
-    if (!get_single_user_lock(force))
-        throw Error(internal_error, "Could not get single user lock for the cache");
+        struct stat s = {};
+        int block_size;
+        if (stat(cache_root.c_str(), &s) == 0)
+            block_size = s.st_blksize;
+        else
+            block_size = 4096;
 
-    struct stat s = {};
-    int block_size;
-    if (stat(cache_root.c_str(), &s) == 0)
-        block_size = s.st_blksize;
-    else
-        block_size = 4096;
-
-    d_http_cache_table = make_unique<HTTPCacheTable>(d_cache_root, block_size);
-    d_cache_enabled = true;
+        d_http_cache_table = make_unique<HTTPCacheTable>(d_cache_root, block_size);
+        d_cache_enabled = true;
+    }
+    catch (const Error &) {
+        // Write to a log here. 2/18/23 jhrg
+        d_cache_enabled = false;
+        DBG(cerr << "Failure to get the cache lock" << endl);
+    }
 }
 
 /** Destroy an instance of HTTPCache. This writes the cache index and frees
@@ -170,10 +179,11 @@ HTTPCache::~HTTPCache() {
         // unless we're debugging, still free up the cache table in memory.
         // How should we let users know they cache index is not being
         // written?? 10/03/02 jhrg
+        // Write a log message here. 2/18/23 jhrg
         DBG(cerr << e.get_error_message() << endl);
     }
 
-    release_single_user_lock();
+    close(d_cache_lock_fd);
 }
 
 
@@ -278,76 +288,186 @@ void HTTPCache::too_big_gc() {
 
 //@} End of the garbage collection methods.
 
-/** Lock the persistent store part of the cache. Return true if the cache lock
-    was acquired, false otherwise. This is a single user cache, so it
-    requires locking at the process level.
+/// @name New multi-process locking methods
+/// @{
 
-    A private method.
+static inline string get_errno() {
+    const char *s_err = strerror(errno);
+    return s_err ? s_err : "unknown error";
+}
 
-    @param force If True force access to the persistent store. False by
-    default.
-    @return True if the cache was locked for our use, False otherwise. */
+// Build a lock of a certain type.
+//
+// Using whence == SEEK_SET with start and len set to zero means lock the whole file.
+// jhrg 9/8/18
+static inline struct flock *lock(int type)
+{
+    static struct flock lock;
+    lock.l_type = type;
+    lock.l_whence = SEEK_SET;
+    lock.l_start = 0;
+    lock.l_len = 0;
+    lock.l_pid = getpid();
 
-bool HTTPCache::get_single_user_lock(bool force) {
-    if (!d_locked_open_file) {
-        FILE *fp = nullptr;
+    return &lock;
+}
 
-        try {
-            // It's OK to call create_cache_root if the directory already exists.
-            create_cache_root(d_cache_root);
-        }
-        catch (const Error &) {
-            // We need to catch and return false because this method is
-            // called from a ctor and throwing at this point will result in a
-            // partially constructed object. 01/22/04 jhrg
-            DBG(cerr << "Failure to create the cache root" << endl);
-            return false;
-        }
+/**
+ * A blocking call to create a file locked for write.
+ *
+ * @note Used by the methods m_initialize_cache_info() and create_and_lock()
+ *
+ * @param file_name The name of the file to lock
+ * @param ref_fd Return-value parameter that holds the file descriptor that's locked.
+ * @return True when the lock is acquired, false if the file already exists.
+ */
+static bool createLockedFile(const string &file_name, int &ref_fd)
+{
+    DBG(cerr << "BEGIN file: " << file_name <<endl);
 
-        // Try to read the lock file. If we can open for reading, it exists.
-        string lock = d_cache_root + CACHE_LOCK;
-        if ((fp = fopen(lock.c_str(), "r")) != nullptr) {
-            int res = fclose(fp);
-            if (res) {
-                DBG(cerr << "Failed to close " << (void *) fp << endl);
-            }
-            if (force)
-                remove(lock.c_str());
-            else
+    int fd;
+    if ((fd = open(file_name.c_str(), O_CREAT | O_EXCL | O_RDWR, 0666)) < 0) {
+        switch (errno) {
+            case EEXIST:
                 return false;
-        }
 
-        if ((fp = fopen(lock.c_str(), "w")) == nullptr) {
-            DBG(cerr << "Could not open for write access" << endl);
-            return false;
+            default:
+                throw InternalErr(__FILE__, __LINE__, file_name + ": " + get_errno());
         }
-
-        d_locked_open_file = fp;
-        return true;
     }
 
-    DBG(cerr << "locked_open_file is true" << endl);
-    return false;
-}
-
-/** Release the single user (process) lock. A private method. */
-
-void
-HTTPCache::release_single_user_lock() {
-    if (d_locked_open_file) {
-        int res = fclose(d_locked_open_file);
-        if (res) {
-            DBG(cerr << "Failed to close " << (void *) d_locked_open_file << endl);
-        }
-        d_locked_open_file = nullptr;
+    struct flock *l = lock(F_WRLCK);
+    // F_SETLKW == set lock, blocking
+    if (fcntl(fd, F_SETLKW, l) == -1) {
+        close(fd);
+        ostringstream oss;
+        oss << "cache process: " << l->l_pid << " triggered a locking error for '" << file_name << "': " << get_errno();
+        throw InternalErr(__FILE__, __LINE__, oss.str());
     }
 
-    string lock = d_cache_root + CACHE_LOCK;
-    remove(lock.c_str());
+    DBG(cerr << "END file: " << file_name <<endl);
+
+    // Success
+    ref_fd = fd;
+    return true;
 }
+
+/**
+ * @brief Either create the cache lock or open an existing one.
+ *
+ * @param cache_lock The name of the cache lock file. This must be the same
+ * for all users of the cache
+ * @return A file descriptor to the open lock file. The file is not locked,
+ * but the op descriptor can be passed to m_lock_cache_read(), ..., and locked.
+ *
+ * @see m_lock_cache_write(), m_lock_cache_read(), m_unlock_cache() for the methods
+ * that use advisory file locking to lock the cache.
+ */
+int HTTPCache::m_initialize_cache_lock(const string &cache_lock)
+{
+    DBG(cerr << "BEGIN" << endl);
+
+    int fd;
+    if (createLockedFile(cache_lock, fd)) {
+        // This leaves the fd file descriptor open, but unlocked
+        m_unlock_cache(fd);
+    }
+    else {
+        if ((fd = open(cache_lock.c_str(), O_RDWR)) == -1) {
+            throw InternalErr(__FILE__, __LINE__, "Failed to open cache lock file: " + cache_lock + " errno: " + get_errno());
+        }
+    }
+
+    DBG(cerr << "END" << endl);
+    return fd;
+}
+
+/** Get an exclusive lock on the 'cache info' file. The 'cache info' file
+ * is used to control certain cache actions, ensuring that they are atomic.
+ * These include making sure that the create_and_lock() and read_and_lock()
+ * operations are atomic as well as the purge and related operations.
+ *
+ * @note This is intended to be used internally only but might be useful in
+ * some settings.
+ */
+void HTTPCache::m_lock_cache_write(int fd)
+{
+    DBG(cerr << "d_cache_info_fd: " << d_cache_info_fd << endl);
+
+    // F_SETLKW == set lock, blocking
+    if (fcntl(fd, F_SETLKW, lock(F_WRLCK)) == -1) {
+        throw InternalErr(__FILE__, __LINE__, "An error occurred trying to lock the cache-control file" + get_errno());
+    }
+
+    DBG(cerr << "lock status: " << lockStatus(d_cache_info_fd) << endl);
+}
+
+/** Get a shared lock on the 'cache info' file.
+ *
+ */
+void HTTPCache::m_lock_cache_read(int fd)
+{
+    DBG(cerr << "d_cache_info_fd: " << d_cache_info_fd << endl);
+
+    if (fcntl(fd, F_SETLKW, lock(F_RDLCK)) == -1) {
+        throw InternalErr(__FILE__, __LINE__, "An error occurred trying to lock the cache-control file" + get_errno());
+    }
+
+    DBG(cerr << "lock status: " << lockStatus(d_cache_info_fd) << endl);
+}
+
+/** Unlock the cache info file.
+ *
+ * @note This is intended to be used internally only but might be useful in
+ * some settings.
+ */
+void HTTPCache::m_unlock_cache(int fd)
+{
+    DBG(cerr << "d_cache_info_fd: " << d_cache_info_fd << endl);
+
+    if (fcntl(fd, F_SETLK, lock(F_UNLCK)) == -1) {
+        throw InternalErr(__FILE__, __LINE__,
+                          "An error occurred trying to unlock the cache-control file" + get_errno());
+    }
+
+    DBG(cerr << "lock status: " << lockStatus(d_cache_info_fd) << endl);
+}
+
+/**
+* @brief Transfer from an exclusive lock to a shared lock.
+*
+* If the file has an exclusive write lock on it, change that to a shared
+* read lock. This is an atomic operation. If the call to fcntl(2) is
+* protected by locking the cache, a dead lock will result given typical use
+        * of this class. This method exists to help with the situation where one
+* process has the cache locked and is blocking on a shared read lock for
+* a file that a second process has locked exclusively (for writing). By
+        * changing the exclusive lock to a shared lock, the first process can get
+        * its shared lock and then release the cache.
+*
+* @param fd The file descriptor that is exclusively locked and which, on
+* exit, will have a shared lock.
+*/
+void HTTPCache::m_exclusive_to_shared_lock(int fd)
+{
+    struct flock lock;
+    lock.l_type = F_RDLCK;
+    lock.l_whence = SEEK_SET;
+    lock.l_start = 0;
+    lock.l_len = 0;
+    lock.l_pid = getpid();
+
+    if (fcntl(fd, F_SETLKW, &lock) == -1) {
+        throw InternalErr(__FILE__, __LINE__, get_errno());
+    }
+
+    DBG(cerr << "lock status: " << lockStatus(fd) << endl);
+}
+
+/// @} New multi-process locking methods
 
 /** @name Accessors and Mutators for various properties. */
-//@{
+/// @{
 
 /** Get the current cache root directory.
     @return A string that contains the cache root directory. */
@@ -356,7 +476,6 @@ string
 HTTPCache::get_cache_root() const {
     return d_cache_root;
 }
-
 
 /** Create the cache's root directory. This is the persistent store used by
     the cache. Paths must always end in DIR_SEPARATOR_CHAR.
@@ -367,7 +486,7 @@ HTTPCache::get_cache_root() const {
     @exception Error Thrown if the given pathname cannot be created. */
 
 void
-HTTPCache::create_cache_root(const string &cache_root) {
+HTTPCache::create_cache_root(const string &cache_root) const {
     // Save the mask
     mode_t mask = umask(0);
 
@@ -443,8 +562,6 @@ HTTPCache::set_cache_enabled(bool mode) {
 
 bool
 HTTPCache::is_cache_enabled() const {
-    DBG2(cerr << "In HTTPCache::is_cache_enabled: (" << d_cache_enabled << ")"
-              << endl);
     return d_cache_enabled;
 }
 
@@ -665,7 +782,7 @@ HTTPCache::get_cache_control() {
     return d_cache_control;
 }
 
-//@}
+/// @}
 
 /** Look in the cache for the given \c url. Is it in the cache table?
 
@@ -875,9 +992,10 @@ HTTPCache::open_body(const string &cachename) {
 
     If a response for \c url is already present in the cache, it will be
     replaced by the new headers and body. To update a response in the cache
-    with new meta data, use update_response().
+    with (only) new meta data, use update_response().
 
-    This method locks the class' interface.
+    This method locks the class' interface AND blocks until the cache can
+    be locked for writing.
 
     @param url A string which holds the request URL.
     @param request_time The time when the request was made, in seconds since
@@ -891,21 +1009,21 @@ HTTPCache::open_body(const string &cachename) {
 
 bool
 HTTPCache::cache_response(const string &url, time_t request_time, const vector<string> &headers, const FILE *body) {
-    lock_guard<mutex> lock{d_cache_mutex};
-
-    DBG(cerr << "Caching url: " << url << "." << endl);
 
     // If this is not an http or https URL, don't cache.
     if (url.find("http:") == string::npos && url.find("https:") == string::npos) {
         return false;
     }
 
+    lock_guard<mutex> lock{d_cache_mutex};
+    m_lock_cache_write(d_cache_lock_fd); // Blocks until the lock is acquired.
+
     // This does nothing if url is not already in the cache. It's
     // more efficient to do this than to first check and see if the entry
     // exists. 10/10/02 jhrg
     d_http_cache_table->remove_entry_from_cache_table(url);
 
-    HTTPCacheTable::CacheEntry *entry = new HTTPCacheTable::CacheEntry(url);
+    auto *entry = new HTTPCacheTable::CacheEntry(url);
     entry->lock_write_response();
 
     try {
@@ -914,6 +1032,7 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
             DBG(cerr << "Not cache-able; deleting HTTPCacheTable::CacheEntry: " << entry
                      << "(" << url << ")" << endl);
             entry->unlock_write_response();
+            m_unlock_cache(d_cache_lock_fd);
             delete entry;
             entry = 0;
             return false;
@@ -937,6 +1056,7 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
         DBG(cerr << "Too big; deleting HTTPCacheTable::CacheEntry: " << entry << "(" << url
                  << ")" << endl);
         entry->unlock_write_response();
+        m_unlock_cache(d_cache_lock_fd);
         delete entry;
         return false;
     }
@@ -948,6 +1068,7 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
         d_http_cache_table->cache_index_write(); // resets new_entries
     }
 
+    m_unlock_cache(d_cache_lock_fd);
     return true;
 }
 
