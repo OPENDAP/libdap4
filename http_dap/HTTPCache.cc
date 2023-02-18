@@ -122,7 +122,7 @@ HTTPCache::instance(const string &cache_root, bool force) {
     @see cache_index_read */
 
 HTTPCache::HTTPCache(const string &cache_root, bool force) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    // FIXME Remove? lock_guard<mutex> lock{d_cache_mutex};
 
     // This used to throw an Error object if we could not get the
     // single user lock. However, that results in an invalid object. It's
@@ -159,15 +159,13 @@ HTTPCache::HTTPCache(const string &cache_root, bool force) {
  */
 
 HTTPCache::~HTTPCache() {
-    DBG(cerr << "Entering the destructor for " << this << "... ");
-
     try {
         if (startGC())
             perform_garbage_collection();
 
         d_http_cache_table->cache_index_write();
     }
-    catch (Error &e) {
+    catch (const Error &e) {
         // If the cache index cannot be written, we've got problems. However,
         // unless we're debugging, still free up the cache table in memory.
         // How should we let users know they cache index is not being
@@ -181,7 +179,7 @@ HTTPCache::~HTTPCache() {
 
 /** @name Garbage collection
     These private methods manage the garbage collection tasks for the cache. */
-//@{
+///@{
 
 /** Enough removed from cache? A private method.
     @return True if enough has been removed from the cache. */
@@ -191,12 +189,10 @@ HTTPCache::stopGC() const {
     return (d_http_cache_table->get_current_size() + d_folder_size < d_total_size - d_gc_buffer);
 }
 
-/** Is there too much in the cache. A private method.
+/** Is there too much in the cache? A private method.
 
-    @todo Modify this method so that it does not count locked entries. See
-    the note for hits_gc().
+    @note This method does not count locked entries. See the note for hits_gc().
     @return True if garbage collection should be performed. */
-
 bool
 HTTPCache::startGC() const {
     DBG(cerr << "startGC, current_size: " << d_http_cache_table->get_current_size() << endl);
@@ -253,13 +249,12 @@ HTTPCache::expired_gc() {
     entries that are locked? One solution is to modify startGC() so that it
     does not count locked entries.
 
-    @todo Change this method to that it looks at the oldest entries first,
+    @note Change this method to that it looks at the oldest entries first,
     using the CacheEntry::date to determine entry age. Using the current
     algorithm it's possible to remove the latest entry which is probably not
     what we want.
 
     A private method. */
-
 void
 HTTPCache::hits_gc() {
     int hits = 0;
@@ -272,7 +267,7 @@ HTTPCache::hits_gc() {
     }
 }
 
-/** Scan the current cache table and remove anything that has is too big.
+/** Scan the current cache table and remove anything that is too big.
  	Don't remove locked entries.
 
     A private method. */
@@ -383,7 +378,7 @@ HTTPCache::create_cache_root(const string &cache_root) {
         throw Error("Could not create the directory for the cache at '" + cache_root + "' (" + strerror(errno) + ").");
     }
 
-    // Restore thecmask
+    // Restore the mask
     umask(mask);
 }
 
@@ -439,7 +434,7 @@ HTTPCache::set_cache_root(const string &root) {
 
 void
 HTTPCache::set_cache_enabled(bool mode) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     d_cache_enabled = mode;
 }
@@ -462,9 +457,10 @@ HTTPCache::is_cache_enabled() const {
     @param mode One of DISCONNECT_NONE, DISCONNECT_NORMAL or
     DISCONNECT_EXTERNAL.
     @see CacheDIsconnectedMode */
+
 void
 HTTPCache::set_cache_disconnected(CacheDisconnectedMode mode) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     d_cache_disconnected = mode;
 }
@@ -486,7 +482,7 @@ HTTPCache::get_cache_disconnected() const {
 
 void
 HTTPCache::set_expire_ignored(bool mode) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     d_expire_ignored = mode;
 }
@@ -516,7 +512,7 @@ HTTPCache::is_expire_ignored() const {
 
 void
 HTTPCache::set_max_size(unsigned long size) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     unsigned long new_size = size < MIN_CACHE_TOTAL_SIZE ?
                              MIN_CACHE_TOTAL_SIZE * MEGA : size * MEGA;
@@ -548,7 +544,7 @@ HTTPCache::get_max_size() const {
 
 void
 HTTPCache::set_max_entry_size(unsigned long size) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     unsigned long new_size = size * MEGA;
     if (new_size > 0 && new_size < d_total_size - d_folder_size) {
@@ -582,7 +578,7 @@ HTTPCache::get_max_entry_size() const {
 
 void
 HTTPCache::set_default_expiration(const int exp_time) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     d_default_expiration = exp_time;
 }
@@ -629,7 +625,7 @@ HTTPCache::get_always_validate() const {
 
 void
 HTTPCache::set_cache_control(const vector<string> &cc) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     d_cache_control = cc;
 
@@ -675,20 +671,25 @@ HTTPCache::get_cache_control() {
 
     This method locks the class' interface.
 
-	@todo Remove this is broken.
+    @note This is really here for testing purposes. It is not used by the
+    HTTPCache class. Even when it returns true, the response may not be
+    in the cache. It is possible that the response was removed from the
+    cache after the entry is unlocked but before the method returns.
+
     @param url The url to look for.
     @return True if \c url is found, otherwise False. */
 
 bool
 HTTPCache::is_url_in_cache(const string &url) {
-    DBG(cerr << "Is this url in the cache? (" << url << ")" << endl);
+    lock_guard<mutex> lock{d_cache_mutex};
 
-    HTTPCacheTable::CacheEntry *entry = d_http_cache_table->get_locked_entry_from_cache_table(url);
-    bool status = entry != 0;
+    HTTPCacheTable::CacheEntry *entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
+
     if (entry) {
         entry->unlock_read_response();
+        return true;
     }
-    return status;
+    return false;
 }
 
 /** Is the header a hop by hop header? If so, we're not supposed to store it
@@ -890,7 +891,7 @@ HTTPCache::open_body(const string &cachename) {
 
 bool
 HTTPCache::cache_response(const string &url, time_t request_time, const vector<string> &headers, const FILE *body) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     DBG(cerr << "Caching url: " << url << "." << endl);
 
@@ -970,36 +971,32 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
 
 vector<string>
 HTTPCache::get_conditional_request_headers(const string &url) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
-    // FIXME unique_ptr
-    HTTPCacheTable::CacheEntry *entry = 0;
+    HTTPCacheTable::CacheEntry *entry = nullptr;
     vector<string> headers;
 
     DBG(cerr << "Getting conditional request headers for " << url << endl);
 
     try {
-        entry = d_http_cache_table->get_locked_entry_from_cache_table(url);
+        entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
         if (!entry)
             throw Error(internal_error, "There is no cache entry for the URL: " + url);
 
-        if (entry->get_etag() != "")
+        if (!entry->get_etag().empty())
             headers.push_back(string("If-None-Match: ") + entry->get_etag());
 
         if (entry->get_lm() > 0) {
             time_t lm = entry->get_lm();
-            headers.push_back(string("If-Modified-Since: ")
-                              + date_time_str(&lm));
+            headers.push_back(string("If-Modified-Since: ") + date_time_str(&lm));
         }
         else if (entry->get_max_age() > 0) {
             time_t max_age = entry->get_max_age();
-            headers.push_back(string("If-Modified-Since: ")
-                              + date_time_str(&max_age));
+            headers.push_back(string("If-Modified-Since: ") + date_time_str(&max_age));
         }
         else if (entry->get_expires() > 0) {
             time_t expires = entry->get_expires();
-            headers.push_back(string("If-Modified-Since: ")
-                              + date_time_str(&expires));
+            headers.push_back(string("If-Modified-Since: ") + date_time_str(&expires));
         }
         entry->unlock_read_response();
     }
@@ -1037,7 +1034,7 @@ struct HeaderLess : binary_function<const string &, const string &, bool> {
 
 void
 HTTPCache::update_response(const string &url, time_t request_time, const vector<string> &headers) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     HTTPCacheTable::CacheEntry *entry = 0;
     DBG(cerr << "Updating the response headers for: " << url << endl);
@@ -1102,7 +1099,7 @@ HTTPCache::update_response(const string &url, time_t request_time, const vector<
 
 bool
 HTTPCache::is_url_valid(const string &url) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     bool freshness;
     // FIXME Make this a unique_ptr so that the CacheEntry is deleted automaticallt
@@ -1115,7 +1112,7 @@ HTTPCache::is_url_valid(const string &url) {
             return false;  // force re-validation.
         }
 
-        entry = d_http_cache_table->get_locked_entry_from_cache_table(url);
+        entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
         if (!entry)
             throw Error(internal_error, "There is no cache entry for the URL: " + url);
 
@@ -1188,7 +1185,7 @@ HTTPCache::is_url_valid(const string &url) {
     @exception InternalErr Thrown if the persistent store cannot be opened. */
 
 FILE *HTTPCache::get_cached_response(const string &url, vector<string> &headers, string &cacheName) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     FILE *body = nullptr;
     HTTPCacheTable::CacheEntry *entry = nullptr;
@@ -1196,7 +1193,7 @@ FILE *HTTPCache::get_cached_response(const string &url, vector<string> &headers,
     DBG(cerr << "Getting the cached response for " << url << endl);
 
     try {
-        entry = d_http_cache_table->get_locked_entry_from_cache_table(url);
+        entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
         if (!entry) {
             return nullptr;
         }
@@ -1270,7 +1267,7 @@ HTTPCache::get_cached_response(const string &url) {
 
 void
 HTTPCache::release_cached_response(FILE *body) {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     // fclose(body); This results in a seg fault on linux jhrg 8/27/13
     d_http_cache_table->uncouple_entry_from_data(body);
@@ -1290,7 +1287,7 @@ HTTPCache::release_cached_response(FILE *body) {
 
 void
 HTTPCache::purge_cache() {
-    lock_guard<mutex> lock(d_cache_mutex2);
+    lock_guard<mutex> lock{d_cache_mutex};
 
     if (d_http_cache_table->is_locked_read_responses())
         throw Error(internal_error, "Attempt to purge the cache with entries in use.");

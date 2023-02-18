@@ -138,7 +138,7 @@ public:
     {
         CPPUNIT_ASSERT(hc_p->d_http_cache_table->cache_index_read());
 
-        HTTPCacheTable::CacheEntry *e = hc_p->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
+        HTTPCacheTable::CacheEntry *e = hc_p->d_http_cache_table->get_read_locked_entry_from_cache_table(localhost_url);
 
         CPPUNIT_ASSERT(e);
         CPPUNIT_ASSERT(e->url == localhost_url);
@@ -167,7 +167,7 @@ public:
         // Test adding an entry and getting it back.
         hc_p->d_http_cache_table->add_entry_to_cache_table(e);
 
-        HTTPCacheTable::CacheEntry *e2 = hc_p->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
+        HTTPCacheTable::CacheEntry *e2 = hc_p->d_http_cache_table->get_read_locked_entry_from_cache_table(localhost_url);
         CPPUNIT_ASSERT(e2);
         CPPUNIT_ASSERT(e2->url == localhost_url);
         e2->unlock_read_response();
@@ -183,12 +183,13 @@ public:
         // Use the version of get_entry... that lets us pass in the hash
         // value (as opposed to the normal version which calculates the hash
         // from the url. 10/01/02 jhrg
-        HTTPCacheTable::CacheEntry *g = hc_p->d_http_cache_table->get_locked_entry_from_cache_table(hash_value, e3->url);
+        HTTPCacheTable::CacheEntry *g = hc_p->d_http_cache_table->get_read_locked_entry_from_cache_table(hash_value,
+                                                                                                         e3->url);
         CPPUNIT_ASSERT(g);
         CPPUNIT_ASSERT(g->url == e3->url);
         g->unlock_read_response();
 
-        g = hc_p->d_http_cache_table->get_locked_entry_from_cache_table("http://not.in.table/never.x");
+        g = hc_p->d_http_cache_table->get_read_locked_entry_from_cache_table("http://not.in.table/never.x");
         CPPUNIT_ASSERT(g == nullptr);
     }
 
@@ -206,7 +207,8 @@ public:
             hc_4->d_http_cache_table->d_cache_index = hc_3->d_cache_root + "test_index";
             hc_4->d_http_cache_table->cache_index_read();
 
-            HTTPCacheTable::CacheEntry *e = hc_4->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
+            HTTPCacheTable::CacheEntry *e = hc_4->d_http_cache_table->get_read_locked_entry_from_cache_table(
+                    localhost_url);
             DBG(cerr << "Got locked entry" << endl);
             CPPUNIT_ASSERT(e);
             CPPUNIT_ASSERT(e->url == localhost_url);
@@ -385,7 +387,8 @@ public:
 
             CPPUNIT_ASSERT(hc_p->is_url_in_cache(localhost_url));
 
-            HTTPCacheTable::CacheEntry *e = hc_p->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
+            HTTPCacheTable::CacheEntry *e = hc_p->d_http_cache_table->get_read_locked_entry_from_cache_table(
+                    localhost_url);
             CPPUNIT_ASSERT(file_size(e->cachename) == 343);
             e->unlock_read_response();
             delete rs;
@@ -523,8 +526,9 @@ public:
             delete rs;
             rs = 0;
 
-            HTTPCacheTable::CacheEntry *e1 = pc->d_http_cache_table->get_locked_entry_from_cache_table(expired);
-            HTTPCacheTable::CacheEntry *e2 = pc->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
+            HTTPCacheTable::CacheEntry *e1 = pc->d_http_cache_table->get_read_locked_entry_from_cache_table(expired);
+            HTTPCacheTable::CacheEntry *e2 = pc->d_http_cache_table->get_read_locked_entry_from_cache_table(
+                    localhost_url);
             string e1_file = e1->cachename;
             string e2_file = e2->cachename;
             e1->unlock_read_response();
@@ -579,8 +583,9 @@ public:
             }
             CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
-            HTTPCacheTable::CacheEntry *e1 = c->d_http_cache_table->get_locked_entry_from_cache_table(expired);
-            HTTPCacheTable::CacheEntry *e2 = c->d_http_cache_table->get_locked_entry_from_cache_table(localhost_url);
+            HTTPCacheTable::CacheEntry *e1 = c->d_http_cache_table->get_read_locked_entry_from_cache_table(expired);
+            HTTPCacheTable::CacheEntry *e2 = c->d_http_cache_table->get_read_locked_entry_from_cache_table(
+                    localhost_url);
             string e1_file = e1->cachename;
             string e2_file = e2->cachename;
             e1->unlock_read_response();

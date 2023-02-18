@@ -223,7 +223,7 @@ private:
 
     std::map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
 
-    CacheEntry *get_locked_entry_from_cache_table(int hash, const std::string &url);
+    CacheEntry *get_read_locked_entry_from_cache_table(int hash, const std::string &url);
 
 public:
     HTTPCacheTable(const std::string &cache_root, int block_size);
@@ -293,7 +293,7 @@ public:
 
     void remove_entry_from_cache_table(const std::string &url);
 
-    CacheEntry *get_locked_entry_from_cache_table(const std::string &url);
+    CacheEntry *get_read_locked_entry_from_cache_table(const std::string &url);
 
     CacheEntry *get_write_locked_entry_from_cache_table(const std::string &url);
 

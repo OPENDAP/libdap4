@@ -417,20 +417,22 @@ HTTPCacheTable::add_entry_to_cache_table(CacheEntry *entry) {
 
     @param url Look for this URL. */
 HTTPCacheTable::CacheEntry *
-HTTPCacheTable::get_locked_entry_from_cache_table(const string &url) /*const*/
+HTTPCacheTable::get_read_locked_entry_from_cache_table(const string &url) /*const*/
 {
-    return get_locked_entry_from_cache_table(get_hash(url), url);
+    return get_read_locked_entry_from_cache_table(get_hash(url), url);
 }
 
 /** Get a pointer to a CacheEntry from the cache table. Providing a way to
     pass the hash code into this method makes it easier to test for correct
     behavior when two entries collide. 10/07/02 jhrg
 
+    @note The caller must unlock the entry when it is done with it.
+
     @param hash The hash code for \c url.
     @param url Look for this URL.
     @return The matching CacheEntry instance or NULL if none was found. */
 HTTPCacheTable::CacheEntry *
-HTTPCacheTable::get_locked_entry_from_cache_table(int hash, const string &url) /*const*/
+HTTPCacheTable::get_read_locked_entry_from_cache_table(int hash, const string &url) /*const*/
 {
     DBG(cerr << "url: " << url << "; hash: " << hash << endl);
     DBG(cerr << "d_cache_table: " << hex << d_cache_table << dec << endl);
@@ -451,6 +453,8 @@ HTTPCacheTable::get_locked_entry_from_cache_table(int hash, const string &url) /
 /** Get a pointer to a CacheEntry from the cache table. Providing a way to
     pass the hash code into this method makes it easier to test for correct
     behavior when two entries collide. 10/07/02 jhrg
+
+    @note The caller must unlock the entry when it is done with it.
 
     @param url Look for this URL.
     @return The matching CacheEntry instance or NULL if none was found. */

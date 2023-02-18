@@ -131,7 +131,7 @@ private:
     time_t d_min_fresh = -1;
 
     // Lock non-const methods (also ones that use the STL).
-    std::mutex d_cache_mutex2;
+    std::mutex d_cache_mutex;
     
     std::unique_ptr<HTTPCacheTable> d_http_cache_table;
 
