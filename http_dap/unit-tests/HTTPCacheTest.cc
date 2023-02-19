@@ -57,6 +57,35 @@ inline static uint64_t file_size(const string &name)
     return s.st_size;
 }
 
+#include <iostream>
+#include <cstdio>
+#include <cstring>
+#include <dirent.h>
+#include "Error.h"
+/// There is an os-independent way of doing this in C++ 2017, but it is not portable in C++ 11.
+/// @note This function is not thread safe.
+/// jhrg 2/19/23
+void remove_directory(const char *dir) {
+    DIR *dp = opendir(dir);
+    if (dp != nullptr) {
+        struct dirent *entry;
+        while ((entry = readdir(dp))) {
+            if (std::strcmp(entry->d_name, ".") != 0 && std::strcmp(entry->d_name, "..") != 0) {
+                std::string path = std::string(dir) + "/" + entry->d_name;
+                if (entry->d_type == DT_DIR) {
+                    remove_directory(path.c_str());
+                } else {
+                    if (std::remove(path.c_str()) == -1)
+                        throw libdap::Error(prolog + "Could not remove file " + path + " (" + std::strerror(errno) + ")", __FILE__, __LINE__);
+                }
+            }
+        }
+        closedir(dp);
+    }
+    if (std::remove(dir) == -1)
+        throw libdap::Error(prolog + "Could not remove directory " + dir + " (" + std::strerror(errno) + ")", __FILE__, __LINE__);
+}
+
 // Note that because this test class uses the fixture 'hc' we must always
 // force access to the single user/process lock for the cache. This is
 // because a fixture is always created (by setUp) *before* the body of the
@@ -226,14 +255,15 @@ public:
     {
         hc_p->create_cache_root("/tmp/silly/");
         CPPUNIT_ASSERT(access("/tmp/silly/", F_OK) == 0);
-        remove("/tmp/silly");
+        // remove("/tmp/silly");
+        CPPUNIT_ASSERT_NO_THROW_MESSAGE("Directory delete should not throw", remove_directory("/tmp/silly"));
     }
 
     void set_cache_root_test()
     {
         hc_p->set_cache_root("/home/jimg/test_cache");
         CPPUNIT_ASSERT(hc_p->d_cache_root == "/home/jimg/test_cache/");
-        remove("/home/jimg/test_cache/");
+        // CPPUNIT_ASSERT_NO_THROW_MESSAGE("Directory delete should not throw", remove_directory("/home/jimg/test_cache/"));
     }
 
     void initialize_cache_lock_test()
@@ -249,15 +279,16 @@ public:
         CPPUNIT_ASSERT_NO_THROW_MESSAGE("The second call to initialize...() should return and not throw",
                                         hc_p->m_initialize_cache_lock(hc_p->d_cache_root + ".lock"));
 
-        remove("/tmp/dods_test_cache/");
+        CPPUNIT_ASSERT_NO_THROW_MESSAGE("Directory delete should not throw", remove_directory("/tmp/dods_test_cache"));
     }
 
     void create_hash_directory_test()
     {
         hc_p->set_cache_root("/tmp/dods_test_cache");
+        hc_p->create_cache_root(hc_p->get_cache_root());
         CPPUNIT_ASSERT(hc_p->d_http_cache_table->create_hash_directory(391) == "/tmp/dods_test_cache/391");
         CPPUNIT_ASSERT(access("/tmp/dods_test_cache/391", W_OK) == 0);
-        remove("/tmp/dods_test_cache/");
+        CPPUNIT_ASSERT_NO_THROW_MESSAGE("Directory delete should not throw", remove_directory("/tmp/dods_test_cache/"));
     }
 
     void create_location_test()
@@ -275,10 +306,9 @@ public:
             CPPUNIT_ASSERT(true && "could not create entry file");
         }
 
-        remove("/tmp/dods_test_cache/");
+        CPPUNIT_ASSERT_NO_THROW_MESSAGE("Directory delete should not throw", remove_directory("/tmp/dods_test_cache/"));
 
         delete e;
-        e = 0;
     }
 
     void parse_headers_test()
@@ -289,7 +319,6 @@ public:
         CPPUNIT_ASSERT(e->lm == 784025377);
 
         delete e;
-        e = 0;
     }
 
     void calculate_time_test()
@@ -328,13 +357,8 @@ public:
             CPPUNIT_ASSERT(*i == *j);
         }
 
-        remove("/tmp/dods_test_cache/");
-#if 0
-        remove(e->cachename.c_str());
-        remove(string(e->cachename + ".meta").c_str());
-#endif
+        CPPUNIT_ASSERT_NO_THROW_MESSAGE("Directory delete should not throw", remove_directory("/tmp/dods_test_cache/"));
         delete e;
-        e = 0;
     }
 
     void cache_response_test()
