@@ -129,7 +129,7 @@ void HTTPCacheTable::delete_by_hits(int hits) {
  * @brief Delete all the entries in the cache that are larger than \c size bytes.
  * @param size
  */
-void HTTPCacheTable::delete_by_size(unsigned int size) {
+void HTTPCacheTable::delete_by_size(unsigned long size) {
     for (auto &row: d_cache_table) {
         for (auto &entry: row) {
             // Remove an entry if it is too big.
