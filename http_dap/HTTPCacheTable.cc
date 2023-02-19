@@ -657,7 +657,6 @@ void HTTPCacheTable::bind_entry_to_data(HTTPCacheTable::CacheEntry *entry, FILE 
 }
 
 void HTTPCacheTable::uncouple_entry_from_data(FILE *body) {
-
     HTTPCacheTable::CacheEntry *entry = d_locked_entries[body];
     if (!entry)
         throw InternalErr("There is no cache entry for the response given.");

@@ -44,8 +44,7 @@
 #define MIN_CACHE_TOTAL_SIZE (5) // 5M Min cache size
 #define MAX_CACHE_ENTRY_SIZE (3) // 3M Max size of single cached entry
 
-namespace libdap
-{
+namespace libdap {
 
 class HTTPCacheTable;
 
@@ -103,8 +102,7 @@ bool is_hop_by_hop_header(const std::string &header);
 	free the 'read-lock' thus blocking a writer.
 	
     @author James Gallagher <jgallagher@opendap.org> */
-class HTTPCache
-{
+class HTTPCache {
 private:
     std::string d_cache_root;
     int d_cache_lock_fd = -1; // Lock for multi-process use.
@@ -133,7 +131,7 @@ private:
 
     // Lock non-const methods (also ones that use the STL).
     std::mutex d_cache_mutex;
-    
+
     std::unique_ptr<HTTPCacheTable> d_http_cache_table;
 
     // d_open_files is used by the interrupt handler to clean up
@@ -145,12 +143,17 @@ private:
     friend class HTTPConnectTest;
 
     void set_cache_root(const std::string &root = "");
+
     void create_cache_root(const std::string &cache_root) const;
 
     int m_initialize_cache_lock(const std::string &cache_lock);
+
     void m_lock_cache_write(int fd);
+
     void m_lock_cache_read(int fd);
+
     void m_unlock_cache(int fd);
+
     void m_exclusive_to_shared_lock(int fd);
 
     bool is_url_in_cache(const std::string &url);
@@ -158,25 +161,84 @@ private:
     // I made these four methods, so they could be tested by HTTPCacheTest.
     // Otherwise, they would be static functions. jhrg 10/01/02
     void write_metadata(const std::string &cachename, const std::vector<std::string> &headers);
+
     void read_metadata(const std::string &cachename, std::vector<std::string> &headers);
+
     int write_body(const std::string &cachename, const FILE *src);
+
     FILE *open_body(const std::string &cachename);
 
     bool stopGC() const;
+
     bool startGC() const;
 
     void perform_garbage_collection();
+
     void too_big_gc();
+
     void expired_gc();
+
     void hits_gc();
 
-    HTTPCache(const std::string &cache_root);
+    explicit HTTPCache(const std::string &cache_root);
+
+    /**
+     * @brief Lock the cache for writing.
+     * Implements RAII for the multi-process write lock for the cache.
+     * @see mp_read_lock_guard for the corresponding read lock guard.
+     */
+    class mp_write_lock_guard {
+        int d_fd;
+        bool d_locked = false;
+    public:
+        mp_write_lock_guard() = delete;
+
+        mp_write_lock_guard(const mp_write_lock_guard &) = delete;
+
+        mp_write_lock_guard &operator=(const mp_write_lock_guard &) = delete;
+
+        mp_write_lock_guard(int fd) : d_fd(fd)
+        {
+            HTTPCache::instance()->m_lock_cache_write(d_fd);
+            d_locked = true;
+        }
+
+        ~mp_write_lock_guard()
+        { if (d_locked) HTTPCache::instance()->m_unlock_cache(d_fd); }
+    };
+
+    /**
+     * @brief Lock the cache for reading.
+     * Implements RAII for the multi-process read lock for the cache.
+     * @see mp_write_lock_guard for the corresponding write lock guard.
+     */
+    class mp_read_lock_guard {
+        int d_fd;
+        bool d_locked = false;
+    public:
+        mp_read_lock_guard() = delete;
+
+        mp_read_lock_guard(const mp_read_lock_guard &) = delete;
+
+        mp_read_lock_guard &operator=(const mp_read_lock_guard &) = delete;
+
+        mp_read_lock_guard(int fd) : d_fd(fd) {
+            HTTPCache::instance()->m_lock_cache_write(d_fd);
+            d_locked = true;
+        }
+
+        ~mp_read_lock_guard() { if (d_locked) HTTPCache::instance()->m_unlock_cache(d_fd); }
+    };
 
 public:
     static HTTPCache *instance(const std::string &cache_root);
 
+    static HTTPCache *instance() { return d_instance.get(); }
+
     HTTPCache() = delete;
+
     HTTPCache(const HTTPCache &) = delete;
+
     HTTPCache &operator=(const HTTPCache &) = delete;
 
     virtual ~HTTPCache();
@@ -184,32 +246,41 @@ public:
     std::string get_cache_root() const;
 
     void set_cache_enabled(bool mode);
+
     bool is_cache_enabled() const;
 
     void set_cache_disconnected(CacheDisconnectedMode mode);
+
     CacheDisconnectedMode get_cache_disconnected() const;
 
     void set_expire_ignored(bool mode);
+
     bool is_expire_ignored() const;
 
     void set_max_size(unsigned long size);
+
     unsigned long get_max_size() const;
 
     void set_max_entry_size(unsigned long size);
+
     unsigned long get_max_entry_size() const;
 
     void set_default_expiration(int exp_time);
+
     int get_default_expiration() const;
 
     void set_always_validate(bool validate);
+
     bool get_always_validate() const;
 
     void set_cache_control(const std::vector<std::string> &cc);
+
     std::vector<std::string> get_cache_control();
 
     // This must lock for writing
     bool cache_response(const std::string &url, time_t request_time,
                         const std::vector<std::string> &headers, const FILE *body);
+
     void update_response(const std::string &url, time_t request_time,
                          const std::vector<std::string> &headers);
 
@@ -217,11 +288,14 @@ public:
     // cache entry just needs a header update. That is best left to the HTTP
     // Connection code.
     bool is_url_valid(const std::string &url);
-    
+
     // Lock these for reading
     std::vector<std::string> get_conditional_request_headers(const std::string &url);
+
     FILE *get_cached_response(const std::string &url, std::vector<std::string> &headers, std::string &cacheName);
+
     FILE *get_cached_response(const std::string &url, std::vector<std::string> &headers);
+
     FILE *get_cached_response(const std::string &url);
 
     void release_cached_response(FILE *response);

@@ -1016,7 +1016,7 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
     }
 
     lock_guard<mutex> lock{d_cache_mutex};
-    m_lock_cache_write(d_cache_lock_fd); // Blocks until the lock is acquired.
+    mp_write_lock_guard lock2{d_cache_lock_fd}; // Blocks until the write lock is acquired.
 
     // This does nothing if url is not already in the cache. It's
     // more efficient to do this than to first check and see if the entry
@@ -1032,7 +1032,6 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
             DBG(cerr << "Not cache-able; deleting HTTPCacheTable::CacheEntry: " << entry
                      << "(" << url << ")" << endl);
             entry->unlock_write_response();
-            m_unlock_cache(d_cache_lock_fd);
             delete entry;
             entry = 0;
             return false;
@@ -1046,7 +1045,6 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
         entry->set_size(write_body(entry->get_cachename(), body));
         write_metadata(entry->get_cachename(), headers);
         d_http_cache_table->add_entry_to_cache_table(entry);
-        entry->unlock_write_response();
     }
     catch (ResponseTooBigErr &e) {
         // Oops. Bummer. Clean up and exit.
@@ -1056,7 +1054,6 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
         DBG(cerr << "Too big; deleting HTTPCacheTable::CacheEntry: " << entry << "(" << url
                  << ")" << endl);
         entry->unlock_write_response();
-        m_unlock_cache(d_cache_lock_fd);
         delete entry;
         return false;
     }
@@ -1068,7 +1065,6 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
         d_http_cache_table->cache_index_write(); // resets new_entries
     }
 
-    m_unlock_cache(d_cache_lock_fd);
     return true;
 }
 
@@ -1092,12 +1088,12 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
 
 vector<string>
 HTTPCache::get_conditional_request_headers(const string &url) {
-    lock_guard<mutex> lock{d_cache_mutex};
 
     HTTPCacheTable::CacheEntry *entry = nullptr;
     vector<string> headers;
 
-    DBG(cerr << "Getting conditional request headers for " << url << endl);
+    lock_guard<mutex> lock{d_cache_mutex};
+    mp_read_lock_guard lock2{d_cache_lock_fd}; // Blocks until the lock is acquired.
 
     try {
         entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
@@ -1155,12 +1151,12 @@ struct HeaderLess : binary_function<const string &, const string &, bool> {
 
 void
 HTTPCache::update_response(const string &url, time_t request_time, const vector<string> &headers) {
-    lock_guard<mutex> lock{d_cache_mutex};
-
-    HTTPCacheTable::CacheEntry *entry = 0;
-    DBG(cerr << "Updating the response headers for: " << url << endl);
+    HTTPCacheTable::CacheEntry *entry = nullptr;
 
     try {
+        lock_guard<mutex> lock{d_cache_mutex};
+        mp_write_lock_guard lock2{d_cache_lock_fd}; // Blocks until the lock is acquired.
+
         entry = d_http_cache_table->get_write_locked_entry_from_cache_table(url);
         if (!entry)
             throw Error(internal_error, "There is no cache entry for the URL: " + url);
@@ -1174,7 +1170,7 @@ HTTPCache::update_response(const string &url, time_t request_time, const vector<
         // Merge the new headers with those in the persistent store. How:
         // Load the new headers into a set, then merge the old headers. Since
         // set<> ignores duplicates, old headers with the same name as a new
-        // header will got into the bit bucket. Define a special compare
+        // header will go into the bit bucket. Define a special compare
         // functor to make sure that headers are compared using only their
         // name and not their value too.
         set<string, HeaderLess> merged_headers;
@@ -1220,18 +1216,17 @@ HTTPCache::update_response(const string &url, time_t request_time, const vector<
 
 bool
 HTTPCache::is_url_valid(const string &url) {
-    lock_guard<mutex> lock{d_cache_mutex};
 
     bool freshness;
-    // FIXME Make this a unique_ptr so that the CacheEntry is deleted automaticallt
-    HTTPCacheTable::CacheEntry *entry = 0;
-
-    DBG(cerr << "Is this URL valid? (" << url << ")" << endl);
+    HTTPCacheTable::CacheEntry *entry = nullptr;
 
     try {
         if (d_always_validate) {
             return false;  // force re-validation.
         }
+
+        lock_guard<mutex> lock{d_cache_mutex};
+        mp_read_lock_guard lock2{d_cache_lock_fd}; // Blocks until the lock is acquired.
 
         entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
         if (!entry)
@@ -1247,25 +1242,22 @@ HTTPCache::is_url_valid(const string &url) {
             return false;
         }
 
-        time_t resident_time = time(NULL) - entry->get_response_time();
+        time_t resident_time = time(nullptr) - entry->get_response_time();
         time_t current_age = entry->get_corrected_initial_age() + resident_time;
 
         // Check that the max-age, max-stale, and min-fresh directives
         // given in the request cache control header is followed.
         if (d_max_age >= 0 && current_age > d_max_age) {
-            DBG(cerr << "Cache....... Max-age validation" << endl);
             entry->unlock_read_response();
             return false;
         }
         if (d_min_fresh >= 0
             && entry->get_freshness_lifetime() < current_age + d_min_fresh) {
-            DBG(cerr << "Cache....... Min-fresh validation" << endl);
             entry->unlock_read_response();
             return false;
         }
 
-        freshness = (entry->get_freshness_lifetime()
-                     + (d_max_stale >= 0 ? d_max_stale : 0) > current_age);
+        freshness = (entry->get_freshness_lifetime() + (d_max_stale >= 0 ? d_max_stale : 0) > current_age);
         entry->unlock_read_response();
     }
     catch (...) {
@@ -1289,7 +1281,9 @@ HTTPCache::is_url_valid(const string &url) {
     system will not reclaim locked entries (but works fine when some entries
     are locked).
 
-    This method locks the class' interface.
+    This method locks the class' interface AND it read locks the cache. The
+    cache will remain read locked until release_cached_response() is called.
+    There is no RAII protection for the cache read lock in this method.
 
     This method does \e not check to see that the response is valid, just
     that it is in the cache. To see if a cached response is valid, use
@@ -1306,16 +1300,18 @@ HTTPCache::is_url_valid(const string &url) {
     @exception InternalErr Thrown if the persistent store cannot be opened. */
 
 FILE *HTTPCache::get_cached_response(const string &url, vector<string> &headers, string &cacheName) {
-    lock_guard<mutex> lock{d_cache_mutex};
-
     FILE *body = nullptr;
     HTTPCacheTable::CacheEntry *entry = nullptr;
 
-    DBG(cerr << "Getting the cached response for " << url << endl);
-
     try {
+        lock_guard<mutex> lock{d_cache_mutex};
+        m_lock_cache_read(d_cache_lock_fd); // Blocks until the read lock is acquired.
+
+        DBG(cerr << "Getting the cached response for " << url << endl);
+
         entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
         if (!entry) {
+            m_unlock_cache(d_cache_lock_fd);
             return nullptr;
         }
 
@@ -1334,6 +1330,7 @@ FILE *HTTPCache::get_cached_response(const string &url, vector<string> &headers,
     catch (...) {
         if (body != nullptr)
             fclose(body);
+        m_unlock_cache(d_cache_lock_fd);
         throw;
     }
 
@@ -1392,6 +1389,7 @@ HTTPCache::release_cached_response(FILE *body) {
 
     // fclose(body); This results in a seg fault on linux jhrg 8/27/13
     d_http_cache_table->uncouple_entry_from_data(body);
+    m_unlock_cache(d_cache_lock_fd);
 }
 
 /** Purge both the in-memory cache table and the contents of the cache on
