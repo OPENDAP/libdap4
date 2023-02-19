@@ -27,7 +27,7 @@
 
 #include <cstring>
 #include <cerrno>
-#include <cstdlib>
+//#include <cstdlib>
 // #include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -35,7 +35,7 @@
 #include <fcntl.h>
 
 #ifdef HAVE_STDLIB_H
-#include <stdlib.h>
+//#include <stdlib.h>
 #endif
 
 #include <sstream>
@@ -45,8 +45,8 @@
 #include <mutex>
 #include <memory>
 
-#include <unistd.h>   // for stat
-#include <sys/stat.h>
+//#include <unistd.h>   // for stat
+//#include <sys/stat.h>
 
 #include "Error.h"
 #include "InternalErr.h"
@@ -502,10 +502,7 @@ HTTPCache::create_cache_root(const string &cache_root) const {
     umask(mask);
 }
 
-/** Set the cache's root directory to the given path. If no path is given,
-    look at the DODS_CACHE, TMP and TEMP environment variables (in that
-    order) to guess at a good location. If those are all NULL, use \c /tmp.
-    If the cache root directory cannot be created, throw an exception.
+/** Set the cache's root directory to the given path.
 
     Note that in most cases callers should look for this path in the user's
     .dodsrc file.

@@ -227,32 +227,10 @@ public:
         hc_p->create_cache_root("/tmp/silly/");
         CPPUNIT_ASSERT(access("/tmp/silly/", F_OK) == 0);
         remove("/tmp/silly");
-#if 0
-        // This test doesn't work on some machines where the build is
-        // run as root or where /root is owned by some other user (as is
-        // the case with OS/X.
-        try {
-            hc_p->create_cache_root("/root/very_silly/");
-            access("/root/very_silly/", F_OK);
-            remove("/root/very_silly/");
-            CPPUNIT_ASSERT(!"Should not be able to do this...");
-        }
-        catch (const Error &e) {
-            CPPUNIT_ASSERT("This is where we want to be");
-            CPPUNIT_ASSERT(access("/root/very_silly/", F_OK) != 0);
-        }
-#endif
     }
 
     void set_cache_root_test()
     {
-#if 0
-        // env var support removed 3/22/11 jhrg
-        putenv("DODS_CACHE=/home/jimg");
-        hc_p->set_cache_root();
-        CPPUNIT_ASSERT(hc_p->d_cache_root == "/home/jimg/dods-cache/");
-        remove("/home/jimg/w3c-cache/");
-#endif
         hc_p->set_cache_root("/home/jimg/test_cache");
         CPPUNIT_ASSERT(hc_p->d_cache_root == "/home/jimg/test_cache/");
         remove("/home/jimg/test_cache/");
@@ -261,6 +239,7 @@ public:
     void initialize_cache_lock_test()
     {
         hc_p->set_cache_root("/tmp/dods_test_cache");
+        hc_p->create_cache_root(hc_p->get_cache_root());
         close(hc_p->d_cache_lock_fd);
 
         CPPUNIT_ASSERT(hc_p->m_initialize_cache_lock(hc_p->d_cache_root + ".lock"));
@@ -269,6 +248,8 @@ public:
         // Second time should return the same fd
         CPPUNIT_ASSERT_NO_THROW_MESSAGE("The second call to initialize...() should return and not throw",
                                         hc_p->m_initialize_cache_lock(hc_p->d_cache_root + ".lock"));
+
+        remove("/tmp/dods_test_cache/");
     }
 
     void create_hash_directory_test()
@@ -276,25 +257,13 @@ public:
         hc_p->set_cache_root("/tmp/dods_test_cache");
         CPPUNIT_ASSERT(hc_p->d_http_cache_table->create_hash_directory(391) == "/tmp/dods_test_cache/391");
         CPPUNIT_ASSERT(access("/tmp/dods_test_cache/391", W_OK) == 0);
-#if 0
-        // This test doesn't work on some machines where the build is
-        // run as root or where /root is owned by some other user (as is
-        // the case with OS/X.
-        hc_p->set_cache_root("/root/");
-        try {
-            hc_p->create_hash_directory(391);
-            CPPUNIT_ASSERT(!"Create in bad directory");
-        }
-        catch (const Error &e) {
-        }
-#endif
-        remove("/tmp/dods_test_cache/391");
-
+        remove("/tmp/dods_test_cache/");
     }
 
     void create_location_test()
     {
         hc_p->set_cache_root("/tmp/dods_test_cache");
+        hc_p->create_cache_root(hc_p->get_cache_root());
         HTTPCacheTable::CacheEntry *e = new HTTPCacheTable::CacheEntry;
         e->url = localhost_url;
         e->hash = hash_value;
@@ -305,7 +274,8 @@ public:
         catch (const Error &e) {
             CPPUNIT_ASSERT(true && "could not create entry file");
         }
-        remove(e->cachename.c_str());
+
+        remove("/tmp/dods_test_cache/");
 
         delete e;
         e = 0;
@@ -338,6 +308,7 @@ public:
     void write_metadata_test()
     {
         hc_p->set_cache_root("/tmp/dods_test_cache");
+        hc_p->create_cache_root(hc_p->get_cache_root());
         HTTPCacheTable::CacheEntry *e = new HTTPCacheTable::CacheEntry;
         try {
             e->hash = 101;
@@ -357,8 +328,11 @@ public:
             CPPUNIT_ASSERT(*i == *j);
         }
 
+        remove("/tmp/dods_test_cache/");
+#if 0
         remove(e->cachename.c_str());
         remove(string(e->cachename + ".meta").c_str());
+#endif
         delete e;
         e = 0;
     }
