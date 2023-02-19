@@ -1016,7 +1016,7 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
     }
 
     lock_guard<mutex> lock{d_cache_mutex};
-    mp_write_lock_guard lock2{d_cache_lock_fd}; // Blocks until the write lock is acquired.
+    mp_write_lock_guard write_lock{d_cache_lock_fd}; // Blocks until the write lock is acquired.
 
     // This does nothing if url is not already in the cache. It's
     // more efficient to do this than to first check and see if the entry
@@ -1033,7 +1033,6 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
                      << "(" << url << ")" << endl);
             entry->unlock_write_response();
             delete entry;
-            entry = 0;
             return false;
         }
 
@@ -1045,6 +1044,7 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
         entry->set_size(write_body(entry->get_cachename(), body));
         write_metadata(entry->get_cachename(), headers);
         d_http_cache_table->add_entry_to_cache_table(entry);
+        entry->unlock_write_response();
     }
     catch (ResponseTooBigErr &e) {
         // Oops. Bummer. Clean up and exit.
@@ -1093,7 +1093,7 @@ HTTPCache::get_conditional_request_headers(const string &url) {
     vector<string> headers;
 
     lock_guard<mutex> lock{d_cache_mutex};
-    mp_read_lock_guard lock2{d_cache_lock_fd}; // Blocks until the lock is acquired.
+    mp_read_lock_guard read_lock{d_cache_lock_fd}; // Blocks until the lock is acquired.
 
     try {
         entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
@@ -1155,7 +1155,7 @@ HTTPCache::update_response(const string &url, time_t request_time, const vector<
 
     try {
         lock_guard<mutex> lock{d_cache_mutex};
-        mp_write_lock_guard lock2{d_cache_lock_fd}; // Blocks until the lock is acquired.
+        mp_write_lock_guard write_lock{d_cache_lock_fd}; // Blocks until the lock is acquired.
 
         entry = d_http_cache_table->get_write_locked_entry_from_cache_table(url);
         if (!entry)
@@ -1226,7 +1226,7 @@ HTTPCache::is_url_valid(const string &url) {
         }
 
         lock_guard<mutex> lock{d_cache_mutex};
-        mp_read_lock_guard lock2{d_cache_lock_fd}; // Blocks until the lock is acquired.
+        mp_read_lock_guard read_lock{d_cache_lock_fd}; // Blocks until the lock is acquired.
 
         entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
         if (!entry)
@@ -1305,13 +1305,13 @@ FILE *HTTPCache::get_cached_response(const string &url, vector<string> &headers,
 
     try {
         lock_guard<mutex> lock{d_cache_mutex};
-        m_lock_cache_read(d_cache_lock_fd); // Blocks until the read lock is acquired.
+        mp_read_lock_guard read_lock{d_cache_lock_fd}; // Blocks until the lock is acquired.
+        // m_lock_cache_read(d_cache_lock_fd); // Blocks until the read lock is acquired.
 
         DBG(cerr << "Getting the cached response for " << url << endl);
 
         entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
         if (!entry) {
-            m_unlock_cache(d_cache_lock_fd);
             return nullptr;
         }
 
@@ -1326,11 +1326,14 @@ FILE *HTTPCache::get_cached_response(const string &url, vector<string> &headers,
         DBG(cerr << "Returning: " << url << " from the cache." << endl);
 
         d_http_cache_table->bind_entry_to_data(entry, body);
+
+        // Set 'read_lock' so that it will not unlock the cache when it goes out of scope.
+        // The client must call release_cached_response() to unlock the cache.
+        read_lock.release();
     }
     catch (...) {
         if (body != nullptr)
             fclose(body);
-        m_unlock_cache(d_cache_lock_fd);
         throw;
     }
 
@@ -1407,6 +1410,7 @@ HTTPCache::release_cached_response(FILE *body) {
 void
 HTTPCache::purge_cache() {
     lock_guard<mutex> lock{d_cache_mutex};
+    mp_write_lock_guard write_lock{d_cache_lock_fd}; // Blocks until the lock is acquired.
 
     if (d_http_cache_table->is_locked_read_responses())
         throw Error(internal_error, "Attempt to purge the cache with entries in use.");

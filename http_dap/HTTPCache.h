@@ -197,24 +197,27 @@ private:
 
         mp_write_lock_guard &operator=(const mp_write_lock_guard &) = delete;
 
-        mp_write_lock_guard(int fd) : d_fd(fd)
-        {
+        explicit mp_write_lock_guard(int fd) : d_fd(fd) {
             HTTPCache::instance()->m_lock_cache_write(d_fd);
             d_locked = true;
         }
 
-        ~mp_write_lock_guard()
-        { if (d_locked) HTTPCache::instance()->m_unlock_cache(d_fd); }
+        ~mp_write_lock_guard() { if (d_locked) HTTPCache::instance()->m_unlock_cache(d_fd); }
     };
 
     /**
      * @brief Lock the cache for reading.
-     * Implements RAII for the multi-process read lock for the cache.
+     *
+     * Implements RAII for the multi-process read lock for the cache. This
+     * class has an extra method that enables the client to 'release' the
+     * lock so that it wil NOT be released when the guard goes out of scope.
+     *
      * @see mp_write_lock_guard for the corresponding write lock guard.
      */
     class mp_read_lock_guard {
         int d_fd;
         bool d_locked = false;
+        bool d_released = false;    // Use this so instances can go out of scope without releasing the lock.
     public:
         mp_read_lock_guard() = delete;
 
@@ -222,12 +225,14 @@ private:
 
         mp_read_lock_guard &operator=(const mp_read_lock_guard &) = delete;
 
-        mp_read_lock_guard(int fd) : d_fd(fd) {
+        explicit mp_read_lock_guard(int fd) : d_fd(fd) {
             HTTPCache::instance()->m_lock_cache_write(d_fd);
             d_locked = true;
         }
 
-        ~mp_read_lock_guard() { if (d_locked) HTTPCache::instance()->m_unlock_cache(d_fd); }
+        ~mp_read_lock_guard() { if (!d_released && d_locked) HTTPCache::instance()->m_unlock_cache(d_fd); }
+
+        void release() { d_released = true; }
     };
 
 public:
