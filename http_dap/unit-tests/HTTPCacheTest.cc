@@ -22,15 +22,18 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#include <unistd.h>   // for access stat
-#include <sys/stat.h>
-
-#include <cstdio>     // for create_cache_root_test
+#include <iostream>
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <memory>
 #include <iterator>
+
+#include <cstdio>     // for create_cache_root_test
+#include <cstring>
+#include <dirent.h>
+#include <unistd.h>   // for access stat
+#include <sys/stat.h>
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -40,6 +43,7 @@
 #include "HTTPConnect.h"	// Used to generate a response to cache.
 #include "HTTPCacheTable.h"
 #include "SignalHandler.h"	// Needed to clean up this singleton.
+#include "Error.h"
 
 #include "run_tests_cppunit.h"
 
@@ -57,11 +61,6 @@ inline static uint64_t file_size(const string &name)
     return s.st_size;
 }
 
-#include <iostream>
-#include <cstdio>
-#include <cstring>
-#include <dirent.h>
-#include "Error.h"
 /// There is an os-independent way of doing this in C++ 2017, but it is not portable in C++ 11.
 /// @note This function is not thread safe.
 /// jhrg 2/19/23
@@ -76,14 +75,14 @@ void remove_directory(const char *dir) {
                     remove_directory(path.c_str());
                 } else {
                     if (std::remove(path.c_str()) == -1)
-                        throw libdap::Error(prolog + "Could not remove file " + path + " (" + std::strerror(errno) + ")", __FILE__, __LINE__);
+                        throw Error(prolog + "Could not remove file " + path + " (" + std::strerror(errno) + ")", __FILE__, __LINE__);
                 }
             }
         }
         closedir(dp);
     }
     if (std::remove(dir) == -1)
-        throw libdap::Error(prolog + "Could not remove directory " + dir + " (" + std::strerror(errno) + ")", __FILE__, __LINE__);
+        throw Error(prolog + "Could not remove directory " + dir + " (" + std::strerror(errno) + ")", __FILE__, __LINE__);
 }
 
 // Note that because this test class uses the fixture 'hc' we must always
