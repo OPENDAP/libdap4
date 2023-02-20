@@ -41,7 +41,7 @@
 #include <cstring>
 #include <cerrno>
 
-#undef USE_GETENV
+//#undef USE_GETENV
 
 #include "debug.h"
 #include "mime_util.h"
@@ -535,7 +535,7 @@ HTTPConnect::url_uses_proxy_for(const string &url)
     the no proxy URL regex? */
 
 bool
-HTTPConnect::url_uses_no_proxy_for(const string &url) throw()
+HTTPConnect::url_uses_no_proxy_for(const string &url) noexcept
 {
     return d_rcr->is_no_proxy_for_used()
            && url.find(d_rcr->get_no_proxy_for_host()) != string::npos;

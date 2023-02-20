@@ -27,16 +27,9 @@
 
 #include <cstring>
 #include <cerrno>
-//#include <cstdlib>
-// #include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>
-// #include <dirent.h>
 #include <fcntl.h>
-
-#ifdef HAVE_STDLIB_H
-//#include <stdlib.h>
-#endif
 
 #include <sstream>
 #include <algorithm>
@@ -44,9 +37,6 @@
 #include <set>
 #include <mutex>
 #include <memory>
-
-//#include <unistd.h>   // for stat
-//#include <sys/stat.h>
 
 #include "Error.h"
 #include "InternalErr.h"
@@ -97,7 +87,8 @@ std::unique_ptr<HTTPCache> HTTPCache::d_instance = nullptr;
     @return A pointer to the HTTPCache object. */
 
 HTTPCache *
-HTTPCache::instance(const string &cache_root) {
+HTTPCache::instance(const string &cache_root)
+{
     if (d_instance == nullptr) {
         static std::once_flag d_http_cache_init_once;
         std::call_once(d_http_cache_init_once,
@@ -124,7 +115,8 @@ HTTPCache::instance(const string &cache_root) {
     persistent store cannot be obtained.
     @see cache_index_read */
 
-HTTPCache::HTTPCache(const string &cache_root) {
+HTTPCache::HTTPCache(const string &cache_root)
+{
     // This used to throw an Error object if we could not get the
     // single user lock. However, that results in an invalid object. It's
     // better to have an instance that has default values. If we cannot get
@@ -168,7 +160,8 @@ HTTPCache::HTTPCache(const string &cache_root) {
     structure in place but removes all the cached information).
  */
 
-HTTPCache::~HTTPCache() {
+HTTPCache::~HTTPCache()
+{
     try {
         if (startGC())
             perform_garbage_collection();
@@ -196,7 +189,8 @@ HTTPCache::~HTTPCache() {
     @return True if enough has been removed from the cache. */
 
 bool
-HTTPCache::stopGC() const {
+HTTPCache::stopGC() const
+{
     return (d_http_cache_table->get_current_size() + d_folder_size < d_total_size - d_gc_buffer);
 }
 
@@ -205,7 +199,8 @@ HTTPCache::stopGC() const {
     @note This method does not count locked entries. See the note for hits_gc().
     @return True if garbage collection should be performed. */
 bool
-HTTPCache::startGC() const {
+HTTPCache::startGC() const
+{
     DBG(cerr << "startGC, current_size: " << d_http_cache_table->get_current_size() << endl);
     return (d_http_cache_table->get_current_size() + d_folder_size > d_total_size);
 }
@@ -225,7 +220,8 @@ HTTPCache::startGC() const {
     @see hits_gc */
 
 void
-HTTPCache::perform_garbage_collection() {
+HTTPCache::perform_garbage_collection()
+{
     DBG(cerr << "Performing garbage collection" << endl);
 
     // Remove all the expired responses.
@@ -245,7 +241,8 @@ HTTPCache::perform_garbage_collection() {
     A private method. */
 
 void
-HTTPCache::expired_gc() {
+HTTPCache::expired_gc()
+{
     if (!d_expire_ignored) {
         d_http_cache_table->delete_expired_entries();
     }
@@ -267,7 +264,8 @@ HTTPCache::expired_gc() {
 
     A private method. */
 void
-HTTPCache::hits_gc() {
+HTTPCache::hits_gc()
+{
     int hits = 0;
 
     if (startGC()) {
@@ -282,7 +280,8 @@ HTTPCache::hits_gc() {
  	Don't remove locked entries.
 
     A private method. */
-void HTTPCache::too_big_gc() {
+void HTTPCache::too_big_gc()
+{
     if (startGC())
         d_http_cache_table->delete_by_size(d_max_entry_size);
 }
@@ -292,7 +291,8 @@ void HTTPCache::too_big_gc() {
 /// @name New multi-process locking methods
 /// @{
 
-static inline string get_errno() {
+static inline string get_errno()
+{
     const char *s_err = strerror(errno);
     return s_err ? s_err : "unknown error";
 }
@@ -322,18 +322,17 @@ static inline struct flock *lock(short type)
  * @param ref_fd Return-value parameter that holds the file descriptor that's locked.
  * @return True when the lock is acquired, false if the file already exists.
  */
-static bool createLockedFile(const string &file_name, int &ref_fd)
+static bool create_locked_file(const string &file_name, int &ref_fd)
 {
-    DBG(cerr << "BEGIN file: " << file_name <<endl);
+    DBG(cerr << "BEGIN file: " << file_name << endl);
 
     int fd;
-    if ((fd = open(file_name.c_str(), O_CREAT | O_EXCL | O_RDWR, 0666)) < 0) {
-        switch (errno) {
-            case EEXIST:
-                return false;
-
-            default:
-                throw InternalErr(__FILE__, __LINE__, file_name + ": " + get_errno());
+    if ((fd = open(file_name.c_str(), O_CREAT | O_EXCL | O_RDWR, 0660)) < 0) {
+        if (errno == EEXIST) {
+            return false;
+        }
+        else {
+            throw InternalErr(__FILE__, __LINE__, file_name + ": " + get_errno());
         }
     }
 
@@ -346,7 +345,7 @@ static bool createLockedFile(const string &file_name, int &ref_fd)
         throw InternalErr(__FILE__, __LINE__, oss.str());
     }
 
-    DBG(cerr << "END file: " << file_name <<endl);
+    DBG(cerr << "END file: " << file_name << endl);
 
     // Success
     ref_fd = fd;
@@ -364,18 +363,19 @@ static bool createLockedFile(const string &file_name, int &ref_fd)
  * @see m_lock_cache_write(), m_lock_cache_read(), m_unlock_cache() for the methods
  * that use advisory file locking to lock the cache.
  */
-int HTTPCache::m_initialize_cache_lock(const string &cache_lock)
+int HTTPCache::m_initialize_cache_lock(const string &cache_lock) const
 {
     DBG(cerr << "BEGIN" << endl);
 
     int fd;
-    if (createLockedFile(cache_lock, fd)) {
+    if (create_locked_file(cache_lock, fd)) {
         // This leaves the fd file descriptor open, but unlocked
         m_unlock_cache(fd);
     }
     else {
         if ((fd = open(cache_lock.c_str(), O_RDWR)) == -1) {
-            throw InternalErr(__FILE__, __LINE__, "Failed to open cache lock file: " + cache_lock + " errno: " + get_errno());
+            throw InternalErr(__FILE__, __LINE__,
+                              "Failed to open cache lock file: " + cache_lock + " errno: " + get_errno());
         }
     }
 
@@ -474,7 +474,8 @@ void HTTPCache::m_exclusive_to_shared_lock(int fd)
     @return A string that contains the cache root directory. */
 
 string
-HTTPCache::get_cache_root() const {
+HTTPCache::get_cache_root() const
+{
     return d_cache_root;
 }
 
@@ -487,7 +488,8 @@ HTTPCache::get_cache_root() const {
     @exception Error Thrown if the given pathname cannot be created. */
 
 void
-HTTPCache::create_cache_root(const string &cache_root) const {
+HTTPCache::create_cache_root(const string &cache_root) const
+{
     // Save the mask
     mode_t mask = umask(0);
 
@@ -514,7 +516,8 @@ HTTPCache::create_cache_root(const string &cache_root) const {
     @exception Error Thrown if the path can neither be deduced nor created. */
 
 void
-HTTPCache::set_cache_root(const string &root) {
+HTTPCache::set_cache_root(const string &root)
+{
     if (!root.empty()) {
         d_cache_root = root;
         // cache root should end in /.
@@ -550,7 +553,8 @@ HTTPCache::set_cache_root(const string &root) {
     disabled. */
 
 void
-HTTPCache::set_cache_enabled(bool mode) {
+HTTPCache::set_cache_enabled(bool mode)
+{
     lock_guard<mutex> lock{d_cache_mutex};
 
     d_cache_enabled = mode;
@@ -559,7 +563,8 @@ HTTPCache::set_cache_enabled(bool mode) {
 /** Is the cache currently enabled? */
 
 bool
-HTTPCache::is_cache_enabled() const {
+HTTPCache::is_cache_enabled() const
+{
     return d_cache_enabled;
 }
 
@@ -574,7 +579,8 @@ HTTPCache::is_cache_enabled() const {
     @see CacheDIsconnectedMode */
 
 void
-HTTPCache::set_cache_disconnected(CacheDisconnectedMode mode) {
+HTTPCache::set_cache_disconnected(CacheDisconnectedMode mode)
+{
     lock_guard<mutex> lock{d_cache_mutex};
 
     d_cache_disconnected = mode;
@@ -583,7 +589,8 @@ HTTPCache::set_cache_disconnected(CacheDisconnectedMode mode) {
 /** Get the cache's disconnected mode property. */
 
 CacheDisconnectedMode
-HTTPCache::get_cache_disconnected() const {
+HTTPCache::get_cache_disconnected() const
+{
     return d_cache_disconnected;
 }
 
@@ -596,7 +603,8 @@ HTTPCache::get_cache_disconnected() const {
     otherwise. */
 
 void
-HTTPCache::set_expire_ignored(bool mode) {
+HTTPCache::set_expire_ignored(bool mode)
+{
     lock_guard<mutex> lock{d_cache_mutex};
 
     d_expire_ignored = mode;
@@ -606,7 +614,8 @@ HTTPCache::set_expire_ignored(bool mode) {
    been cached? */
 
 bool
-HTTPCache::is_expire_ignored() const {
+HTTPCache::is_expire_ignored() const
+{
     return d_expire_ignored;
 }
 
@@ -626,7 +635,8 @@ HTTPCache::is_expire_ignored() const {
     @param size The maximum size of the cache in megabytes. */
 
 void
-HTTPCache::set_max_size(unsigned long size) {
+HTTPCache::set_max_size(unsigned long size)
+{
     lock_guard<mutex> lock{d_cache_mutex};
 
     unsigned long new_size = size < MIN_CACHE_TOTAL_SIZE ?
@@ -645,7 +655,8 @@ HTTPCache::set_max_size(unsigned long size) {
 /** How big is the cache? The value returned is the size in megabytes. */
 
 unsigned long
-HTTPCache::get_max_size() const {
+HTTPCache::get_max_size() const
+{
     return d_total_size / MEGA;
 }
 
@@ -658,7 +669,8 @@ HTTPCache::get_max_size() const {
     @param size The size in megabytes. */
 
 void
-HTTPCache::set_max_entry_size(unsigned long size) {
+HTTPCache::set_max_entry_size(unsigned long size)
+{
     lock_guard<mutex> lock{d_cache_mutex};
 
     unsigned long new_size = size * MEGA;
@@ -677,7 +689,8 @@ HTTPCache::set_max_entry_size(unsigned long size) {
     @return The maximum size in megabytes. */
 
 unsigned long
-HTTPCache::get_max_entry_size() const {
+HTTPCache::get_max_entry_size() const
+{
     return d_max_entry_size / MEGA;
 }
 
@@ -692,7 +705,8 @@ HTTPCache::get_max_entry_size() const {
     @param exp_time The time in seconds. */
 
 void
-HTTPCache::set_default_expiration(const int exp_time) {
+HTTPCache::set_default_expiration(const int exp_time)
+{
     lock_guard<mutex> lock{d_cache_mutex};
 
     d_default_expiration = exp_time;
@@ -701,7 +715,8 @@ HTTPCache::set_default_expiration(const int exp_time) {
 /** Get the default expiration time used by the cache. */
 
 int
-HTTPCache::get_default_expiration() const {
+HTTPCache::get_default_expiration() const
+{
     return d_default_expiration;
 }
 
@@ -710,7 +725,8 @@ HTTPCache::get_default_expiration() const {
     being used. */
 
 void
-HTTPCache::set_always_validate(bool validate) {
+HTTPCache::set_always_validate(bool validate)
+{
     d_always_validate = validate;
 }
 
@@ -718,7 +734,8 @@ HTTPCache::set_always_validate(bool validate) {
     @return True if all cache entries require validation. */
 
 bool
-HTTPCache::get_always_validate() const {
+HTTPCache::get_always_validate() const
+{
     return d_always_validate;
 }
 
@@ -739,7 +756,8 @@ HTTPCache::get_always_validate() const {
     start with 'Cache-Control: '. */
 
 void
-HTTPCache::set_cache_control(const vector<string> &cc) {
+HTTPCache::set_cache_control(const vector<string> &cc)
+{
     lock_guard<mutex> lock{d_cache_mutex};
 
     d_cache_control = cc;
@@ -776,7 +794,8 @@ HTTPCache::set_cache_control(const vector<string> &cc) {
     @return A vector of strings, one string for each header. */
 
 vector<string>
-HTTPCache::get_cache_control() {
+HTTPCache::get_cache_control() const
+{
     return d_cache_control;
 }
 
@@ -795,7 +814,8 @@ HTTPCache::get_cache_control() {
     @return True if \c url is found, otherwise False. */
 
 bool
-HTTPCache::is_url_in_cache(const string &url) {
+HTTPCache::is_url_in_cache(const string &url)
+{
     lock_guard<mutex> lock{d_cache_mutex};
 
     HTTPCacheTable::CacheEntry *entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
@@ -813,7 +833,8 @@ HTTPCache::is_url_in_cache(const string &url) {
     @return True if the header is, otherwise False. */
 
 bool
-is_hop_by_hop_header(const string &header) {
+is_hop_by_hop_header(const string &header)
+{
     return header.find("Connection") != string::npos
            || header.find("Keep-Alive") != string::npos
            || header.find("Proxy-Authenticate") != string::npos
@@ -834,7 +855,8 @@ is_hop_by_hop_header(const string &header) {
     @exception InternalErr Thrown if the file cannot be opened. */
 
 void
-HTTPCache::write_metadata(const string &cachename, const vector<string> &headers) {
+HTTPCache::write_metadata(const string &cachename, const vector<string> &headers)
+{
     string fname = cachename + CACHE_META;
     d_open_files.push_back(fname);
 
@@ -878,7 +900,8 @@ HTTPCache::write_metadata(const string &cachename, const vector<string> &headers
     @exception InternalErr Thrown if the file cannot be opened. */
 
 void
-HTTPCache::read_metadata(const string &cachename, vector<string> &headers) {
+HTTPCache::read_metadata(const string &cachename, vector<string> &headers) const
+{
     FILE *md = fopen(string(cachename + CACHE_META).c_str(), "r");
     if (!md) {
         throw InternalErr(__FILE__, __LINE__, "Could not open named cache entry meta data file.");
@@ -888,7 +911,7 @@ HTTPCache::read_metadata(const string &cachename, vector<string> &headers) {
     char line[line_buf_len];
     while (!feof(md) && fgets(line, line_buf_len, md)) {
         line[std::min(line_buf_len, strnlen(line, line_buf_len)) - 1] = '\0'; // erase newline
-        headers.push_back(string(line));
+        headers.emplace_back(line);
     }
 
     int res = fclose(md);
@@ -919,7 +942,8 @@ HTTPCache::read_metadata(const string &cachename, vector<string> &headers) {
     jhrg */
 
 int
-HTTPCache::write_body(const string &cachename, const FILE *src) {
+HTTPCache::write_body(const string &cachename, const FILE *src)
+{
     d_open_files.push_back(cachename);
 
     FILE *dest = fopen(cachename.c_str(), "wb");
@@ -969,7 +993,8 @@ HTTPCache::write_body(const string &cachename, const FILE *src) {
     @exception InternalErr Thrown if the file cannot be opened. */
 
 FILE *
-HTTPCache::open_body(const string &cachename) {
+HTTPCache::open_body(const string &cachename)
+{
     DBG(cerr << "cachename: " << cachename << endl);
 
     FILE *src = fopen(cachename.c_str(), "rb"); // Read only
@@ -1006,7 +1031,8 @@ HTTPCache::open_body(const string &cachename) {
     the persistent store. */
 
 bool
-HTTPCache::cache_response(const string &url, time_t request_time, const vector<string> &headers, const FILE *body) {
+HTTPCache::cache_response(const string &url, time_t request_time, const vector<string> &headers, const FILE *body)
+{
 
     // If this is not an http or https URL, don't cache.
     if (url.find("http:") == string::npos && url.find("https:") == string::npos) {
@@ -1014,7 +1040,8 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
     }
 
     lock_guard<mutex> lock{d_cache_mutex};
-    mp_lock_guard write_lock{d_cache_lock_fd, mp_lock_guard::operation::write}; // Blocks until the write lock is acquired.
+    mp_lock_guard write_lock{d_cache_lock_fd,
+                             mp_lock_guard::operation::write}; // Blocks until the write lock is acquired.
 
     // This does nothing if url is not already in the cache. It's
     // more efficient to do this than to first check and see if the entry
@@ -1082,7 +1109,8 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
     @exception Error Thrown if the \e url is not in the cache. */
 
 vector<string>
-HTTPCache::get_conditional_request_headers(const string &url) {
+HTTPCache::get_conditional_request_headers(const string &url)
+{
 
     HTTPCacheTable::CacheEntry *entry = nullptr;
     vector<string> headers;
@@ -1126,7 +1154,8 @@ HTTPCache::get_conditional_request_headers(const string &url) {
     only (discounting the value). */
 
 struct HeaderLess : binary_function<const string &, const string &, bool> {
-    bool operator()(const string &s1, const string &s2) const {
+    bool operator()(const string &s1, const string &s2) const
+    {
         return s1.substr(0, s1.find(':')) < s2.substr(0, s2.find(':'));
     }
 };
@@ -1145,12 +1174,14 @@ struct HeaderLess : binary_function<const string &, const string &, bool> {
     @exception Error Thrown if the \c url is not in the cache. */
 
 void
-HTTPCache::update_response(const string &url, time_t request_time, const vector<string> &headers) {
+HTTPCache::update_response(const string &url, time_t request_time, const vector<string> &headers)
+{
     HTTPCacheTable::CacheEntry *entry = nullptr;
 
     try {
         lock_guard<mutex> lock{d_cache_mutex};
-        mp_lock_guard write_lock{d_cache_lock_fd, mp_lock_guard::operation::write}; // Blocks until the lock is acquired.
+        mp_lock_guard write_lock{d_cache_lock_fd,
+                                 mp_lock_guard::operation::write}; // Blocks until the lock is acquired.
 
         entry = d_http_cache_table->get_write_locked_entry_from_cache_table(url);
         if (!entry)
@@ -1210,7 +1241,8 @@ HTTPCache::update_response(const string &url, time_t request_time, const vector<
     @exception Error Thrown if the URL's response is not in the cache. */
 
 bool
-HTTPCache::is_url_valid(const string &url) {
+HTTPCache::is_url_valid(const string &url)
+{
 
     bool freshness;
     HTTPCacheTable::CacheEntry *entry = nullptr;
@@ -1294,7 +1326,8 @@ HTTPCache::is_url_valid(const string &url) {
     @exception Error Thrown if the URL's response is not in the cache.
     @exception InternalErr Thrown if the persistent store cannot be opened. */
 
-FILE *HTTPCache::get_cached_response(const string &url, vector<string> &headers, string &cacheName) {
+FILE *HTTPCache::get_cached_response(const string &url, vector<string> &headers, string &cacheName)
+{
     FILE *body = nullptr;
     HTTPCacheTable::CacheEntry *entry = nullptr;
 
@@ -1346,7 +1379,8 @@ FILE *HTTPCache::get_cached_response(const string &url, vector<string> &headers,
     @exception InternalErr Thrown if the persistent store cannot be opened. */
 
 FILE *
-HTTPCache::get_cached_response(const string &url, vector<string> &headers) {
+HTTPCache::get_cached_response(const string &url, vector<string> &headers)
+{
     string discard_name;
     return get_cached_response(url, headers, discard_name);
 }
@@ -1362,7 +1396,8 @@ HTTPCache::get_cached_response(const string &url, vector<string> &headers) {
     @exception InternalErr Thrown if an I/O error is detected. */
 
 FILE *
-HTTPCache::get_cached_response(const string &url) {
+HTTPCache::get_cached_response(const string &url)
+{
     string discard_name;
     vector<string> discard_headers;
     return get_cached_response(url, discard_headers, discard_name);
@@ -1381,7 +1416,8 @@ HTTPCache::get_cached_response(const string &url) {
     cache or if the entry was already released. */
 
 void
-HTTPCache::release_cached_response(FILE *body) {
+HTTPCache::release_cached_response(FILE *body)
+{
     lock_guard<mutex> lock{d_cache_mutex};
 
     // fclose(body); This results in a seg fault on linux jhrg 8/27/13
@@ -1402,7 +1438,8 @@ HTTPCache::release_cached_response(FILE *body) {
     an entry is still in use. */
 
 void
-HTTPCache::purge_cache() {
+HTTPCache::purge_cache()
+{
     lock_guard<mutex> lock{d_cache_mutex};
     mp_lock_guard write_lock{d_cache_lock_fd, mp_lock_guard::operation::write}; // Blocks until the lock is acquired.
 

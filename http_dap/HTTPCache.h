@@ -146,7 +146,7 @@ private:
 
     void create_cache_root(const std::string &cache_root) const;
 
-    int m_initialize_cache_lock(const std::string &cache_lock);
+    int m_initialize_cache_lock(const std::string &cache_lock) const;
 
     static void m_lock_cache_write(int fd);
 
@@ -162,7 +162,7 @@ private:
     // Otherwise, they would be static functions. jhrg 10/01/02
     void write_metadata(const std::string &cachename, const std::vector<std::string> &headers);
 
-    void read_metadata(const std::string &cachename, std::vector<std::string> &headers);
+    void read_metadata(const std::string &cachename, std::vector<std::string> &headers) const;
 
     int write_body(const std::string &cachename, const FILE *src);
 
@@ -207,16 +207,30 @@ private:
         mp_lock_guard &operator=(const mp_lock_guard &) = delete;
 
         mp_lock_guard(int fd, operation op) : d_fd(fd), d_op(op) {
-            if (d_op == operation::write)
-                HTTPCache::instance()->m_lock_cache_write(d_fd);
-            else
-                HTTPCache::instance()->m_lock_cache_read(d_fd);
-            d_locked = true;
+            try {
+                if (d_op == operation::write)
+                    HTTPCache::m_lock_cache_write(d_fd);
+                else
+                    HTTPCache::m_lock_cache_read(d_fd);
+                d_locked = true;
+            }
+            catch (const std::exception &e) {
+                d_locked = false;
+                // Log this case.
+                std::cerr << "mp_lock_guard::mp_lock_guard() - Failed to lock the cache (" << e.what() << ")." << std::endl;
+            }
         }
 
         ~mp_lock_guard() {
-            if (!d_released && d_locked)
-                HTTPCache::instance()->m_unlock_cache(d_fd);
+            try {
+                if (!d_released && d_locked) {
+                    HTTPCache::m_unlock_cache(d_fd);
+                }
+            }
+            catch (const std::exception &e) {
+                // Log this case.
+                std::cerr << "mp_lock_guard::~mp_lock_guard() - Failed to release the cache lock (" << e.what() << ")." << std::endl;
+            }
         }
 
         void release() { d_released = true; }
@@ -267,7 +281,7 @@ public:
 
     void set_cache_control(const std::vector<std::string> &cc);
 
-    std::vector<std::string> get_cache_control();
+    std::vector<std::string> get_cache_control() const;
 
     // This must lock for writing
     bool cache_response(const std::string &url, time_t request_time,
