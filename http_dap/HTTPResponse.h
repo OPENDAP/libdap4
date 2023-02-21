@@ -38,14 +38,14 @@
 
 #include "Response.h"
 #include "util.h"
-#include "debug.h"
+// #include "debug.h"
 
 namespace libdap
 {
 
 // defined in HTTPConnect.cc
 extern int dods_keep_temps;
-extern void close_temp(FILE *s, const string &name);
+// extern void close_temp(FILE *s, const string &name);
 
 /** Encapsulate an http response. Instead of directly returning the FILE
     pointer from which a response is read and vector of headers, return an
@@ -84,12 +84,7 @@ public:
     body; this file is deleted when this instance is deleted. */
     HTTPResponse(FILE *s, int status, const std::vector<std::string> &h, const std::string &temp_file)
             : Response(s, status), d_headers(h), d_file(temp_file)
-    {
-        DBG(cerr << "Headers: " << endl);
-        DBGN(copy(d_headers.begin(), d_headers.end(),
-                  ostream_iterator<string>(cerr, "\n")));
-        DBGN(cerr << "end of headers." << endl);
-    }
+    { }
 
     /**
      * @brief Build a HTTPResponse using a cpp fstream
@@ -101,12 +96,7 @@ public:
      */
     HTTPResponse(std::fstream *s, int status, const std::vector<std::string> &h, const std::string &temp_file)
             : Response(s, status), d_headers(h), d_file(temp_file)
-    {
-        DBG(cerr << "Headers: " << endl);
-        DBGN(copy(d_headers.begin(), d_headers.end(),
-                  ostream_iterator<string>(cerr, "\n")));
-        DBGN(cerr << "end of headers." << endl);
-    }
+    { }
 
     /** When an instance is destroyed, free the temporary resources: the
     temp_file and headers are deleted. If the tmp file name is "", it is

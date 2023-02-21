@@ -72,14 +72,14 @@ extern int dods_keep_temps;
 class HTTPConnect
 {
 private:
-    CURL *d_curl;
-    RCReader *d_rcr;
-    HTTPCache *d_http_cache;
+    CURL *d_curl = nullptr;
+    RCReader *d_rcr = nullptr;
+    HTTPCache *d_http_cache = nullptr;
 
     char d_error_buffer[CURL_ERROR_SIZE]; // A human-readable message.
     std::string d_content_type; // apparently read by libcurl; this is valid only after curl_easy_perform()
 
-    bool d_accept_deflate;
+    bool d_accept_deflate = false; // Use deflate encoding for HTTP requests
 
     string d_username;  // extracted from URL
     string d_password;  // extracted from URL
@@ -89,8 +89,8 @@ private:
 
     vector<string> d_request_headers; // Request headers
 
-    int d_dap_client_protocol_major;
-    int d_dap_client_protocol_minor;
+    int d_dap_client_protocol_major = 2;
+    int d_dap_client_protocol_minor = 0;
 
     bool d_use_cpp_streams;	// Build HTTPResponse objects using fstream and not FILE*
 
@@ -126,7 +126,7 @@ public:
     virtual ~HTTPConnect();
 
     void set_credentials(const string &u, const string &p);
-    void set_accept_deflate(bool defalte);
+    void set_accept_deflate(bool deflate);
     void set_xdap_protocol(int major, int minor);
 
     bool use_cpp_streams() const { return d_use_cpp_streams; }
@@ -151,7 +151,7 @@ public:
     }
 
     /** Return the current state of the HTTP cache. */
-    bool is_cache_enabled() const { return (d_http_cache) ? d_http_cache->is_cache_enabled() : false; }
+    bool is_cache_enabled() const { return (d_http_cache) != nullptr && d_http_cache->is_cache_enabled(); }
 
     HTTPResponse *fetch_url(const string &url);
 };

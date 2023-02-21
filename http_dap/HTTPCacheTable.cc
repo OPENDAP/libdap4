@@ -246,7 +246,7 @@ public:
                          "%s %s %s %ld %ld %ld %c %d %d %ld %ld %ld %c\r\n",
                          e->url.c_str(),
                          e->cachename.c_str(),
-                         e->etag.empty() ? CACHE_EMPTY_ETAG : e->etag.c_str(),
+                         e->etag.empty() ? CACHE_EMPTY_ETAG.c_str() : e->etag.c_str(),
                          (e->lm),
                          (e->expires),
                          e->size,

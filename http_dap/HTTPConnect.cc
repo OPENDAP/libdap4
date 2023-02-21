@@ -41,8 +41,6 @@
 #include <cstring>
 #include <cerrno>
 
-//#undef USE_GETENV
-
 #include "debug.h"
 #include "mime_util.h"
 #include "GNURegex.h"
@@ -549,32 +547,29 @@ HTTPConnect::url_uses_no_proxy_for(const string &url) noexcept
     @param rcr A pointer to the RCReader object which holds configuration
     file information to be used by this virtual connection. */
 
-HTTPConnect::HTTPConnect(RCReader *rcr, bool use_cpp) : d_username(""), d_password(""), d_cookie_jar(""),
-		d_dap_client_protocol_major(2),	d_dap_client_protocol_minor(0), d_use_cpp_streams(use_cpp)
-
+HTTPConnect::HTTPConnect(RCReader *rcr, bool use_cpp) : d_rcr(rcr), d_accept_deflate(rcr->get_deflate()),
+    d_use_cpp_streams(use_cpp)
 {
-    d_accept_deflate = rcr->get_deflate();
-    d_rcr = rcr;
+    // d_accept_deflate = rcr->get_deflate();
 
     // Load in the default headers to send with a request. The empty Pragma
     // headers overrides libcurl's default Pragma: no-cache header (which
     // will disable caching by Squid, et c.). The User-Agent header helps
     // make server logs more readable. 05/05/03 jhrg
-    d_request_headers.push_back(string("Pragma:"));
+    d_request_headers.emplace_back("Pragma:");
+#if 0
     string user_agent = string("User-Agent: ") + string(CNAME)
                         + string("/") + string(CVER);
-    d_request_headers.push_back(user_agent);
+#endif
+    d_request_headers.emplace_back(string("User-Agent: ") + CNAME + "/" + CVER);
     if (d_accept_deflate)
-        d_request_headers.push_back(string("Accept-Encoding: deflate, gzip, compress"));
+        d_request_headers.emplace_back("Accept-Encoding: deflate, gzip, compress");
 
     // HTTPCache::instance returns a valid ptr or 0.
     if (d_rcr->get_use_cache())
         d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root());
     else
         d_http_cache = 0;
-
-    DBG2(cerr << "Cache object created (" << hex << d_http_cache << dec
-         << ")" << endl);
 
     if (d_http_cache) {
         d_http_cache->set_cache_enabled(d_rcr->get_use_cache());
@@ -592,11 +587,7 @@ HTTPConnect::HTTPConnect(RCReader *rcr, bool use_cpp) : d_username(""), d_passwo
 
 HTTPConnect::~HTTPConnect()
 {
-    DBG2(cerr << "Entering the HTTPConnect dtor" << endl);
-
     curl_easy_cleanup(d_curl);
-
-    DBG2(cerr << "Leaving the HTTPConnect dtor" << endl);
 }
 
 /** Look for a certain header */
@@ -626,9 +617,9 @@ HTTPConnect::fetch_url(const string &url)
     cout << "GET " << url << " HTTP/1.0" << endl;
 #endif
 
-    HTTPResponse *stream;
+    HTTPResponse *stream = nullptr;
 
-    if (/*d_http_cache && d_http_cache->*/is_cache_enabled()) {
+    if (is_cache_enabled()) {
         stream = caching_fetch_url(url);
     }
     else {
@@ -661,8 +652,8 @@ HTTPConnect::fetch_url(const string &url)
 #endif
 
     // handle redirection case (2007-04-27, gaffigan@sfos.uaf.edu)
-    if (parser.get_location() != "" &&
-	    url.substr(0,url.find("?",0)).compare(parser.get_location().substr(0,url.find("?",0))) != 0) {
+    if (!parser.get_location().empty()
+        && (url.substr(0, url.find('?')) == parser.get_location().substr(0, url.find('?')))) {// } != 0)) {
     	delete stream;
         return fetch_url(parser.get_location());
     }
@@ -771,8 +762,8 @@ valid_temp_directory:
     @return The name of the temporary file.
     @exception InternalErr thrown if the FILE* could not be opened. */
 
-string
-get_temp_file(FILE *&stream) throw(Error)
+static string
+get_temp_file(FILE *&stream)
 {
     string dods_temp = get_tempfile_template((string)"dodsXXXXXX");
 
@@ -780,29 +771,20 @@ get_temp_file(FILE *&stream) throw(Error)
 
     strncpy(pathname.data(), dods_temp.c_str(), dods_temp.length());
 
-    DBG(cerr << "pathanme: " << pathname.data() << " (" << dods_temp.length() + 1 << ")" << endl);
-
     // Open truncated for update. NB: mkstemp() returns a file descriptor.
-#if defined(WIN32) || defined(TEST_WIN32_TEMPS)
-    stream = fopen(_mktemp(pathname.data()), "w+b");
-#else
     // Make sure that temp files are accessible only by the owner.
-    int mask = umask(077);
-    if (mask < 0)
-        throw Error("Could not set the file creation mask: " + string(strerror(errno)));
+    mode_t mask = umask(077);
     int fd = mkstemp(pathname.data());
     if (fd < 0)
         throw Error("Could not create a temporary file to store the response: " + string(strerror(errno)));
 
     stream = fdopen(fd, "w+");
     umask(mask);
-#endif
 
     if (!stream)
     	throw Error("Failed to open a temporary file for the data values (" + dods_temp + ")");
 
-    dods_temp = pathname.data();
-    return dods_temp;
+    return {pathname.data()};
 }
 
 /**
@@ -810,7 +792,7 @@ get_temp_file(FILE *&stream) throw(Error)
  * @param s
  * @param name
  */
-void
+static void
 close_temp(FILE *s, const string &name)
 {
     int res = fclose(s);

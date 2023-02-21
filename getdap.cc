@@ -52,6 +52,7 @@
 #include "Connect.h"
 #include "Response.h"
 #include "StdinResponse.h"
+#include "debug.h"
 
 using std::cerr;
 using std::endl;

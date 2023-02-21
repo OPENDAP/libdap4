@@ -34,7 +34,7 @@
 
 #include "GNURegex.h"
 #include "HTTPConnect.h"
-
+#include "debug.h"
 
 #include "run_tests_cppunit.h"
 #include "test_config.h"

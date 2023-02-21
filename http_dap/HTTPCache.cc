@@ -49,17 +49,19 @@
 #include "util_mit.h"
 #include "debug.h"
 
-#define CACHE_LOCATION "/tmp/"
-#define CACHE_ROOT "dods-cache/"
-
-#define CACHE_INDEX ".index"
-#define CACHE_LOCK ".lock"
-#define CACHE_META ".meta"
-#define CACHE_EMPTY_ETAG "@cache@"
-
-#define DIR_SEPARATOR_CHAR '/'
-
 using namespace std;
+
+// #define CACHE_LOCATION "/tmp/"
+const string CACHE_LOCATION{"/tmp/"};
+
+const string CACHE_ROOT{"dods-cache/"};
+
+const string CACHE_INDEX{".index"};
+const string CACHE_LOCK{".lock"};
+const string CACHE_META{".meta"};
+const string CACHE_EMPTY_ETAG{"@cache@"};
+
+const string DIR_SEPARATOR_CHAR{"/"};
 
 namespace libdap {
 
@@ -504,6 +506,12 @@ HTTPCache::create_cache_root(const string &cache_root) const
     umask(mask);
 }
 
+inline bool ends_with(std::string const & value, std::string const & ending)
+{
+    if (ending.size() > value.size()) return false;
+    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
+
 /** Set the cache's root directory to the given path.
 
     Note that in most cases callers should look for this path in the user's
@@ -521,14 +529,14 @@ HTTPCache::set_cache_root(const string &root)
     if (!root.empty()) {
         d_cache_root = root;
         // cache root should end in /.
-        if (d_cache_root[d_cache_root.size() - 1] != DIR_SEPARATOR_CHAR)
+        if (!ends_with(d_cache_root, DIR_SEPARATOR_CHAR))
             d_cache_root += DIR_SEPARATOR_CHAR;
     }
     else {
         // If no cache root has been indicated then look for a suitable location.
         d_cache_root = CACHE_LOCATION;
 
-        if (d_cache_root[d_cache_root.size() - 1] != DIR_SEPARATOR_CHAR)
+        if (!ends_with(d_cache_root, DIR_SEPARATOR_CHAR))
             d_cache_root += DIR_SEPARATOR_CHAR;
 
         d_cache_root += CACHE_ROOT;
