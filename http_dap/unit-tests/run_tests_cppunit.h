@@ -41,7 +41,7 @@
 bool debug = false;
 
 #undef DBG
-#define DBG(x) do { if (debug) (x); } while(false);
+#define DBG(x) do { if (debug) (x); } while(false)
 
 /**
  * @brief Run the test(s)

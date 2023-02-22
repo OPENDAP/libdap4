@@ -76,7 +76,7 @@ D4-xml.tar.gz: D4-xml/DMR_*[0-9].xml
 #
 
 if CPPUNIT
-UNIT_TESTS = HTTPConnectTest HTTPCacheTest
+UNIT_TESTS = HTTPConnectTest HTTPConnectMTTest HTTPCacheTest
 
 else
 UNIT_TESTS =
@@ -109,3 +109,7 @@ HTTPCacheTest_LDADD = $(AM_LDADD)
 HTTPConnectTest_SOURCES = HTTPConnectTest.cc
 HTTPConnectTest_CPPFLAGS = $(AM_CPPFLAGS)
 HTTPConnectTest_LDADD = $(AM_LDADD)
+
+HTTPConnectMTTest_SOURCES = HTTPConnectMTTest.cc
+HTTPConnectMTTest_CPPFLAGS = $(AM_CPPFLAGS)
+HTTPConnectMTTest_LDADD = $(AM_LDADD)

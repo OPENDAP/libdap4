@@ -108,6 +108,7 @@ private:
 
     friend size_t save_raw_http_header(void *ptr, size_t size, size_t nmemb, void *http_connect);
     friend class HTTPConnectTest;
+    friend class HTTPConnectMTTest;
     friend class ParseHeader;
 
 public:
