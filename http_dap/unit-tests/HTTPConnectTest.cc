@@ -48,11 +48,13 @@ namespace libdap {
 
 class HTTPConnectTest: public TestFixture {
 private:
-    HTTPConnect * http{};
-    string localhost_url, localhost_pw_url, localhost_digest_pw_url;
-    string etag;
-    string lm;
-    string netcdf_das_url;
+    unique_ptr<HTTPConnect> http = make_unique<HTTPConnect>(RCReader::instance());
+    string localhost_url{"http://test.opendap.org/test-304.html"};
+    string localhost_pw_url{"http://jimg:dods_test@test.opendap.org/basic/page.txt"};
+    string localhost_digest_pw_url{"http://jimg:dods_digest@test.opendap.org/basic/page.txt"};
+    string etag{"\"157-3df0e26958000\""};
+    string lm{"Wed, 13 Jul 2005 19:32:26 GMT"};
+    string netcdf_das_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.das"};
 
     bool re_match(Regex & r, const char *s)
     {
@@ -90,7 +92,7 @@ private:
     };
 
 public:
-    HTTPConnectTest(): http(nullptr) { }
+    HTTPConnectTest() = default;
     ~HTTPConnectTest() override = default;
 
     void setUp() override
@@ -98,9 +100,6 @@ public:
         DBG(cerr << endl);
         DBG(cerr << prolog << "Setting the DODS_CONF env var" << endl);
         setenv("DODS_CONF", "cache-testsuite/dodsrc", 1);
-        http = new HTTPConnect(RCReader::instance());
-
-        localhost_url = "http://test.opendap.org/test-304.html";
         DBG(cerr << prolog << "localhost_url: " << localhost_url<< endl);
 
         // Two request header values that will generate a 304 response to the
@@ -112,35 +111,12 @@ public:
         // etag = "\"2a008e-157-3fbcd139c2680\"";
         // etag = "\"181893-157-3fbcd139c2680\""; // On 10/13/14 we moved to a new httpd and the etag value changed.
         // etag ="\"157-3df1e87884680\""; // New httpd service, new etag, ndp - 01/11/21
-        etag = "\"157-3df0e26958000\"";// New httpd (dockerized), new etag. ndp - 12/06/22
+        //etag = "\"157-3df0e26958000\"";// New httpd (dockerized), new etag. ndp - 12/06/22
         DBG(cerr << prolog << "etag: " << etag<< endl);
-        lm = "Wed, 13 Jul 2005 19:32:26 GMT";
         DBG(cerr << prolog << "lm: " << lm<< endl);
-        string u("jimg");
-        string dt(":dods_test@");
-        string dd(":dods_digest@");
-        string page("test.opendap.org/basic/page.txt");
-
-        localhost_pw_url = "http://"+u+dt+page;
         DBG(cerr << prolog << "localhost_pw_url: " << localhost_pw_url<< endl);
-
-        localhost_digest_pw_url = "http://"+u+dd+page;
         DBG(cerr << prolog << "localhost_digest_pw_url: " << localhost_digest_pw_url<< endl);
-
-        netcdf_das_url = "http://test.opendap.org/dap/data/nc/fnoc1.nc.das";
         DBG(cerr << prolog << "netcdf_das_url: " << netcdf_das_url<< endl);
-    }
-
-    void tearDown() override
-    {
-#if 0
-        // normal code doesn't do this - it happens at exit() but not doing
-        // this here make valgrind think there are leaks.
-        http->d_http_cache->delete_instance();
-#endif
-        delete http;
-        http = nullptr;
-        unsetenv("DODS_CONF");
     }
 
     CPPUNIT_TEST_SUITE (HTTPConnectTest);
@@ -168,8 +144,6 @@ public:
     CPPUNIT_TEST (set_xdap_protocol_test);
     CPPUNIT_TEST (read_url_password_test);
     CPPUNIT_TEST (read_url_password_test2);
-
-    // CPPUNIT_TEST(read_url_password_proxy_test);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -229,25 +203,17 @@ public:
     void fetch_url_test_1()
     {
         DBG(cerr << "Entering fetch_url_test 1" << endl);
-        HTTPResponse *stuff = nullptr;
         char c;
         try {
-            stuff = http->fetch_url(localhost_url);
+            unique_ptr<HTTPResponse> stuff(http->fetch_url(localhost_url));
             CPPUNIT_ASSERT(
                 fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
                     && !feof(stuff->get_stream()));
-            delete stuff;
-            stuff = nullptr;
-
         }
         catch (InternalErr & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
         }
         catch (Error & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -255,8 +221,6 @@ public:
         // is not called, then a failed test can leave the cache with locked
         // entries
         catch (const std::exception &e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("An exception was thrown from fetch_url_test_1: " + string(e.what()));
         }
     }
@@ -264,47 +228,32 @@ public:
     void fetch_url_test_1_cpp()
     {
         DBG(cerr << "Entering fetch_url_test 1" << endl);
-        HTTPResponse *stuff = nullptr;
         http->set_use_cpp_streams(true);
         char c;
         try {
-            stuff = http->fetch_url(localhost_url);
+            unique_ptr<HTTPResponse> stuff(http->fetch_url(localhost_url));
             stuff->get_cpp_stream()->read(&c, 1);
             CPPUNIT_ASSERT(*(stuff->get_cpp_stream()));
             CPPUNIT_ASSERT(!stuff->get_cpp_stream()->bad());
             CPPUNIT_ASSERT(!stuff->get_cpp_stream()->eof());
-
-            delete stuff;
         }
         catch (InternalErr &e) {
-            delete stuff;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
         }
         catch (Error &e) {
-            delete stuff;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         catch (std::exception &e) {
-            delete stuff;
             CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        // Catch the exception from a failed ASSERT and clean up. Deleting a
-        // Response object also unlocks the HTTPCache in some cases. If delete
-        // is not called, then a failed test can leave the cache with locked
-        // entries
-        catch (const std::exception &e) {
-            delete stuff;
-            CPPUNIT_FAIL("An exception was thrown from fetch_url_test_1_cpp: " + string(e.what()));
         }
     }
 
     void fetch_url_test_2()
     {
         DBG(cerr << "Entering fetch_url_test 2" << endl);
-        HTTPResponse *stuff = nullptr;
         char c;
         try {
-            stuff = http->fetch_url(netcdf_das_url);
+            unique_ptr<HTTPResponse> stuff(http->fetch_url(netcdf_das_url));
             DBG2(char ln[1024]; while (!feof(stuff->get_stream())) {
                     fgets(ln, 1024, stuff->get_stream()); cerr << ln;}
                 rewind(stuff->get_stream()));
@@ -312,17 +261,11 @@ public:
             CPPUNIT_ASSERT(
                 fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
                     && !feof(stuff->get_stream()));
-            delete stuff;
-            stuff = nullptr;
         }
         catch (InternalErr & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
         }
         catch (Error & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -330,7 +273,6 @@ public:
         // is not called, then a failed test can leave the cache with locked
         // entries
         catch (const std::exception &e) {
-            delete stuff;
             CPPUNIT_FAIL("An exception was thrown from fetch_url_test_2: " + string(e.what()));        }
     }
 
@@ -338,28 +280,17 @@ public:
     {
         DBG(cerr << "Entering fetch_url_test 2" << endl);
         http->set_use_cpp_streams(true);
-
-        HTTPResponse *stuff = nullptr;
         char c;
-
         try {
-            stuff = http->fetch_url(netcdf_das_url);
-
+            unique_ptr<HTTPResponse> stuff(http->fetch_url(netcdf_das_url));
             stuff->get_cpp_stream()->read(&c, 1);
             CPPUNIT_ASSERT(
                 *(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() && !stuff->get_cpp_stream()->eof());
-
-            delete stuff;
-            stuff = nullptr;
         }
         catch (InternalErr & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
         }
         catch (Error & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -367,7 +298,6 @@ public:
         // is not called, then a failed test can leave the cache with locked
         // entries
         catch (const std::exception &e) {
-            delete stuff;
             CPPUNIT_FAIL("An exception was thrown from fetch_url_test_2_cpp: " + string(e.what()));
         }
     }
@@ -375,24 +305,17 @@ public:
     void fetch_url_test_3()
     {
         DBG(cerr << "Entering fetch_url_test 3" << endl);
-        HTTPResponse *stuff = nullptr;
         char c;
         try {
-            stuff = http->fetch_url("file:///etc/passwd");
+            unique_ptr<HTTPResponse> stuff(http->fetch_url("file:///etc/passwd"));
             CPPUNIT_ASSERT(
                 fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
                     && !feof(stuff->get_stream()));
-            delete stuff;
-            stuff = nullptr;
         }
         catch (InternalErr & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
         }
         catch (Error & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -400,7 +323,6 @@ public:
         // is not called, then a failed test can leave the cache with locked
         // entries
         catch (const std::exception &e) {
-            delete stuff;
             CPPUNIT_FAIL("An exception was thrown from fetch_url_test_3: " + string(e.what()));
         }
     }
@@ -409,27 +331,18 @@ public:
     {
         DBG(cerr << "Entering fetch_url_test 3" << endl);
         http->set_use_cpp_streams(true);
-
-        HTTPResponse *stuff = nullptr;
         char c;
         try {
-            stuff = http->fetch_url("file:///etc/passwd");
+            unique_ptr<HTTPResponse> stuff(http->fetch_url("file:///etc/passwd"));
 
             stuff->get_cpp_stream()->read(&c, 1);
             CPPUNIT_ASSERT(
                 *(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() && !stuff->get_cpp_stream()->eof());
-
-            delete stuff;
-            stuff = nullptr;
         }
         catch (InternalErr & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
         }
         catch (Error & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -437,7 +350,6 @@ public:
         // is not called, then a failed test can leave the cache with locked
         // entries
         catch (const std::exception &e) {
-            delete stuff;
             CPPUNIT_FAIL("An exception was thrown from fetch_url_test_3_cpp: " + string(e.what()));
         }
     }
@@ -445,25 +357,18 @@ public:
     void fetch_url_test_4()
     {
         DBG(cerr << "Entering fetch_url_test 4" << endl);
-        HTTPResponse *stuff = nullptr;
         char c;
         try {
             string url = (string) "file://" + TEST_SRC_DIR + "/test_config.h";
-            stuff = http->fetch_url(url);
+            unique_ptr<HTTPResponse> stuff(http->fetch_url(url));
             CPPUNIT_ASSERT(
                 fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
                     && !feof(stuff->get_stream()));
-            delete stuff;
-            stuff = nullptr;
         }
         catch (InternalErr & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
         }
         catch (Error & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -471,7 +376,6 @@ public:
         // is not called, then a failed test can leave the cache with locked
         // entries
         catch (const std::exception &e) {
-            delete stuff;
             CPPUNIT_FAIL("An exception was thrown from fetch_url_test_4: " + string(e.what()));
         }
     }
@@ -480,28 +384,20 @@ public:
     {
         DBG(cerr << "Entering fetch_url_test_4_cpp" << endl);
         http->set_use_cpp_streams(true);
-
-        HTTPResponse *stuff = nullptr;
         char c;
         try {
             string url = (string) "file://" + TEST_SRC_DIR + "/test_config.h";
-            stuff = http->fetch_url(url);
+            unique_ptr<HTTPResponse> stuff(http->fetch_url(url));
 
             stuff->get_cpp_stream()->read(&c, 1);
-            CPPUNIT_ASSERT(
-                *(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() && !stuff->get_cpp_stream()->eof());
-
-            delete stuff;
-            stuff = nullptr;
+            CPPUNIT_ASSERT(*(stuff->get_cpp_stream()));
+            CPPUNIT_ASSERT(!stuff->get_cpp_stream()->bad());
+            CPPUNIT_ASSERT(!stuff->get_cpp_stream()->eof());
         }
         catch (InternalErr & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
         }
         catch (Error & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -509,7 +405,6 @@ public:
         // is not called, then a failed test can leave the cache with locked
         // entries
         catch (const std::exception &e) {
-            delete stuff;
             CPPUNIT_FAIL("An exception was thrown from fetch_url_test_4_cpp: " + string(e.what()));
         }
     }
@@ -540,64 +435,47 @@ public:
 
     void server_version_test()
     {
-        Response *r = nullptr;
+        // Response *r = nullptr;
         Regex protocol("^[0-9]+\\.[0-9]+$");
         try {
-            r = http->fetch_url(netcdf_das_url);
-
+            // r = http->fetch_url(netcdf_das_url);
+            unique_ptr<HTTPResponse> r(http->fetch_url(netcdf_das_url));
             DBG(cerr << "r->get_version().c_str(): " << r->get_protocol().c_str() << endl);
 
             CPPUNIT_ASSERT(re_match(protocol, r->get_protocol().c_str()));
-            delete r;
-            r = nullptr;
         }
         catch (InternalErr & e) {
-            delete r;
-            r = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr exception from server_version: " + e.get_error_message());
         }
         catch (const std::exception &e) {
-            delete r;
-            r = nullptr;
             CPPUNIT_FAIL("An exception was thrown from server_version_test: " + string(e.what()));
         }
-
     }
 
     void type_test()
     {
-        Response *r = nullptr;
         try {
-            r = http->fetch_url(netcdf_das_url);
+            unique_ptr<HTTPResponse> r(http->fetch_url(netcdf_das_url));
             DBG(cerr << "r->get_type(): " << r->get_type() << endl);
             CPPUNIT_ASSERT(r->get_type() == dods_das);
-            delete r;
-            r = nullptr;
         }
         catch (InternalErr & e) {
-            delete r;
-            r = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr exception from type(): " + e.get_error_message());
         }
-
     }
 
     void set_credentials_test()
     {
         http->set_credentials("jimg", "was_quit");
-        Response *stuff = http->fetch_url("http://localhost/secret");
+        unique_ptr<HTTPResponse> stuff(http->fetch_url("http://localhost/secret"));
 
         try {
             char c;
-            CPPUNIT_ASSERT(
-                fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                    && !feof(stuff->get_stream()));
-            delete stuff;
-            stuff = nullptr;
+            CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1);
+            CPPUNIT_ASSERT(!ferror(stuff->get_stream()));
+            CPPUNIT_ASSERT(!feof(stuff->get_stream()));
         }
         catch (InternalErr & e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr exception from output: " + e.get_error_message());
         }
     }

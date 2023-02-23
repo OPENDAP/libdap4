@@ -192,6 +192,9 @@ public:
         catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
+        catch (const std::exception &e) {
+            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
+        }
         catch (...) {
             cerr << "Caught unknown exception" << endl;
             throw;
@@ -261,6 +264,9 @@ public:
         catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
+        catch (const std::exception &e) {
+            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
+        }
         catch (...) {
             cerr << "Caught unknown exception" << endl;
             throw;
@@ -303,6 +309,9 @@ public:
         catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
+        catch (const std::exception &e) {
+            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
+        }
         catch (...) {
             cerr << "Caught unknown exception" << endl;
             throw;
@@ -343,6 +352,9 @@ public:
         }
         catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch (const std::exception &e) {
+            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
         }
         catch (...) {
             cerr << "Caught unknown exception" << endl;
@@ -385,6 +397,9 @@ public:
         }
         catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch (const std::exception &e) {
+            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
         }
         catch (...) {
             cerr << "Caught unknown exception" << endl;
@@ -433,6 +448,9 @@ public:
         }
         catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch (const std::exception &e) {
+            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
         }
         catch (...) {
             cerr << "Caught unknown exception" << endl;
@@ -518,6 +536,9 @@ public:
         }
         catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch (const std::exception &e) {
+            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
         }
         catch (...) {
             cerr << "Caught unknown exception" << endl;
