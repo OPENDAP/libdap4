@@ -254,11 +254,10 @@ public:
         // Response object also unlocks the HTTPCache in some cases. If delete
         // is not called, then a failed test can leave the cache with locked
         // entries
-        catch (...) {
-            cerr << "Caught unknown exception" << endl;
+        catch (const std::exception &e) {
             delete stuff;
             stuff = nullptr;
-            throw;
+            CPPUNIT_FAIL("An exception was thrown from fetch_url_test_1: " + string(e.what()));
         }
     }
 
@@ -293,10 +292,9 @@ public:
         // Response object also unlocks the HTTPCache in some cases. If delete
         // is not called, then a failed test can leave the cache with locked
         // entries
-        catch (...) {
-            cerr << "Caught unknown exception" << endl;
+        catch (const std::exception &e) {
             delete stuff;
-            throw;
+            CPPUNIT_FAIL("An exception was thrown from fetch_url_test_1_cpp: " + string(e.what()));
         }
     }
 
@@ -331,11 +329,9 @@ public:
         // Response object also unlocks the HTTPCache in some cases. If delete
         // is not called, then a failed test can leave the cache with locked
         // entries
-        catch (...) {
+        catch (const std::exception &e) {
             delete stuff;
-            stuff = nullptr;
-            throw;
-        }
+            CPPUNIT_FAIL("An exception was thrown from fetch_url_test_2: " + string(e.what()));        }
     }
 
     void fetch_url_test_2_cpp()
@@ -370,10 +366,9 @@ public:
         // Response object also unlocks the HTTPCache in some cases. If delete
         // is not called, then a failed test can leave the cache with locked
         // entries
-        catch (...) {
+        catch (const std::exception &e) {
             delete stuff;
-            stuff = nullptr;
-            throw;
+            CPPUNIT_FAIL("An exception was thrown from fetch_url_test_2_cpp: " + string(e.what()));
         }
     }
 
@@ -404,10 +399,9 @@ public:
         // Response object also unlocks the HTTPCache in some cases. If delete
         // is not called, then a failed test can leave the cache with locked
         // entries
-        catch (...) {
+        catch (const std::exception &e) {
             delete stuff;
-            stuff = nullptr;
-            throw;
+            CPPUNIT_FAIL("An exception was thrown from fetch_url_test_3: " + string(e.what()));
         }
     }
 
@@ -442,10 +436,9 @@ public:
         // Response object also unlocks the HTTPCache in some cases. If delete
         // is not called, then a failed test can leave the cache with locked
         // entries
-        catch (...) {
+        catch (const std::exception &e) {
             delete stuff;
-            stuff = nullptr;
-            throw;
+            CPPUNIT_FAIL("An exception was thrown from fetch_url_test_3_cpp: " + string(e.what()));
         }
     }
 
@@ -477,10 +470,9 @@ public:
         // Response object also unlocks the HTTPCache in some cases. If delete
         // is not called, then a failed test can leave the cache with locked
         // entries
-        catch (...) {
+        catch (const std::exception &e) {
             delete stuff;
-            stuff = nullptr;
-            throw;
+            CPPUNIT_FAIL("An exception was thrown from fetch_url_test_4: " + string(e.what()));
         }
     }
 
@@ -516,10 +508,9 @@ public:
         // Response object also unlocks the HTTPCache in some cases. If delete
         // is not called, then a failed test can leave the cache with locked
         // entries
-        catch (...) {
+        catch (const std::exception &e) {
             delete stuff;
-            stuff = nullptr;
-            throw;
+            CPPUNIT_FAIL("An exception was thrown from fetch_url_test_4_cpp: " + string(e.what()));
         }
     }
 
@@ -542,8 +533,8 @@ public:
         catch (InternalErr & e) {
             CPPUNIT_FAIL("Caught an InternalErr exception from get_response_headers: " + e.get_error_message());
         }
-        catch (...) {
-            CPPUNIT_FAIL("No idea what exception was thrown from get_response_headers");
+        catch (const std::exception &e) {
+            CPPUNIT_FAIL("An exception was thrown from get_response_headers: " + string(e.what()));
         }
     }
 
@@ -565,10 +556,10 @@ public:
             r = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr exception from server_version: " + e.get_error_message());
         }
-        catch (...) {
+        catch (const std::exception &e) {
             delete r;
             r = nullptr;
-            throw;
+            CPPUNIT_FAIL("An exception was thrown from server_version_test: " + string(e.what()));
         }
 
     }
@@ -607,7 +598,7 @@ public:
         catch (InternalErr & e) {
             delete stuff;
             stuff = nullptr;
-            CPPUNIT_FAIL("Caught an InternalErrexception from output: " + e.get_error_message());
+            CPPUNIT_FAIL("Caught an InternalErr exception from output: " + e.get_error_message());
         }
     }
 
