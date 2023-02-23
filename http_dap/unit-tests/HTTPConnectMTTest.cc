@@ -68,6 +68,7 @@ private:
     string lm{"Wed, 13 Jul 2005 19:32:26 GMT"};
     string netcdf_das_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.das"};
 
+#if 0
     static bool re_match(const Regex &r, const char *s)
     {
         return r.match(s, (int) strlen(s)) == (int) strlen(s);
@@ -105,28 +106,7 @@ private:
             return arg.find(d_header) == 0;
         }
     };
-
-    static bool is_prime(int n) {
-        if (n <= 1) {
-            return false;
-        }
-        for (int i = 2; i * i <= n; i++) {
-            if (n % i == 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    static int count_primes(int start, int end) {
-        int count = 0;
-        for (int i = start; i <= end; i++) {
-            if (is_prime(i)) {
-                count++;
-            }
-        }
-        return count;
-    }
+#endif
 
 public:
     HTTPConnectMTTest() = default;
@@ -160,12 +140,6 @@ public:
     }
 
     CPPUNIT_TEST_SUITE (HTTPConnectMTTest);
-
-#if 0
-        CPPUNIT_TEST (read_url_test);
-#endif
-
-        CPPUNIT_TEST(count_primes_test_mt);
 
         CPPUNIT_TEST(fetch_url_test);
         CPPUNIT_TEST(fetch_url_test_304_mt);
@@ -201,84 +175,6 @@ public:
 #endif
 
     CPPUNIT_TEST_SUITE_END();
-
-    void read_url_test()
-    {
-        vector<string> resp_h;
-
-        try {
-            DBG(cerr << prolog << "BEGIN" << endl);
-            DBG(cerr << prolog << "Testing with URL: " << url_304 << endl);
-
-            FILE *dump = fopen("/dev/null", "w");
-            long status = http->read_url(url_304, dump, resp_h);
-            CPPUNIT_ASSERT(status == 200);
-
-            vector<string> request_h;
-
-            // First test using a time with if-modified-since
-            DBG(cerr << prolog << "If-Modified-Since test. BEGIN " << endl);
-            request_h.push_back(string("If-Modified-Since: ") + lm);
-            status = http->read_url(url_304, dump, resp_h, request_h);
-            DBG(cerr << prolog << "If modified since test. Returned http status: " << status << endl);
-            DBG(cerr << prolog << "Response Headers: " << endl);
-            DBG(copy(resp_h.begin(), resp_h.end(), ostream_iterator<string>(cerr, "\n")));
-            DBG(cerr << endl);
-            CPPUNIT_ASSERT(status == 304);
-            DBG(cerr << prolog << "If-Modified-Since test. END " << endl);
-
-            // Now test an etag
-            DBG(cerr << prolog << "ETag (If-None_Match) test. BEGIN (etag:" << etag << ")" << endl);
-            resp_h.clear();
-            request_h.clear();
-            request_h.push_back(string("If-None-Match: ") + etag);
-            status = http->read_url(url_304, dump, resp_h, request_h);
-            DBG(cerr << prolog << "ETag (If-None_Match) test. Returned http status: " << status << endl);
-            DBG(cerr << prolog << "Response Headers: " << endl);
-            DBG(copy(resp_h.begin(), resp_h.end(), ostream_iterator<string>(cerr, "\n")));
-            DBG(cerr << endl);
-            CPPUNIT_ASSERT(status == 304);
-            DBG(cerr << prolog << "ETag test. END " << endl);
-
-            // now test a combined etag and time4
-            resp_h.clear();
-            request_h.clear();
-            request_h.push_back(string("If-None-Match: ") + etag);
-            request_h.push_back(string("If-Modified-Since: ") + lm);
-            status = http->read_url(url_304, dump, resp_h, request_h);
-            DBG(cerr << prolog << "Combined test. Returned http status: " << status << endl);
-            DBG(copy(resp_h.begin(), resp_h.end(), ostream_iterator<string>(cerr, "\n")));
-            CPPUNIT_ASSERT(status == 304);
-        }
-        catch (const Error &e) {
-            CPPUNIT_FAIL(prolog + "Error: " + e.get_error_message());
-        }
-    }
-
-    void count_primes_test_mt() {
-        int start1 = 1;
-        int end1 = 10000;
-        int start2 = 10001;
-        int end2 = 20000;
-
-        int count1, count2;
-        std::thread thread1([&count1, start1, end1]() {
-            count1 = count_primes(start1, end1);
-        });
-        std::thread thread2([&count2, start2, end2]() {
-            count2 = count_primes(start2, end2);
-        });
-        thread1.join();
-        thread2.join();
-
-        int total_count = count1 + count2;
-        int expected_count = count_primes(start1, end2);
-        DBG(cerr << "Expected count: " << expected_count << endl);
-        DBG(cerr << "Total count: " << total_count << endl);
-        DBG(cerr << "Count1: " << count1 << endl);
-        DBG(cerr << "Count2: " << count2 << endl);
-        CPPUNIT_ASSERT_EQUAL(expected_count, total_count);
-    }
 
     void fetch_url_test()
     {
@@ -629,36 +525,7 @@ public:
         }
     }
 
-
 #if 0
-    std::thread thread1([&http_1, this]() {
-                unique_ptr<HTTPResponse> stuff(http_1->fetch_url(url_304));
-                char c;
-                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                               && !feof(stuff->get_stream()));
-            });
-            std::thread thread2([&http_2, this]() {
-                unique_ptr<HTTPResponse> stuff(http_2->fetch_url(url_304));
-                char c;
-                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                               && !feof(stuff->get_stream()));
-            });
-            std::thread thread3([&http_3, this]() {
-                unique_ptr<HTTPResponse> stuff(http_3->fetch_url(url_304));
-                char c;
-                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                               && !feof(stuff->get_stream()));
-            });
-            std::thread thread4([&http_4, this]() {
-                unique_ptr<HTTPResponse> stuff(http_4->fetch_url(url_304));
-                char c;
-                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                               && !feof(stuff->get_stream()));
-            });
-#endif
-
-#if 0
-
     void fetch_url_test_2_cpp()
     {
         DBG(cerr << "Entering fetch_url_test 2" << endl);
@@ -1057,7 +924,6 @@ public:
         DBG(cerr << "Status: " << status << endl);
         CPPUNIT_ASSERT(status == 200);
     }
-
 #endif
 };
 

@@ -60,7 +60,7 @@ namespace libdap {
 // private field d_verbose_runtime. 02/22/23 jhrg
 #define VERBOSE_RUNTIME(x) do { if (d_verbose_runtime) (x); } while(false)
 #else
-VERBOSE_RUNTIME(x) /* x */
+#define VERBOSE_RUNTIME(x) /* x */
 #endif
 
 // These global variables are not MT-Safe, but I'm leaving them as is because
