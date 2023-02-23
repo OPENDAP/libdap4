@@ -30,8 +30,6 @@
 #include <iterator>
 
 #include <cstdio>     // for create_cache_root_test
-#include <cstring>
-#include <dirent.h>
 #include <unistd.h>   // for access stat
 #include <sys/stat.h>
 
@@ -42,10 +40,9 @@
 #include "HTTPCache.h"
 #include "HTTPConnect.h"	// Used to generate a response to cache.
 #include "HTTPCacheTable.h"
-#include "SignalHandler.h"	// Needed to clean up this singleton.
-#include "Error.h"
 
 #include "run_tests_cppunit.h"
+#include "remove_directory.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -59,30 +56,6 @@ inline static uint64_t file_size(const string &name)
     struct stat s;
     stat(name.c_str(), &s);
     return s.st_size;
-}
-
-/// There is an os-independent way of doing this in C++ 2017, but it is not portable in C++ 11.
-/// @note This function is not thread safe.
-/// jhrg 2/19/23
-void remove_directory(const char *dir) {
-    DIR *dp = opendir(dir);
-    if (dp != nullptr) {
-        struct dirent *entry;
-        while ((entry = readdir(dp))) {
-            if (std::strcmp(entry->d_name, ".") != 0 && std::strcmp(entry->d_name, "..") != 0) {
-                std::string path = std::string(dir) + "/" + entry->d_name;
-                if (entry->d_type == DT_DIR) {
-                    remove_directory(path.c_str());
-                } else {
-                    if (std::remove(path.c_str()) == -1)
-                        throw Error(prolog + "Could not remove file " + path + " (" + std::strerror(errno) + ")", __FILE__, __LINE__);
-                }
-            }
-        }
-        closedir(dp);
-    }
-    if (std::remove(dir) == -1)
-        throw Error(prolog + "Could not remove directory " + dir + " (" + std::strerror(errno) + ")", __FILE__, __LINE__);
 }
 
 // Note that because this test class uses the fixture 'hc' we must always

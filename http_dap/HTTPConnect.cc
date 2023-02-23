@@ -53,6 +53,16 @@ using namespace std;
 
 namespace libdap {
 
+#ifndef NDEBUG
+// If this is a developer build (so NDEBUG is not defined) then if the HTTPConnect
+// field d_verbose_runtime is true, then the VERBOSE_RUNTIME macro will print stuff.
+// This will only work inside HTTPConnect methods with code that has access to the
+// private field d_verbose_runtime. 02/22/23 jhrg
+#define VERBOSE_RUNTIME(x) do { if (d_verbose_runtime) (x); } while(false)
+#else
+VERBOSE_RUNTIME(x) /* x */
+#endif
+
 // These global variables are not MT-Safe, but I'm leaving them as is because
 // they are used only for debugging (set them in a debugger like gdb or ddd).
 // They are not static because I think that many debuggers cannot access
@@ -545,31 +555,28 @@ HTTPConnect::url_uses_no_proxy_for(const string &url) noexcept
     accessed using HTTP.
 
     @param rcr A pointer to the RCReader object which holds configuration
-    file information to be used by this virtual connection. */
+    file information to be used by this virtual connection.
+    @param use_cpp If true, use C++ streams and not FILE* for the data read
+    off the wire. This can be changed later using the set_use_cpp_streams()
+    method. */
 
 HTTPConnect::HTTPConnect(RCReader *rcr, bool use_cpp) : d_rcr(rcr), d_accept_deflate(rcr->get_deflate()),
     d_use_cpp_streams(use_cpp)
 {
-    // d_accept_deflate = rcr->get_deflate();
-
     // Load in the default headers to send with a request. The empty Pragma
     // headers overrides libcurl's default Pragma: no-cache header (which
     // will disable caching by Squid, et c.). The User-Agent header helps
     // make server logs more readable. 05/05/03 jhrg
     d_request_headers.emplace_back("Pragma:");
-#if 0
-    string user_agent = string("User-Agent: ") + string(CNAME)
-                        + string("/") + string(CVER);
-#endif
     d_request_headers.emplace_back(string("User-Agent: ") + CNAME + "/" + CVER);
     if (d_accept_deflate)
         d_request_headers.emplace_back("Accept-Encoding: deflate, gzip, compress");
 
-    // HTTPCache::instance returns a valid ptr or 0.
+    // HTTPCache::instance returns a valid ptr or nullptr.
     if (d_rcr->get_use_cache())
         d_http_cache = HTTPCache::instance(d_rcr->get_dods_cache_root());
     else
-        d_http_cache = 0;
+        d_http_cache = nullptr;
 
     if (d_http_cache) {
         d_http_cache->set_cache_enabled(d_rcr->get_use_cache());
@@ -613,10 +620,6 @@ class HeaderMatch : public unary_function<const string &, bool> {
 HTTPResponse *
 HTTPConnect::fetch_url(const string &url)
 {
-#ifdef HTTP_TRACE
-    cout << "GET " << url << " HTTP/1.0" << endl;
-#endif
-
     HTTPResponse *stream = nullptr;
 
     if (is_cache_enabled()) {
@@ -647,10 +650,6 @@ HTTPConnect::fetch_url(const string &url)
 
     parser = for_each(stream->get_headers().begin(), stream->get_headers().end(), ParseHeader());
 
-#ifdef HTTP_TRACE
-    cout << endl << endl;
-#endif
-
     // handle redirection case (2007-04-27, gaffigan@sfos.uaf.edu)
     if (!parser.get_location().empty()
         && (url.substr(0, url.find('?')) == parser.get_location().substr(0, url.find('?')))) {// } != 0)) {
@@ -671,9 +670,9 @@ HTTPConnect::fetch_url(const string &url)
 }
 
 // Look around for a reasonable place to put a temporary file. Check first
-// the value of the TMPDIR env var. If that does not yeild a path that's
-// writable (as defined by access(..., W_OK|R_OK)) then look at P_tmpdir (as
-// defined in stdio.h. If both come up empty, then use `./'.
+// the value of the TMPDIR env var. If that does not yield a path that's
+// writable (as defined by access(..., W_OK|R_OK)) then look at P_tmpdir
+// (defined in stdio.h). If both come up empty, then use `./'.
 
 // Change this to a version that either returns a string or an open file
 // descriptor. Use information from https://buildsecurityin.us-cert.gov/
@@ -828,30 +827,31 @@ close_temp(FILE *s, const string &name)
 HTTPResponse *
 HTTPConnect::caching_fetch_url(const string &url)
 {
-    DBG(cerr << "Is this URL (" << url << ") in the cache?... ");
+    VERBOSE_RUNTIME(cerr << "Is this URL (" << url << ") in the cache?... ");
 
     vector<string> headers;
     string file_name;
     FILE *s = d_http_cache->get_cached_response(url, headers, file_name);
     if (!s) {
         // url not in cache; get it and cache it
-        DBGN(cerr << "no; getting response and caching." << endl);
-        time_t now = time(0);
+        VERBOSE_RUNTIME(cerr << "no; getting response and caching." << endl);
+        time_t now = time(nullptr);
         HTTPResponse *rs = plain_fetch_url(url);
         d_http_cache->cache_response(url, now, rs->get_headers(), rs->get_stream());
 
         return rs;
     }
     else { // url in cache
-        DBGN(cerr << "yes... ");
+        VERBOSE_RUNTIME(cerr << "yes... ");
 
         if (d_http_cache->is_url_valid(url)) { // url in cache and valid
-            DBGN(cerr << "and it's valid; using cached response." << endl);
-            HTTPCacheResponse *crs = new HTTPCacheResponse(s, 200, headers, file_name, d_http_cache);
+            VERBOSE_RUNTIME(cerr << "and it's valid; using cached response." << endl);
+            d_cached_response = true;       // False by default
+            auto crs = new HTTPCacheResponse(s, 200, headers, file_name, d_http_cache);
             return crs;
         }
         else { // url in cache but not valid; validate
-            DBGN(cerr << "but it's not valid; validating... ");
+            VERBOSE_RUNTIME(cerr << "but it's not valid; validating... ");
 
             d_http_cache->release_cached_response(s); // This closes 's'
             headers.clear();
@@ -872,7 +872,7 @@ HTTPConnect::caching_fetch_url(const string &url)
 
             switch (http_status) {
                 case 200: { // New headers and new body
-                    DBGN(cerr << "read a new response; caching." << endl);
+                    VERBOSE_RUNTIME(cerr << "read a new response; caching." << endl);
 
                     d_http_cache->cache_response(url, now, /*resp_hdrs*/headers, body);
                     auto rs = new HTTPResponse(body, http_status, /*resp_hdrs*/headers, dods_temp);
@@ -881,9 +881,10 @@ HTTPConnect::caching_fetch_url(const string &url)
                 }
 
                 case 304: { // Just new headers, use cached body
-                    DBGN(cerr << "cached response valid; updating." << endl);
+                    VERBOSE_RUNTIME(cerr << "cached response valid; updating." << endl);
 
                     close_temp(body, dods_temp);
+                    d_cached_response = true;
                     d_http_cache->update_response(url, now, /*resp_hdrs*/headers);
                     string file_name;
                     FILE *hs = d_http_cache->get_cached_response(url, headers, file_name);

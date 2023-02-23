@@ -31,7 +31,6 @@
 #include <fstream>
 
 #include "ObjectType.h"
-// #include "debug.h"
 
 namespace libdap
 {

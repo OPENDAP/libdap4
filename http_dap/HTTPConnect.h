@@ -94,6 +94,9 @@ private:
 
     bool d_use_cpp_streams;	// Build HTTPResponse objects using fstream and not FILE*
 
+    bool d_verbose_runtime = false;
+    bool d_cached_response = false;
+
     void www_lib_init();
     long read_url(const string &url, FILE *stream, vector<string> &resp_hdrs, const vector<string> &headers);
     long read_url(const string &url, FILE *stream, vector<string> &resp_hdrs);
@@ -104,15 +107,16 @@ private:
     bool url_uses_proxy_for(const string &url);
     bool url_uses_no_proxy_for(const string &url) noexcept;
 
-    void extract_auth_info(string &url);
+    void set_verbose_runtime(bool verbose) { d_verbose_runtime = verbose; }
 
-    friend size_t save_raw_http_header(void *ptr, size_t size, size_t nmemb, void *http_connect);
+    bool is_cached_response() const { return d_cached_response; }
+
     friend class HTTPConnectTest;
     friend class HTTPConnectMTTest;
     friend class ParseHeader;
 
 public:
-    HTTPConnect(RCReader *rcr, bool use_cpp = false);
+    explicit HTTPConnect(RCReader *rcr, bool use_cpp = false);
 
     /** @name Suppress default methods
      These methods are not supported and are implemented here as protected

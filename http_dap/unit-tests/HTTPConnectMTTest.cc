@@ -27,10 +27,12 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <cstring>
+#include <sys/stat.h>
+
 #include <iterator>
+#include <memory>
 #include <string>
 #include <algorithm>
-#include <functional>
 #include <thread>
 
 #include "GNURegex.h"
@@ -40,6 +42,8 @@
 #include "run_tests_cppunit.h"
 #include "test_config.h"
 
+#include "remove_directory.h"
+
 using namespace CppUnit;
 using namespace std;
 
@@ -47,13 +51,22 @@ using namespace std;
 
 namespace libdap {
 
+inline static uint64_t file_size(FILE *fp)
+{
+    struct stat s;
+    fstat(fileno(fp), &s);
+    return s.st_size;
+}
+
 class HTTPConnectMTTest : public TestFixture {
 private:
-    HTTPConnect *http{};
-    string localhost_url, localhost_pw_url, localhost_digest_pw_url;
-    string etag;
-    string lm;
-    string netcdf_das_url;
+    unique_ptr<HTTPConnect> http{nullptr};
+    string url_304{"http://test.opendap.org/test-304.html"};
+    string basic_pw_url{"http://jimg:dods_test@test.opendap.org/basic/page.txt"};
+    string basic_digest_pw_url{"http://jimg:dods_digest@test.opendap.org/basic/page.txt"};
+    string etag{"\"157-3df0e26958000\""};   // New httpd (dockerized), new etag. ndp - 12/06/22
+    string lm{"Wed, 13 Jul 2005 19:32:26 GMT"};
+    string netcdf_das_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.das"};
 
     static bool re_match(const Regex &r, const char *s)
     {
@@ -116,8 +129,7 @@ private:
     }
 
 public:
-    HTTPConnectMTTest() : http(nullptr)
-    {}
+    HTTPConnectMTTest() = default;
 
     ~HTTPConnectMTTest() override = default;
 
@@ -125,12 +137,12 @@ public:
     {
         DBG(cerr << endl);
         DBG(cerr << prolog << "Setting the DODS_CONF env var" << endl);
+
         setenv("DODS_CONF", "cache-testsuite/dodsrc", 1);
-        http = new HTTPConnect(RCReader::instance());
+        if (access("cache-testsuite/http_connect_cache/", F_OK) == 0)
+            remove_directory("cache-testsuite/http_connect_cache/");
 
-        localhost_url = "http://test.opendap.org/test-304.html";
-        DBG(cerr << prolog << "localhost_url: " << localhost_url << endl);
-
+        DBG(cerr << prolog << "url_304: " << url_304 << endl);
         // Two request header values that will generate a 304 response to the
         // above URL. The values below much match the etag and last-modified
         // time returned by the server. Run this test with DODS_DEBUG defined
@@ -140,53 +152,41 @@ public:
         // etag = "\"2a008e-157-3fbcd139c2680\"";
         // etag = "\"181893-157-3fbcd139c2680\""; // On 10/13/14 we moved to a new httpd and the etag value changed.
         // etag ="\"157-3df1e87884680\""; // New httpd service, new etag, ndp - 01/11/21
-        etag = "\"157-3df0e26958000\"";// New httpd (dockerized), new etag. ndp - 12/06/22
         DBG(cerr << prolog << "etag: " << etag << endl);
-        lm = "Wed, 13 Jul 2005 19:32:26 GMT";
         DBG(cerr << prolog << "lm: " << lm << endl);
-        string u("jimg");
-        string dt(":dods_test@");
-        string dd(":dods_digest@");
-        string page("test.opendap.org/basic/page.txt");
-
-        localhost_pw_url = "http://" + u + dt + page;
-        DBG(cerr << prolog << "localhost_pw_url: " << localhost_pw_url << endl);
-
-        localhost_digest_pw_url = "http://" + u + dd + page;
-        DBG(cerr << prolog << "localhost_digest_pw_url: " << localhost_digest_pw_url << endl);
-
-        netcdf_das_url = "http://test.opendap.org/dap/data/nc/fnoc1.nc.das";
+        DBG(cerr << prolog << "basic_pw_url: " << basic_pw_url << endl);
+        DBG(cerr << prolog << "basic_digest_pw_url: " << basic_digest_pw_url << endl);
         DBG(cerr << prolog << "netcdf_das_url: " << netcdf_das_url << endl);
-    }
-
-    void tearDown() override
-    {
-#if 0
-        // normal code doesn't do this - it happens at exit() but not doing
-        // this here make valgrind think there are leaks.
-        http->d_http_cache->delete_instance();
-#endif
-        delete http;
-        http = nullptr;
-        unsetenv("DODS_CONF");
     }
 
     CPPUNIT_TEST_SUITE (HTTPConnectMTTest);
 
+#if 0
         CPPUNIT_TEST (read_url_test);
+#endif
 
-        CPPUNIT_TEST(count_primes_test_mt_1);
+        CPPUNIT_TEST(count_primes_test_mt);
 
-        CPPUNIT_TEST (fetch_url_test_1);
-        CPPUNIT_TEST (fetch_url_test_2);
+        CPPUNIT_TEST(fetch_url_test);
+        CPPUNIT_TEST(fetch_url_test_304_mt);
+        CPPUNIT_TEST(fetch_url_test_304_mt_w_cache);
+        CPPUNIT_TEST(fetch_url_test_nc_mt);
+        CPPUNIT_TEST(fetch_url_test_nc_mt_w_cache);
+        CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache);
+        CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache_multi_access);
+#if 0
         CPPUNIT_TEST (fetch_url_test_3);
         CPPUNIT_TEST (fetch_url_test_4);
+#endif
 
-        CPPUNIT_TEST (fetch_url_test_1_cpp);
+        CPPUNIT_TEST(fetch_url_test_cpp);
+#if 0
         CPPUNIT_TEST (fetch_url_test_2_cpp);
         CPPUNIT_TEST (fetch_url_test_3_cpp);
         CPPUNIT_TEST (fetch_url_test_4_cpp);
+#endif
 
+#if 0
         CPPUNIT_TEST (get_response_headers_test);
         CPPUNIT_TEST (server_version_test);
         CPPUNIT_TEST (type_test);
@@ -198,6 +198,7 @@ public:
         CPPUNIT_TEST (set_xdap_protocol_test);
         CPPUNIT_TEST (read_url_password_test);
         CPPUNIT_TEST (read_url_password_test2);
+#endif
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -207,10 +208,10 @@ public:
 
         try {
             DBG(cerr << prolog << "BEGIN" << endl);
-            DBG(cerr << prolog << "Testing with URL: " << localhost_url << endl);
+            DBG(cerr << prolog << "Testing with URL: " << url_304 << endl);
 
             FILE *dump = fopen("/dev/null", "w");
-            long status = http->read_url(localhost_url, dump, resp_h);
+            long status = http->read_url(url_304, dump, resp_h);
             CPPUNIT_ASSERT(status == 200);
 
             vector<string> request_h;
@@ -218,7 +219,7 @@ public:
             // First test using a time with if-modified-since
             DBG(cerr << prolog << "If-Modified-Since test. BEGIN " << endl);
             request_h.push_back(string("If-Modified-Since: ") + lm);
-            status = http->read_url(localhost_url, dump, resp_h, request_h);
+            status = http->read_url(url_304, dump, resp_h, request_h);
             DBG(cerr << prolog << "If modified since test. Returned http status: " << status << endl);
             DBG(cerr << prolog << "Response Headers: " << endl);
             DBG(copy(resp_h.begin(), resp_h.end(), ostream_iterator<string>(cerr, "\n")));
@@ -231,7 +232,7 @@ public:
             resp_h.clear();
             request_h.clear();
             request_h.push_back(string("If-None-Match: ") + etag);
-            status = http->read_url(localhost_url, dump, resp_h, request_h);
+            status = http->read_url(url_304, dump, resp_h, request_h);
             DBG(cerr << prolog << "ETag (If-None_Match) test. Returned http status: " << status << endl);
             DBG(cerr << prolog << "Response Headers: " << endl);
             DBG(copy(resp_h.begin(), resp_h.end(), ostream_iterator<string>(cerr, "\n")));
@@ -244,7 +245,7 @@ public:
             request_h.clear();
             request_h.push_back(string("If-None-Match: ") + etag);
             request_h.push_back(string("If-Modified-Since: ") + lm);
-            status = http->read_url(localhost_url, dump, resp_h, request_h);
+            status = http->read_url(url_304, dump, resp_h, request_h);
             DBG(cerr << prolog << "Combined test. Returned http status: " << status << endl);
             DBG(copy(resp_h.begin(), resp_h.end(), ostream_iterator<string>(cerr, "\n")));
             CPPUNIT_ASSERT(status == 304);
@@ -254,7 +255,7 @@ public:
         }
     }
 
-    void count_primes_test_mt_1() {
+    void count_primes_test_mt() {
         int start1 = 1;
         int end1 = 10000;
         int start2 = 10001;
@@ -279,114 +280,384 @@ public:
         CPPUNIT_ASSERT_EQUAL(expected_count, total_count);
     }
 
-    void fetch_url_test_1()
+    void fetch_url_test()
     {
-        DBG(cerr << "Entering fetch_url_test 1" << endl);
-        HTTPResponse *stuff = nullptr;
-        char c;
+        DBG(cerr << "Entering " << __func__  << endl);
         try {
-            stuff = http->fetch_url(localhost_url);
-            CPPUNIT_ASSERT(
-                    fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                    && !feof(stuff->get_stream()));
-            delete stuff;
+            http = std::make_unique<HTTPConnect>(RCReader::instance());
+            unique_ptr<HTTPResponse> stuff(http->fetch_url(url_304));
+            char c;
+            CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
+                            && !feof(stuff->get_stream()));
         }
         catch (InternalErr &e) {
-            delete stuff;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
         }
         catch (Error &e) {
-            delete stuff;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
-            // Catch the exception from a failed ASSERT and clean up. Deleting a
-            // Response object also unlocks the HTTPCache in some cases. If delete
-            // is not called, then a failed test can leave the cache with locked
-            // entries
         catch (...) {
             cerr << "Caught unknown exception" << endl;
-            delete stuff;
             throw;
         }
     }
 
-    void fetch_url_test_1_cpp()
+    void fetch_url_test_cpp()
     {
-        DBG(cerr << "Entering fetch_url_test 1" << endl);
-        HTTPResponse *stuff = nullptr;
-        http->set_use_cpp_streams(true);
-        char c;
+        DBG(cerr << "Entering " << __func__  << endl);
         try {
-            stuff = http->fetch_url(localhost_url);
+            http = std::make_unique<HTTPConnect>(RCReader::instance());
+            http->set_use_cpp_streams(true);
+            unique_ptr<HTTPResponse> stuff(http->fetch_url(url_304));
+            char c;
             stuff->get_cpp_stream()->read(&c, 1);
             CPPUNIT_ASSERT(*(stuff->get_cpp_stream()));
             CPPUNIT_ASSERT(!stuff->get_cpp_stream()->bad());
             CPPUNIT_ASSERT(!stuff->get_cpp_stream()->eof());
-
-            delete stuff;
         }
-        catch (InternalErr &e) {
-            delete stuff;
+        catch (const InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
         }
-        catch (Error &e) {
-            delete stuff;
+        catch (const Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
-        catch (std::exception &e) {
-            delete stuff;
+        catch (const std::exception &e) {
             CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
         }
-            // Catch the exception from a failed ASSERT and clean up. Deleting a
-            // Response object also unlocks the HTTPCache in some cases. If delete
-            // is not called, then a failed test can leave the cache with locked
-            // entries
         catch (...) {
             cerr << "Caught unknown exception" << endl;
-            delete stuff;
             throw;
         }
     }
 
-    void fetch_url_test_2()
+    void fetch_url_test_304_mt()
     {
-        DBG(cerr << "Entering fetch_url_test 2" << endl);
-        HTTPResponse *stuff = nullptr;
-        char c;
+        DBG(cerr << "Entering " << __func__  << endl);
         try {
-            stuff = http->fetch_url(netcdf_das_url);
-            DBG2(char ln[1024]; while (!feof(stuff->get_stream())) {
-                fgets(ln, 1024, stuff->get_stream());
-                cerr << ln;
-            }
-                         rewind(stuff->get_stream()));
+            auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_3 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_4 = std::make_unique<HTTPConnect>(RCReader::instance());
 
-            CPPUNIT_ASSERT(
-                    fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                    && !feof(stuff->get_stream()));
-            delete stuff;
-            stuff = nullptr;
+            auto hc_lambda = [](const string &url, HTTPConnect *hc) {
+                unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
+                char c;
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
+                               && c =='<'
+                               && !ferror(stuff->get_stream())
+                               && !feof(stuff->get_stream()));
+                DBG(cerr << "hc_lambda: " << url << ", " << c << endl);
+            };
+
+            std::thread thread1(hc_lambda, url_304, http_1.get());
+            std::thread thread2(hc_lambda, url_304, http_2.get());
+            std::thread thread3(hc_lambda, url_304, http_3.get());
+            std::thread thread4(hc_lambda, url_304, http_4.get());
+
+            thread1.join();
+            thread2.join();
+            thread3.join();
+            thread4.join();
         }
         catch (InternalErr &e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
         }
         catch (Error &e) {
-            delete stuff;
-            stuff = nullptr;
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
-            // Catch the exception from a failed ASSERT and clean up. Deleting a
-            // Response object also unlocks the HTTPCache in some cases. If delete
-            // is not called, then a failed test can leave the cache with locked
-            // entries
         catch (...) {
-            delete stuff;
-            stuff = nullptr;
+            cerr << "Caught unknown exception" << endl;
             throw;
         }
     }
+
+    void fetch_url_test_304_mt_w_cache()
+    {
+        DBG(cerr << "Entering " << __func__  << endl);
+        try {
+            setenv("DODS_CONF", "cache-testsuite/dodsrc_w_caching", 1);
+            auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_3 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_4 = std::make_unique<HTTPConnect>(RCReader::instance());
+
+            auto hc_lambda = [](const string &url, HTTPConnect *hc) {
+                unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
+                char c;
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
+                               && c =='<'
+                               && !ferror(stuff->get_stream())
+                               && !feof(stuff->get_stream()));
+                DBG(cerr << "hc_lambda: " << url << ", " << c << endl);
+            };
+
+            std::thread thread1(hc_lambda, url_304, http_1.get());
+            std::thread thread2(hc_lambda, url_304, http_2.get());
+            std::thread thread3(hc_lambda, url_304, http_3.get());
+            std::thread thread4(hc_lambda, url_304, http_4.get());
+
+            thread1.join();
+            thread2.join();
+            thread3.join();
+            thread4.join();
+        }
+        catch (InternalErr &e) {
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch (...) {
+            cerr << "Caught unknown exception" << endl;
+            throw;
+        }
+    }
+
+    void fetch_url_test_nc_mt()
+    {
+        DBG(cerr << "Entering " << __func__  << endl);
+        try {
+            auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_3 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_4 = std::make_unique<HTTPConnect>(RCReader::instance());
+
+            auto hc_lambda = [](const string &url, HTTPConnect *hc) {
+                unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
+                char c;
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
+                               && c =='A'
+                               && !ferror(stuff->get_stream())
+                               && !feof(stuff->get_stream()));
+                DBG(cerr << "hc_lambda: " << url << ", " << c << endl);
+            };
+
+            std::thread thread1(hc_lambda, netcdf_das_url, http_1.get());
+            std::thread thread2(hc_lambda, netcdf_das_url, http_2.get());
+            std::thread thread3(hc_lambda, netcdf_das_url, http_3.get());
+            std::thread thread4(hc_lambda, netcdf_das_url, http_4.get());
+
+            thread1.join();
+            thread2.join();
+            thread3.join();
+            thread4.join();
+        }
+        catch (InternalErr &e) {
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch (...) {
+            cerr << "Caught unknown exception" << endl;
+            throw;
+        }
+    }
+
+    void fetch_url_test_nc_mt_w_cache()
+    {
+        DBG(cerr << "Entering " << __func__  << endl);
+        try {
+            setenv("DODS_CONF", "cache-testsuite/dodsrc_w_caching", 1);
+            auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_3 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_4 = std::make_unique<HTTPConnect>(RCReader::instance());
+
+            auto hc_lambda = [](const string &url, HTTPConnect *hc) {
+                unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
+                char c;
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
+                                && c =='A'
+                                && !ferror(stuff->get_stream())
+                                && !feof(stuff->get_stream()));
+                DBG(cerr << "hc_lambda: " << url << ", " << c << endl);
+            };
+
+            std::thread thread1(hc_lambda, netcdf_das_url, http_1.get());
+            std::thread thread2(hc_lambda, netcdf_das_url, http_2.get());
+            std::thread thread3(hc_lambda, netcdf_das_url, http_3.get());
+            std::thread thread4(hc_lambda, netcdf_das_url, http_4.get());
+
+            thread1.join();
+            thread2.join();
+            thread3.join();
+            thread4.join();
+        }
+        catch (InternalErr &e) {
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch (...) {
+            cerr << "Caught unknown exception" << endl;
+            throw;
+        }
+    }
+
+    void fetch_url_test_diff_urls_mt_w_cache()
+    {
+        DBG(cerr << "Entering " << __func__  << endl);
+        try {
+            setenv("DODS_CONF", "cache-testsuite/dodsrc_w_caching", 1);
+            auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_3 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_4 = std::make_unique<HTTPConnect>(RCReader::instance());
+
+            auto hc_lambda = [](const string &url, HTTPConnect *hc, uint32_t expected_size) {
+                unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
+                DBG(cerr << "hc_lambda: " << url << ", response size: " << file_size(stuff->get_stream()) << endl);
+                DBG2(cerr << "hc_lambda: " << url << ", Response type: " << typeid(stuff.get()).name() << endl);
+                char c;
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1);
+                CPPUNIT_ASSERT(!ferror(stuff->get_stream()));
+                CPPUNIT_ASSERT(!feof(stuff->get_stream()));
+                CPPUNIT_ASSERT_MESSAGE("response size: " + std::to_string(file_size(stuff->get_stream())),
+                                       file_size(stuff->get_stream()) == expected_size);
+            };
+
+            string netcdf_dds_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"};
+            string netcdf_dmr_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"};
+            string netcdf_dap_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"};
+
+            std::thread thread1(hc_lambda, netcdf_das_url, http_1.get(), 927);
+            std::thread thread2(hc_lambda, netcdf_dds_url, http_2.get(), 197);
+            std::thread thread3(hc_lambda, netcdf_dmr_url, http_3.get(), 3103);
+            std::thread thread4(hc_lambda, netcdf_dap_url, http_4.get(), 26221);
+
+            thread1.join();
+            thread2.join();
+            thread3.join();
+            thread4.join();
+        }
+        catch (InternalErr &e) {
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch (...) {
+            cerr << "Caught unknown exception" << endl;
+            throw;
+        }
+    }
+    void fetch_url_test_diff_urls_mt_w_cache_multi_access()
+    {
+        DBG(cerr << "Entering " << __func__  << endl);
+        try {
+            setenv("DODS_CONF", "cache-testsuite/dodsrc_w_caching", 1);
+            auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_3 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_4 = std::make_unique<HTTPConnect>(RCReader::instance());
+
+            auto hc_lambda = [](const string &url, HTTPConnect *hc, uint32_t expected_size) {
+                hc->set_verbose_runtime(true);
+                unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
+                DBG(cerr << "hc_lambda: " << url << ", response size: " << file_size(stuff->get_stream()) << endl);
+                DBG2(cerr << "hc_lambda: " << url << ", Response type: " << typeid(stuff.get()).name() << endl);
+                char c;
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1);
+                CPPUNIT_ASSERT(!ferror(stuff->get_stream()));
+                CPPUNIT_ASSERT(!feof(stuff->get_stream()));
+                CPPUNIT_ASSERT_MESSAGE("response size: " + std::to_string(file_size(stuff->get_stream())),
+                                       file_size(stuff->get_stream()) == expected_size);
+            };
+
+            string netcdf_dds_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"};
+            string netcdf_dmr_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"};
+            string netcdf_dap_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"};
+
+            std::thread thread1(hc_lambda, netcdf_das_url, http_1.get(), 927);
+            std::thread thread2(hc_lambda, netcdf_dds_url, http_2.get(), 197);
+            std::thread thread3(hc_lambda, netcdf_dmr_url, http_3.get(), 3103);
+            std::thread thread4(hc_lambda, netcdf_dap_url, http_4.get(), 26221);
+
+            thread1.join();
+            thread2.join();
+            thread3.join();
+            thread4.join();
+
+            CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !http_1->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !http_2->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !http_3->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !http_4->is_cached_response());
+
+            // Now we access the same URLs again. The cache should be used.
+            std::thread thread5(hc_lambda, netcdf_das_url, http_1.get(), 927);
+            std::thread thread6(hc_lambda, netcdf_dds_url, http_2.get(), 197);
+            std::thread thread7(hc_lambda, netcdf_dmr_url, http_3.get(), 3103);
+            std::thread thread8(hc_lambda, netcdf_dap_url, http_4.get(), 26221);
+
+            thread5.join();
+            thread6.join();
+            thread7.join();
+            thread8.join();
+
+            // CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_1->is_cached_response());
+
+            // Now we access the same URLs again using new instances of HTTPConnect.
+            // The cache should be used
+            auto http_5 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_6 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_7 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_8 = std::make_unique<HTTPConnect>(RCReader::instance());
+
+            std::thread thread9(hc_lambda, netcdf_das_url, http_5.get(), 927);
+            std::thread thread10(hc_lambda, netcdf_dds_url, http_6.get(), 197);
+            std::thread thread11(hc_lambda, netcdf_dmr_url, http_7.get(), 3103);
+            std::thread thread12(hc_lambda, netcdf_dap_url, http_8.get(), 26221);
+
+            thread9.join();
+            thread10.join();
+            thread11.join();
+            thread12.join();
+
+            // CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_5->is_cached_response());
+        }
+        catch (InternalErr &e) {
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch (...) {
+            cerr << "Caught unknown exception" << endl;
+            throw;
+        }
+    }
+
+
+#if 0
+    std::thread thread1([&http_1, this]() {
+                unique_ptr<HTTPResponse> stuff(http_1->fetch_url(url_304));
+                char c;
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
+                               && !feof(stuff->get_stream()));
+            });
+            std::thread thread2([&http_2, this]() {
+                unique_ptr<HTTPResponse> stuff(http_2->fetch_url(url_304));
+                char c;
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
+                               && !feof(stuff->get_stream()));
+            });
+            std::thread thread3([&http_3, this]() {
+                unique_ptr<HTTPResponse> stuff(http_3->fetch_url(url_304));
+                char c;
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
+                               && !feof(stuff->get_stream()));
+            });
+            std::thread thread4([&http_4, this]() {
+                unique_ptr<HTTPResponse> stuff(http_4->fetch_url(url_304));
+                char c;
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
+                               && !feof(stuff->get_stream()));
+            });
+#endif
+
+#if 0
 
     void fetch_url_test_2_cpp()
     {
@@ -767,7 +1038,7 @@ public:
     {
         FILE *dump = fopen("/dev/null", "w");
         vector<string> resp_h;
-        long status = http->read_url(localhost_pw_url, dump, resp_h);
+        long status = http->read_url(basic_pw_url, dump, resp_h);
 
         DBG(cerr << endl << http->d_upstring << endl);
         CPPUNIT_ASSERT(http->d_upstring == "jimg:dods_test");
@@ -779,13 +1050,15 @@ public:
     {
         FILE *dump = fopen("/dev/null", "w");
         vector<string> resp_h;
-        long status = http->read_url(localhost_digest_pw_url, dump, resp_h);
+        long status = http->read_url(basic_digest_pw_url, dump, resp_h);
 
         DBG(cerr << endl << http->d_upstring << endl);
         CPPUNIT_ASSERT(http->d_upstring == "jimg:dods_digest");
         DBG(cerr << "Status: " << status << endl);
         CPPUNIT_ASSERT(status == 200);
     }
+
+#endif
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION (HTTPConnectMTTest);

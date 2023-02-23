@@ -99,10 +99,10 @@ endif
 # Started reworking this file to reduce the number of program-specific configurations.
 # added -static for OSX 'leaks.' jhrg 2/18/22
 
-TEST_SRC = testFile.cc testFile.h
+TEST_SRC = remove_directory.cc remove_directory.h
 AM_LDFLAGS += -static
 
-HTTPCacheTest_SOURCES = HTTPCacheTest.cc
+HTTPCacheTest_SOURCES = HTTPCacheTest.cc $(TEST_SRC)
 HTTPCacheTest_CPPFLAGS = $(AM_CPPFLAGS)
 HTTPCacheTest_LDADD = $(AM_LDADD)
 
@@ -110,6 +110,6 @@ HTTPConnectTest_SOURCES = HTTPConnectTest.cc
 HTTPConnectTest_CPPFLAGS = $(AM_CPPFLAGS)
 HTTPConnectTest_LDADD = $(AM_LDADD)
 
-HTTPConnectMTTest_SOURCES = HTTPConnectMTTest.cc
+HTTPConnectMTTest_SOURCES = HTTPConnectMTTest.cc $(TEST_SRC)
 HTTPConnectMTTest_CPPFLAGS = $(AM_CPPFLAGS)
 HTTPConnectMTTest_LDADD = $(AM_LDADD)

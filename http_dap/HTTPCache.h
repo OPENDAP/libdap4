@@ -105,7 +105,7 @@ bool is_hop_by_hop_header(const std::string &header);
 class HTTPCache {
 private:
     std::string d_cache_root;
-    int d_cache_lock_fd = -1; // Lock for multi-process use.
+    int d_cache_lock_fd = -1; // Lock for multiprocess use.
     std::string d_cache_lock_file;
 
     bool d_cache_enabled = false;
@@ -239,6 +239,10 @@ private:
 public:
     static HTTPCache *instance(const std::string &cache_root);
 
+    /**
+     * @brief Return the singleton instance of the HTTPCache.
+     * @note Only use this if you know the cache has been initialized.
+     */
     static HTTPCache *instance() { return d_instance.get(); }
 
     HTTPCache() = delete;
