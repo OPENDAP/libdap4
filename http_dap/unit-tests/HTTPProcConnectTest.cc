@@ -22,11 +22,9 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/extensions/HelperMacros.h>
-
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include <iterator>
 #include <memory>
@@ -44,7 +42,7 @@
 using namespace CppUnit;
 using namespace std;
 
-#define prolog std::string("HTTPThreadsConnectTest::").append(__func__).append("() - ")
+#define prolog std::string("HTTPProcConnectTest::").append(__func__).append("() - ")
 
 namespace libdap {
 
@@ -55,34 +53,67 @@ inline static uint64_t file_size(FILE *fp)
     return s.st_size;
 }
 
-class HTTPThreadsConnectTest : public TestFixture {
+/**
+ * Per-process test code for HTTPConnect::fetch_url()
+ * @param hc The HTTPConnect object to use.
+ * @param url The URL to fetch.
+ * @param expected_size The expected size of the response.
+ * @return True if the response was cached, false otherwise.
+ */
+bool fetch_url_test(HTTPConnect *hc, const string &url, uint64_t expected_size) {
+    // Disable the cache for this test.
+    DBG(cerr << "hc->is_cache_enabled()? " << boolalpha << hc->is_cache_enabled() << endl);
+
+    unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
+    DBG(cerr << url << ", response size: " << file_size(stuff->get_stream()) << endl);
+
+    char c;
+    CPPUNIT_ASSERT_MESSAGE("No error from the response stream", !ferror(stuff->get_stream()));
+    CPPUNIT_ASSERT_MESSAGE("No eof from the response stream", !feof(stuff->get_stream()));
+    CPPUNIT_ASSERT_MESSAGE("Read a character from the response stream", fread(&c, 1, 1, stuff->get_stream()) == 1);
+    CPPUNIT_ASSERT_MESSAGE("response size: " + std::to_string(file_size(stuff->get_stream())),
+                           file_size(stuff->get_stream()) == expected_size);
+
+    return hc->is_cached_response();
+}
+
+class HTTPProcConnectTest : public TestFixture {
 private:
-    HTTPCache *d_cache = HTTPCache::instance("cache-testsuite/http_mt_cache/");
+    HTTPCache *d_cache = HTTPCache::instance("cache-testsuite/http_mp_cache/");
     unique_ptr<HTTPConnect> http{nullptr};
     string url_304{"http://test.opendap.org/test-304.html"};
     string netcdf_das_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.das"};
 
 public:
-    HTTPThreadsConnectTest() = default;
+    HTTPProcConnectTest() = default;
 
-    ~HTTPThreadsConnectTest() override = default;
+    ~HTTPProcConnectTest() override = default;
 
     void setUp() override
     {
-        setenv("DODS_CONF", "cache-testsuite/dodsrc_mt_caching", 1);
-        // This is coupled with the cache name in cache-testsuite/dodsrc_mt_caching
-        if (access("cache-testsuite/http_mt_cache/", F_OK) == 0) {
+        setenv("DODS_CONF", "cache-testsuite/dodsrc_mp_caching", 1);
+        // This is coupled with the cache name in cache-testsuite/dodsrc_mp_caching
+#if 0
+        if (access("cache-testsuite/http_mp_cache/", F_OK) == 0) {
             CPPUNIT_ASSERT_MESSAGE("The HTTPCache::instance() is null!", d_cache);
-            CPPUNIT_ASSERT_MESSAGE("The HTTPCache directory is not correct", d_cache->get_cache_root() == "cache-testsuite/http_mt_cache/");
+            CPPUNIT_ASSERT_MESSAGE("The HTTPCache directory is not correct",
+                                   d_cache->get_cache_root() == "cache-testsuite/http_mp_cache/");
             // Some tests disable the cache, so we need to make sure it's enabled.
             d_cache->set_cache_enabled(true);
             d_cache->purge_cache();
         }
+#endif
+
+        system("rm -rf cache-testsuite/http_mp_cache/*");
+        system("rm -rf cache-testsuite/http_mp_cache/.index");
+        system("rm -rf cache-testsuite/http_mp_cache/.lock");
     }
 
-    CPPUNIT_TEST_SUITE (HTTPThreadsConnectTest);
+    CPPUNIT_TEST_SUITE (HTTPProcConnectTest);
 
-        CPPUNIT_TEST(fetch_url_test);
+        CPPUNIT_TEST(fetch_url_test_mp_url_already_cached);
+        CPPUNIT_TEST(fetch_url_test_mp_url);
+#if 0
         CPPUNIT_TEST(fetch_url_test_304_mt);
         CPPUNIT_TEST(fetch_url_test_304_mt_w_cache);
         CPPUNIT_TEST(fetch_url_test_nc_mt);
@@ -92,22 +123,45 @@ public:
         CPPUNIT_TEST(fetch_url_test_302_urls_mt_w_cache_multi_access);
 
         CPPUNIT_TEST(fetch_url_test_cpp);
+#endif
 
     CPPUNIT_TEST_SUITE_END();
 
-    void fetch_url_test()
+    void fetch_url_test_mp_url_already_cached()
     {
         DBG(cerr << "Entering " << __func__  << endl);
         try {
+            // Run the test the simple way first...
             http = std::make_unique<HTTPConnect>(RCReader::instance());
-            // Disable the cache for this test.
-            http->set_cache_enabled(false);
-            DBG(cerr << "hc->is_cache_enabled()? " << boolalpha << http->is_cache_enabled() << endl);
+            auto res = fetch_url_test(http.get(), netcdf_das_url, 927);
+            CPPUNIT_ASSERT_MESSAGE("The response should not be cached", !res);
 
-            unique_ptr<HTTPResponse> stuff(http->fetch_url(url_304));
-            char c;
-            CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                            && !feof(stuff->get_stream()));
+            // Create child processes to concurrently access the cache
+            const int num_processes = 4;
+            unique_ptr<HTTPConnect> hc_mp[num_processes] = {std::make_unique<HTTPConnect>(RCReader::instance()),
+                                                std::make_unique<HTTPConnect>(RCReader::instance()),
+                                                std::make_unique<HTTPConnect>(RCReader::instance()),
+                                                std::make_unique<HTTPConnect>(RCReader::instance())};
+             pid_t pid[num_processes];
+            for (int i = 0; i < num_processes; i++) {
+                pid[i] = fork();
+                if (pid[i] == 0) {
+                    // Child process, fetch_url_test() returns true if the URL was in the cache.
+                    bool result = fetch_url_test(hc_mp[i].get(), netcdf_das_url, 927);
+                    exit(result ? 1 : 0);   // 1 = true, 0 = false, not the usual EXIT_SUCCESS/EXIT_FAILURE
+                } else if (pid[i] < 0) {
+                    // Error: failed to fork process
+                    CPPUNIT_FAIL("Failed to fork child process");
+                }
+            }
+
+            // Wait for child processes to complete and collect their exit status
+            int status;
+            for (int i = 0; i < num_processes; i++) {
+                waitpid(pid[i], &status, 0);
+                DBG(cerr << "Child process " << i << " (" << getpid() << ") exited with status " << WEXITSTATUS(status) << endl);
+                CPPUNIT_ASSERT_MESSAGE("All these responses should be in the cache", WEXITSTATUS(status));
+            }
         }
         catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
@@ -124,6 +178,60 @@ public:
         }
     }
 
+    void fetch_url_test_mp_url()
+    {
+        DBG(cerr << "Entering " << __func__  << endl);
+        try {
+            // Create child processes to concurrently access the cache
+            const int num_processes = 4;
+            unique_ptr<HTTPConnect> hc_mp[num_processes] = {std::make_unique<HTTPConnect>(RCReader::instance()),
+                                                            std::make_unique<HTTPConnect>(RCReader::instance()),
+                                                            std::make_unique<HTTPConnect>(RCReader::instance()),
+                                                            std::make_unique<HTTPConnect>(RCReader::instance())};
+            pid_t pid[num_processes];
+            for (int i = 0; i < num_processes; i++) {
+                pid[i] = fork();
+                if (pid[i] == 0) {
+                    if (i > 0)
+                        sleep(1);   // Give the first child process a head start - hack, FIXME
+                    // Child process, fetch_url_test() returns true if the URL was in the cache.
+                    bool result = fetch_url_test(hc_mp[i].get(), netcdf_das_url, 927);
+                    exit(result ? 1 : 0);   // 1 = true, 0 = false, not the usual EXIT_SUCCESS/EXIT_FAILURE
+                } else if (pid[i] < 0) {
+                    // Error: failed to fork process
+                    CPPUNIT_FAIL("Failed to fork child process");
+                }
+            }
+
+            // Wait for child processes to complete and collect their exit status
+            int status;
+            int num_cached = 0;
+            for (int i = 0; i < num_processes; i++) {
+                waitpid(pid[i], &status, 0);
+                DBG(cerr << "Child process " << i << " (" << getpid() << ") exited with status " << WEXITSTATUS(status) << endl);
+                if (WEXITSTATUS(status) == 1)
+                    num_cached++;
+            }
+
+            CPPUNIT_ASSERT_MESSAGE("Three responses should be in the cache", num_cached == 3);
+        }
+        catch (InternalErr &e) {
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch (const std::exception &e) {
+            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
+        }
+        catch (...) {
+            cerr << "Caught unknown exception" << endl;
+            throw;
+        }
+    }
+
+
+#if 0
     void fetch_url_test_cpp()
     {
         DBG(cerr << "Entering " << __func__  << endl);
@@ -581,10 +689,9 @@ public:
             throw;
         }
     }
-
+#endif
 
 #if 0
-
     void get_response_headers_test()
     {
         try {
@@ -652,16 +759,14 @@ public:
         }
 
     }
-
-
 #endif
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (HTTPThreadsConnectTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (HTTPProcConnectTest);
 
 }
 
 int main(int argc, char *argv[])
 {
-    return run_tests<libdap::HTTPThreadsConnectTest>(argc, argv) ? 0 : 1;
+    return run_tests<libdap::HTTPProcConnectTest>(argc, argv) ? 0 : 1;
 }

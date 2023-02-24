@@ -94,8 +94,6 @@ private:
 
     void set_verbose_runtime(bool verbose) { d_verbose_runtime = verbose; }
 
-    bool is_cached_response() const { return d_cached_response; }
-
     friend class HTTPConnectTest;
 
     friend class HTTPThreadsConnectTest;
@@ -153,6 +151,9 @@ public:
         if (d_http_cache)
             d_http_cache->set_cache_enabled(enabled);
     }
+
+    /** Was the response read from the cache? */
+    bool is_cached_response() const { return d_cached_response; }
 
     /** Return the current state of the HTTP cache. */
     bool is_cache_enabled() const { return (d_http_cache) != nullptr && d_http_cache->is_cache_enabled(); }

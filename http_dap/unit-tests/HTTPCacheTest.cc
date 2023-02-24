@@ -133,7 +133,7 @@ public:
     void constructor_test()
     {
         DBG(cerr << "hc_p->cache_index: " << hc_p->d_http_cache_table->d_cache_index << endl);
-        CPPUNIT_ASSERT(hc_p->d_http_cache_table->d_cache_index == "cache-testsuite/dods_cache/.index");
+        CPPUNIT_ASSERT(hc_p->d_http_cache_table->d_cache_index == "cache-testsuite/dods_cache/" + libdap::CACHE_INDEX);
         CPPUNIT_ASSERT(hc_p->d_cache_root == "cache-testsuite/dods_cache/");
         DBG(cerr << "Current size: " << hc_p->d_http_cache_table->d_current_size << endl);
         DBG(cerr << "Block size: " << hc_p->d_http_cache_table->d_block_size << endl);

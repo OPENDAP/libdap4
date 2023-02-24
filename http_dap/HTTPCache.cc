@@ -51,19 +51,18 @@
 
 using namespace std;
 
-// #define CACHE_LOCATION "/tmp/"
+namespace libdap {
+
 const string CACHE_LOCATION{"/tmp/"};
 
 const string CACHE_ROOT{"dods-cache/"};
 
-const string CACHE_INDEX{".index"};
-const string CACHE_LOCK{".lock"};
+const string CACHE_INDEX{"cache.index"};
+const string CACHE_LOCK{"cache.lock"};
 const string CACHE_META{".meta"};
 const string CACHE_EMPTY_ETAG{"@cache@"};
 
 const string DIR_SEPARATOR_CHAR{"/"};
-
-namespace libdap {
 
 std::unique_ptr<HTTPCache> HTTPCache::d_instance = nullptr;
 
@@ -1093,6 +1092,9 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
             perform_garbage_collection();
 
         d_http_cache_table->cache_index_write(); // resets new_entries
+    }
+    else if (ALWAYS_UPDATE_INDEX && d_http_cache_table->get_new_entries() > 0) {
+        d_http_cache_table->cache_index_write();
     }
 
     return true;

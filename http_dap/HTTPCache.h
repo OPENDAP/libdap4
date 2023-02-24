@@ -34,7 +34,12 @@
 
 #include "HTTPCacheDisconnectedMode.h"
 
+// DUMP FREQUENCY triggers both a cache purge and an index dump. The
+// ALWAYS_UPDATE_INDEX ensures that when the cache is used by several processes
+// two processes working with the same URL will not both pull the same info
+// over the wire.
 #define DUMP_FREQUENCY (10) // Dump index every x loads
+#define ALWAYS_UPDATE_INDEX true // Always update index when a new entry is added
 
 #define NO_LM_EXPIRATION (24*3600) // 24 hours
 
