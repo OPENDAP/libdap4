@@ -51,6 +51,7 @@
 #include "D4Group.h"
 #include "D4Sequence.h"
 #include "D4Connect.h"
+#include "HTTPResponse.h"
 #include "StdinResponse.h"
 #include "HTTPConnect.h"
 #include "RCReader.h"

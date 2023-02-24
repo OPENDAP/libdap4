@@ -26,12 +26,6 @@
 
 #include "config.h"
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#include <sys/stat.h>
-
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -41,9 +35,21 @@
 #include <cstring>
 #include <cerrno>
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#include <sys/stat.h>
+
+#include <curl/curl.h>
+//No longer used in CURL - pwest April 09, 2012
+//#include <curl/types.h>
+#include <curl/easy.h>
+
 #include "debug.h"
 #include "mime_util.h"
 #include "GNURegex.h"
+#include "RCReader.h"
 #include "HTTPCache.h"
 #include "HTTPConnect.h"
 #include "HTTPResponse.h"
@@ -652,7 +658,7 @@ HTTPConnect::fetch_url(const string &url)
 
     // handle redirection case (2007-04-27, gaffigan@sfos.uaf.edu)
     if (!parser.get_location().empty()
-        && (url.substr(0, url.find('?')) == parser.get_location().substr(0, url.find('?')))) {// } != 0)) {
+        && (url.substr(0, url.find('?')) == parser.get_location().substr(0, url.find('?')))) {
     	delete stream;
         return fetch_url(parser.get_location());
     }
@@ -827,6 +833,11 @@ close_temp(FILE *s, const string &name)
 HTTPResponse *
 HTTPConnect::caching_fetch_url(const string &url)
 {
+    // This lock enables caching for threads that run simultaneously. A recursive
+    // mutex is used because this private method can be called recursively by fetch_url().
+    static recursive_mutex m;
+    lock_guard<recursive_mutex> lock(m);
+
     VERBOSE_RUNTIME(cerr << "Is this URL (" << url << ") in the cache?... ");
 
     vector<string> headers;
@@ -966,6 +977,8 @@ HTTPConnect::plain_fetch_url(const string &url)
 void
 HTTPConnect::set_accept_deflate(bool deflate)
 {
+    lock_guard<mutex> lock(d_connect_mutex);
+
     d_accept_deflate = deflate;
 
     if (d_accept_deflate) {
@@ -992,6 +1005,8 @@ HTTPConnect::set_accept_deflate(bool deflate)
 void
 HTTPConnect::set_xdap_protocol(int major, int minor)
 {
+    lock_guard<mutex> lock(d_connect_mutex);
+
     // Look for, and remove if one exists, an XDAP-Accept header
     vector<string>::iterator i;
     i = find_if(d_request_headers.begin(), d_request_headers.end(), HeaderMatch("XDAP-Accept:"));
@@ -1028,6 +1043,8 @@ HTTPConnect::set_xdap_protocol(int major, int minor)
 void
 HTTPConnect::set_credentials(const string &u, const string &p)
 {
+    lock_guard<mutex> lock(d_connect_mutex);
+
     if (u.empty())
         return;
 

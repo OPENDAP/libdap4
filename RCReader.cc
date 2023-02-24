@@ -274,8 +274,6 @@ bool RCReader::read_rc_file(const string &pathname)
             }
         }
 
-        //delete [] tempstr; tempstr = 0;
-
         fpi.close(); // Close the .dodsrc file. 12/14/99 jhrg
 
         return true;
@@ -445,7 +443,7 @@ void RCReader::initialize_instance()
 RCReader*
 RCReader::instance()
 {
-    DBG(cerr << "Entring RCReader::instance" << endl);
+    DBG(cerr << "Entering RCReader::instance" << endl);
     // The instance_control variable is defined at the top of this file.
     // 08/07/02 jhrg
     pthread_once(&instance_control, initialize_instance);

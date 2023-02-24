@@ -26,23 +26,20 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <cstring>
 #include <sys/stat.h>
 
 #include <iterator>
 #include <memory>
 #include <string>
-#include <algorithm>
 #include <thread>
 
-#include "GNURegex.h"
+#include "RCReader.h"
+#include "HTTPResponse.h"
+#include "HTTPCache.h"
 #include "HTTPConnect.h"
 #include "debug.h"
 
 #include "run_tests_cppunit.h"
-#include "test_config.h"
-
-#include "remove_directory.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -60,53 +57,16 @@ inline static uint64_t file_size(FILE *fp)
 
 class HTTPConnectMTTest : public TestFixture {
 private:
+    HTTPCache *d_cache = HTTPCache::instance("cache-testsuite/http_mt_cache/");
     unique_ptr<HTTPConnect> http{nullptr};
     string url_304{"http://test.opendap.org/test-304.html"};
     string basic_pw_url{"http://jimg:dods_test@test.opendap.org/basic/page.txt"};
     string basic_digest_pw_url{"http://jimg:dods_digest@test.opendap.org/basic/page.txt"};
+    // The etag value needs to be updated when the server changes, etc.
+    // Also, the value looks like a 'sectret' to git secrets, which will complain. jhrg 2/23/23
     string etag{"\"157-3df0e26958000\""};   // New httpd (dockerized), new etag. ndp - 12/06/22
     string lm{"Wed, 13 Jul 2005 19:32:26 GMT"};
     string netcdf_das_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.das"};
-
-#if 0
-    static bool re_match(const Regex &r, const char *s)
-    {
-        return r.match(s, (int) strlen(s)) == (int) strlen(s);
-    }
-
-    struct REMatch : public unary_function<const string &, bool> {
-        Regex &d_re;
-
-        explicit REMatch(Regex &re) :
-                d_re(re)
-        {
-        }
-
-        ~REMatch() = default;
-
-        bool operator()(const string &str) const
-        {
-            const char *s = str.c_str();
-            return d_re.match(s, (int) strlen(s)) == (int) strlen(s);
-        }
-    };
-
-    // This is defined in HTTPConnect.cc but has to be defined here as well.
-    // Don't know why... jhrg
-    class HeaderMatch : public unary_function<const string &, bool> {
-        const string &d_header;
-    public:
-        explicit HeaderMatch(const string &header) :
-                d_header(header)
-        {
-        }
-
-        bool operator()(const string &arg) const
-        {
-            return arg.find(d_header) == 0;
-        }
-    };
-#endif
 
 public:
     HTTPConnectMTTest() = default;
@@ -115,28 +75,15 @@ public:
 
     void setUp() override
     {
-        DBG(cerr << endl);
-        DBG(cerr << prolog << "Setting the DODS_CONF env var" << endl);
-
-        setenv("DODS_CONF", "cache-testsuite/dodsrc", 1);
-        if (access("cache-testsuite/http_connect_cache/", F_OK) == 0)
-            remove_directory("cache-testsuite/http_connect_cache/");
-
-        DBG(cerr << prolog << "url_304: " << url_304 << endl);
-        // Two request header values that will generate a 304 response to the
-        // above URL. The values below much match the etag and last-modified
-        // time returned by the server. Run this test with DODS_DEBUG defined
-        // to see the values it's returning.
-        //
-        // etag = "\"a10df-157-139c2680\"";
-        // etag = "\"2a008e-157-3fbcd139c2680\"";
-        // etag = "\"181893-157-3fbcd139c2680\""; // On 10/13/14 we moved to a new httpd and the etag value changed.
-        // etag ="\"157-3df1e87884680\""; // New httpd service, new etag, ndp - 01/11/21
-        DBG(cerr << prolog << "etag: " << etag << endl);
-        DBG(cerr << prolog << "lm: " << lm << endl);
-        DBG(cerr << prolog << "basic_pw_url: " << basic_pw_url << endl);
-        DBG(cerr << prolog << "basic_digest_pw_url: " << basic_digest_pw_url << endl);
-        DBG(cerr << prolog << "netcdf_das_url: " << netcdf_das_url << endl);
+        setenv("DODS_CONF", "cache-testsuite/dodsrc_w_caching", 1);
+        // This is coupled with the cache name in cache-testsuite/dodsrc_w_caching
+        if (access("cache-testsuite/http_mt_cache/", F_OK) == 0) {
+            CPPUNIT_ASSERT_MESSAGE("The HTTPCache::instance() is null!", d_cache);
+            CPPUNIT_ASSERT_MESSAGE("The HTTPCache directory is not correct", d_cache->get_cache_root() == "cache-testsuite/http_mt_cache/");
+            // Some tests disable the cache, so we need to make sure it's enabled.
+            d_cache->set_cache_enabled(true);
+            d_cache->purge_cache();
+        }
     }
 
     CPPUNIT_TEST_SUITE (HTTPConnectMTTest);
@@ -148,31 +95,8 @@ public:
         CPPUNIT_TEST(fetch_url_test_nc_mt_w_cache);
         CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache);
         CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache_multi_access);
-#if 0
-        CPPUNIT_TEST (fetch_url_test_3);
-        CPPUNIT_TEST (fetch_url_test_4);
-#endif
 
         CPPUNIT_TEST(fetch_url_test_cpp);
-#if 0
-        CPPUNIT_TEST (fetch_url_test_2_cpp);
-        CPPUNIT_TEST (fetch_url_test_3_cpp);
-        CPPUNIT_TEST (fetch_url_test_4_cpp);
-#endif
-
-#if 0
-        CPPUNIT_TEST (get_response_headers_test);
-        CPPUNIT_TEST (server_version_test);
-        CPPUNIT_TEST (type_test);
-
-        CPPUNIT_TEST (cache_test);
-        CPPUNIT_TEST (cache_test_cpp);
-
-        CPPUNIT_TEST (set_accept_deflate_test);
-        CPPUNIT_TEST (set_xdap_protocol_test);
-        CPPUNIT_TEST (read_url_password_test);
-        CPPUNIT_TEST (read_url_password_test2);
-#endif
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -181,6 +105,10 @@ public:
         DBG(cerr << "Entering " << __func__  << endl);
         try {
             http = std::make_unique<HTTPConnect>(RCReader::instance());
+            // Disable the cache for this test.
+            http->set_cache_enabled(false);
+            DBG(cerr << "hc->is_cache_enabled()? " << boolalpha << http->is_cache_enabled() << endl);
+
             unique_ptr<HTTPResponse> stuff(http->fetch_url(url_304));
             char c;
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
@@ -207,6 +135,9 @@ public:
         try {
             http = std::make_unique<HTTPConnect>(RCReader::instance());
             http->set_use_cpp_streams(true);
+            // Disable the cache for this test.
+            http->set_cache_enabled(false);
+            DBG(cerr << "hc->is_cache_enabled()? " << boolalpha << http->is_cache_enabled() << endl);
             unique_ptr<HTTPResponse> stuff(http->fetch_url(url_304));
             char c;
             stuff->get_cpp_stream()->read(&c, 1);
@@ -239,6 +170,9 @@ public:
             auto http_4 = std::make_unique<HTTPConnect>(RCReader::instance());
 
             auto hc_lambda = [](const string &url, HTTPConnect *hc) {
+                // Disable the cache for this test.
+                hc->set_cache_enabled(false);
+                DBG(cerr << "hc->is_cache_enabled()? " << boolalpha << hc->is_cache_enabled() << endl);
                 unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
                 char c;
                 CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
@@ -277,7 +211,6 @@ public:
     {
         DBG(cerr << "Entering " << __func__  << endl);
         try {
-            setenv("DODS_CONF", "cache-testsuite/dodsrc_w_caching", 1);
             auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_3 = std::make_unique<HTTPConnect>(RCReader::instance());
@@ -328,6 +261,7 @@ public:
             auto http_4 = std::make_unique<HTTPConnect>(RCReader::instance());
 
             auto hc_lambda = [](const string &url, HTTPConnect *hc) {
+                hc->set_cache_enabled(false);
                 unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
                 char c;
                 CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
@@ -346,6 +280,14 @@ public:
             thread2.join();
             thread3.join();
             thread4.join();
+
+            // None should be cached; the cache is disabled.
+            int cached = 0;
+            if (http_1->is_cached_response()) cached++;
+            if (http_2->is_cached_response()) cached++;
+            if (http_3->is_cached_response()) cached++;
+            if (http_4->is_cached_response()) cached++;
+            CPPUNIT_ASSERT_MESSAGE("Three responses should be cached, one not (" + std::to_string(cached) + " was)", cached == 0);
         }
         catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
@@ -366,31 +308,39 @@ public:
     {
         DBG(cerr << "Entering " << __func__  << endl);
         try {
-            setenv("DODS_CONF", "cache-testsuite/dodsrc_w_caching", 1);
             auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_3 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_4 = std::make_unique<HTTPConnect>(RCReader::instance());
 
-            auto hc_lambda = [](const string &url, HTTPConnect *hc) {
+            auto hc_lambda = [](const string &url, HTTPConnect *hc, uint32_t expected_size) {
                 unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
+                DBG(cerr << "hc_lambda: " << url << ", response size: " << file_size(stuff->get_stream()) << endl);
                 char c;
-                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
-                                && c =='A'
-                                && !ferror(stuff->get_stream())
-                                && !feof(stuff->get_stream()));
-                DBG(cerr << "hc_lambda: " << url << ", " << c << endl);
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1);
+                CPPUNIT_ASSERT(!ferror(stuff->get_stream()));
+                CPPUNIT_ASSERT(!feof(stuff->get_stream()));
+                CPPUNIT_ASSERT_MESSAGE("response size: " + std::to_string(file_size(stuff->get_stream())),
+                                       file_size(stuff->get_stream()) == expected_size);
             };
 
-            std::thread thread1(hc_lambda, netcdf_das_url, http_1.get());
-            std::thread thread2(hc_lambda, netcdf_das_url, http_2.get());
-            std::thread thread3(hc_lambda, netcdf_das_url, http_3.get());
-            std::thread thread4(hc_lambda, netcdf_das_url, http_4.get());
+            std::thread thread1(hc_lambda, netcdf_das_url, http_1.get(), 927);
+            std::thread thread2(hc_lambda, netcdf_das_url, http_2.get(), 927);
+            std::thread thread3(hc_lambda, netcdf_das_url, http_3.get(), 927);
+            std::thread thread4(hc_lambda, netcdf_das_url, http_4.get(), 927);
 
             thread1.join();
             thread2.join();
             thread3.join();
             thread4.join();
+
+            // Three should be cached; the cache is enabled.
+            int cached = 0;
+            if (http_1->is_cached_response()) cached++;
+            if (http_2->is_cached_response()) cached++;
+            if (http_3->is_cached_response()) cached++;
+            if (http_4->is_cached_response()) cached++;
+            CPPUNIT_ASSERT_MESSAGE("Three responses should be cached; number cached: " + std::to_string(cached) + ".", cached == 3);
         }
         catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
@@ -411,7 +361,6 @@ public:
     {
         DBG(cerr << "Entering " << __func__  << endl);
         try {
-            setenv("DODS_CONF", "cache-testsuite/dodsrc_w_caching", 1);
             auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_3 = std::make_unique<HTTPConnect>(RCReader::instance());
@@ -420,7 +369,6 @@ public:
             auto hc_lambda = [](const string &url, HTTPConnect *hc, uint32_t expected_size) {
                 unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
                 DBG(cerr << "hc_lambda: " << url << ", response size: " << file_size(stuff->get_stream()) << endl);
-                DBG2(cerr << "hc_lambda: " << url << ", Response type: " << typeid(stuff.get()).name() << endl);
                 char c;
                 CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1);
                 CPPUNIT_ASSERT(!ferror(stuff->get_stream()));
@@ -442,6 +390,12 @@ public:
             thread2.join();
             thread3.join();
             thread4.join();
+
+            // None should be cached; different URLs, accessed each for the first time.
+            CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !http_1->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !http_2->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !http_3->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !http_4->is_cached_response());
         }
         catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
@@ -461,14 +415,13 @@ public:
     {
         DBG(cerr << "Entering " << __func__  << endl);
         try {
-            setenv("DODS_CONF", "cache-testsuite/dodsrc_w_caching", 1);
             auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_3 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_4 = std::make_unique<HTTPConnect>(RCReader::instance());
 
             auto hc_lambda = [](const string &url, HTTPConnect *hc, uint32_t expected_size) {
-                hc->set_verbose_runtime(true);
+                hc->set_verbose_runtime(false);
                 unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
                 DBG(cerr << "hc_lambda: " << url << ", response size: " << file_size(stuff->get_stream()) << endl);
                 DBG2(cerr << "hc_lambda: " << url << ", Response type: " << typeid(stuff.get()).name() << endl);
@@ -510,7 +463,11 @@ public:
             thread7.join();
             thread8.join();
 
-            // CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_1->is_cached_response());
+            DBG(cerr << "http_1->is_cached_response(): " << boolalpha << http_1->is_cached_response() << endl);
+            CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_1->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_2->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_3->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_4->is_cached_response());
 
             // Now we access the same URLs again using new instances of HTTPConnect.
             // The cache should be used
@@ -529,7 +486,11 @@ public:
             thread11.join();
             thread12.join();
 
-            // CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_5->is_cached_response());
+            DBG(cerr << "http_5->is_cached_response(): " << boolalpha << http_5->is_cached_response() << endl);
+            CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_5->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_6->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_7->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_8->is_cached_response());
         }
         catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
@@ -547,190 +508,6 @@ public:
     }
 
 #if 0
-    void fetch_url_test_2_cpp()
-    {
-        DBG(cerr << "Entering fetch_url_test 2" << endl);
-        http->set_use_cpp_streams(true);
-
-        HTTPResponse *stuff = nullptr;
-        char c;
-
-        try {
-            stuff = http->fetch_url(netcdf_das_url);
-
-            stuff->get_cpp_stream()->read(&c, 1);
-            CPPUNIT_ASSERT(
-                    *(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() && !stuff->get_cpp_stream()->eof());
-
-            delete stuff;
-            stuff = nullptr;
-        }
-        catch (InternalErr &e) {
-            delete stuff;
-            stuff = nullptr;
-            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
-            delete stuff;
-            stuff = nullptr;
-            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-            // Catch the exception from a failed ASSERT and clean up. Deleting a
-            // Response object also unlocks the HTTPCache in some cases. If delete
-            // is not called, then a failed test can leave the cache with locked
-            // entries
-        catch (...) {
-            delete stuff;
-            stuff = nullptr;
-            throw;
-        }
-    }
-
-    void fetch_url_test_3()
-    {
-        DBG(cerr << "Entering fetch_url_test 3" << endl);
-        HTTPResponse *stuff = nullptr;
-        char c;
-        try {
-            stuff = http->fetch_url("file:///etc/passwd");
-            CPPUNIT_ASSERT(
-                    fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                    && !feof(stuff->get_stream()));
-            delete stuff;
-            stuff = nullptr;
-        }
-        catch (InternalErr &e) {
-            delete stuff;
-            stuff = nullptr;
-            CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
-        }
-        catch (Error &e) {
-            delete stuff;
-            stuff = nullptr;
-            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-            // Catch the exception from a failed ASSERT and clean up. Deleting a
-            // Response object also unlocks the HTTPCache in some cases. If delete
-            // is not called, then a failed test can leave the cache with locked
-            // entries
-        catch (...) {
-            delete stuff;
-            stuff = nullptr;
-            throw;
-        }
-    }
-
-    void fetch_url_test_3_cpp()
-    {
-        DBG(cerr << "Entering fetch_url_test 3" << endl);
-        http->set_use_cpp_streams(true);
-
-        HTTPResponse *stuff = nullptr;
-        char c;
-        try {
-            stuff = http->fetch_url("file:///etc/passwd");
-
-            stuff->get_cpp_stream()->read(&c, 1);
-            CPPUNIT_ASSERT(
-                    *(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() && !stuff->get_cpp_stream()->eof());
-
-            delete stuff;
-            stuff = nullptr;
-        }
-        catch (InternalErr &e) {
-            delete stuff;
-            stuff = nullptr;
-            CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
-        }
-        catch (Error &e) {
-            delete stuff;
-            stuff = nullptr;
-            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-            // Catch the exception from a failed ASSERT and clean up. Deleting a
-            // Response object also unlocks the HTTPCache in some cases. If delete
-            // is not called, then a failed test can leave the cache with locked
-            // entries
-        catch (...) {
-            delete stuff;
-            stuff = nullptr;
-            throw;
-        }
-    }
-
-    void fetch_url_test_4()
-    {
-        DBG(cerr << "Entering fetch_url_test 4" << endl);
-        HTTPResponse *stuff = nullptr;
-        char c;
-        try {
-            string url = (string) "file://" + TEST_SRC_DIR + "/test_config.h";
-            stuff = http->fetch_url(url);
-            CPPUNIT_ASSERT(
-                    fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                    && !feof(stuff->get_stream()));
-            delete stuff;
-            stuff = nullptr;
-        }
-        catch (InternalErr &e) {
-            delete stuff;
-            stuff = nullptr;
-            CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
-        }
-        catch (Error &e) {
-            delete stuff;
-            stuff = nullptr;
-            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-            // Catch the exception from a failed ASSERT and clean up. Deleting a
-            // Response object also unlocks the HTTPCache in some cases. If delete
-            // is not called, then a failed test can leave the cache with locked
-            // entries
-        catch (...) {
-            delete stuff;
-            stuff = nullptr;
-            throw;
-        }
-    }
-
-    void fetch_url_test_4_cpp()
-    {
-        DBG(cerr << "Entering fetch_url_test_4_cpp" << endl);
-        http->set_use_cpp_streams(true);
-
-        HTTPResponse *stuff = nullptr;
-        char c;
-        try {
-            string url = (string) "file://" + TEST_SRC_DIR + "/test_config.h";
-            stuff = http->fetch_url(url);
-
-            stuff->get_cpp_stream()->read(&c, 1);
-            CPPUNIT_ASSERT(
-                    *(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() && !stuff->get_cpp_stream()->eof());
-
-            delete stuff;
-            stuff = nullptr;
-        }
-        catch (InternalErr &e) {
-            delete stuff;
-            stuff = nullptr;
-            CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
-        }
-        catch (Error &e) {
-            delete stuff;
-            stuff = nullptr;
-            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-            // Catch the exception from a failed ASSERT and clean up. Deleting a
-            // Response object also unlocks the HTTPCache in some cases. If delete
-            // is not called, then a failed test can leave the cache with locked
-            // entries
-        catch (...) {
-            delete stuff;
-            stuff = nullptr;
-            throw;
-        }
-    }
 
     void get_response_headers_test()
     {
@@ -800,151 +577,7 @@ public:
 
     }
 
-    void set_credentials_test()
-    {
-        http->set_credentials("jimg", "was_quit");
-        Response *stuff = http->fetch_url("http://localhost/secret");
 
-        try {
-            char c;
-            CPPUNIT_ASSERT(
-                    fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                    && !feof(stuff->get_stream()));
-            delete stuff;
-            stuff = nullptr;
-        }
-        catch (InternalErr &e) {
-            delete stuff;
-            stuff = nullptr;
-            CPPUNIT_FAIL("Caught an InternalErrexception from output: " + e.get_error_message());
-        }
-    }
-
-    void cache_test()
-    {
-        DBG(cerr << endl << "Entering Caching tests." << endl);
-        try {
-            // The cache-testsuite/dodsrc file turns this off; all the other
-            // params are set up. It used to be that HTTPConnect had an option to
-            // turn caching on, but that no longer is present. This hack enables
-            // caching for this test. 06/18/04 jhrg
-            http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root());
-            DBG(cerr << "Instantiate the cache" << endl);
-
-            CPPUNIT_ASSERT(http->d_http_cache != nullptr);
-            http->d_http_cache->set_cache_enabled(true);
-            DBG(cerr << "Enable the cache" << endl);
-
-            fetch_url_test_4();
-            DBG(cerr << "fetch_url_test" << endl);
-            get_response_headers_test();
-            DBG(cerr << "get_response_headers_test" << endl);
-            server_version_test();
-            DBG(cerr << "server_version_test" << endl);
-            type_test();
-            DBG(cerr << "type_test" << endl);
-        }
-        catch (Error &e) {
-            CPPUNIT_FAIL((string) "Error: " + e.get_error_message());
-        }
-    }
-
-    void cache_test_cpp()
-    {
-        DBG(cerr << endl << "Entering Caching tests." << endl);
-        try {
-            // The cache-testsuite/dodsrc file turns this off; all the other
-            // params are set up. It used to be that HTTPConnect had an option to
-            // turn caching on, but that no longer is present. This hack enables
-            // caching for this test. 06/18/04 jhrg
-            http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root());
-            DBG(cerr << "Instantiate the cache" << endl);
-
-            CPPUNIT_ASSERT(http->d_http_cache != nullptr);
-            http->d_http_cache->set_cache_enabled(true);
-            DBG(cerr << "Enable the cache" << endl);
-
-            fetch_url_test_4_cpp();
-            DBG(cerr << "fetch_url_test_4_cpp" << endl);
-
-            get_response_headers_test();
-            DBG(cerr << "get_response_headers_test" << endl);
-
-            server_version_test();
-            DBG(cerr << "server_version_test" << endl);
-
-            type_test();
-            DBG(cerr << "type_test" << endl);
-        }
-        catch (Error &e) {
-            CPPUNIT_FAIL((string) "Error: " + e.get_error_message());
-        }
-    }
-
-    void set_accept_deflate_test()
-    {
-        http->set_accept_deflate(false);
-        CPPUNIT_ASSERT(
-                count(http->d_request_headers.begin(), http->d_request_headers.end(),
-                      "Accept-Encoding: deflate, gzip, compress") == 0);
-
-        http->set_accept_deflate(true);
-        CPPUNIT_ASSERT(
-                count(http->d_request_headers.begin(), http->d_request_headers.end(),
-                      "Accept-Encoding: deflate, gzip, compress") == 1);
-
-        http->set_accept_deflate(true);
-        CPPUNIT_ASSERT(
-                count(http->d_request_headers.begin(), http->d_request_headers.end(),
-                      "Accept-Encoding: deflate, gzip, compress") == 1);
-
-        http->set_accept_deflate(false);
-        CPPUNIT_ASSERT(
-                count(http->d_request_headers.begin(), http->d_request_headers.end(),
-                      "Accept-Encoding: deflate, gzip, compress") == 0);
-    }
-
-    void set_xdap_protocol_test()
-    {
-        // Initially there should be no header and the protocol should be 2.0
-        CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 2 && http->d_dap_client_protocol_minor == 0);
-
-        CPPUNIT_ASSERT(
-                count_if(http->d_request_headers.begin(), http->d_request_headers.end(), HeaderMatch("XDAP-Accept:")) ==
-                0);
-
-        http->set_xdap_protocol(8, 9);
-        CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 8 && http->d_dap_client_protocol_minor == 9);
-        CPPUNIT_ASSERT(count(http->d_request_headers.begin(), http->d_request_headers.end(), "XDAP-Accept: 8.9") == 1);
-
-        http->set_xdap_protocol(3, 2);
-        CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 3 && http->d_dap_client_protocol_minor == 2);
-        CPPUNIT_ASSERT(count(http->d_request_headers.begin(), http->d_request_headers.end(), "XDAP-Accept: 3.2") == 1);
-    }
-
-    void read_url_password_test()
-    {
-        FILE *dump = fopen("/dev/null", "w");
-        vector<string> resp_h;
-        long status = http->read_url(basic_pw_url, dump, resp_h);
-
-        DBG(cerr << endl << http->d_upstring << endl);
-        CPPUNIT_ASSERT(http->d_upstring == "jimg:dods_test");
-        DBG(cerr << "Status: " << status << endl);
-        CPPUNIT_ASSERT(status == 200);
-    }
-
-    void read_url_password_test2()
-    {
-        FILE *dump = fopen("/dev/null", "w");
-        vector<string> resp_h;
-        long status = http->read_url(basic_digest_pw_url, dump, resp_h);
-
-        DBG(cerr << endl << http->d_upstring << endl);
-        CPPUNIT_ASSERT(http->d_upstring == "jimg:dods_digest");
-        DBG(cerr << "Status: " << status << endl);
-        CPPUNIT_ASSERT(status == 200);
-    }
 #endif
 };
 

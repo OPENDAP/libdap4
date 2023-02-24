@@ -50,7 +50,9 @@
 
 #include "Sequence.h"
 #include "Connect.h"
+#include "RCReader.h"
 #include "Response.h"
+#include "HTTPResponse.h"
 #include "StdinResponse.h"
 #include "debug.h"
 
@@ -435,7 +437,7 @@ int main(int argc, char *argv[])
             else {
                 // if (!get_das && !get_dds && !get_data ...) This code uses
                 // HTTPConnect::fetch_url which cannot be accessed using an
-                // instance of Connect. So some of the options supported by
+                // instance of Connect. So some options supported by
                 // other URLs won't work here (e.g., the verbose option
                 // doesn't show the server version number).
                 HTTPConnect http(RCReader::instance());

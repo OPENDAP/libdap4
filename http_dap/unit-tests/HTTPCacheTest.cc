@@ -40,6 +40,8 @@
 #include "HTTPCache.h"
 #include "HTTPConnect.h"	// Used to generate a response to cache.
 #include "HTTPCacheTable.h"
+#include "RCReader.h"
+#include "HTTPResponse.h"
 
 #include "run_tests_cppunit.h"
 #include "remove_directory.h"

@@ -106,7 +106,7 @@ HTTPCacheTest_SOURCES = HTTPCacheTest.cc $(TEST_SRC)
 HTTPCacheTest_CPPFLAGS = $(AM_CPPFLAGS)
 HTTPCacheTest_LDADD = $(AM_LDADD)
 
-HTTPConnectTest_SOURCES = HTTPConnectTest.cc
+HTTPConnectTest_SOURCES = HTTPConnectTest.cc $(TEST_SRC)
 HTTPConnectTest_CPPFLAGS = $(AM_CPPFLAGS)
 HTTPConnectTest_LDADD = $(AM_LDADD)
 

@@ -33,11 +33,15 @@
 #include <functional>
 
 #include "GNURegex.h"
+#include "RCReader.h"
+#include "HTTPResponse.h"
+#include "HTTPCache.h"
 #include "HTTPConnect.h"
 #include "debug.h"
 
 #include "run_tests_cppunit.h"
 #include "test_config.h"
+#include "remove_directory.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -100,6 +104,12 @@ public:
         DBG(cerr << endl);
         DBG(cerr << prolog << "Setting the DODS_CONF env var" << endl);
         setenv("DODS_CONF", "cache-testsuite/dodsrc", 1);
+        // This is coupled with the cache name in cache-testsuite/dodsrc
+        if (access("cache-testsuite/http_connect_cache/", F_OK) == 0) {
+            auto cache = HTTPCache::instance("cache-testsuite/http_connect_cache/");
+            cache->purge_cache();
+        }
+
         DBG(cerr << prolog << "localhost_url: " << localhost_url<< endl);
 
         // Two request header values that will generate a 304 response to the

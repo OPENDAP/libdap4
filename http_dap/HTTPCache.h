@@ -26,6 +26,7 @@
 #ifndef _http_cache_h
 #define _http_cache_h
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <memory>

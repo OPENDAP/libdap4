@@ -47,7 +47,8 @@
 #include "DataDDS.h"
 #include "Connect.h"
 #include "escaping.h"
-//#include "RCReader.h"
+#include "HTTPResponse.h"
+#include "RCReader.h"
 #include "DDXParserSAX2.h"
 #if FILE_UN_MARSHALLER
 #include "XDRFileUnMarshaller.h"
