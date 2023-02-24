@@ -55,28 +55,25 @@ check_PROGRAMS = $(UNIT_TESTS)
 # This determines what gets run by 'make check.'
 TESTS = $(UNIT_TESTS)
 
-noinst_HEADERS = test_config.h run_tests_cppunit.h
+noinst_HEADERS = test_config.h run_tests_cppunit.h remove_directory.h
 
 DIRS_EXTRA =
 
 EXTRA_DIST = $(DIRS_EXTRA) test_config.h.in
 
-CLEANFILES = testout .dodsrc  *.gcda *.gcno *.gcov *.trs *.log *.file D4-xml.tar.gz *.output
+CLEANFILES = testout .dodsrc  *.gcda *.gcno *.gcov *.trs *.log *.file *.output
 
 DISTCLEANFILES = test_config.h *.strm *.file tmp.txt
 
 test_config.h: test_config.h.in Makefile
 	sed -e "s%[@]abs_srcdir[@]%${abs_srcdir}%" $< > test_config.h
 
-D4-xml.tar.gz: D4-xml/DMR_*[0-9].xml
-	tar -czf $@ $^
-
 ############################################################################
 # Unit Tests
 #
 
 if CPPUNIT
-UNIT_TESTS = HTTPConnectTest HTTPConnectMTTest HTTPCacheTest
+UNIT_TESTS = HTTPConnectTest HTTPThreadsConnectTest HTTPCacheTest
 
 else
 UNIT_TESTS =
@@ -110,6 +107,6 @@ HTTPConnectTest_SOURCES = HTTPConnectTest.cc $(TEST_SRC)
 HTTPConnectTest_CPPFLAGS = $(AM_CPPFLAGS)
 HTTPConnectTest_LDADD = $(AM_LDADD)
 
-HTTPConnectMTTest_SOURCES = HTTPConnectMTTest.cc $(TEST_SRC)
-HTTPConnectMTTest_CPPFLAGS = $(AM_CPPFLAGS)
-HTTPConnectMTTest_LDADD = $(AM_LDADD)
+HTTPThreadsConnectTest_SOURCES = HTTPThreadsConnectTest.cc $(TEST_SRC)
+HTTPThreadsConnectTest_CPPFLAGS = $(AM_CPPFLAGS)
+HTTPThreadsConnectTest_LDADD = $(AM_LDADD)

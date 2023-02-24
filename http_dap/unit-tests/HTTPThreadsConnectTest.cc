@@ -44,7 +44,7 @@
 using namespace CppUnit;
 using namespace std;
 
-#define prolog std::string("HTTPConnectMTTest::").append(__func__).append("() - ")
+#define prolog std::string("HTTPThreadsConnectTest::").append(__func__).append("() - ")
 
 namespace libdap {
 
@@ -55,7 +55,7 @@ inline static uint64_t file_size(FILE *fp)
     return s.st_size;
 }
 
-class HTTPConnectMTTest : public TestFixture {
+class HTTPThreadsConnectTest : public TestFixture {
 private:
     HTTPCache *d_cache = HTTPCache::instance("cache-testsuite/http_mt_cache/");
     unique_ptr<HTTPConnect> http{nullptr};
@@ -69,9 +69,9 @@ private:
     string netcdf_das_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.das"};
 
 public:
-    HTTPConnectMTTest() = default;
+    HTTPThreadsConnectTest() = default;
 
-    ~HTTPConnectMTTest() override = default;
+    ~HTTPThreadsConnectTest() override = default;
 
     void setUp() override
     {
@@ -86,7 +86,7 @@ public:
         }
     }
 
-    CPPUNIT_TEST_SUITE (HTTPConnectMTTest);
+    CPPUNIT_TEST_SUITE (HTTPThreadsConnectTest);
 
         CPPUNIT_TEST(fetch_url_test);
         CPPUNIT_TEST(fetch_url_test_304_mt);
@@ -95,6 +95,7 @@ public:
         CPPUNIT_TEST(fetch_url_test_nc_mt_w_cache);
         CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache);
         CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache_multi_access);
+        CPPUNIT_TEST(fetch_url_test_302_urls_mt_w_cache_multi_access);
 
         CPPUNIT_TEST(fetch_url_test_cpp);
 
@@ -411,6 +412,7 @@ public:
             throw;
         }
     }
+
     void fetch_url_test_diff_urls_mt_w_cache_multi_access()
     {
         DBG(cerr << "Entering " << __func__  << endl);
@@ -424,7 +426,6 @@ public:
                 hc->set_verbose_runtime(false);
                 unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
                 DBG(cerr << "hc_lambda: " << url << ", response size: " << file_size(stuff->get_stream()) << endl);
-                DBG2(cerr << "hc_lambda: " << url << ", Response type: " << typeid(stuff.get()).name() << endl);
                 char c;
                 CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1);
                 CPPUNIT_ASSERT(!ferror(stuff->get_stream()));
@@ -507,6 +508,87 @@ public:
         }
     }
 
+    void fetch_url_test_302_urls_mt_w_cache_multi_access()
+    {
+        DBG(cerr << "Entering " << __func__  << endl);
+        try {
+            auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_3 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_4 = std::make_unique<HTTPConnect>(RCReader::instance());
+
+            auto hc_lambda = [](const string &url, HTTPConnect *hc) {
+                hc->set_verbose_runtime(false);
+                unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
+                char c;
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1);
+                DBG(cerr << "First character: " << c << endl);
+                CPPUNIT_ASSERT(!ferror(stuff->get_stream()));
+                CPPUNIT_ASSERT(!feof(stuff->get_stream()));
+            };
+
+            string opendap_url{"http://test.opendap.org/opendap"};
+
+            std::thread thread1(hc_lambda, opendap_url, http_1.get());
+            std::thread thread2(hc_lambda, opendap_url, http_2.get());
+            std::thread thread3(hc_lambda, opendap_url, http_3.get());
+            std::thread thread4(hc_lambda, opendap_url, http_4.get());
+
+            thread1.join();
+            thread2.join();
+            thread3.join();
+            thread4.join();
+
+            // Three should be cached; the cache is enabled.
+            int cached = 0;
+            if (http_1->is_cached_response()) cached++;
+            if (http_2->is_cached_response()) cached++;
+            if (http_3->is_cached_response()) cached++;
+            if (http_4->is_cached_response()) cached++;
+            CPPUNIT_ASSERT_MESSAGE("Three responses should be cached; number cached: " + std::to_string(cached) + ".", cached == 3);
+
+            // Now we access the same URLs again. The cache should be used.
+            std::thread thread5(hc_lambda, opendap_url, http_1.get());
+            std::thread thread6(hc_lambda, opendap_url, http_2.get());
+
+            thread5.join();
+            thread6.join();
+
+            DBG(cerr << "http_1->is_cached_response(): " << boolalpha << http_1->is_cached_response() << endl);
+            CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_1->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_2->is_cached_response());
+
+            // Now we access the same URLs again using new instances of HTTPConnect.
+            // The cache should be used
+            auto http_5 = std::make_unique<HTTPConnect>(RCReader::instance());
+            auto http_6 = std::make_unique<HTTPConnect>(RCReader::instance());
+
+            std::thread thread9(hc_lambda, opendap_url, http_5.get());
+            std::thread thread10(hc_lambda, opendap_url, http_6.get());
+
+            thread9.join();
+            thread10.join();
+
+            DBG(cerr << "http_5->is_cached_response(): " << boolalpha << http_5->is_cached_response() << endl);
+            CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_5->is_cached_response());
+            CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_6->is_cached_response());
+        }
+        catch (InternalErr &e) {
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch (const std::exception &e) {
+            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
+        }
+        catch (...) {
+            cerr << "Caught unknown exception" << endl;
+            throw;
+        }
+    }
+
+
 #if 0
 
     void get_response_headers_test()
@@ -581,11 +663,11 @@ public:
 #endif
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (HTTPConnectMTTest);
+CPPUNIT_TEST_SUITE_REGISTRATION (HTTPThreadsConnectTest);
 
 }
 
 int main(int argc, char *argv[])
 {
-    return run_tests<libdap::HTTPConnectMTTest>(argc, argv) ? 0 : 1;
+    return run_tests<libdap::HTTPThreadsConnectTest>(argc, argv) ? 0 : 1;
 }

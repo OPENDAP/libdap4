@@ -32,17 +32,7 @@
 
 #include <curl/curl.h>
 
-
-//No longer used in CURL - pwest April 09, 2012
-//#include <curl/types.h>
-//#include <curl/easy.h>
-
-//#include "RCReader.h"
-//#include "ObjectType.h"
 #include "HTTPCache.h"
-//#include "HTTPResponse.h"
-
-// #include "util.h"
 
 namespace libdap {
 
@@ -108,7 +98,7 @@ private:
 
     friend class HTTPConnectTest;
 
-    friend class HTTPConnectMTTest;
+    friend class HTTPThreadsConnectTest;
 
     friend class ParseHeader;
 
