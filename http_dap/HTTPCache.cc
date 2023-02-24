@@ -1093,7 +1093,7 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
 
         d_http_cache_table->cache_index_write(); // resets new_entries
     }
-    else if (ALWAYS_UPDATE_INDEX && d_http_cache_table->get_new_entries() > 0) {
+    else if (ALWAYS_UPDATE_INDEX) {
         d_http_cache_table->cache_index_write();
     }
 

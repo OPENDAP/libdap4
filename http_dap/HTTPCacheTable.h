@@ -30,11 +30,6 @@
 #include <map>
 #include <mutex>
 
-// These are defined in HTTPCache.cc. jhrg 2/21/23
-extern const std::string CACHE_META;
-extern const std::string CACHE_INDEX;
-extern const std::string CACHE_EMPTY_ETAG;
-
 #define NO_LM_EXPIRATION (24*3600) // 24 hours
 #define MAX_LM_EXPIRATION (48*3600) // Max expiration from LM
 
@@ -45,6 +40,11 @@ extern const std::string CACHE_EMPTY_ETAG;
 #endif
 
 namespace libdap {
+
+// These are defined in HTTPCache.cc. jhrg 2/21/23
+extern const std::string CACHE_META;
+extern const std::string CACHE_INDEX;
+extern const std::string CACHE_EMPTY_ETAG;
 
 int get_hash(const std::string &url);
 

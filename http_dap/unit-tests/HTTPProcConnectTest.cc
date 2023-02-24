@@ -93,7 +93,7 @@ public:
     {
         setenv("DODS_CONF", "cache-testsuite/dodsrc_mp_caching", 1);
         // This is coupled with the cache name in cache-testsuite/dodsrc_mp_caching
-#if 0
+#if 1
         if (access("cache-testsuite/http_mp_cache/", F_OK) == 0) {
             CPPUNIT_ASSERT_MESSAGE("The HTTPCache::instance() is null!", d_cache);
             CPPUNIT_ASSERT_MESSAGE("The HTTPCache directory is not correct",
@@ -104,9 +104,7 @@ public:
         }
 #endif
 
-        system("rm -rf cache-testsuite/http_mp_cache/*");
-        system("rm -rf cache-testsuite/http_mp_cache/.index");
-        system("rm -rf cache-testsuite/http_mp_cache/.lock");
+        // system("rm -rf cache-testsuite/http_mp_cache/*");
     }
 
     CPPUNIT_TEST_SUITE (HTTPProcConnectTest);
@@ -192,11 +190,19 @@ public:
             for (int i = 0; i < num_processes; i++) {
                 pid[i] = fork();
                 if (pid[i] == 0) {
-                    if (i > 0)
-                        sleep(1);   // Give the first child process a head start - hack, FIXME
-                    // Child process, fetch_url_test() returns true if the URL was in the cache.
-                    bool result = fetch_url_test(hc_mp[i].get(), netcdf_das_url, 927);
-                    exit(result ? 1 : 0);   // 1 = true, 0 = false, not the usual EXIT_SUCCESS/EXIT_FAILURE
+                    try {
+                        if (i > 0)
+                            sleep(1);   // Give the first child process a head start - hack, FIXME
+                        // Child process, fetch_url_test() returns true if the URL was in the cache.
+                        bool result = fetch_url_test(hc_mp[i].get(), netcdf_das_url, 927);
+                        exit(result ? 1 : 0);   // 1 = true, 0 = false, not the usual EXIT_SUCCESS/EXIT_FAILURE
+                    }
+                    catch (Error &e) {
+                        CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+                    }
+                    catch (const std::exception &e) {
+                        CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
+                    }
                 } else if (pid[i] < 0) {
                     // Error: failed to fork process
                     CPPUNIT_FAIL("Failed to fork child process");
@@ -208,7 +214,7 @@ public:
             int num_cached = 0;
             for (int i = 0; i < num_processes; i++) {
                 waitpid(pid[i], &status, 0);
-                DBG(cerr << "Child process " << i << " (" << getpid() << ") exited with status " << WEXITSTATUS(status) << endl);
+                DBG(cerr << "Child process " << i << " (" << pid[i] << ") exited with status " << WEXITSTATUS(status) << endl);
                 if (WEXITSTATUS(status) == 1)
                     num_cached++;
             }
