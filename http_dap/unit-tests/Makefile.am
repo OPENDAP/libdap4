@@ -18,7 +18,7 @@ AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-self-assign-overloaded
 endif
 
 if CPPUNIT
-AM_CPPFLAGS += $(CPPUNIT_CFLAGS)
+AM_CPPFLAGS += $(CPPUNIT_CFLAGS) -Wno-deprecated-declarations -Wno-unused-parameter
 AM_LDADD += $(CPPUNIT_LIBS)
 endif
 
