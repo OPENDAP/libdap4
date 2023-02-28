@@ -79,7 +79,7 @@ private:
 public:
     HTTPCacheTest()
     {
-        setenv("DODS_CONF", "cache-testsuite/dodsrc", 1);
+        setenv("DODS_CONF", "cache-testsuite/dodsrc_cache_test", 1);
         http_conn_p = std::make_unique<HTTPConnect>(RCReader::instance());
 
         h.emplace_back("ETag: jhrgjhrgjhrg");
@@ -92,9 +92,9 @@ public:
 
     void setUp() override {
         // Here we use reset because std::make_unique<>() cannot access the private constructor. jhrg 2/15/23
-        hc_p.reset(new HTTPCache("cache-testsuite/dods_cache/"));
-        system("rm -rf cache-testsuite/dods_cache");
-        system("cp -r ./cache-testsuite/dods_cache_init cache-testsuite/dods_cache");
+        hc_p.reset(new HTTPCache("cache-testsuite/http_cache_test/"));
+        system("rm -rf cache-testsuite/http_cache_test");
+        system("cp -r ./cache-testsuite/dods_cache_init cache-testsuite/http_cache_test");
     }
 
     CPPUNIT_TEST_SUITE (HTTPCacheTest);
@@ -132,8 +132,8 @@ public:
     void constructor_test()
     {
         DBG(cerr << "hc_p->cache_index: " << hc_p->d_http_cache_table->d_cache_index << endl);
-        CPPUNIT_ASSERT(hc_p->d_http_cache_table->d_cache_index == "cache-testsuite/dods_cache/" + libdap::CACHE_INDEX);
-        CPPUNIT_ASSERT(hc_p->d_cache_root == "cache-testsuite/dods_cache/");
+        CPPUNIT_ASSERT(hc_p->d_http_cache_table->d_cache_index == "cache-testsuite/http_cache_test/" + libdap::CACHE_INDEX);
+        CPPUNIT_ASSERT(hc_p->d_cache_root == "cache-testsuite/http_cache_test/");
         DBG(cerr << "Current size: " << hc_p->d_http_cache_table->d_current_size << endl);
         DBG(cerr << "Block size: " << hc_p->d_http_cache_table->d_block_size << endl);
 
