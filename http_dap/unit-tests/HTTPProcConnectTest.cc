@@ -53,6 +53,15 @@ inline static uint64_t file_size(FILE *fp)
     return s.st_size;
 }
 
+#define CHILD_ASSERT_MESSAGE(os, message, condition) \
+    if (!(condition)) {         \
+        os << message << endl;  \
+        exit(1);                \
+    }
+
+#define CHILD_DBG(os, message) \
+    os << message << endl;
+
 /**
  * Per-process test code for HTTPConnect::fetch_url()
  * @param hc The HTTPConnect object to use.
@@ -61,19 +70,24 @@ inline static uint64_t file_size(FILE *fp)
  * @return True if the response was cached, false otherwise.
  */
 bool fetch_url_test(HTTPConnect *hc, const string &url, uint64_t expected_size) {
-    // Disable the cache for this test.
-    DBG(cerr << "hc->is_cache_enabled()? " << boolalpha << hc->is_cache_enabled() << endl);
+    auto ofs = ofstream("http_proc_" + std::to_string(getpid()) + ".out");
+    CHILD_DBG(ofs, "hc->is_cache_enabled()? " << boolalpha << hc->is_cache_enabled() << endl);
 
     unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
-    DBG(cerr << url << ", response size: " << file_size(stuff->get_stream()) << endl);
+    CHILD_DBG(ofs, url << ", response size: " << file_size(stuff->get_stream()) << endl);
+
+    // CPPUNIT_FAIL("What happens when the child process fails an assert?");
+
+    CHILD_ASSERT_MESSAGE(ofs, "Error from the response stream", !ferror(stuff->get_stream()));
+    CHILD_ASSERT_MESSAGE(ofs, "EOF from the response stream", !feof(stuff->get_stream()));
 
     char c;
-    CPPUNIT_ASSERT_MESSAGE("No error from the response stream", !ferror(stuff->get_stream()));
-    CPPUNIT_ASSERT_MESSAGE("No eof from the response stream", !feof(stuff->get_stream()));
-    CPPUNIT_ASSERT_MESSAGE("Read a character from the response stream", fread(&c, 1, 1, stuff->get_stream()) == 1);
-    CPPUNIT_ASSERT_MESSAGE("response size: " + std::to_string(file_size(stuff->get_stream())),
-                           file_size(stuff->get_stream()) == expected_size);
+    CHILD_ASSERT_MESSAGE(ofs, "Did not read a character from the response stream",
+                         fread(&c, 1, 1, stuff->get_stream()) == 1);
+    CHILD_ASSERT_MESSAGE(ofs, "Wrong response size: " + std::to_string(file_size(stuff->get_stream())),
+                         file_size(stuff->get_stream()) == expected_size);
 
+    CHILD_DBG(ofs, "is_cached_response: " << boolalpha << hc->is_cached_response());
     return hc->is_cached_response();
 }
 
@@ -93,7 +107,6 @@ public:
     {
         setenv("DODS_CONF", "cache-testsuite/dodsrc_mp_caching", 1);
         // This is coupled with the cache name in cache-testsuite/dodsrc_mp_caching
-#if 1
         if (access("cache-testsuite/http_mp_cache/", F_OK) == 0) {
             CPPUNIT_ASSERT_MESSAGE("The HTTPCache::instance() is null!", d_cache);
             CPPUNIT_ASSERT_MESSAGE("The HTTPCache directory is not correct",
@@ -102,15 +115,13 @@ public:
             d_cache->set_cache_enabled(true);
             d_cache->purge_cache();
         }
-#endif
-
-        // system("rm -rf cache-testsuite/http_mp_cache/*");
     }
 
     CPPUNIT_TEST_SUITE (HTTPProcConnectTest);
 
         CPPUNIT_TEST(fetch_url_test_mp_url_already_cached);
-        CPPUNIT_TEST(fetch_url_test_mp_url);
+        CPPUNIT_TEST(fetch_url_test_mp_url_serial_access);
+        CPPUNIT_TEST(fetch_url_test_mp_url_parallel_access);
 #if 0
         CPPUNIT_TEST(fetch_url_test_304_mt);
         CPPUNIT_TEST(fetch_url_test_304_mt_w_cache);
@@ -125,23 +136,30 @@ public:
 
     CPPUNIT_TEST_SUITE_END();
 
+    // This is a test that builds the HTTPConnect objects in two batches. The first one will cache the
+    // response and the second set will see that and read from the cache.
     void fetch_url_test_mp_url_already_cached()
     {
         DBG(cerr << "Entering " << __func__  << endl);
         try {
             // Run the test the simple way first...
             http = std::make_unique<HTTPConnect>(RCReader::instance());
+            if (debug) http->set_verbose_runtime(true);
             auto res = fetch_url_test(http.get(), netcdf_das_url, 927);
             CPPUNIT_ASSERT_MESSAGE("The response should not be cached", !res);
 
-            // Create child processes to concurrently access the cache
+            // Create child processes to concurrently access the cache. Note that these instances
+            // of HTTPConnect all share the same HTTPCacheTable. That means that they 'see' the cached
+            // data retrieved in the above access.
             const int num_processes = 4;
             unique_ptr<HTTPConnect> hc_mp[num_processes] = {std::make_unique<HTTPConnect>(RCReader::instance()),
                                                 std::make_unique<HTTPConnect>(RCReader::instance()),
                                                 std::make_unique<HTTPConnect>(RCReader::instance()),
                                                 std::make_unique<HTTPConnect>(RCReader::instance())};
-             pid_t pid[num_processes];
+
+            pid_t pid[num_processes];
             for (int i = 0; i < num_processes; i++) {
+                if (debug) hc_mp[i]->set_verbose_runtime(true);
                 pid[i] = fork();
                 if (pid[i] == 0) {
                     // Child process, fetch_url_test() returns true if the URL was in the cache.
@@ -176,7 +194,68 @@ public:
         }
     }
 
-    void fetch_url_test_mp_url()
+    // All HTTPConnect processes made in one batch but use the cache serially.
+    void fetch_url_test_mp_url_serial_access()
+    {
+        DBG(cerr << "Entering " << __func__  << endl);
+        try {
+            // Create child processes to concurrently access the cache. The first access will cache the data.
+            // Subsequent accesses will need to have a freshly made HTTPCacheTable object by reading the cache
+            // index before looking for the response in the cache
+            const int num_processes = 4;
+            unique_ptr<HTTPConnect> hc_mp[num_processes] = {std::make_unique<HTTPConnect>(RCReader::instance()),
+                                                            std::make_unique<HTTPConnect>(RCReader::instance()),
+                                                            std::make_unique<HTTPConnect>(RCReader::instance()),
+                                                            std::make_unique<HTTPConnect>(RCReader::instance())};
+            pid_t pid[num_processes];
+            int status;
+            int num_cached = 0;
+
+            for (int i = 0; i < num_processes; i++) {
+                if (debug) hc_mp[i]->set_verbose_runtime(true);
+                pid[i] = fork();
+                if (pid[i] == 0) {
+                    try {
+                        // Child process, fetch_url_test() returns true if the URL was in the cache.
+                        bool result = fetch_url_test(hc_mp[i].get(), netcdf_das_url, 927);
+                        exit(result ? 1 : 0);   // 1 = true, 0 = false, not the usual EXIT_SUCCESS/EXIT_FAILURE
+                    }
+                    catch (Error &e) {
+                        CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+                    }
+                    catch (const std::exception &e) {
+                        CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
+                    }
+                } else if (pid[i] > 0) {
+                    // Parent process
+                    waitpid(pid[i], &status, 0);
+                    DBG(cerr << "Child process " << i << " (" << pid[i] << ") exited with status " << WEXITSTATUS(status) << endl);
+                    if (WEXITSTATUS(status) == 1)
+                        num_cached++;
+                } else if (pid[i] < 0) {
+                    // Error: failed to fork process
+                    CPPUNIT_FAIL("Failed to fork child process");
+                }
+            }
+
+            CPPUNIT_ASSERT_MESSAGE("Three responses should be in the cache", num_cached == 3);
+        }
+        catch (InternalErr &e) {
+            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
+        }
+        catch (Error &e) {
+            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
+        }
+        catch (const std::exception &e) {
+            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
+        }
+        catch (...) {
+            cerr << "Caught unknown exception" << endl;
+            throw;
+        }
+    }
+
+    void fetch_url_test_mp_url_parallel_access()
     {
         DBG(cerr << "Entering " << __func__  << endl);
         try {
@@ -188,11 +267,12 @@ public:
                                                             std::make_unique<HTTPConnect>(RCReader::instance())};
             pid_t pid[num_processes];
             for (int i = 0; i < num_processes; i++) {
+                hc_mp[i]->set_verbose_runtime(true);
                 pid[i] = fork();
                 if (pid[i] == 0) {
+                    if (i != 0)
+                        sleep(2);   // Wait for the first process to cache the response
                     try {
-                        if (i > 0)
-                            sleep(1);   // Give the first child process a head start - hack, FIXME
                         // Child process, fetch_url_test() returns true if the URL was in the cache.
                         bool result = fetch_url_test(hc_mp[i].get(), netcdf_das_url, 927);
                         exit(result ? 1 : 0);   // 1 = true, 0 = false, not the usual EXIT_SUCCESS/EXIT_FAILURE

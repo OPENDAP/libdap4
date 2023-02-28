@@ -505,7 +505,7 @@ HTTPCache::create_cache_root(const string &cache_root) const
     umask(mask);
 }
 
-inline bool ends_with(std::string const & value, std::string const & ending)
+inline bool ends_with(std::string const &value, std::string const &ending)
 {
     if (ending.size() > value.size()) return false;
     return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
@@ -1040,7 +1040,6 @@ HTTPCache::open_body(const string &cachename)
 bool
 HTTPCache::cache_response(const string &url, time_t request_time, const vector<string> &headers, const FILE *body)
 {
-
     // If this is not an http or https URL, don't cache.
     if (url.find("http:") == string::npos && url.find("https:") == string::npos) {
         return false;
@@ -1050,6 +1049,10 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
     mp_lock_guard write_lock{d_cache_lock_fd,
                              mp_lock_guard::operation::write}; // Blocks until the write lock is acquired.
 
+    // TODO: See below todo. jhrg 2/27/23
+#if 1
+    d_http_cache_table->cache_index_read();
+#endif
     // This does nothing if url is not already in the cache. It's
     // more efficient to do this than to first check and see if the entry
     // exists. 10/10/02 jhrg
@@ -1192,6 +1195,11 @@ HTTPCache::update_response(const string &url, time_t request_time, const vector<
         lock_guard<mutex> lock{d_cache_mutex};
         mp_lock_guard write_lock{d_cache_lock_fd,
                                  mp_lock_guard::operation::write}; // Blocks until the lock is acquired.
+
+        // TODO: See below todo. jhrg 2/27/23
+#if 1
+        d_http_cache_table->cache_index_read();
+#endif
 
         entry = d_http_cache_table->get_write_locked_entry_from_cache_table(url);
         if (!entry)
@@ -1344,6 +1352,11 @@ FILE *HTTPCache::get_cached_response(const string &url, vector<string> &headers,
     try {
         lock_guard<mutex> lock{d_cache_mutex};
         mp_lock_guard read_lock{d_cache_lock_fd, mp_lock_guard::operation::read}; // Blocks until the lock is acquired.
+
+        // TODO: Is there a way to only read this when the index file is different? jhrg 2/27/23
+#if 1
+        d_http_cache_table->cache_index_read();
+#endif
 
         DBG(cerr << "Getting the cached response for " << url << endl);
 

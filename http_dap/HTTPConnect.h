@@ -95,8 +95,8 @@ private:
     void set_verbose_runtime(bool verbose) { d_verbose_runtime = verbose; }
 
     friend class HTTPConnectTest;
-
     friend class HTTPThreadsConnectTest;
+    friend class HTTPProcConnectTest;
 
     friend class ParseHeader;
 

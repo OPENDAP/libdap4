@@ -145,9 +145,6 @@ private:
 
     static std::unique_ptr<HTTPCache> d_instance;
 
-    friend class HTTPCacheTest; // Unit tests
-    friend class HTTPConnectTest;
-
     void set_cache_root(const std::string &root = "");
 
     void create_cache_root(const std::string &cache_root) const;
@@ -241,6 +238,11 @@ private:
 
         void release() { d_released = true; }
     };
+
+    friend class HTTPConnect;
+
+    friend class HTTPCacheTest; // Unit tests
+    friend class HTTPConnectTest;
 
 public:
     static HTTPCache *instance(const std::string &cache_root);

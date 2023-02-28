@@ -64,7 +64,10 @@ namespace libdap {
 // field d_verbose_runtime is true, then the VERBOSE_RUNTIME macro will print stuff.
 // This will only work inside HTTPConnect methods with code that has access to the
 // private field d_verbose_runtime. 02/22/23 jhrg
-#define VERBOSE_RUNTIME(x) do { if (d_verbose_runtime) (x); } while(false)
+
+#define prolog (std::to_string(getpid()))
+
+#define VERBOSE_RUNTIME(x) do { if (d_verbose_runtime) (cerr << prolog << ": " << x); } while(false)
 #else
 #define VERBOSE_RUNTIME(x) /* x */
 #endif
@@ -131,7 +134,7 @@ http_status_to_string(int status)
     else if (status >= SERVER_ERR_MIN && status <= SERVER_ERR_MAX)
         return {http_server_errors[status - SERVER_ERR_MIN]};
     else
-        return {"Unknown Error: This indicates a problem with libdap++.\nPlease report this to support@opendap.org."};
+        return {"Unknown Error: This indicates a problem with libdap.\nPlease report this to support@opendap.org."};
 }
 
 static ObjectType
@@ -829,23 +832,23 @@ close_temp(FILE *s, const string &name)
     @exception Error Thrown if the URL could not be dereferenced.
     @exception InternalErr Thrown if a temporary file to hold the response
     could not be opened. */
-
 HTTPResponse *
 HTTPConnect::caching_fetch_url(const string &url)
 {
-    // This lock enables caching for threads that run simultaneously. A recursive
-    // mutex is used because this private method can be called recursively by fetch_url().
-    static recursive_mutex m;
-    lock_guard<recursive_mutex> lock(m);
+    static mutex m;
+    lock_guard<mutex> lock(m);
+    // use the underlying cache's MP lock file to lock the cache for writing.
+    HTTPCache::mp_lock_guard write_lock(d_http_cache->d_cache_lock_fd,
+                                        HTTPCache::mp_lock_guard::operation::write);
 
-    VERBOSE_RUNTIME(cerr << "Is this URL (" << url << ") in the cache?... ");
+    VERBOSE_RUNTIME("Is this URL (" << url << ") in the cache?... ");
 
     vector<string> headers;
     string file_name;
     FILE *s = d_http_cache->get_cached_response(url, headers, file_name);
     if (!s) {
         // url not in cache; get it and cache it
-        VERBOSE_RUNTIME(cerr << "no; getting response and caching." << endl);
+        VERBOSE_RUNTIME("no; getting response and caching." << endl);
         time_t now = time(nullptr);
         HTTPResponse *rs = plain_fetch_url(url);
         d_http_cache->cache_response(url, now, rs->get_headers(), rs->get_stream());
@@ -853,16 +856,16 @@ HTTPConnect::caching_fetch_url(const string &url)
         return rs;
     }
     else { // url in cache
-        VERBOSE_RUNTIME(cerr << "yes... ");
+        VERBOSE_RUNTIME("yes... ");
 
         if (d_http_cache->is_url_valid(url)) { // url in cache and valid
-            VERBOSE_RUNTIME(cerr << "and it's valid; using cached response." << endl);
+            VERBOSE_RUNTIME("and it's valid; using cached response." << endl);
             d_cached_response = true;       // False by default
             auto crs = new HTTPCacheResponse(s, 200, headers, file_name, d_http_cache);
             return crs;
         }
         else { // url in cache but not valid; validate
-            VERBOSE_RUNTIME(cerr << "but it's not valid; validating... ");
+            VERBOSE_RUNTIME("but it's not valid; validating... ");
 
             d_http_cache->release_cached_response(s); // This closes 's'
             headers.clear();
@@ -883,7 +886,7 @@ HTTPConnect::caching_fetch_url(const string &url)
 
             switch (http_status) {
                 case 200: { // New headers and new body
-                    VERBOSE_RUNTIME(cerr << "read a new response; caching." << endl);
+                    VERBOSE_RUNTIME("read a new response; caching." << endl);
 
                     d_http_cache->cache_response(url, now, /*resp_hdrs*/headers, body);
                     auto rs = new HTTPResponse(body, http_status, /*resp_hdrs*/headers, dods_temp);
@@ -892,7 +895,7 @@ HTTPConnect::caching_fetch_url(const string &url)
                 }
 
                 case 304: { // Just new headers, use cached body
-                    VERBOSE_RUNTIME(cerr << "cached response valid; updating." << endl);
+                    VERBOSE_RUNTIME("cached response valid; updating." << endl);
 
                     close_temp(body, dods_temp);
                     d_cached_response = true;

@@ -137,7 +137,9 @@ public:
         CPPUNIT_ASSERT(hc_p->d_cache_root == "cache-testsuite/dods_cache/");
         DBG(cerr << "Current size: " << hc_p->d_http_cache_table->d_current_size << endl);
         DBG(cerr << "Block size: " << hc_p->d_http_cache_table->d_block_size << endl);
-        CPPUNIT_ASSERT(hc_p->d_http_cache_table->d_current_size == hc_p->d_http_cache_table->d_block_size);
+
+        CPPUNIT_ASSERT_MESSAGE("If the dods_cache directory is not configured for this test, this assert can fail.",
+                               hc_p->d_http_cache_table->d_current_size == hc_p->d_http_cache_table->d_block_size);
     }
 
     void cache_index_read_test()
