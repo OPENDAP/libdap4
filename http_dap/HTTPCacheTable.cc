@@ -76,7 +76,6 @@ HTTPCacheTable::~HTTPCacheTable() {
     for (auto &row: d_cache_table) {
         for (auto &entry: row) {
             delete entry;
-            entry = nullptr;
         }
     }
 }
@@ -203,7 +202,7 @@ HTTPCacheTable::cache_index_read() {
     A private method.
 
     @param line A single line from the \c .index file.
-    @return A CacheEntry* initialized with the information from \c line. */
+    @return A new CacheEntry* initialized with the information from \c line. */
 
 HTTPCacheTable::CacheEntry *
 HTTPCacheTable::cache_index_parse_line(const char *line) {

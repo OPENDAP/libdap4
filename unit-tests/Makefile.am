@@ -48,6 +48,11 @@ endif
 AM_LDFLAGS =
 include $(top_srcdir)/coverage.mk
 
+noinst_PROGRAMS = save_http_responses
+
+save_http_responses_SOURCES = save_http_responses.cc
+save_http_responses_LDADD = $(AM_LDADD) $(top_builddir)/libdap.la $(top_builddir)/libdapclient.la
+
 # This determines what gets built by make check
 check_PROGRAMS = $(UNIT_TESTS)
 

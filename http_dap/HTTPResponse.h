@@ -61,7 +61,7 @@ private:
 public:
     /** @name Suppressed default methods */
     //@{
-    HTTPResponse() = delete;
+    HTTPResponse() = default;
     HTTPResponse(const HTTPResponse &rs) = delete;
     HTTPResponse &operator=(const HTTPResponse &) = delete;
     //@}

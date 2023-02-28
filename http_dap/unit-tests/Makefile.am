@@ -61,7 +61,7 @@ DIRS_EXTRA =
 
 EXTRA_DIST = $(DIRS_EXTRA) test_config.h.in
 
-CLEANFILES = testout .dodsrc  *.gcda *.gcno *.gcov *.trs *.log *.file *.output
+CLEANFILES = testout .dodsrc  *.gcda *.gcno *.gcov *.trs *.log *.file *.output *.out
 
 DISTCLEANFILES = test_config.h *.strm *.file tmp.txt
 
@@ -99,7 +99,7 @@ endif
 TEST_SRC = remove_directory.cc remove_directory.h
 AM_LDFLAGS += -static
 
-HTTPCacheTest_SOURCES = HTTPCacheTest.cc $(TEST_SRC)
+HTTPCacheTest_SOURCES = HTTPCacheTest.cc HTTPTestResponse.h $(TEST_SRC)
 HTTPCacheTest_CPPFLAGS = $(AM_CPPFLAGS)
 HTTPCacheTest_LDADD = $(AM_LDADD)
 
