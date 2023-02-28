@@ -1,0 +1,10 @@
+Date: Tue, 28 Feb 2023 18:15:02 GMT
+Server: Apache/2.4.54 (Unix)
+X-FRAME-OPTIONS: DENY
+Last-Modified: Thu, 23 Sep 2021 19:45:14 GMT
+XDODS-Server: dods/3.2
+XOPeNDAP-Server: asciival/, bes/, csv_handler/, dapreader_module/, dmrpp_module/, fileout_covjson/, fileout_json/, fileout_netcdf/, freeform_handler/, functions/, gateway/, gdal_module/, hdf4_handler/, hdf5_handler/, libdap/, ncml_moddule/, netcdf_handler/, ngap_module/, usage/, w10n_handler/, xml_data_handler/
+X-DAP: 3.2
+Content-Description: dods_das
+Content-Type: text/plain
+Transfer-Encoding: chunked

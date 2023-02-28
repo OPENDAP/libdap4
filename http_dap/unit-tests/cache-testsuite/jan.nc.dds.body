@@ -1,0 +1,21 @@
+Dataset {
+    Grid {
+      Array:
+        Float64 P[time = 31][lat = 3][lon = 4];
+      Maps:
+        Int32 time[time = 31];
+        Float32 lat[lat = 3];
+        Float32 lon[lon = 4];
+    } P;
+    Grid {
+      Array:
+        Float64 T[time = 31][lat = 3][lon = 4];
+      Maps:
+        Int32 time[time = 31];
+        Float32 lat[lat = 3];
+        Float32 lon[lon = 4];
+    } T;
+    Float32 lat[lat = 3];
+    Float32 lon[lon = 4];
+    Int32 time[time = 31];
+} jan.nc;
