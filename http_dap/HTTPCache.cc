@@ -911,7 +911,8 @@ HTTPCache::read_metadata(const string &cachename, vector<string> &headers) const
 {
     FILE *md = fopen(string(cachename + CACHE_META).c_str(), "r");
     if (!md) {
-        throw InternalErr(__FILE__, __LINE__, "Could not open named cache entry meta data file.");
+        throw InternalErr(__FILE__, __LINE__, "Could not open named cache entry meta data file ("
+                            + cachename + CACHE_META + ").");
     }
 
     const size_t line_buf_len = 1024;

@@ -243,6 +243,7 @@ private:
 
     friend class HTTPCacheTest; // Unit tests
     friend class HTTPConnectTest;
+    friend class HTTPProcConnectTest;
 
 public:
     static HTTPCache *instance(const std::string &cache_root);

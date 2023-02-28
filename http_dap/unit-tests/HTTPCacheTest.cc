@@ -79,6 +79,7 @@ private:
 public:
     HTTPCacheTest()
     {
+        setenv("DODS_CONF", "cache-testsuite/dodsrc", 1);
         http_conn_p = std::make_unique<HTTPConnect>(RCReader::instance());
 
         h.emplace_back("ETag: jhrgjhrgjhrg");
@@ -92,6 +93,8 @@ public:
     void setUp() override {
         // Here we use reset because std::make_unique<>() cannot access the private constructor. jhrg 2/15/23
         hc_p.reset(new HTTPCache("cache-testsuite/dods_cache/"));
+        system("rm -rf cache-testsuite/dods_cache");
+        system("cp -r ./cache-testsuite/dods_cache_init cache-testsuite/dods_cache");
     }
 
     CPPUNIT_TEST_SUITE (HTTPCacheTest);
@@ -105,10 +108,6 @@ public:
     CPPUNIT_TEST (set_cache_root_test);
     CPPUNIT_TEST (initialize_cache_lock_test);
 
-#if 0
-    // Removed release_single_user_lock() from the class
-    CPPUNIT_TEST (release_single_user_lock_test);
-#endif
     CPPUNIT_TEST (create_hash_directory_test);
     CPPUNIT_TEST (create_location_test);
     CPPUNIT_TEST (parse_headers_test);

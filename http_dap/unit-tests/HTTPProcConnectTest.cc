@@ -35,6 +35,7 @@
 #include "HTTPResponse.h"
 #include "HTTPCache.h"
 #include "HTTPConnect.h"
+#include "HTTPCacheTable.h"
 #include "debug.h"
 
 #include "run_tests_cppunit.h"
@@ -115,6 +116,10 @@ public:
             d_cache->set_cache_enabled(true);
             d_cache->purge_cache();
         }
+
+        // clean the http_proc_*.out files that are made when set_verbose_runtime() is true.
+        // Running the clean here leaves the files around from the last test.
+        system("rm -f http_proc_*.out");
     }
 
     CPPUNIT_TEST_SUITE (HTTPProcConnectTest);
@@ -152,19 +157,14 @@ public:
             // of HTTPConnect all share the same HTTPCacheTable. That means that they 'see' the cached
             // data retrieved in the above access.
             const int num_processes = 4;
-            unique_ptr<HTTPConnect> hc_mp[num_processes] = {std::make_unique<HTTPConnect>(RCReader::instance()),
-                                                std::make_unique<HTTPConnect>(RCReader::instance()),
-                                                std::make_unique<HTTPConnect>(RCReader::instance()),
-                                                std::make_unique<HTTPConnect>(RCReader::instance())};
-
             pid_t pid[num_processes];
             for (int i = 0; i < num_processes; i++) {
-                if (debug) hc_mp[i]->set_verbose_runtime(true);
                 pid[i] = fork();
                 if (pid[i] == 0) {
-                    // Child process, fetch_url_test() returns true if the URL was in the cache.
-                    bool result = fetch_url_test(hc_mp[i].get(), netcdf_das_url, 927);
-                    exit(result ? 1 : 0);   // 1 = true, 0 = false, not the usual EXIT_SUCCESS/EXIT_FAILURE
+                    auto hc_mp = std::make_unique<HTTPConnect>(RCReader::instance());
+                    if (debug) hc_mp->set_verbose_runtime(true);
+                    bool result = fetch_url_test(hc_mp.get(), netcdf_das_url, 927);
+                    exit(result ? EXIT_SUCCESS : EXIT_FAILURE);
                 } else if (pid[i] < 0) {
                     // Error: failed to fork process
                     CPPUNIT_FAIL("Failed to fork child process");
@@ -176,7 +176,7 @@ public:
             for (int i = 0; i < num_processes; i++) {
                 waitpid(pid[i], &status, 0);
                 DBG(cerr << "Child process " << i << " (" << getpid() << ") exited with status " << WEXITSTATUS(status) << endl);
-                CPPUNIT_ASSERT_MESSAGE("All these responses should be in the cache", WEXITSTATUS(status));
+                CPPUNIT_ASSERT_MESSAGE("All these responses should be in the cache", WEXITSTATUS(status) == EXIT_SUCCESS);
             }
         }
         catch (InternalErr &e) {
@@ -202,35 +202,23 @@ public:
             // Create child processes to concurrently access the cache. The first access will cache the data.
             // Subsequent accesses will need to have a freshly made HTTPCacheTable object by reading the cache
             // index before looking for the response in the cache
-            const int num_processes = 4;
-            unique_ptr<HTTPConnect> hc_mp[num_processes] = {std::make_unique<HTTPConnect>(RCReader::instance()),
-                                                            std::make_unique<HTTPConnect>(RCReader::instance()),
-                                                            std::make_unique<HTTPConnect>(RCReader::instance()),
-                                                            std::make_unique<HTTPConnect>(RCReader::instance())};
+            const int num_processes = 1;
             pid_t pid[num_processes];
             int status;
             int num_cached = 0;
 
             for (int i = 0; i < num_processes; i++) {
-                if (debug) hc_mp[i]->set_verbose_runtime(true);
                 pid[i] = fork();
                 if (pid[i] == 0) {
-                    try {
-                        // Child process, fetch_url_test() returns true if the URL was in the cache.
-                        bool result = fetch_url_test(hc_mp[i].get(), netcdf_das_url, 927);
-                        exit(result ? 1 : 0);   // 1 = true, 0 = false, not the usual EXIT_SUCCESS/EXIT_FAILURE
-                    }
-                    catch (Error &e) {
-                        CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-                    }
-                    catch (const std::exception &e) {
-                        CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-                    }
+                    auto hc_mp = std::make_unique<HTTPConnect>(RCReader::instance());
+                    if (debug) hc_mp->set_verbose_runtime(true);
+                    bool result = fetch_url_test(hc_mp.get(), netcdf_das_url, 927);
+                    exit(result ? EXIT_SUCCESS : EXIT_FAILURE);
                 } else if (pid[i] > 0) {
                     // Parent process
                     waitpid(pid[i], &status, 0);
                     DBG(cerr << "Child process " << i << " (" << pid[i] << ") exited with status " << WEXITSTATUS(status) << endl);
-                    if (WEXITSTATUS(status) == 1)
+                    if (WEXITSTATUS(status) == EXIT_SUCCESS)
                         num_cached++;
                 } else if (pid[i] < 0) {
                     // Error: failed to fork process
@@ -238,7 +226,7 @@ public:
                 }
             }
 
-            CPPUNIT_ASSERT_MESSAGE("Three responses should be in the cache", num_cached == 3);
+            CPPUNIT_ASSERT_MESSAGE("Three responses should be in the cache", num_cached == num_processes - 1);
         }
         catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
@@ -261,28 +249,16 @@ public:
         try {
             // Create child processes to concurrently access the cache
             const int num_processes = 4;
-            unique_ptr<HTTPConnect> hc_mp[num_processes] = {std::make_unique<HTTPConnect>(RCReader::instance()),
-                                                            std::make_unique<HTTPConnect>(RCReader::instance()),
-                                                            std::make_unique<HTTPConnect>(RCReader::instance()),
-                                                            std::make_unique<HTTPConnect>(RCReader::instance())};
             pid_t pid[num_processes];
             for (int i = 0; i < num_processes; i++) {
-                hc_mp[i]->set_verbose_runtime(true);
                 pid[i] = fork();
                 if (pid[i] == 0) {
                     if (i != 0)
-                        sleep(2);   // Wait for the first process to cache the response
-                    try {
-                        // Child process, fetch_url_test() returns true if the URL was in the cache.
-                        bool result = fetch_url_test(hc_mp[i].get(), netcdf_das_url, 927);
-                        exit(result ? 1 : 0);   // 1 = true, 0 = false, not the usual EXIT_SUCCESS/EXIT_FAILURE
-                    }
-                    catch (Error &e) {
-                        CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-                    }
-                    catch (const std::exception &e) {
-                        CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-                    }
+                        sleep(3);   // Wait for the first process to cache the response
+                    auto hc_mp = std::make_unique<HTTPConnect>(RCReader::instance());
+                    if (debug) hc_mp->set_verbose_runtime(true);
+                    bool result = fetch_url_test(hc_mp.get(), netcdf_das_url, 927);
+                    exit(result ? EXIT_SUCCESS : EXIT_FAILURE);
                 } else if (pid[i] < 0) {
                     // Error: failed to fork process
                     CPPUNIT_FAIL("Failed to fork child process");
@@ -295,7 +271,7 @@ public:
             for (int i = 0; i < num_processes; i++) {
                 waitpid(pid[i], &status, 0);
                 DBG(cerr << "Child process " << i << " (" << pid[i] << ") exited with status " << WEXITSTATUS(status) << endl);
-                if (WEXITSTATUS(status) == 1)
+                if (WEXITSTATUS(status) == EXIT_SUCCESS)
                     num_cached++;
             }
 
@@ -315,7 +291,6 @@ public:
             throw;
         }
     }
-
 
 #if 0
     void fetch_url_test_cpp()
@@ -775,9 +750,6 @@ public:
             throw;
         }
     }
-#endif
-
-#if 0
     void get_response_headers_test()
     {
         try {

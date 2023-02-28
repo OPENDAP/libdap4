@@ -143,6 +143,7 @@ public:
     CPPUNIT_TEST (fetch_url_test_3_cpp);
     CPPUNIT_TEST (fetch_url_test_4_cpp);
 
+
     CPPUNIT_TEST (get_response_headers_test);
     CPPUNIT_TEST (server_version_test);
     CPPUNIT_TEST (type_test);

@@ -207,6 +207,7 @@ public:
     using CacheTable = std::vector<CacheEntries>;
 
     friend class HTTPCacheTest;
+    friend class HTTPProcConnectTest;
     friend class HTTPCache;
 
 private:
