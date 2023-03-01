@@ -28,21 +28,6 @@
 
 #include "config.h"
 
-#if 0
-#ifndef WIN32
-#include <alloca.h>
-#endif
-#include <stdlib.h>
- 
-#include <sys/types.h>
-#include <regex.h>
-
-#include <new>
-#include <string>
-#include <vector>
-#include <stdexcept>
-#endif
-
 #include <vector>
 
 #include <regex.h>
@@ -50,13 +35,7 @@
 #include "GNURegex.h"
 #include "Error.h"
 
-#include "debug.h"
 #include "util.h"
-
-#if 0
-#include "util.h"
-#include "debug.h"
-#endif
 
 using namespace std;
 
@@ -66,45 +45,24 @@ void
 Regex::init(const char *t)
 {
 #if !USE_CPP_11_REGEX
-    DBG( cerr << "Regex::init() - BEGIN" << endl);
-
-    DBG( cerr << "Regex::init() - creating new regex..." << endl);
     d_preg = static_cast<void*>(new regex_t);
 
-    DBG( cerr << "Regex::init() - Calling regcomp()..." << endl);
     int result = regcomp(static_cast<regex_t*>(d_preg), t, REG_EXTENDED);
 
     if  (result != 0) {
-        DBG( cerr << "Regex::init() - Call to regcomp FAILED" << endl);
-        DBG( cerr << "Regex::init() - Calling regerror()..." << endl);
         size_t msg_len = regerror(result, static_cast<regex_t*>(d_preg),
-                                  static_cast<char*>(NULL),
+                                  static_cast<char*>(nullptr),
                                   static_cast<size_t>(0));
 
-        DBG( cerr << "Regex::init() - Creating message" << endl);
         vector<char> msg(msg_len+1);
-        //char *msg = new char[msg_len+1];
-        DBG( cerr << "Regex::init() - Calling regerror() again..." << endl);
+
         regerror(result, static_cast<regex_t*>(d_preg), msg.data(), msg_len);
-        DBG( cerr << "Regex::init() - Throwing libdap::Error" << endl);
         throw Error(string("Regex error: ") + string(msg.data()));
-        //delete[] msg;
-        //throw e;
     }
-    DBG( cerr << "Regex::init() - Call to regcomp() SUCCEEDED" << endl);
-    DBG( cerr << "Regex::init() - END" << endl);
 #else
     d_exp = regex(t);
 #endif
 }
-
-#if 0
-void
-Regex::init(const string &t)
-{
-    d_exp = regex(t);
-}
-#endif
 
 #if !USE_CPP_11_REGEX
 Regex::~Regex()
@@ -114,24 +72,7 @@ Regex::~Regex()
 }
 #endif
 
-#if 0
-/** Initialize a POSIX regular expression (using the 'extended' features).
-
-    @param t The regular expression pattern. */
-Regex::Regex(const char* t)
-{
-    init(t);
-}
-
-/** Compatability ctor.
-    @see Regex::Regex(const char* t) */
-Regex::Regex(const char* t, int)
-{
-    init(t);
-}
-#endif
-
-/** Does the regular expression match the string? 
+/** Does the regular expression match the string?
 
     @param s The string
     @param len The length of string to consider
@@ -188,7 +129,7 @@ Regex::match(const string &s) const
     else
         return -1;
 #else
-    return match(s.c_str(), s.length(), 0);
+    return match(s.c_str(), (int)s.length(), 0);
 #endif
 }
 

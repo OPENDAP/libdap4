@@ -198,19 +198,18 @@ public:
     void cache_index_write_test()
     {
         try {
-            unique_ptr<HTTPCache> hc_3(new HTTPCache("cache-testsuite/dods_cache/"));
+            unique_ptr<HTTPCache> hc_3(new HTTPCache("cache-testsuite/http_cache_test/"));
             hc_3->d_http_cache_table->add_entry_to_cache_table(
                 hc_p->d_http_cache_table->cache_index_parse_line(index_file_line.c_str()));
 
             hc_3->d_http_cache_table->d_cache_index = hc_p->d_cache_root + "test_index";
             hc_3->d_http_cache_table->cache_index_write();
 
-            unique_ptr<HTTPCache> hc_4(new HTTPCache("cache-testsuite/dods_cache/"));
+            unique_ptr<HTTPCache> hc_4(new HTTPCache("cache-testsuite/http_cache_test/"));
             hc_4->d_http_cache_table->d_cache_index = hc_3->d_cache_root + "test_index";
             hc_4->d_http_cache_table->cache_index_read();
 
-            HTTPCacheTable::CacheEntry *e = hc_4->d_http_cache_table->get_read_locked_entry_from_cache_table(
-                    not_modified_304);
+            auto e = hc_4->d_http_cache_table->get_read_locked_entry_from_cache_table(not_modified_304);
             DBG(cerr << "Got locked entry" << endl);
             CPPUNIT_ASSERT(e);
             CPPUNIT_ASSERT(e->url == not_modified_304);
