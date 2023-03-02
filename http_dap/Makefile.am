@@ -34,6 +34,7 @@ BUILT_SOURCES =
 
 libhttp_dap_la_SOURCES = HTTPCache.cc \
                          HTTPCache.h \
+                         mp_lock_guard.h \
                          HTTPCacheDisconnectedMode.h \
                          HTTPCacheResponse.h \
                          HTTPCacheTable.cc \

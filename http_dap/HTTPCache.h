@@ -33,6 +33,7 @@
 #include <mutex>
 
 #include "HTTPCacheDisconnectedMode.h"
+#include "mp_lock_guard.h"
 
 // DUMP FREQUENCY triggers both a cache purge and an index dump. The
 // ALWAYS_UPDATE_INDEX ensures that when the cache is used by several processes
@@ -185,6 +186,7 @@ private:
 
     explicit HTTPCache(const std::string &cache_root);
 
+#if 0
     /**
      * @brief Lock the cache for writing.
      * Implements RAII for the multi-process write lock for the cache.
@@ -238,8 +240,10 @@ private:
 
         void release() { d_released = true; }
     };
+#endif
 
     friend class HTTPConnect;
+    friend class mp_lock_guard;
 
     friend class HTTPCacheTest; // Unit tests
     friend class HTTPConnectTest;
