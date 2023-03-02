@@ -838,8 +838,7 @@ HTTPConnect::caching_fetch_url(const string &url)
     static mutex m;
     lock_guard<mutex> lock(m);
     // use the underlying cache's MP lock file to lock the cache for writing.
-    HTTPCache::mp_lock_guard write_lock(d_http_cache->d_cache_lock_fd,
-                                        HTTPCache::mp_lock_guard::operation::write);
+    mp_lock_guard write_lock(d_http_cache->d_cache_lock_fd, mp_lock_guard::operation::write);
 
     VERBOSE_RUNTIME("Is this URL (" << url << ") in the cache?... ");
 
