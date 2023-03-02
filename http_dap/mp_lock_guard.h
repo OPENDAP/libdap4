@@ -18,6 +18,20 @@ static inline std::string get_errno()
     return s_err ? s_err : "unknown error";
 }
 
+class mp_lock_guard_logger {
+public:
+    virtual void log(const std::string &msg) = 0;
+    virtual void error(const std::string &msg) = 0;
+};
+
+class mp_lock_guard_logger_default {
+public:
+    virtual void log(const std::string &msg) { std::cerr << msg << ": " << get_errno() << std::endl; }
+    virtual void error(const std::string &msg) {
+        throw std::runtime_error("mp_lock_guard: " + msg + ": " + get_errno());
+    }
+};
+
 /**
  * @brief Lock the cache for writing.
  * Implements RAII for the multi-process write lock for the cache.
