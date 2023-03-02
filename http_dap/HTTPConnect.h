@@ -103,10 +103,7 @@ private:
 public:
     explicit HTTPConnect(RCReader *rcr, bool use_cpp = false);
 
-    /** @name Suppress default methods
-     These methods are not supported and are implemented here as protected
-     methods to suppress the C++-supplied default versions (which will
-     break this object). */
+    /// @name Suppress default methods
     ///@{
     HTTPConnect() = delete;
 

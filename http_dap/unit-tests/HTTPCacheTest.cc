@@ -239,12 +239,14 @@ public:
         hc_p->create_cache_root(hc_p->get_cache_root());
         close(hc_p->d_cache_lock_fd);
 
-        CPPUNIT_ASSERT(hc_p->m_initialize_cache_lock(hc_p->d_cache_root + ".lock"));
-        CPPUNIT_ASSERT(access("/tmp/dods_test_cache/.lock", F_OK) == 0);
+        const string lock_file = hc_p->d_cache_root + "cache.lock";
+        int fd;
+        CPPUNIT_ASSERT(HTTPCache::create_or_open_lock_file(lock_file, fd));
+        CPPUNIT_ASSERT(access(lock_file.c_str(), F_OK) == 0);
 
         // Second time should return the same fd
         CPPUNIT_ASSERT_NO_THROW_MESSAGE("The second call to initialize...() should return and not throw",
-                                        hc_p->m_initialize_cache_lock(hc_p->d_cache_root + ".lock"));
+                                        HTTPCache::create_or_open_lock_file(lock_file, fd));
 
         CPPUNIT_ASSERT_NO_THROW_MESSAGE("Directory delete should not throw", remove_directory("/tmp/dods_test_cache"));
     }
@@ -358,7 +360,7 @@ public:
         for (; i != cached_headers.end() && j != headers.end(); ++i, ++j) {
             string cached_header = (*i).substr(0, (*i).find(": "));
             // Skip over headers that won't be cached. jhrg 7/4/05
-            while (is_hop_by_hop_header(*j))
+            while (HTTPCache::is_hop_by_hop_header(*j))
                 ++j;
             string header = (*j).substr(0, (*j).find(": "));
             DBG(cerr << "cached: " << cached_header << ", header: " << header << endl);
@@ -721,7 +723,7 @@ int main(int argc, char*argv[])
     // Run cleanup here, so that the first run works (since this code now
     // sets up the tests).
     // This gives valgrind fits...
-    // system("cd cache-testsuite && ./cleanup.sh");
+    system("cd cache-testsuite && ./cleanup.sh");
 
     return run_tests<libdap::HTTPCacheTest>(argc, argv) ? EXIT_SUCCESS: EXIT_FAILURE;
 }

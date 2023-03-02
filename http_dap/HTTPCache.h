@@ -55,9 +55,6 @@ namespace libdap {
 
 class HTTPCacheTable;
 
-// This function is exported so the test code can use it too.
-bool is_hop_by_hop_header(const std::string &header);
-
 /** Implements a multi-process MT-safe HTTP 1.1 compliant (mostly) cache.
 
     <i>Clients that run as users lacking a writable HOME directory MUST
@@ -111,6 +108,9 @@ bool is_hop_by_hop_header(const std::string &header);
     @author James Gallagher <jgallagher@opendap.org> */
 class HTTPCache {
 private:
+    // The cache is a singleton. This is the instance.
+    static std::unique_ptr<HTTPCache> d_instance;
+
     std::string d_cache_root;
     int d_cache_lock_fd = -1; // Lock for multiprocess use.
     std::string d_cache_lock_file;
@@ -144,21 +144,16 @@ private:
     // d_open_files is used by the interrupt handler to clean up
     std::vector<std::string> d_open_files;
 
-    static std::unique_ptr<HTTPCache> d_instance;
-
     void set_cache_root(const std::string &root = "");
 
     void create_cache_root(const std::string &cache_root) const;
 
-    int m_initialize_cache_lock(const std::string &cache_lock) const;
-
-    static void m_lock_cache_write(int fd);
-
-    static void m_lock_cache_read(int fd);
-
-    static void m_unlock_cache(int fd);
+    static bool create_or_open_lock_file(const std::string &file_name, int &ref_fd) noexcept;
 
     static void m_exclusive_to_shared_lock(int fd);
+
+    // This function is exported so the test code can use it too.
+    static bool is_hop_by_hop_header(const std::string &header) noexcept;
 
     bool is_url_in_cache(const std::string &url);
 
@@ -185,62 +180,6 @@ private:
     void hits_gc();
 
     explicit HTTPCache(const std::string &cache_root);
-
-#if 0
-    /**
-     * @brief Lock the cache for writing.
-     * Implements RAII for the multi-process write lock for the cache.
-     *
-     * This class has an extra method that enables the client to 'release' the
-     * lock so that it wil NOT be released when the guard goes out of scope.
-     *
-     * @see mp_read_lock_guard for the corresponding read lock guard.
-     */
-    class mp_lock_guard {
-    public:
-        enum class operation { read, write };
-    private:
-        int d_fd;
-        bool d_locked = false;
-        bool d_released = false;    // Use this so instances can go out of scope without releasing the lock.
-        operation d_op;
-    public:
-        mp_lock_guard() = delete;
-
-        mp_lock_guard(const mp_lock_guard &) = delete;
-
-        mp_lock_guard &operator=(const mp_lock_guard &) = delete;
-
-        mp_lock_guard(int fd, operation op) : d_fd(fd), d_op(op) {
-            try {
-                if (d_op == operation::write)
-                    HTTPCache::m_lock_cache_write(d_fd);
-                else
-                    HTTPCache::m_lock_cache_read(d_fd);
-                d_locked = true;
-            }
-            catch (const std::exception &e) {
-                d_locked = false;
-                // Log this case.
-                std::cerr << "mp_lock_guard::mp_lock_guard() - Failed to lock the cache (" << e.what() << ")." << std::endl;
-            }
-        }
-
-        ~mp_lock_guard() {
-            try {
-                if (!d_released && d_locked) {
-                    HTTPCache::m_unlock_cache(d_fd);
-                }
-            }
-            catch (const std::exception &e) {
-                // Log this case.
-                std::cerr << "mp_lock_guard::~mp_lock_guard() - Failed to release the cache lock (" << e.what() << ")." << std::endl;
-            }
-        }
-
-        void release() { d_released = true; }
-    };
-#endif
 
     friend class HTTPConnect;
     friend class mp_lock_guard;

@@ -1,21 +1,23 @@
 #!/bin/sh
 #
-# remove stuff that accumulates between runs of the HTTPCacheTest unit tests.
+# Reset the environment for the HTTPCacheTests
 
-# sometimes have trouble deleting dods_cache during distcheck
-if [ -d dods_cache ]
+# sometimes have trouble deleting http_cache_test during distcheck
+if [ -d http_cache_test ]
 then
-    chmod -R +w dods_cache
+    chmod -R +w http_cache_test
 fi
-rm -rf dods_cache
-
-# initialize the dods_cache directory
-cp -r @srcdir@/dods_cache_init dods_cache
-# make sure we can write to the directory and sub directories
-chmod -R +w dods_cache
 
 # remove generated cache directories
 rm -rf gc_cache
 rm -rf purge_cache
 rm -rf header_cache
 rm -rf singleton_cache
+rm -rf http_cache_test
+
+# initialize the http_cache_test directory
+cp -r @srcdir@/dods_cache_init http_cache_test
+
+# make sure we can write to the directory and sub directories
+chmod -R +w http_cache_test
+

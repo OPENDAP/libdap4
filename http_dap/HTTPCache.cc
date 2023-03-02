@@ -102,6 +102,31 @@ HTTPCache::instance(const string &cache_root)
     return d_instance.get();
 }
 
+/**
+ * A blocking call to create or open a lock file. The file is not locked.
+ * @note A static method.
+ * @param file_name The name of the lock file
+ * @param ref_fd Return-value parameter that holds the open file descriptor of the lock file.
+ * @return True when the file is created or opened, false otherwise. See errno for details.
+ */
+bool HTTPCache::create_or_open_lock_file(const std::string &file_name, int &ref_fd) noexcept
+{
+    int fd;
+    if ((fd = open(file_name.c_str(), O_CREAT | O_EXCL | O_RDWR, 0660)) < 0) {
+        if (errno == EEXIST) {
+            if ((fd = open(file_name.c_str(), O_RDWR, 0660)) < 0)
+                return false;
+        }
+        else {
+            return false;
+        }
+    }
+
+    // Success
+    ref_fd = fd;
+    return true;
+}
+
 /** Create an instance of the HTTP 1.1 compliant cache. This initializes the
     both the cache root and the path to the index file. It then reads the
     cache index file if one is present.
@@ -133,10 +158,14 @@ HTTPCache::HTTPCache(const string &cache_root)
         // It's OK to call create_cache_root if the directory already exists.
         create_cache_root(d_cache_root);
         string lock = d_cache_root + CACHE_LOCK;
+#if 0
         d_cache_lock_fd = m_initialize_cache_lock(lock);
+#endif
+        if (!create_or_open_lock_file(lock, d_cache_lock_fd))
+            throw Error("Could not get the cache lock");
         d_cache_lock_file = lock;
 
-        struct stat s = {};
+        struct stat s{};
         int block_size;
         if (stat(cache_root.c_str(), &s) == 0)
             block_size = s.st_blksize;
@@ -149,7 +178,6 @@ HTTPCache::HTTPCache(const string &cache_root)
     catch (const Error &) {
         // Write to a log here. 2/18/23 jhrg
         d_cache_enabled = false;
-        DBG(cerr << "Failure to get the cache lock" << endl);
     }
 }
 
@@ -289,6 +317,7 @@ void HTTPCache::too_big_gc()
 
 //@} End of the garbage collection methods.
 
+#if 0
 /// @name New multi-process locking methods
 /// @{
 
@@ -315,7 +344,7 @@ static inline struct flock *lock(short type)
 }
 
 /**
- * A blocking call to create a file locked for write.
+ * A blocking call to create a file locked for read/write.
  *
  * @note Used by the methods m_initialize_cache_info() and create_and_lock()
  *
@@ -434,6 +463,8 @@ void HTTPCache::m_unlock_cache(int fd)
 
     DBG(cerr << "lock status: " << lockStatus(d_cache_info_fd) << endl);
 }
+
+#endif
 
 /**
 * @brief Transfer from an exclusive lock to a shared lock.
@@ -836,11 +867,11 @@ HTTPCache::is_url_in_cache(const string &url)
 
 /** Is the header a hop by hop header? If so, we're not supposed to store it
     in the cache. See RFC 2616, Section 13.5.1.
-
+    @note A static method.
     @return True if the header is, otherwise False. */
 
 bool
-is_hop_by_hop_header(const string &header)
+HTTPCache::is_hop_by_hop_header(const string &header) noexcept
 {
     return header.find("Connection") != string::npos
            || header.find("Keep-Alive") != string::npos
@@ -1446,7 +1477,10 @@ HTTPCache::release_cached_response(FILE *body)
 
     // fclose(body); This results in a seg fault on linux jhrg 8/27/13
     d_http_cache_table->uncouple_entry_from_data(body);
+    mp_lock_guard::unlock(d_cache_lock_fd);
+#if 0
     m_unlock_cache(d_cache_lock_fd);
+#endif
 }
 
 /** Purge both the in-memory cache table and the contents of the cache on

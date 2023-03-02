@@ -256,7 +256,7 @@ static size_t
 save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *resp_hdrs)
 {
     DBG2(cerr << "Inside the header parser." << endl);
-     auto hdrs = static_cast<vector<string> * >(resp_hdrs);
+    auto hdrs = static_cast<vector<string> * >(resp_hdrs);
 
     // Grab the header, minus the trailing newline. Or \r\n pair.
     string complete_line;
@@ -339,16 +339,11 @@ HTTPConnect::www_lib_init()
     // Set the proxy host.
     if (!d_rcr->get_proxy_server_host().empty()) {
         DBG(cerr << "Setting up a proxy server." << endl);
-        DBG(cerr << "Proxy host: " << d_rcr->get_proxy_server_host()
-            << endl);
-        DBG(cerr << "Proxy port: " << d_rcr->get_proxy_server_port()
-            << endl);
-        DBG(cerr << "Proxy pwd : " << d_rcr->get_proxy_server_userpw()
-            << endl);
-        curl_easy_setopt(d_curl, CURLOPT_PROXY,
-                         d_rcr->get_proxy_server_host().c_str());
-        curl_easy_setopt(d_curl, CURLOPT_PROXYPORT,
-                         d_rcr->get_proxy_server_port());
+        DBG(cerr << "Proxy host: " << d_rcr->get_proxy_server_host() << endl);
+        DBG(cerr << "Proxy port: " << d_rcr->get_proxy_server_port() << endl);
+        DBG(cerr << "Proxy pwd : " << d_rcr->get_proxy_server_userpw() << endl);
+        curl_easy_setopt(d_curl, CURLOPT_PROXY, d_rcr->get_proxy_server_host().c_str());
+        curl_easy_setopt(d_curl, CURLOPT_PROXYPORT, d_rcr->get_proxy_server_port());
 
 	    // As of 4/21/08 only NTLM, Digest and Basic work.
 #ifdef CURLOPT_PROXYAUTH
@@ -357,8 +352,7 @@ HTTPConnect::www_lib_init()
 
         // Password might not be required. 06/21/04 jhrg
         if (!d_rcr->get_proxy_server_userpw().empty())
-            curl_easy_setopt(d_curl, CURLOPT_PROXYUSERPWD,
-                             d_rcr->get_proxy_server_userpw().c_str());
+            curl_easy_setopt(d_curl, CURLOPT_PROXYUSERPWD, d_rcr->get_proxy_server_userpw().c_str());
     }
 
     // We have to set FailOnError to false for any of the non-Basic
