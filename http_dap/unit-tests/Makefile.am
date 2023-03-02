@@ -73,7 +73,8 @@ test_config.h: test_config.h.in Makefile
 #
 
 if CPPUNIT
-UNIT_TESTS = HTTPConnectTest HTTPThreadsConnectTest HTTPProcConnectTest HTTPCacheTest
+UNIT_TESTS = HTTPConnectTest HTTPThreadsConnectTest HTTPProcConnectTest HTTPCacheTest \
+    mp_lock_guard_test
 
 else
 UNIT_TESTS =
@@ -114,3 +115,7 @@ HTTPThreadsConnectTest_LDADD = $(AM_LDADD)
 HTTPProcConnectTest_SOURCES = HTTPProcConnectTest.cc $(TEST_SRC)
 HTTPProcConnectTest_CPPFLAGS = $(AM_CPPFLAGS)
 HTTPProcConnectTest_LDADD = $(AM_LDADD)
+
+mp_lock_guard_test_SOURCES = mp_lock_guard_test.cc
+mp_lock_guard_test_CPPFLAGS = $(AM_CPPFLAGS)
+mp_lock_guard_test_LDADD = $(AM_LDADD)
