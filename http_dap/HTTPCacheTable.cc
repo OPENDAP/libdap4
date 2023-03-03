@@ -30,6 +30,7 @@
 #include <cerrno>
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <iterator>
@@ -248,6 +249,7 @@ HTTPCacheTable::cache_index_parse_line(const char *line) {
     @exception Error Thrown if the index file cannot be opened for writing.
     @note The HTTPCache destructor calls this method and silently ignores
     this exception. */
+#if 0
 void
 HTTPCacheTable::cache_index_write() {
     DBG(cerr << "Cache Index. Writing index " << d_cache_index << ", PID: " << to_string(getpid()) << endl);
@@ -273,6 +275,29 @@ HTTPCacheTable::cache_index_write() {
 
     d_new_entries = 0;
 }
+#else
+void
+HTTPCacheTable::cache_index_write() {
+    DBG(cerr << "Cache Index. Writing index " << d_cache_index << ", PID: " << to_string(getpid()) << endl);
+
+    fstream fs(d_cache_index, ios::out|ios::trunc);
+    if (!fs)
+        throw Error(string("Cache Index. Can't open `") + d_cache_index + "' for writing");
+
+    // Walk through the list and write it out. The format is really simple as we keep it all in ASCII.
+    for (const auto &row: d_cache_table) {
+        for (auto &entry: row) {
+            if (entry) {
+                fs << entry->get_formatted_index_file_line();
+                if (!fs)
+                    throw InternalErr(__FILE__, __LINE__, "Cache Index. Error writing cache index");
+            }
+        }
+    }
+
+    d_new_entries = 0;
+}
+#endif
 
 //@} End of the cache index methods.
 /** Create the directory path for cache file. The cache uses a set of
