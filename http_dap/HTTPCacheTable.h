@@ -29,6 +29,7 @@
 #include <vector>
 #include <map>
 #include <mutex>
+#include <shared_mutex>
 
 #define NO_LM_EXPIRATION (24*3600) // 24 hours
 #define MAX_LM_EXPIRATION (48*3600) // Max expiration from LM
@@ -48,7 +49,7 @@ extern const std::string CACHE_EMPTY_ETAG;
 
 int get_hash(const std::string &url);
 
-/** A struct used to store information about responses in the
+/** A class used to store information about responses in the
  cache's volatile memory.
 
  About entry locking: An entry is locked using both a mutex and a
@@ -84,17 +85,18 @@ private:
     bool must_revalidate = false;
     bool no_cache = false; // This field is not saved in the index.
 
-    int readers = 0;
+    std::shared_timed_mutex d_lock; // Lock for this entry
+    std::atomic<int> readers{0};
+#if 0
+
     std::mutex d_readers_lock;
     std::mutex d_response_read_lock; // set if being read
     std::mutex d_response_write_lock; // set if being written
+#endif
 
     // Allow HTTPCacheTable methods access and the test class, too
     friend class HTTPCacheTable;
     friend class HTTPCacheTest;
-
-    // Allow access by the functors used in HTTPCacheTable
-    friend class WriteOneCacheEntry;
 
 public:
     CacheEntry() = default;
@@ -159,32 +161,21 @@ public:
     }
 
     void lock_read_response() {
-        // if the response_lock cannot be acquired, it might be a reader or a writer. If it is a writer, then
-        // we need to wait for the writer to finish. If it is a reader, then we don't care and increment the
-        // reader count.
-        if (d_response_read_lock.try_lock()) {
-            d_response_write_lock.lock();
-            d_response_write_lock.unlock();
-        }
-        std::lock_guard<std::mutex> lock(d_readers_lock);
-        readers++; // Record number of readers
+        d_lock.lock_shared();
+        readers++;
     }
 
     void unlock_read_response() {
-        std::lock_guard<std::mutex> lock(d_readers_lock);
+        d_lock.unlock_shared();
         readers--;
-        if (readers == 0) {
-            d_response_read_lock.unlock();
-        }
     }
 
     void lock_write_response() {
-        std::lock(d_response_read_lock, d_response_write_lock);
+        d_lock.lock();
     }
 
     void unlock_write_response() {
-        d_response_read_lock.unlock();
-        d_response_write_lock.unlock();
+        d_lock.unlock();
     }
 };  // CacheEntry
 
