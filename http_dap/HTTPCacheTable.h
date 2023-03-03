@@ -48,6 +48,149 @@ extern const std::string CACHE_EMPTY_ETAG;
 
 int get_hash(const std::string &url);
 
+/** A struct used to store information about responses in the
+ cache's volatile memory.
+
+ About entry locking: An entry is locked using both a mutex and a
+ counter. The counter keeps track of how many clients are accessing a
+ given entry while the mutex provides a guarantee that updates to the
+ counter are MT-safe. In addition, the HTTPCacheTable object maintains a
+ map which binds the FILE* returned to a client with a given entry.
+ This way the client can tell the HTTPCacheTable object that it is done
+ with <code>FILE *response</code> and the class can arrange to update
+ the lock counter and mutex. */
+class CacheEntry {
+private:
+    std::string url; // Location
+    int hash = -1;
+    int hits = 0; // Hit counts
+    std::string cachename;
+
+    std::string etag;
+    time_t lm = -1; // Last modified
+    time_t expires = -1;
+    time_t date = -1; // From the response header.
+    time_t age = -1;
+    time_t max_age = -1; // From Cache-Control
+
+    unsigned long size = 0; // Size of cached entity body
+    bool range = false; // Range is not currently supported. 10/02/02 jhrg
+
+    time_t freshness_lifetime = 0;
+    time_t response_time = 0;
+    time_t corrected_initial_age = 0;
+
+    bool must_revalidate = false;
+    bool no_cache = false; // This field is not saved in the index.
+
+    int readers = 0;
+    std::mutex d_readers_lock;
+    std::mutex d_response_read_lock; // set if being read
+    std::mutex d_response_write_lock; // set if being written
+
+    // Allow HTTPCacheTable methods access and the test class, too
+    friend class HTTPCacheTable;
+    friend class HTTPCacheTest;
+
+    // Allow access by the functors used in HTTPCacheTable
+    friend class WriteOneCacheEntry;
+
+public:
+    CacheEntry() = default;
+    explicit CacheEntry(std::string u) : url(std::move(u)) {
+        hash = get_hash(url);
+    }
+
+    std::string get_formatted_index_file_line() const {
+        return {url + " " + cachename + " " + (etag.empty() ? CACHE_EMPTY_ETAG : etag) + " "
+                + std::to_string(lm) + " " + std::to_string(expires) + " " + std::to_string(size) + " "
+                + (range ? '1' : '0') + " " + std::to_string(hash) + " " + std::to_string(hits) + " "
+                + std::to_string(freshness_lifetime) + " " + std::to_string(response_time) + " "
+                + std::to_string(corrected_initial_age) + " " + (must_revalidate ? '1' : '0') + "\r\n"};
+    }
+
+#if 1
+
+    std::string get_cachename() const {
+        return cachename;
+    }
+
+    std::string get_etag() const {
+        return etag;
+    }
+
+    time_t get_lm() const {
+        return lm;
+    }
+
+    time_t get_expires() const {
+        return expires;
+    }
+
+    time_t get_max_age() const {
+        return max_age;
+    }
+
+    void set_size(unsigned long sz) {
+        size = sz;
+    }
+
+    time_t get_freshness_lifetime() const {
+        return freshness_lifetime;
+    }
+
+    time_t get_response_time() const {
+        return response_time;
+    }
+
+    time_t get_corrected_initial_age() const {
+        return corrected_initial_age;
+    }
+
+    bool get_must_revalidate() const {
+        return must_revalidate;
+    }
+
+    void set_no_cache(bool state) {
+        no_cache = state;
+    }
+
+    bool is_no_cache() const {
+        return no_cache;
+    }
+
+#endif
+
+    void lock_read_response() {
+        // if the response_lock cannot be acquired, it might be a reader or a writer. If it is a writer, then
+        // we need to wait for the writer to finish. If it is a reader, then we don't care and increment the
+        // reader count.
+        if (d_response_read_lock.try_lock()) {
+            d_response_write_lock.lock();
+            d_response_write_lock.unlock();
+        }
+        std::lock_guard<std::mutex> lock(d_readers_lock);
+        readers++; // Record number of readers
+    }
+
+    void unlock_read_response() {
+        std::lock_guard<std::mutex> lock(d_readers_lock);
+        readers--;
+        if (readers == 0) {
+            d_response_read_lock.unlock();
+        }
+    }
+
+    void lock_write_response() {
+        std::lock(d_response_read_lock, d_response_write_lock);
+    }
+
+    void unlock_write_response() {
+        d_response_read_lock.unlock();
+        d_response_write_lock.unlock();
+    }
+};  // CacheEntry
+
 /** The table of entries in the client-side cache. This class maintains a table
  of CacheEntries, where one instance of CacheEntry is made for
  each item in the cache. When an item is accessed it is either
@@ -65,137 +208,6 @@ int get_hash(const std::string &url);
  redundant. */
 class HTTPCacheTable {
 public:
-    /** A struct used to store information about responses in the
-     cache's volatile memory.
-
-     About entry locking: An entry is locked using both a mutex and a
-     counter. The counter keeps track of how many clients are accessing a
-     given entry while the mutex provides a guarantee that updates to the
-     counter are MT-safe. In addition, the HTTPCacheTable object maintains a
-     map which binds the FILE* returned to a client with a given entry.
-     This way the client can tell the HTTPCacheTable object that it is done
-     with <code>FILE *response</code> and the class can arrange to update
-     the lock counter and mutex. */
-    struct CacheEntry {
-    private:
-        std::string url; // Location
-        int hash = -1;
-        int hits = 0; // Hit counts
-        std::string cachename;
-
-        std::string etag;
-        time_t lm = -1; // Last modified
-        time_t expires = -1;
-        time_t date = -1; // From the response header.
-        time_t age = -1;
-        time_t max_age = -1; // From Cache-Control
-
-        unsigned long size = 0; // Size of cached entity body
-        bool range = false; // Range is not currently supported. 10/02/02 jhrg
-
-        time_t freshness_lifetime = 0;
-        time_t response_time = 0;
-        time_t corrected_initial_age = 0;
-
-        bool must_revalidate = false;
-        bool no_cache = false; // This field is not saved in the index.
-
-        int readers = 0;
-        std::mutex d_readers_lock;
-        std::mutex d_response_read_lock; // set if being read
-        std::mutex d_response_write_lock; // set if being written
-
-        // Allow HTTPCacheTable methods access and the test class, too
-        friend class HTTPCacheTable;
-        friend class HTTPCacheTest;
-
-        // Allow access by the functors used in HTTPCacheTable
-        friend class WriteOneCacheEntry;
-
-    public:
-        std::string get_cachename() const {
-            return cachename;
-        }
-
-        std::string get_etag() const {
-            return etag;
-        }
-
-        time_t get_lm() const {
-            return lm;
-        }
-
-        time_t get_expires() const {
-            return expires;
-        }
-
-        time_t get_max_age() const {
-            return max_age;
-        }
-
-        void set_size(unsigned long sz) {
-            size = sz;
-        }
-
-        time_t get_freshness_lifetime() const {
-            return freshness_lifetime;
-        }
-
-        time_t get_response_time() const {
-            return response_time;
-        }
-
-        time_t get_corrected_initial_age() const {
-            return corrected_initial_age;
-        }
-
-        bool get_must_revalidate() const {
-            return must_revalidate;
-        }
-
-        void set_no_cache(bool state) {
-            no_cache = state;
-        }
-
-        bool is_no_cache() const {
-            return no_cache;
-        }
-
-        void lock_read_response() {
-            // if the response_lock cannot be acquired, it might be a reader or a writer. If it is a writer, then
-            // we need to wait for the writer to finish. If it is a reader, then we don't care and increment the
-            // reader count.
-            if (d_response_read_lock.try_lock()) {
-                d_response_write_lock.lock();
-                d_response_write_lock.unlock();
-            }
-            std::lock_guard<std::mutex> lock(d_readers_lock);
-            readers++; // Record number of readers
-        }
-
-        void unlock_read_response() {
-            std::lock_guard<std::mutex> lock(d_readers_lock);
-            readers--;
-            if (readers == 0) {
-                d_response_read_lock.unlock();
-            }
-        }
-
-        void lock_write_response() {
-            std::lock(d_response_read_lock, d_response_write_lock);
-        }
-
-        void unlock_write_response() {
-            d_response_read_lock.unlock();
-            d_response_write_lock.unlock();
-        }
-
-        CacheEntry() = default;
-
-        explicit CacheEntry(std::string u) : url(std::move(u)) {
-            hash = get_hash(url);
-        }
-    };  // CacheEntry
 
     // Typedefs for CacheTable. A CacheTable is a vector of vectors of
     // CacheEntries. The outer vector is accessed using the hash value.
@@ -220,14 +232,14 @@ private:
     std::string d_cache_index;
     int d_new_entries = 0;
 
-    std::map<FILE *, HTTPCacheTable::CacheEntry *> d_locked_entries;
+    std::map<FILE *, CacheEntry *> d_locked_entries;
 
     CacheEntry *get_read_locked_entry_from_cache_table(int hash, const std::string &url);
     bool cache_index_delete();
     bool cache_index_read();
     CacheEntry *cache_index_parse_line(const char *line);
     std::string create_hash_directory(int hash);
-    void remove_cache_entry(const HTTPCacheTable::CacheEntry *entry);
+    void remove_cache_entry(const CacheEntry *entry);
 
 public:
     HTTPCacheTable(const std::string &cache_root, int block_size);
@@ -284,8 +296,8 @@ public:
     CacheEntry *get_read_locked_entry_from_cache_table(const std::string &url);
     CacheEntry *get_write_locked_entry_from_cache_table(const std::string &url);
 
-    void calculate_time(HTTPCacheTable::CacheEntry *entry, int default_expiration, time_t request_time);
-    void parse_headers(HTTPCacheTable::CacheEntry *entry, unsigned long max_entry_size, const std::vector<std::string> &headers);
+    void calculate_time(CacheEntry *entry, int default_expiration, time_t request_time);
+    void parse_headers(CacheEntry *entry, unsigned long max_entry_size, const std::vector<std::string> &headers);
 
     // These should move back to HTTPCache
     void bind_entry_to_data(CacheEntry *entry, FILE *body);

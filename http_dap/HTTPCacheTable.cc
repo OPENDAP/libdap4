@@ -23,6 +23,7 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+//#define DODS_DEBUG
 #include "config.h"
 
 #include <cstring>
@@ -36,6 +37,7 @@
 
 #include <unistd.h>   // for stat
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include "Error.h"
 #include "InternalErr.h"
@@ -159,6 +161,7 @@ void HTTPCacheTable::delete_by_size(unsigned long size) {
 
 bool
 HTTPCacheTable::cache_index_delete() {
+    DBG(cerr << "Cache Index. Delete index " << d_cache_index << ", PID: " << to_string(getpid()) << endl);
     d_new_entries = 0;
 
     return (remove(d_cache_index.c_str()) == 0);
@@ -174,6 +177,7 @@ HTTPCacheTable::cache_index_delete() {
 
 bool
 HTTPCacheTable::cache_index_read() {
+    DBG(cerr << "Cache Index. Reading index " << d_cache_index << ", PID: " << to_string(getpid()) << endl);
     FILE *fp = fopen(d_cache_index.c_str(), "r");
     // If the cache index can't be opened that's OK; start with an empty
     // cache. 09/05/02 jhrg
@@ -204,10 +208,10 @@ HTTPCacheTable::cache_index_read() {
     @param line A single line from the \c .index file.
     @return A new CacheEntry* initialized with the information from \c line. */
 
-HTTPCacheTable::CacheEntry *
+CacheEntry *
 HTTPCacheTable::cache_index_parse_line(const char *line) {
     // Read the line and create the cache object
-    auto entry = new HTTPCacheTable::CacheEntry;
+    auto entry = new CacheEntry;
     istringstream iss(line);
     iss >> entry->url;
     iss >> entry->cachename;
@@ -232,33 +236,52 @@ HTTPCacheTable::cache_index_parse_line(const char *line) {
     return entry;
 }
 
-/** Functor which writes a single CacheEntry to the \c .index file. */
+#if 0
 
-class WriteOneCacheEntry : public unary_function<HTTPCacheTable::CacheEntry *, void> {
+/** Functor which writes a single CacheEntry to the \c .index file. */
+class WriteOneCacheEntry : public unary_function<CacheEntry *, void> {
     FILE *d_fp;
 
 public:
     explicit WriteOneCacheEntry(FILE *fp) : d_fp(fp) {}
 
-    void operator()(const HTTPCacheTable::CacheEntry *e) {
+    void operator()(const CacheEntry *e) {
         if (e && (fprintf(d_fp,
-                         "%s %s %s %ld %ld %ld %c %d %d %ld %ld %ld %c\r\n",
-                         e->url.c_str(),
-                         e->cachename.c_str(),
-                         e->etag.empty() ? CACHE_EMPTY_ETAG.c_str() : e->etag.c_str(),
-                         (e->lm),
-                         (e->expires),
-                         e->size,
-                         e->range ? '1' : '0', // not used. 10/02/02 jhrg
-                         e->hash,
-                         e->hits,
-                         e->freshness_lifetime,
-                         e->response_time,
-                         e->corrected_initial_age,
-                         e->must_revalidate ? '1' : '0') < 0))
+                          "%s %s %s %ld %ld %ld %c %d %d %ld %ld %ld %c\r\n",
+                          e->url.c_str(),
+                          e->cachename.c_str(),
+                          e->etag.empty() ? CACHE_EMPTY_ETAG.c_str() : e->etag.c_str(),
+                          (e->lm),
+                          (e->expires),
+                          e->size,
+                          e->range ? '1' : '0', // not used. 10/02/02 jhrg
+                          e->hash,
+                          e->hits,
+                          e->freshness_lifetime,
+                          e->response_time,
+                          e->corrected_initial_age,
+                          e->must_revalidate ? '1' : '0') < 0))
             throw Error(internal_error, "Cache Index. Error writing cache index\n");
     }
 };
+
+/** Functor which writes a single CacheEntry to the \c .index file. */
+class WriteOneCacheEntry2 : public unary_function<CacheEntry *, void> {
+    int d_fd;
+
+public:
+    explicit WriteOneCacheEntry2(int fd) : d_fd(fd) {}
+
+    void operator()(const CacheEntry *e) {
+        if (!e)
+            throw InternalErr(__FILE__, __LINE__, "Cache Index. Error writing cache index");
+        string line = e->get_formatted_index_file_line();
+        if (write(d_fd, line.c_str(), line.length()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Cache Index. Error writing cache index");
+    }
+};
+
+#endif
 
 /** Walk through the list of cached objects and write the cache index file to
     disk. If the file does not exist, it is created. If the file does exist,
@@ -271,8 +294,9 @@ public:
     this exception. */
 void
 HTTPCacheTable::cache_index_write() {
-    DBG(cerr << "Cache Index. Writing index " << d_cache_index << endl);
+    DBG(cerr << "Cache Index. Writing index " << d_cache_index << ", PID: " << to_string(getpid()) << endl);
 
+#if 0
     // Open the file for writing.
     FILE *fp = nullptr;
     if ((fp = fopen(d_cache_index.c_str(), "wb")) == nullptr) {
@@ -295,6 +319,26 @@ HTTPCacheTable::cache_index_write() {
     if (res) {
         DBG(cerr << "HTTPCache::cache_index_write - Failed to close " << (void *) fp << endl);
     }
+#endif
+
+    // Open the file for writing.
+    int fd = open(d_cache_index.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    if (fd < 0) {
+        throw Error(string("Cache Index. Can't open `") + d_cache_index + "' for writing");
+    }
+
+    // Walk through the list and write it out. The format is really simple as we keep it all in ASCII.
+    for (const auto &row: d_cache_table) {
+        for (auto &entry: row) {
+            if (entry) {
+                string line = entry->get_formatted_index_file_line();
+                if (write(fd, line.c_str(), line.length()) < 0)
+                    throw InternalErr(__FILE__, __LINE__, "Cache Index. Error writing cache index");
+            }
+        }
+    }
+
+    close(fd);
 
     d_new_entries = 0;
 }
@@ -350,7 +394,7 @@ HTTPCacheTable::create_hash_directory(int hash) {
     @exception Error If the file for the response's body cannot be created. */
 
 void
-HTTPCacheTable::create_location(HTTPCacheTable::CacheEntry *entry) {
+HTTPCacheTable::create_location(CacheEntry *entry) {
     string hash_dir = create_hash_directory(entry->hash);
     hash_dir += "/dodsXXXXXX"; // mkstemp uses six characters.
 
@@ -415,7 +459,7 @@ HTTPCacheTable::add_entry_to_cache_table(CacheEntry *entry) {
 /** Get a pointer to a CacheEntry from the cache table.
 
     @param url Look for this URL. */
-HTTPCacheTable::CacheEntry *
+CacheEntry *
 HTTPCacheTable::get_read_locked_entry_from_cache_table(const string &url) /*const*/
 {
     return get_read_locked_entry_from_cache_table(get_hash(url), url);
@@ -430,11 +474,11 @@ HTTPCacheTable::get_read_locked_entry_from_cache_table(const string &url) /*cons
     @param hash The hash code for \c url.
     @param url Look for this URL.
     @return The matching CacheEntry instance or NULL if none was found. */
-HTTPCacheTable::CacheEntry *
+CacheEntry *
 HTTPCacheTable::get_read_locked_entry_from_cache_table(int hash, const string &url) /*const*/
 {
     DBG(cerr << "url: " << url << "; hash: " << hash << endl);
-    DBG(cerr << "d_cache_table: " << hex << d_cache_table << dec << endl);
+    DBG(cerr << "d_cache_table: " << d_cache_table.size() << endl);
     if (!d_cache_table[hash].empty()) {
         for (auto entry: d_cache_table[hash]) {
             // Must test entry because perform_garbage_collection may have
@@ -457,7 +501,7 @@ HTTPCacheTable::get_read_locked_entry_from_cache_table(int hash, const string &u
 
     @param url Look for this URL.
     @return The matching CacheEntry instance or NULL if none was found. */
-HTTPCacheTable::CacheEntry *
+CacheEntry *
 HTTPCacheTable::get_write_locked_entry_from_cache_table(const string &url) {
     int hash = get_hash(url);
     if (!d_cache_table[hash].empty()) {
@@ -480,7 +524,7 @@ HTTPCacheTable::get_write_locked_entry_from_cache_table(const string &url) {
     @param entry The CacheEntry to delete.
     @exception InternalErr Thrown if \c entry is in use. */
 void
-HTTPCacheTable::remove_cache_entry(const HTTPCacheTable::CacheEntry *entry) {
+HTTPCacheTable::remove_cache_entry(const CacheEntry *entry) {
     // This should never happen; all calls to this method are protected by
     // the caller, hence the InternalErr.
     if (entry->readers)
@@ -550,7 +594,7 @@ void HTTPCacheTable::delete_all_entries() {
     passed into the method that calls this method... */
 
 void
-HTTPCacheTable::calculate_time(HTTPCacheTable::CacheEntry *entry, int default_expiration, time_t request_time) {
+HTTPCacheTable::calculate_time(CacheEntry *entry, int default_expiration, time_t request_time) {
     entry->response_time = time(nullptr);
     time_t apparent_age = max(0, static_cast<int>(entry->response_time - entry->date));
     time_t corrected_received_age = max(apparent_age, entry->age);
@@ -592,7 +636,7 @@ HTTPCacheTable::calculate_time(HTTPCacheTable::CacheEntry *entry, int default_ex
     @param max_entry_size DO not cache entries larger than this.
     @param headers A vector of header lines. */
 
-void HTTPCacheTable::parse_headers(HTTPCacheTable::CacheEntry *entry, unsigned long max_entry_size,
+void HTTPCacheTable::parse_headers(CacheEntry *entry, unsigned long max_entry_size,
                                    const vector<string> &headers) {
     for (const auto &line: headers) {
         // skip a blank header.
@@ -650,13 +694,13 @@ void HTTPCacheTable::parse_headers(HTTPCacheTable::CacheEntry *entry, unsigned l
 
 //@} End of the CacheEntry methods.
 
-void HTTPCacheTable::bind_entry_to_data(HTTPCacheTable::CacheEntry *entry, FILE *body) {
+void HTTPCacheTable::bind_entry_to_data(CacheEntry *entry, FILE *body) {
     entry->hits++;  // Mark hit
     d_locked_entries[body] = entry; // record lock, see release_cached_r...
 }
 
 void HTTPCacheTable::uncouple_entry_from_data(FILE *body) {
-    HTTPCacheTable::CacheEntry *entry = d_locked_entries[body];
+    CacheEntry *entry = d_locked_entries[body];
     if (!entry)
         throw InternalErr("There is no cache entry for the response given.");
 

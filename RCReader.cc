@@ -145,7 +145,7 @@ bool RCReader::read_rc_file(const string &pathname)
 
     ifstream fpi(pathname.c_str());
     if (fpi) {
-        // The file exists and we may now begin to parse it.
+        // The file exists, we may now begin to parse it.
         // Defaults are already stored in the variables, if the correct
         // tokens are found in the file then those defaults will be
         // overwritten.

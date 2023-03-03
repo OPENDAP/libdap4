@@ -191,11 +191,20 @@ HTTPCache::HTTPCache(const string &cache_root)
 
 HTTPCache::~HTTPCache()
 {
+    mp_lock_guard mp_lock(d_cache_lock_fd, mp_lock_guard::operation::write);
+
     try {
+        d_http_cache_table->cache_index_read();
+
         if (startGC())
             perform_garbage_collection();
 
         d_http_cache_table->cache_index_write();
+
+        // release the lock before closing the file descriptor since closing the file
+        // will invalidate the descriptor.
+        mp_lock.release();
+        close(d_cache_lock_fd);
     }
     catch (const Error &e) {
         // If the cache index cannot be written, we've got problems. However,
@@ -205,8 +214,6 @@ HTTPCache::~HTTPCache()
         // Write a log message here. 2/18/23 jhrg
         DBG(cerr << e.get_error_message() << endl);
     }
-
-    close(d_cache_lock_fd);
 }
 
 
@@ -676,6 +683,7 @@ void
 HTTPCache::set_max_size(unsigned long size)
 {
     lock_guard<mutex> lock{d_cache_mutex};
+    mp_lock_guard write_lock{d_cache_lock_fd, mp_lock_guard::operation::write};
 
     unsigned long new_size = size < MIN_CACHE_TOTAL_SIZE ?
                              MIN_CACHE_TOTAL_SIZE * MEGA : size * MEGA;
@@ -685,6 +693,7 @@ HTTPCache::set_max_size(unsigned long size)
     d_gc_buffer = d_total_size / CACHE_GC_PCT;
 
     if (new_size < old_size && startGC()) {
+        d_http_cache_table->cache_index_read();
         perform_garbage_collection();
         d_http_cache_table->cache_index_write();
     }
@@ -710,12 +719,14 @@ void
 HTTPCache::set_max_entry_size(unsigned long size)
 {
     lock_guard<mutex> lock{d_cache_mutex};
+    mp_lock_guard write_lock{d_cache_lock_fd, mp_lock_guard::operation::write};
 
     unsigned long new_size = size * MEGA;
     if (new_size > 0 && new_size < d_total_size - d_folder_size) {
         unsigned long old_size = d_max_entry_size;
         d_max_entry_size = new_size;
         if (new_size < old_size && startGC()) {
+            d_http_cache_table->cache_index_read();
             perform_garbage_collection();
             d_http_cache_table->cache_index_write();
         }
@@ -856,7 +867,7 @@ HTTPCache::is_url_in_cache(const string &url)
 {
     lock_guard<mutex> lock{d_cache_mutex};
 
-    HTTPCacheTable::CacheEntry *entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
+    CacheEntry *entry = d_http_cache_table->get_read_locked_entry_from_cache_table(url);
 
     if (entry) {
         entry->unlock_read_response();
@@ -1078,10 +1089,9 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
     }
 
     lock_guard<mutex> lock{d_cache_mutex};
-    mp_lock_guard write_lock{d_cache_lock_fd,
-                             mp_lock_guard::operation::write}; // Blocks until the write lock is acquired.
+    mp_lock_guard write_lock{d_cache_lock_fd, mp_lock_guard::operation::write};
 
-    // TODO: See below todo. jhrg 2/27/23
+    // TODO: Is there a way to only read this when the index file is different? jhrg 2/27/23
 #if 1
     d_http_cache_table->cache_index_read();
 #endif
@@ -1089,13 +1099,13 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
     // more efficient to do this than to first check and see if the entry
     // exists. 10/10/02 jhrg
     d_http_cache_table->remove_entry_from_cache_table(url);
-    auto *entry = new HTTPCacheTable::CacheEntry(url);
+    auto *entry = new CacheEntry(url);
     entry->lock_write_response();
 
     try {
         d_http_cache_table->parse_headers(entry, d_max_entry_size, headers); // etag, lm, date, age, expires, max_age.
         if (entry->is_no_cache()) {
-            DBG(cerr << "Not cache-able; deleting HTTPCacheTable::CacheEntry: " << entry
+            DBG(cerr << "Not cache-able; deleting CacheEntry: " << entry
                      << "(" << url << ")" << endl);
             entry->unlock_write_response();
             delete entry;
@@ -1149,7 +1159,7 @@ HTTPCache::cache_response(const string &url, time_t request_time, const vector<s
 
     This method locks the cache interface and the cache entry.
 
-    @param url Get the HTTPCacheTable::CacheEntry for this URL.
+    @param url Get the CacheEntry for this URL.
     @return A vector of strings, one request header per string.
     @exception Error Thrown if the \e url is not in the cache. */
 
@@ -1157,7 +1167,7 @@ vector<string>
 HTTPCache::get_conditional_request_headers(const string &url)
 {
 
-    HTTPCacheTable::CacheEntry *entry = nullptr;
+    CacheEntry *entry = nullptr;
     vector<string> headers;
 
     lock_guard<mutex> lock{d_cache_mutex};
@@ -1221,14 +1231,13 @@ struct HeaderLess : binary_function<const string &, const string &, bool> {
 void
 HTTPCache::update_response(const string &url, time_t request_time, const vector<string> &headers)
 {
-    HTTPCacheTable::CacheEntry *entry = nullptr;
+    CacheEntry *entry = nullptr;
 
     try {
         lock_guard<mutex> lock{d_cache_mutex};
-        mp_lock_guard write_lock{d_cache_lock_fd,
-                                 mp_lock_guard::operation::write}; // Blocks until the lock is acquired.
+        mp_lock_guard write_lock{d_cache_lock_fd, mp_lock_guard::operation::write};
 
-        // TODO: See below todo. jhrg 2/27/23
+        // TODO: Is there a way to only read this when the index file is different? jhrg 2/27/23
 #if 1
         d_http_cache_table->cache_index_read();
 #endif
@@ -1237,7 +1246,7 @@ HTTPCache::update_response(const string &url, time_t request_time, const vector<
         if (!entry)
             throw Error(internal_error, "There is no cache entry for the URL: " + url);
 
-        // Merge the new headers with the exiting HTTPCacheTable::CacheEntry object.
+        // Merge the new headers with the exiting CacheEntry object.
         d_http_cache_table->parse_headers(entry, d_max_entry_size, headers);
 
         // Update corrected_initial_age, freshness_lifetime, response_time.
@@ -1295,7 +1304,7 @@ HTTPCache::is_url_valid(const string &url)
 {
 
     bool freshness;
-    HTTPCacheTable::CacheEntry *entry = nullptr;
+    CacheEntry *entry = nullptr;
 
     try {
         if (d_always_validate) {
@@ -1379,7 +1388,7 @@ HTTPCache::is_url_valid(const string &url)
 FILE *HTTPCache::get_cached_response(const string &url, vector<string> &headers, string &cacheName)
 {
     FILE *body = nullptr;
-    HTTPCacheTable::CacheEntry *entry = nullptr;
+    CacheEntry *entry = nullptr;
 
     try {
         lock_guard<mutex> lock{d_cache_mutex};

@@ -52,10 +52,10 @@ public:
     mp_lock_guard_logger_default() = default;
     ~mp_lock_guard_logger_default() override = default;
 
-    void log(const std::string &msg) const override { std::cerr << msg << ": " << get_errno() << std::endl; }
+    void log(const std::string &msg) const override { std::cerr << "~mp_lock_guard: " << msg << std::endl; }
 
     void error(const std::string &msg) const override {
-        throw std::runtime_error("mp_lock_guard: " + msg + ": " + get_errno());
+        throw std::runtime_error("mp_lock_guard: " + msg);
     }
 };
 

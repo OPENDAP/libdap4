@@ -89,7 +89,7 @@ public:
     void setUp() override {
         // Here we use reset because std::make_unique<>() cannot access the private constructor. jhrg 2/15/23
         hc_p.reset(new HTTPCache("cache-testsuite/http_cache_test/"));
-        // There are some other cache directories that are cleaned in the specific tesets
+        // There are some other cache directories that are cleaned in the specific tests
         // that use them.
         system("rm -rf cache-testsuite/http_cache_test");
         system("cp -r ./cache-testsuite/dods_cache_init cache-testsuite/http_cache_test");
@@ -152,7 +152,7 @@ public:
 
     void cache_index_parse_line_test()
     {
-        unique_ptr<HTTPCacheTable::CacheEntry> e(hc_p->d_http_cache_table->cache_index_parse_line(index_file_line.c_str()));
+        unique_ptr<CacheEntry> e(hc_p->d_http_cache_table->cache_index_parse_line(index_file_line.c_str()));
 
         CPPUNIT_ASSERT(e->url == not_modified_304);
         CPPUNIT_ASSERT(e->cachename == "cache-testsuite/dods_cache/656/dodsKbcD0h");
@@ -165,7 +165,7 @@ public:
     // This will also test the add_entry_to_cache_table() method.
     void get_entry_from_cache_table_test()
     {
-        unique_ptr<HTTPCacheTable::CacheEntry> e(hc_p->d_http_cache_table->cache_index_parse_line(index_file_line.c_str()));
+        unique_ptr<CacheEntry> e(hc_p->d_http_cache_table->cache_index_parse_line(index_file_line.c_str()));
         // Test adding an entry and getting it back.
         hc_p->d_http_cache_table->add_entry_to_cache_table(e.release());
 
@@ -177,16 +177,15 @@ public:
         // Now test what happens when two entries collide.
         auto e3 = hc_p->d_http_cache_table->cache_index_parse_line(index_file_line.c_str());
 
-        // Change the url so we can tell the difference (the hash is the same)
+        // Change the url, so we can tell the difference (the hash is the same)
         e3->url = "http://new.url.same.hash/test/collisions.gif";
 
         hc_p->d_http_cache_table->add_entry_to_cache_table(e3);
 
         // Use the version of get_entry... that lets us pass in the hash
         // value (as opposed to the normal version which calculates the hash
-        // from the url. 10/01/02 jhrg
-        HTTPCacheTable::CacheEntry *g = hc_p->d_http_cache_table->get_read_locked_entry_from_cache_table(hash_value,
-                                                                                                         e3->url);
+        // from the url). 10/01/02 jhrg
+        CacheEntry *g = hc_p->d_http_cache_table->get_read_locked_entry_from_cache_table(hash_value, e3->url);
         CPPUNIT_ASSERT(g);
         CPPUNIT_ASSERT(g->url == e3->url);
         g->unlock_read_response();
@@ -200,7 +199,7 @@ public:
         try {
             unique_ptr<HTTPCache> hc_3(new HTTPCache("cache-testsuite/http_cache_test/"));
             hc_3->d_http_cache_table->add_entry_to_cache_table(
-                hc_p->d_http_cache_table->cache_index_parse_line(index_file_line.c_str()));
+                hc_3->d_http_cache_table->cache_index_parse_line(index_file_line.c_str()));
 
             hc_3->d_http_cache_table->d_cache_index = hc_p->d_cache_root + "test_index";
             hc_3->d_http_cache_table->cache_index_write();
@@ -264,7 +263,7 @@ public:
     {
         hc_p->set_cache_root("/tmp/dods_test_cache");
         hc_p->create_cache_root(hc_p->get_cache_root());
-        auto e = make_unique<HTTPCacheTable::CacheEntry>();
+        auto e = make_unique<CacheEntry>();
         e->url = not_modified_304;
         e->hash = hash_value;
         try {
@@ -280,14 +279,14 @@ public:
 
     void parse_headers_test()
     {
-        auto e = make_unique<HTTPCacheTable::CacheEntry>();
+        auto e = make_unique<CacheEntry>();
         hc_p->d_http_cache_table->parse_headers(e.get(), hc_p->d_max_entry_size, h);
         CPPUNIT_ASSERT(e->lm == 784025377);
     }
 
     void calculate_time_test()
     {
-        auto e = make_unique<HTTPCacheTable::CacheEntry>();
+        auto e = make_unique<CacheEntry>();
 
         hc_p->d_http_cache_table->parse_headers(e.get(), hc_p->d_max_entry_size, h);
         hc_p->d_http_cache_table->calculate_time(e.get(), hc_p->d_default_expiration, time(nullptr));
@@ -299,7 +298,7 @@ public:
     {
         hc_p->set_cache_root("/tmp/dods_test_cache");
         hc_p->create_cache_root(hc_p->get_cache_root());
-        auto e = make_unique<HTTPCacheTable::CacheEntry>();
+        auto e = make_unique<CacheEntry>();
         try {
             e->hash = 101;
             hc_p->d_http_cache_table->create_location(e.get());
@@ -445,8 +444,8 @@ public:
 
             CPPUNIT_ASSERT(pc->is_url_in_cache(expired));
 
-            HTTPCacheTable::CacheEntry *e1 = pc->d_http_cache_table->get_read_locked_entry_from_cache_table(expired);
-            HTTPCacheTable::CacheEntry *e2 = pc->d_http_cache_table->get_read_locked_entry_from_cache_table(
+            CacheEntry *e1 = pc->d_http_cache_table->get_read_locked_entry_from_cache_table(expired);
+            CacheEntry *e2 = pc->d_http_cache_table->get_read_locked_entry_from_cache_table(
                     not_modified_304);
             string e1_file = e1->cachename;
             string e2_file = e2->cachename;
@@ -498,8 +497,8 @@ public:
             }
             CPPUNIT_ASSERT(c->is_url_in_cache(expired));
 
-            HTTPCacheTable::CacheEntry *e1 = c->d_http_cache_table->get_read_locked_entry_from_cache_table(expired);
-            HTTPCacheTable::CacheEntry *e2 = c->d_http_cache_table->get_read_locked_entry_from_cache_table(
+            CacheEntry *e1 = c->d_http_cache_table->get_read_locked_entry_from_cache_table(expired);
+            CacheEntry *e2 = c->d_http_cache_table->get_read_locked_entry_from_cache_table(
                     not_modified_304);
             string e1_file = e1->cachename;
             string e2_file = e2->cachename;

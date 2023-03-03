@@ -150,6 +150,7 @@ public:
             for (int i = 0; i < num_processes; i++) {
                 pid[i] = fork();
                 if (pid[i] == 0) {
+                    setenv("DODS_CONF", "cache-testsuite/dodsrc_mp_caching", 1);
                     auto hc_mp = std::make_unique<HTTPConnect>(RCReader::instance());
                     if (debug) hc_mp->set_verbose_runtime(true);
                     bool result = fetch_url_test(hc_mp.get(), netcdf_das_url, 927);
@@ -190,7 +191,7 @@ public:
             // Create child processes to concurrently access the cache. The first access will cache the data.
             // Subsequent accesses will need to have a freshly made HTTPCacheTable object by reading the cache
             // index before looking for the response in the cache
-            const int num_processes = 1;
+            const int num_processes = 4;
             pid_t pid[num_processes];
             int status;
             int num_cached = 0;
@@ -198,6 +199,7 @@ public:
             for (int i = 0; i < num_processes; i++) {
                 pid[i] = fork();
                 if (pid[i] == 0) {
+                    setenv("DODS_CONF", "cache-testsuite/dodsrc_mp_caching", 1);
                     auto hc_mp = std::make_unique<HTTPConnect>(RCReader::instance());
                     if (debug) hc_mp->set_verbose_runtime(true);
                     bool result = fetch_url_test(hc_mp.get(), netcdf_das_url, 927);
@@ -240,8 +242,11 @@ public:
             for (int i = 0; i < num_processes; i++) {
                 pid[i] = fork();
                 if (pid[i] == 0) {
+                    setenv("DODS_CONF", "cache-testsuite/dodsrc_mp_caching", 1);
+#if 1
                     if (i != 0)
                         sleep(3);   // Wait for the first process to cache the response
+#endif
                     auto hc_mp = std::make_unique<HTTPConnect>(RCReader::instance());
                     if (debug) hc_mp->set_verbose_runtime(true);
                     bool result = fetch_url_test(hc_mp.get(), netcdf_das_url, 927);

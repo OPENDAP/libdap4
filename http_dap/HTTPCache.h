@@ -141,8 +141,11 @@ private:
 
     std::unique_ptr<HTTPCacheTable> d_http_cache_table;
 
+#if 1
+    // The signal handler was removed but this is still used in the code. jhrg 03/02/23
     // d_open_files is used by the interrupt handler to clean up
     std::vector<std::string> d_open_files;
+#endif
 
     void set_cache_root(const std::string &root = "");
 
@@ -189,6 +192,10 @@ private:
     friend class HTTPProcConnectTest;
 
 public:
+    HTTPCache() = delete;
+    HTTPCache(const HTTPCache &) = delete;
+    HTTPCache &operator=(const HTTPCache &) = delete;
+
     static HTTPCache *instance(const std::string &cache_root);
 
     /**
@@ -197,11 +204,6 @@ public:
      */
     static HTTPCache *instance() { return d_instance.get(); }
 
-    HTTPCache() = delete;
-
-    HTTPCache(const HTTPCache &) = delete;
-
-    HTTPCache &operator=(const HTTPCache &) = delete;
 
     virtual ~HTTPCache();
 
