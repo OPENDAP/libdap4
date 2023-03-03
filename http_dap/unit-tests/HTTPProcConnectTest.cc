@@ -223,10 +223,9 @@ public:
                 pid[i] = fork();
                 if (pid[i] == 0) {
                     setenv("DODS_CONF", "cache-testsuite/dodsrc_mp_caching", 1);
-#if 0
+                    // HACK: The first process will cache the response. The others will read from the cache.
                     if (i != 0)
                         sleep(1);   // Wait for the first process to cache the response
-#endif
                     auto hc_mp = std::make_unique<HTTPConnect>(RCReader::instance());
                     if (debug) hc_mp->set_verbose_runtime(true);
                     bool result = fetch_url_test(hc_mp.get(), netcdf_das_url, 927);
