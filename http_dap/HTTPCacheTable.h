@@ -73,6 +73,7 @@ private:
     time_t age = -1;
     time_t max_age = -1; // From Cache-Control
 
+    // TODO Make this 64-bits. jhrg 3/2/23
     unsigned long size = 0; // Size of cached entity body
     bool range = false; // Range is not currently supported. 10/02/02 jhrg
 
@@ -108,8 +109,6 @@ public:
                 + std::to_string(freshness_lifetime) + " " + std::to_string(response_time) + " "
                 + std::to_string(corrected_initial_age) + " " + (must_revalidate ? '1' : '0') + "\r\n"};
     }
-
-#if 1
 
     std::string get_cachename() const {
         return cachename;
@@ -158,8 +157,6 @@ public:
     bool is_no_cache() const {
         return no_cache;
     }
-
-#endif
 
     void lock_read_response() {
         // if the response_lock cannot be acquired, it might be a reader or a writer. If it is a writer, then

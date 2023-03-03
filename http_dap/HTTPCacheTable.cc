@@ -187,6 +187,9 @@ HTTPCacheTable::cache_index_read() {
 
     char line[1024];
     while (!feof(fp) && fgets(line, 1024, fp)) {
+        // TODO here, in the cache_index_parse_line() method, and in the
+        //  add_entry_to_cache_table() method, we can optimize the code
+        //  so that duplicate entries are not added, etc. jhrg 3/2/23
         add_entry_to_cache_table(cache_index_parse_line(line));
         DBG2(cerr << line << endl);
     }
@@ -236,53 +239,6 @@ HTTPCacheTable::cache_index_parse_line(const char *line) {
     return entry;
 }
 
-#if 0
-
-/** Functor which writes a single CacheEntry to the \c .index file. */
-class WriteOneCacheEntry : public unary_function<CacheEntry *, void> {
-    FILE *d_fp;
-
-public:
-    explicit WriteOneCacheEntry(FILE *fp) : d_fp(fp) {}
-
-    void operator()(const CacheEntry *e) {
-        if (e && (fprintf(d_fp,
-                          "%s %s %s %ld %ld %ld %c %d %d %ld %ld %ld %c\r\n",
-                          e->url.c_str(),
-                          e->cachename.c_str(),
-                          e->etag.empty() ? CACHE_EMPTY_ETAG.c_str() : e->etag.c_str(),
-                          (e->lm),
-                          (e->expires),
-                          e->size,
-                          e->range ? '1' : '0', // not used. 10/02/02 jhrg
-                          e->hash,
-                          e->hits,
-                          e->freshness_lifetime,
-                          e->response_time,
-                          e->corrected_initial_age,
-                          e->must_revalidate ? '1' : '0') < 0))
-            throw Error(internal_error, "Cache Index. Error writing cache index\n");
-    }
-};
-
-/** Functor which writes a single CacheEntry to the \c .index file. */
-class WriteOneCacheEntry2 : public unary_function<CacheEntry *, void> {
-    int d_fd;
-
-public:
-    explicit WriteOneCacheEntry2(int fd) : d_fd(fd) {}
-
-    void operator()(const CacheEntry *e) {
-        if (!e)
-            throw InternalErr(__FILE__, __LINE__, "Cache Index. Error writing cache index");
-        string line = e->get_formatted_index_file_line();
-        if (write(d_fd, line.c_str(), line.length()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Cache Index. Error writing cache index");
-    }
-};
-
-#endif
-
 /** Walk through the list of cached objects and write the cache index file to
     disk. If the file does not exist, it is created. If the file does exist,
     it is overwritten. As a side effect, zero the new_entries counter.
@@ -295,31 +251,6 @@ public:
 void
 HTTPCacheTable::cache_index_write() {
     DBG(cerr << "Cache Index. Writing index " << d_cache_index << ", PID: " << to_string(getpid()) << endl);
-
-#if 0
-    // Open the file for writing.
-    FILE *fp = nullptr;
-    if ((fp = fopen(d_cache_index.c_str(), "wb")) == nullptr) {
-        throw Error(string("Cache Index. Can't open `") + d_cache_index + "' for writing");
-    }
-
-    // Walk through the list and write it out. The format is really
-    // simple as we keep it all in ASCII.
-    WriteOneCacheEntry woc(fp);
-    for (const auto &row: d_cache_table) {
-        for (auto &entry: row) {
-            if (entry) {
-                woc(entry);
-            }
-        }
-    }
-
-    /* Done writing */
-    int res = fclose(fp);
-    if (res) {
-        DBG(cerr << "HTTPCache::cache_index_write - Failed to close " << (void *) fp << endl);
-    }
-#endif
 
     // Open the file for writing.
     int fd = open(d_cache_index.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
@@ -443,6 +374,10 @@ HTTPCacheTable::add_entry_to_cache_table(CacheEntry *entry) {
     if (hash > CACHE_TABLE_SIZE - 1 || hash < 0)
         throw InternalErr(__FILE__, __LINE__, "Hash value too large!");
 
+    // TODO Only add the entry if it's not already in the table.
+    //  This code could be improved considerably by partly parsing the
+    //  entry/line, doing the lookup and then completing the parse
+    //  if the entry is not in the table. jhrg 3/2/23
     d_cache_table[hash].push_back(entry);
 
     DBG(cerr << "add_entry_to_cache_table, current_size: " << d_current_size
