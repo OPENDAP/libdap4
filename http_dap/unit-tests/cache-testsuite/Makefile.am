@@ -24,3 +24,6 @@ clean-local:
 	-rm -rf header_cache
 	-rm -rf singleton_cache
 	-rm -rf http_cache_test
+	-rm -rf http_mp_cache
+	-rm -rf http_mt_cache
+
