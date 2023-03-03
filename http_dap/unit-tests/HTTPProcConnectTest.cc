@@ -113,7 +113,7 @@ public:
             CPPUNIT_ASSERT_MESSAGE("The HTTPCache directory is not correct",
                                    d_cache->get_cache_root() == "cache-testsuite/http_mp_cache/");
             // Some tests disable the cache, so we need to make sure it's enabled.
-            d_cache->set_cache_enabled(true);
+            // d_cache->set_cache_enabled(true);
             d_cache->purge_cache();
         }
 
@@ -168,18 +168,8 @@ public:
                 CPPUNIT_ASSERT_MESSAGE("All these responses should be in the cache", WEXITSTATUS(status) == EXIT_SUCCESS);
             }
         }
-        catch (InternalErr &e) {
-            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
-            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
         catch (const std::exception &e) {
-            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        catch (...) {
-            cerr << "Caught unknown exception" << endl;
-            throw;
+            CPPUNIT_FAIL(string("Caught an exception: ") + e.what());
         }
     }
 
@@ -217,18 +207,8 @@ public:
 
             CPPUNIT_ASSERT_MESSAGE("Three responses should be in the cache", num_cached == num_processes - 1);
         }
-        catch (InternalErr &e) {
-            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
-            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
         catch (const std::exception &e) {
-            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        catch (...) {
-            cerr << "Caught unknown exception" << endl;
-            throw;
+            CPPUNIT_FAIL(string("Caught an exception: ") + e.what());
         }
     }
 
@@ -243,9 +223,9 @@ public:
                 pid[i] = fork();
                 if (pid[i] == 0) {
                     setenv("DODS_CONF", "cache-testsuite/dodsrc_mp_caching", 1);
-#if 1
+#if 0
                     if (i != 0)
-                        sleep(3);   // Wait for the first process to cache the response
+                        sleep(1);   // Wait for the first process to cache the response
 #endif
                     auto hc_mp = std::make_unique<HTTPConnect>(RCReader::instance());
                     if (debug) hc_mp->set_verbose_runtime(true);
@@ -269,18 +249,8 @@ public:
 
             CPPUNIT_ASSERT_MESSAGE("Three responses should be in the cache", num_cached == 3);
         }
-        catch (InternalErr &e) {
-            CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
-            CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
         catch (const std::exception &e) {
-            CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        catch (...) {
-            cerr << "Caught unknown exception" << endl;
-            throw;
+            CPPUNIT_FAIL(string("Caught an exception: ") + e.what());
         }
     }
 };

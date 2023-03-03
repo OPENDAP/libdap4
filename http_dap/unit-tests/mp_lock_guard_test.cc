@@ -90,6 +90,8 @@ public:
         CPPUNIT_TEST(single_read_lock_w_child_get_write_test);
 
         CPPUNIT_TEST(multiple_read_locks_scope_test);
+        CPPUNIT_TEST(single_read_lock_unlock_failure_test);
+
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -318,6 +320,34 @@ public:
             int status;
             waitpid(pid, &status, 0);
             CPPUNIT_ASSERT_MESSAGE("The child should have exited with status 0", WEXITSTATUS(status) == 0);
+        }
+    }
+
+    // Test that closing the lock fd but not calling release on the lock guard is an error.
+    void single_read_lock_unlock_failure_test() {
+        class mp_lock_guard_logger_failure_test : public mp_lock_guard_logger {
+        public:
+            mp_lock_guard_logger_failure_test() = default;
+            ~mp_lock_guard_logger_failure_test() override = default;
+
+            void log(const std::string &msg) const override {
+                DBG(cerr << "log: " << msg << endl);
+                CPPUNIT_ASSERT("Log should be called");
+            }
+
+            void error(const std::string &msg) const override {
+                DBG(cerr << "error: " << msg << endl);
+                CPPUNIT_FAIL("Log should be called, no error");
+            }
+        };
+
+        mp_lock_guard_logger_failure_test logger;
+
+        {
+            mp_lock_guard lg(lock_fd, mp_lock_guard::operation::read, logger);
+            CPPUNIT_ASSERT_MESSAGE("The lock should be held", lg.d_locked);
+            // closing the fd will make the subsequent call to fnctl() fail.
+            close(lock_fd);
         }
     }
 };

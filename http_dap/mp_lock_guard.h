@@ -143,6 +143,8 @@ public:
 
     /** Release control of the lock so that control can exit scope and the lock
      *  can be released somewhere else.
+     *  @note This is a static method, so it cannot tell if the lock was previously
+     *  released.
      */
     void release() { d_released = true; }
 
