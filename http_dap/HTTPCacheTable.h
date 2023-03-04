@@ -31,6 +31,7 @@
 #include <unordered_map>
 #include <mutex>
 #include <shared_mutex>
+#include <atomic>
 
 #define NO_LM_EXPIRATION (24*3600) // 24 hours
 #define MAX_LM_EXPIRATION (48*3600) // Max expiration from LM
