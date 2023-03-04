@@ -70,10 +70,6 @@ HTTPCacheTable::HTTPCacheTable(const string &cache_root, int block_size) :
         d_cache_root(cache_root), d_block_size(block_size) {
     d_cache_index = cache_root + CACHE_INDEX;
 
-#if 0
-    d_cache_table.resize(CACHE_TABLE_SIZE);
-#endif
-
     cache_index_read();
 }
 
@@ -83,13 +79,6 @@ HTTPCacheTable::~HTTPCacheTable() {
             delete entry;
         }
     }
-#if 0
-    for (auto &row: d_cache_table) {
-        for (auto &entry: row) {
-            delete entry;
-        }
-    }
-#endif
 }
 
 /**
@@ -113,22 +102,6 @@ void HTTPCacheTable::delete_expired_entries(time_t t) {
         // Remove the null entries from the vector (aka p.second).
         p.second.erase(remove(p.second.begin(), p.second.end(), nullptr), p.second.end());
     }
-#if 0
-    for (auto &row: d_cache_table) {
-        for (auto &entry: row) {
-            // Remove an entry if it has expired.
-            if (entry && !entry->readers
-                && (entry->freshness_lifetime < (entry->corrected_initial_age + (t - entry->response_time)))) {
-                DBG(cerr << "Deleting expired cache entry: " << entry->url << endl);
-                remove_cache_entry(entry);  // deletes the files in the cache
-                delete entry;
-                entry = nullptr;
-            }
-        }
-        // Remove the null entries from the vector.
-        row.erase(remove(row.begin(), row.end(), nullptr), row.end());
-    }
-#endif
 }
 
 /**
@@ -148,22 +121,6 @@ void HTTPCacheTable::delete_by_hits(int hits) {
         // Remove the null entries from the vector (aka p.second).
         p.second.erase(remove(p.second.begin(), p.second.end(), nullptr), p.second.end());
     }
-
-#if 0
-    for (auto &row: d_cache_table) {
-        for (auto &entry: row) {
-            // Remove an entry if it has not had enough cache hits.
-            if (entry && !entry->readers && entry->hits <= hits) {
-                DBG(cerr << "Deleting cache entry (too few hits): " << entry->url << endl);
-                remove_cache_entry(entry);  // deletes the files in the cache
-                delete entry;
-                entry = nullptr;
-            }
-        }
-        // Remove the null entries from the vector.
-        row.erase(remove(row.begin(), row.end(), nullptr), row.end());
-    }
-#endif
 }
 
 /**
@@ -183,22 +140,6 @@ void HTTPCacheTable::delete_by_size(unsigned long size) {
         // Remove the null entries from the vector (aka p.second).
         p.second.erase(remove(p.second.begin(), p.second.end(), nullptr), p.second.end());
     }
-
-#if 0
-    for (auto &row: d_cache_table) {
-        for (auto &entry: row) {
-            // Remove an entry if it is too big.
-            if (entry && !entry->readers && entry->size > size) {
-                DBG(cerr << "Deleting cache entry (too few hits): " << entry->url << endl);
-                remove_cache_entry(entry);  // deletes the files in the cache
-                delete entry;
-                entry = nullptr;
-            }
-        }
-        // Remove the null entries from the vector.
-        row.erase(remove(row.begin(), row.end(), nullptr), row.end());
-    }
-#endif
 }
 
 /** @name Cache Index
@@ -229,7 +170,7 @@ HTTPCacheTable::cache_index_delete() {
     A private method.
 
     @return True when a cache index was found and read, false otherwise. */
-
+#if 1
 bool
 HTTPCacheTable::cache_index_read() {
     DBG(cerr << "Cache Index. Reading index " << d_cache_index << ", PID: " << to_string(getpid()) << endl);
@@ -239,6 +180,16 @@ HTTPCacheTable::cache_index_read() {
     if (!fp) {
         return false;
     }
+
+    // Clean out existing cache table
+    for (auto &p: d_cache_table) {
+        for (auto &entry: p.second) {
+            delete entry;
+            entry = nullptr;
+        }
+    }
+
+    set_current_size(0);
 
     char line[1024];
     while (!feof(fp) && fgets(line, 1024, fp)) {
@@ -258,6 +209,34 @@ HTTPCacheTable::cache_index_read() {
 
     return true;
 }
+#else
+bool
+HTTPCacheTable::cache_index_read() {
+    // Open the file for writing.
+    fstream fs(d_cache_index, ios::in);
+    if (!fs)
+        throw Error(string("Cache Index. Can't open `") + d_cache_index + "' for reading");
+
+    // Clean out existing cache table
+    for (auto &p: d_cache_table) {
+        for (auto &entry: p.second) {
+            delete entry;
+            entry = nullptr;
+        }
+    }
+
+    // Read the file and build the cache table.
+    string line;
+    while (getline(fs, line)) {
+        // Parse the line and add the entry to the cache table.
+        add_entry_to_cache_table(cache_index_parse_line(line.c_str()));
+    }
+
+    d_new_entries = 0;
+
+    return true;
+}
+#endif
 
 /** Parse one line of the index file.
 
@@ -321,18 +300,6 @@ HTTPCacheTable::cache_index_write() {
             }
         }
     }
-
-#if 0
-    for (const auto &row: d_cache_table) {
-        for (auto &entry: row) {
-            if (entry) {
-                fs << entry->get_formatted_index_file_line();
-                if (!fs)
-                    throw InternalErr(__FILE__, __LINE__, "Cache Index. Error writing cache index");
-            }
-        }
-    }
-#endif
 
     d_new_entries = 0;
 }
@@ -574,20 +541,6 @@ void HTTPCacheTable::delete_all_entries() {
         // Remove the null entries from the vector (aka p.second).
         p.second.erase(remove(p.second.begin(), p.second.end(), nullptr), p.second.end());
     }
-
-#if 0
-    for (auto &row: d_cache_table) {
-        for (auto &entry: row) {
-            if (entry) {
-                remove_cache_entry(entry);  // deletes the files in the cache
-                delete entry;
-                entry = nullptr;
-            }
-        }
-        // Remove the null entries from the vector.
-        row.erase(remove(row.begin(), row.end(), nullptr), row.end());
-    }
-#endif
 
     cache_index_delete();
 }
