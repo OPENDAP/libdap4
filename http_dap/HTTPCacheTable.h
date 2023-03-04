@@ -297,59 +297,5 @@ public:
     bool is_locked_read_responses() const;
 };
 
-#if 0
-/**
- * This class is used to guard a cache entry. Initialize an instance with a
- * locked CacheEntry* and provide the kind of lock (read or write) already
- * set on the object. When the guard instance goes out of scope, it will unlock
- * the CacheEntry.
- *
- * The release() method can be used to release the guard before it goes out of scope,
- * for those cases where the client will unlock the entry itself.
- */
-class cache_entry_guard {
-public:
-    enum class operation { read, write };
-    
-private:
-    operation d_op;
-    HTTPCacheTable::CacheEntry *d_entry;
-    bool d_managed = true;    // Use this so instances can go out of scope without releasing the lock.
-    bool d_delete_after_unlock = false;
-public:
-    cache_entry_guard() = delete;
-
-    cache_entry_guard(const cache_entry_guard &) = delete;
-
-    cache_entry_guard &operator=(const cache_entry_guard &) = delete;
-
-    HTTPCacheTable::CacheEntry* &operator->() {
-        return d_entry;
-    }
-
-    /// @brief Initialize the guard with a locked CacheEntry* and the kind of lock already set on the object.
-    cache_entry_guard(operation op, HTTPCacheTable::CacheEntry *entry) : d_op(op), d_entry(entry) {
-    }
-
-    ~cache_entry_guard() {
-        if (d_managed) {
-            if (d_op == operation::read)
-                d_entry->unlock_read_response();
-            else
-                d_entry->unlock_write_response();
-
-            if (d_delete_after_unlock)
-                delete d_entry;
-        }
-    }
-
-    /// @brief Release the guard on the CacheEntry. This is useful when the client will unlock the entry itself.
-    void release() { d_managed = false; }
-
-    /// @brief If true, delete the CacheEntry after unlocking it.
-    void delete_after() { d_delete_after_unlock = true; }
-};
-#endif
-
 } // namespace libdap
 #endif

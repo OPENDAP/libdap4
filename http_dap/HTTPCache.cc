@@ -1484,12 +1484,8 @@ HTTPCache::release_cached_response(FILE *body)
 {
     lock_guard<mutex> lock{d_cache_mutex};
 
-    // fclose(body); This results in a seg fault on linux jhrg 8/27/13
     d_http_cache_table->uncouple_entry_from_data(body);
     mp_lock_guard::unlock(d_cache_lock_fd);
-#if 0
-    m_unlock_cache(d_cache_lock_fd);
-#endif
 }
 
 /** Purge both the in-memory cache table and the contents of the cache on
