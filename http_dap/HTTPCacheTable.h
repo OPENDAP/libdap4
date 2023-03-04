@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <mutex>
 #include <shared_mutex>
 
@@ -204,7 +205,8 @@ public:
     // vector for a specific match.
 
     using CacheEntries = std::vector<CacheEntry *>;
-    using CacheTable = std::vector<CacheEntries>;
+    // using CacheTable = std::vector<CacheEntries>;
+    using CacheTable = std::unordered_map<unsigned int, CacheEntries>;
 
     friend class HTTPCacheTest;
     friend class HTTPProcConnectTest;
