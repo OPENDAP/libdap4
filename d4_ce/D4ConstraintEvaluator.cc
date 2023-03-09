@@ -26,7 +26,7 @@
 #include <sstream>
 #include <iterator>
 
-//#define DODS_DEBUG 
+#define DODS_DEBUG 
 
 #include "D4CEScanner.h"
 #include "D4ConstraintEvaluator.h"
@@ -271,7 +271,7 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
                 // local dimension slices. See https://opendap.atlassian.net/browse/HYRAX-98
                 // jhrg 4/12/16
                 if (!a->maps()->empty()) {
-                    for (D4Maps::D4MapsIter m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ++m) {
+                    for (D4Maps::D4MapsIter m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ) {
 #if 0
                         if ((*m)->array() == 0)
                             throw Error(malformed_expr,
@@ -285,11 +285,17 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
                         // Added a test to ensure 'dim' is not null. This could be the case if
                         // execution gets here and the index *i was not empty. jhrg 4/18/17
                         if (dim && array_uses_shared_dimension(map, dim)) {
+                DBG(cerr << "Entering: LOCAL D4 constraint inside the loop" <<  endl);
+                DBG(cerr << "map->name()" <<  map->name() <<endl);
+                            D4Maps::D4MapsIter tm=m+1;
                             D4Map *map_to_be_removed = *m;
                             a->maps()->remove_map(map_to_be_removed); // Invalidates the iterator
                             delete map_to_be_removed;   // removed from container; delete
-                            break; // must leave the for loop because 'm' is now invalid
+                            //break; // must leave the for loop because 'm' is now invalid
+                            m =tm;
                         }
+                        else
+                            ++m;
                     }
                 }
             }
