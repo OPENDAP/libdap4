@@ -272,30 +272,31 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
                 // jhrg 4/12/16
                 if (!a->maps()->empty()) {
                    int map_size = a->maps()->size();
-                   for (int i = 0; i <map_size; i++) {
-                    for (D4Maps::D4MapsIter m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ++m) {
+
+                   // Some variables may have several maps that shares the same dimension.
+                   // When local contraint applies, all these maps should be removed.
+                   for (int map_index = 0; map_index  <map_size; map_index++) {
+                        for (D4Maps::D4MapsIter m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ++m) {
 #if 0
                         if ((*m)->array() == 0)
                             throw Error(malformed_expr,
                                 "An array with Maps was found, but one of the Maps was not defined correctly.");
 #endif
-                        auto root = dynamic_cast<D4Group*>(a->get_ancestor());
-                        if (!root)
-                            throw InternalErr(__FILE__, __LINE__, "Expected a valid ancestor Group.");
-                        auto *map = (*m)->array(root);
-
-                        // Added a test to ensure 'dim' is not null. This could be the case if
-                        // execution gets here and the index *i was not empty. jhrg 4/18/17
-                        if (dim && array_uses_shared_dimension(map, dim)) {
-                DBG(cerr << "Entering: LOCAL D4 constraint inside the loop" <<  endl);
-                DBG(cerr << "map->name()" <<  map->name() <<endl);
-                            D4Map *map_to_be_removed = *m;
-                            a->maps()->remove_map(map_to_be_removed); // Invalidates the iterator
-                            delete map_to_be_removed;   // removed from container; delete
-                            break; // must leave the for loop because 'm' is now invalid
+                            auto root = dynamic_cast<D4Group*>(a->get_ancestor());
+                            if (!root)
+                                throw InternalErr(__FILE__, __LINE__, "Expected a valid ancestor Group.");
+                            auto *map = (*m)->array(root);
+    
+                            // Added a test to ensure 'dim' is not null. This could be the case if
+                            // execution gets here and the index *i was not empty. jhrg 4/18/17
+                            if (dim && array_uses_shared_dimension(map, dim)) {
+                                D4Map *map_to_be_removed = *m;
+                                a->maps()->remove_map(map_to_be_removed); // Invalidates the iterator
+                                delete map_to_be_removed;   // removed from container; delete
+                                break; // must leave the for loop because 'm' is now invalid
+                            }
                         }
                     }
-                  }
                 }
             }
 
