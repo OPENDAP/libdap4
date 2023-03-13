@@ -275,6 +275,8 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
 
                    // Some variables may have several maps that shares the same dimension.
                    // When local contraint applies, all these maps should be removed.
+                   // TODO: Ideally we can just use typical erase-remove in the an inner-loop to handle this.
+                   //       Somehow this doesn't work. Maybe we need to add public methods. KY 2023-03-13
                    for (int map_index = 0; map_index  <map_size; map_index++) {
                         for (D4Maps::D4MapsIter m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ++m) {
 #if 0
