@@ -37,6 +37,11 @@ static inline std::string get_errno() {
     return s_err ? s_err : "unknown error";
 }
 
+/**
+ * @brief Interface for the logger used by mp_lock_guard
+ * The idea behind this abstract class (aka, interface) is that the client
+ * of mp_lock_guard can provide a logger that will behave as they want.
+ */
 class mp_lock_guard_logger {
 public:
     mp_lock_guard_logger() = default;
@@ -47,6 +52,11 @@ public:
     virtual void error(const std::string &msg) const = 0;
 };
 
+/**
+ * @brief Default logger for mp_lock_guard
+ * For this implementation of mp_lock_guard_logger, the log() method writes
+ * to std::cerr and the error() method throws a std::runtime_error.
+ */
 class mp_lock_guard_logger_default : public mp_lock_guard_logger {
 public:
     mp_lock_guard_logger_default() = default;
@@ -126,7 +136,13 @@ public:
         m_get_lock();
     }
 
-    /// @brief Unlock the cache. Works for both read and write locks.
+    /**
+     * @brief Unlock the cache. Works for both read and write locks.
+     * @note This will not throw an exception if the unlock fails when using the
+     * default logger. Also, if the release() method has been called, then this
+     * will not unlock the file. It is assumed that some other code will do that using
+     * the unlock() method.
+     */
     ~mp_lock_guard() {
         if (!d_released && d_locked) {
             struct flock lock{};
@@ -141,14 +157,15 @@ public:
         }
     }
 
-    /** Release control of the lock so that control can exit scope and the lock
+    /**
+     * Release control of the lock so that control can exit scope and the lock
      *  can be released somewhere else.
-     *  @note This is a static method, so it cannot tell if the lock was previously
-     *  released.
      */
     void release() { d_released = true; }
 
-    /// Unlock the file.
+    /**
+     * Unlock the cache.
+     */
     static void unlock(int fd, const mp_lock_guard_logger &logger = mp_lock_guard_logger_default()) {
         struct flock lock{};
         lock.l_type = F_UNLCK;
