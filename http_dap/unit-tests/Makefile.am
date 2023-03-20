@@ -66,7 +66,8 @@ CLEANFILES = testout .dodsrc  *.gcda *.gcno *.gcov *.trs *.log *.file *.output
 DISTCLEANFILES = test_config.h *.strm *.file tmp.txt
 
 test_config.h: test_config.h.in Makefile
-	sed -e "s%[@]abs_srcdir[@]%${abs_srcdir}%" $< > test_config.h
+	sed -e "s%[@]abs_srcdir[@]%${abs_srcdir}%" \
+	    -e "s%[@]abs_builddir[@]%${abs_builddir}%" $< > test_config.h
 
 ############################################################################
 # Unit Tests

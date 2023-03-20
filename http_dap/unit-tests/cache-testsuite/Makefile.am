@@ -15,7 +15,7 @@ cleanup.sh: cleanup.sh.in
 	sed -e "s%[@]srcdir[@]%${srcdir}%" $< > $(builddir)/cleanup.sh
 	chmod +x $(builddir)/cleanup.sh
 
-# Moved the cleanup od 'cleanup.sh' here to avoid issues with parallel
+# Moved the cleanup of 'cleanup.sh' here to avoid issues with parallel
 # runs while cleaning. See comment above about DISTCLEANFILES. jhrg 2/2/22
 clean-local: cleanup.sh
 	sh $(builddir)/cleanup.sh

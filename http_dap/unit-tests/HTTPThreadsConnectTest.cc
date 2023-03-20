@@ -50,7 +50,7 @@ namespace libdap {
 
 inline static uint64_t file_size(FILE *fp)
 {
-    struct stat s;
+    struct stat s{};
     fstat(fileno(fp), &s);
     return s.st_size;
 }
@@ -63,7 +63,7 @@ private:
     string basic_pw_url{"http://jimg:dods_test@test.opendap.org/basic/page.txt"};
     string basic_digest_pw_url{"http://jimg:dods_digest@test.opendap.org/basic/page.txt"};
     // The etag value needs to be updated when the server changes, etc.
-    // Also, the value looks like a 'sectret' to git secrets, which will complain. jhrg 2/23/23
+    // Also, the value looks like a 'secret' to git secrets, which will complain. jhrg 2/23/23
     string etag{"\"157-3df0e26958000\""};   // New httpd (dockerized), new etag. ndp - 12/06/22
     string lm{"Wed, 13 Jul 2005 19:32:26 GMT"};
     string netcdf_das_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.das"};
@@ -79,7 +79,8 @@ public:
         // This is coupled with the cache name in cache-testsuite/dodsrc_w_caching
         if (access("cache-testsuite/http_mt_cache/", F_OK) == 0) {
             CPPUNIT_ASSERT_MESSAGE("The HTTPCache::instance() is null!", d_cache);
-            CPPUNIT_ASSERT_MESSAGE("The HTTPCache directory is not correct", d_cache->get_cache_root() == "cache-testsuite/http_mt_cache/");
+            CPPUNIT_ASSERT_MESSAGE("The HTTPCache directory is not correct",
+                                   d_cache->get_cache_root() == "cache-testsuite/http_mt_cache/");
             // Some tests disable the cache, so we need to make sure it's enabled.
             d_cache->set_cache_enabled(true);
             d_cache->purge_cache();
@@ -669,5 +670,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION (HTTPThreadsConnectTest);
 
 int main(int argc, char *argv[])
 {
-    return run_tests<libdap::HTTPThreadsConnectTest>(argc, argv) ? 0 : 1;
+    bool passed = run_tests<libdap::HTTPThreadsConnectTest>(argc, argv) ? 0 : 1;
+    return passed;
 }
