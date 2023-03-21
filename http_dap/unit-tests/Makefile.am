@@ -1,6 +1,8 @@
 
 # Tests
 
+.NOTPARALLEL:
+
 SUBDIRS = cache-testsuite
 
 AUTOMAKE_OPTIONS = foreign
@@ -74,7 +76,7 @@ test_config.h: test_config.h.in Makefile
 #
 
 if CPPUNIT
-UNIT_TESTS = HTTPConnectTest HTTPThreadsConnectTest HTTPCacheTest
+UNIT_TESTS = HTTPThreadsConnectTest HTTPConnectTest HTTPCacheTest
 
 else
 UNIT_TESTS =

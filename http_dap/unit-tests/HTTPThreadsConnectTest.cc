@@ -39,10 +39,13 @@
 #include "HTTPConnect.h"
 #include "debug.h"
 
+#include "test_config.h"
 #include "run_tests_cppunit.h"
 
 using namespace CppUnit;
 using namespace std;
+
+const static string cache_dir{string(TEST_BUILD_DIR) + "/cache-testsuite/http_mt_cache/"};
 
 #define prolog std::string("HTTPThreadsConnectTest::").append(__func__).append("() - ")
 
@@ -57,7 +60,7 @@ inline static uint64_t file_size(FILE *fp)
 
 class HTTPThreadsConnectTest : public TestFixture {
 private:
-    HTTPCache *d_cache = HTTPCache::instance("cache-testsuite/http_mt_cache/");
+    HTTPCache *d_cache = HTTPCache::instance(cache_dir);
     unique_ptr<HTTPConnect> http{nullptr};
     string url_304{"http://test.opendap.org/test-304.html"};
     string basic_pw_url{"http://jimg:dods_test@test.opendap.org/basic/page.txt"};
@@ -73,17 +76,23 @@ public:
 
     ~HTTPThreadsConnectTest() override = default;
 
-    void setUp() override
-    {
-        setenv("DODS_CONF", "cache-testsuite/dodsrc_w_caching", 1);
+    void setUp() override {
+        setenv("DODS_CONF", (string(TEST_SRC_DIR) + "/cache-testsuite/dodsrc_w_caching").c_str(), 1);
         // This is coupled with the cache name in cache-testsuite/dodsrc_w_caching
-        if (access("cache-testsuite/http_mt_cache/", F_OK) == 0) {
+        if (access(cache_dir.c_str(), F_OK) == 0) {
             CPPUNIT_ASSERT_MESSAGE("The HTTPCache::instance() is null!", d_cache);
+            DBG(cerr << "The HTTPCache root is: " << d_cache->get_cache_root() << endl);
+            DBG(cerr << "The HTTPCache directory is: " << cache_dir << endl);
             CPPUNIT_ASSERT_MESSAGE("The HTTPCache directory is not correct",
-                                   d_cache->get_cache_root() == "cache-testsuite/http_mt_cache/");
+                                   d_cache->get_cache_root() == cache_dir);
             // Some tests disable the cache, so we need to make sure it's enabled.
             d_cache->set_cache_enabled(true);
             d_cache->purge_cache();
+        }
+        else {
+            DBG(cerr << "Creating cache directory: " << cache_dir << endl);
+            system(("mkdir -p " + cache_dir).c_str());
+            DBG(system("ls -l cache-testsuite/http_*"));
         }
     }
 
@@ -589,9 +598,7 @@ public:
         }
     }
 
-
 #if 0
-
     void get_response_headers_test()
     {
         try {
@@ -659,8 +666,6 @@ public:
         }
 
     }
-
-
 #endif
 };
 
@@ -671,5 +676,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION (HTTPThreadsConnectTest);
 int main(int argc, char *argv[])
 {
     bool passed = run_tests<libdap::HTTPThreadsConnectTest>(argc, argv) ? 0 : 1;
+
+    system(("rm -rf " + cache_dir).c_str());
+
     return passed;
 }

@@ -499,7 +499,7 @@ HTTPCache::create_cache_root(const string &cache_root) const
     errno = 0;
     if (mkdir(cache_root.c_str(), 0777) < 0 && errno != EEXIST) {
         umask(mask);
-        throw Error("Could not create the directory for the cache at '" + cache_root + "' (" + strerror(errno) + ").");
+        throw Error("HTTPCache::create_cache_root: Could not create the directory for the cache at '" + cache_root + "' (" + strerror(errno) + ").");
     }
 
     // Restore the mask

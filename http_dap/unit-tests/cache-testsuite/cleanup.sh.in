@@ -19,4 +19,3 @@ rm -rf gc_cache
 rm -rf purge_cache
 rm -rf header_cache
 rm -rf singleton_cache
-rm -rf http_mt_cache

@@ -327,7 +327,7 @@ HTTPCacheTable::create_hash_directory(int hash) {
     if (mkdir(path.str().c_str(), 0777) < 0 && errno != EEXIST) {
         umask(mask);
         throw Error(internal_error,
-                    "Could not create the directory for the cache at '" + path.str() + "' (" + strerror(errno) + ").");
+                    "HTTPCacheTable::create_hash_directory: Could not create the directory for the cache at '" + path.str() + "' (" + strerror(errno) + ").");
     }
 
     // Restore the mask
