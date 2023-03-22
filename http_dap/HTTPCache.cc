@@ -51,7 +51,6 @@
 
 using namespace std;
 
-// #define CACHE_LOCATION "/tmp/"
 const string CACHE_LOCATION{"/tmp/"};
 
 const string CACHE_ROOT{"dods-cache/"};
