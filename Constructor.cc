@@ -340,6 +340,23 @@ Constructor::get_var_index(int i)
     return *(d_vars.begin() + i);
 }
 
+void Constructor::set_var_index(BaseType *bt,int i) {
+
+    if (!bt)
+        throw InternalErr(__FILE__, __LINE__, "The BaseType parameter cannot be null.");
+
+    bt->set_parent(this);
+
+    // Update the is_dap4 property
+    if (bt->is_dap4())
+        set_is_dap4(true);
+
+    //BaseType *bt_i = d_vars[i];
+    //delete bt_i;
+    d_vars[i] = bt;
+
+}
+
 /** Adds an element to a Constructor.
 
     @param bt A pointer to the variable to add to this Constructor.
