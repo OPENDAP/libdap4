@@ -105,6 +105,7 @@ public:
     Vars_riter var_rend();
     Vars_iter get_vars_iter(int i);
     BaseType *get_var_index(int i);
+    void set_var_index(BaseType *bt, int i);
 
     /**
       * Get a const reference to the vector of BaseType pointers.
