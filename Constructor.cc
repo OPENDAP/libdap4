@@ -354,6 +354,9 @@ void Constructor::set_var_index(BaseType *bt,int i) {
     if (!bt)
         throw InternalErr(__FILE__, __LINE__, "The BaseType parameter cannot be null.");
 
+    if (i<0 || i>= (int)(d_vars.size())) 
+        throw InternalErr(__FILE__, __LINE__, "The index must be within the variable vector  range..");
+
     bt->set_parent(this);
 
     // Update the is_dap4 property
