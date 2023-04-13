@@ -340,6 +340,15 @@ Constructor::get_var_index(int i)
     return *(d_vars.begin() + i);
 }
 
+/**
+ * @brief Set the ith element of d_vars to a variable object.
+ * @note  This method only sets the ith element to a BaseType object. 
+ * The user should be responsible to release or allocate the resource properly.
+ * Use this method cautionally. 
+ * @param bt A pointer to the variable that is assigned to the ith element.
+ * @param i The index of the variable to be set.
+ */
+
 void Constructor::set_var_index(BaseType *bt,int i) {
 
     if (!bt)
@@ -351,8 +360,6 @@ void Constructor::set_var_index(BaseType *bt,int i) {
     if (bt->is_dap4())
         set_is_dap4(true);
 
-    //BaseType *bt_i = d_vars[i];
-    //delete bt_i;
     d_vars[i] = bt;
 
 }
