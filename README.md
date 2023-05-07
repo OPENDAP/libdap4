@@ -1,4 +1,4 @@
-Trigger a build against the new hyrax-dependencies package. jhrg 5//4/23
+Trigger a build against the new hyrax-dependencies package. jhrg 5//7/23
 
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
