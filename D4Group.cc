@@ -328,7 +328,6 @@ D4Group::m_find_map_source_helper(const string &path)
 		else
 			lpath = lpath.substr(1);
 	}
-
 	string::size_type pos = lpath.find('/');
 	if (pos == string::npos) {
 		// name looks like 'bar'
@@ -339,8 +338,41 @@ D4Group::m_find_map_source_helper(const string &path)
 	string grp_name = lpath.substr(0, pos);
 	lpath = lpath.substr(pos + 1);
 
+
 	D4Group *grp = find_child_grp(grp_name);
+
+    if (pos == string::npos) 
+	    return (grp == 0) ? 0: grp->var(lpath);
+    
+    while (pos != string::npos) {
+
+	    // name looks like foo/bar/baz where foo and bar must be groups
+	    grp_name = lpath.substr(0, pos);
+	    grp = grp->find_child_grp(grp_name);
+	    lpath = lpath.substr(pos + 1);
+	    pos = lpath.find('/');
+    }
+
 	return (grp == 0) ? 0: grp->var(lpath);
+
+#if 0
+    if (var != nullptr) 
+        return var(lpath);
+	string::size_type pos = lpath.find('/');
+	if (pos == string::npos) {
+		// name looks like 'bar'
+		return var(lpath);
+	}
+
+	// name looks like foo/bar/baz where foo and bar must be groups
+	string grp_name = lpath.substr(0, pos);
+	lpath = lpath.substr(pos + 1);
+
+
+	D4Group *grp = find_child_grp(grp_name);
+#endif
+    
+
 }
 
 D4EnumDef *
