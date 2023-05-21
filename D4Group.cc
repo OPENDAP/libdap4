@@ -54,6 +54,7 @@
 #include "escaping.h"
 #include "util.h"
 #include "debug.h"
+#define DODS_DEBUG 1
 
 /**
  * Define this symbol iff we decide to include information about the
@@ -336,10 +337,15 @@ D4Group::m_find_map_source_helper(const string &path)
 
 	// name looks like foo/bar/baz where foo and bar must be groups
 	string grp_name = lpath.substr(0, pos);
-	lpath = lpath.substr(pos + 1);
 
+//cout<<"lpath: "<<lpath << endl;
+DBG(cerr << "D4Group::map_source_helper:grp_name: " << grp_name << endl);
+//cout<<"grp_name: "<<grp_name << endl;
 
 	D4Group *grp = find_child_grp(grp_name);
+
+	lpath = lpath.substr(pos + 1);
+	pos = lpath.find('/');
 
     if (pos == string::npos) 
 	    return (grp == 0) ? 0: grp->var(lpath);
@@ -348,8 +354,10 @@ D4Group::m_find_map_source_helper(const string &path)
 
 	    // name looks like foo/bar/baz where foo and bar must be groups
 	    grp_name = lpath.substr(0, pos);
+//cout<<"grp_name inside: "<<grp_name << endl;
 	    grp = grp->find_child_grp(grp_name);
 	    lpath = lpath.substr(pos + 1);
+//cout<<"grp_name after find_child_grp: inside: "<<grp_name << endl;
 	    pos = lpath.find('/');
     }
 
