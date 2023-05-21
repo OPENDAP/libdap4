@@ -54,7 +54,6 @@
 #include "escaping.h"
 #include "util.h"
 #include "debug.h"
-#define DODS_DEBUG 1
 
 /**
  * Define this symbol iff we decide to include information about the
@@ -349,7 +348,7 @@ D4Group::m_find_map_source_helper(const string &path)
 	pos = lpath.find('/');
 
     if (pos == string::npos) 
-	    return (grp == 0) ? 0: grp->var(lpath);
+	    return (grp == nullptr) ? nullptr: grp->var(lpath);
     
     // Recursively check the child groups until we hit the leaf.
     while (pos != string::npos) {
@@ -360,7 +359,7 @@ D4Group::m_find_map_source_helper(const string &path)
 	    pos = lpath.find('/');
     }
 
-	return (grp == 0) ? 0: grp->var(lpath);
+	return (grp == nullptr) ? nullptr: grp->var(lpath);
 
 }
 
