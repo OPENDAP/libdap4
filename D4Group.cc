@@ -338,48 +338,29 @@ D4Group::m_find_map_source_helper(const string &path)
 	// name looks like foo/bar/baz where foo and bar must be groups
 	string grp_name = lpath.substr(0, pos);
 
-//cout<<"lpath: "<<lpath << endl;
-DBG(cerr << "D4Group::map_source_helper:grp_name: " << grp_name << endl);
-//cout<<"grp_name: "<<grp_name << endl;
-
 	D4Group *grp = find_child_grp(grp_name);
-
 	lpath = lpath.substr(pos + 1);
+
+    // We need to resolve the case that
+    // many group layers are involved such as /foo/bar/bar2/bar3/.../baz
+    // The following code handles this.
+    // KY 2023-05-21
+    //
 	pos = lpath.find('/');
 
     if (pos == string::npos) 
 	    return (grp == 0) ? 0: grp->var(lpath);
     
+    // Recursively check the child groups until we hit the leaf.
     while (pos != string::npos) {
 
-	    // name looks like foo/bar/baz where foo and bar must be groups
 	    grp_name = lpath.substr(0, pos);
-//cout<<"grp_name inside: "<<grp_name << endl;
 	    grp = grp->find_child_grp(grp_name);
 	    lpath = lpath.substr(pos + 1);
-//cout<<"grp_name after find_child_grp: inside: "<<grp_name << endl;
 	    pos = lpath.find('/');
     }
 
 	return (grp == 0) ? 0: grp->var(lpath);
-
-#if 0
-    if (var != nullptr) 
-        return var(lpath);
-	string::size_type pos = lpath.find('/');
-	if (pos == string::npos) {
-		// name looks like 'bar'
-		return var(lpath);
-	}
-
-	// name looks like foo/bar/baz where foo and bar must be groups
-	string grp_name = lpath.substr(0, pos);
-	lpath = lpath.substr(pos + 1);
-
-
-	D4Group *grp = find_child_grp(grp_name);
-#endif
-    
 
 }
 
