@@ -328,7 +328,6 @@ D4Group::m_find_map_source_helper(const string &path)
 		else
 			lpath = lpath.substr(1);
 	}
-
 	string::size_type pos = lpath.find('/');
 	if (pos == string::npos) {
 		// name looks like 'bar'
@@ -337,10 +336,31 @@ D4Group::m_find_map_source_helper(const string &path)
 
 	// name looks like foo/bar/baz where foo and bar must be groups
 	string grp_name = lpath.substr(0, pos);
-	lpath = lpath.substr(pos + 1);
 
 	D4Group *grp = find_child_grp(grp_name);
-	return (grp == 0) ? 0: grp->var(lpath);
+	lpath = lpath.substr(pos + 1);
+
+    // We need to resolve the case that
+    // many group layers are involved such as /foo/bar/bar2/bar3/.../baz
+    // The following code handles this.
+    // KY 2023-05-21
+    //
+	pos = lpath.find('/');
+
+    if (pos == string::npos) 
+	    return (grp == nullptr) ? nullptr: grp->var(lpath);
+    
+    // Recursively check the child groups until we hit the leaf.
+    while (pos != string::npos) {
+
+	    grp_name = lpath.substr(0, pos);
+	    grp = grp->find_child_grp(grp_name);
+	    lpath = lpath.substr(pos + 1);
+	    pos = lpath.find('/');
+    }
+
+	return (grp == nullptr) ? nullptr: grp->var(lpath);
+
 }
 
 D4EnumDef *
