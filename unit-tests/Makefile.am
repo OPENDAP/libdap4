@@ -85,11 +85,13 @@ D4-xml.tar.gz: D4-xml/DMR_*[0-9].xml
 if CPPUNIT
 UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	RegexTest ArrayTest GridTest AttrTableTest ByteTest MIMEUtilTest ancT DASTest \
-	DDSTest	DDXParserTest  generalUtilTest HTTPConnectTest parserUtilTest \
+	DDSTest	DDXParserTest  generalUtilTest parserUtilTest \
 	RCReaderTest SequenceTest SignalHandlerTest  MarshallerTest \
-	HTTPCacheTest ServerFunctionsListUnitTest Int8Test Int16Test UInt16Test \
+	ServerFunctionsListUnitTest Int8Test Int16Test UInt16Test \
 	Int32Test UInt32Test Int64Test UInt64Test Float32Test Float64Test \
 	D4BaseTypeFactoryTest BaseTypeFactoryTest util_mitTest
+
+# Moved to http+dap/unit-tests HTTPConnectTest HTTPCacheTest
 
 # Unit tests for DAP4-only code. jhrg 2/4/22
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
@@ -178,13 +180,13 @@ DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 
 generalUtilTest_SOURCES = generalUtilTest.cc
 
-HTTPCacheTest_SOURCES = HTTPCacheTest.cc
-HTTPCacheTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
-HTTPCacheTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+# HTTPCacheTest_SOURCES = HTTPCacheTest.cc
+# HTTPCacheTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
+# HTTPCacheTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
 
-HTTPConnectTest_SOURCES = HTTPConnectTest.cc
-HTTPConnectTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
-HTTPConnectTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
+# HTTPConnectTest_SOURCES = HTTPConnectTest.cc
+# HTTPConnectTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)
+# HTTPConnectTest_LDADD = ../libdapclient.la ../libdap.la $(AM_LDADD)
 
 parserUtilTest_SOURCES = parserUtilTest.cc
 

@@ -42,6 +42,8 @@
 #include "D4Connect.h"
 #include "HTTPConnect.h"
 #include "Response.h"
+#include "HTTPResponse.h"
+#include "RCReader.h"
 #include "DMR.h"
 #include "D4Group.h"
 

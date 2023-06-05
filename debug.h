@@ -72,7 +72,7 @@ using std::endl;
 #define DBG2N(x) x
 #else
 #define DBG2(x) /* x */
-#define DBG2n(x) /* x */
+#define DBG2N(x) /* x */
 #endif
 
 #ifdef DODS_PERF

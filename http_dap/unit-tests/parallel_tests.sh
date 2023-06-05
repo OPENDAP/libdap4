@@ -1,0 +1,4 @@
+#!/bin/bash
+
+./HTTPCacheTest &
+./HTTPThreadsConnectTest &
