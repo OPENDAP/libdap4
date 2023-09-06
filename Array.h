@@ -178,10 +178,29 @@ public:
         explicit dimension(D4Dimension *d);
     };
 
+    // Add comments
+    struct var_chunk_info_t{
+        unsigned int filter_mask;
+        unsigned long long chunk_buffer_size;
+        unsigned long long num_chunks;
+        vector<unsigned long long> chunk_coords;
+    }; 
+
+    struct var_storage_info {
+        string filter;
+        size_t num_chunk_dims;
+        unsigned int num_deflates;
+        vector<unsigned int>deflate_level;
+        vector<size_t> chunk_dims;
+        vector<var_chunk_info_t> var_chunk_info;
+    };
 private:
     D4Maps *d_maps = nullptr;
 
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
+
+    bool direct_io_flag = false;
+    var_storage_info vs_info;
 
     void update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims);
 
@@ -322,6 +341,12 @@ public:
     bool is_dap4_projected(std::vector<std::string> &projected_dap4_inventory) override;
 
     void dump(ostream &strm) const override;
+
+    bool get_dio_flag() const {return direct_io_flag; }
+    void set_dio_flag() { direct_io_flag = true; }
+    var_storage_info & get_var_storage_info() {return vs_info;}
+    void set_var_storage_info(var_storage_info my_vs_info) {vs_info = my_vs_info;}  
+
 };
 
 } // namespace libdap
