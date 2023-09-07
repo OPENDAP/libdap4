@@ -178,7 +178,13 @@ public:
         explicit dimension(D4Dimension *d);
     };
 
-    // Add comments
+    // The following two structs are for the direct IO optimization.
+    // The variable chunk and compression information need to be passed
+    // between two BES modules. The ideal approach is to use the
+    // dynamic_cast for a BES module to retrieve the information stored
+    // by another module. However, there are issues in the current BES 
+    // that prevent us from implementing in this way. 
+    // So we need to use libdap to do the job.  
     struct var_chunk_info_t{
         unsigned int filter_mask;
         unsigned long long chunk_direct_io_offset;
@@ -340,6 +346,7 @@ public:
 
     void dump(ostream &strm) const override;
 
+    // The following methods are for direct IO optimization.
     bool get_dio_flag() const {return direct_io_flag; }
     void set_dio_flag() { direct_io_flag = true; }
     var_storage_info & get_var_storage_info() {return vs_info;}

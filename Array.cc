@@ -1517,6 +1517,12 @@ void Array::dump(ostream &strm) const
     DapIndent::UnIndent();
 }
 
+/** @brief Set the variable storage information for direct IO optimization
+ *
+ *
+ * @param the struct that stores the variable storage information.
+ * @return void
+ */
 void Array::set_var_storage_info(const var_storage_info &my_vs_info) {
 
     vs_info.filter = my_vs_info.filter;
