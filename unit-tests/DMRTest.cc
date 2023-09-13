@@ -336,6 +336,7 @@ public:
         DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
         CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
+        delete dmr_3;
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
