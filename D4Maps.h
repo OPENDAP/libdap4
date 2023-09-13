@@ -123,29 +123,44 @@ public:
 
 private:
 	vector<D4Map*> d_maps;
-	Array *d_parent;	// Array these Maps belong to; weak pointer
+	const Array *d_parent;	// Array these Maps belong to; weak pointer
 
+#if 0
     ///@brief Used by the const copy ctor; we only know the source Array path is valid.
-	void m_duplicate(const D4Maps &maps) {
-		d_parent = maps.d_parent;
+    void m_duplicate(const D4Maps &maps) {
+        d_parent = nullptr;
         d_maps.reserve(maps.size());
         for (auto const map: maps.d_maps) {
             d_maps.emplace_back(new D4Map(map->name(), map->get_array_path()));
         }
-	}
+    }
+#endif
+    void m_duplicate(const D4Maps &maps, const Array *parent) {
+        d_parent = parent;
+        d_maps.reserve(maps.size());
+        for (auto const map: maps.d_maps) {
+            d_maps.emplace_back(new D4Map(map->name(), map->get_array_path()));
+        }
+    }
 
 public:
-    D4Maps() {}
-    D4Maps(Array* parent) : d_parent(parent) { }
-    D4Maps(const D4Maps &maps) { m_duplicate(maps); }
-    // Build valid Maps for a true deep copy of a whole dataset
-    //D4Maps(const D4Maps *maps, Array *parent, D4Group *root);
+    D4Maps() = default;
+
+    // See comment below at operator=(). jhrg 9/12/23
+    D4Maps(const D4Maps &maps) = delete;
+
+    explicit D4Maps(Array* parent) : d_parent(parent) { }
+    D4Maps(const D4Maps &maps, const Array *parent) { m_duplicate(maps, parent); }
+
     virtual ~D4Maps() {
     	for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i)
     		delete *i;
     }
 
-    D4Maps &operator=(const D4Maps &rhs);
+    // I deleted this because this class needs to set the _parent_ pointer to
+    // the Array that holds these maps. The one argument assignment operator
+    // provides no way to include that information. jhrg 9/12/23
+    D4Maps &operator=(const D4Maps &rhs) = delete;
 
     /**
      * Add a map. This does not test for duplicate names or Array pointers.

@@ -28,19 +28,10 @@
 #include <io.h>
 #include <process.h>
 #include <fstream>
-#else
-#include <unistd.h>    // for alarm and dup
-#include <sys/wait.h>
 #endif
-
-#include <cassert>
 
 #include <iostream>
 #include <sstream>
-#include <memory>
-
-//#define DODS_DEBUG
-//#define DODS_DEBUG2
 
 #include "D4Group.h"
 #include "BaseType.h"
@@ -56,6 +47,7 @@
 #include "debug.h"
 #include "DapIndent.h"
 
+#if 0
 /**
  * DapXmlNamespaces
  *
@@ -63,23 +55,26 @@
  */
 const string c_xml_xsi = "http://www.w3.org/2001/XMLSchema-instance";
 const string c_xml_namespace = "http://www.w3.org/XML/1998/namespace";
-
 const string c_default_dap40_schema_location = "http://xml.opendap.org/dap/dap4.0.xsd";
-
-const string c_dap40_namespace = "http://xml.opendap.org/ns/DAP/4.0#";
-
 const string c_dap_40_n_sl = c_dap40_namespace + " " + c_default_dap40_schema_location;
+#endif
+
+#if 0
+const string c_dap40_namespace = "http://xml.opendap.org/ns/DAP/4.0#";
+#endif
 
 using namespace std;
 
 namespace libdap {
 
+/**
+ * @brief Copy the contents of the given DMR into this one.
+ * This is defined because the we perform a deep copy of the root group object.
+ * @param dmr
+ */
 void
 DMR::m_duplicate(const DMR &dmr)
 {
-    // This is needed because we use the factory to make a new instance of the root group
-    assert(dmr.OK());
-
     d_factory = dmr.d_factory; // Shallow copy here
 
     d_name = dmr.d_name;
@@ -104,8 +99,6 @@ DMR::m_duplicate(const DMR &dmr)
     d_root = static_cast<D4Group*>(dmr.d_root->ptr_duplicate());
     DBG(cerr << "dmr.d_root: " << dmr.d_root << endl);
     DBG(cerr << "d_root (from ptr_dup(): " << d_root << endl);
-
-    //d_root = static_cast<D4Group*>(dmr.d_factory->NewVariable(dods_group_c, dmr.d_root->name()));
 }
 
 /**
@@ -121,14 +114,8 @@ DMR::m_duplicate(const DMR &dmr)
  * pathname or table name of the dataset.
  */
 DMR::DMR(D4BaseTypeFactory *factory, const string &name)
-        : d_factory(factory), d_name(name), d_filename(""),
-          d_dap_major(4), d_dap_minor(0),
-          d_dmr_version("1.0"), d_request_xml_base(""),
-          d_namespace(c_dap40_namespace), d_max_response_size_kb(0),
-          d_ce_empty(false),d_root(0)
+        : d_factory(factory), d_name(name)
 {
-    // sets d_dap_version string and the two integer fields too
-    set_dap_version("4.0");
 }
 
 /** @brief Build a DMR using a DAP2 DDS.
@@ -152,14 +139,8 @@ DMR::DMR(D4BaseTypeFactory *factory, const string &name)
  * @see BaseType::transform_to_dap4()
  */
 DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
-        : d_factory(factory), d_name(dds.get_dataset_name()),
-          d_filename(dds.filename()), d_dap_major(4), d_dap_minor(0),
-          d_dmr_version("1.0"), d_request_xml_base(""),
-          d_namespace(c_dap40_namespace), d_max_response_size_kb(0),d_ce_empty(false), d_root(0)
+        : d_factory(factory), d_name(dds.get_dataset_name()), d_filename(dds.filename())
 {
-    // sets d_dap_version string and the two integer fields too
-    set_dap_version("4.0");
-
     build_using_dds(dds);
 }
 
@@ -170,12 +151,7 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
  * things. The default DMR version is 1.0
  */
 DMR::DMR()
-        : d_factory(0), d_name(""), d_filename(""), d_dap_major(4), d_dap_minor(0),
-          d_dap_version("4.0"), d_dmr_version("1.0"), d_request_xml_base(""),
-          d_namespace(c_dap40_namespace), d_max_response_size_kb(0), d_ce_empty(false),d_root(0)
 {
-    // sets d_dap_version string and the two integer fields too
-    set_dap_version("4.0");
 }
 
 /** The DMR copy constructor. */
@@ -197,7 +173,9 @@ DMR::operator=(const DMR &rhs)
 {
     if (this == &rhs)
         return *this;
+
     m_duplicate(rhs);
+
     return *this;
 }
 

@@ -324,8 +324,16 @@ public:
         dmr_2->print_dap4(xml2);
         string dmr_dest = string(xml2.get_doc());
         DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+        CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
+        DMR *dmr_3 = new DMR();
+        *dmr_3 = *dmr_2;
         delete dmr_2;
+
+        XMLWriter xml3;
+        dmr_3->print_dap4(xml3);
+        dmr_dest = string(xml3.get_doc());
+        DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
         CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
         DBG(cerr << __func__ << "() - END" << endl);

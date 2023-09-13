@@ -61,6 +61,8 @@ D4Map::print_dap4(XMLWriter &xml)
 
 }
 
+#if 0
+
 D4Maps&
 D4Maps::operator=(const D4Maps &rhs)
 {
@@ -68,3 +70,5 @@ D4Maps::operator=(const D4Maps &rhs)
 	m_duplicate(rhs);
 	return *this;
 }
+
+#endif

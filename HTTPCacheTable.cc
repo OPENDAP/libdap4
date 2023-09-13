@@ -29,7 +29,7 @@
 
 // TODO: Remove unneeded includes.
 
-#include <pthread.h>
+//#include <pthread.h>
 #include <limits.h>
 #include <unistd.h>   // for stat
 #include <sys/types.h>  // for stat and mkdir
