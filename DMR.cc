@@ -32,6 +32,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <memory>
 
 #include "D4Group.h"
 #include "BaseType.h"
