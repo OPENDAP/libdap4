@@ -80,15 +80,15 @@ void Array::_duplicate(const Array &a)
 
     // Deep copy the Maps if they are being used.
     if (a.d_maps) {
-        d_maps = new D4Maps(*a.d_maps);
+        d_maps = new D4Maps(*a.d_maps, this);
     }
     else {
-        d_maps = 0;
+        d_maps = nullptr;
     }
 }
 
 // The first method of calculating length works when only one dimension is
-// constrained and you want the others to appear in total. This is important
+// constrained, and you want the others to appear in the total. This is important
 // when selecting from grids since users may not select from all dimensions
 // in which case that means they want the whole thing. Array projection
 // should probably work this way too, but it doesn't. 9/21/2001 jhrg
