@@ -95,7 +95,7 @@ protected:
     void m_duplicate(const DMR &dmr);
 
 public:
-    DMR();
+    DMR() = default;
     DMR(const DMR &dmr);
     explicit DMR(D4BaseTypeFactory *factory, const std::string &name = "");
 

@@ -125,16 +125,6 @@ private:
 	vector<D4Map*> d_maps;
 	const Array *d_parent;	// Array these Maps belong to; weak pointer
 
-#if 0
-    ///@brief Used by the const copy ctor; we only know the source Array path is valid.
-    void m_duplicate(const D4Maps &maps) {
-        d_parent = nullptr;
-        d_maps.reserve(maps.size());
-        for (auto const map: maps.d_maps) {
-            d_maps.emplace_back(new D4Map(map->name(), map->get_array_path()));
-        }
-    }
-#endif
     void m_duplicate(const D4Maps &maps, const Array *parent) {
         d_parent = parent;
         d_maps.reserve(maps.size());
@@ -149,7 +139,7 @@ public:
     // See comment below at operator=(). jhrg 9/12/23
     D4Maps(const D4Maps &maps) = delete;
 
-    explicit D4Maps(Array* parent) : d_parent(parent) { }
+    explicit D4Maps(const Array* parent) : d_parent(parent) { }
     D4Maps(const D4Maps &maps, const Array *parent) { m_duplicate(maps, parent); }
 
     virtual ~D4Maps() {

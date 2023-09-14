@@ -48,22 +48,6 @@
 #include "debug.h"
 #include "DapIndent.h"
 
-#if 0
-/**
- * DapXmlNamespaces
- *
- * TODO  Replace all uses of the following variables with calls to DapXmlNamespaces
- */
-const string c_xml_xsi = "http://www.w3.org/2001/XMLSchema-instance";
-const string c_xml_namespace = "http://www.w3.org/XML/1998/namespace";
-const string c_default_dap40_schema_location = "http://xml.opendap.org/dap/dap4.0.xsd";
-const string c_dap_40_n_sl = c_dap40_namespace + " " + c_default_dap40_schema_location;
-#endif
-
-#if 0
-const string c_dap40_namespace = "http://xml.opendap.org/ns/DAP/4.0#";
-#endif
-
 using namespace std;
 
 namespace libdap {
@@ -143,16 +127,6 @@ DMR::DMR(D4BaseTypeFactory *factory, DDS &dds)
         : d_factory(factory), d_name(dds.get_dataset_name()), d_filename(dds.filename())
 {
     build_using_dds(dds);
-}
-
-/**
- * Make a DMR which uses the given BaseTypeFactory to create variables.
- *
- * @note The default DAP version is 4.0 - use the DDS class to make DAP2
- * things. The default DMR version is 1.0
- */
-DMR::DMR()
-{
 }
 
 /** The DMR copy constructor. */
@@ -366,21 +340,6 @@ DMR::print_dap4(XMLWriter &xml, bool constrained)
 {
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dataset") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write Dataset element");
-
-#if 0
-    // Reintroduce these if they are really useful. jhrg 4/15/13
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xml",
-            (const xmlChar*) c_xml_namespace.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xml");
-
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns:xsi", (const xmlChar*) c_xml_xsi.c_str())
-            < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:xsi");
-
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xsi:schemaLocation",
-            (const xmlChar*) c_dap_40_n_sl.c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:schemaLocation");
-#endif
 
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "xmlns", (const xmlChar*) get_namespace().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns");
