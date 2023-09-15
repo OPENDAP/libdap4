@@ -40,8 +40,7 @@ Array* D4Map::array(D4Group *root)
     else {
         d_array = dynamic_cast<Array*>(root->find_var(d_array_path));
         if (!d_array)
-            throw InternalErr(__FILE__, __LINE__,
-                              std::string("Failed to find an array at: ").append(d_array_path));
+            throw InternalErr(__FILE__, __LINE__, "Failed to find an array at: " + d_array_path);
         return d_array;
     }
 }

@@ -142,10 +142,10 @@ public:
     	// pointer; it is shared between the array and the Group where the
     	// Dimension is defined. To keep Array manageable to implement, size
     	// will be set here using the value from 'dim' if it is not null.
-        int64_t  size;  ///< The unconstrained dimension size.
-        string name;    ///< The name of this dimension.
+        int64_t size = 0;    ///< The unconstrained dimension size.
+        string name;         ///< The name of this dimension.
 
-        D4Dimension *dim; ///< If not null, a weak pointer to the D4Dimension
+        D4Dimension *dim = nullptr; ///< If not null, a weak pointer to the D4Dimension
 
         // when a DMR is printed for a data response, if an array uses shared
         // dimensions and those sdims have been sliced, make sure to use those
@@ -153,29 +153,24 @@ public:
         // case the array records the sizes of its dimensions and their slices
         // regardless of whether they were provided explicitly in a CE or inherited
         // from a sliced sdim.
-        bool use_sdim_for_slice; ///< Used to control printing the DMR in data responses
+        bool use_sdim_for_slice = false; ///< Used to control printing the DMR in data responses
 
-        int64_t start;  ///< The constraint start index
-        int64_t  stop;  ///< The constraint end index
-        int64_t  stride;  ///< The constraint stride
+        int64_t start = 0;  ///< The constraint start index
+        int64_t  stop = 0;  ///< The constraint end index
+        int64_t  stride = 1;  ///< The constraint stride
         int64_t  c_size;  ///< Size of dimension once constrained
 
-        dimension() : size(0), name(""), dim(0), use_sdim_for_slice(false) {
-            // this information changes with each constraint expression
-            start = 0;
-            stop = 0;
-            stride = 1;
-            c_size = size;
-        }
+        dimension() : c_size(size) {}
 
-        dimension(int64_t s, string n) : size(s), name(n), dim(0), use_sdim_for_slice(false) {
-            start = 0;
-            stop = size - 1;
-            stride = 1;
-            c_size = size;
-        }
+        dimension(int64_t s, string n) : size(s), name(n), stop(s - 1), c_size(size) {}
 
-        explicit dimension(D4Dimension *d);
+        //explicit dimension(D4Dimension *d);
+
+        // Copy the dim pointer because it is a weak pointer.
+#if 0
+        dimension(const dimension &rhs) = default;
+        const &dimension operator=(const dimension &rhs) = default;
+#endif
     };
 
     // The following two structs are for the direct IO optimization.
@@ -257,7 +252,9 @@ public:
 
     void append_dim(int size, const string &name = "");
     void append_dim_ll(int64_t size, const string &name = "");
+#if 0
     void append_dim(D4Dimension *dim);
+#endif
     void prepend_dim(int size, const string& name = "");
     void prepend_dim(D4Dimension *dim);
     void clear_all_dims();

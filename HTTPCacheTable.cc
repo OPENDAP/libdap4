@@ -454,7 +454,7 @@ HTTPCacheTable::create_hash_directory(int hash)
         throw Error(internal_error, "Could not create the directory for the cache at '" + path.str() + "' (" + strerror(errno) + ").");
     }
 
-    // Restore themask
+    // Restore the mask
     umask(mask);
 
     return path.str();

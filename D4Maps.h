@@ -82,9 +82,9 @@ public:
     /// This ctor mimics older behavior - the parent arg is ignored now.
     /// @deprecated
     D4Map(std::string name, Array *array, BaseType * /*parent*/)
-            : d_name(std::move(name)), d_array(array) { }
-    D4Map(std::string name, std::string array)
-            : d_name(std::move(name)), d_array_path(std::move(array)) { }
+            : d_name(std::move(name)), d_array_path(array->FQN()), d_array(array) { }
+    D4Map(std::string name, std::string array_path)
+            : d_name(std::move(name)), d_array_path(std::move(array_path)) { }
     ///@}
 	virtual ~D4Map() = default;
 

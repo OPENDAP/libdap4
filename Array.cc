@@ -165,8 +165,7 @@ Array::Array(const string &n, const string &d, BaseType *v, bool is_dap4 /* defa
 }
 
 /** @brief The Array copy constructor. */
-Array::Array(const Array &rhs) :
-    Vector(rhs)
+Array::Array(const Array &rhs) : Vector(rhs)
 {
     _duplicate(rhs);
 }
@@ -540,16 +539,12 @@ void Array::append_dim(int size, const string &name)
 
 void Array::append_dim_ll(int64_t size, const string &name)
 {
-
-#if 0
-    dimension d(size, www2id(name));
-    _shape.push_back(d);
-#endif
-
     _shape.emplace_back(size,www2id(name));
     update_length();
 }
 
+// TODO replace with path version. jhrg 9/16/23
+#if 0
 void Array::append_dim(D4Dimension *dim)
 {
     dimension d(/*dim->size(), www2id(dim->name()),*/dim);
@@ -557,6 +552,7 @@ void Array::append_dim(D4Dimension *dim)
 
     update_length();
 }
+#endif
 
 /** Creates a new OUTER dimension (slowest varying in rowmajor)
  * for the array by prepending rather than appending it.
@@ -572,6 +568,7 @@ void Array::prepend_dim(int size, const string& name/* = "" */)
     update_length(); // the number is ignored...
 }
 
+// TODO replace with path version. jhrg 9/16/23
 void Array::prepend_dim(D4Dimension *dim)
 {
     dimension d(/*dim->size(), www2id(dim->name()),*/dim);

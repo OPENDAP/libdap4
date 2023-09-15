@@ -285,6 +285,7 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
 
     	if (!dim)
     		throw Error("The dimension '" + name + "' was not found while parsing the variable '" + a->name() + "'.");
+        // TODO Put the path in here. jhrg 9/15/23
     	a->append_dim(dim);
     	return true;
     }
