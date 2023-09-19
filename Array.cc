@@ -62,6 +62,8 @@ using namespace std;
 
 namespace libdap {
 
+#if 0
+
 Array::dimension::dimension(D4Dimension *d) :
     dim(d), use_sdim_for_slice(true)
 {
@@ -73,6 +75,8 @@ Array::dimension::dimension(D4Dimension *d) :
     stride = 1;
     c_size = size;
 }
+
+#endif
 
 void Array::_duplicate(const Array &a)
 {
@@ -554,7 +558,7 @@ void Array::append_dim(D4Dimension *dim)
 }
 #endif
 
-/** Creates a new OUTER dimension (slowest varying in rowmajor)
+/** Creates a new OUTER dimension (slowest varying in row major order)
  * for the array by prepending rather than appending it.
  * @param size cardinality of the new dimension
  * @param name  optional name for the new dimension
@@ -562,11 +566,13 @@ void Array::append_dim(D4Dimension *dim)
 void Array::prepend_dim(int size, const string& name/* = "" */)
 {
     dimension d(size, www2id(name));
-// Shifts the whole array, but it's tiny in general
+    // Shifts the whole array, but it's tiny in general
     _shape.insert(_shape.begin(), d);
 
-    update_length(); // the number is ignored...
+    update_length();
 }
+
+#if 0
 
 // TODO replace with path version. jhrg 9/16/23
 void Array::prepend_dim(D4Dimension *dim)
@@ -577,6 +583,8 @@ void Array::prepend_dim(D4Dimension *dim)
 
     update_length(); // the number is ignored...
 }
+
+#endif
 
 /** Remove all the dimensions currently set for the Array. This also
  * removes all constraint information.

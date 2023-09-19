@@ -164,7 +164,7 @@ public:
 
         dimension(int64_t s, string n) : size(s), name(n), stop(s - 1), c_size(size) {}
 
-        //explicit dimension(D4Dimension *d);
+        explicit dimension(D4Dimension *d);
 
         // Copy the dim pointer because it is a weak pointer.
 #if 0
@@ -256,7 +256,10 @@ public:
     void append_dim(D4Dimension *dim);
 #endif
     void prepend_dim(int size, const string& name = "");
+
+#if 0
     void prepend_dim(D4Dimension *dim);
+#endif
     void clear_all_dims();
     void rename_dim(const string &oldName = "", const string &newName = "");
 

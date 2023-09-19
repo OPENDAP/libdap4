@@ -101,9 +101,11 @@ public:
 class D4Dimensions {
     vector<D4Dimension*> d_dims;
 
-    D4Group *d_parent;		// the group that holds this set of D4Dimensions; weak pointer, don't delete
+    D4Group *d_parent = nullptr;    // the group that holds this set of D4Dimensions; weak pointer, don't delete
 
+#if 0
 protected:
+#endif
     // Note Code in Array depends on the order of these 'new' dimensions
     // matching the 'old' dimensions they are derived from. See
     // Array::update_dimension_pointers. jhrg 8/25/14
