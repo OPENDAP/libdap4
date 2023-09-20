@@ -24,17 +24,20 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
-
 #include <cassert>
 
 #include <iostream>
 #include <sstream>
+
+#if 0
+
 #include <iomanip>
 
 #include <stdint.h>
 
 #include "crc.h"
+
+#endif
 
 #include "BaseType.h"
 #include "Array.h"
@@ -48,6 +51,8 @@
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
+#include "escaping.h"
+#include "util.h"
 #include "debug.h"
 
 /**
@@ -323,7 +328,6 @@ D4Group::m_find_map_source_helper(const string &path)
 		else
 			lpath = lpath.substr(1);
 	}
-
 	string::size_type pos = lpath.find('/');
 	if (pos == string::npos) {
 		// name looks like 'bar'
@@ -332,10 +336,31 @@ D4Group::m_find_map_source_helper(const string &path)
 
 	// name looks like foo/bar/baz where foo and bar must be groups
 	string grp_name = lpath.substr(0, pos);
-	lpath = lpath.substr(pos + 1);
 
 	D4Group *grp = find_child_grp(grp_name);
-	return (grp == 0) ? 0: grp->var(lpath);
+	lpath = lpath.substr(pos + 1);
+
+    // We need to resolve the case that
+    // many group layers are involved such as /foo/bar/bar2/bar3/.../baz
+    // The following code handles this.
+    // KY 2023-05-21
+    //
+	pos = lpath.find('/');
+
+    if (pos == string::npos) 
+	    return (grp == nullptr) ? nullptr: grp->var(lpath);
+    
+    // Recursively check the child groups until we hit the leaf.
+    while (pos != string::npos) {
+
+	    grp_name = lpath.substr(0, pos);
+	    grp = grp->find_child_grp(grp_name);
+	    lpath = lpath.substr(pos + 1);
+	    pos = lpath.find('/');
+    }
+
+	return (grp == nullptr) ? nullptr: grp->var(lpath);
+
 }
 
 D4EnumDef *
@@ -366,10 +391,10 @@ D4Group::find_enum_def(const string &path)
 }
 
 /**
- * Find a variable using it's FUlly Qualified Name (FQN). The leading '/' is optional.
+ * Find a variable using its Fully Qualified Name (FQN). The leading '/' is optional.
  *
  * @param path The FQN to the variable
- * @return A BaseType* to the variable of null if it was not found
+ * @return A BaseType* to the variable or null if it was not found
  * @see BaseType::FQN()
  */
 BaseType *
@@ -387,8 +412,15 @@ D4Group::find_var(const string &path)
 
     string::size_type pos = lpath.find('/');
     if (pos == string::npos) {
-        // name looks like 'bar' or bar.baz; lookup in the Constructor that's part of the Group
-    	return var(lpath);
+        // New behavior to accommodate cases where the path ends in a group - the
+        // CE is being used to request all the variables in a Group. So, first check
+        // if this is the name of a Group and if so, return that. Otherwise, look in
+        // the Group's Constructor for a matching variable. jhrg 8/3/22
+        D4Group *grp = find_child_grp(lpath);
+        if (grp != nullptr)
+            return grp;
+        else
+    	    return var(lpath);
     }
 
     // name looks like foo/bar/baz where foo and bar must be groups
@@ -396,76 +428,64 @@ D4Group::find_var(const string &path)
     lpath = lpath.substr(pos + 1);
 
     D4Group *grp = find_child_grp(grp_name);
-    return (grp == 0) ? 0 : grp->find_var(lpath);
+    if (grp == nullptr)
+        return nullptr;
+    else if (lpath.empty())
+        return grp;
+    else
+        return grp->find_var(lpath);
 }
 
-/** Compute the size of all of the variables in this group and it's children,
+/**
+ * Compute the size of all of the variables in this group and its children,
  * in kilobytes
  *
  * @param constrained Should the current constraint be taken into account?
  * @return The size in kilobytes
+ * @deprecated Use request_size_kb() instead.
  */
 long
 D4Group::request_size(bool constrained)
 {
-    long long size = 0;
-    // variables
-    Constructor::Vars_iter v = var_begin();
-    while (v != var_end()) {
-        if (constrained) {
-            if ((*v)->send_p())
-                size += (*v)->width(constrained);
-        }
-        else {
-            size += (*v)->width(constrained);
-        }
-
-        ++v;
-    }
-
-    // groups
-    groupsIter g = d_groups.begin();
-    while (g != d_groups.end())
-        size += (*g++)->request_size(constrained);
-
-    return size / 1024;
+    return (long) request_size_kb(constrained);
 }
 
 /**
  * @brief Get the estimated size of a response in kilobytes.
- * This method looks at the variables in the DDS and computes
- * the number of bytes in the response.
  *
- *  @note This version of the method does a poor job with Sequences. A better
- *  implementation would look at row-constraint-based limitations and use them
- *  for size computations. If a row-constraint is missing, return an error.
+ * This method looks at the variables in the DMR and computes
+ * the number of kilobytes in the response.
  *
- *  @param constrained Should the size of the whole DDS be used or should the
- *  current constraint be taken into account?
+ * @note This version of the method does a poor job with Sequences. A better
+ * implementation would look at row-constraint-based limitations and use them
+ * for size computations. If a row-constraint is missing, return an error.
+ *
+ * @param constrained Should the size of the whole DMR be used or should the
+ * current constraint be taken into account?
+ * @return The size in kilobytes
  */
 uint64_t D4Group::request_size_kb(bool constrained)
 {
     uint64_t size = 0;
     // variables
-    Constructor::Vars_iter v = var_begin();
-    while (v != var_end()) {
+    for (auto &btp: d_vars) {
         if (constrained) {
-            if ((*v)->send_p())
-                size += (*v)->width(constrained);
+            if (btp->send_p())
+                size += btp->width_ll(constrained);
         }
         else {
-            size += (*v)->width(constrained);
+            size += btp->width_ll(constrained);
         }
-        ++v;
     }
-    // groups
-    groupsIter g = d_groups.begin();
-    while (g != d_groups.end())
-        size += (*g++)->request_size(constrained);
 
-    return size / 1024;
+    size = size / 1024; // Make into kilobytes
+
+    // All the child groups
+    for(auto grp : d_groups)
+        size += grp->request_size_kb(constrained);
+
+    return size;
 }
-
 
 void
 D4Group::set_read_p(bool state)
@@ -649,6 +669,84 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
             throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
     }
 }
+
+void
+D4Group::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained)
+{
+    ostringstream oss;
+    print_decl(oss, space, print_semi, constraint_info, constrained);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+}
+
+void
+D4Group::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained)
+{
+    if (constrained && !send_p())
+        return;
+
+    out << space << type_name() << " {\n" ;
+    for (auto var: d_vars) {
+        var->print_decl(out, space + "    ", true, constraint_info, constrained);
+    }
+
+    for (auto grp: d_groups) {
+        grp->print_decl(out, space + "    ", true, constraint_info, constrained);
+    }
+
+    out << space << "} " << id2www(name()) ;
+
+    if (constraint_info) { // Used by test drivers only.
+        if (send_p())
+            out << ": Send True";
+        else
+            out << ": Send False";
+    }
+
+    if (print_semi)
+        out << ";\n" ;
+}
+
+void
+D4Group::print_val(FILE *out, string space, bool print_decl_p)
+{
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+}
+
+void
+D4Group::print_val(ostream &out, string space, bool print_decl_p)
+{
+    if (print_decl_p) {
+        print_decl(out, space, false);
+        out << " = " ;
+    }
+
+    out << "{ " ;
+    bool padding_needed = false;    // Add padding - which is complex with the two parts. jhrg 8/5/22
+    for (Vars_citer i = d_vars.begin(), e = d_vars.end(); i != e; i++, (void)(i != e && out << ", ")) {
+        (*i)->print_val(out, "", false);
+        padding_needed = true;
+    }
+
+    if (padding_needed)
+        out << " ";
+
+    padding_needed = false;
+    for (auto grp: d_groups) {
+        grp->print_val(out, "", false);
+        padding_needed = true;
+    }
+
+    if (padding_needed)
+        out << " }";
+    else
+        out << "}" ;
+
+    if (print_decl_p)
+        out << ";\n" ;
+}
+
 #if 0
 /** @brief DAP4 to DAP2 transform
  *
@@ -725,7 +823,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
                 parent_attr_table->append_container(at, at->get_name());
             }
             else {
-                parent_attr_table->append_attr((*i)->name, AttrType_to_String((*i)->type), (*i)->attr);
+                parent_attr_table->append_attr((*i)->name, AttrType_to_String((*i)->type), (*i)->attr,(*i)->is_utf8_str);
             }
         }
         delete group_attrs;
@@ -790,6 +888,39 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
     }
 
     return results;
+}
+
+/**
+ * When send_p() is true a description of the instance is added to the inventory and true is returned.
+ * @param inventory is a value-result parameter
+ * @return True when send_p() is true, false otherwise
+ */
+bool D4Group::is_dap4_projected(std::vector<std::string> &inventory)
+{
+    bool has_projected_dap4 = false;
+    if(send_p()) {
+        // Groups are a dap4 thing, so if the Group is projected...
+        has_projected_dap4 = true;
+        inventory.emplace_back(type_name() + " " + FQN());
+
+        // Even tho this Group is a projected dap4 variable we still need to
+        // generate an inventory of it's dap4 attributes and projected dap4 child variables
+        // and groups.
+
+        //Inventory the Group's dap4 attributes
+        has_projected_dap4 |= attributes()->has_dap4_types(FQN(), inventory);
+
+        // Process the child variables.
+        for (const auto var: variables()) {
+            has_projected_dap4 |= var->is_dap4_projected(inventory);
+        }
+        // Process the child Groups.
+        for (const auto grp: groups()) {
+            has_projected_dap4 |= grp->is_dap4_projected(inventory);
+        }
+    }
+    return has_projected_dap4;
+
 }
 
 

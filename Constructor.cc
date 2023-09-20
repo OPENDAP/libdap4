@@ -29,17 +29,12 @@
 // Authors:
 //      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
 
-
 #include "config.h"
 
-//#define DODS_DEBUG
-
+#include <cstdint>
 #include <string>
 #include <sstream>
 #include <algorithm>
-#include <functional>
-
-#include <stdint.h>
 
 #include "crc.h"
 
@@ -56,11 +51,9 @@
 
 #include "escaping.h"
 #include "util.h"
-#include "Error.h"
 #include "InternalErr.h"
 #include "DapIndent.h"
 
-// #define DODS_DEBUG 1
 #include "debug.h"
 
 using namespace std;
@@ -72,105 +65,39 @@ namespace libdap {
 void
 Constructor::m_duplicate(const Constructor &c)
 {
-	DBG(cerr << "In Constructor::m_duplicate for " << c.name() << endl);
 	// Clear out any spurious vars in Constructor::d_vars
 	// Moved from Grid::m_duplicate. jhrg 4/3/13
 	d_vars.clear(); // [mjohnson 10 Sep 2009]
 
-	Vars_citer i = c.d_vars.begin();
-	while (i != c.d_vars.end()) {
-		BaseType *btp = (*i++)->ptr_duplicate();
-		btp->set_parent(this);
-		d_vars.push_back(btp);
-	}
-
-	DBG(cerr << "Exiting Constructor::m_duplicate for " << c.name() << endl);
+    for (auto var: c.d_vars) {
+        BaseType *btp = var->ptr_duplicate();
+        btp->set_parent(this);
+        d_vars.push_back(btp);
+    }
 }
 
 // Public member functions
 
-Constructor::Constructor(const string &name, const Type &type, bool is_dap4)
-        : BaseType(name, type, is_dap4)
-{}
-
-/** Server-side constructor that takes the name of the variable to be
- * created, the dataset name from which this variable is being created, and
- * the type of data being stored in the Constructor. This is a protected
- * constructor, available only to derived classes of Constructor
- *
- * @param name string containing the name of the variable to be created
- * @param dataset string containing the name of the dataset from which this
- * variable is being created
- * @param type type of data being stored
- */
-Constructor::Constructor(const string &name, const string &dataset, const Type &type, bool is_dap4)
-        : BaseType(name, dataset, type, is_dap4)
-{}
-
-Constructor::Constructor(const Constructor &rhs) : BaseType(rhs), d_vars(0)
-{
-    DBG(cerr << "In Constructor::copy_ctor for " << rhs.name() << endl);
-    m_duplicate(rhs);
-}
-
-Constructor::~Constructor()
-{
-    Vars_iter i = d_vars.begin();
-    while (i != d_vars.end()) {
-        delete *i++;
-    }
-}
-
-Constructor &
-Constructor::operator=(const Constructor &rhs)
-{
-    if (this == &rhs)
-        return *this;
-    BaseType::operator=(rhs);
-    m_duplicate(rhs);
-    return *this;
-}
-
 // A public method, but just barely...
+// TODO Understand what this method does. What is dest? Is it the parent-to-be
+//  of the variables in this Constructor? jhrg 4/25/22
 void
 Constructor::transform_to_dap4(D4Group *root, Constructor *dest)
 {
-    DBG(cerr << __func__ << "() - BEGIN (name:"<< name() <<
-        ")(type:"<< type_name()<<
-        ")(root:'"<< root->name()<<"':"<<(void*)root <<
-        ")(dest:'"<< dest->name()<<"':"<< (void *) dest<< ")"
-        << endl;);
-
     for (Constructor::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
+
         BaseType *d4_var = dest->var((*i)->name());
         // Don't add duplicate variables. We have to make this check
-        // because some of the child variables may add arrays
+        // because some child variables may add arrays
         // to the root object. For example, this happens in
         // Grid with the Map Arrays - ndp - 05/08/17
-        if(!d4_var){
-            /*
-            BaseType *new_var = (*i)->transform_to_dap4(root, dest);
-            if (new_var) {	// Might be a Grid; see the comment in BaseType::transform_to_dap4()
-                new_var->set_parent(dest);
-                dest->add_var_nocopy(new_var);
-            }
-            */
-            DBG(cerr << __func__ << "() - Transforming variable: '" <<
-                (*i)->name() << "'" << endl; );
+        if (!d4_var) {
             (*i)->transform_to_dap4(root /*group*/, dest /*container*/);
-        }
-        else {
-            DBG(cerr << __func__ << "() - Skipping variable: " <<
-                d4_var->type_name() << " " << d4_var->name() << " because a variable with" <<
-                " this name already exists in the root group." << endl; );
         }
     }
     dest->attributes()->transform_to_dap4(get_attr_table());
     dest->set_is_dap4(true);
-    DBG(cerr << __func__ << "() - END (name:"<< name() << ")(type:"<< type_name()<< ")" << endl;);
 }
-
-
 
 string
 Constructor::FQN() const
@@ -192,8 +119,8 @@ Constructor::element_count(bool leaves)
         return d_vars.size();
     else {
         int i = 0;
-        for (Vars_iter j = d_vars.begin(); j != d_vars.end(); j++) {
-            i += (*j)->element_count(leaves);
+        for (auto var: d_vars) {
+            i += var->element_count(leaves);
         }
         return i;
     }
@@ -202,56 +129,77 @@ Constructor::element_count(bool leaves)
 void
 Constructor::set_send_p(bool state)
 {
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        (*i)->set_send_p(state);
+    for (auto var: d_vars) {
+        var->set_send_p(state);
     }
 
     BaseType::set_send_p(state);
 }
 
+/**
+ * @brief Set the 'read_p' property for the Constructor and its members
+ *
+ * This method sets read_p for all of the Constructor. The read() method
+ * is much more selective and only sets read_p for the Constructor itself,
+ * leaving the value of the property of the members up to their read()
+ * methods. Calling this with false will clear the property of all the
+ * member variables.
+ *
+ * @param state Set the read_p property to this state.
+ */
 void
 Constructor::set_read_p(bool state)
 {
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        (*i)->set_read_p(state);
+    for (auto var: d_vars) {
+        var->set_read_p(state);
     }
 
     BaseType::set_read_p(state);
 }
 
-#if 0
-// TODO Recode to use width(bool). Bur see comments in BaseType.h
-unsigned int
-Constructor::width()
-{
-    unsigned int sz = 0;
-
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        sz += (*i)->width();
-    }
-
-    return sz;
-}
-#endif
 /** This version of width simply returns the same thing as width() for simple
     types and Arrays. For Structure it returns the total size if constrained
     is false, or the size of the elements in the current projection if true.
 
     @param constrained If true, return the size after applying a constraint.
     @return  The number of bytes used by the variable.
+    @deprecated Use width_ll()
  */
 unsigned int
 Constructor::width(bool constrained) const
 {
     unsigned int sz = 0;
 
-    for (Vars_citer i = d_vars.begin(); i != d_vars.end(); i++) {
+    for (auto var: d_vars) {
         if (constrained) {
-            if ((*i)->send_p())
-                sz += (*i)->width(constrained);
+            if (var->send_p())
+                sz += var->width(constrained);
         }
         else {
-            sz += (*i)->width(constrained);
+            sz += var->width(constrained);
+        }
+    }
+
+    return sz;
+}
+
+/**
+ * @brief Get the width of the Constructor's fields
+ * @param constrained If true, return the constrained size
+ * @return The number of bytes needed to store the values of this instance
+ */
+int64_t
+Constructor::width_ll(bool constrained) const
+{
+    int64_t sz = 0;
+
+    for (auto var: d_vars) {
+        if (constrained) {
+            if (var->send_p())
+                sz += var->width_ll(constrained);
+        }
+        else {
+            sz += var->width_ll(constrained);
         }
     }
 
@@ -288,19 +236,17 @@ Constructor::var(const string &n, btp_stack &s)
 BaseType *
 Constructor::m_leaf_match(const string &name, btp_stack *s)
 {
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        if ((*i)->name() == name) {
+    for (auto var: d_vars) {
+        if (var->name() == name) {
             if (s) {
-                DBG(cerr << "Pushing " << this->name() << endl);
                 s->push(static_cast<BaseType *>(this));
             }
-            return *i;
+            return var;
         }
-        if ((*i)->is_constructor_type()) {
-            BaseType *btp = (*i)->var(name, false, s);
+        if (var->is_constructor_type()) {
+            BaseType *btp = var->var(name, false, s);
             if (btp) {
                 if (s) {
-                    DBG(cerr << "Pushing " << this->name() << endl);
                     s->push(static_cast<BaseType *>(this));
                 }
                 return btp;
@@ -308,7 +254,7 @@ Constructor::m_leaf_match(const string &name, btp_stack *s)
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 // Protected method
@@ -316,12 +262,12 @@ BaseType *
 Constructor::m_exact_match(const string &name, btp_stack *s)
 {
     // Look for name at the top level first.
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        if ((*i)->name() == name) {
+    for (auto var: d_vars) {
+        if (var->name() == name) {
             if (s)
                 s->push(static_cast<BaseType *>(this));
 
-            return *i;
+            return var;
         }
     }
 
@@ -340,17 +286,17 @@ Constructor::m_exact_match(const string &name, btp_stack *s)
             return agg_ptr->var(field, true, s); // recurse
         }
         else
-            return 0;  // qualified names must be *fully* qualified
+            return nullptr;  // qualified names must be *fully* qualified
     }
 
-    return 0;
+    return nullptr;
 }
 
 /** Returns an iterator referencing the first structure element. */
 Constructor::Vars_iter
 Constructor::var_begin()
 {
-    return d_vars.begin() ;
+    return d_vars.begin();
 }
 
 /** Returns an iterator referencing the end of the list of structure
@@ -358,7 +304,7 @@ Constructor::var_begin()
 Constructor::Vars_iter
 Constructor::var_end()
 {
-    return d_vars.end() ;
+    return d_vars.end();
 }
 
 /** Return a reverse iterator that references the last element. */
@@ -394,6 +340,33 @@ Constructor::get_var_index(int i)
     return *(d_vars.begin() + i);
 }
 
+/**
+ * @brief Set the ith element of d_vars to a variable object.
+ * @note  This method only sets the ith element to a BaseType object. 
+ * The user should be responsible to release or allocate the resource properly.
+ * Use this method cautionally. 
+ * @param bt A pointer to the variable that is assigned to the ith element.
+ * @param i The index of the variable to be set.
+ */
+
+void Constructor::set_var_index(BaseType *bt,int i) {
+
+    if (!bt)
+        throw InternalErr(__FILE__, __LINE__, "The BaseType parameter cannot be null.");
+
+    if (i<0 || i>= (int)(d_vars.size())) 
+        throw InternalErr(__FILE__, __LINE__, "The index must be within the variable vector  range..");
+
+    bt->set_parent(this);
+
+    // Update the is_dap4 property
+    if (bt->is_dap4())
+        set_is_dap4(true);
+
+    d_vars[i] = bt;
+
+}
+
 /** Adds an element to a Constructor.
 
     @param bt A pointer to the variable to add to this Constructor.
@@ -405,18 +378,13 @@ Constructor::add_var(BaseType *bt, Part)
     // Passing and invalid pointer to an object is a developer's error.
     if (!bt)
         throw InternalErr(__FILE__, __LINE__, "The BaseType parameter cannot be null.");
-#if 0
-    if (bt->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Structure.");
-#endif
+
     // Jose Garcia
     // Now we add a copy of bt so the external user is able to destroy bt as
     // he/she wishes. The policy is: "If it is allocated outside, it is
     // deallocated outside, if it is allocated inside, it is deallocated
     // inside"
-    BaseType *btp = bt->ptr_duplicate();
-    btp->set_parent(this);
-    d_vars.push_back(btp);
+    add_var_nocopy(bt->ptr_duplicate());
 }
 
 /** Adds an element to a Constructor.
@@ -428,54 +396,63 @@ Constructor::add_var_nocopy(BaseType *bt, Part)
 {
     if (!bt)
         throw InternalErr(__FILE__, __LINE__, "The BaseType parameter cannot be null.");
-#if 0
-    if (bt->is_dap4_only_type())
-        throw InternalErr(__FILE__, __LINE__, "Attempt to add a DAP4 type to a DAP2 Structure.");
-#endif
+
     bt->set_parent(this);
     d_vars.push_back(bt);
+
+    // Update the is_dap4 property
+    if (bt->is_dap4())
+        set_is_dap4(true);
 }
 
-/** Remove an element from a Constructor.
-
-    @param n name of the variable to remove */
+/**
+ * @brief Remove an element from a Constructor.
+ * @note New version. There is a subtle change in that this version will
+ * remove all variables in this Constructor with name 'n' while the old
+ * version would just remove the first variable.
+ * @param n name of the variable to remove
+ */
 void
 Constructor::del_var(const string &n)
 {
-	// TODO remove_if? find_if?
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        if ((*i)->name() == n) {
-            BaseType *bt = *i ;
-            d_vars.erase(i) ;
-            delete bt ; bt = 0;
-            return;
-        }
-    }
+    auto to_remove = stable_partition(d_vars.begin(), d_vars.end(),
+                                      [n](BaseType* btp){ return btp->name() != n; });
+    for_each(to_remove, d_vars.end(), [](BaseType* btp){ delete btp; });
+    d_vars.erase(to_remove, d_vars.end());
 }
 
+/**
+ * @brief Delete the BaseType* and erase the iterator .
+ * @note It is OK to call this with an iterator that points to nullptr.
+ * @param i The iterator that points to the BaseType.
+ */
 void
 Constructor::del_var(Vars_iter i)
 {
-    if (*i != 0) {
-        BaseType *bt = *i;
-        d_vars.erase(i);
-        delete bt;
-    }
+    delete *i;
+    d_vars.erase(i);
 }
 
-/** @brief simple implementation of read that iterates through vars
- *  and calls read on them
+/**
+ * @brief Read the elements of Constructor marked for transmission
  *
- * @return returns false to signify all has been read
+ * Iterate over the top level members of the Constructor and read all
+ * of them that have the 'send_p' property set to true. Assume the
+ * read() methods correctly set the 'read_p' property. Once done,
+ * set 'read_p' for the Constructor itself (but not for the members,
+ * that is left up to their individual read() methods).
+ *
+ * @return returns false; the return value is a relic.
  */
 bool Constructor::read()
 {
-	DBG(cerr << "Entering  Constructor::read..." << endl);
     if (!read_p()) {
-        for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-            (*i)->read();
+        for (auto var: d_vars) {
+            if (var->send_p())
+                var->read();
         }
-        set_read_p(true);
+        // Set read_p for the Constructor
+        BaseType::set_read_p(true);
     }
 
     return false;
@@ -484,13 +461,15 @@ bool Constructor::read()
 void
 Constructor::intern_data(ConstraintEvaluator & eval, DDS & dds)
 {
-    DBG(cerr << "Constructor::intern_data: " << name() << endl);
+    if (is_dap4())
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (").append(name()).append(")."), __FILE__, __LINE__);
+
     if (!read_p())
         read();          // read() throws Error and InternalErr
 
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        if ((*i)->send_p()) {
-            (*i)->intern_data(eval, dds);
+    for (auto var: d_vars) {
+        if (var->send_p()) {
+            var->intern_data(eval, dds);
         }
     }
 }
@@ -498,32 +477,27 @@ Constructor::intern_data(ConstraintEvaluator & eval, DDS & dds)
 bool
 Constructor::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
-#if USE_LOCAL_TIMEOUT_SCHEME
-    dds.timeout_on();
-#endif
     if (!read_p())
         read();  // read() throws Error and InternalErr
 
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
-#if USE_LOCAL_TIMEOUT_SCHEME
-    dds.timeout_off();
-#endif
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        if ((*i)->send_p()) {
+
+    for (auto var: d_vars) {
+        if (var->send_p()) {
 #ifdef CHECKSUMS
             XDRStreamMarshaller *sm = dynamic_cast<XDRStreamMarshaller*>(&m);
-            if (sm && sm->checksums() && (*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
+            if (sm && sm->checksums() && var->type() != dods_structure_c && var->type() != dods_grid_c)
                 sm->reset_checksum();
 
-            (*i)->serialize(eval, dds, m, false);
+            var->serialize(eval, dds, m, false);
 
-            if (sm && sm->checksums() && (*i)->type() != dods_structure_c && (*i)->type() != dods_grid_c)
+            if (sm && sm->checksums() && var->type() != dods_structure_c && var->type() != dods_grid_c)
                 sm->get_checksum();
 #else
             // (*i)->serialize(eval, dds, m, false);
             // Only Sequence and Vector run the evaluator.
-            (*i)->serialize(eval, dds, m, true);
+            var->serialize(eval, dds, m, true);
 #endif
         }
     }
@@ -534,8 +508,8 @@ Constructor::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool 
 bool
 Constructor::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 {
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        (*i)->deserialize(um, dds, reuse);
+    for (auto var: d_vars) {
+        var->deserialize(um, dds, reuse);
     }
 
     return false;
@@ -548,15 +522,14 @@ Constructor::compute_checksum(Crc32 &)
 }
 
 void
-Constructor::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator & eval*/)
+Constructor::intern_data()
 {
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        if ((*i)->send_p()) {
-            (*i)->intern_data(/*checksum, dmr, eval*/);
+    for (auto var: d_vars) {
+        if (var->send_p()) {
+            var->intern_data(/*checksum, dmr, eval*/);
         }
     }
 }
-
 
 /**
  * @brief Serialize a Constructor
@@ -570,9 +543,8 @@ Constructor::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator & eval
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
 void
-Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter)
+Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter)
 {
-#if 1
 	// Not used for the same reason the equivalent code in D4Group::serialize()
 	// is not used. Fail for D4Sequence and general issues with memory use.
 	//
@@ -581,21 +553,14 @@ Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &e
 	// ::serialize() method calls read_next_instance(). What seems to be happening
 	// is that this call to read gets the first set of values, but does not store
 	// them; the call to serialize then runs the D4Sequence::serialize() method that
-	// _does_ read all of the sequence data and then serialize it. However, the first
+	// _does_ read all the sequence data and then serialize it. However, the first
 	// sequence instance is missing...
     if (!read_p())
         read();  // read() throws Error
-#endif
-#if 0
-    // place holder for now. There may be no need for this; only Array and Seq?
-    // jhrg 9/6/13
-    if (filter && !eval.eval_selection(dmr, dataset()))
-        return true;
-#endif
 
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        if ((*i)->send_p()) {
-            (*i)->serialize(m, dmr, /*eval,*/ filter);
+    for (auto var: d_vars) {
+        if (var->send_p()) {
+            var->serialize(m, dmr, filter);
         }
     }
 }
@@ -603,14 +568,13 @@ Constructor::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &e
 void
 Constructor::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
 {
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        (*i)->deserialize(um, dmr);
+    for (auto var: d_vars) {
+        var->deserialize(um, dmr);
     }
 }
 
 void
-Constructor::print_decl(FILE *out, string space, bool print_semi,
-                        bool constraint_info, bool constrained)
+Constructor::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained)
 {
     ostringstream oss;
     print_decl(oss, space, print_semi, constraint_info, constrained);
@@ -618,15 +582,14 @@ Constructor::print_decl(FILE *out, string space, bool print_semi,
 }
 
 void
-Constructor::print_decl(ostream &out, string space, bool print_semi,
-                        bool constraint_info, bool constrained)
+Constructor::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained)
 {
     if (constrained && !send_p())
         return;
 
     out << space << type_name() << " {\n" ;
-    for (Vars_citer i = d_vars.begin(); i != d_vars.end(); i++) {
-        (*i)->print_decl(out, space + "    ", true, constraint_info, constrained);
+    for (auto var: d_vars) {
+        var->print_decl(out, space + "    ", true, constraint_info, constrained);
     }
     out << space << "} " << id2www(name()) ;
 
@@ -658,11 +621,7 @@ Constructor::print_val(ostream &out, string space, bool print_decl_p)
     }
 
     out << "{ " ;
-    for (Vars_citer i = d_vars.begin(), e = d_vars.end(); i != e;
-         i++, (void)(i != e && out << ", ")) {
-
-        DBG(cerr << (*i)->name() << " isa " << (*i)->type_name() << endl);
-
+    for (Vars_citer i = d_vars.begin(), e = d_vars.end(); i != e; i++, (void)(i != e && out << ", ")) {
         (*i)->print_val(out, "", false);
     }
 
@@ -694,21 +653,6 @@ Constructor::print_xml(ostream &out, string space, bool constrained)
     out << xml.get_doc();
 }
 
-class PrintFieldXMLWriter : public unary_function<BaseType *, void>
-{
-    XMLWriter &d_xml;
-    bool d_constrained;
-public:
-    PrintFieldXMLWriter(XMLWriter &x, bool c)
-            : d_xml(x), d_constrained(c)
-    {}
-
-    void operator()(BaseType *btp)
-    {
-        btp->print_xml_writer(d_xml, d_constrained);
-    }
-};
-
 void
 Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
 {
@@ -727,37 +671,16 @@ Constructor::print_xml_writer(XMLWriter &xml, bool constrained)
     if (!is_dap4() && get_attr_table().get_size() > 0)
         get_attr_table().print_xml_writer(xml);
 
-    bool has_variables = (var_begin() != var_end());
-    if (has_variables)
-        for_each(var_begin(), var_end(), PrintFieldXMLWriter(xml, constrained));
+    if (!d_vars.empty())
+        for_each(d_vars.begin(), d_vars.end(),
+                 [&xml, constrained](BaseType *btp) { btp->print_xml_writer(xml, constrained); });
 
     if (is_dap4())
         attributes()->print_dap4(xml);
 
-#if 0
-    // Moved up above so that the DDX tests for various handles will still work.
-    // jhrg 8/15/14
-    if (!is_dap4() && get_attr_table().get_size() > 0)
-        get_attr_table().print_xml_writer(xml);
-#endif
-
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
 }
-
-class PrintDAP4FieldXMLWriter : public unary_function<BaseType *, void>
-{
-    XMLWriter &d_xml;
-    bool d_constrained;
-public:
-    PrintDAP4FieldXMLWriter(XMLWriter &x, bool c) : d_xml(x), d_constrained(c) {}
-
-    void operator()(BaseType *btp)
-    {
-        btp->print_dap4(d_xml, d_constrained);
-    }
-};
-
 
 void
 Constructor::print_dap4(XMLWriter &xml, bool constrained)
@@ -772,16 +695,15 @@ Constructor::print_dap4(XMLWriter &xml, bool constrained)
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    bool has_variables = (var_begin() != var_end());
-    if (has_variables)
-        for_each(var_begin(), var_end(), PrintDAP4FieldXMLWriter(xml, constrained));
+    if (!d_vars.empty())
+        for_each(d_vars.begin(), d_vars.end(),
+                 [&xml, constrained](BaseType *btp) { btp->print_dap4(xml, constrained); });
 
     attributes()->print_dap4(xml);
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
 }
-
 
 bool
 Constructor::check_semantics(string &msg, bool all)
@@ -792,12 +714,13 @@ Constructor::check_semantics(string &msg, bool all)
     if (!unique_names(d_vars, name(), type_name(), msg))
         return false;
 
-    if (all)
-        for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-            if (!(*i)->check_semantics(msg, true)) {
+    if (all) {
+        for (auto var: d_vars) {
+            if (!var->check_semantics(msg, true)) {
                 return false;
             }
         }
+    }
 
     return true;
 }
@@ -807,9 +730,6 @@ Constructor::check_semantics(string &msg, bool all)
     and Sequences the conditions are more complex. The implementation
     provided by this class always returns false. Other classes should
     override this implementation.
-
-    @todo Change the name to is_flattenable or something like that. 05/16/03
-    jhrg
 
     @brief Check to see whether this variable can be printed simply.
     @return True if the instance can be printed as a single table of
@@ -828,71 +748,85 @@ Constructor::is_linear()
 void
 Constructor::set_in_selection(bool state)
 {
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        (*i)->set_in_selection(state);
+    for (auto var: d_vars) {
+        var->set_in_selection(state);
     }
 
     BaseType::set_in_selection(state);
 }
 
-
 void Constructor::transfer_attributes(AttrTable *at_container)
 {
     AttrTable *at = at_container->get_attr_table(name());
-    DBG(cerr << "Constructor::transfer_attributes() - processing " << name() << "'  addr: "<< (void*) at << endl);
+
     if (at) {
         BaseType::transfer_attributes(at_container);
-        for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-            BaseType *bt  = (*i);
-            bt->transfer_attributes(at);
+        for (auto var: d_vars) {
+            var->transfer_attributes(at);
         }
-
     }
 }
 
 AttrTable *
-Constructor::make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars) {
-    DBG( cerr << __func__ << "() - BEGIN" << endl;);
-
-    AttrTable *dv_table = NULL;
-    if(!dropped_vars->empty()){
+Constructor::make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars)
+{
+    AttrTable *dv_table = nullptr;
+    if (!dropped_vars->empty()) {
         dv_table = new AttrTable;
         dv_table->set_name("dap4:dropped_members");
+
         vector<BaseType *>::iterator dvIter = dropped_vars->begin();
         vector<BaseType *>::iterator dvEnd = dropped_vars->end();
         unsigned int i = 0;
-        for( ; dvIter!=dvEnd ; dvIter++, i++){
+        for (; dvIter != dvEnd; dvIter++, i++) {
             BaseType *bt = (*dvIter);
+
             AttrTable *bt_attr_table = new AttrTable(bt->get_attr_table());
             bt_attr_table->set_name(bt->name());
             string type_name = bt->type_name();
-            if(bt->is_vector_type()){
+
+            if (bt->is_vector_type()) {
                 Array *array = dynamic_cast <Array *>(bt);
-                if(array){
+                if (array) {    // This is always true - only an Array is_vector_type(). jhrg 4/25/22
                     type_name = array->prototype()->type_name();
-                    DBG( cerr << __func__ << "() - The variable " << bt->name() << " is an Array of '"<< type_name << "'" << endl;);
                     Array::Dim_iter d_iter = array->dim_begin();
                     Array::Dim_iter end = array->dim_end();
-                    for( ; d_iter< end ; d_iter++){
+                    for (; d_iter < end; d_iter++) {
 
                         ostringstream dim_size;
                         dim_size << (*d_iter).size;
-                        bt_attr_table->append_attr(
-                            "array_dimensions",
-                            AttrType_to_String(Attr_uint32),
-                            dim_size.str());
+                        bt_attr_table->append_attr("array_dimensions", AttrType_to_String(Attr_uint32), dim_size.str());
                     }
                 }
             }
-            bt_attr_table->append_attr("dap4:type","String", type_name);
-            dv_table->append_container(bt_attr_table,bt_attr_table->get_name());
+
+            bt_attr_table->append_attr("dap4:type", "String", type_name);
+            dv_table->append_container(bt_attr_table, bt_attr_table->get_name());
             // Clear entry now that we're done.
             (*dvIter) = 0;
         }
-   }
-    DBG( cerr << __func__ << "() - END " << endl;);
-    return dv_table;
+    }
 
+    return dv_table;
+}
+
+
+/**
+ * When send_p() is true and the attributes or variables contain dap4 data types then
+ *   a description of the instance is added to the inventory and true is returned.
+ * @param inventory is a value-result parameter
+ * @return True when send_p() is true and this object contains dap4 types variables or attributes, false otherwise
+ */
+bool Constructor::is_dap4_projected(std::vector<std::string> &inventory)
+{
+    bool has_projected_dap4 = false;
+    if(send_p()) {
+        has_projected_dap4 = attributes()->has_dap4_types(FQN(),inventory);
+        for (const auto var: variables()) {
+            has_projected_dap4 |= var->is_dap4_projected(inventory);
+        }
+    }
+    return has_projected_dap4;
 }
 
 
@@ -905,21 +839,19 @@ Constructor::make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars) {
  * @return void
  */
 void
-Constructor::dump(ostream &strm) const
-{
-    strm << DapIndent::LMarg << "Constructor::dump - ("
-    << (void *)this << ")" << endl ;
-    DapIndent::Indent() ;
-    BaseType::dump(strm) ;
-    strm << DapIndent::LMarg << "vars: " << endl ;
-    DapIndent::Indent() ;
-    Vars_citer i = d_vars.begin() ;
-    Vars_citer ie = d_vars.end() ;
-    for (; i != ie; i++) {
-        (*i)->dump(strm) ;
+Constructor::dump(ostream &strm) const {
+    strm << DapIndent::LMarg << "Constructor::dump - (" << (void *) this << ")" << endl;
+    DapIndent::Indent();
+    BaseType::dump(strm);
+    strm << DapIndent::LMarg << "vars: " << endl;
+    DapIndent::Indent();
+
+    for (auto var: d_vars) {
+        var->dump(strm);
     }
-    DapIndent::UnIndent() ;
-    DapIndent::UnIndent() ;
+
+    DapIndent::UnIndent();
+    DapIndent::UnIndent();
 }
 
 } // namespace libdap

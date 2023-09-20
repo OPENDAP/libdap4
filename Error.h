@@ -96,7 +96,7 @@ protected:
     ErrorCode _error_code;
     std::string _error_message;
     std::string d_file;
-    int d_line{};
+    int d_line = 0;
 
 public:
     /** Specializations of Error should use this to set the error code and message. */

@@ -44,6 +44,7 @@ class D4Attributes;
 class D4Attribute : public DapObj {
     string d_name;
     D4AttributeType d_type;    // Attributes are limited to the simple types
+    bool is_utf8_str = false;
 
     // If d_type is attr_container_c is true, use d_attributes to read
     // the contained attributes, otherwise use d_values to read the vector
@@ -75,6 +76,9 @@ public:
     D4AttributeType type() const { return d_type; }
     void set_type(D4AttributeType type) { d_type = type; }
 
+    bool get_utf8_str_flag() const { return is_utf8_str; }
+    void set_utf8_str_flag(bool utf8_str_flag) { is_utf8_str = utf8_str_flag; }
+
     void add_value(const string &value) { d_values.push_back(value); }
     void add_value_vector(const vector<string> &values) { d_values = values; }
 
@@ -85,6 +89,8 @@ public:
     string value(unsigned int i) const { return d_values[i]; }
 
     D4Attributes *attributes();
+
+    bool is_dap4_type(const std::string &path, std::vector<std::string> &inventory);
 
     void print_dap4(XMLWriter &xml) const;
 
@@ -158,6 +164,8 @@ public:
       * @return A const reference to the vector of D4Attribute pointers.
       */
     const vector<D4Attribute*> &attributes() const { return d_attrs; }
+
+    bool has_dap4_types(const std::string &path, std::vector<std::string> &inventory) const;
 
     void print_dap4(XMLWriter &xml) const;
 

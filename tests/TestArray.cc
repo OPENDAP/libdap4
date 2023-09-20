@@ -184,7 +184,7 @@ void TestArray::output_values(std::ostream &out)
     for (Dim_iter i = dim_begin(); i != dim_end() && index < dimensions(true); ++i)
         shape[index++] = dimension_size(i, true);
 
-    m_print_array(out, 0, dimensions(true), &shape[0]);
+    m_print_array(out, 0, dimensions(true), shape.data());
 
     //delete[] shape;
     //shape = 0;
@@ -207,7 +207,7 @@ void TestArray::m_build_special_values()
         for (int i = 0; i < array_len; ++i) {
             lat_data[i] = -89 + (180 / array_len) * (i + 1);
         }
-        libdap::set_array_using_double(this, &lat_data[0], array_len);
+        libdap::set_array_using_double(this, lat_data.data(), array_len);
     }
     else if (name().find("lat") != string::npos) {
         int array_len = length();
@@ -216,7 +216,7 @@ void TestArray::m_build_special_values()
         for (int i = 0; i < array_len; ++i) {
             lat_data[i] = 90 - (180 / array_len) * (i + 1);
         }
-        libdap::set_array_using_double(this, &lat_data[0], array_len);
+        libdap::set_array_using_double(this, lat_data.data(), array_len);
     }
     else if (name().find("lon") != string::npos) {
         int array_len = length();
@@ -225,7 +225,7 @@ void TestArray::m_build_special_values()
         for (int i = 0; i < array_len; ++i) {
             lon_data[i] = (360 / array_len) * (i + 1);
         }
-        libdap::set_array_using_double(this, &lon_data[0], array_len);
+        libdap::set_array_using_double(this, lon_data.data(), array_len);
     }
     else {
         throw InternalErr(__FILE__, __LINE__, "Unrecognized name");
@@ -342,30 +342,38 @@ void TestArray::m_cardinal_type_read_helper()
             m_build_special_values();
         }
         else if (dimensions() == 2) {
-            vector<T> tmp(length());
+            vector<T> tmp(length_ll());
             m_constrained_matrix<T, C>(tmp);
-            set_value(tmp, length());
+            set_value_ll((T*)tmp.data(), length_ll());
         }
         else {
-            vector<T> tmp(length());
+            vector<T> tmp(length_ll());
             for (int64_t i = 0, end = length(); i < end; ++i) {
                 var()->read();
                 tmp[i] = static_cast<C*>(var())->value();
                 var()->set_read_p(false); // pick up the next value
             }
-            set_value(tmp, length());
+            set_value_ll((T*)tmp.data(), length_ll());
         }
     }
     else {
         // read a value into the Array's prototype element
         var()->read();
         T value = static_cast<C*>(var())->value();
-        vector<T> tmp(length());
-        for (int64_t i = 0, end = length(); i < end; ++i) {
+        vector<T> tmp(length_ll());
+        for (int64_t i = 0, end = length_ll(); i < end; ++i) {
             tmp[i] = value;
         }
 
-        set_value(tmp, length());
+#if 0
+        set_value(tmp, length_ll());
+#endif
+        // The following code inside #if 0 block always goes to set_value.
+        // May check why in the future. KY 2023-01-12
+#if 0
+        set_value_ll(tmp, length_ll());
+#endif
+        set_value_ll((T*)tmp.data(), length_ll());
     }
 }
 
@@ -416,7 +424,7 @@ bool TestArray::read()
 
     if (test_variable_sleep_interval > 0) sleep(test_variable_sleep_interval);
 
-    int64_t array_len = length(); // elements in the array
+    int64_t array_len = length_ll(); // elements in the array
 
     switch (var()->type()) {
     // These are the DAP2 types and the classes that implement them all define

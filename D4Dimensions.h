@@ -45,7 +45,7 @@ class D4Dimension {
     D4Dimensions *d_parent;	// This is used to get the Dimensions and then the Group object
 
     bool d_constrained;
-    unsigned long long d_c_start, d_c_stride, d_c_stop;
+    int64_t d_c_start, d_c_stride, d_c_stop;
 
     bool d_used_by_projected_var;
 
@@ -68,9 +68,9 @@ public:
     void set_parent(D4Dimensions *d) { d_parent = d; }
 
     bool constrained() const { return d_constrained; }
-    unsigned long long c_start() const { return d_c_start; }
-    unsigned long long c_stride() const { return d_c_stride; }
-    unsigned long long c_stop() const { return d_c_stop; }
+    int64_t c_start() const { return d_c_start; }
+    int64_t c_stride() const { return d_c_stride; }
+    int64_t c_stop() const { return d_c_stop; }
 
     bool used_by_projected_var() const { return d_used_by_projected_var; }
     void set_used_by_projected_var(bool state) { d_used_by_projected_var = state; }
@@ -83,7 +83,7 @@ public:
      * @param stride The stride for the slice
      * @param stop The stopping index (never greater than size -1)
      */
-    void set_constraint(unsigned long long start, unsigned long long stride, unsigned long long stop) {
+    void set_constraint(int64_t start, int64_t stride, int64_t stop) {
         d_c_start = start;
         d_c_stride = stride;
         d_c_stop = stop;

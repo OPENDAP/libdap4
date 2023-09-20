@@ -77,8 +77,9 @@ public:
     D4Group &operator=(const D4Group &rhs);
 
     // This method returned a D4Group * previously. jhrg 11/17/16
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
+    // TODO Wire up the new D4Dimensions object to have this group as its parent. jhrg 8/22/22
     /// Get the dimensions defined for this Group
     D4Dimensions *dims() {
     	// If not built yet, make one and set this as parent.
@@ -86,7 +87,7 @@ public:
         return d_dims;
     }
 
-    virtual std::string FQN() const;
+    std::string FQN() const override;
 
     D4Dimension *find_dim(const string &path);
 
@@ -107,6 +108,8 @@ public:
     BaseType *find_first_var_that_uses_enumeration(D4EnumDef *enum_def);
 
     BaseType *find_var(const string &name);
+
+    const vector<D4Group*> &groups() const { return d_groups; }
 
     /// Get an iterator to the start of the values
     groupsIter grp_begin() { return d_groups.begin(); }
@@ -132,19 +135,27 @@ public:
     long request_size(bool constrained);
     uint64_t request_size_kb(bool constrained);
 
-    virtual void set_send_p(bool state);
-    virtual void set_read_p(bool state);
+    void set_send_p(bool state) override;
+    void set_read_p(bool state) override;
+
+    bool is_dap4_projected(std::vector<std::string> &inventory) override;
 
     // DAP4
-    virtual void intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void intern_data() override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    void print_dap4(XMLWriter &xml, bool constrained = false);
+    void print_dap4(XMLWriter &xml, bool constrained = false) override;
 
-    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
-    //virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool is_root);
+    void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
+                    bool constrained = false) override;
+    void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
+                    bool constrained = false) override;
 
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 };
 
 } /* namespace libdap */

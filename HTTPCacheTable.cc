@@ -25,11 +25,6 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG
-
-// TODO: Remove unneeded includes.
-
-#include <pthread.h>
 #include <limits.h>
 #include <unistd.h>   // for stat
 #include <sys/types.h>  // for stat and mkdir
@@ -446,28 +441,6 @@ HTTPCacheTable::cache_index_write()
 string
 HTTPCacheTable::create_hash_directory(int hash)
 {
-#if 0
-    struct stat stat_info;
-    ostringstream path;
-
-    path << d_cache_root << hash;
-    string p = path.str();
-
-    if (stat(p.c_str(), &stat_info) == -1) {
-        DBG2(cerr << "Cache....... Create dir " << p << endl);
-        if (MKDIR(p.c_str(), 0777) < 0) {
-            DBG2(cerr << "Cache....... Can't create..." << endl);
-            throw Error("Could not create cache slot to hold response! Check the write permissions on your disk cache directory. Cache root: " + d_cache_root + ".");
-        }
-    }
-    else {
-        DBG2(cerr << "Cache....... Directory " << p << " already exists"
-             << endl);
-    }
-
-    return p;
-#endif
-
     ostringstream path;
     path << d_cache_root << hash;
 
@@ -514,7 +487,7 @@ HTTPCacheTable::create_location(HTTPCacheTable::CacheEntry *entry)
     // mkstemp uses the storage passed to it; must be writable and local.
     // char *templat = new char[hash_dir.size() + 1];
     vector<char> templat(hash_dir.size() + 1);
-    strncpy(&templat[0], hash_dir.c_str(), hash_dir.size() + 1);
+    strncpy(templat.data(), hash_dir.c_str(), hash_dir.size() + 1);
 
     // Open truncated for update. NB: mkstemp() returns a file descriptor.
     // man mkstemp says "... The file is opened with the O_EXCL flag,
@@ -524,14 +497,14 @@ HTTPCacheTable::create_location(HTTPCacheTable::CacheEntry *entry)
     // Make sure that temp files are accessible only by the owner.
     umask(077);
 #endif
-    int fd = MKSTEMP(&templat[0]); // fd mode is 666 or 600 (Unix)
+    int fd = MKSTEMP(templat.data()); // fd mode is 666 or 600 (Unix)
     if (fd < 0) {
         // delete[] templat; templat = 0;
         // close(fd); Calling close() when fd is < 0 is a bad idea! jhrg 7/2/15
         throw Error(internal_error, "The HTTP Cache could not create a file to hold the response; it will not be cached.");
     }
 
-    entry->cachename = &templat[0];
+    entry->cachename = templat.data();
     // delete[] templat; templat = 0;
     close(fd);
 }

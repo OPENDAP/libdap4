@@ -84,7 +84,7 @@ public:
         char *argv_1[] = { (char*) "test_case", (char *) test_file.c_str() };
         df = new DODSFilter(2, argv_1);
 
-        char *argv_1_1[] = { (char*) "test_case", (char *) test_file.c_str(), (char*) "-l", &now_array[0] };
+        char *argv_1_1[] = { (char*) "test_case", (char *) test_file.c_str(), (char*) "-l", now_array.data() };
         df_conditional = new DODSFilter(4, argv_1_1);
 
         // Test missing file
@@ -103,7 +103,7 @@ public:
         test_file = (string) TEST_SRC_DIR + "/server-testsuite/coads.data";
         argv_2[1] = (char *) test_file.c_str();
         argv_2[2] = (char*) "-l";
-        argv_2[3] = &now_array[0];
+        argv_2[3] = now_array.data();
         argv_2[4] = (char*) "-e";
         argv_2[5] = (char*) "u,x,z[0]&grid(u,\"lat<10.0\")";
         argv_2[6] = (char*) "-t";
@@ -115,7 +115,7 @@ public:
         test_file = (string) TEST_SRC_DIR + "/server-testsuite/bears.data";
         argv_2[1] = (char *) test_file.c_str();
         argv_2[2] = (char*) "-l";
-        argv_2[3] = &now_array[0];
+        argv_2[3] = now_array.data();
         argv_2[4] = (char*) "-e";
         argv_2[5] = (char*) "u,x,z[0]&grid(u,\"lat<10.0\")";
         argv_2[6] = (char*) "-t";

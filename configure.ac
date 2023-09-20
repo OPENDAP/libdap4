@@ -3,6 +3,7 @@ dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
+
 dnl AC_PREREQ([2.68]); Fails on CentOS 6. jhrg 3/26/19
 dnl m4_pattern_forbid([^_?(gl_[A-Z]|AX_|BISON_)])
 dnl m4_pattern_allow([^BISON_USE_NLS$])
@@ -13,7 +14,8 @@ dnl in the RPM spec file. The build number is not part of the pkg config
 dnl 'pc' files and tarball for the source. See
 dnl libdap4/travis/travis_libdap_build_offset.sh for info about setting the
 dnl base value for the build number. jhrg 3/22/21
-AC_INIT(libdap, 3.20.9, opendap-tech@opendap.org)
+
+AC_INIT(libdap, 3.20.11, opendap-tech@opendap.org)
 
 dnl As an alternative, we can...
 dnl Read the version number from the file VERSION. The file must contain
@@ -104,9 +106,9 @@ dnl increment AGE, set REVISION to 0.
 dnl Interfaces removed or changed (BAD, breaks upward compatibility):
 dnl ==> Increment CURRENT, set AGE and REVISION to 0.
 
-DAPLIB_CURRENT=27
-DAPLIB_REVISION=5
-DAPLIB_AGE=0
+DAPLIB_CURRENT=28
+DAPLIB_REVISION=1
+DAPLIB_AGE=1
 
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_REVISION)
@@ -157,23 +159,22 @@ AS_IF([test "x$CC" = xgcc],
 dnl AC_PROG_YACC
 dnl AC_PROG_LEX
 
-dnl NB: CentOS 6 does not support C++-11 but does support some features:
-dnl https://gcc.gnu.org/gcc-4.4/cxx0x_status.html.
-dnl For now, I'm counting 0x as supporting C++-11 in our code.
+dnl Here we test for both C++11 and 14, but our code nominally requires 14.
+dnl We can use the C++11 test and CXX_STD_FLAG to build with 11 if we add a
+dnl compatibility layer for the missing features. jhrg 1/30/23.
 
-CXX11_FLAG=""
+CXX_STD_FLAG=""
 
-CXX_FLAGS_CHECK([--std=c++11], [CXX11_FLAG=--std=c++11], [])
+CXX_FLAGS_CHECK([--std=c++11], [CXX_STD_FLAG=--std=c++11], [])
+CXX_FLAGS_CHECK([--std=c++14], [CXX_STD_FLAG=--std=c++14],
+    [AC_MSG_WARN([C++14 is required but not found. Using C++11 compatability mode.])])
 
-AS_IF([test -z "$CXX11_FLAG"],
-      [CXX_FLAGS_CHECK([--std=c++0x], [CXX11_FLAG=--std=c++0x], [])])
+AS_IF([test -z "$CXX_STD_FLAG"],
+      [AC_MSG_ERROR([Not using modern C++ (C++11 or 14)])],
+      [AC_MSG_NOTICE([Using $CXX_STD_FLAG])
+       cxx_debug_flags="$cxx_debug_flags --pedantic $CXX_STD_FLAG"])
 
-AS_IF([test -z "$CXX11_FLAG"],
-      [AC_MSG_ERROR([Not using C++11 (or C++0x)])],
-      [AC_MSG_NOTICE([Using $CXX11_FLAG for C++11 support])
-       cxx_debug_flags="$cxx_debug_flags --pedantic $CXX11_FLAG"])
-
-AC_SUBST(CXX11_FLAG)
+AC_SUBST(CXX_STD_FLAG)
 
 AM_PROG_LEX
 AC_PROG_INSTALL
@@ -457,6 +458,11 @@ AC_SUBST([XML2_CFLAGS])
 dnl End old version of XML2 configuration. jhrg 8/31/20
 dnl ********
 
+dnl Check for the RHEL 8 requirement libtirpc and its headers.
+dnl jhrg 6/23/22
+
+OX_RHEL8_TIRPC
+
 AC_CHECK_LIB([pthread], [pthread_kill], 
 	[PTHREAD_LIBS="-lpthread"],
 	[AC_MSG_ERROR([I could not find pthreads])])
@@ -491,12 +497,25 @@ AS_IF([test "$prefix" = "NONE"],
 
 AC_ARG_ENABLE([asan], 
     [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
-           
+
+ASAN_OPTIONS="-fsanitize=address -fno-omit-frame-pointer"
+CXX_FLAGS_CHECK([$ASAN_OPTIONS], [has_asan=yes], [has_asan=no])
+
 AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
       [AC_MSG_NOTICE([Building Address Sanitizer version])
        AM_CONDITIONAL([USE_ASAN], [true])],
       [AC_MSG_NOTICE([Not building Address Sanitizer version])
        AM_CONDITIONAL([USE_ASAN], [false])])
+
+dnl An optional big array(>4GB) unit test. Since it is resource consuming, turn it off by default.
+AC_ARG_ENABLE([batest], 
+    [AS_HELP_STRING([--enable-batest], [The big array unit test is turned on.  (default: no)])])
+           
+AS_IF([test x$enable_batest = xyes ],
+      [AC_MSG_NOTICE([Adding big array unit test])
+       AM_CONDITIONAL([USE_BA], [true])],
+      [AC_MSG_NOTICE([Not adding big array unit test])
+       AM_CONDITIONAL([USE_BA], [false])])
 
 AC_ARG_ENABLE([leaks],
     [AS_HELP_STRING([--enable-leaks], [Run unit tests on OSX using the 'leaks' if available (default: no)])])
@@ -524,6 +543,7 @@ AS_IF([test x$enable_developer = xyes],
       [AC_MSG_NOTICE([Not building developer version])
        AM_CONDITIONAL([BUILD_DEVELOPER], [false])
        AC_DEFINE([NDEBUG], [1], [Define this to suppres assert() calls.])])
+
 
 AC_ARG_ENABLE([coverage],
     [AS_HELP_STRING([--enable-coverage], [Build so tests emit coverage data and enable coverage target (default: no)])])

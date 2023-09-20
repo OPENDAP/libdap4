@@ -267,7 +267,11 @@ bool D4ParserSax2::process_dimension(const char *name, const xmlChar **attrs, in
 
 	Array *a = static_cast<Array*>(top_basetype());
     if (check_attribute("size")) {
+
+    	a->append_dim_ll(strtoll(xml_attrs["size"].value.c_str(),nullptr,10));
+#if 0
     	a->append_dim(atoi(xml_attrs["size"].value.c_str())); // low budget code for now. jhrg 8/20/13
+#endif
         return true;
     }
     else if (check_attribute("name")) {

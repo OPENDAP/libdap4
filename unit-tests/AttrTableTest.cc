@@ -296,9 +296,13 @@ public:
         ostringstream oss;
         t->print(oss, "");
         //FILE2string(sof, of, t->print(of, ""));
+        // Now the string attribute is escaped. So the output of '"' becomes
+        // '/"'. We need to reflect this change in the comparision. KY 2022-08-24
         string attrs = "String long%20name \"first\";\n\
-String longer%20name \"second test\";";
+String longer%20name \"\\\"second test\\\"\";";
+ 
         //CPPUNIT_ASSERT(sof.find(attrs) != string::npos);
+        // With the escaping 
         CPPUNIT_ASSERT(oss.str().find(attrs) != string::npos);
         delete t;
         t = 0;
@@ -386,8 +390,17 @@ String longer%20name \"second test\";";
         CPPUNIT_ASSERT(b->get_name(i) == "number");
         i += 2;
         CPPUNIT_ASSERT(b->get_name(i) == "ba");
+        AttrTable *ba = b->find_container("ba");
 
         b->del_attr_table(i);
+        // The current implementation of del_attr_table() 
+        // doesn't delete the attribute table itself.
+        // Fixing this causes the failure of BES's NcML module tests.
+        // So we have to explicitly release the resource to avoid the
+        // memory leaks. This may be not necessary after the fix in
+        // https://bugs.earthdata.nasa.gov/browse/HYRAX-866. 
+        // KY 11-08-2022
+        delete ba;
 
         i = b->attr_begin();
         CPPUNIT_ASSERT(b->get_name(i) == "number");
@@ -410,6 +423,15 @@ String longer%20name \"second test\";";
             CPPUNIT_ASSERT(at2->get_name(i) == "cont_at2");
 
             at2->del_attr_table(i);
+            
+            // The current implementation of del_attr_table() 
+            // doesn't delete the attribute table itself.
+            // Fixing this causes the failure of BES's NcML module tests.
+            // So we have to explicitly release the resource to avoid the
+            // memory leaks. This may be not necessary after the fix in
+            // https://bugs.earthdata.nasa.gov/browse/HYRAX-866. 
+            // KY 11-08-2022
+            delete cont_at2;
 
             i = at2->attr_begin();
             CPPUNIT_ASSERT(at2->get_name(i) == "color");

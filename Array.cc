@@ -80,15 +80,15 @@ void Array::_duplicate(const Array &a)
 
     // Deep copy the Maps if they are being used.
     if (a.d_maps) {
-        d_maps = new D4Maps(*(a.d_maps));
+        d_maps = new D4Maps(*a.d_maps, this);
     }
     else {
-        d_maps = 0;
+        d_maps = nullptr;
     }
 }
 
 // The first method of calculating length works when only one dimension is
-// constrained and you want the others to appear in total. This is important
+// constrained, and you want the others to appear in the total. This is important
 // when selecting from grids since users may not select from all dimensions
 // in which case that means they want the whole thing. Array projection
 // should probably work this way too, but it doesn't. 9/21/2001 jhrg
@@ -101,25 +101,34 @@ void Array::_duplicate(const Array &a)
  */
 void Array::update_length(int)
 {
-    int length = 1;
+    uint64_t  length = 1;
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
         length *= (*i).c_size;
     }
 
-    set_length(length);
+    set_length_ll(length);
 }
 
+
+void Array::update_length_ll(unsigned long long)
+{
+    unsigned long long length = 1;
+    for (const auto &i:_shape) {
+        length *= i.c_size;
+    }
+
+    set_length_ll(length);
+}
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new - The dtor for Vector will delete this object.
 
 /** Build an array with a name and an element type. The name may be omitted,
  which will create a nameless variable. The template (element type) pointer
  may also be omitted, but if it is omitted when the Array is created, it
- \e must be added (with \c add_var()) before \c read() or \c deserialize()
- is called.
+ \e must be added (with \c add_var() od add_var_nocopy()) before \c read()
+ or \c deserialize() is called.
 
- @todo Force the Array::add_var() method to be used to add \e v.
- This version of add_var() calls Vector::add_var().
+ This version of add_var() calls Array::add_var().
 
  @param n A string containing the name of the variable to be
  created.
@@ -128,16 +137,17 @@ void Array::update_length(int)
  @brief Array constructor
  */
 Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */) :
-    Vector(n, 0, dods_array_c, is_dap4), d_maps(0)
+    Vector(n, nullptr, dods_array_c, is_dap4)
 {
-    add_var(v); // Vector::add_var() stores null if v is null
+    Array::add_var(v);
+    if (v)
+        BaseType::set_is_dap4(v->is_dap4());
 }
 
 /** Build an array on the server-side with a name, a dataset name from which
  this Array is being created, and an element type.
 
- @todo Force the Array::add_var() method to be used to add \e v.
- This version of add_var() calls Vector::add_var().
+ This version of add_var() calls Array::add_var().
 
  @param n A string containing the name of the variable to be created.
  @param d A string containing the name of the dataset from which this
@@ -147,9 +157,11 @@ Array::Array(const string &n, BaseType *v, bool is_dap4 /* default:false */) :
  @brief Array constructor
  */
 Array::Array(const string &n, const string &d, BaseType *v, bool is_dap4 /* default:false */) :
-    Vector(n, d, 0, dods_array_c, is_dap4), d_maps(0)
+    Vector(n, d, nullptr, dods_array_c, is_dap4)
 {
-    add_var(v); // Vector::add_var() stores null if v is null
+    Array::add_var(v);
+    if (v)
+        BaseType::set_is_dap4(v->is_dap4());
 }
 
 /** @brief The Array copy constructor. */
@@ -247,6 +259,9 @@ bool Array::is_dap2_grid()
     bool is_grid = false;
     if (this->is_dap4()) {
         DBG( cerr << __func__ << "() - Array '"<< name() << "' is DAP4 object!" << endl);
+        auto root = dynamic_cast<D4Group*>(this->get_ancestor());
+        if (!root)
+            throw InternalErr(__FILE__, __LINE__, string("Could not get the root group for ").append(this->name()));
         D4Maps *d4_maps = this->maps();
         is_grid = d4_maps->size(); // It can't be a grid if there are no maps...
         if (is_grid) {
@@ -256,7 +271,7 @@ bool Array::is_dap2_grid()
             D4Maps::D4MapsIter e = d4_maps->map_end();
             while (i != e) {
                 DBG( cerr << __func__ << "() - Map '"<< (*i)->array()->name() << " has " << (*i)->array()->_shape.size() << " dimension(s)." << endl);
-                if ((*i)->array()->_shape.size() > 1) {
+                if ((*i)->array(root)->_shape.size() > 1) {
                     is_grid = false;
                     i = e;
                 }
@@ -308,19 +323,23 @@ Array::transform_to_dap2(AttrTable *)
             Grid *g = new Grid(name());
             dest = g;
             Array *grid_array = static_cast<Array *>(ptr_duplicate());
+            grid_array->set_is_dap4(false);
             g->set_array(grid_array);
 
             // Fix for HK-403. jhrg 6/17/19
             attributes()->transform_attrs_to_dap2(&grid_array->get_attr_table());
 
             // Process the Map Arrays.
+            auto root = dynamic_cast<D4Group*>(this->get_ancestor());
+            if (!root)
+                throw InternalErr(__FILE__, __LINE__, string("Could not get the root group for ").append(this->name()));
             D4Maps *d4_maps = this->maps();
             vector<BaseType *> dropped_maps;
             D4Maps::D4MapsIter miter = d4_maps->map_begin();
             D4Maps::D4MapsIter end = d4_maps->map_end();
             for (; miter != end; miter++) {
                 D4Map *d4_map = (*miter);
-                Array *d4_map_array = const_cast<Array*>(d4_map->array());
+                Array *d4_map_array = const_cast<Array*>(d4_map->array(root));
                 vector<BaseType *> *d2_result = d4_map_array->transform_to_dap2(&(g->get_attr_table()));
                 if (d2_result) {
                     if (d2_result->size() > 1)
@@ -332,6 +351,7 @@ Array::transform_to_dap2(AttrTable *)
                         if (d2_map_array->dimensions() != 1)
                             throw Error(internal_error, "DAP2 array from D4Map Array conversion has more than 1 dimension.");
 
+                        d2_map_array->set_is_dap4(false);
                         g->add_map(d2_map_array, false);
                         AttrTable at = d2_map_array->get_attr_table();
                         DBG( cerr << __func__ << "() - " <<
@@ -518,6 +538,18 @@ void Array::append_dim(int size, const string &name)
     update_length();
 }
 
+void Array::append_dim_ll(int64_t size, const string &name)
+{
+
+#if 0
+    dimension d(size, www2id(name));
+    _shape.push_back(d);
+#endif
+
+    _shape.emplace_back(size,www2id(name));
+    update_length();
+}
+
 void Array::append_dim(D4Dimension *dim)
 {
     dimension d(/*dim->size(), www2id(dim->name()),*/dim);
@@ -639,6 +671,55 @@ void Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 {
     dimension &d = *i;
 
+    DBG(cerr << "add_constraint: d_size = " << d.size << endl);
+    DBG(cerr << "add_constraint: start = " << start << endl);
+    DBG(cerr << "add_constraint: stop = " << stop << endl);
+    DBG(cerr << "add_constraint: stride = " << stride << endl);
+
+// if stop is -1, set it to the array's max element index
+// jhrg 12/20/12
+    // Check if d.size is greater than INT_MAX, if yes, the following block needs to be re-worked. STOP
+    if (stop == -1) {
+        if (d.size >DODS_INT_MAX)  {
+            // The total size of this dimension is greater than the maximum 32-bit integer. 
+            throw Error(malformed_expr,
+                  "The dimension size is too large. use add_constraint_ll()");
+        }
+        else 
+            stop = d.size - 1;
+    }
+
+// Check for bad constraints.
+// Jose Garcia
+// Usually invalid data for a constraint is the user's mistake
+// because they build a wrong URL in the client side.
+    if (start >= d.size || stop >= d.size || stride > d.size || stride <= 0) throw Error(malformed_expr, array_sss);
+
+    if (((stop - start) / stride + 1) > d.size) throw Error(malformed_expr, array_sss);
+
+    d.start = start;
+    d.stop = stop;
+    d.stride = stride;
+
+    d.c_size = (stop - start) / stride + 1;
+
+    DBG(cerr << "add_constraint: c_size = " << d.c_size << endl);
+
+    update_length();
+
+    d.use_sdim_for_slice = false;
+}
+
+void Array::add_constraint_ll(Dim_iter i, int64_t start, int64_t stride, int64_t stop)
+{
+    dimension &d = *i;
+    DBG(cerr << "add_constraint_ll: d_size = " << d.size << endl);
+    DBG(cerr << "add_constraint_ll: start = " << start << endl);
+    DBG(cerr << "add_constraint_ll: stop = " << stop << endl);
+    DBG(cerr << "add_constraint_ll: stride = " << stride << endl);
+
+
+
 // if stop is -1, set it to the array's max element index
 // jhrg 12/20/12
     if (stop == -1) stop = d.size - 1;
@@ -663,12 +744,12 @@ void Array::add_constraint(Dim_iter i, int start, int stride, int stop)
 
     d.use_sdim_for_slice = false;
 }
-
 void Array::add_constraint(Dim_iter i, D4Dimension *dim)
 {
     dimension &d = *i;
+    DBG(cerr << "add_constraint d4dimension: stride = " << dim->c_stride() << endl);
 
-    if (dim->constrained()) add_constraint(i, dim->c_start(), dim->c_stride(), dim->c_stop());
+    if (dim->constrained()) add_constraint_ll(i, dim->c_start(), dim->c_stride(), dim->c_stop());
 
     dim->set_used_by_projected_var(true);
 
@@ -726,10 +807,22 @@ int Array::dimension_size(Dim_iter i, bool constrained)
     int size = 0;
 
     if (!_shape.empty()) {
-        if (constrained)
-            size = (*i).c_size;
-        else
-            size = (*i).size;
+        if (constrained) {
+            if ((*i).c_size >DODS_INT_MAX) {
+                throw Error(malformed_expr,
+                          "The dimension size is too large. Use dimension_size_ll()");
+            }
+            else 
+                size = (*i).c_size;
+        }
+        else {
+            if ((*i).size >DODS_INT_MAX) {
+                throw Error(malformed_expr,
+                          "The dimension size is too large. Use dimension_size_ll()");
+            }
+            else 
+                size = (*i).size;
+        }
     }
 
     return size;
@@ -755,6 +848,10 @@ int Array::dimension_size(Dim_iter i, bool constrained)
  */
 int Array::dimension_start(Dim_iter i, bool /*constrained*/)
 {
+    if ((*i).start > DODS_INT_MAX) {
+        throw Error(malformed_expr,
+                   "The dimension start value is too large. Use dimension_start_ll()");
+    }
     return (!_shape.empty()) ? (*i).start : 0;
 }
 
@@ -778,6 +875,10 @@ int Array::dimension_start(Dim_iter i, bool /*constrained*/)
  */
 int Array::dimension_stop(Dim_iter i, bool /*constrained*/)
 {
+    if ((*i).stop > DODS_INT_MAX) {
+        throw Error(malformed_expr,
+                   "The dimension stop value is too large. Use dimension_stop_ll()");
+    }
     return (!_shape.empty()) ? (*i).stop : 0;
 }
 
@@ -801,6 +902,38 @@ int Array::dimension_stop(Dim_iter i, bool /*constrained*/)
  is TRUE and the dimension is not selected.
  */
 int Array::dimension_stride(Dim_iter i, bool /*constrained*/)
+{
+    if ((*i).stride > DODS_INT_MAX) {
+        throw Error(malformed_expr,
+                   "The dimension stride value is too large. Use dimension_stride_ll()");
+    }
+    return (!_shape.empty()) ? (*i).stride : 0;
+}
+
+int64_t Array::dimension_size_ll(Dim_iter i, bool constrained)
+{
+    int64_t size = 0;
+
+    if (!_shape.empty()) {
+        if (constrained) 
+            size = (*i).c_size;
+        else 
+            size = (*i).size;
+    }
+    return size;
+}
+
+int64_t Array::dimension_start_ll(Dim_iter i, bool /*constrained*/)
+{
+    return (!_shape.empty()) ? (*i).start : 0;
+}
+
+int64_t Array::dimension_stop_ll(Dim_iter i, bool /*constrained*/)
+{
+    return (!_shape.empty()) ? (*i).stop : 0;
+}
+
+int64_t Array::dimension_stride_ll(Dim_iter i, bool /*constrained*/)
 {
     return (!_shape.empty()) ? (*i).stride : 0;
 }
@@ -1186,10 +1319,10 @@ void Array::print_xml_writer_core(XMLWriter &xml, bool constrained, string tag)
 
  @brief Print the value given the current constraint.
  */
-unsigned int Array::print_array(FILE *out, unsigned int index, unsigned int dims, unsigned int shape[])
+uint64_t  Array::print_array(FILE *out, uint64_t index, unsigned int dims, uint64_t shape[])
 {
     ostringstream oss;
-    unsigned int i = print_array(oss, index, dims, shape);
+    uint64_t i = print_array(oss, index, dims, shape);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 
     return i;
@@ -1206,18 +1339,18 @@ unsigned int Array::print_array(FILE *out, unsigned int index, unsigned int dims
 
  @brief Print the value given the current constraint.
  */
-unsigned int Array::print_array(ostream &out, unsigned int index, unsigned int dims, unsigned int shape[])
+uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, uint64_t shape[])
 {
     if (dims == 1) {
         out << "{";
 
         // Added test in case this method is passed an array with no elements. jhrg 1/27/16
         if (shape[0] >= 1) {
-            for (unsigned i = 0; i < shape[0] - 1; ++i) {
-                var(index++)->print_val(out, "", false);
+            for (uint64_t i = 0; i < shape[0] - 1; ++i) {
+                var_ll(index++)->print_val(out, "", false);
                 out << ", ";
             }
-            var(index++)->print_val(out, "", false);
+            var_ll(index++)->print_val(out, "", false);
         }
 
         out << "}";
@@ -1238,7 +1371,7 @@ unsigned int Array::print_array(ostream &out, unsigned int index, unsigned int d
         // may look a little odd (e.g., x[4][0] will print as { {}, {}, {}, {} })
         // but it's not wrong and this is really for debugging mostly. jhrg 1/28/16
         if (shape[0] > 0) {
-            for (unsigned i = 0; i < shape[0] - 1; ++i) {
+            for (uint64_t i = 0; i < shape[0] - 1; ++i) {
                 index = print_array(out, index, dims - 1, shape + 1);
                 out << ",";
             }
@@ -1272,10 +1405,10 @@ void Array::print_val(ostream &out, string space, bool print_decl_p)
         out << " = ";
     }
 
-    unsigned int *shape = new unsigned int[dimensions(true)];
+    auto shape = new uint64_t[dimensions(true)];
     unsigned int index = 0;
     for (Dim_iter i = _shape.begin(); i != _shape.end() && index < dimensions(true); ++i)
-        shape[index++] = dimension_size(i, true);
+        shape[index++] = dimension_size_ll(i, true);
 
     print_array(out, 0, dimensions(true), shape);
 
@@ -1303,6 +1436,52 @@ bool Array::check_semantics(string &msg, bool)
     if (!sem) msg = "An array variable must have dimensions";
 
     return sem;
+}
+
+
+/**
+ * Makes the square bracket representation, with dimension names where available, of
+ * the array's dimensions, ex: [5][lat=100][lon=200]
+ * @param a The array to examine
+ * @return The square bracket representation of the array's dimensions
+ */
+string get_dims_decl(Array &a) {
+    stringstream sqr_brkty_stuff;
+    for(auto itr=a.dim_begin(); itr!=a.dim_end(); itr++){
+        sqr_brkty_stuff << "[";
+        string dim_name = a.dimension_name(itr);
+        if(!dim_name.empty()){
+            sqr_brkty_stuff << dim_name << "=";
+        }
+        sqr_brkty_stuff << a.dimension_size_ll(itr,true) << "]";
+    }
+    return sqr_brkty_stuff.str();
+}
+
+/**
+ * When send_p() is true and the attributes or variables have dap4 data types then
+ *   a description of the instance is added to the inventory and true is returned.
+ * @param inventory is a value-result parameter
+ * @return True when send_p() is true, false otherwise
+ */
+bool Array::is_dap4_projected(std::vector<std::string> &inventory)
+{
+    bool has_projected_dap4 = false;
+    if(send_p()) {
+        if(prototype()->is_constructor_type()){
+            has_projected_dap4 = prototype()->is_dap4_projected(inventory) || attributes()->has_dap4_types(FQN(),inventory);
+        }
+        else {
+            Type type = prototype()->type();
+            has_projected_dap4 = (type == libdap::dods_int8_c ) || (type == dods_uint64_c) || (type == dods_int64_c);
+            if(has_projected_dap4) {
+                inventory.emplace_back(prototype()->type_name() + " " + FQN() + get_dims_decl(*this));
+            }
+            has_projected_dap4 |= attributes()->has_dap4_types(FQN(), inventory);
+        }
+    }
+    return has_projected_dap4;
+
 }
 
 /** @brief dumps information about this object
@@ -1338,5 +1517,32 @@ void Array::dump(ostream &strm) const
     DapIndent::UnIndent();
 }
 
-} // namespace libdap
+/** @brief Set the variable storage information for direct IO optimization
+ *
+ *
+ * @param the struct that stores the variable storage information.
+ * @return void
+ */
+void Array::set_var_storage_info(const var_storage_info &my_vs_info) {
 
+    vs_info.filter = my_vs_info.filter;
+
+    for (const auto &def_lev:my_vs_info.deflate_levels)
+        vs_info.deflate_levels.push_back(def_lev);
+
+    for (const auto &chunk_dim:my_vs_info.chunk_dims)
+        vs_info.chunk_dims.push_back(chunk_dim);
+
+    for (const auto &vci:my_vs_info.var_chunk_info) {
+        var_chunk_info_t vci_t;
+        vci_t.filter_mask = vci.filter_mask;
+        vci_t.chunk_direct_io_offset = vci.chunk_direct_io_offset;
+        vci_t.chunk_buffer_size = vci.chunk_buffer_size;
+        for (const auto &chunk_coord:vci.chunk_coords)
+            vci_t.chunk_coords.push_back(chunk_coord);
+        vs_info.var_chunk_info.push_back(vci_t);
+    }
+
+}
+
+} // namespace libdap

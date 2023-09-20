@@ -189,10 +189,10 @@ void XDRStreamUnMarshaller::get_str(string &val)
         vector<char> buf(i+4);
 
         XDR source;// = new XDR;
-        xdrmem_create(&source, &buf[0], i + 4, XDR_DECODE);
-        memcpy(&buf[0], d_buf, 4);
+        xdrmem_create(&source, buf.data(), i + 4, XDR_DECODE);
+        memcpy(buf.data(), d_buf, 4);
 
-        d_in.read(&buf[0] + 4, i);
+        d_in.read(buf.data() + 4, i);
 
         xdr_setpos( &source, 0);
         if (!xdr_string( &source, &in_tmp, max_str_len)) {
@@ -262,10 +262,10 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, Vector &)
     if (i + 4 > XDR_DAP_BUFF_SIZE) {
     	vector<char> buf(i+4);
         XDR source;
-        xdrmem_create(&source, &buf[0], i + 4, XDR_DECODE);
-        memcpy(&buf[0], d_buf, 4);
+        xdrmem_create(&source, buf.data(), i + 4, XDR_DECODE);
+        memcpy(buf.data(), d_buf, 4);
 
-        d_in.read(&buf[0] + 4, i);
+        d_in.read(buf.data() + 4, i);
         DBG2(cerr << "bytes read: " << d_in.gcount() << endl);
 
         xdr_setpos(&source, 0);
@@ -306,11 +306,11 @@ void XDRStreamUnMarshaller::get_vector(char **val, unsigned int &num, int width,
     if (size > XDR_DAP_BUFF_SIZE) {
     	vector<char> buf(size+4);
         XDR source;
-        xdrmem_create(&source, &buf[0], size + 4, XDR_DECODE);
+        xdrmem_create(&source, buf.data(), size + 4, XDR_DECODE);
         DBG(cerr << "size: " << size << endl);
-        memcpy(&buf[0], d_buf, 4);
+        memcpy(buf.data(), d_buf, 4);
 
-        d_in.read(&buf[0] + 4, size); // +4 for the int already read
+        d_in.read(buf.data() + 4, size); // +4 for the int already read
         DBG(cerr << "bytes read: " << d_in.gcount() << endl);
 
         xdr_setpos(&source, 0);

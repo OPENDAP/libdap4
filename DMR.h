@@ -33,9 +33,12 @@
 #include <cstdint>
 
 #include "DapObj.h"
+#include "BaseType.h"
 
 namespace libdap
 {
+
+const string c_dap40_namespace = "http://xml.opendap.org/ns/DAP/4.0#";
 
 class D4Group;
 class D4BaseTypeFactory;
@@ -54,7 +57,7 @@ class DDS;
 class DMR : public DapObj
 {
 private:
-    D4BaseTypeFactory *d_factory;
+    D4BaseTypeFactory *d_factory = nullptr;
 
     /// The name of the dataset. This should not be the pathname to a file
     std::string d_name;
@@ -62,29 +65,29 @@ private:
     std::string d_filename;
 
     /// DAP protocol major version number. Should be '4'
-    int d_dap_major;
+    int d_dap_major = 4;
     /// DAP protocol minor version number.
-    int d_dap_minor;
+    int d_dap_minor = 0;
     /// String version of the DAP protocol number
-    std::string d_dap_version;
+    std::string d_dap_version = "4.0";
 
     /// The version of the DMR document
-    std::string d_dmr_version;
+    std::string d_dmr_version = "1.0";
 
     /// The URL for the request base
     std::string d_request_xml_base;
 
     /// The namespace to use when printing the XML serialization
-    std::string d_namespace;
+    std::string d_namespace = c_dap40_namespace;
 
     /// The maximum response size (in Kilo bytes)
-    uint64_t d_max_response_size_kb;
+    uint64_t d_max_response_size_kb = 0;
 
     /// Whether transferring the whole DMR(the expression constraint is empty)
-    bool d_ce_empty;
+    bool d_ce_empty = false;
 
     /// The root group; holds dimensions, enums, variables, groups, ...
-    D4Group *d_root;
+    D4Group *d_root = nullptr;
 
     friend class DMRTest;
 
@@ -92,7 +95,7 @@ protected:
     void m_duplicate(const DMR &dmr);
 
 public:
-    DMR();
+    DMR() = default;
     DMR(const DMR &dmr);
     explicit DMR(D4BaseTypeFactory *factory, const std::string &name = "");
 
@@ -219,6 +222,8 @@ public:
     D4Group *root();
 
     virtual DDS *getDDS();
+
+    virtual bool is_dap4_projected(std::vector<string> &inventory);
 
     void print_dap4(XMLWriter &xml, bool constrained = false);
 

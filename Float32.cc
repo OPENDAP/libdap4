@@ -116,12 +116,6 @@ Float32::operator=(const Float32 &rhs)
     return *this;
 }
 
-unsigned int
-Float32::width(bool) const
-{
-    return sizeof(dods_float32);
-}
-
 bool
 Float32::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {

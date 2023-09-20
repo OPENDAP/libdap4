@@ -190,7 +190,7 @@ public:
         db.resize(arr->length());
         for (int i = 0; i < arr->length(); ++i)
             db[i] = 126;
-        arr->value(&db[0]);
+        arr->value(db.data());
 
         // Array of Float32
         a_f32 = new TestFloat32("a_f32");
@@ -204,7 +204,7 @@ public:
         d_f32.resize(arr->length());
         for (int i = 0; i < arr->length(); ++i)
             d_f32[i] = 126.126;
-        arr_f32->value(&d_f32[0]);
+        arr_f32->value(d_f32.data());
 
         // Array of Float64
         a_f64 = new TestFloat64("a_f64");
@@ -218,7 +218,7 @@ public:
         d_f64.resize(arr->length());
         for (int i = 0; i < arr->length(); ++i)
             d_f64[i] = 1260.0126;
-        arr_f64->value(&d_f64[0]);
+        arr_f64->value(d_f64.data());
 
         s = new TestStructure("s");
         s->add_var(i32);
@@ -367,7 +367,7 @@ public:
 
             dods_byte fdb[farr.length() * sizeof(dods_byte)];
             farr.value(fdb);
-            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) &db[0], farr.length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db.data(), farr.length() * sizeof(dods_byte)));
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
@@ -428,7 +428,7 @@ public:
             fsarr_p->value(fdb);
 
             CPPUNIT_ASSERT(fsarr_p->length() == arr->length());
-            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) &db[0], fsarr_p->length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db.data(), fsarr_p->length() * sizeof(dods_byte)));
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
@@ -495,7 +495,7 @@ public:
 
             dods_byte fdb[tg.get_array()->length() * sizeof(dods_byte)];
             tg.get_array()->value(fdb);
-            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) &db[0], tg.get_array()->length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db.data(), tg.get_array()->length() * sizeof(dods_byte)));
 
             // Should test the map values here, but skip that for now...
         }
@@ -566,7 +566,7 @@ public:
                 CPPUNIT_ASSERT(arr_p);
                 arr_p->value(fdb);
                 CPPUNIT_ASSERT(arr_p->length() == arr->length());
-                CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) &db[0], arr_p->length() * sizeof(dods_byte)));
+                CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db.data(), arr_p->length() * sizeof(dods_byte)));
                 Sequence *seq_p = dynamic_cast<Sequence *>((*row)[2]);
                 CPPUNIT_ASSERT(seq_p);
                 unsigned int num_rows_sub = seq_p->number_of_rows();
@@ -709,7 +709,7 @@ public:
 
             dods_byte fdb[arr->length() * sizeof(dods_byte)];
             farr.value(fdb);
-            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) &db[0], farr.length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db.data(), farr.length() * sizeof(dods_byte)));
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
@@ -875,8 +875,8 @@ public:
             CPPUNIT_ASSERT(farr.length() == arr->length());
 
             vector<dods_float32> fd_f32(arr->length());
-            farr.value(&fd_f32[0]);
-            CPPUNIT_ASSERT(!memcmp((void *) &fd_f32[0], (void *) &d_f32[0], farr.length() * sizeof(dods_float32)));
+            farr.value(fd_f32.data());
+            CPPUNIT_ASSERT(!memcmp((void *) fd_f32.data(), (void *) d_f32.data(), farr.length() * sizeof(dods_float32)));
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
@@ -965,8 +965,8 @@ public:
             CPPUNIT_ASSERT(farr.length() == arr->length());
 
             vector<dods_float64> fd_f64(arr->length());
-            farr.value(&fd_f64[0]);
-            CPPUNIT_ASSERT(!memcmp((void *) &fd_f64[0], (void *) &d_f64[0], farr.length() * sizeof(dods_float64)));
+            farr.value(fd_f64.data());
+            CPPUNIT_ASSERT(!memcmp((void *) fd_f64.data(), (void *) d_f64.data(), farr.length() * sizeof(dods_float64)));
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
@@ -1076,7 +1076,7 @@ public:
             CPPUNIT_ASSERT(fsarr_p->length() == arr->length());
             dods_byte fdb[fsarr_p->length() * sizeof(dods_byte)];
             fsarr_p->value(fdb);
-            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) &db[0], fsarr_p->length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db.data(), fsarr_p->length() * sizeof(dods_byte)));
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
@@ -1147,7 +1147,7 @@ public:
 
             dods_byte fdb[tg.get_array()->length() * sizeof(dods_byte)];
             tg.get_array()->value(fdb);
-            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) &db[0], tg.get_array()->length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db.data(), tg.get_array()->length() * sizeof(dods_byte)));
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
@@ -1220,7 +1220,7 @@ public:
                 CPPUNIT_ASSERT(arr_p);
                 arr_p->value(fdb);
                 CPPUNIT_ASSERT(arr_p->length() == arr->length());
-                CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) &db[0], arr_p->length() * sizeof(dods_byte)));
+                CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db.data(), arr_p->length() * sizeof(dods_byte)));
                 Sequence *seq_p = dynamic_cast<Sequence *>((*row)[2]);
                 CPPUNIT_ASSERT(seq_p);
                 unsigned int num_rows_sub = seq_p->number_of_rows();
@@ -1328,20 +1328,20 @@ public:
 
             dods_byte fdb[arr->length() * sizeof(dods_byte)];
             farr.value(fdb);
-            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) &db[0], farr.length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db.data(), farr.length() * sizeof(dods_byte)));
 
             // now get three more arrays of the same size
             farr.deserialize(um, &dds, false);
             farr.value(fdb);
-            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) &db[0], farr.length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db.data(), farr.length() * sizeof(dods_byte)));
 
             farr.deserialize(um, &dds, false);
             farr.value(fdb);
-            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) &db[0], farr.length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db.data(), farr.length() * sizeof(dods_byte)));
 
             farr.deserialize(um, &dds, false);
             farr.value(fdb);
-            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) &db[0], farr.length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db.data(), farr.length() * sizeof(dods_byte)));
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();
@@ -1474,12 +1474,12 @@ public:
 
             dods_float32 fd_32[arr->length() * sizeof(dods_float32)];
             farr.value(fd_32);
-            CPPUNIT_ASSERT(!memcmp((void *) fd_32, (void *) &d_f32[0], farr.length() * sizeof(dods_float32)));
+            CPPUNIT_ASSERT(!memcmp((void *) fd_32, (void *) d_f32.data(), farr.length() * sizeof(dods_float32)));
 
             // now get three more arrays of the same size
             farr.deserialize(um, &dds, false);
             farr.value(fd_32);
-            CPPUNIT_ASSERT(!memcmp((void *) fd_32, (void *) &d_f32[0], farr.length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *) fd_32, (void *) d_f32.data(), farr.length() * sizeof(dods_byte)));
         }
         catch (Error &e) {
             string err = "failed:" + e.get_error_message();

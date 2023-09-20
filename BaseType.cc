@@ -296,6 +296,7 @@ BaseType::dump(ostream &strm) const
     strm << DapIndent::LMarg << "read_p: " << d_is_read << endl ;
     strm << DapIndent::LMarg << "send_p: " << d_is_send << endl ;
     strm << DapIndent::LMarg << "synthesized_p: " << d_is_synthesized << endl ;
+    strm << DapIndent::LMarg << "d_is_dap4: " << d_is_dap4 << endl;
     strm << DapIndent::LMarg << "parent: " << (void *)d_parent << endl ;
     strm << DapIndent::LMarg << "attributes: " << endl ;
     DapIndent::Indent() ;
@@ -673,7 +674,7 @@ void BaseType::transfer_attributes(AttrTable *at_container) {
             }
             else {
                 DBG(cerr << __func__ << "() - Adding Attribute '" << at->get_name(at_p) << endl);
-                get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p));
+                get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p),(*at_p)->is_utf8_str);
             }
             at_p++;
         }
@@ -747,6 +748,15 @@ BaseType *
 BaseType::get_parent() const
 {
     return d_parent;
+}
+
+BaseType *
+BaseType::get_ancestor()
+{
+    if (d_parent)
+        return d_parent->get_ancestor();
+    else
+        return this;
 }
 
 // Documented in the header file.
@@ -906,6 +916,9 @@ BaseType::intern_data(ConstraintEvaluator &, DDS &/*dds*/)
 #if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_on();
 #endif
+    if (is_dap4())
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (").append(name()).append(")."), __FILE__, __LINE__);
+
     DBG2(cerr << "BaseType::intern_data: " << name() << endl);
     if (!read_p())
         read();          // read() throws Error and InternalErr
@@ -920,13 +933,10 @@ BaseType::intern_data(ConstraintEvaluator &, DDS &/*dds*/)
  * @param dmr DMR for the whole dataset
  */
 void
-BaseType::intern_data(/*Crc32 &checksum, DMR &, ConstraintEvaluator &*/)
+BaseType::intern_data()
 {
     if (!read_p())
         read();          // read() throws Error and InternalErr
-#if 0
-    compute_checksum(checksum);
-#endif
 }
 
 bool
@@ -1296,5 +1306,28 @@ BaseType::width(bool /* constrained */) const
 {
     throw InternalErr(__FILE__, __LINE__, "not implemented");
 }
+
+int64_t
+BaseType::width_ll(bool /* constrained */) const
+{
+    throw InternalErr(__FILE__, __LINE__, "not implemented");
+}
+
+
+/**
+ * When send_p() is true and the attributes contain dap4 data types then
+ *   a description of the instance is added to the inventory and true is returned.
+ * @param inventory is a value-result parameter
+ * @return True when send_p() is true and the attributes contain dap4 data types, false otherwise
+ */
+bool BaseType::is_dap4_projected(std::vector<string> &inventory)
+{
+    bool has_projected_dap4 = false;
+    if(send_p()) {
+        has_projected_dap4 = attributes()->has_dap4_types(FQN(), inventory);
+    }
+    return has_projected_dap4;
+}
+
 
 } // namespace libdap

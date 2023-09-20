@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir) $(XML2_CFLAGS)
-AM_CXXFLAGS =  
+AM_CXXFLAGS = -Wall -W -Wcast-align -Wno-inconsistent-missing-override
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
@@ -28,12 +28,12 @@ if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
 endif
 
-# Removed  $(CXX11_FLAG) since c++0x, gcc 4.4.x and bison -gneerated code
+# Removed  $(CXX_STD_FLAG) since c++0x, gcc 4.4.x and bison -gneerated code
 # do not work together. jhrg 4//5/19
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXX11_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+AM_CXXFLAGS += $(CXX_STD_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
+AM_CXXFLAGS += -g -O2 $(CXX_STD_FLAG)
 endif
 
 AM_LDFLAGS =

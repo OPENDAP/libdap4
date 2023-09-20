@@ -128,12 +128,6 @@ Int64::operator=(const Int64 &rhs)
     return *this;
 }
 
-unsigned int
-Int64::width(bool) const
-{
-    return sizeof(dods_int64);
-}
-
 void
 Int64::compute_checksum(Crc32 &checksum)
 {
@@ -271,6 +265,23 @@ Int64::transform_to_dap2(AttrTable *)
 
     return NULL;
 }
+
+/**
+ * When send_p() is true a description of the instance is added to the inventory and true is returned.
+ * @param inventory is a value-result parameter
+ * @return True when send_p() is true, false otherwise
+ */
+bool Int64::is_dap4_projected(std::vector<string> &inventory)
+{
+    bool has_projected_dap4 = false;
+    if(send_p()) {
+        has_projected_dap4 = true;
+        attributes()->has_dap4_types(FQN(), inventory);
+        inventory.emplace_back(type_name() + " " + FQN());
+    }
+    return has_projected_dap4;
+}
+
 
 /** @brief dumps information about this object
  *

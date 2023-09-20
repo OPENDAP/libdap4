@@ -62,6 +62,7 @@ bool D4ConstraintEvaluator::parse(const std::string &expr)
     d_expr = expr;	// set for error messages. See the %initial-action section of .yy
 
     DBG(cerr << "Entering D4ConstraintEvaluator::parse: "  << endl);
+    DBG(cerr << "Entering D4ConstraintEvaluator::expr: "  << expr <<endl);
     std::istringstream iss(expr);
     D4CEScanner scanner(iss);
     D4CEParser parser(scanner, *this /* driver */);
@@ -213,13 +214,22 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
             throw Error(malformed_expr, "The index constraint for '" + btp->name() + "' does not match its rank.");
 
         Array::Dim_iter d = a->dim_begin();
+
+        DBG(cerr << "dimension size " << a->dimension_size_ll(d,false) << endl);
+
         for (vector<index>::iterator i = d_indexes.begin(), e = d_indexes.end(); i != e; ++i) {
+#if 0
             if ((*i).stride > (unsigned long long) (a->dimension_stop(d, false) - a->dimension_start(d, false)) + 1)
+#endif
+            if ((*i).stride > (unsigned long long) (a->dimension_stop_ll(d, false) - a->dimension_start_ll(d, false)) + 1)
                 throw Error(malformed_expr,
                     "For '" + btp->name()
                         + "', the index stride value is greater than the number of elements in the Array");
             if (!(*i).rest
+                && ((*i).stop) > (unsigned long long) (a->dimension_stop_ll(d, false) - a->dimension_start_ll(d, false)) + 1)
+#if 0
                 && ((*i).stop) > (unsigned long long) (a->dimension_stop(d, false) - a->dimension_start(d, false)) + 1)
+#endif
                 throw Error(malformed_expr,
                     "For '" + btp->name()
                         + "', the index stop value is greater than the number of elements in the Array");
@@ -244,8 +254,12 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
                 // an Array when some of the Array's dimensions don't use Shared Dimensions
                 // but others do.
 
+                DBG(cerr << "Entering: LOCAL D4 constraint" <<  endl);
                 // First apply the constraint to the Array's dimension
+#if 0
                 a->add_constraint(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
+#endif
+                a->add_constraint_ll(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
 
                 // Then, if the Array has Maps, scan those Maps for any that use dimensions
                 // that match the name of this particular dimension. If any such Maps are found
@@ -257,19 +271,32 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
                 // local dimension slices. See https://opendap.atlassian.net/browse/HYRAX-98
                 // jhrg 4/12/16
                 if (!a->maps()->empty()) {
-                    for (D4Maps::D4MapsIter m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ++m) {
+                   int map_size = a->maps()->size();
+
+                   // Some variables may have several maps that shares the same dimension.
+                   // When local contraint applies, all these maps should be removed.
+                   // TODO: Ideally we can just use typical erase-remove in the an inner-loop to handle this.
+                   //       Somehow this doesn't work. Maybe we need to add public methods. KY 2023-03-13
+                   for (int map_index = 0; map_index  <map_size; map_index++) {
+                        for (D4Maps::D4MapsIter m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ++m) {
+#if 0
                         if ((*m)->array() == 0)
                             throw Error(malformed_expr,
                                 "An array with Maps was found, but one of the Maps was not defined correctly.");
-
-                        Array *map = const_cast<Array*>((*m)->array()); // Array lacks const iterator support
-                        // Added a test to ensure 'dim' is not null. This could be the case if
-                        // execution gets here and the index *i was not empty. jhrg 4/18/17
-                        if (dim && array_uses_shared_dimension(map, dim)) {
-                            D4Map *map_to_be_removed = *m;
-                            a->maps()->remove_map(map_to_be_removed); // Invalidates the iterator
-                            delete map_to_be_removed;   // removed from container; delete
-                            break; // must leave the for loop because 'm' is now invalid
+#endif
+                            auto root = dynamic_cast<D4Group*>(a->get_ancestor());
+                            if (!root)
+                                throw InternalErr(__FILE__, __LINE__, "Expected a valid ancestor Group.");
+                            auto *map = (*m)->array(root);
+    
+                            // Added a test to ensure 'dim' is not null. This could be the case if
+                            // execution gets here and the index *i was not empty. jhrg 4/18/17
+                            if (dim && array_uses_shared_dimension(map, dim)) {
+                                D4Map *map_to_be_removed = *m;
+                                a->maps()->remove_map(map_to_be_removed); // Invalidates the iterator
+                                delete map_to_be_removed;   // removed from container; delete
+                                break; // must leave the for loop because 'm' is now invalid
+                            }
                         }
                     }
                 }

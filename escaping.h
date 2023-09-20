@@ -74,6 +74,7 @@ string xml2id(string in);
 string esc2underscore(string s);
 string char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]");
 string escattr(string s);
+string escattr_xml(string s);
 string unescattr(string s);
 
 string munge_error_message(string msg);

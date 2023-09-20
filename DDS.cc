@@ -522,16 +522,17 @@ int DDS::get_request_size(bool constrained)
 uint64_t DDS::get_request_size_kb(bool constrained)
 {
     uint64_t req_size = 0;
-    for (Vars_iter i = vars.begin(); i != vars.end(); i++) {
+    for (auto &btp: vars) {
         if (constrained) {
-            if ((*i)->send_p())
-                req_size += (*i)->width(constrained);
+            if (btp->send_p())
+                req_size += btp->width_ll(constrained);
         }
         else {
-            req_size += (*i)->width(constrained);
+            req_size += btp->width_ll(constrained);
         }
     }
-    return req_size/1024;
+
+    return req_size / 1024;
 }
 
 
@@ -1140,7 +1141,7 @@ void fillConstructorAttrTable(AttrTable *at, BaseType *bt){
                 else {
                     vector<string>* pAttrTokens = arrayAT.get_attr_vector(atIter);
                     // append_attr makes a copy of the vector, so we don't have to do so here.
-                    at->append_attr(childName, AttrType_to_String(type), pAttrTokens);
+                    at->append_attr(childName, AttrType_to_String(type), pAttrTokens,(*atIter)->is_utf8_str);
                 }
             }
 
@@ -1178,7 +1179,7 @@ void DDS::get_das(DAS *das)
         }
         else {
             // This must be a top level attribute outside a container.  jhrg 4/6/18
-            global->append_attr(d_attr.get_name(i), d_attr.get_type(i), d_attr.get_attr_vector(i));
+            global->append_attr(d_attr.get_name(i), d_attr.get_type(i), d_attr.get_attr_vector(i),(*i)->is_utf8_str);
         }
     }
 
@@ -1535,6 +1536,21 @@ DDS::mark_all(bool state)
     for (Vars_iter i = vars.begin(); i != vars.end(); i++)
         (*i)->set_send_p(state);
 }
+
+/**
+ *
+ * @param inventory
+ * @return
+ */
+bool DDS::is_dap4_projected(std::vector<string> &inventory)
+{
+    bool has_dap4 = d_attr.has_dap4_types("/", inventory);
+    for(const auto var : variables()){
+        has_dap4 |= var->is_dap4_projected(inventory);
+    }
+    return has_dap4;
+}
+
 
 /** @brief dumps information about this object
  *

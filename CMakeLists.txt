@@ -409,6 +409,7 @@ add_executable(libdap
 		unit-tests/Int32Test.cc
 		unit-tests/Int64Test.cc
 		unit-tests/Int8Test.cc
+		unit-tests/IsDap4ProjectedTest.cc
 		unit-tests/MIMEUtilTest.cc
 		unit-tests/MarshallerTest.cc
 		unit-tests/RCReaderTest.cc

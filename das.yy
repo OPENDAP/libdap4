@@ -377,11 +377,13 @@ float64:	float_or_int
 strs:		str_or_id
 		{
 		    string attr = remove_quotes($1);
+                    attr = unescattr(attr);
 		    add_attribute(*type, *name, attr, 0);
 		}
 		| strs ',' str_or_id
 		{
 		    string attr = remove_quotes($3);
+                    attr = unescattr(attr);
 		    add_attribute(*type, *name, attr, 0);
 		}
 ;

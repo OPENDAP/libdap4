@@ -44,9 +44,7 @@
 #include "debug.h"
 
 #include "run_tests_cppunit.h"
-#include "run_tests_cppunit.h"
 #include "test_config.h"
-
 
 using namespace CppUnit;
 using namespace std;

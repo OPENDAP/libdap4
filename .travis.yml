@@ -16,9 +16,14 @@ language: cpp
 
 compiler: gcc         # Could add clang
 
+# Build only 'master,' 'main,' or '.*-test-deploy' branches. This is used down in the
+# "stages" section where we assume the build process is only run for branches that
+# match those patterns. jhrg 8/22/22
 branches:
   only:
   - master
+  - main
+  - /^(.*-test-deploy)$/
 
 # This cache is used to speed up sonar scan runs. See https://docs.travis-ci.com/user/caching.
 # Each branch gets its own cache. jhrg 2/11/22
@@ -68,8 +73,7 @@ env:
   # GIT_UID travis-ci-opendap
   - secure: "g+SL53aSnULaToAu+HJO86Ljr6//j+aVSlVh7ROj6h80PDVmSW0xyiLUQRkA24vMrQqNY/rj6+qAXgVGORCPs2JBGcKjELzLr30eNDXfUNOjB+0actXI8sKD8I3eTZMHawOpedtk9v884Z+iQJauh04tD70sUMBp/WpCp+mXgQE="
   # GIT_PSWD travis-ci-opendap
-  - secure: "tWdPVVe+22hRx5LP4jhwG4LVxrWXnW2fBR+S05kiBwnsNI7YS5Lq2uOANJ/z8T1tPE2+hq5ErWKTkOqRsMMLg1Y/TUX5Vd+718oVGiSf/Iz3HWCBakxgCuyq5ejzCZWKJxBqmoTigBCWIyzMV7S+BCjjqZV2DxGzXY5kSg7uG3A="
-
+  - secure: "Oi3LunWs6lnFSW83d8z1llVBGIfUx3E+0d6wRAnkO0Q3muTMr8zm/bmaBt7XxnUQ3uKjRp9Uwkqtt7jJDHfTMeO5mXqYz018mc+PxwPmfFk6mnCQVbu1fk2tDRFbKYBPxILk0lvkShqzfKJJ9g/5b1IBJ/oxZAErf21qMqi1IHU="
   # DOCKER_HUB_UID for our DockerHub account
   - secure: "PsI4sAD6i7dPfsYRof05Ya0GmuE9j3/gpULUNrIOGYc2wbLlApqhkUoznqeOaXGB3O+kM1Mxah6ft4PyYcuLZ0xM0H7ulT3mz+clqXuH9ssgGoDt/Ye5PJiFWNOQlRvWd7F9NNtVSBikjWN4ujalUqby2cSThBizkOXhZYe3CzM="
   # DOCKER_HUB_PSWD for our DockerHub account
@@ -97,13 +101,12 @@ before_script:
 
 stages:
   - name: build
-    if:  branch = master
   - name: scan
-    if: branch = master
+    if: branch = master OR branch = main
   - name: package
-    if:  branch = master
   - name: hyrax-bes-trigger
-    if: branch = master AND type != pull_request
+    if: type != pull_request OR branch =~ ^(.*-test-deploy)$
+    # Was "if: branch = master AND type != pull_request" jhrg 8/22/22
 
 jobs:
   include:
@@ -129,7 +132,7 @@ jobs:
     script:
     - export LIBDAP_BUILD=distcheck
     - autoreconf --force --install --verbose
-    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer
+    - ./configure --disable-dependency-tracking --prefix=$prefix
     - make distcheck -j7
 
   - stage: scan
@@ -137,7 +140,7 @@ jobs:
     script:
     - export LIBDAP_BUILD=sonar
     - autoreconf --force --install --verbose
-    - ./configure --disable-dependency-tracking  --prefix=$prefix --enable-developer --enable-coverage
+    - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-coverage
     - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
     # Run these commands in bw-output?
     - make check -j7
@@ -145,18 +148,6 @@ jobs:
     - sonar-scanner -Dsonar.login=$SONAR_LOGIN
     # Test the result of the scan and fail a PR/build if the quality gate fails
     - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
-
-  - stage: package
-    name: "centos7 rpms"
-    script:
-      - export LIBDAP_BUILD=centos7
-      # $prefix = $HOME/install which is /home/travis/install here but /root/install in the image.
-      # For this image, prefix is already set.
-      - mkdir -p $prefix/rpmbuild
-      - docker run --volume $prefix/rpmbuild:/root/rpmbuild --volume $TRAVIS_BUILD_DIR:/root/travis
-          --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-          --env os=centos7 --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
-          opendap/centos7_hyrax_builder:1.7 /root/travis/travis/build-rpm.sh
 
   - stage: package
     name: "centos stream8 rpms"
@@ -195,6 +186,9 @@ jobs:
       - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
       - ./travis/trigger-bes-build.sh
 
+after_script:
+  - ./travis/upload-test-results.sh
+
 before_deploy:
   # This part of the before_deploy action copies the built distributions named with version numbers
   # into $TRAVIS_BUILD_DIR/package and then places a second copy of those files with the version
@@ -208,8 +202,6 @@ before_deploy:
   # Build the binary used by downstream Travis BES builds
   - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz
                                                --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
-  # CentOS-7 distribution prep
-  - if test "$LIBDAP_BUILD" = "centos7"; then ./travis/rpm-to-package-dir.sh "el7"; fi
   # CentOS-Stream8 distribution prep
   - if test "$LIBDAP_BUILD" = "centos-stream8"; then ./travis/rpm-to-package-dir.sh "el8"; fi
   # Src dist distribution prep
@@ -225,7 +217,9 @@ deploy:
   skip_cleanup: true
   local_dir: $TRAVIS_BUILD_DIR/package
   on:
-    # Change 'master' to 'travis' to test deployment
-    branch: master
-    condition: $LIBDAP_BUILD =~ ^main|srddist|centos7|centos-stream8$
+    all_branches: true
+    # Was "branch: master". Now supports the *-test-deploy feature and also
+    # using 'main' as the branch name. jhrg 8/22/22
+    condition: $LIBDAP_BUILD =~ ^main|srddist|centos-stream8$
     # Removed 'centos6|' jhrg 10/23/20
+    # Removed 'centos7|' jhrg 01/27/23

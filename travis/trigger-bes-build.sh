@@ -26,14 +26,25 @@
 
 set -e
 
-echo "New CentOS-7 snapshot of libdap4 has been pushed. Triggering a BES build..."
-
-LIBDAP4_SNAPSHOT="libdap4-`cat ./libdap_VERSION` `date \"+%FT%T%z\"`"
-echo "libdap4-snapshot record: ${LIBDAP_SNAPSHOT}"  >&2
-
-git clone --depth 1 https://github.com/opendap/bes
 git config --global user.name "The-Robot-Travis"
 git config --global user.email "npotter@opendap.org"
+
+echo "New snapshot of libdap4 has been pushed. Triggering a BES build..."
+
+export libdap4_version_num=$(cat ./libdap_VERSION)
+echo "libdap4_version_num: ${libdap4_version_num}"  >&2
+
+export time_now=$(date "+%FT%T%z")
+echo "time_now: ${time_now}"  >&2
+
+LIBDAP4_SNAPSHOT="libdap4-${libdap4_version_num} ${time_now}"
+echo "libdap4-snapshot record: ${LIBDAP4_SNAPSHOT}"  >&2
+
+echo "Tagging libdap with version ${libdap4_version_num}"
+git tag -m "libdap4-${libdap4_version_num}" -a "${libdap4_version_num}"
+git push "https://${GIT_UID}:${GIT_PSWD}@github.com/OPENDAP/libdap4.git" "${libdap4_version_num}"
+
+git clone --depth 1 https://github.com/opendap/bes
 
 cd bes
 git checkout master
@@ -42,5 +53,12 @@ echo "${LIBDAP4_SNAPSHOT}" > libdap4-snapshot
 
 cat libdap4-snapshot  >&2
 
-git commit -am "${LIBDAP4_SNAPSHOT} Triggering BES build for snapshots.";
-git push https://$GIT_UID:$GIT_PSWD@github.com/opendap/bes --all;
+# Bounding the commit message with the " character allows use to include
+# new line stuff for easy commit message readability later.
+git commit -am \
+"libdap4: Triggering BES build for snapshot production.
+Build Version Matrix:
+${LIBDAP4_SNAPSHOT}
+";
+
+git push "https://${GIT_UID}:${GIT_PSWD}@github.com/OPENDAP/bes" --all;

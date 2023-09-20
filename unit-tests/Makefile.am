@@ -8,9 +8,9 @@ AUTOMAKE_OPTIONS = foreign
 # Headers in 'tests' are used by the arrayT unit tests.
 
 AM_CPPFLAGS = -I$(top_srcdir)/GNU -I$(top_srcdir) -I$(top_srcdir)/tests \
-$(CURL_CFLAGS) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
+    $(CURL_CFLAGS) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_LDADD = $(XML2_LIBS)
-AM_CXXFLAGS = $(CXX11_FLAG)
+AM_CXXFLAGS = $(CXX_STD_FLAG)
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-self-assign-overloaded
@@ -21,7 +21,7 @@ AM_CPPFLAGS += $(CPPUNIT_CFLAGS)
 AM_LDADD += $(CPPUNIT_LIBS)
 endif
 
-CXXFLAGS_DEBUG = -g3 -O0 -Wall -Wcast-align
+CXXFLAGS_DEBUG = -g3 -O0
 
 if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
@@ -95,7 +95,7 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
 	D4EnumDefsTest D4GroupTest D4ParserSax2Test D4AttributesTest D4EnumTest \
 	chunked_iostream_test D4AsyncDocTest DMRTest D4FilterClauseTest \
-	D4SequenceTest DmrRoundTripTest DmrToDap2Test
+	D4SequenceTest DmrRoundTripTest DmrToDap2Test IsDap4ProjectedTest
 
 else
 UNIT_TESTS =
@@ -107,6 +107,13 @@ check-local:
 	@echo "check target in unit-tests directory                     *"
 	@echo "**********************************************************"
 	@echo ""
+endif
+
+# If cppunit exists and big array test option are chosen, turn on BigArrayTest.
+if CPPUNIT
+if USE_BA
+UNIT_TESTS +=BigArrayTest
+endif
 endif
 
 # making these link statically makes them easier to debug and to use
@@ -244,4 +251,9 @@ DmrToDap2Test_SOURCES = DmrToDap2Test.cc $(TEST_SRC)
 D4FilterClauseTest_SOURCES = D4FilterClauseTest.cc
 
 D4SequenceTest_SOURCES = D4SequenceTest.cc $(TEST_SRC)
+
+BigArrayTest_SOURCES = BigArrayTest.cc $(TEST_SRC)
+
 D4SequenceTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
+
+IsDap4ProjectedTest_SOURCES = IsDap4ProjectedTest.cc

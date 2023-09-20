@@ -33,6 +33,7 @@
 #include "AttrTable.h"
 
 #include "util.h"
+#include "escaping.h"
 #include "debug.h"
 #include "DapIndent.h"
 
@@ -252,6 +253,7 @@ D4Attributes::transform_to_dap4(AttrTable &at)
         }
         case Attr_string: {
             D4Attribute *a = new D4Attribute(name, attr_str_c);
+            a->set_utf8_str_flag((*i)->is_utf8_str);
             a->add_value_vector(*at.get_attr_vector(i));
             add_attribute_nocopy(a);
             break;
@@ -277,39 +279,28 @@ D4Attributes::transform_to_dap4(AttrTable &at)
 
 AttrType get_dap2_AttrType(D4AttributeType d4_type) {
     switch (d4_type) {
-    case attr_container_c: { return Attr_container; }
-    case attr_byte_c:      { return Attr_byte; }
-    case attr_int16_c:     { return Attr_int16; }
-    case attr_uint16_c:    { return Attr_uint16; }
-    case attr_int32_c:     { return Attr_int32; }
-    case attr_uint32_c:    { return Attr_uint32; }
-    case attr_float32_c:   { return Attr_float32; }
-    case attr_float64_c:   { return Attr_float64; }
-    case attr_str_c:       { return Attr_string; }
-    case attr_url_c:       { return Attr_url; }
-    case attr_otherxml_c:  { return Attr_other_xml; }
+            // These types are common between DAP4 and DAP2.
+        case attr_container_c: { return Attr_container; }
+        case attr_byte_c:      { return Attr_byte; }
+        case attr_int16_c:     { return Attr_int16; }
+        case attr_uint16_c:    { return Attr_uint16; }
+        case attr_int32_c:     { return Attr_int32; }
+        case attr_uint32_c:    { return Attr_uint32; }
+        case attr_float32_c:   { return Attr_float32; }
+        case attr_float64_c:   { return Attr_float64; }
+        case attr_str_c:       { return Attr_string; }
+        case attr_url_c:       { return Attr_url; }
+        case attr_otherxml_c:  { return Attr_other_xml; }
+        case attr_uint8_c:     { return Attr_byte; }
 
-    case attr_int8_c:      { return Attr_byte; }
-    case attr_uint8_c:     { return Attr_byte; }
-    case attr_int64_c:     {
-        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
-            "There is no accepted DAP2 representation of Int64.");
-    }
-    case attr_uint64_c:    {
-        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
-            "There is no accepted DAP2 representation of UInt64.");
-    }
-    case attr_enum_c:    {
-        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
-            "There is no accepted DAP2 representation of Enumeration.");
-    }
-    case attr_opaque_c:    {
-        throw InternalErr(__FILE__, __LINE__, "Unable to convert DAP4 attribute to DAP2. "
-            "There is no accepted DAP2 representation of Opaque.");
-    }
-
-    default:
-        throw InternalErr(__FILE__, __LINE__, "Unknown DAP4 attribute.");
+        // Types exclusive to DAP4
+        case attr_int8_c:      { return Attr_int8; }
+        case attr_int64_c:     { return Attr_int64; }
+        case attr_uint64_c:    { return Attr_uint64; }
+        case attr_enum_c:      { return Attr_enum; }
+        case attr_opaque_c:    { return Attr_opaque; }
+        default:
+            throw InternalErr(__FILE__, __LINE__, "Unknown DAP4 attribute.");
     }
 }
 
@@ -338,7 +329,7 @@ void D4Attributes::transform_attrs_to_dap2(AttrTable *d2_attr_table)
         }
         default: {
             for (D4Attribute::D4AttributeIter vi = (*i)->value_begin(), ve = (*i)->value_end(); vi != ve; vi++) {
-                d2_attr_table->append_attr(name, d2_attr_type_name, *vi);
+                d2_attr_table->append_attr(name, d2_attr_type_name, *vi,(*i)->get_utf8_str_flag());
             }
 
             break;
@@ -552,6 +543,33 @@ D4Attribute::print_dap4(XMLWriter &xml) const
             throw InternalErr(__FILE__, __LINE__, "Could not write OtherXML value");
         break;
 
+    case attr_url_c:
+    case attr_str_c: {
+
+        // Need to escape special characters that xml doesn't allow. Note: the XML escaping is
+        // not the same as the das string escaping. See escattr_xml in the escaping.cc for details.
+        // KY 08-22-22
+#if 0 
+        D4AttributeCIter i = d_values.begin();//value_begin();
+#endif
+        auto i = d_values.begin();
+        while (i != d_values.end()) {
+            if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Value") < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write value element");
+#if 0
+            if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) (*i++).c_str()) < 0)
+#endif
+            string s = (get_utf8_str_flag())?(*i++):escattr_xml(*i++);
+            if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) s.c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute value");
+
+            if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not end value element");
+        }
+        break;
+    }
+
+       
     default: {
         // Assume only valid types make it into instances
         D4AttributeCIter i = d_values.begin();//value_begin();
@@ -607,6 +625,51 @@ D4Attributes::print_dap4(XMLWriter &xml) const
     while (i != d_attrs.end()) {
         (*i++)->print_dap4(xml);
     }
+}
+
+
+/**
+ * Returns true if this Attribute is a dap4 type.
+ * @param path
+ * @param inventory
+ * @return True of the attribute is a dap4 type, false otherwise
+ */
+bool D4Attribute::is_dap4_type(const std::string &path, std::vector<std::string> &inventory)
+{
+    bool ima_d4_attr = false;
+    switch(type()){
+        case attr_int8_c:
+        case attr_int64_c:
+        case attr_uint64_c:
+            ima_d4_attr=true;
+            break;
+        case attr_container_c:
+            ima_d4_attr = attributes()->has_dap4_types(path ,inventory);
+            break;
+        default:
+            break;
+    }
+    return ima_d4_attr;
+}
+
+/**
+ * Checks the child Attributes for ones with dap4 types and, when found, adds a description of each to the inventory
+ * @param path
+ * @param inventory
+ * @return true when dap4 types are found, false otherwise.
+ */
+bool D4Attributes::has_dap4_types(const std::string &path, std::vector<std::string> &inventory) const
+{
+    bool has_d4_attr = false;
+    for (const auto attr: attributes()) {
+        string attr_fqn = path + "@" + attr->name();
+        bool isa_d4_attr = attr->is_dap4_type(attr_fqn, inventory);
+        if(isa_d4_attr){
+            inventory.emplace_back(D4AttributeTypeToString(attr->type()) + " " + attr_fqn);
+        }
+        has_d4_attr |= isa_d4_attr;
+    }
+    return has_d4_attr;
 }
 
 /** @brief dumps information about this object

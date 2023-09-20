@@ -110,12 +110,6 @@ Int16::operator=(const Int16 &rhs)
     return *this;
 }
 
-unsigned int
-Int16::width(bool) const
-{
-    return sizeof(dods_int16);
-}
-
 bool
 Int16::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 {
