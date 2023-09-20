@@ -30,8 +30,8 @@
 %defines
 
 // The d4ce_parser.tab.cc and .hh files define and declare this class
-%define parser_class_name {D4CEParser}
-// %define api.parser.class {D4CEParser}
+%define api.parser.class {D4CEParser}
+// OLD, deprecated but may require bison 3.3 jhrg 9/19/23 %define parser_class_name {D4CEParser}
 // D4CEParser is in this namespace
 %define api.namespace {libdap}
 

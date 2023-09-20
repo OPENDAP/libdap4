@@ -239,7 +239,6 @@ CLIENT_HDR = RCReader.h Connect.h HTTPConnect.h HTTPCache.h		\
 DAP4_CLIENT_HDR = D4Connect.h
 
 SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
-#	ResponseBuilder.h ResponseCache.h
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support
@@ -260,29 +259,17 @@ SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 lex.das.cc: das.lex das.tab.cc das.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-#das.tab.cc das.tab.hh: das.yy DAS.h
-#	$(YACC) $(YFLAGS) $<
-
 # DDS
 
 lex.dds.cc: dds.lex dds.tab.cc dds.tab.hh
 	$(LEX) $(LFLAGS) $<
-
-#dds.tab.cc dds.tab.hh: dds.yy
-#	$(YACC) $(YFLAGS) $<
 
 # CE
 
 lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
 	$(LEX) $(LFLAGS) $<
 
-#ce_expr.tab.cc ce_expr.tab.hh: ce_expr.yy
-#	$(YACC) $(YFLAGS) $<
-
 # Errors
 
 lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh
 	$(LEX) $(LFLAGS) $<
-
-#Error.tab.cc Error.tab.hh: Error.yy
-#	$(YACC) $(YFLAGS) $<

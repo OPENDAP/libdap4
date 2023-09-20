@@ -66,10 +66,10 @@ void Errorerror(parser_arg *arg, const string &s);	// gotta love automatically g
 
 }
 
-%require "2.4"
+%require "3.3"
 %parse-param {parser_arg *arg}
-%name-prefix "Error"
-// %define api.prefix {Error}
+// OLD deprecated but may require bison 3.3 jhrg 9/19/23 %name-prefix "Error"
+%define api.prefix {Error}
 %defines
 %debug
 %verbose

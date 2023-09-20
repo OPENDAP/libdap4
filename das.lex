@@ -184,7 +184,7 @@ NEVER   [^\-+a-zA-Z0-9_/%.:\\()#{};,[\]]
                         }
 <quote><<EOF>>          {
                           char msg[256];
-                          sprintf(msg,
+                          snprintf(msg, 256,
                                   "Unterminated quote (starts on line %d)\n",
                                   start_line);
                           YY_FATAL_ERROR(msg);

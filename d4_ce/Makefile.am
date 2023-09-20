@@ -8,11 +8,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir)  $(XML2_CFLAGS) $(TIRPC_CFLAGS)
-AM_CXXFLAGS = -Wall -W -Wcast-align -Wno-inconsistent-missing-override
-
-if COMPILER_IS_GCC
-AM_CXXFLAGS += -Wall -W -Wcast-align
-endif
+AM_CXXFLAGS = -Wall -W -Wcast-align -Wno-inconsistent-missing-override -Wno-sign-compare
 
 # autoconf/automake includes support for yacc and lex so that the input
 # files for those compilers can be listed in a _SOURCES variable and the
@@ -25,7 +21,7 @@ endif
 # AM_YFLAGS= -d
 # AM_LFLAGS = -d
 
-CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
+CXXFLAGS_DEBUG = -g3 -O0
 
 if USE_ASAN
 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
