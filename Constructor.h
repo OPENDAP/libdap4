@@ -90,6 +90,7 @@ public:
     void set_read_p(bool state) override;
 
     unsigned int width(bool constrained = false) const override;
+
     int64_t width_ll(bool constrained = false) const override;
 
     /// btp_stack no longer needed; use back pointers (BaseType::get_parent())
@@ -139,6 +140,7 @@ public:
     unsigned int val2buf(void *, bool) override {
         throw InternalErr(__FILE__, __LINE__, "Never use this method; see the programmer's guide documentation.");
     }
+
     unsigned int buf2val(void **) override {
         throw InternalErr(__FILE__, __LINE__, "Never use this method; see the programmer's guide documentation.");
     }
@@ -158,6 +160,7 @@ public:
 
     void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
                     bool constrained = false) override;
+
     void print_xml(FILE *out, string space = "    ", bool constrained = false) override;
 
     void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
@@ -166,6 +169,7 @@ public:
     bool check_semantics(string &msg, bool all = false) override;
 
     void transfer_attributes(AttrTable *at) override;
+
     static AttrTable *make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars);
 
     void dump(ostream &strm) const override;

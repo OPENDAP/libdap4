@@ -331,7 +331,6 @@ public:
                             bool constrained = false) override;
 
     bool check_semantics(string &msg, bool all = false) override;
- 
 
     bool is_dap4_projected(std::vector<std::string> &projected_dap4_inventory) override;
 
@@ -341,8 +340,7 @@ public:
     bool get_dio_flag() const {return direct_io_flag; }
     void set_dio_flag() { direct_io_flag = true; }
     var_storage_info & get_var_storage_info() {return vs_info;}
-    void set_var_storage_info(const var_storage_info &my_vs_info); 
-
+    void set_var_storage_info(const var_storage_info &my_vs_info);
 };
 
 } // namespace libdap
