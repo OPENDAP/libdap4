@@ -1,0 +1,826 @@
+# libdap4 CMakeLists.txt file for use with CLion. This is not intended to be
+# a replacement for the autotools build. But it does provide information that
+# CLion needs to navigate the Hyrax code. jhrg 12/5/19
+
+cmake_minimum_required(VERSION 3.13)
+project(libdap4)
+
+add_library(libdap "")
+add_library(gl "")
+
+add_subdirectory(tests)
+add_subdirectory(unit-tests)
+
+# https://cmake.org/cmake/help/latest/module/FindBISON.html
+find_package(BISON 3.3 REQUIRED)
+# https://cmake.org/cmake/help/latest/module/FindFLEX.html
+find_package(FLEX 2.6 REQUIRED)
+
+BISON_TARGET(dds_parser dds.yy ${CMAKE_CURRENT_BINARY_DIR}/dds.tab.cc)
+FLEX_TARGET(dds_scanner dds.ll ${CMAKE_CURRENT_BINARY_DIR}/lex.das.cc)
+ADD_FLEX_BISON_DEPENDENCY(dds_scanner dds_parser)
+
+# add_executable(Foo main.cpp ${BISON_dds_parser_OUTPUTS})
+
+if (EXISTS /usr/local/Cellar/openssl/1.0.2r)
+include_directories(/usr/local/Cellar/openssl/1.0.2r/include/)
+endif()
+
+include_directories(/usr/local/include/)
+
+# Where the hyrax project puts the dependencies' headers. We might be building
+# standalone. jhrg 7/22/21
+if (EXISTS ../build/deps/include)
+include_directories(../build/deps/include)
+endif()
+
+include_directories(.)
+include_directories(d4_ce)
+include_directories(d4_functions)
+include_directories(geo)
+include_directories(gl)
+include_directories(GNU)
+
+include_directories(tests)
+include_directories(unit-tests)
+
+# target_link_libraries(Collector    PUBLIC  Ui    PRIVATE Algo Engine )
+# target_link_libraries(MyApp PRIVATE Collector)
+
+target_sources(libdap
+		PRIVATE
+		${BISON_dds_parser_OUTPUTS}
+		AISConnect.cc
+		AISDatabaseParser.cc
+        AISMerge.cc
+		AISResources.cc
+		Ancillary.cc
+		Array.cc
+		AttrTable.cc
+		BaseType.cc
+		BaseTypeFactory.cc
+		Byte.cc
+		Clause.cc
+		Connect.cc
+		ConstraintEvaluator.cc
+		Constructor.cc
+		D4AsyncUtil.cc
+		D4Attributes.cc
+		D4BaseTypeFactory.cc
+		D4Connect.cc
+		D4Dimensions.cc
+		D4Enum.cc
+		D4EnumDefs.cc
+		D4FilterClause.cc
+		D4Group.cc
+		D4Maps.cc
+		D4Opaque.cc
+		D4ParserSax2.cc
+		D4RValue.cc
+		D4Sequence.cc
+		D4StreamMarshaller.cc
+		D4StreamUnMarshaller.cc
+		DAPCache3.cc
+		DAS.cc
+		DDS.cc
+		DDXParserSAX2.cc
+		DMR.cc
+		DODSFilter.cc
+		DapIndent.cc
+		DapXmlNamespaces.cc
+		DataDDS.cc
+		Error.cc
+		Float32.cc
+		Float64.cc
+		GNU/GNURegex.cc
+		GNU/GetOpt.cc
+		Grid.cc
+		HTTPCache.cc
+		HTTPCacheTable.cc
+		HTTPConnect.cc
+		Int16.cc
+		Int32.cc
+		Int64.cc
+		Int8.cc
+		InternalErr.cc
+		Keywords2.cc
+		MarshallerThread.cc
+		RCReader.cc
+		RValue.cc
+		ResponseTooBigErr.cc
+		Sequence.cc
+		ServerFunction.cc
+		ServerFunctionsList.cc
+		SignalHandler.cc
+		Str.cc
+		Structure.cc
+		UInt16.cc
+		UInt32.cc
+		UInt64.cc
+		Url.cc
+		Vector.cc
+		XDRFileMarshaller.cc
+		XDRFileUnMarshaller.cc
+		XDRStreamMarshaller.cc
+		XDRStreamUnMarshaller.cc
+		XDRUtils.cc
+		XMLWriter.cc
+		chunked_istream.cc
+		chunked_ostream.cc
+		d4_ce/D4ConstraintEvaluator.cc
+		d4_function/D4FunctionEvaluator.cc
+		error-test.cc
+		escaping.cc
+		fdiostream.cc
+		geo/GSEClause.cc
+		geo/grid_utils.cc
+		getdap.cc
+		getdap4.cc
+		mime_util.cc
+		parser-util.cc
+		regex_test.cc
+		util.cc
+		util_mit.cc
+
+		PUBLIC
+		AISConnect.h
+		AISDatabaseParser.h
+		AISExceptions.h
+		AISMerge.h
+		AISResources.h
+		AlarmHandler.h
+		Ancillary.h
+		Array.h
+		AttrTable.h
+		BaseType.h
+		BaseTypeFactory.h
+		Byte.h
+		Clause.h
+		Connect.h
+		ConstraintEvaluator.h
+		Constructor.h
+		D4AsyncUtil.h
+		D4AttributeType.h
+		D4Attributes.h
+		D4BaseTypeFactory.h
+		D4Connect.h
+		D4Dimensions.h
+		D4Enum.h
+		D4EnumDefs.h
+		D4FilterClause.h
+		D4Function.h
+		D4Group.h
+		D4Maps.h
+		D4Opaque.h
+		D4ParseError.h
+		D4ParserSax2.h
+		D4RValue.h
+		D4Sequence.h
+		D4StreamMarshaller.h
+		D4StreamUnMarshaller.h
+		DAPCache3.h
+		DAS.h
+		DDS.h
+		DDXExceptions.h
+		DDXParserSAX2.h
+		DMR.h
+		DODSFilter.h
+		DapIndent.h
+		DapObj.h
+		DapXmlNamespaces.h
+		DataDDS.h
+		EncodingType.h
+		Error.h
+		EventHandler.h
+		Float32.h
+		Float64.h
+		GNU/GNURegex.h
+		GNU/GetOpt.h
+		Grid.h
+		HTTPCache.h
+		HTTPCacheDisconnectedMode.h
+		HTTPCacheInterruptHandler.h
+		HTTPCacheMacros.h
+		HTTPCacheResponse.h
+		HTTPCacheTable.h
+		HTTPConnect.h
+		HTTPResponse.h
+		Int16.h
+		Int32.h
+		Int64.h
+		Int8.h
+		InternalErr.h
+		Keywords2.h
+		Marshaller.h
+		MarshallerThread.h
+		ObjectType.h
+		Operators.h
+		PipeResponse.h
+		RCReader.h
+		RValue.h
+		Resource.h
+		Response.h
+		ResponseTooBigErr.h
+		Sequence.h
+		ServerFunction.h
+		ServerFunctionsList.h
+		SignalHandler.h
+		SignalHandlerRegisteredErr.h
+		StdinResponse.h
+		Str.h
+		Structure.h
+		Type.h
+		UInt16.h
+		UInt32.h
+		UInt64.h
+		UnMarshaller.h
+		Url.h
+		Vector.h
+		XDRFileMarshaller.h
+		XDRFileUnMarshaller.h
+		XDRStreamMarshaller.h
+		XDRStreamUnMarshaller.h
+		XDRUtils.h
+		XMLWriter.h
+		ce_parser.h
+		cgi_util.h
+		chunked_istream.h
+		chunked_ostream.h
+		chunked_stream.h
+		conf/arg-nonnull.h
+		conf/c++defs.h
+		conf/warn-on-use.h
+		config.h
+		config_dap.h
+		crc.h
+		d4_ce/D4CEScanner.h
+		d4_ce/D4ConstraintEvaluator.h
+		d4_function/D4FunctionEvaluator.h
+		d4_function/D4FunctionScanner.h
+		debug.h
+		dods-datatypes-config.h
+		dods-datatypes-static.h
+		dods-datatypes.h
+		dods-limits.h
+		escaping.h
+		expr.h
+		fdiostream.h
+		geo/GSEClause.h
+		geo/grid_utils.h
+		geo/gse_parser.h
+		media_types.h
+		mime_util.h
+		parser-util.h
+		parser.h
+		util.h
+		util_mit.h
+		xdr-datatypes-config.h
+		xdr-datatypes-static.h
+		xdr-datatypes.h
+)
+
+tests/D4ResponseBuilder.cc
+
+tests/D4TestFunction.cc
+
+tests/D4TestTypeFactory.cc
+
+tests/ResponseBuilder.cc
+
+tests/TestArray.cc
+
+tests/TestByte.cc
+
+tests/TestCommon.cc
+
+tests/TestD4Enum.cc
+
+tests/TestD4Group.cc
+
+tests/TestD4Opaque.cc
+
+tests/TestD4Sequence.cc
+
+tests/TestFloat32.cc
+
+tests/TestFloat64.cc
+
+tests/TestFunction.cc
+
+tests/TestGrid.cc
+
+tests/TestInt16.cc
+
+tests/TestInt32.cc
+
+tests/TestInt64.cc
+
+tests/TestInt8.cc
+
+tests/TestSequence.cc
+
+tests/TestStr.cc
+
+tests/TestStructure.cc
+
+tests/TestTypeFactory.cc
+
+tests/TestUInt16.cc
+
+tests/TestUInt32.cc
+
+tests/TestUInt64.cc
+
+tests/TestUrl.cc
+
+tests/das-test.cc
+tests/dds-test.cc
+tests/dmr-test.cc
+tests/expr-test.cc
+tests/io_test.cc
+unit-tests/AISDatabaseParserTest.cc
+unit-tests/AISMergeTest.cc
+unit-tests/AISResourcesTest.cc
+unit-tests/ArrayTest.cc
+unit-tests/AttrTableTest.cc
+unit-tests/BaseTypeFactoryTest.cc
+unit-tests/ByteTest.cc
+unit-tests/D4AsyncDocTest.cc
+unit-tests/D4AttributesTest.cc
+unit-tests/D4BaseTypeFactoryTest.cc
+unit-tests/D4DimensionsTest.cc
+unit-tests/D4EnumDefsTest.cc
+unit-tests/D4EnumTest.cc
+unit-tests/D4FilterClauseTest.cc
+unit-tests/D4GroupTest.cc
+unit-tests/D4MarshallerTest.cc
+unit-tests/D4ParserSax2Test.cc
+unit-tests/D4SequenceTest.cc
+unit-tests/D4UnMarshallerTest.cc
+unit-tests/DASTest.cc
+unit-tests/DDSTest.cc
+unit-tests/DDXParserTest.cc
+unit-tests/DMRTest.cc
+unit-tests/DODSFilterTest.cc
+unit-tests/DmrRoundTripTest.cc
+unit-tests/DmrToDap2Test.cc
+unit-tests/Float32Test.cc
+unit-tests/Float64Test.cc
+unit-tests/HTTPCacheTest.cc
+unit-tests/HTTPConnectTest.cc
+unit-tests/Int16Test.cc
+unit-tests/Int32Test.cc
+unit-tests/Int64Test.cc
+unit-tests/Int8Test.cc
+unit-tests/IsDap4ProjectedTest.cc
+unit-tests/MIMEUtilTest.cc
+unit-tests/MarshallerTest.cc
+unit-tests/RCReaderTest.cc
+unit-tests/RegexTest.cc
+unit-tests/ResponseBuilderTest.cc
+unit-tests/ResponseCacheTest.cc
+unit-tests/SequenceTest.cc
+unit-tests/ServerFunctionsListUnitTest.cc
+unit-tests/SignalHandlerTest.cc
+unit-tests/ThreadTest.cc
+unit-tests/UInt16Test.cc
+unit-tests/UInt32Test.cc
+unit-tests/UInt64Test.cc
+unit-tests/ancT.cc
+unit-tests/arrayT.cc
+unit-tests/attrTableT.cc
+unit-tests/chunked_iostream_test.cc
+unit-tests/dasT.cc
+unit-tests/ddsT.cc
+unit-tests/fdiostreamTest.cc
+unit-tests/generalUtilTest.cc
+unit-tests/marshT.cc
+unit-tests/parserUtilTest.cc
+unit-tests/sequenceT.cc
+unit-tests/structT.cc
+unit-tests/testFile.cc
+
+
+
+add_executable(libdap
+		AISConnect.cc
+
+		AISDatabaseParser.cc
+
+
+		AISMerge.cc
+
+		AISResources.cc
+
+
+		Ancillary.cc
+
+		Array.cc
+
+		AttrTable.cc
+
+		BaseType.cc
+
+		BaseTypeFactory.cc
+
+		Byte.cc
+
+		Clause.cc
+
+		Connect.cc
+
+		ConstraintEvaluator.cc
+
+		Constructor.cc
+
+		D4AsyncUtil.cc
+
+
+		D4Attributes.cc
+
+		D4BaseTypeFactory.cc
+
+		D4Connect.cc
+
+		D4Dimensions.cc
+
+		D4Enum.cc
+
+		D4EnumDefs.cc
+
+		D4FilterClause.cc
+
+
+		D4Group.cc
+
+		D4Maps.cc
+
+		D4Opaque.cc
+
+
+		D4ParserSax2.cc
+
+		D4RValue.cc
+
+		D4Sequence.cc
+
+		D4StreamMarshaller.cc
+
+		D4StreamUnMarshaller.cc
+
+		DAPCache3.cc
+
+		DAS.cc
+
+		DDS.cc
+
+
+		DDXParserSAX2.cc
+
+		DMR.cc
+
+		DODSFilter.cc
+
+		DapIndent.cc
+
+
+		DapXmlNamespaces.cc
+
+		DataDDS.cc
+
+
+		Error.cc
+
+		#Error.tab.cc
+
+		Float32.cc
+
+		Float64.cc
+
+		GNU/GNURegex.cc
+
+		GNU/GetOpt.cc
+
+		Grid.cc
+
+		HTTPCache.cc
+
+
+
+
+
+		HTTPCacheTable.cc
+
+		HTTPConnect.cc
+
+
+		Int16.cc
+
+		Int32.cc
+
+		Int64.cc
+
+		Int8.cc
+
+		InternalErr.cc
+
+		Keywords2.cc
+
+
+		MarshallerThread.cc
+
+
+
+
+		RCReader.cc
+
+		RValue.cc
+
+
+
+		ResponseTooBigErr.cc
+
+		Sequence.cc
+
+		ServerFunction.cc
+
+		ServerFunctionsList.cc
+
+		SignalHandler.cc
+
+
+
+		Str.cc
+
+		Structure.cc
+
+
+		UInt16.cc
+
+		UInt32.cc
+
+		UInt64.cc
+
+
+		Url.cc
+
+		Vector.cc
+
+		XDRFileMarshaller.cc
+
+		XDRFileUnMarshaller.cc
+
+		XDRStreamMarshaller.cc
+
+		XDRStreamUnMarshaller.cc
+
+		XDRUtils.cc
+
+		XMLWriter.cc
+
+		#e_expr.tab.cc
+
+
+		chunked_istream.cc
+
+		chunked_ostream.cc
+
+
+
+
+
+
+
+
+
+		d4_ce/D4ConstraintEvaluator.cc
+
+		#d4_ce/d4_ce_parser.tab.cc
+		#d4_ce/lex.d4_ce.cc
+		d4_function/D4FunctionEvaluator.cc
+
+
+		#d4_function/d4_function_parser.tab.cc
+		#d4_function/lex.d4_function.cc
+		#das.tab.cc
+		#dds.tab.cc
+
+
+
+
+
+		error-test.cc
+		escaping.cc
+
+
+		fdiostream.cc
+
+		geo/GSEClause.cc
+
+		geo/grid_utils.cc
+
+		# geo/gse.tab.cc
+
+		#geo/lex.gse.cc
+		getdap.cc
+		getdap4.cc
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		#lex.Error.cc
+		#lex.ce_expr.cc
+		#lex.das.cc
+		#lex.dds.cc
+
+		mime_util.cc
+
+		parser-util.cc
+
+
+		regex_test.cc
+		tests/D4ResponseBuilder.cc
+
+		tests/D4TestFunction.cc
+
+		tests/D4TestTypeFactory.cc
+
+		tests/ResponseBuilder.cc
+
+		tests/TestArray.cc
+
+		tests/TestByte.cc
+
+		tests/TestCommon.cc
+
+		tests/TestD4Enum.cc
+
+		tests/TestD4Group.cc
+
+		tests/TestD4Opaque.cc
+
+		tests/TestD4Sequence.cc
+
+		tests/TestFloat32.cc
+
+		tests/TestFloat64.cc
+
+		tests/TestFunction.cc
+
+		tests/TestGrid.cc
+
+		tests/TestInt16.cc
+
+		tests/TestInt32.cc
+
+		tests/TestInt64.cc
+
+		tests/TestInt8.cc
+
+		tests/TestSequence.cc
+
+		tests/TestStr.cc
+
+		tests/TestStructure.cc
+
+		tests/TestTypeFactory.cc
+
+		tests/TestUInt16.cc
+
+		tests/TestUInt32.cc
+
+		tests/TestUInt64.cc
+
+		tests/TestUrl.cc
+
+		tests/das-test.cc
+		tests/dds-test.cc
+		tests/dmr-test.cc
+		tests/expr-test.cc
+		tests/io_test.cc
+		unit-tests/AISDatabaseParserTest.cc
+		unit-tests/AISMergeTest.cc
+		unit-tests/AISResourcesTest.cc
+		unit-tests/ArrayTest.cc
+		unit-tests/AttrTableTest.cc
+		unit-tests/BaseTypeFactoryTest.cc
+		unit-tests/ByteTest.cc
+		unit-tests/D4AsyncDocTest.cc
+		unit-tests/D4AttributesTest.cc
+		unit-tests/D4BaseTypeFactoryTest.cc
+		unit-tests/D4DimensionsTest.cc
+		unit-tests/D4EnumDefsTest.cc
+		unit-tests/D4EnumTest.cc
+		unit-tests/D4FilterClauseTest.cc
+		unit-tests/D4GroupTest.cc
+		unit-tests/D4MarshallerTest.cc
+		unit-tests/D4ParserSax2Test.cc
+		unit-tests/D4SequenceTest.cc
+		unit-tests/D4UnMarshallerTest.cc
+		unit-tests/DASTest.cc
+		unit-tests/DDSTest.cc
+		unit-tests/DDXParserTest.cc
+		unit-tests/DMRTest.cc
+		unit-tests/DODSFilterTest.cc
+		unit-tests/DmrRoundTripTest.cc
+		unit-tests/DmrToDap2Test.cc
+		unit-tests/Float32Test.cc
+		unit-tests/Float64Test.cc
+		unit-tests/HTTPCacheTest.cc
+		unit-tests/HTTPConnectTest.cc
+		unit-tests/Int16Test.cc
+		unit-tests/Int32Test.cc
+		unit-tests/Int64Test.cc
+		unit-tests/Int8Test.cc
+		unit-tests/IsDap4ProjectedTest.cc
+		unit-tests/MIMEUtilTest.cc
+		unit-tests/MarshallerTest.cc
+		unit-tests/RCReaderTest.cc
+		unit-tests/RegexTest.cc
+		unit-tests/ResponseBuilderTest.cc
+		unit-tests/ResponseCacheTest.cc
+		unit-tests/SequenceTest.cc
+		unit-tests/ServerFunctionsListUnitTest.cc
+		unit-tests/SignalHandlerTest.cc
+		unit-tests/ThreadTest.cc
+		unit-tests/UInt16Test.cc
+		unit-tests/UInt32Test.cc
+		unit-tests/UInt64Test.cc
+		unit-tests/ancT.cc
+		unit-tests/arrayT.cc
+		unit-tests/attrTableT.cc
+		unit-tests/chunked_iostream_test.cc
+		unit-tests/dasT.cc
+		unit-tests/ddsT.cc
+		unit-tests/fdiostreamTest.cc
+		unit-tests/generalUtilTest.cc
+		unit-tests/marshT.cc
+		unit-tests/parserUtilTest.cc
+		unit-tests/sequenceT.cc
+		unit-tests/structT.cc
+		unit-tests/testFile.cc
+
+
+		util.cc
+
+		util_mit.cc
+
+
+
+		xdr-datatypes.h)
