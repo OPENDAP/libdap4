@@ -1860,6 +1860,11 @@ void Vector::reserve_value_capacity_ll()
 }
 
 
+void Vector::reserve_value_capacity_ll_byte(uint64_t numBytes) {
+
+    d_buf = new char[numBytes];
+
+}
 /**
  * Copy rowMajorData.length() elements currently in a rowMajorData buffer
  * into this value buffer starting at element index startElement and
