@@ -241,6 +241,11 @@ DAP4_CLIENT_HDR = D4Connect.h
 SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 #	ResponseBuilder.h ResponseCache.h
 
+.PHONY: clion-source-discovery
+clion-source-discovery:
+	$(MAKE) $(MFLAGS)
+	$(MAKE) $(MFLAGS) check
+
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support
 # but these grammars are so hacked that it was taking too much time. Maybe if
