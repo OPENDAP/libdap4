@@ -269,6 +269,7 @@ public:
     virtual void reserve_value_capacity_ll(uint64_t numElements);
     virtual void reserve_value_capacity_ll();
 
+    virtual void reserve_value_capacity_ll_byte(uint64_t numBytes);
 
     virtual uint64_t set_value_slice_from_row_major_vector(const Vector& rowMajorData, uint64_t startElement);
 

@@ -37,6 +37,7 @@
 
 #include <cstring>
 #include <cassert>
+#include <cstdint>
 
 #include <sstream>
 #include <vector>
@@ -1858,7 +1859,16 @@ void Vector::reserve_value_capacity_ll()
     reserve_value_capacity_ll(length_ll());
 }
 
+/**
+ *  A light-weight method to allocate the storage size in bytes
+ *  of the Vector. This method is necessary for operations like 
+ *  direct IO in the BES.
+ */
+void Vector::reserve_value_capacity_ll_byte(uint64_t numBytes) {
 
+    d_buf = new char[numBytes];
+
+}
 /**
  * Copy rowMajorData.length() elements currently in a rowMajorData buffer
  * into this value buffer starting at element index startElement and

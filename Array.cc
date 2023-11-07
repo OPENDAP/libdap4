@@ -80,15 +80,15 @@ void Array::_duplicate(const Array &a)
 
     // Deep copy the Maps if they are being used.
     if (a.d_maps) {
-        d_maps = new D4Maps(*a.d_maps);
+        d_maps = new D4Maps(*a.d_maps, this);
     }
     else {
-        d_maps = 0;
+        d_maps = nullptr;
     }
 }
 
 // The first method of calculating length works when only one dimension is
-// constrained and you want the others to appear in total. This is important
+// constrained, and you want the others to appear in the total. This is important
 // when selecting from grids since users may not select from all dimensions
 // in which case that means they want the whole thing. Array projection
 // should probably work this way too, but it doesn't. 9/21/2001 jhrg
@@ -1517,5 +1517,32 @@ void Array::dump(ostream &strm) const
     DapIndent::UnIndent();
 }
 
-} // namespace libdap
+/** @brief Set the variable storage information for direct IO optimization
+ *
+ *
+ * @param the struct that stores the variable storage information.
+ * @return void
+ */
+void Array::set_var_storage_info(const var_storage_info &my_vs_info) {
 
+    vs_info.filter = my_vs_info.filter;
+
+    for (const auto &def_lev:my_vs_info.deflate_levels)
+        vs_info.deflate_levels.push_back(def_lev);
+
+    for (const auto &chunk_dim:my_vs_info.chunk_dims)
+        vs_info.chunk_dims.push_back(chunk_dim);
+
+    for (const auto &vci:my_vs_info.var_chunk_info) {
+        var_chunk_info_t vci_t;
+        vci_t.filter_mask = vci.filter_mask;
+        vci_t.chunk_direct_io_offset = vci.chunk_direct_io_offset;
+        vci_t.chunk_buffer_size = vci.chunk_buffer_size;
+        for (const auto &chunk_coord:vci.chunk_coords)
+            vci_t.chunk_coords.push_back(chunk_coord);
+        vs_info.var_chunk_info.push_back(vci_t);
+    }
+
+}
+
+} // namespace libdap

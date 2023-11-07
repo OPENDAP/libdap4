@@ -25,11 +25,6 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG
-
-// TODO: Remove unneeded includes.
-
-#include <pthread.h>
 #include <limits.h>
 #include <unistd.h>   // for stat
 #include <sys/types.h>  // for stat and mkdir
@@ -446,28 +441,6 @@ HTTPCacheTable::cache_index_write()
 string
 HTTPCacheTable::create_hash_directory(int hash)
 {
-#if 0
-    struct stat stat_info;
-    ostringstream path;
-
-    path << d_cache_root << hash;
-    string p = path.str();
-
-    if (stat(p.c_str(), &stat_info) == -1) {
-        DBG2(cerr << "Cache....... Create dir " << p << endl);
-        if (MKDIR(p.c_str(), 0777) < 0) {
-            DBG2(cerr << "Cache....... Can't create..." << endl);
-            throw Error("Could not create cache slot to hold response! Check the write permissions on your disk cache directory. Cache root: " + d_cache_root + ".");
-        }
-    }
-    else {
-        DBG2(cerr << "Cache....... Directory " << p << " already exists"
-             << endl);
-    }
-
-    return p;
-#endif
-
     ostringstream path;
     path << d_cache_root << hash;
 

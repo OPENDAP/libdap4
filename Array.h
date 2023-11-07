@@ -178,28 +178,42 @@ public:
         explicit dimension(D4Dimension *d);
     };
 
+    // The following two structs are for the direct IO optimization.
+    // The variable chunk and compression information need to be passed
+    // between two BES modules. The ideal approach is to use the
+    // dynamic_cast for a BES module to retrieve the information stored
+    // by another module. However, there are issues in the current BES 
+    // that prevent us from implementing in this way. 
+    // So we need to use libdap to do the job.  
+    struct var_chunk_info_t{
+        unsigned int filter_mask;
+        unsigned long long chunk_direct_io_offset;
+        unsigned long long chunk_buffer_size;
+        vector<unsigned long long> chunk_coords;
+    }; 
+
+    struct var_storage_info {
+        string filter;
+        vector<unsigned int>deflate_levels;
+        vector<size_t> chunk_dims;
+        vector<var_chunk_info_t> var_chunk_info;
+    };
 private:
     D4Maps *d_maps = nullptr;
 
     std::vector<dimension> _shape; // list of dimensions (i.e., the shape)
+
+    bool direct_io_flag = false;
+    var_storage_info vs_info;
 
     void update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims);
 
     friend class ArrayTest;
     friend class D4Group;
 
-
-
 protected:
     void _duplicate(const Array &a);
 
-#if 0
-    unsigned int print_array(FILE *out, unsigned int index,
-                             unsigned int dims, unsigned int shape[]);
-
-    unsigned int print_array(ostream &out, unsigned int index,
-                             unsigned int dims, unsigned int shape[]);
-#endif
     uint64_t print_array(FILE *out, uint64_t index,
                              unsigned int dims, uint64_t shape[]);
 
@@ -322,6 +336,13 @@ public:
     bool is_dap4_projected(std::vector<std::string> &projected_dap4_inventory) override;
 
     void dump(ostream &strm) const override;
+
+    // The following methods are for direct IO optimization.
+    bool get_dio_flag() const {return direct_io_flag; }
+    void set_dio_flag() { direct_io_flag = true; }
+    var_storage_info & get_var_storage_info() {return vs_info;}
+    void set_var_storage_info(const var_storage_info &my_vs_info); 
+
 };
 
 } // namespace libdap
