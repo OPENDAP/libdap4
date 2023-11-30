@@ -339,7 +339,7 @@ public:
 
     // The following methods are for direct IO optimization.
     bool get_dio_flag() const {return direct_io_flag; }
-    void set_dio_flag() { direct_io_flag = true; }
+    void set_dio_flag( bool dio_flag_value = true) { direct_io_flag = dio_flag_value; }
     var_storage_info & get_var_storage_info() {return vs_info;}
     void set_var_storage_info(const var_storage_info &my_vs_info); 
 
