@@ -89,6 +89,9 @@ private:
     /// The root group; holds dimensions, enums, variables, groups, ...
     D4Group *d_root = nullptr;
 
+    /// A global flag to indicate if we need to use direct IO
+    bool global_dio_flag = false;
+
     friend class DMRTest;
 
 protected:
@@ -228,6 +231,11 @@ public:
     void print_dap4(XMLWriter &xml, bool constrained = false);
 
     void dump(std::ostream &strm) const override;
+
+    // The following methods are for direct IO optimization.
+    bool get_global_dio_flag() const {return global_dio_flag; }
+    void set_global_dio_flag( bool dio_flag_value = true) { global_dio_flag = dio_flag_value; }
+ 
 };
 
 } // namespace libdap
