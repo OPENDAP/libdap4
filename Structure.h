@@ -104,7 +104,6 @@ public:
 
     virtual void dump(ostream &strm) const ;
 
-    void intern_data(ConstraintEvaluator &eval, DDS &dds) override;
 };
 
 } // namespace libdap

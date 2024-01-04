@@ -434,27 +434,6 @@ Structure::width(bool constrained)
 }
 #endif
 
-void
-Structure::intern_data(ConstraintEvaluator & eval, DDS & dds)
-{
-    DBG(cerr << "Structure::intern_data: " << name() << endl);
-    if (is_dap4())
-        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (").append(name()).append(")."), __FILE__, __LINE__);
-
-    if (!read_p())
-        read();          // read() throws Error and InternalErr
-
-#if 0
-    for (auto var: d_vars) {
-        if (var->send_p()) {
-            var->intern_data(eval, dds);
-        }
-    }
-#endif
-
-}
-
-
 #if 0
 void
 Structure::intern_data(ConstraintEvaluator & eval, DDS & dds)
