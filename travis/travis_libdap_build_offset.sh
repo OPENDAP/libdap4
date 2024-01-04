@@ -4,5 +4,5 @@
 # to the current Travis number so that the 'build number' in
 # x.y.z-<build number> is zero. jhrg 3/22/21
 
-export LIBDAP_TRAVIS_BUILD_OFFSET=1025
+export LIBDAP_TRAVIS_BUILD_OFFSET=219
 
