@@ -103,7 +103,6 @@ public:
     virtual void set_leaf_sequence(int level = 1);
 
     virtual void dump(ostream &strm) const ;
-
 };
 
 } // namespace libdap
