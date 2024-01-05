@@ -133,9 +133,10 @@ bool TestStructure::read()
 	if (read_p()) return true;
 
 	for (Vars_iter i = var_begin(); i != var_end(); i++) {
-		if (!(*i)->read()) {
+                if ((*i)->type() == dods_sequence_c)
+                   (*i)->intern_data();
+		else if (!(*i)->read()) 
 			return false;
-		}
 	}
 
 	set_read_p(true);
