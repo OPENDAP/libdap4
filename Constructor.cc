@@ -524,6 +524,9 @@ Constructor::compute_checksum(Crc32 &)
 void
 Constructor::intern_data()
 {
+    if (!read_p())
+        read();  // read() throws Error
+
     for (auto var: d_vars) {
         if (var->send_p()) {
             var->intern_data(/*checksum, dmr, eval*/);
