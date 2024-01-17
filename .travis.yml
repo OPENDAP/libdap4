@@ -24,6 +24,7 @@ branches:
   - master
   - main
   - /^(.*-test-deploy)$/
+  - /^(.*test-scan)$/
 
 # This cache is used to speed up sonar scan runs. See https://docs.travis-ci.com/user/caching.
 # Each branch gets its own cache. jhrg 2/11/22
@@ -101,12 +102,13 @@ before_script:
 
 stages:
   - name: build
+    if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
   - name: scan
-    if: branch = master OR branch = main
+    if: branch = master OR branch = main OR branch =~ ^(.*test-scan)$
   - name: package
+    if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
   - name: hyrax-bes-trigger
     if: type != pull_request OR branch =~ ^(.*-test-deploy)$
-    # Was "if: branch = master AND type != pull_request" jhrg 8/22/22
 
 jobs:
   include:
