@@ -57,7 +57,7 @@ env:
   - TESTSUITEFLAGS=-j7
 
   # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
-  - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
+  # - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
   # SONAR_LOGIN, created using travis encrypt --org -r OPENDAP/libdap4 SONAR_LOGIN=<sonar login key>
   - secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw=" 
 
@@ -139,6 +139,7 @@ jobs:
 
   - stage: scan
     name: "scan"
+    jdk: openjdk17
     script:
     - export LIBDAP_BUILD=sonar
     - autoreconf --force --install --verbose
