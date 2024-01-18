@@ -24,7 +24,7 @@ branches:
   - master
   - main
   - /^(.*-test-deploy)$/
-  - /^(.*test-scan)$/
+  - /^(.*test-scan)$/     # enables running only the scan. jhrg 1/18/24
 
 # This cache is used to speed up sonar scan runs. See https://docs.travis-ci.com/user/caching.
 # Each branch gets its own cache. jhrg 2/11/22
@@ -41,8 +41,8 @@ addons:
     - libcurl4-openssl-dev
     - libcppunit-dev 
     - gcovr
-    - libfl-dev   # needed for focal, but not xenial
-    # - openjdk-17-jre
+    - libfl-dev   # needed for focal, but not xenial. jhrg 1/18/24
+    - openjdk-17-jre  # This should get Java 17. jhrg 1/18/24
 
 # remove support for debian packages. jhrg 2/23/21
 # - build-essential
