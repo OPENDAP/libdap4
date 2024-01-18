@@ -41,6 +41,7 @@ addons:
     - libcurl4-openssl-dev
     - libcppunit-dev 
     - gcovr
+    - libfl-dev   # needed for focal, but not xenial
     # - openjdk-17-jre
 
 # remove support for debian packages. jhrg 2/23/21
