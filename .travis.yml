@@ -41,6 +41,7 @@ addons:
     - libcurl4-openssl-dev
     - libcppunit-dev 
     - gcovr
+    - openjdk-17-jdk
 
 # remove support for debian packages. jhrg 2/23/21
 # - build-essential
@@ -108,7 +109,10 @@ stages:
   - name: package
     if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
   - name: hyrax-bes-trigger
-    if: type != pull_request OR branch =~ ^(.*-test-deploy)$
+    # This stage is used to trigger a build of the Hyrax BES. It is triggered by a successful
+    # build but only for things that are not pull requests with the sole exception that branches
+    # that end in '-test-deploy' are also allowed to trigger a BES build. jhrg 1/18/24
+    if: type != pull_request AND NOT branch =~ ^(.*test-scan)$ OR branch =~ ^(.*-test-deploy)$
 
 jobs:
   include:
@@ -139,7 +143,6 @@ jobs:
 
   - stage: scan
     name: "scan"
-    jdk: openjdk17
     script:
     - export LIBDAP_BUILD=sonar
     - autoreconf --force --install --verbose
