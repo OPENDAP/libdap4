@@ -33,7 +33,11 @@ cache:
     - ./.cache/sonar/
 
 addons:
-  sonarcloud: true
+  # sonarcloud: true
+  sonarcloud:
+    organization: "OPENDAP-libdap4" # the key of the org you chose at step #3
+    token:
+      secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw="
   apt:
     packages:
     - libxml2-dev
@@ -147,11 +151,6 @@ jobs:
 
   - stage: scan
     name: "scan"
-    addons:
-      sonarcloud:
-        organization: "OPENDAP-libdap4" # the key of the org you chose at step #3
-        token:
-          secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw="
     script:
     - export LIBDAP_BUILD=sonar
     - autoreconf --force --install --verbose
