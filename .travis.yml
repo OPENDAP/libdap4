@@ -92,6 +92,9 @@ before_install:
 
 install:
   # $HOME is /home/travis and $TRAVIS_BUILD_DIR is /home/travis/build/OPENDAP/libdap4
+  - echo which bison flex
+  - echo bison --version
+  - echo flex --version
   - aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
   - tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
 
