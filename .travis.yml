@@ -14,11 +14,12 @@ dist: focal             # xenial (Ubuntu 16) is the default; focal is Ubuntu 20
 
 language: cpp
 
-compiler: gcc         # Could add clang
+compiler: gcc           # Could add clang
 
 # Build only 'master,' 'main,' or '.*-test-deploy' branches. This is used down in the
 # "stages" section where we assume the build process is only run for branches that
 # match those patterns. jhrg 8/22/22
+# Added '.*test-scan' to the list of branches that can trigger a build. jhrg 1/18/24
 branches:
   only:
   - master
@@ -43,11 +44,10 @@ addons:
     - gcovr
     - libfl-dev   # needed for focal, but not xenial. jhrg 1/18/24
     - openjdk-17-jre  # This should get Java 17. jhrg 1/18/24
-
-# remove support for debian packages. jhrg 2/23/21
-# - build-essential
-# - lintian
-# - fakeroot
+    # remove support for debian packages. jhrg 2/23/21
+    # - build-essential
+    # - lintian
+    # - fakeroot
     
 env:
   global:
