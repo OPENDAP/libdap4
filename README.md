@@ -1,8 +1,7 @@
-Trigger a build against the new hyrax-dependencies package. jhrg 5//7/23
 
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
-## Updated for version 3.21.0
+## Updated for version 3.21.0 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10564122.svg)](https://doi.org/10.5281/zenodo.10564122)
 
 * Added new Direct I/O support so that modules written using libdap
   can pass compressed data buffers read directly from disk to output
@@ -28,12 +27,12 @@ Please find the libdap4 API documentation here: https://opendap.github.io/libdap
   'size methods' that have the suffix '_ll' (for long long). These should
   be used in place of the old methods, which are still in the code.
 
-##Updated for version 3.20.11 
+## Updated for version 3.20.11 
 
 * Fixed bug in computation of request_size_kb()
 * Fixed type issue in HTTPCache.cc (#192)
 
-##Updated for version 3.20.10 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6789103.svg)](https://doi.org/10.5281/zenodo.6789103)
+## Updated for version 3.20.10 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6789103.svg)](https://doi.org/10.5281/zenodo.6789103)
 
 * Support for RHEL8
 * Fix for bugs in the ce parser around inverted indices. 
