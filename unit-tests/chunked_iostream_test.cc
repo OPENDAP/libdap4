@@ -556,8 +556,11 @@ public:
     }
 
     void foo(){
-        auto temp=std::numeric_limits<std::streamsize>::max();
+        cerr << "\n";
         cerr << "std::numeric_limits<std::streamsize>::max(): " << std::numeric_limits<std::streamsize>::max() << "\n";
+        cerr << "        std::numeric_limits<int64_t>::max(): " << std::numeric_limits<int64_t>::max() << "\n";
+        cerr << "       std::numeric_limits<uint64_t>::max(): " << std::numeric_limits<uint64_t>::max() << "\n";
+        cerr << "\n";
     }
 
 

@@ -289,12 +289,12 @@ chunked_outbuf::xsputn(const char *s, std::streamsize num)
 	if (d_os.eof() || d_os.bad())
 		return traits_type::not_eof(0);
 
-	int bytes_to_fill_out_buffer =  d_buf_size - bytes_in_buffer;
+	auto bytes_to_fill_out_buffer =  d_buf_size - bytes_in_buffer;
 	d_os.write(s, bytes_to_fill_out_buffer);
 	if (d_os.eof() || d_os.bad())
 		return traits_type::not_eof(0);
 	s += bytes_to_fill_out_buffer;
-	uint32_t bytes_still_to_send = num - bytes_to_fill_out_buffer;
+	auto bytes_still_to_send = num - bytes_to_fill_out_buffer;
 
 	// Now send all the remaining data in s until the amount remaining doesn't
 	// fill a complete chunk and buffer those data.
