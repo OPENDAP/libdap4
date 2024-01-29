@@ -33,6 +33,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <limits>       // std::numeric_limits
 
 #include "chunked_ostream.h"
 #include "chunked_istream.h"
