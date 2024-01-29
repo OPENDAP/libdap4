@@ -554,7 +554,15 @@ public:
         }
     }
 
-    CPPUNIT_TEST_SUITE (chunked_iostream_test);
+    void foo(){
+        auto temp=std::numeric_limits<std::streamsize>::max();
+        cerr << "std::numeric_limits<std::streamsize>::max(): " << std::numeric_limits<std::streamsize>::max() << "\n";
+    }
+
+
+CPPUNIT_TEST_SUITE (chunked_iostream_test);
+
+    CPPUNIT_TEST (foo);
 
     CPPUNIT_TEST (test_write_1_read_1_small_file);
     CPPUNIT_TEST (test_write_1_read_1_text_file);
