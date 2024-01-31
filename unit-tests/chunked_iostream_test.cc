@@ -53,68 +53,16 @@ using namespace CppUnit;
 using namespace libdap;
 
 
-int make_temp_file(const string &temp_file_dir, string &temp_file_name) {
-    temp_file_name = temp_file_dir +  "/" + temp_file_name+"_XXXXXX";
-
-    // Open truncated for update. NB: mkstemp() returns a file descriptor.
-    // man mkstemp says "... The file is opened with the O_EXCL flag,
-    // guaranteeing that when mkstemp returns successfully we are the only
-    // user." 09/19/02 jhrg
-    // The 'hack' &temp_file_name[0] is explicitly supported by the C++ 11 standard.
-    // jhrg 3/9/23
-    int fd = mkstemp(&temp_file_name[0]); // fd mode is 666 or 600 (Unix)
-    if (fd < 0) {
-        stringstream msg;
-        msg << "make_temp_file() - mkstemp() for " << temp_file_name << " ";
-        msg << "failed (" <<  strerror(errno) << "). ";
-        msg << "file: " << __FILE__ << " line: "<< __LINE__ << "\n";
-        cerr << msg.str();
-    }
-    return fd;
-}
-
-string the_text="Stephen could remember an evening when he had sat there in the warm,\n"
-                "deepening twilight, watching the sea; it had barely a ruffle on its surface,\n"
-                "and yet the Sophie picked up enough moving air with her topgallants\n"
-                "to draw a long straight whispering furrow across the water, a line\n"
-                "brilliant with unearthly phosphorescence, visible for quarter of a mile behind her.\n"
-                "Days and nights of unbelievable purity. Nights when the steady Ionian breeze\n"
-                "rounded the square mainsail – not a brace to be touched, watch relieving watch –\n"
-                "and he and Jack on deck, sawing away, sawing away, lost in their music,\n"
-                "until the falling dew untuned their strings. And days when the perfection\n"
-                "of dawn was so great, the emptiness so entire, that men were almost afraid to speak.\n";
-
-int mk_test_file(string &name_base, const uint64_t target_size){
-    int fd = make_temp_file("/tmp", name_base);
-    if(fd>=0){
-        the_text.size();
-        uint64_t position = 0;
-        uint64_t remaining;
-        uint64_t outnum;
-        while( position < target_size){
-            remaining = target_size - position;
-            if(the_text.size() < remaining){
-                outnum = the_text.size();
-            }
-            else {
-                outnum = remaining;
-            }
-            auto wrtn =  write(fd, the_text.c_str(), outnum);
-            if(wrtn < 0){
-                stringstream msg;
-                msg << "mk_test_file() - Failed to write " << outnum << " bytes to file: " << name_base;
-                msg << " (" <<  strerror(errno) << "). ";
-                msg << "file: " << __FILE__ << " line: "<< __LINE__ << "\n";
-                cerr << msg.str();
-                return -1;
-            }
-            position += wrtn;
-        }
-    }
-    auto location = lseek(fd, 0, SEEK_SET); //get back to the beginning
-    cerr << "File descriptor reset to file beginning. location: " << location << "\n";
-    return fd;
-}
+string the_test_text="Stephen could remember an evening when he had sat there in the warm,\n"
+                    "deepening twilight, watching the sea; it had barely a ruffle on its surface,\n"
+                    "and yet the Sophie picked up enough moving air with her topgallants\n"
+                    "to draw a long straight whispering furrow across the water, a line\n"
+                    "brilliant with unearthly phosphorescence, visible for quarter of a mile behind her.\n"
+                    "Days and nights of unbelievable purity. Nights when the steady Ionian breeze\n"
+                    "rounded the square mainsail – not a brace to be touched, watch relieving watch –\n"
+                    "and he and Jack on deck, sawing away, sawing away, lost in their music,\n"
+                    "until the falling dew untuned their strings. And days when the perfection\n"
+                    "of dawn was so great, the emptiness so entire, that men were almost afraid to speak.\n";
 
 
 /**
@@ -637,19 +585,6 @@ public:
 
 
 
-    /**
-     * 1GB = 1073741824 bytes
-     * 2GB = 2147483648 bytes
-     * 3GB = 3221225472 bytes
-     * 4GB = 4294967296 bytes
-     * 5GB = 5368709120 bytes
-     */
-    void mk_file_test(){
-        string test_file_name="mk_file_test";
-        int fd;
-        fd = mk_test_file(test_file_name,3221225472);
-        cerr << "test_file_name: " << test_file_name << "\n";
-    }
     string tf(bool val){
         return val?"true":"false";
     }
@@ -671,22 +606,22 @@ public:
     bool write_chunked_file(string &out_file, const uint64_t target_size){
         string msg;
         fstream outfile(out_file.c_str(), ios::out | ios::binary);
-        chunked_ostream chunked_outfile(outfile, the_text.size());
+        chunked_ostream chunked_outfile(outfile, the_test_text.size());
         msg = check_stream(chunked_outfile);
         if(msg.empty()){
-            the_text.size();
+            the_test_text.size();
             uint64_t position = 0;
             uint64_t remaining;
             std::streamsize outnum;
             while( position < target_size){
                 remaining = target_size - position;
-                if(the_text.size() < remaining){
-                    outnum = the_text.size();
+                if(the_test_text.size() < remaining){
+                    outnum = the_test_text.size();
                 }
                 else {
                     outnum = remaining;
                 }
-                chunked_outfile.write(the_text.c_str(), outnum);
+                chunked_outfile.write(the_test_text.c_str(), outnum);
                 msg = check_stream(chunked_outfile);
                 if ( !msg.empty() ){
                     cerr << msg;
@@ -701,6 +636,7 @@ public:
         }
         return true;
     }
+
     uint64_t read_chunked_file(string ifile, string ofile, unsigned int bufsize){
         fstream infile(ifile.c_str(), ios::in | ios::binary);
         if (!infile.good()) cerr << "ERROR Failed to open to encountered eof for: " << ifile << "\n";
@@ -733,6 +669,13 @@ public:
         return sz;
     }
 
+    /**
+    * 1GB = 1073741824 bytes
+    * 2GB = 2147483648 bytes
+    * 3GB = 3221225472 bytes
+    * 4GB = 4294967296 bytes
+    * 5GB = 5368709120 bytes
+    */
     void write_then_read_large_chunked_file(){
         DBG(cerr << "\n");
 
