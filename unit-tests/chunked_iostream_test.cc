@@ -638,7 +638,7 @@ public:
         if (!outfile.good()) cerr << "ERROR Failed to open to encountered eof for: " << ofile << "\n";
 
         char str[8096];
-        int count = 1;
+        // int count = 1;
         chunked_infile.read(str, 8096);
         auto num = chunked_infile.gcount();
         // DBG(cerr << prolog <<  "num: " << num << ", " << count++ << endl);
