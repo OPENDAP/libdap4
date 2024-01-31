@@ -573,17 +573,6 @@ public:
         }
     }
 
-    void see_max(){
-        cerr << "\n";
-        cerr << "##########################################################################\n" ;
-        cerr << "# see_max() \n" ;
-        cerr << "# std::numeric_limits<std::streamsize>::max(): " << setw(20) << setfill(' ') << std::numeric_limits<std::streamsize>::max() << "\n";
-        cerr << "#         std::numeric_limits<int64_t>::max(): " << setw(20) << setfill(' ')  << std::numeric_limits<int64_t>::max() << "\n";
-        cerr << "#        std::numeric_limits<uint64_t>::max(): " << setw(20) << setfill(' ')  << std::numeric_limits<uint64_t>::max() << "\n";
-        cerr << "#\n";
-    }
-
-
 
     string tf(bool val){
         return val?"true":"false";
@@ -698,7 +687,6 @@ public:
 
 CPPUNIT_TEST_SUITE (chunked_iostream_test);
 
-        CPPUNIT_TEST (see_max);
         CPPUNIT_TEST (write_then_read_large_chunked_file);
 
     CPPUNIT_TEST (test_write_1_read_1_small_file);
