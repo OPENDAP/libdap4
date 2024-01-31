@@ -28,7 +28,8 @@
 
 #include <fcntl.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <errno.h>
+#include <cstdlib>
 
 #include <iostream>
 #include <fstream>
@@ -140,6 +141,8 @@ public:
 
     void setUp()
     {
+        DBG("\n");
+
         big_file = path + "/test_big_binary_file.bin";
         big_file_2 = path + "/test_big_binary_file_2.bin";
         big_file_3 = path + "/test_big_binary_file_3.bin"; // not used yet
