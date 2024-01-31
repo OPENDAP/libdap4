@@ -93,7 +93,7 @@ public:
 
     void setUp()
     {
-        DBG("\n");
+        DBG( cerr << "\n");
 
         big_file = path + "/test_big_binary_file.bin";
         big_file_2 = path + "/test_big_binary_file_2.bin";
