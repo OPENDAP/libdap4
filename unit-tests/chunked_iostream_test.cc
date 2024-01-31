@@ -667,7 +667,7 @@ public:
     void write_then_read_large_chunked_file(){
         DBG(cerr << "\n");
 
-        string chunked_filename = path + "/one-gb-text.chunked";
+        string chunked_filename = path + "/large-text-file.chunked";
         DBG(cerr << "    chunked_filename: " << chunked_filename << "\n");
 
         uint64_t target_size = 1073741824ULL * 5; // 1073741824 == 1GB
@@ -676,7 +676,7 @@ public:
         bool success  = write_chunked_file(chunked_filename, target_size);
         CPPUNIT_ASSERT( success == true);
 
-        string plain_file_out = path + "/one-gb-text.plain";
+        string plain_file_out = path + "/large-text-file.plain";
         DBG(cerr << "      plain_file_out: " << plain_file_out << "\n");
         auto size = read_chunked_file(chunked_filename, plain_file_out, 8096);
         DBG(cerr << " read_chunked_file(): " << size << "\n");
