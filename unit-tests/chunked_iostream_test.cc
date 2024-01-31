@@ -592,7 +592,6 @@ public:
     string  check_stream(const chunked_ostream &os){
         stringstream msg;
         if ( !os.good() ){
-            msg << " (" <<  strerror(errno) << ").\n";
             msg << "    chunked_outfile::good(): " <<  tf(os.good()) << ").\n";
             msg << "    chunked_outfile::eof():  " <<  tf(os.eof()) << ").\n";
             msg << "    chunked_outfile::fail(): " <<  tf(os.fail()) << ").\n";
