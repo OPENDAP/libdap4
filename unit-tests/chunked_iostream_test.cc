@@ -28,7 +28,7 @@
 
 #include <fcntl.h>
 #include <stdio.h>
-#include <errno.h>
+#include <cerrno>
 #include <cstdlib>
 
 #include <iostream>
