@@ -46,6 +46,10 @@
 
 #include "debug.h"
 
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false)
+#define prolog string("chunked_iostream_test::").append(__func__).append("() - ")
+
 const string path = (string) TEST_SRC_DIR + "/chunked-io";
 
 using namespace std;
@@ -617,10 +621,10 @@ public:
                 }
                 position += outnum;
             }
-            DBG(cerr << "write_chunked_file() -       remaining: " << remaining << " bytes \n");
-            DBG(cerr << "write_chunked_file() -        position: " << position << " bytes \n");
-            DBG(cerr << "write_chunked_file() -          outnum: " << outnum << " bytes \n");
-            DBG(cerr << "write_chunked_file() - the_text.size(): " << the_text.size() << " bytes \n");
+            //DBG(cerr << prolog <<  "write_chunked_file() -            remaining: " << remaining << " bytes \n");
+            //DBG(cerr << prolog <<  "write_chunked_file() -             position: " << position << " bytes \n");
+            //DBG(cerr << prolog <<  "write_chunked_file() -               outnum: " << outnum << " bytes \n");
+            //DBG(cerr << prolog <<  "write_chunked_file() - the_test_text.size(): " << the_test_text.size() << " bytes \n");
         }
         return true;
     }
@@ -637,15 +641,15 @@ public:
         int count = 1;
         chunked_infile.read(str, 8096);
         auto num = chunked_infile.gcount();
-        DBG(cerr << "num: " << num << ", " << count++ << endl);
+        // DBG(cerr << prolog <<  "num: " << num << ", " << count++ << endl);
         uint64_t sz = 0;
         while (num > 0 && !chunked_infile.eof()) {
             outfile.write(str, num);
             sz += num;
 
-            chunked_infile.read(str, 5000);
+            chunked_infile.read(str, 8096);
             num = chunked_infile.gcount();
-            DBG(cerr << "num: " << num << ", " << count++ << ", eof: " << chunked_infile.eof() << endl);
+            // DBG(cerr << prolog <<  "num: " << num << ", " << count++ << ", eof: " << chunked_infile.eof() << endl);
         }
 
         if (num > 0 && !chunked_infile.bad()) {
@@ -668,18 +672,18 @@ public:
         DBG(cerr << "\n");
 
         string chunked_filename = path + "/large-text-file.chunked";
-        DBG(cerr << "    chunked_filename: " << chunked_filename << "\n");
+        DBG(cerr << prolog << "    chunked_filename: " << chunked_filename << "\n");
 
         uint64_t target_size = 1073741824ULL * 5; // 1073741824 == 1GB
-        DBG(cerr << "         target_size: " << target_size << " bytes\n");
+        DBG(cerr << prolog << "         target_size: " << target_size << " bytes\n");
 
         bool success  = write_chunked_file(chunked_filename, target_size);
         CPPUNIT_ASSERT( success == true);
 
         string plain_file_out = path + "/large-text-file.plain";
-        DBG(cerr << "      plain_file_out: " << plain_file_out << "\n");
+        DBG(cerr << prolog << "      plain_file_out: " << plain_file_out << "\n");
         auto size = read_chunked_file(chunked_filename, plain_file_out, 8096);
-        DBG(cerr << " read_chunked_file(): " << size << "\n");
+        DBG(cerr << prolog << " read_chunked_file(): " << size << " bytes\n");
 
         CPPUNIT_ASSERT( size == target_size);
     }
