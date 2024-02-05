@@ -582,25 +582,24 @@ public:
         return val?"true":"false";
     }
 
-    string  check_stream(const chunked_ostream &os){
+    string check_stream(const chunked_ostream &os){
         stringstream msg;
         if ( !os.good() ){
-            msg << "    chunked_outfile::good(): " <<  tf(os.good()) << ").\n";
-            msg << "    chunked_outfile::eof():  " <<  tf(os.eof()) << ").\n";
-            msg << "    chunked_outfile::fail(): " <<  tf(os.fail()) << ").\n";
-            msg << "    chunked_outfile::bad():  " <<  tf(os.bad()) << ").\n";
-            msg << "file: " << __FILE__ << " line: "<< __LINE__ << "\n";
-            // cerr << msg.str();
+            msg << prolog << "chunked_outfile::good(): " <<  tf(os.good()) << ").\n";
+            msg << prolog << "chunked_outfile::eof():  " <<  tf(os.eof()) << ").\n";
+            msg << prolog << "chunked_outfile::fail(): " <<  tf(os.fail()) << ").\n";
+            msg << prolog << "chunked_outfile::bad():  " <<  tf(os.bad()) << ").\n";
+            msg << prolog << "file: " << __FILE__ << " line: "<< __LINE__ << "\n";
         }
         return msg.str();
     }
 
     bool write_chunked_file(string &out_file, const uint64_t target_size){
-        string msg;
+        string error_msg;
         fstream outfile(out_file.c_str(), ios::out | ios::binary);
         chunked_ostream chunked_outfile(outfile, the_test_text.size());
-        msg = check_stream(chunked_outfile);
-        if(msg.empty()){
+        error_msg = check_stream(chunked_outfile);
+        if(error_msg.empty()){
             the_test_text.size();
             uint64_t position = 0;
             uint64_t remaining;
@@ -614,50 +613,41 @@ public:
                     outnum = remaining;
                 }
                 chunked_outfile.write(the_test_text.c_str(), outnum);
-                msg = check_stream(chunked_outfile);
-                if ( !msg.empty() ){
-                    cerr << msg;
+                error_msg = check_stream(chunked_outfile);
+                if ( !error_msg.empty() ){
+                    cerr << error_msg;
                     return false;
                 }
                 position += outnum;
             }
-            //DBG(cerr << prolog <<  "write_chunked_file() -            remaining: " << remaining << " bytes \n");
-            //DBG(cerr << prolog <<  "write_chunked_file() -             position: " << position << " bytes \n");
-            //DBG(cerr << prolog <<  "write_chunked_file() -               outnum: " << outnum << " bytes \n");
-            //DBG(cerr << prolog <<  "write_chunked_file() - the_test_text.size(): " << the_test_text.size() << " bytes \n");
         }
         return true;
     }
 
     uint64_t read_chunked_file(string ifile, string ofile, unsigned int bufsize){
         fstream infile(ifile.c_str(), ios::in | ios::binary);
-        if (!infile.good()) cerr << "ERROR Failed to open to encountered eof for: " << ifile << "\n";
+        if (!infile.good()) cerr << "ERROR Failed to open or encountered eof for: " << ifile << "\n";
         chunked_istream chunked_infile(infile, bufsize);
 
         fstream outfile(ofile.c_str(), ios::out | ios::binary);
-        if (!outfile.good()) cerr << "ERROR Failed to open to encountered eof for: " << ofile << "\n";
+        if (!outfile.good()) cerr << "ERROR Failed to open or encountered eof for: " << ofile << "\n";
 
         char str[8096];
         // int count = 1;
         chunked_infile.read(str, 8096);
         auto num = chunked_infile.gcount();
-        // DBG(cerr << prolog <<  "num: " << num << ", " << count++ << endl);
+
         uint64_t sz = 0;
         while (num > 0 && !chunked_infile.eof()) {
             outfile.write(str, num);
             sz += num;
-
             chunked_infile.read(str, 8096);
             num = chunked_infile.gcount();
-            // DBG(cerr << prolog <<  "num: " << num << ", " << count++ << ", eof: " << chunked_infile.eof() << endl);
         }
-
         if (num > 0 && !chunked_infile.bad()) {
             outfile.write(str, num);
             sz += num;
         }
-
-        outfile.flush();
         return sz;
     }
 
@@ -691,7 +681,7 @@ public:
 
 CPPUNIT_TEST_SUITE (chunked_iostream_test);
 
-        CPPUNIT_TEST (write_then_read_large_chunked_file);
+    CPPUNIT_TEST (write_then_read_large_chunked_file);
 
     CPPUNIT_TEST (test_write_1_read_1_small_file);
     CPPUNIT_TEST (test_write_1_read_1_text_file);
