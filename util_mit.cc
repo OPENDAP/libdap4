@@ -124,7 +124,7 @@ offset_from_utc()
     time_t offset;
     time_t now = time(0);
 #ifdef _REENTRANT
-    struct tm gmt, local;
+    struct tm gmt{};, local{};
     offset = mktime(gmtime_r(&now, &gmt)) - mktime(localtime_r(&now, &local));
 #else
     offset = mktime(gmtime(&now)) - mktime(localtime(&now));
@@ -153,7 +153,7 @@ time_t
 parse_time(const char * str, bool expand)
 {
     char * s;
-    struct tm tm;
+    struct tm tm{};
     time_t t;
 
     if (!str) return 0;
@@ -279,7 +279,7 @@ string date_time_str(time_t *calendar, bool local)
 #ifdef HAVE_STRFTIME
     if (local) {
 #if defined(_REENTRANT)  || defined(SOLARIS)
-        struct tm loctime;
+        struct tm loctime{};
         localtime_r(calendar, &loctime);
         strftime(buf, MAX_TIME_STR_LEN, "%a, %d %b %Y %H:%M:%S", &loctime);
 #else
@@ -289,7 +289,7 @@ string date_time_str(time_t *calendar, bool local)
     }
     else {
 #if defined(_REENTRANT)  || defined(SOLARIS)
-        struct tm gmt;
+        struct tm gmt{};
         gmtime_r(calendar, &gmt);
         strftime(buf, MAX_TIME_STR_LEN, "%a, %d %b %Y %H:%M:%S GMT", &gmt);
 #else
@@ -302,7 +302,7 @@ string date_time_str(time_t *calendar, bool local)
 
     if (local) {
 #if defined(_REENTRANT)
-        struct tm loctime;
+        struct tm loctime{};
         localtime_r(calendar, &loctime);
         snprintf(buf, MAX_TIME_STR_LEN, "%s, %02d %s %04d %02d:%02d:%02d",
                 wkdays[loctime.tm_wday],
@@ -328,7 +328,7 @@ string date_time_str(time_t *calendar, bool local)
     }
     else {
 #if defined(_REENTRANT) || defined(SOLARIS)
-        struct tm gmt;
+        struct tm gmt{};
         gmtime_r(calendar, &gmt);
         snprintf(buf, MAX_TIME_STR_LEN, "%s, %02d %s %04d %02d:%02d:%02d GMT",
                 wkdays[gmt.tm_wday],
