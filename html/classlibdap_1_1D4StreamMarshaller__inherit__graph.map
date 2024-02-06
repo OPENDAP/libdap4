@@ -1,4 +1,0 @@
-<map id="libdap::D4StreamMarshaller" name="libdap::D4StreamMarshaller">
-<area shape="rect" id="node2" href="$classlibdap_1_1Marshaller.html" title="abstract base class used to marshal/serialize dap data objects " alt="" coords="35,140,162,347"/>
-<area shape="rect" id="node3" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects " alt="" coords="44,5,153,92"/>
-</map>

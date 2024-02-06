@@ -155,7 +155,7 @@ static const char *months[] =
 string
 rfc822_date(const time_t t)
 {
-    struct tm stm;
+    struct tm stm{};
     const struct tm *ret = gmtime_r(&t, &stm);
     if (!ret)
     	return "";
