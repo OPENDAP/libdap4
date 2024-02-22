@@ -99,19 +99,19 @@ void D4ConstraintEvaluator::search_for_and_mark_arrays(BaseType *btp)
         throw InternalErr(__FILE__, __LINE__, "D4ConstraintEvaluator::search_for_and_mark_arrays(): Expected a Constructor type.");
 
     auto ctor = static_cast<Constructor*>(btp);
-    for (auto i = ctor->var_begin(), e = ctor->var_end(); i != e; ++i) {
-        switch ((*i)->type()) {
-        case dods_array_c:
-            DBG(cerr << "Found an array: " << (*i)->name() << endl);
-            mark_array_variable(*i);
-            break;
-        case dods_structure_c:
-        case dods_sequence_c:
-            DBG(cerr << "Found a ctor: " << (*i)->name() << endl);
-            search_for_and_mark_arrays(*i);
-            break;
-        default:
-            break;
+    for (auto var: ctor->variables()) {
+        switch (var->type()) {
+            case dods_array_c:
+                DBG(cerr << "Found an array: " << (*i)->name() << endl);
+                mark_array_variable(var);
+                break;
+            case dods_structure_c:
+            case dods_sequence_c:
+                DBG(cerr << "Found a ctor: " << (*i)->name() << endl);
+                search_for_and_mark_arrays(var);
+                break;
+            default:
+                break;
         }
     }
 }
@@ -209,14 +209,13 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
 
         DBG(cerr << "dimension size " << a->dimension_size_ll(d, false) << endl);
 
-        for (auto i = d_indexes.begin(), e = d_indexes.end(); i != e; ++i) {
-            if ((*i).stride >
-                (unsigned long long) (a->dimension_stop_ll(d, false) - a->dimension_start_ll(d, false)) + 1)
+        for (auto const &index: d_indexes) {
+            if (index.stride >  (a->dimension_stop_ll(d, false) - a->dimension_start_ll(d, false)) + 1)
                 throw Error(malformed_expr,
                             "For '" + btp->name()
                             + "', the index stride value is greater than the number of elements in the Array");
-            if (!(*i).rest && ((*i).stop) >
-                   (unsigned long long) (a->dimension_stop_ll(d, false) - a->dimension_start_ll(d, false)) + 1)
+            if (!index.rest
+                && index.stop > (a->dimension_stop_ll(d, false) - a->dimension_start_ll(d, false)) + 1)
                 throw Error(malformed_expr, "For '" + btp->name()
                                             + "', the index stop value is greater than the number of elements in the Array");
 
@@ -227,7 +226,7 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
             // from the shared dimension'. The latter might be provide 'all the elements'
             // but regardless, the Array object must record the CE correctly.
 
-            if (dim && (*i).empty) {
+            if (dim && index.empty) {
                 // This case corresponds to a CE that uses the '[]' notation for a
                 // particular dimension - meaning, use the Shared Dimension size for
                 // this dimension's 'slice'.
@@ -242,7 +241,7 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
 
                 DBG(cerr << "Entering: LOCAL D4 constraint" << endl);
                 // First apply the constraint to the Array's dimension
-                a->add_constraint_ll(d, (*i).start, (*i).stride, (*i).rest ? -1 : (*i).stop);
+                a->add_constraint_ll(d, index.start, index.stride, index.rest ? -1 : index.stop);
 
                 // Then, if the Array has Maps, scan those Maps for any that use dimensions
                 // that match the name of this particular dimension. If any such Maps are found
@@ -302,10 +301,10 @@ D4ConstraintEvaluator::slice_dimension(const std::string &id, const index &i)
 {
     D4Dimension *dim = dmr()->root()->find_dim(id);
 
-    if (i.stride > dim->size())
+    if ((uint64_t)i.stride > dim->size())
         throw Error(malformed_expr,
             "For '" + id + "', the index stride value is greater than the size of the dimension");
-    if (!i.rest && (i.stop > dim->size() - 1))
+    if (!i.rest && ((uint64_t)i.stop > dim->size() - 1))
         throw Error(malformed_expr, "For '" + id + "', the index stop value is greater than the size of the dimension");
 
     dim->set_constraint(i.start, i.stride, i.rest ? dim->size() - 1 : i.stop);
@@ -315,26 +314,26 @@ D4ConstraintEvaluator::slice_dimension(const std::string &id, const index &i)
 
 D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i)
 {
-    unsigned long long v = get_uint64(i.c_str());
+    int64_t v = get_int64(i.c_str());
     return {v, 1, v, false, false /*empty*/, ""};
 }
 
 D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s,
     const std::string &e)
 {
-    uint64_t initial = get_uint64(i.c_str());
-    uint64_t end = get_uint64(e.c_str());
+    int64_t initial = get_int64(i.c_str());
+    int64_t end = get_int64(e.c_str());
     if (initial > end)
         throw Error(malformed_expr, string("The start value of an array index is past the stop value."));
 
-    return {initial, get_uint64(s.c_str()), end, false, false /*empty*/, ""};
+    return {initial, get_int64(s.c_str()), end, false, false /*empty*/, ""};
 }
 
-D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s,
+D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, int64_t s,
     const std::string &e)
 {
-    uint64_t initial = get_uint64(i.c_str());
-    uint64_t end = get_uint64(e.c_str());
+    int64_t initial = get_int64(i.c_str());
+    int64_t end = get_int64(e.c_str());
     if (initial > end)
         throw Error(malformed_expr, string("The start value of an array index is past the stop value."));
 
@@ -343,12 +342,12 @@ D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string
 
 D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, const std::string &s)
 {
-    return {get_uint64(i.c_str()), get_uint64(s.c_str()), 0, true, false /*empty*/, ""};
+    return {get_int64(i.c_str()), get_int64(s.c_str()), 0, true, false /*empty*/, ""};
 }
 
-D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, unsigned long long s)
+D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, int64_t s)
 {
-    return {get_uint64(i.c_str()), s, 0, true, false /*empty*/, ""};
+    return {get_int64(i.c_str()), s, 0, true, false /*empty*/, ""};
 }
 
 static string expr_msg(const std::string &op, const std::string &arg1, const std::string &arg2)
@@ -392,7 +391,7 @@ static D4FilterClause::ops get_op_code(const std::string &op)
     else if (op == "~=")
         return D4FilterClause::match;
     else
-        throw Error(malformed_expr, "The opertator '" + op + "' is not supported.");
+        throw Error(malformed_expr, "The operator '" + op + "' is not supported.");
 }
 
 /**
@@ -473,7 +472,7 @@ D4ConstraintEvaluator::remove_quotes(string &s)
 //
 // Including the value passed in for 'l' allows the CE text to leak into
 // the error message, a potential XSS attack vector. jhrg 4/15/20
-void D4ConstraintEvaluator::error(const libdap::location &, const std::string &m)
+[[noreturn]] void D4ConstraintEvaluator::error(const libdap::location &, const std::string &m)
 {
     ostringstream oss;
 #if PREVENT_XXS_VIA_CE

@@ -47,7 +47,9 @@ class D4ConstraintEvaluator {
 	struct index {
 		// start and stride are simple numbers; stop is either the stopping index or
 		// if rest is true, is ignored and the subset runs to the end of the dimension
-		unsigned long long start = 0, stride = 0, stop = 0;
+		int64_t start = 0;
+        int64_t stride = 0;
+        int64_t stop = 0;
 		// true if the slice indicates it does not contain a specific 'stop' value but
 		// goes to the end, whatever that value is.
 		bool rest = false;
@@ -65,7 +67,7 @@ class D4ConstraintEvaluator {
 
 		// Added because the parser code needs it. Our code does not use this. jhrg 11/26/13
 		index() = default;
-		index(unsigned long long i, unsigned long long s, unsigned long long e, bool r, bool em, std::string n)
+		index(int64_t i, int64_t s, int64_t e, bool r, bool em, std::string n)
 			: start(i), stride(s), stop(e), rest(r), empty(em), dim_name{std::move(n)} {}
 	};
 
@@ -74,10 +76,10 @@ class D4ConstraintEvaluator {
 	index make_index(const std::string &is);
 
 	index make_index(const std::string &i, const std::string &s, const std::string &e);
-	index make_index(const std::string &i, unsigned long long s, const std::string &e);
+	index make_index(const std::string &i, int64_t s, const std::string &e);
 
 	index make_index(const std::string &i, const std::string &s);
-	index make_index(const std::string &i, unsigned long long s);
+	index make_index(const std::string &i, int64_t s);
 
 	bool d_trace_scanning = false;
 	bool d_trace_parsing = false;
@@ -137,7 +139,7 @@ public:
 	DMR *dmr() const { return d_dmr; }
 	void set_dmr(DMR *dmr) { d_dmr = dmr; }
 
-	static void error(const libdap::location &l, const std::string &m);
+	[[noreturn]] static void error(const libdap::location &l, const std::string &m);
 };
 
 } /* namespace libdap */
