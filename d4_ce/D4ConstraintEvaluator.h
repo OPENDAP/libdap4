@@ -30,6 +30,8 @@
 #include <vector>
 #include <stack>
 
+#include "Array.h"
+
 namespace libdap {
 
 class location;
@@ -71,15 +73,15 @@ class D4ConstraintEvaluator {
 			: start(i), stride(s), stop(e), rest(r), empty(em), dim_name{std::move(n)} {}
 	};
 
-	index make_index() { return {0, 1, 0, true /*rest*/, true /*empty*/, ""}; }
+	static index make_index() { return {0, 1, 0, true /*rest*/, true /*empty*/, ""}; }
 
-	index make_index(const std::string &is);
+    static index make_index(const std::string &is);
 
-	index make_index(const std::string &i, const std::string &s, const std::string &e);
-	index make_index(const std::string &i, int64_t s, const std::string &e);
+    static index make_index(const std::string &i, const std::string &s, const std::string &e);
+    static index make_index(const std::string &i, int64_t s, const std::string &e);
 
-	index make_index(const std::string &i, const std::string &s);
-	index make_index(const std::string &i, int64_t s);
+	static index make_index(const std::string &i, const std::string &s);
+	static index make_index(const std::string &i, int64_t s);
 
 	bool d_trace_scanning = false;
 	bool d_trace_parsing = false;
@@ -99,6 +101,7 @@ class D4ConstraintEvaluator {
 	void search_for_and_mark_arrays(BaseType *btp);
 	BaseType *mark_variable(BaseType *btp);
 	BaseType *mark_array_variable(BaseType *btp);
+    void use_explicit_projection(Array *a, const Array::Dim_iter &dim_iter, const D4ConstraintEvaluator::index &index);
 
 	D4Dimension *slice_dimension(const std::string &id, const index &i);
 
@@ -113,9 +116,9 @@ class D4ConstraintEvaluator {
     [[noreturn]] static void throw_not_array(const std::string &id, const std::string &ident);
 
 	// Build FilterClauseList for filter clauses for a Sequence
-	void add_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2);
+	void add_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2) const;
 
-	std::string &remove_quotes(std::string &src);
+	static std::string &remove_quotes(std::string &src);
 
 	friend class D4CEParser;
 

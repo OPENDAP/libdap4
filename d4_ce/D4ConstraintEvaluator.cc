@@ -288,6 +288,57 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
     return btp;
 }
 
+void D4ConstraintEvaluator::use_explicit_projection(Array *a, const Array::Dim_iter &dim_iter,
+                                                    const D4ConstraintEvaluator::index &index)
+{
+    // This case corresponds to a 'local dimension slice' (See sections 8.6.2 and
+    // 8.7 of the spec as of 4/12/16). When a local dimension slice is used, drop
+    // the Map(s) that include that dimension. This enables people to constrain
+    // an Array when some of the Array's dimensions don't use Shared Dimensions
+    // but others do.
+
+    DBG(cerr << "Entering: LOCAL D4 constraint" << endl);
+    // First apply the constraint to the Array's dimension
+    a->add_constraint_ll(dim_iter, index.start, index.stride, index.rest ? -1 : index.stop);
+
+    // Then, if the Array has Maps, scan those Maps for any that use dimensions
+    // that match the name of this particular dimension. If any such Maps are found
+    // remove them. This ensures that the Array can be constrained using the  'local
+    // dimension slice' without the constrained DMR containing references to Maps
+    // that don't exist (or are otherwise nonsensical).
+    //
+    // This code came about as a fix for problems discovered during testing of
+    // local dimension slices. See https://opendap.atlassian.net/browse/HYRAX-98
+    // jhrg 4/12/16
+    if (!a->maps()->empty()) {
+        D4Dimension *dim = a->dimension_D4dim(dim_iter);
+        int map_size = a->maps()->size();
+
+        // Some variables may have several maps that shares the same dimension.
+        // When local constraint applies, all these maps should be removed.
+        // TODO: Ideally we can just use typical erase-remove in the an inner-loop to handle this.
+        //       Somehow this doesn't work. Maybe we need to add public methods. KY 2023-03-13
+        for (int map_index = 0; map_index < map_size; map_index++) {
+            for (auto m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ++m) {
+                auto root = dynamic_cast<D4Group *>(a->get_ancestor());
+                if (!root)
+                    throw InternalErr(__FILE__, __LINE__, "Expected a valid ancestor Group.");
+
+                auto *map = (*m)->array(root);
+
+                // Added a test to ensure 'dim' is not null. This could be the case if
+                // execution gets here and the index *i was not empty. jhrg 4/18/17
+                if (dim && array_uses_shared_dimension(map, dim)) {
+                    D4Map *map_to_be_removed = *m;
+                    a->maps()->remove_map(map_to_be_removed); // Invalidates the iterator
+                    delete map_to_be_removed;   // removed from container; delete
+                    break; // must leave the for loop because 'm' is now invalid
+                }
+            }
+        }
+    }
+}
+
 /**
  * Add an array to the current projection with slicing. Calling this method will result
  * in the array being returned with anonymous dimensions.
@@ -329,8 +380,7 @@ D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string
     return {initial, get_int64(s.c_str()), end, false, false /*empty*/, ""};
 }
 
-D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, int64_t s,
-    const std::string &e)
+D4ConstraintEvaluator::index D4ConstraintEvaluator::make_index(const std::string &i, int64_t s, const std::string &e)
 {
     int64_t initial = get_int64(i.c_str());
     int64_t end = get_int64(e.c_str());
@@ -415,7 +465,7 @@ static D4FilterClause::ops get_op_code(const std::string &op)
  * @param arg2 The second argument; a D4Sequence variable or a constant.
  * @param op The infix relop
  */
-void D4ConstraintEvaluator::add_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2)
+void D4ConstraintEvaluator::add_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2) const
 {
     DBG(cerr << "Entering: " << __PRETTY_FUNCTION__ << endl);
 
