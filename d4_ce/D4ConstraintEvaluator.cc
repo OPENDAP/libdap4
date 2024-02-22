@@ -238,8 +238,12 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
                 // the Map(s) that include that dimension. This enables people to constrain
                 // an Array when some of the Array's dimensions don't use Shared Dimensions
                 // but others do.
+                use_explicit_projection(a, d, index);
+            }
 
-                DBG(cerr << "Entering: LOCAL D4 constraint" << endl);
+
+#if 0
+            DBG(cerr << "Entering: LOCAL D4 constraint" << endl);
                 // First apply the constraint to the Array's dimension
                 a->add_constraint_ll(d, index.start, index.stride, index.rest ? -1 : index.stop);
 
@@ -278,6 +282,7 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
                     }
                 }
             }
+#endif
 
             ++d;
         }
@@ -316,8 +321,6 @@ void D4ConstraintEvaluator::use_explicit_projection(Array *a, const Array::Dim_i
 
         // Some variables may have several maps that shares the same dimension.
         // When local constraint applies, all these maps should be removed.
-        // TODO: Ideally we can just use typical erase-remove in the an inner-loop to handle this.
-        //       Somehow this doesn't work. Maybe we need to add public methods. KY 2023-03-13
         for (int map_index = 0; map_index < map_size; map_index++) {
             for (auto m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ++m) {
                 auto root = dynamic_cast<D4Group *>(a->get_ancestor());
