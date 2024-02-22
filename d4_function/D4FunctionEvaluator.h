@@ -150,7 +150,7 @@ public:
 
     template<typename t> std::vector<t> *init_arg_list(t val);
 
-    static void error(const libdap::location &l, const std::string &m);
+    [[noreturn]] static void error(const libdap::location &l, const std::string &m);
 };
 
 } /* namespace libdap */

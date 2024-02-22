@@ -31,17 +31,12 @@
 #include <list>
 #include <algorithm>
 
-//#define DODS_DEBUG
-
 #include "D4FunctionScanner.h"
 #include "D4FunctionEvaluator.h"
 #include "d4_function_parser.tab.hh"
 
 #include "DMR.h"
 #include "D4Group.h"
-#include "D4RValue.h"
-
-#include "BaseType.h"
 #include "Array.h"
 #include "D4Enum.h"
 
@@ -129,15 +124,24 @@ void D4FunctionEvaluator::eval(DMR *function_result)
 
     D4Group *root = function_result->root();	// Load everything in the root group
 
+#if 0
     for (D4RValueList::iter i = d_result->begin(), e = d_result->end(); i != e; ++i) {
-        // Copy the BaseTypes; this means all of the function results can
+        // Copy the BaseTypes; this means all the function results can
         // be deleted, which addresses the memory leak issue with function
         // results. This should also copy the D4Dimensions. jhrg 3/17/14
         root->add_var((*i)->value(*d_dmr));
     }
+#endif
+
+    for (auto result: *d_result) {
+        // Copy the BaseTypes; this means all the function results can
+        // be deleted, which addresses the memory leak issue with function
+        // results. This should also copy the D4Dimensions. jhrg 3/17/14
+        root->add_var(result->value(*d_dmr));
+    }
 
     delete d_result;	// The parser/function allocates the BaseType*s that hold the results.
-    d_result = 0;
+    d_result = nullptr;
 
     // Variables can use Dimensions and Enumerations, so those need to be copied
     // from the source dataset to the result. NB: The variables that refer to these
@@ -149,10 +153,10 @@ void D4FunctionEvaluator::eval(DMR *function_result)
     // result.'
     list<D4Dimension*> dim_set;
 
-    for (Constructor::Vars_iter i = root->var_begin(), ie = root->var_end(); i != ie; ++i) {
+    for (auto i = root->var_begin(), ie = root->var_end(); i != ie; ++i) {
         if ((*i)->is_vector_type()) {
-            Array *a = static_cast<Array*>(*i);
-            for (Array::Dim_iter d = a->dim_begin(), de = a->dim_end(); d != de; ++d) {
+            auto a = static_cast<Array*>(*i);
+            for (auto d = a->dim_begin(), de = a->dim_end(); d != de; ++d) {
                 // Only add Dimensions that are not already present; share dims are not repeated. jhrg 2/7/18
                 D4Dimension *d4_dim = a->dimension_D4dim(d);
                 if (d4_dim) {
@@ -167,20 +171,32 @@ void D4FunctionEvaluator::eval(DMR *function_result)
     // Copy the D4Dimensions and EnumDefs because this all goes in a new DMR - we don't
     // want to share those across DMRs because the DMRs delete those (so sharing htem
     // across DMRs would lead to dangling pointers.
+#if 0
     for (list<D4Dimension*>::iterator i = dim_set.begin(), e = dim_set.end(); i != e; ++i) {
         root->dims()->add_dim(*i);
     }
+#endif
 
-    // Now lets do the enumerations....
+    for (auto dim: dim_set) {
+        root->dims()->add_dim(dim);
+    }
+
+    // Now let's do the enumerations....
     list<D4EnumDef*> enum_def_set;
-    for (Constructor::Vars_iter i = root->var_begin(), ie = root->var_end(); i != ie; ++i) {
+    for (auto i = root->var_begin(), ie = root->var_end(); i != ie; ++i) {
         if ((*i)->type() == dods_enum_c) {
             enum_def_set.push_back(static_cast<D4Enum*>(*i)->enumeration());
         }
     }
 
+#if 0
     for (list<D4EnumDef*>::iterator i = enum_def_set.begin(), e = enum_def_set.end(); i != e; ++i) {
         root->enum_defs()->add_enum(*i);
+    }
+#endif
+
+    for (auto enum_def: enum_def_set) {
+        root->enum_defs()->add_enum(enum_def);
     }
 }
 
@@ -242,16 +258,17 @@ D4FunctionEvaluator::build_rvalue(const std::string &id)
     return nullptr;
 }
 
+// TODO Make the arg_list a unique_ptr through out. jhrg 2/22/24
 template<typename T>
-std::vector<T> *
+vector<T> *
 D4FunctionEvaluator::init_arg_list(T val)
 {
-    auto arg_list = new std::vector<T>();
+    auto arg_list = make_unique<vector<T>>();
     if (get_arg_length_hint() > 0) arg_list->reserve(get_arg_length_hint());
 
     arg_list->push_back(val);
 
-    return arg_list;
+    return arg_list.release();
 }
 
 // Force an instantiation so this can be called from within the d4_function.yy
@@ -270,7 +287,7 @@ template std::vector<dods_float64> *D4FunctionEvaluator::init_arg_list(dods_floa
 // This method is called from the parser (see d4_function_parser.yy, down in the code
 // section). This will be called during the call to D4FunctionParser::parse(), that
 // is inside D4FunctionEvaluator::parse(...)
-void D4FunctionEvaluator::error(const libdap::location &l, const std::string &m)
+[[noreturn]] void D4FunctionEvaluator::error(const libdap::location &l, const std::string &m)
 {
     ostringstream oss;
     oss << l << ": " << m << ends;
