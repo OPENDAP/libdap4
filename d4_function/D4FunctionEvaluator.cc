@@ -27,6 +27,7 @@
 
 #include <string>
 #include <sstream>
+#include <memory>
 #include <iterator>
 #include <list>
 #include <algorithm>
@@ -103,36 +104,9 @@ bool D4FunctionEvaluator::parse(const std::string &expr)
  */
 void D4FunctionEvaluator::eval(DMR *function_result)
 {
-#if 0
-    ServerFunctionsList *sf_list = ServerFunctionsList::TheList();
-    ServerFunction *scale = new D4TestFunction;
-    sf_list->add_function(scale);
-
-    D4FunctionEvaluator parser(dataset, sf_list);
-    if (ce_parser_debug) parser.set_trace_parsing(true);
-    bool parse_ok = parser.parse(function);
-    if (!parse_ok)
-    Error(malformed_expr, "Function Expression failed to parse.");
-    else {
-        if (ce_parser_debug) cerr << "Function Parse OK" << endl;
-        D4RValueList *result = parser.result();
-
-        function_result = new DMR(&d4_factory, "function_results");
-#endif
-
     if (!d_result) throw InternalErr(__FILE__, __LINE__, "Must parse() the function expression before calling eval()");
 
     D4Group *root = function_result->root();	// Load everything in the root group
-
-#if 0
-    for (D4RValueList::iter i = d_result->begin(), e = d_result->end(); i != e; ++i) {
-        // Copy the BaseTypes; this means all the function results can
-        // be deleted, which addresses the memory leak issue with function
-        // results. This should also copy the D4Dimensions. jhrg 3/17/14
-        root->add_var((*i)->value(*d_dmr));
-    }
-#endif
-
     for (auto result: *d_result) {
         // Copy the BaseTypes; this means all the function results can
         // be deleted, which addresses the memory leak issue with function
@@ -171,12 +145,6 @@ void D4FunctionEvaluator::eval(DMR *function_result)
     // Copy the D4Dimensions and EnumDefs because this all goes in a new DMR - we don't
     // want to share those across DMRs because the DMRs delete those (so sharing htem
     // across DMRs would lead to dangling pointers.
-#if 0
-    for (list<D4Dimension*>::iterator i = dim_set.begin(), e = dim_set.end(); i != e; ++i) {
-        root->dims()->add_dim(*i);
-    }
-#endif
-
     for (auto dim: dim_set) {
         root->dims()->add_dim(dim);
     }
@@ -188,12 +156,6 @@ void D4FunctionEvaluator::eval(DMR *function_result)
             enum_def_set.push_back(static_cast<D4Enum*>(*i)->enumeration());
         }
     }
-
-#if 0
-    for (list<D4EnumDef*>::iterator i = enum_def_set.begin(), e = enum_def_set.end(); i != e; ++i) {
-        root->enum_defs()->add_enum(*i);
-    }
-#endif
 
     for (auto enum_def: enum_def_set) {
         root->enum_defs()->add_enum(enum_def);
