@@ -206,10 +206,10 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
             throw Error(malformed_expr, "The index constraint for '" + btp->name() + "' does not match its rank.");
 
         auto d = a->dim_begin();
-
-        DBG(cerr << "dimension size " << a->dimension_size_ll(d, false) << endl);
-
         for (auto const &index: d_indexes) {
+            if (d == a->dim_end())
+                throw Error(malformed_expr, "The index constraint for '" + btp->name() + "' does not match its rank.");
+
             if (index.stride >  (a->dimension_stop_ll(d, false) - a->dimension_start_ll(d, false)) + 1)
                 throw Error(malformed_expr,
                             "For '" + btp->name()
@@ -240,49 +240,6 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
                 // but others do.
                 use_explicit_projection(a, d, index);
             }
-
-
-#if 0
-            DBG(cerr << "Entering: LOCAL D4 constraint" << endl);
-                // First apply the constraint to the Array's dimension
-                a->add_constraint_ll(d, index.start, index.stride, index.rest ? -1 : index.stop);
-
-                // Then, if the Array has Maps, scan those Maps for any that use dimensions
-                // that match the name of this particular dimension. If any such Maps are found
-                // remove them. This ensure that the Array can be constrained using the  'local
-                // dimension slice' without the constrained DMR containing references to Maps
-                // that don't exist (or are otherwise nonsensical).
-                //
-                // This code came about as a fix for problems discovered during testing of
-                // local dimension slices. See https://opendap.atlassian.net/browse/HYRAX-98
-                // jhrg 4/12/16
-                if (!a->maps()->empty()) {
-                    int map_size = a->maps()->size();
-
-                    // Some variables may have several maps that shares the same dimension.
-                    // When local constraint applies, all these maps should be removed.
-                    // TODO: Ideally we can just use typical erase-remove in the an inner-loop to handle this.
-                    //       Somehow this doesn't work. Maybe we need to add public methods. KY 2023-03-13
-                    for (int map_index = 0; map_index < map_size; map_index++) {
-                        for (D4Maps::D4MapsIter m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ++m) {
-                            auto root = dynamic_cast<D4Group *>(a->get_ancestor());
-                            if (!root)
-                                throw InternalErr(__FILE__, __LINE__, "Expected a valid ancestor Group.");
-                            auto *map = (*m)->array(root);
-
-                            // Added a test to ensure 'dim' is not null. This could be the case if
-                            // execution gets here and the index *i was not empty. jhrg 4/18/17
-                            if (dim && array_uses_shared_dimension(map, dim)) {
-                                D4Map *map_to_be_removed = *m;
-                                a->maps()->remove_map(map_to_be_removed); // Invalidates the iterator
-                                delete map_to_be_removed;   // removed from container; delete
-                                break; // must leave the for loop because 'm' is now invalid
-                            }
-                        }
-                    }
-                }
-            }
-#endif
 
             ++d;
         }
