@@ -47,33 +47,29 @@ class D4RValueList;
  */
 class D4FunctionEvaluator
 {
-    bool d_trace_scanning;
-    bool d_trace_parsing;
+    bool d_trace_scanning = false;
+    bool d_trace_parsing = false;
     std::string d_expr;
 
-    DMR *d_dmr;
-    ServerFunctionsList *d_sf_list;
+    DMR *d_dmr = nullptr;
+    ServerFunctionsList *d_sf_list = nullptr;
 
-    D4RValueList *d_result;
+    D4RValueList *d_result = nullptr;
 
     std::stack<BaseType*> d_basetype_stack;
 
-    unsigned long long d_arg_length_hint;
+    unsigned long long d_arg_length_hint = 0;
 
     // d_expr should be set by parse! Its value is used by the parser right before
     // the actual parsing operation starts. jhrg 11/26/13
-    std::string *expression()
-    {
-        return &d_expr;
-    }
+    std::string *expression() { return &d_expr; }
 
-    void push_basetype(BaseType *btp)
-    {
+    void push_basetype(BaseType *btp) {
         d_basetype_stack.push(btp);
     }
     BaseType *top_basetype() const
     {
-        return d_basetype_stack.empty() ? 0 : d_basetype_stack.top();
+        return d_basetype_stack.empty() ? nullptr : d_basetype_stack.top();
     }
     void pop_basetype()
     {
@@ -85,20 +81,10 @@ class D4FunctionEvaluator
     friend class D4FunctionParser;
 
 public:
-    D4FunctionEvaluator() :
-            d_trace_scanning(false), d_trace_parsing(false), d_expr(""), d_dmr(0), d_sf_list(0), d_result(0), d_arg_length_hint(
-                    0)
-    {
-    }
-    D4FunctionEvaluator(DMR *dmr, ServerFunctionsList *sf_list) :
-            d_trace_scanning(false), d_trace_parsing(false), d_expr(""), d_dmr(dmr), d_sf_list(sf_list), d_result(0), d_arg_length_hint(
-                    0)
-    {
-    }
+    D4FunctionEvaluator() = default;
+    D4FunctionEvaluator(DMR *dmr, ServerFunctionsList *sf_list) :  d_dmr(dmr), d_sf_list(sf_list) { }
 
-    virtual ~D4FunctionEvaluator()
-    {
-    }
+    virtual ~D4FunctionEvaluator() = default;
 
     bool parse(const std::string &expr);
 
@@ -164,7 +150,7 @@ public:
 
     template<typename t> std::vector<t> *init_arg_list(t val);
 
-    void error(const libdap::location &l, const std::string &m);
+    static void error(const libdap::location &l, const std::string &m);
 };
 
 } /* namespace libdap */

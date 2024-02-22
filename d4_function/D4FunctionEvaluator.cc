@@ -205,7 +205,7 @@ void D4FunctionEvaluator::eval(DMR *function_result)
 D4RValue *
 D4FunctionEvaluator::build_rvalue(const std::string &id)
 {
-    BaseType *btp = 0;
+    BaseType *btp = nullptr;
 
     // Look for the id in the dataset first
     if (top_basetype()) {
@@ -218,8 +218,8 @@ D4FunctionEvaluator::build_rvalue(const std::string &id)
     if (btp) return new D4RValue(btp);
 
     // If the id is not a variable, try to turn it into a constant,
-    // otherwise, its an error.
-    char *end_ptr = 0;
+    // otherwise, it's an error.
+    char *end_ptr = nullptr;
 
     errno = 0;
     long long ll_val = strtoll(id.c_str(), &end_ptr, 0);
@@ -239,14 +239,14 @@ D4FunctionEvaluator::build_rvalue(const std::string &id)
     if (is_quoted(id)) return new D4RValue(www2id(id));
 
     // if it's none of these, return null
-    return 0;
+    return nullptr;
 }
 
 template<typename T>
 std::vector<T> *
 D4FunctionEvaluator::init_arg_list(T val)
 {
-    std::vector<T> *arg_list = new std::vector<T>();
+    auto arg_list = new std::vector<T>();
     if (get_arg_length_hint() > 0) arg_list->reserve(get_arg_length_hint());
 
     arg_list->push_back(val);
