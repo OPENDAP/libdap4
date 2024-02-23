@@ -30,6 +30,8 @@
 #include <vector>
 #include <stack>
 
+#include "Array.h"
+
 namespace libdap {
 
 class location;
@@ -47,14 +49,16 @@ class D4ConstraintEvaluator {
 	struct index {
 		// start and stride are simple numbers; stop is either the stopping index or
 		// if rest is true, is ignored and the subset runs to the end of the dimension
-		unsigned long long start, stride, stop;
+		int64_t start = 0;
+        int64_t stride = 0;
+        int64_t stop = 0;
 		// true if the slice indicates it does not contain a specific 'stop' value but
 		// goes to the end, whatever that value is.
-		bool rest;
+		bool rest = false;
 		// An empty slice ([]) means either the entire dimension or apply the shared
 		// dimension slice, depending on whether the corresponding shared dimension has
 		// been sliced.
-		bool empty;
+		bool empty = false;
 		// When a slice is applied to an Array with Maps, we need to know the name of
 		// each dimension. These names are then used to apply the slice to each of the
 		// Maps (Maps may have fewer dimensions than the Array, but the idea that a
@@ -64,27 +68,27 @@ class D4ConstraintEvaluator {
 		std::string dim_name;
 
 		// Added because the parser code needs it. Our code does not use this. jhrg 11/26/13
-		index(): start(0), stride(0), stop(0), rest(false), empty(false), dim_name("") {}
-		index(unsigned long long i, unsigned long long s, unsigned long long e, bool r, bool em, const std::string &n)
-			: start(i), stride(s), stop(e), rest(r), empty(em), dim_name(n) {}
+		index() = default;
+		index(int64_t i, int64_t s, int64_t e, bool r, bool em, std::string n)
+			: start(i), stride(s), stop(e), rest(r), empty(em), dim_name{std::move(n)} {}
 	};
 
-	index make_index() { return index(0, 1, 0, true /*rest*/, true /*empty*/, ""); }
+	static index make_index() { return {0, 1, 0, true /*rest*/, true /*empty*/, ""}; }
 
-	index make_index(const std::string &is);
+    static index make_index(const std::string &is);
 
-	index make_index(const std::string &i, const std::string &s, const std::string &e);
-	index make_index(const std::string &i, unsigned long long s, const std::string &e);
+    static index make_index(const std::string &i, const std::string &s, const std::string &e);
+    static index make_index(const std::string &i, int64_t s, const std::string &e);
 
-	index make_index(const std::string &i, const std::string &s);
-	index make_index(const std::string &i, unsigned long long s);
+	static index make_index(const std::string &i, const std::string &s);
+	static index make_index(const std::string &i, int64_t s);
 
-	bool d_trace_scanning;
-	bool d_trace_parsing;
-	bool d_result;
+	bool d_trace_scanning = false;
+	bool d_trace_parsing = false;
+	bool d_result = false;
 	std::string d_expr;
 
-	DMR *d_dmr;
+	DMR *d_dmr = nullptr;
 
 	std::vector<index> d_indexes;
 
@@ -97,31 +101,33 @@ class D4ConstraintEvaluator {
 	void search_for_and_mark_arrays(BaseType *btp);
 	BaseType *mark_variable(BaseType *btp);
 	BaseType *mark_array_variable(BaseType *btp);
+    static void use_explicit_projection(Array *a, const Array::Dim_iter &dim_iter,
+                                        const D4ConstraintEvaluator::index &index);
 
 	D4Dimension *slice_dimension(const std::string &id, const index &i);
 
 	void push_index(const index &i) { d_indexes.push_back(i); }
 
 	void push_basetype(BaseType *btp) { d_basetype_stack.push(btp); }
-	BaseType *top_basetype() const { return d_basetype_stack.empty() ? 0 : d_basetype_stack.top(); }
+	BaseType *top_basetype() const { return d_basetype_stack.empty() ? nullptr : d_basetype_stack.top(); }
 	// throw on pop with an empty stack?
 	void pop_basetype() { d_basetype_stack.pop(); }
 
-	void throw_not_found(const std::string &id, const std::string &ident);
-	void throw_not_array(const std::string &id, const std::string &ident);
+    [[noreturn]] static void throw_not_found(const std::string &id, const std::string &ident);
+    [[noreturn]] static void throw_not_array(const std::string &id, const std::string &ident);
 
 	// Build FilterClauseList for filter clauses for a Sequence
-	void add_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2);
+	void add_filter_clause(const std::string &op, const std::string &arg1, const std::string &arg2) const;
 
-	std::string &remove_quotes(std::string &src);
+	static std::string &remove_quotes(std::string &src);
 
 	friend class D4CEParser;
 
 public:
-	D4ConstraintEvaluator() : d_trace_scanning(false), d_trace_parsing(false), d_result(false), d_expr(""), d_dmr(0) { }
-	D4ConstraintEvaluator(DMR *dmr) : d_trace_scanning(false), d_trace_parsing(false), d_result(false), d_expr(""), d_dmr(dmr) { }
+	D4ConstraintEvaluator() = default;
+	explicit D4ConstraintEvaluator(DMR *dmr) : d_dmr(dmr) { }
 
-	virtual ~D4ConstraintEvaluator() { }
+	virtual ~D4ConstraintEvaluator() = default;
 
 	bool parse(const std::string &expr);
 
@@ -137,7 +143,7 @@ public:
 	DMR *dmr() const { return d_dmr; }
 	void set_dmr(DMR *dmr) { d_dmr = dmr; }
 
-	void error(const libdap::location &l, const std::string &m);
+	[[noreturn]] static void error(const libdap::location &l, const std::string &m);
 };
 
 } /* namespace libdap */

@@ -36,9 +36,6 @@
 #include <cstdio>
 #include <cmath>
 #include <climits>
-//#include <cstdint>
-
-//#include <sys/types.h>
 
 #ifdef WIN32
 #include <io.h>
@@ -54,9 +51,6 @@
 #include <algorithm>
 #include <functional>
 #include <memory>
-
-// #define DODS_DEBUG
-// #define DODS_DEBUG2
 
 #include "Byte.h"
 #include "Int16.h"
