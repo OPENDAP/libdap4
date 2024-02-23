@@ -101,7 +101,8 @@ class D4ConstraintEvaluator {
 	void search_for_and_mark_arrays(BaseType *btp);
 	BaseType *mark_variable(BaseType *btp);
 	BaseType *mark_array_variable(BaseType *btp);
-    void use_explicit_projection(Array *a, const Array::Dim_iter &dim_iter, const D4ConstraintEvaluator::index &index);
+    static void use_explicit_projection(Array *a, const Array::Dim_iter &dim_iter,
+                                        const D4ConstraintEvaluator::index &index);
 
 	D4Dimension *slice_dimension(const std::string &id, const index &i);
 
