@@ -29,16 +29,6 @@
 #include <iostream>
 #include <sstream>
 
-#if 0
-
-#include <iomanip>
-
-#include <stdint.h>
-
-#include "crc.h"
-
-#endif
-
 #include "BaseType.h"
 #include "Array.h"
 
@@ -86,16 +76,6 @@ void D4Group::m_duplicate(const D4Group &g)
 	        ++vi;
 	    }
 	}
-
-#if 0
-	// Moved this block up inside the if because g.d_dims might be false. jhrg 9/14/15
-	Vars_citer vi = d_vars.begin();
-	while (vi != d_vars.end()) {
-		if ((*vi)->type() == dods_array_c)
-			static_cast<Array*>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
-		++vi;
-	}
-#endif
 
 	// enums; deep copy
 	if (g.d_enum_defs) d_enum_defs = new D4EnumDefs(*g.d_enum_defs);

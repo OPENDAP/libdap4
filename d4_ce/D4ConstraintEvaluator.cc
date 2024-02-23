@@ -273,7 +273,7 @@ void D4ConstraintEvaluator::use_explicit_projection(Array *a, const Array::Dim_i
     // local dimension slices. See https://opendap.atlassian.net/browse/HYRAX-98
     // jhrg 4/12/16
     if (!a->maps()->empty()) {
-        D4Dimension *dim = a->dimension_D4dim(dim_iter);
+        const D4Dimension *dim = a->dimension_D4dim(dim_iter);
         int map_size = a->maps()->size();
 
         // Some variables may have several maps that shares the same dimension.
