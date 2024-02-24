@@ -50,8 +50,12 @@ bool D4ConstraintEvaluator::parse(const std::string &expr)
 {
     d_expr = expr;	// set for error messages. See the %initial-action section of .yy
 
-    DBG(cerr << "Entering D4ConstraintEvaluator::parse: "  << endl);
-    DBG(cerr << "Entering D4ConstraintEvaluator::expr: "  << expr <<endl);
+    // empty expressions are valid but fail the parser. jhrg 2/23/24
+    if (expr.empty()) {
+        d_dmr->set_ce_empty(true);
+        return true;
+    }
+
     std::istringstream iss(expr);
     D4CEScanner scanner(iss);
     D4CEParser parser(scanner, *this /* driver */);
@@ -60,9 +64,6 @@ bool D4ConstraintEvaluator::parse(const std::string &expr)
         parser.set_debug_level(1);
         parser.set_debug_stream(std::cerr);
     }
-
-    if(expr.empty()) 
-        d_dmr->set_ce_empty(true);
 
     return parser.parse() == 0;
 }

@@ -6,8 +6,10 @@ AUTOMAKE_OPTIONS = foreign
 # shot.
 .NOTPARALLEL:
 
+SUBDIRS = . unit-tests
+
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir)  $(XML2_CFLAGS) $(TIRPC_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS = -Wall -W -Wcast-align -Wno-inconsistent-missing-override
 
 if COMPILER_IS_GCC
