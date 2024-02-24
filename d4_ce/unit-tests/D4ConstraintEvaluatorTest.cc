@@ -57,11 +57,9 @@ class D4ConstraintEvaluatorTest : public CppUnit::TestFixture {
     
     CPPUNIT_TEST_SUITE(D4ConstraintEvaluatorTest);
 
-#if 1
     CPPUNIT_TEST(test_parse_valid_expression);
     CPPUNIT_TEST(test_parse_empty_expression);
     CPPUNIT_TEST(test_parse_invalid_expression);
-#endif
 
     CPPUNIT_TEST(test_throw_not_found_prevent_xxs);
     CPPUNIT_TEST(test_throw_not_found_no_prevent_xxs);
