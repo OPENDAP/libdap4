@@ -122,6 +122,7 @@ class D4ConstraintEvaluator {
 	static std::string &remove_quotes(std::string &src);
 
 	friend class D4CEParser;
+    friend class D4ConstraintEvaluatorTest;
 
 public:
 	D4ConstraintEvaluator() = default;
