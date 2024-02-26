@@ -5,8 +5,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Headers in 'tests' are used by the arrayT unit tests.
 
-AM_CPPFLAGS = -I$(top_srcdir)/d4_ce -I$(top_srcdir)/unit-tests \
-    $(CURL_CFLAGS) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce $(CURL_CFLAGS) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_LDADD = $(XML2_LIBS)
 AM_CXXFLAGS = $(CXX_STD_FLAG)
 

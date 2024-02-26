@@ -27,12 +27,12 @@
 
 #include <iostream>
 
-#include "unit-tests/run_tests_cppunit.h"
-
 #include "DMR.h"
 #include "D4Group.h"
 #include "D4BaseTypeFactory.h"
 #include "Byte.h"
+
+#include "unit-tests/run_tests_cppunit.h"
 
 #include "D4ConstraintEvaluator.h"
 
