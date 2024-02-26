@@ -45,7 +45,6 @@ class MockDMR : public DMR {
 public:
     D4BaseTypeFactory d_factory;
     MockDMR() : DMR(&d_factory) {
-        //d_root = new D4Group("root");
         root()->add_var_nocopy(new Byte("x"));
         root()->add_var_nocopy(new Byte("y"));
     }
@@ -75,7 +74,6 @@ public:
         MockDMR dmr;
         D4ConstraintEvaluator evaluator(&dmr);
         CPPUNIT_ASSERT(evaluator.parse(validExpr));
-        // Add assertions to verify expected behavior and side effects
     }
 
     void test_parse_empty_expression() {
@@ -84,7 +82,6 @@ public:
         MockDMR dmr;
         D4ConstraintEvaluator evaluator(&dmr);
         CPPUNIT_ASSERT(evaluator.parse(emptyExpr));
-        // Add assertions to ensure d_dmr->set_ce_empty(true) was called
     }
 
     void test_parse_invalid_expression() {
@@ -93,7 +90,6 @@ public:
         MockDMR dmr;
         D4ConstraintEvaluator evaluator(&dmr);
         CPPUNIT_ASSERT_THROW(!evaluator.parse(invalidExpr), Error);
-        // Add assertions to verify error handling and logging
     }
 
     void test_throw_not_found_prevent_xxs() {
