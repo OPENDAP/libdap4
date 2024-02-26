@@ -50,8 +50,12 @@ bool D4ConstraintEvaluator::parse(const std::string &expr)
 {
     d_expr = expr;	// set for error messages. See the %initial-action section of .yy
 
-    DBG(cerr << "Entering D4ConstraintEvaluator::parse: "  << endl);
-    DBG(cerr << "Entering D4ConstraintEvaluator::expr: "  << expr <<endl);
+    // empty expressions are valid but fail the parser. jhrg 2/23/24
+    if (expr.empty()) {
+        d_dmr->set_ce_empty(true);
+        return true;
+    }
+
     std::istringstream iss(expr);
     D4CEScanner scanner(iss);
     D4CEParser parser(scanner, *this /* driver */);
@@ -60,9 +64,6 @@ bool D4ConstraintEvaluator::parse(const std::string &expr)
         parser.set_debug_level(1);
         parser.set_debug_stream(std::cerr);
     }
-
-    if(expr.empty()) 
-        d_dmr->set_ce_empty(true);
 
     return parser.parse() == 0;
 }
@@ -250,7 +251,12 @@ D4ConstraintEvaluator::mark_array_variable(BaseType *btp)
     return btp;
 }
 
-void array_map_remover(Array *a, const D4Dimension *dim) {
+/**
+ * For each D4Dimension in an Array and for all of the maps in an Array, if one maps corresponds to a shared dimension, remove it.
+ * @param a The Array
+ * @param dim The dimension
+ */
+static void array_map_remover(Array *a, const D4Dimension *dim) {
     auto root = dynamic_cast<D4Group *>(a->get_ancestor());
     if (!root)
         throw InternalErr(__FILE__, __LINE__, "Expected a valid ancestor Group.");
@@ -268,16 +274,16 @@ void array_map_remover(Array *a, const D4Dimension *dim) {
     }
 }
 
+/**
+ * This case corresponds to a 'local dimension slice' (See sections 8.6.2 and
+ * 8.7 of the spec as of 4/12/16). When a local dimension slice is used, drop
+ * the Map(s) that include that dimension. This enables people to constrain
+ * an Array when some of the Array's dimensions don't use Shared Dimensions
+ * but others do.
+ */
 void D4ConstraintEvaluator::use_explicit_projection(Array *a, const Array::Dim_iter &dim_iter,
                                                     const D4ConstraintEvaluator::index &index)
 {
-    // This case corresponds to a 'local dimension slice' (See sections 8.6.2 and
-    // 8.7 of the spec as of 4/12/16). When a local dimension slice is used, drop
-    // the Map(s) that include that dimension. This enables people to constrain
-    // an Array when some of the Array's dimensions don't use Shared Dimensions
-    // but others do.
-
-    DBG(cerr << "Entering: LOCAL D4 constraint" << endl);
     // First apply the constraint to the Array's dimension
     a->add_constraint_ll(dim_iter, index.start, index.stride, index.rest ? -1 : index.stop);
 
@@ -296,25 +302,6 @@ void D4ConstraintEvaluator::use_explicit_projection(Array *a, const Array::Dim_i
         int map_size = a->maps()->size();
         for (int map_index = 0; map_index < map_size; map_index++) {
             array_map_remover(a, a->dimension_D4dim(dim_iter));
-#if 0
-            for (auto m = a->maps()->map_begin(), e = a->maps()->map_end(); m != e; ++m) {
-                auto root = dynamic_cast<D4Group *>(a->get_ancestor());
-                if (!root)
-                    throw InternalErr(__FILE__, __LINE__, "Expected a valid ancestor Group.");
-
-                auto *map = (*m)->array(root);
-
-                // Added a test to ensure 'dim' is not null. This could be the case if
-                // execution gets here and the index *i was not empty. jhrg 4/18/17
-                if (dim && array_uses_shared_dimension(map, dim)) {
-                    D4Map *map_to_be_removed = *m;
-                    a->maps()->remove_map(map_to_be_removed); // Invalidates the iterator
-                    delete map_to_be_removed;   // removed from container; delete
-                    break; // must leave the for loop because 'm' is now invalid
-                }
-            }
-        }
-#endif
         }
     }
 }

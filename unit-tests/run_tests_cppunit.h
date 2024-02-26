@@ -35,13 +35,15 @@
 #define HYRAX_GIT_RUN_TESTS_CPPUNIT_H
 
 #include <unistd.h>
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 bool debug = false;
 
 #undef DBG
-#define DBG(x) do { if (debug) (x); } while(false);
+#define DBG(x) do { if (debug) (x); } while(false)
 
 /**
  * @brief Run the test(s)

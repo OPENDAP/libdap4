@@ -93,6 +93,7 @@ private:
     bool global_dio_flag = false;
 
     friend class DMRTest;
+    friend class MockDMR;
 
 protected:
     void m_duplicate(const DMR &dmr);
