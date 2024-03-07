@@ -58,8 +58,6 @@ env:
   - PATH=$prefix/bin:$PATH
   - TESTSUITEFLAGS=-j7
 
-  # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
-  # - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
   # SONAR_LOGIN, created using travis encrypt --org -r OPENDAP/libdap4 SONAR_LOGIN=<sonar login key>
   - secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw="
 
@@ -78,9 +76,9 @@ env:
   # GIT_PSWD travis-ci-opendap
   - secure: "Oi3LunWs6lnFSW83d8z1llVBGIfUx3E+0d6wRAnkO0Q3muTMr8zm/bmaBt7XxnUQ3uKjRp9Uwkqtt7jJDHfTMeO5mXqYz018mc+PxwPmfFk6mnCQVbu1fk2tDRFbKYBPxILk0lvkShqzfKJJ9g/5b1IBJ/oxZAErf21qMqi1IHU="
   # DOCKER_HUB_UID for our DockerHub account
-  - secure: "PsI4sAD6i7dPfsYRof05Ya0GmuE9j3/gpULUNrIOGYc2wbLlApqhkUoznqeOaXGB3O+kM1Mxah6ft4PyYcuLZ0xM0H7ulT3mz+clqXuH9ssgGoDt/Ye5PJiFWNOQlRvWd7F9NNtVSBikjWN4ujalUqby2cSThBizkOXhZYe3CzM="
+  #- secure: "PsI4sAD6i7dPfsYRof05Ya0GmuE9j3/gpULUNrIOGYc2wbLlApqhkUoznqeOaXGB3O+kM1Mxah6ft4PyYcuLZ0xM0H7ulT3mz+clqXuH9ssgGoDt/Ye5PJiFWNOQlRvWd7F9NNtVSBikjWN4ujalUqby2cSThBizkOXhZYe3CzM="
   # DOCKER_HUB_PSWD for our DockerHub account
-  - secure: "dD0lFOU73qJztihQeK+m3mzYTUOB5uq2jI/oWRsyc9DIevI+H2RhMRC/Cc7eJP5yRUWxxVgU3Ad15ov2cnTSCyd/bddM4DmeZeoWi79G8IkjMhTL628ZAiJeysCO/vSFkw0bu4NbFADqswtCO8PUk9FICjnJr/Ts2zOvIaQOkR8="
+  #- secure: "dD0lFOU73qJztihQeK+m3mzYTUOB5uq2jI/oWRsyc9DIevI+H2RhMRC/Cc7eJP5yRUWxxVgU3Ad15ov2cnTSCyd/bddM4DmeZeoWi79G8IkjMhTL628ZAiJeysCO/vSFkw0bu4NbFADqswtCO8PUk9FICjnJr/Ts2zOvIaQOkR8="
 
 # This file was using docker login but that didn't seem to be needed and was generating
 # a warning about the plain-text credentials being stored/accessible. I dropped it, but
@@ -112,10 +110,10 @@ before_script:
   # moved down below to individual steps. jhrg 3/23/21 autoreconf --force --install --verbose
 
 stages:
-  - name: build
-    if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
-  - name: scan
-    if: branch = master OR branch = main OR branch =~ ^(.*test-scan)$
+#  - name: build
+#    if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
+#  - name: scan
+#    if: branch = master OR branch = main OR branch =~ ^(.*test-scan)$
   - name: package
     if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
   - name: hyrax-bes-trigger
