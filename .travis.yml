@@ -110,10 +110,10 @@ before_script:
   # moved down below to individual steps. jhrg 3/23/21 autoreconf --force --install --verbose
 
 stages:
-#  - name: build
-#    if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
-#  - name: scan
-#    if: branch = master OR branch = main OR branch =~ ^(.*test-scan)$
+  - name: build
+    if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
+  - name: scan
+    if: branch = master OR branch = main OR branch =~ ^(.*test-scan)$
   - name: package
     if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
   - name: hyrax-bes-trigger
