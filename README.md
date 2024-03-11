@@ -1,6 +1,8 @@
 
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
+* Merge PR from fork regarding configure.ac use of bash-specific syntax.
+
 ## Updated for version 3.21.0 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10564122.svg)](https://doi.org/10.5281/zenodo.10564122)
 
 * Added new Direct I/O support so that modules written using libdap
