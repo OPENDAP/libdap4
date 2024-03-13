@@ -25,7 +25,8 @@ endif
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
 
 if USE_ASAN
-ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+# old ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fsanitize-address-use-odr-indicator -fno-omit-frame-pointer
 endif
 
 # Removed  $(CXX_STD_FLAG) since c++0x, gcc 4.4.x and bison -gneerated code

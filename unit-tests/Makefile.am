@@ -24,7 +24,8 @@ endif
 CXXFLAGS_DEBUG = -g3 -O0
 
 if USE_ASAN
-ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+# old ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fsanitize-address-use-odr-indicator -fno-omit-frame-pointer
 endif
 
 if BUILD_DEVELOPER

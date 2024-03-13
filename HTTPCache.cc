@@ -63,7 +63,9 @@ using namespace std;
 
 namespace libdap {
 
+#if 0
 HTTPCache *HTTPCache::_instance = 0;
+#endif
 
 // instance_mutex is used to ensure that only one instance is created.
 // That is, it protects the body of the HTTPCache::instance() method. This
@@ -73,7 +75,9 @@ HTTPCache *HTTPCache::_instance = 0;
 // how many threads call the instance() method, only one instance is ever
 // made.
 static pthread_mutex_t instance_mutex;
+#if 0
 static pthread_once_t once_block = PTHREAD_ONCE_INIT;
+#endif
 
 
 #define NO_LM_EXPIRATION 24*3600 // 24 hours
@@ -87,6 +91,8 @@ static pthread_once_t once_block = PTHREAD_ONCE_INIT;
 #define MIN_CACHE_TOTAL_SIZE 5 // 5M Min cache size
 #define MAX_CACHE_ENTRY_SIZE 3 // 3M Max size of single cached entry
 
+#if 0
+
 static void
 once_init_routine()
 {
@@ -96,6 +102,8 @@ once_init_routine()
     if (status != 0)
         throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
 }
+
+#endif
 
 /** Get a pointer to the HTTP 1.1 compliant cache. If not already
     instantiated, this creates an instance of the HTTP cache object and
@@ -128,6 +136,10 @@ once_init_routine()
 HTTPCache *
 HTTPCache::instance(const string &cache_root, bool force)
 {
+    static HTTPCache instance(cache_root, force);
+    return &instance;
+}
+#if 0
     int status = pthread_once(&once_block, once_init_routine);
     if (status != 0)
         throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
@@ -187,7 +199,7 @@ HTTPCache::instance(const string &cache_root, bool force)
     DBGN(cerr << "returning " << hex << _instance << dec << endl);
 
     return _instance;
-}
+#endif
 
 /** This static method is called using atexit(). It deletes the singleton;
     see ~HTTPCache for all that implies. */

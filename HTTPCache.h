@@ -143,14 +143,6 @@ private:
     friend class HTTPCacheInterruptHandler;
 
     // Private methods
-    HTTPCache(const HTTPCache &);
-    HTTPCache();
-    HTTPCache &operator=(const HTTPCache &);
-
-    HTTPCache(string cache_root, bool force);
-
-    static void delete_instance(); // Run by atexit (hence static)
-    
     void set_cache_root(const string &root = "");
     void create_cache_root(const string &cache_root);
     
@@ -160,8 +152,8 @@ private:
     
     bool is_url_in_cache(const string &url);
 
-    // I made these four methods so they could be tested by HTTPCacheTest.
-    // Otherwise they would be static functions. jhrg 10/01/02
+    // I made these four methods, so they could be tested by HTTPCacheTest.
+    // Otherwise, they would be static functions. jhrg 10/01/02
     void write_metadata(const string &cachename, const vector<string> &headers);
     void read_metadata(const string &cachename, vector<string> &headers);
     int write_body(const string &cachename, const FILE *src);
@@ -176,6 +168,16 @@ private:
     void hits_gc();
 
 public:
+    HTTPCache() = delete;
+    HTTPCache(const HTTPCache &) = delete;
+    HTTPCache &operator=(const HTTPCache &) = delete;
+    HTTPCache(HTTPCache &&) = delete;
+    HTTPCache &operator=(HTTPCache &&) = delete;
+
+    HTTPCache(string cache_root, bool force);
+
+    static void delete_instance(); // Run by atexit (hence static)
+
     static HTTPCache *instance(const string &cache_root, bool force = false);
     virtual ~HTTPCache();
 
