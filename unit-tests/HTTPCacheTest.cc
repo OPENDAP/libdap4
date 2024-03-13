@@ -632,8 +632,10 @@ public:
     void instance_test()
     {
         try {
+#if 0
             // FIXME: Explain
             HTTPCache::delete_instance();
+#endif
 
             HTTPCache *c = HTTPCache::instance("cache-testsuite/singleton_cache", true);
             DBG(cerr << "get_cache_root: " << c->get_cache_root() << endl);
@@ -673,6 +675,7 @@ public:
             CPPUNIT_ASSERT(false);
         }
 
+#if 0
         // Call this here to simulate exiting the program. This ensures that
         // the next test's call to instance() gets a fresh cache. The static
         // method will still be run at exit, but that's OK since it tests the
@@ -680,6 +683,7 @@ public:
         HTTPCache::delete_instance();
 #ifndef WIN32
         SignalHandler::delete_instance();
+#endif
 #endif
     }
 

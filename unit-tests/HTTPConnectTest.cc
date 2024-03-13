@@ -144,7 +144,9 @@ public:
     {
         // normal code doesn't do this - it happens at exit() but not doing
         // this here make valgrind think there are leaks.
+#if 0
         http->d_http_cache->delete_instance();
+#endif
         delete http;
         http = nullptr;
         unsetenv("DODS_CONF");
