@@ -80,7 +80,7 @@ SignalHandler::instance()
     @param signum Bind the event handler to this signal number. Limited to
     those signals that, according to POSIX.1, cause process termination.
     @param eh A pointer to the EventHandler for \c signum.
-    @param override If \c true, do not run the default handler/action.
+    @param ignore_by_default If \c true, do not run the default handler/action.
     Instead run \e eh and then treat the signal as if the original action was
     SIG_IGN. Default is false.
     @return A pointer to the old EventHandler or null. */

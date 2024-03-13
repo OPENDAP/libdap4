@@ -36,21 +36,22 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include <mutex>
 
 #include "HTTPCacheTable.h" // included for macros
 
 #include "HTTPCacheDisconnectedMode.h"
 
-#define NO_LM_EXPIRATION 24*3600 // 24 hours
+constexpr const unsigned int NO_LM_EXPIRATION = 24*3600; // 24 hours
 
-#define DUMP_FREQUENCY 10 // Dump index every x loads
+constexpr const int DUMP_FREQUENCY = 10; // Dump index every x loads
 
-#define MEGA 0x100000L
-#define CACHE_TOTAL_SIZE 20 // Default cache size is 20M
-#define CACHE_FOLDER_PCT 10 // 10% of cache size for metainfo etc.
-#define CACHE_GC_PCT 10  // 10% of cache size free after GC
-#define MIN_CACHE_TOTAL_SIZE 5 // 5M Min cache size
-#define MAX_CACHE_ENTRY_SIZE 3 // 3M Max size of single cached entry
+constexpr const unsigned int  MEGA = 0x100000L;
+constexpr const unsigned int CACHE_TOTAL_SIZE = 20; // Default cache size is 20M
+constexpr const unsigned int CACHE_FOLDER_PCT = 10; // 10% of cache size for metainfo etc.
+constexpr const unsigned int CACHE_GC_PCT = 10;  // 10% of cache size free after GC
+constexpr const unsigned int MIN_CACHE_TOTAL_SIZE = 5; // 5M Min cache size
+constexpr const unsigned int MAX_CACHE_ENTRY_SIZE = 3; // 3M Max size of single cached entry
 
 namespace libdap
 {
@@ -135,16 +136,15 @@ private:
     time_t d_min_fresh = -1;
 
     // Lock non-const methods (also ones that use the STL).
+#if 0
     pthread_mutex_t d_cache_mutex;
-    
-    HTTPCacheTable *d_http_cache_table = nullptr;
+#endif
+    static std::mutex d_cache_interface_mutex;
+
+    std::unique_ptr<HTTPCacheTable> d_http_cache_table = nullptr;
 
     // d_open_files is used by the interrupt handler to clean up
     vector<string> d_open_files;
-
-#if 0
-    static HTTPCache *_instance;
-#endif
 
     friend class HTTPCacheTest; // Unit tests
     friend class HTTPConnectTest;
@@ -185,10 +185,6 @@ public:
 
     HTTPCache(const string &cache_root, bool force);
 
-#if 0
-    static void delete_instance(); // Run by atexit (hence static)
-#endif
-
     // Added default value for cache_root; enables use of accessor with no arguments. jhrg 3/12/24
     static HTTPCache *get_instance(const string &cache_root = "/tmp/dods_cache", bool force = false);
     virtual ~HTTPCache();
@@ -219,6 +215,8 @@ public:
     void set_cache_control(const vector<string> &cc);
     vector<string> get_cache_control();
 
+#if 0
+
     void lock_cache_interface() {
     	DBG(cerr << "Locking interface... ");
     	LOCK(&d_cache_mutex);
@@ -229,6 +227,8 @@ public:
     	UNLOCK(&d_cache_mutex);
     	DBGN(cerr << "Done" << endl);
     }
+
+#endif
     
     // This must lock for writing
     bool cache_response(const string &url, time_t request_time,

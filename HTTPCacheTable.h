@@ -64,14 +64,14 @@
 	int code = pthread_mutex_lock((m)); \
 	if (code != 0) \
 		throw InternalErr(__FILE__, __LINE__, string("Mutex lock: ") + strerror(code)); \
-    } while(0);
+    } while(0)
 
 //+ long_to_string(code));
 #define UNLOCK(m) do { \
 	int code = pthread_mutex_unlock((m)); \
 	if (code != 0) \
 		throw InternalErr(__FILE__, __LINE__, string("Mutex unlock: ") + strerror(code)); \
-    } while(0);
+    } while(0)
 
 #define TRYLOCK(m) pthread_mutex_trylock((m))
 #define INIT(m) pthread_mutex_init((m), 0)
@@ -151,11 +151,11 @@ public:
         friend class DeleteBySize;
 
     public:
-        string get_cachename()
+        string get_cachename() const
         {
             return cachename;
         }
-        string get_etag()
+        string get_etag() const
         {
             return etag;
         }
@@ -163,11 +163,11 @@ public:
         {
             return lm;
         }
-        time_t get_expires()
+        time_t get_expires() const
         {
             return expires;
         }
-        time_t get_max_age()
+        time_t get_max_age() const
         {
             return max_age;
         }
@@ -175,19 +175,19 @@ public:
         {
             size = sz;
         }
-        time_t get_freshness_lifetime()
+        time_t get_freshness_lifetime() const
         {
             return freshness_lifetime;
         }
-        time_t get_response_time()
+        time_t get_response_time() const
         {
             return response_time;
         }
-        time_t get_corrected_initial_age()
+        time_t get_corrected_initial_age() const
         {
             return corrected_initial_age;
         }
-        bool get_must_revalidate()
+        bool get_must_revalidate() const
         {
             return must_revalidate;
         }
@@ -195,7 +195,7 @@ public:
         {
             no_cache = state;
         }
-        bool is_no_cache()
+        bool is_no_cache() const
         {
             return no_cache;
         }
@@ -326,7 +326,7 @@ public:
         ++d_new_entries;
     }
 
-    string get_cache_root()
+    string get_cache_root() const
     {
         return d_cache_root;
     }
@@ -346,7 +346,7 @@ public:
     CacheEntry *cache_index_parse_line(const char *line);
     void cache_index_write();
 
-    string create_hash_directory(int hash);
+    string create_hash_directory(int hash) const;
     void create_location(CacheEntry *entry);
 
     void add_entry_to_cache_table(CacheEntry *entry);

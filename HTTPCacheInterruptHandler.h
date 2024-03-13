@@ -69,6 +69,7 @@ public:
     when NDEBUG is not defined.
     @return Never returns. */
     void handle_signal(int signum) override {
+        assert(signum == SIGINT);   // generally, asserts are bad in libraries, but this is a special case. jhrg 3/13/24
         auto of = &HTTPCache::get_instance()->d_open_files;
 
         for_each(of->begin(), of->end(), [](const string &f) { unlink(f.c_str()); });
