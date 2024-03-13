@@ -637,7 +637,7 @@ public:
             HTTPCache::delete_instance();
 #endif
 
-            HTTPCache *c = HTTPCache::instance("cache-testsuite/singleton_cache", true);
+            HTTPCache *c = HTTPCache::get_instance("cache-testsuite/singleton_cache", true);
             DBG(cerr << "get_cache_root: " << c->get_cache_root() << endl);
 
             if (!c->is_url_in_cache(localhost_url)) {

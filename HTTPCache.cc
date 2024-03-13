@@ -43,6 +43,7 @@
 #include <algorithm>
 #include <iterator>
 #include <set>
+#include <memory>
 
 #include "Error.h"
 #include "InternalErr.h"
@@ -80,6 +81,7 @@ static pthread_once_t once_block = PTHREAD_ONCE_INIT;
 #endif
 
 
+#if 0
 #define NO_LM_EXPIRATION 24*3600 // 24 hours
 
 #define DUMP_FREQUENCY 10 // Dump index every x loads
@@ -90,6 +92,7 @@ static pthread_once_t once_block = PTHREAD_ONCE_INIT;
 #define CACHE_GC_PCT 10  // 10% of cache size free after GC
 #define MIN_CACHE_TOTAL_SIZE 5 // 5M Min cache size
 #define MAX_CACHE_ENTRY_SIZE 3 // 3M Max size of single cached entry
+#endif
 
 #if 0
 
@@ -134,7 +137,7 @@ once_init_routine()
     @exception Error thrown if the cache root cannot set. */
 
 HTTPCache *
-HTTPCache::instance(const string &cache_root, bool force)
+HTTPCache::get_instance(const string &cache_root, bool force)
 {
     static HTTPCache instance(cache_root, force);
     return &instance;
@@ -241,7 +244,9 @@ HTTPCache::delete_instance()
     persistent store cannot be obtained.
     @see cache_index_read */
 
-HTTPCache::HTTPCache(string cache_root, bool force) :
+HTTPCache::HTTPCache(const string &cache_root, bool force)
+#if 0
+        :
         d_locked_open_file(0),
         d_cache_enabled(false),
         d_cache_protected(false),
@@ -259,8 +264,11 @@ HTTPCache::HTTPCache(string cache_root, bool force) :
         d_max_stale(-1),
         d_min_fresh(-1),
         d_http_cache_table(0)
+#endif
 {
+#if 0
     DBG(cerr << "Entering the constructor for " << this << "... ");
+#endif
 #if 0
 	int status = pthread_once(&once_block, once_init_routine);
 	if (status != 0)
@@ -300,7 +308,9 @@ HTTPCache::HTTPCache(string cache_root, bool force) :
 	d_http_cache_table = new HTTPCacheTable(d_cache_root, block_size);
 	d_cache_enabled = true;
 
-	DBGN(cerr << "exiting" << endl);
+#if 0
+    DBGN(cerr << "exiting" << endl);
+#endif
 }
 
 /** Destroy an instance of HTTPCache. This writes the cache index and frees

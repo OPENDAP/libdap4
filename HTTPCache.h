@@ -34,11 +34,23 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include <map>
 
 #include "HTTPCacheTable.h" // included for macros
 
 #include "HTTPCacheDisconnectedMode.h"
+
+#define NO_LM_EXPIRATION 24*3600 // 24 hours
+
+#define DUMP_FREQUENCY 10 // Dump index every x loads
+
+#define MEGA 0x100000L
+#define CACHE_TOTAL_SIZE 20 // Default cache size is 20M
+#define CACHE_FOLDER_PCT 10 // 10% of cache size for metainfo etc.
+#define CACHE_GC_PCT 10  // 10% of cache size free after GC
+#define MIN_CACHE_TOTAL_SIZE 5 // 5M Min cache size
+#define MAX_CACHE_ENTRY_SIZE 3 // 3M Max size of single cached entry
 
 namespace libdap
 {
@@ -88,53 +100,51 @@ bool is_hop_by_hop_header(const string &header);
     get_conditional_request_headers() would only lock when an entry is in use
     for writing. But I haven't done that.)
 
-	@note Update documentation: get_cache_response() now also serves as
-	is_url_in_cache() and is_url_valid() should only be called after a locked
+	@note Update: get_cache_response() now also serves as
+	is_url_in_cache(), and is_url_valid() should only be called after a locked
 	cached response is accessed using get_cahced_response(). These lock the
 	cache for reading. The methods cache_response() and update_response()
 	lock an entry for writing.
-	
-	@note Check that the lock-for-write and lock-for-read work together since
-	it's possible that an entry in use might have a stream of readers and never
-	free the 'read-lock' thus blocking a writer.
 	
     @author James Gallagher <jgallagher@opendap.org> */
 class HTTPCache
 {
 private:
     string d_cache_root;
-    FILE *d_locked_open_file; // Lock for single process use.
+    FILE *d_locked_open_file = nullptr; // Lock for single process use.
 
-    bool d_cache_enabled;
-    bool d_cache_protected;
-    CacheDisconnectedMode d_cache_disconnected;
-    bool d_expire_ignored;
-    bool d_always_validate;
+    bool d_cache_enabled = false;
+    bool d_cache_protected = false;
+    CacheDisconnectedMode d_cache_disconnected = DISCONNECT_NONE;
+    bool d_expire_ignored = false;
+    bool d_always_validate = false;
 
-    unsigned long d_total_size; // How much can we store?
-    unsigned long d_folder_size; // How much of that is meta data?
-    unsigned long d_gc_buffer; // How much memory needed as buffer?
-    unsigned long d_max_entry_size; // Max individual entry size.
-    int d_default_expiration;
+    unsigned long d_total_size = CACHE_TOTAL_SIZE * MEGA; // How much can we store?
+    unsigned long d_folder_size = CACHE_TOTAL_SIZE / CACHE_FOLDER_PCT; // How much of that is meta data?
+    unsigned long d_gc_buffer = CACHE_TOTAL_SIZE / CACHE_GC_PCT; // How much memory needed as buffer?
+    unsigned long d_max_entry_size = MAX_CACHE_ENTRY_SIZE * MEGA; // Max individual entry size.
+    int d_default_expiration = NO_LM_EXPIRATION;
 
     vector<string> d_cache_control;
     // these are values read from a request-directive Cache-Control header.
     // Not to be confused with values read from the response or a cached
     // response (e.g., CacheEntry has a max_age field, too). These fields are
     // set when the set_cache_control method is called.
-    time_t d_max_age;
-    time_t d_max_stale;  // -1: not set, 0:any response, >0 max time.
-    time_t d_min_fresh;
+    time_t d_max_age = -1;
+    time_t d_max_stale = -1;  // -1: not set, 0:any response, >0 max time.
+    time_t d_min_fresh = -1;
 
     // Lock non-const methods (also ones that use the STL).
     pthread_mutex_t d_cache_mutex;
     
-    HTTPCacheTable *d_http_cache_table;
+    HTTPCacheTable *d_http_cache_table = nullptr;
 
     // d_open_files is used by the interrupt handler to clean up
     vector<string> d_open_files;
 
+#if 0
     static HTTPCache *_instance;
+#endif
 
     friend class HTTPCacheTest; // Unit tests
     friend class HTTPConnectTest;
@@ -173,14 +183,14 @@ public:
     HTTPCache(HTTPCache &&) = delete;
     HTTPCache &operator=(HTTPCache &&) = delete;
 
-    HTTPCache(string cache_root, bool force);
+    HTTPCache(const string &cache_root, bool force);
 
 #if 0
     static void delete_instance(); // Run by atexit (hence static)
 #endif
 
     // Added default value for cache_root; enables use of accessor with no arguments. jhrg 3/12/24
-    static HTTPCache *instance(const string &cache_root = "/tmp/dods", bool force = false);
+    static HTTPCache *get_instance(const string &cache_root = "/tmp/dods_cache", bool force = false);
     virtual ~HTTPCache();
 
     string get_cache_root() const;

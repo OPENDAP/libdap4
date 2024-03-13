@@ -643,7 +643,7 @@ public:
             // params are set up. It used to be that HTTPConnect had an option to
             // turn caching on, but that no longer is present. This hack enables
             // caching for this test. 06/18/04 jhrg
-            http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), true);
+            http->d_http_cache = HTTPCache::get_instance(http->d_rcr->get_dods_cache_root(), true);
             DBG(cerr << "Instantiate the cache" << endl);
 
             CPPUNIT_ASSERT(http->d_http_cache != nullptr);
@@ -672,7 +672,7 @@ public:
             // params are set up. It used to be that HTTPConnect had an option to
             // turn caching on, but that no longer is present. This hack enables
             // caching for this test. 06/18/04 jhrg
-            http->d_http_cache = HTTPCache::instance(http->d_rcr->get_dods_cache_root(), true);
+            http->d_http_cache = HTTPCache::get_instance(http->d_rcr->get_dods_cache_root(), true);
             DBG(cerr << "Instantiate the cache" << endl);
 
             CPPUNIT_ASSERT(http->d_http_cache != nullptr);
