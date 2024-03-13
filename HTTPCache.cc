@@ -204,6 +204,8 @@ HTTPCache::instance(const string &cache_root, bool force)
 /** This static method is called using atexit(). It deletes the singleton;
     see ~HTTPCache for all that implies. */
 
+#if 0
+
 void
 HTTPCache::delete_instance()
 {
@@ -222,6 +224,8 @@ HTTPCache::delete_instance()
 
     DBG(cerr << "Exiting delete_instance()" << endl);
 }
+
+#endif
 
 /** Create an instance of the HTTP 1.1 compliant cache. This initializes the
     both the cache root and the path to the index file. It then reads the
@@ -287,7 +291,7 @@ HTTPCache::HTTPCache(string cache_root, bool force) :
 	//  time ?
 	block_size = 4096;
 #else
-	struct stat s;
+	struct stat s{};
 	if (stat(cache_root.c_str(), &s) == 0)
 		block_size = s.st_blksize;
 	else

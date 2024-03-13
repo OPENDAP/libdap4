@@ -39,7 +39,6 @@
 #include "HTTPCacheTable.h" // included for macros
 
 #include "HTTPCacheDisconnectedMode.h"
-//using namespace std;
 
 namespace libdap
 {
@@ -89,13 +88,13 @@ bool is_hop_by_hop_header(const string &header);
     get_conditional_request_headers() would only lock when an entry is in use
     for writing. But I haven't done that.)
 
-	@todo Update documentation: get_cache_response() now also serves as 
+	@note Update documentation: get_cache_response() now also serves as
 	is_url_in_cache() and is_url_valid() should only be called after a locked
 	cached response is accessed using get_cahced_response(). These lock the
 	cache for reading. The methods cache_response() and update_response()
 	lock an entry for writing.
 	
-	@todo Check that the lock-for-write and lock-for-read work together since
+	@note Check that the lock-for-write and lock-for-read work together since
 	it's possible that an entry in use might have a stream of readers and never
 	free the 'read-lock' thus blocking a writer.
 	
@@ -176,9 +175,12 @@ public:
 
     HTTPCache(string cache_root, bool force);
 
+#if 0
     static void delete_instance(); // Run by atexit (hence static)
+#endif
 
-    static HTTPCache *instance(const string &cache_root, bool force = false);
+    // Added default value for cache_root; enables use of accessor with no arguments. jhrg 3/12/24
+    static HTTPCache *instance(const string &cache_root = "/tmp/dods", bool force = false);
     virtual ~HTTPCache();
 
     string get_cache_root() const;

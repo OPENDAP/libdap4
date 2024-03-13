@@ -26,7 +26,7 @@
 #ifndef http_cache_interrupt_handler_h
 #define http_cache_interrupt_handler_h
 
-#include <signal.h>
+#include <csignal>
 
 #include <cassert>
 #include <iostream>
@@ -86,7 +86,9 @@ public:
 
         for_each(of->begin(), of->end(), unlink_file);
 
+#if 0
         HTTPCache::delete_instance();
+#endif
     }
 };
 

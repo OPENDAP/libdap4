@@ -96,7 +96,7 @@ public:
 
         // sleep(2) also works _except_ when run with valgrind; reason
         // unknown. jhrg 4/26/13
-        int start, end;
+        time_t start, end;
         start = end = time(nullptr);
         while (end < start + 2)
             end = time(nullptr);
