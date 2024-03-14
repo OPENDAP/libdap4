@@ -185,13 +185,11 @@ HTTPCache::HTTPCache(const string &cache_root, bool force) {
     either erase the directory that contains the cache using a file system
     command or use the purge_cache() method (which leaves the cache directory
     structure in place but removes all the cached information).
-
-    This class uses the singleton pattern. Clients should \e never call this
-    method. The HTTPCache::instance() method arranges to call the
-    HTTPCache::delete_instance() using \c atexit(). If delete is called more
-    than once, the result will likely be an index file that is corrupt. */
+*/
 
 HTTPCache::~HTTPCache() {
+    if (startGC())
+        perform_garbage_collection();
     d_http_cache_table->cache_index_write();
     release_single_user_lock();
 }
