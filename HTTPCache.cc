@@ -176,6 +176,7 @@ HTTPCache::HTTPCache(const string &cache_root, bool force) {
     d_http_cache_table = make_unique<HTTPCacheTable>(d_cache_root, block_size);
     d_cache_enabled = true;
 
+
     set_signal_handlers();
 }
 
