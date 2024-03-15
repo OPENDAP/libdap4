@@ -46,6 +46,9 @@ std::vector<Sigfunc *> SignalHandler::d_old_handlers{NSIG, nullptr};
     to find an instance of EventHandler and calls that instance's
     handle_signal method.
 
+    It then looks for an 'old handler' (one that was set before and was/is not
+    a child of EvenHandler) and calls it.
+
     @param signum The number of the signal. */
 void
 SignalHandler::dispatcher(int signum)
@@ -134,9 +137,9 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_def
 #endif
     }
 
-    struct sigaction osa{}; // extract the old handler/action
+    struct sigaction old_sa{}; // extract the old handler/action
 
-    if (sigaction(signum, &sa, &osa) < 0)
+    if (sigaction(signum, &sa, &old_sa) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not register a signal handler.");
 
     // Take care of the case where this interface is used to register a
@@ -145,14 +148,14 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_def
     // loop. 02/10/04 jhrg
     if (ignore_by_default)
         SignalHandler::d_old_handlers[signum] = SIG_IGN;
-    else if (osa.sa_handler != &dispatcher)
-        SignalHandler::d_old_handlers[signum] = osa.sa_handler;
+    else if (old_sa.sa_handler != &dispatcher)
+        SignalHandler::d_old_handlers[signum] = old_sa.sa_handler;
 #endif  // ndef WIN32
 
     return old_eh;
 }
 
-/** Remove the event hander.
+/** Remove the event handler.
     @param signum The signal number of the handler to remove.
     @return The old event handler */
 EventHandler *

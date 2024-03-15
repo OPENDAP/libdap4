@@ -180,10 +180,10 @@ public:
     HTTPCache(HTTPCache &&) = delete;
     HTTPCache &operator=(HTTPCache &&) = delete;
 
-    HTTPCache(const string &cache_root, bool force);
+    HTTPCache(const string &cache_root, bool force, bool force_signal_handlers = false);
 
     // Added default value for cache_root; enables use of accessor with no arguments. jhrg 3/12/24
-    static HTTPCache *get_instance(const string &cache_root = "/tmp/dods_cache", bool force = false);
+    static HTTPCache *get_instance(const string &cache_root = "/tmp/dods-cache", bool force = false);
     virtual ~HTTPCache();
 
     string get_cache_root() const;

@@ -38,11 +38,6 @@
 
 namespace libdap {
 
-static void
-unlink_file(const string &f) {
-    unlink(f.c_str());
-}
-
 /** Handle SIGINT for HTTPCache. When the cache is in use and the process is
     sent SIGINT, we must make sure that the cache is left in a consistent
     state. This includes removing the lock file, updating the index file and
@@ -56,7 +51,6 @@ class HTTPCacheInterruptHandler : public EventHandler {
 private:
 
 public:
-    ///
     HTTPCacheInterruptHandler() = default;
 
     ~HTTPCacheInterruptHandler() override = default;

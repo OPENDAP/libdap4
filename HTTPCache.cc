@@ -71,23 +71,31 @@ std::mutex HTTPCache::d_cache_interface_mutex;
 
 /**
  * @brief Set the signal handlers for SIGINT, SIGPIPE, and SIGTERM.
+ *
  * This function is used by the constructor of HTTPCache to set the signal
  * handlers for SIGINT, SIGPIPE, and SIGTERM. It is called only once, when
- * and writes an error message to stderr since it called from the constructor.
+ * and writes an error message to stderr since it called from the constructor
+ * of a singleton object.
+ *
+ * @note the param force is used by tests that make many instances of the
+ * singleton to test various aspects of the class. It should not be used in
+ * production code.
+ *
+ * @param force If true, force setting the specific signal handlers.
  */
-void set_signal_handlers() {
+void set_signal_handlers(bool force = false) {
     auto old = SignalHandler::register_handler(SIGINT, new HTTPCacheInterruptHandler, true);
-    if (old) {
+    if (old && !force) {
         SignalHandler::register_handler(SIGINT, old);
         cerr << "Could not register event handler for SIGINT without superseding an existing one.\n";
     }
     old = SignalHandler::register_handler(SIGPIPE, new HTTPCacheInterruptHandler, true);
-    if (old) {
+    if (old && !force) {
         SignalHandler::register_handler(SIGPIPE, old);
         cerr << "Could not register event handler for SIGPIPE without superseding an existing one.\n";
     }
     old = SignalHandler::register_handler(SIGTERM, new HTTPCacheInterruptHandler, true);
-    if (old) {
+    if (old && !force) {
         SignalHandler::register_handler(SIGTERM, old);
         cerr << "Could not register event handler for SIGTERM without superseding an existing one.\n";
     }
@@ -141,7 +149,7 @@ HTTPCache::get_instance(const string &cache_root, bool force) {
     persistent store cannot be obtained.
     @see cache_index_read */
 
-HTTPCache::HTTPCache(const string &cache_root, bool force) {
+HTTPCache::HTTPCache(const string &cache_root, bool force, bool force_signal_handlers) {
     // This used to throw an Error object if we could not get the
     // single user lock. However, that results in an invalid object. It's
     // better to have an instance that has default values. If we cannot get
@@ -177,7 +185,7 @@ HTTPCache::HTTPCache(const string &cache_root, bool force) {
     d_cache_enabled = true;
 
 
-    set_signal_handlers();
+    set_signal_handlers(force_signal_handlers);
 }
 
 /** Destroy an instance of HTTPCache. This writes the cache index and frees

@@ -91,11 +91,8 @@ public:
     SignalHandler() = default;
 
     SignalHandler(const SignalHandler &) = delete;
-
     SignalHandler &operator=(const SignalHandler &) = delete;
-
     SignalHandler(SignalHandler &&) = delete;
-
     SignalHandler &operator=(SignalHandler &&) = delete;
 
     static SignalHandler *instance();
