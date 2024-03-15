@@ -31,7 +31,7 @@ CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
 
 if USE_ASAN
 # old. jhrg 3/12/24 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
-ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fsanitize-address-use-odr-indicator -fno-omit-frame-pointer
+ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
 endif
 
 # See note in d4_function about CXX_STD_FLAG. jhrg 4/5/19
