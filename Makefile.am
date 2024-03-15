@@ -15,7 +15,7 @@ CXXFLAGS_DEBUG = -g3 -O0
 # See: https://github.com/google/sanitizers/wiki/AddressSanitizer
 # jhrg 2/6/18
 if USE_ASAN
-ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
 endif
 
 if BUILD_DEVELOPER
