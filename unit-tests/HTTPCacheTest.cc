@@ -679,7 +679,7 @@ public:
         // value of _instance and simply returns with it's zero.
         HTTPCache::delete_instance();
 #ifndef WIN32
-        SignalHandler::delete_instance();
+        // jhrg 3/15/24 SignalHandler::delete_instance();
 #endif
     }
 
