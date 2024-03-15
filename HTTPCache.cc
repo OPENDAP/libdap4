@@ -85,19 +85,39 @@ std::mutex HTTPCache::d_cache_interface_mutex;
  */
 void set_signal_handlers(bool force = false) {
     auto old = SignalHandler::register_handler(SIGINT, new HTTPCacheInterruptHandler, true);
-    if (old && !force) {
-        SignalHandler::register_handler(SIGINT, old);
-        cerr << "Could not register event handler for SIGINT without superseding an existing one.\n";
+    if (old) {
+        if (force) {
+            delete old;
+        }
+        else {
+            delete SignalHandler::remove_handler(SIGINT);
+            SignalHandler::register_handler(SIGINT, old);
+            cerr << "Could not register event handler for SIGINT without superseding an existing one.\n";
+        }
     }
+
     old = SignalHandler::register_handler(SIGPIPE, new HTTPCacheInterruptHandler, true);
-    if (old && !force) {
-        SignalHandler::register_handler(SIGPIPE, old);
-        cerr << "Could not register event handler for SIGPIPE without superseding an existing one.\n";
+    if (old) {
+        if (force) {
+            delete old;
+        }
+        else {
+            delete SignalHandler::remove_handler(SIGPIPE);
+            SignalHandler::register_handler(SIGPIPE, old);
+            cerr << "Could not register event handler for SIGPIPE without superseding an existing one.\n";
+        }
     }
+
     old = SignalHandler::register_handler(SIGTERM, new HTTPCacheInterruptHandler, true);
-    if (old && !force) {
-        SignalHandler::register_handler(SIGTERM, old);
-        cerr << "Could not register event handler for SIGTERM without superseding an existing one.\n";
+    if (old) {
+        if (force) {
+            delete old;
+        }
+        else {
+            delete SignalHandler::remove_handler(SIGTERM);
+            SignalHandler::register_handler(SIGTERM, old);
+            cerr << "Could not register event handler for SIGTERM without superseding an existing one.\n";
+        }
     }
 }
 
