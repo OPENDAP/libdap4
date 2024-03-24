@@ -15,7 +15,7 @@ dnl 'pc' files and tarball for the source. See
 dnl libdap4/travis/travis_libdap_build_offset.sh for info about setting the
 dnl base value for the build number. jhrg 3/22/21
 
-AC_INIT(libdap, 3.20.11, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.21.0, opendap-tech@opendap.org)
 
 dnl As an alternative, we can...
 dnl Read the version number from the file VERSION. The file must contain
@@ -106,9 +106,9 @@ dnl increment AGE, set REVISION to 0.
 dnl Interfaces removed or changed (BAD, breaks upward compatibility):
 dnl ==> Increment CURRENT, set AGE and REVISION to 0.
 
-DAPLIB_CURRENT=28
-DAPLIB_REVISION=1
-DAPLIB_AGE=1
+DAPLIB_CURRENT=29
+DAPLIB_REVISION=0
+DAPLIB_AGE=2
 
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_REVISION)
@@ -117,22 +117,24 @@ AC_SUBST(DAPLIB_AGE)
 LIBDAP_VERSION="$DAPLIB_CURRENT:$DAPLIB_REVISION:$DAPLIB_AGE"
 AC_SUBST(LIBDAP_VERSION)
 
-CLIENTLIB_CURRENT=7
-CLIENTLIB_AGE=1
-CLIENTLIB_REVISION=11
+CLIENTLIB_CURRENT=8
+CLIENTLIB_REVISION=0
+CLIENTLIB_AGE=2
+
 AC_SUBST(CLIENTLIB_CURRENT)
-AC_SUBST(CLIENTLIB_AGE)
 AC_SUBST(CLIENTLIB_REVISION)
+AC_SUBST(CLIENTLIB_AGE)
 
 CLIENTLIB_VERSION="$CLIENTLIB_CURRENT:$CLIENTLIB_REVISION:$CLIENTLIB_AGE"
 AC_SUBST(CLIENTLIB_VERSION)
 
-SERVERLIB_CURRENT=13
-SERVERLIB_AGE=6
-SERVERLIB_REVISION=11
+SERVERLIB_CURRENT=14
+SERVERLIB_REVISION=0
+SERVERLIB_AGE=7
+
 AC_SUBST(SERVERLIB_CURRENT)
-AC_SUBST(SERVERLIB_AGE)
 AC_SUBST(SERVERLIB_REVISION)
+AC_SUBST(SERVERLIB_AGE)
 
 SERVERLIB_VERSION="$SERVERLIB_CURRENT:$SERVERLIB_REVISION:$SERVERLIB_AGE"
 AC_SUBST(SERVERLIB_VERSION)
@@ -498,7 +500,7 @@ AS_IF([test "$prefix" = "NONE"],
 AC_ARG_ENABLE([asan], 
     [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
 
-ASAN_OPTIONS="-fsanitize=address -fno-omit-frame-pointer"
+ASAN_OPTIONS="-fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer"
 CXX_FLAGS_CHECK([$ASAN_OPTIONS], [has_asan=yes], [has_asan=no])
 
 AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
@@ -583,6 +585,7 @@ AC_CONFIG_FILES([Makefile
 
                  gl/Makefile
                  d4_ce/Makefile
+                 d4_ce/unit-tests/Makefile
                  d4_function/Makefile
                  
                  tests/Makefile

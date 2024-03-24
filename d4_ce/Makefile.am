@@ -6,8 +6,10 @@ AUTOMAKE_OPTIONS = foreign
 # shot.
 .NOTPARALLEL:
 
+SUBDIRS = . unit-tests
+
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir)  $(XML2_CFLAGS) $(TIRPC_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS = -Wall -W -Wcast-align -Wno-inconsistent-missing-override
 
 if COMPILER_IS_GCC
@@ -28,7 +30,8 @@ endif
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
 
 if USE_ASAN
-ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+# old. jhrg 3/12/24 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
 endif
 
 # See note in d4_function about CXX_STD_FLAG. jhrg 4/5/19

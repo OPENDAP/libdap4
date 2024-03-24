@@ -10,20 +10,22 @@
 # virt: lxd             # use an lxd container
 # arch: amd64           # optional, this is default, routes to a full VM
 # os: linux             # optional, this is default
-dist: xenial          # or bionic | xenial | trusty | precise with xenial as default
+dist: focal             # xenial (Ubuntu 16) is the default; focal is Ubuntu 20
 
 language: cpp
 
-compiler: gcc         # Could add clang
+compiler: gcc           # Could add clang
 
 # Build only 'master,' 'main,' or '.*-test-deploy' branches. This is used down in the
 # "stages" section where we assume the build process is only run for branches that
 # match those patterns. jhrg 8/22/22
+# Added '.*test-scan' to the list of branches that can trigger a build. jhrg 1/18/24
 branches:
   only:
   - master
   - main
   - /^(.*-test-deploy)$/
+  - /^(.*test-scan)$/     # enables running only the scan. jhrg 1/18/24
 
 # This cache is used to speed up sonar scan runs. See https://docs.travis-ci.com/user/caching.
 # Each branch gets its own cache. jhrg 2/11/22
@@ -40,11 +42,12 @@ addons:
     - libcurl4-openssl-dev
     - libcppunit-dev 
     - gcovr
-
-# remove support for debian packages. jhrg 2/23/21
-# - build-essential
-# - lintian
-# - fakeroot
+    - libfl-dev   # needed for focal, but not xenial. jhrg 1/18/24
+    # - openjdk-17-jre  # Removed, see hack in before_install: jhrg 1/23/24
+    # remove support for debian packages. jhrg 2/23/21
+    # - build-essential
+    # - lintian
+    # - fakeroot
     
 env:
   global:
@@ -55,15 +58,8 @@ env:
   - PATH=$prefix/bin:$PATH
   - TESTSUITEFLAGS=-j7
 
-  # COVERITY_SCAN_TOKEN, created via the "travis encrypt" command using the project repo's public key
-  - secure: "OYEzGP6BuDHctPj90EP0y0wjfSyaJs6tN89niLhq82jJfJVGvU2UmXGWACNFakM7xpobVfdwCIYomxgIz43CpNKt4TbuGW8PVIz2EI9Ir/Ne4A3W8pVHBkP8YvzRkiu0pWNeShcsJ4ZmzWEGy9YlPF36/HWai3ZCMEtJsTY8cCo="
   # SONAR_LOGIN, created using travis encrypt --org -r OPENDAP/libdap4 SONAR_LOGIN=<sonar login key>
-  - secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw=" 
-
-  # AWS_ACCESS_KEY_ID for the user 'travis-libdap'
-  #- secure: "uWXN90b3+L74+TZzGonRmhxfOVyi4/MJ8jlGDTdKRepUpvVLM3D8jwj/A4fOaudrAGg64DSJUUnHp8FmzMPO2hz2kcgDwFJ+VkGdBgxPU81srIN3NOur6EcwQ0rjYEsL6AkOe3lAiQixrhg2aOWRFBtv6fOSApbSh0WqUlNfR/g="
-  # AWS_SECRET_ACCESS_KEY
-  #- secure: "M46pBw0ILYUg+BG9XE5exCmITD/gCAmAkYYu0UsnuQQUsSdJmHNiQ9e7/K6uodlk0doSlyekI0dQj5e+dzCgZSLoKckEwwufslM8C+0Q4ZWCwiyi8sBTOLpcgqfhtyu6gYrRiG3bHGyfDO0LHlpw34UKhtpP9z8YvN8r2isqRX0="
+  - secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw="
 
   # For the AWS user ci-user: travis encrypt --org -r OPENDAP/libdap4 AWS_ACCESS_KEY_ID=
   - secure: "QIk09Kg5l6QLKE44W2fqlJ840b82PpGBhb74p/fWjQPmnuUTlCnBN2/BqD5egeoTetDbtwo5K3tNTFlFbiLjO6vTKmj6L2EZL6ghaPkidBv+5Tmp1oj/UwbINakdUV3S4Y/jJ5Z3iahIW9+wiwGAnxGSNbgRhOnpivZEY787qRM="
@@ -74,24 +70,23 @@ env:
   - secure: "g+SL53aSnULaToAu+HJO86Ljr6//j+aVSlVh7ROj6h80PDVmSW0xyiLUQRkA24vMrQqNY/rj6+qAXgVGORCPs2JBGcKjELzLr30eNDXfUNOjB+0actXI8sKD8I3eTZMHawOpedtk9v884Z+iQJauh04tD70sUMBp/WpCp+mXgQE="
   # GIT_PSWD travis-ci-opendap
   - secure: "Oi3LunWs6lnFSW83d8z1llVBGIfUx3E+0d6wRAnkO0Q3muTMr8zm/bmaBt7XxnUQ3uKjRp9Uwkqtt7jJDHfTMeO5mXqYz018mc+PxwPmfFk6mnCQVbu1fk2tDRFbKYBPxILk0lvkShqzfKJJ9g/5b1IBJ/oxZAErf21qMqi1IHU="
-  # DOCKER_HUB_UID for our DockerHub account
-  - secure: "PsI4sAD6i7dPfsYRof05Ya0GmuE9j3/gpULUNrIOGYc2wbLlApqhkUoznqeOaXGB3O+kM1Mxah6ft4PyYcuLZ0xM0H7ulT3mz+clqXuH9ssgGoDt/Ye5PJiFWNOQlRvWd7F9NNtVSBikjWN4ujalUqby2cSThBizkOXhZYe3CzM="
-  # DOCKER_HUB_PSWD for our DockerHub account
-  - secure: "dD0lFOU73qJztihQeK+m3mzYTUOB5uq2jI/oWRsyc9DIevI+H2RhMRC/Cc7eJP5yRUWxxVgU3Ad15ov2cnTSCyd/bddM4DmeZeoWi79G8IkjMhTL628ZAiJeysCO/vSFkw0bu4NbFADqswtCO8PUk9FICjnJr/Ts2zOvIaQOkR8="
-
-# This file was using docker login but that didn't seem to be needed and was generating
-# a warning about the plain-text credentials being stored/accessible. I dropped it, but
-# in case we need to login in the future, here's what we were doing (with the caveat that
-# it is not secure) jhrg 2/9/22:
-# - echo $DOCKER_HUB_PSWD | docker login -u $DOCKER_HUB_UID --password-stdin
 
 before_install:
   - pip install --user awscli
+  # fix for Java 17 install for Sonar from Travis CI support. jhrg 1/23/24
+  - curl -s "https://get.sdkman.io" | bash
+  - source "$HOME/.sdkman/bin/sdkman-init.sh"
+  - sdk install java 17.0.2-open
+  - sdk use java 17.0.2-open
+  - java -version
 
 install:
   # $HOME is /home/travis and $TRAVIS_BUILD_DIR is /home/travis/build/OPENDAP/libdap4
-  - aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
-  - tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
+  - which bison flex
+  - bison --version
+  - flex --version
+  # - aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
+  # - tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
 
 before_script:
   - source travis/travis_libdap_build_offset.sh
@@ -101,12 +96,16 @@ before_script:
 
 stages:
   - name: build
+    if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
   - name: scan
-    if: branch = master OR branch = main
+    if: branch = master OR branch = main OR branch =~ ^(.*test-scan)$
   - name: package
+    if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
   - name: hyrax-bes-trigger
-    if: type != pull_request OR branch =~ ^(.*-test-deploy)$
-    # Was "if: branch = master AND type != pull_request" jhrg 8/22/22
+    # This stage is used to trigger a build of the Hyrax BES. It is triggered by a successful
+    # build but only for things that are not pull requests with the sole exception that branches
+    # that end in '-test-deploy' are also allowed to trigger a BES build. jhrg 1/18/24
+    if: type != pull_request AND NOT branch =~ ^(.*test-scan)$ OR branch =~ ^(.*-test-deploy)$
 
 jobs:
   include:
@@ -145,7 +144,7 @@ jobs:
     # Run these commands in bw-output?
     - make check -j7
     - ./travis/sonar-scanner-coverage.sh
-    - sonar-scanner -Dsonar.login=$SONAR_LOGIN
+    - sonar-scanner -Dsonar.token=$SONAR_LOGIN    # Dsonar.login --> Dsonar.token. Fix a warning. jhrg 1/18/24
     # Test the result of the scan and fail a PR/build if the quality gate fails
     - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
 
