@@ -668,14 +668,14 @@ public:
         DBG(cerr << prolog << "         target_size: " << target_size << " bytes\n");
 
         bool success  = write_chunked_file(chunked_filename, target_size);
-        CPPUNIT_ASSERT( success == true);
+        CPPUNIT_ASSERT( success == true );
 
         string plain_file_out = path + "/large-text-file.plain";
         DBG(cerr << prolog << "      plain_file_out: " << plain_file_out << "\n");
         auto size = read_chunked_file(chunked_filename, plain_file_out, 8096);
         DBG(cerr << prolog << " read_chunked_file(): " << size << " bytes\n");
 
-        CPPUNIT_ASSERT( size == target_size);
+        CPPUNIT_ASSERT( size == target_size );
     }
 
 
