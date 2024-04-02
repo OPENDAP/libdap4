@@ -262,6 +262,8 @@ MarshallerThread::write_thread(void *arg)
             return (void*) -1;
     }
     else {
+        cerr << "# MarshallerThread::write_thread() - args->d_buf(" << (void *)args->d_buf << ") args->d_num: " << args->d_num << " sizeof(std::streamsize): " << sizeof(std::streamsize) << "\n";
+
         args->d_out.write(args->d_buf, args->d_num);
         if (args->d_out.fail()) {
             ostringstream oss;
