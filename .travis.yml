@@ -149,15 +149,15 @@ jobs:
     - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
 
   - stage: package
-    name: "centos stream8 rpms"
+    name: "rocky8 RPMs"
     script:
-      - export LIBDAP_BUILD=centos-stream8
+      - export LIBDAP_BUILD=rocky8
       # $prefix = $HOME/install which is /home/travis/install here but should be /root/install in the image.
       - mkdir -p $prefix/rpmbuild
       - docker run --env prefix=/root/install --volume $prefix/rpmbuild:/root/rpmbuild 
           --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID 
-          --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=centos-stream8 
-          --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/centos-stream8_hyrax_builder:1.1 
+          --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=rocky8 
+          --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/rocky8_hyrax_builder:latest 
           /root/travis/travis/build-rpm.sh
 
   - stage: package
@@ -201,8 +201,8 @@ before_deploy:
   # Build the binary used by downstream Travis BES builds
   - if test "$LIBDAP_BUILD" = "main"; then tar -C $HOME -czvf $TRAVIS_BUILD_DIR/package/libdap-build.tar.gz
                                                --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
-  # CentOS-Stream8 distribution prep
-  - if test "$LIBDAP_BUILD" = "centos-stream8"; then ./travis/rpm-to-package-dir.sh "el8"; fi
+  # rocky8 distribution prep
+  - if test "$LIBDAP_BUILD" = "rocky8"; then ./travis/rpm-to-package-dir.sh "el8"; fi
   # Src dist distribution prep
   - if test "$BES_BUILD" = "srcdist"; then cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package; fi
   # Check for the stuff...
@@ -219,6 +219,6 @@ deploy:
     all_branches: true
     # Was "branch: master". Now supports the *-test-deploy feature and also
     # using 'main' as the branch name. jhrg 8/22/22
-    condition: $LIBDAP_BUILD =~ ^main|srddist|centos-stream8$
+    condition: $LIBDAP_BUILD =~ ^main|srddist|rocky8$
     # Removed 'centos6|' jhrg 10/23/20
     # Removed 'centos7|' jhrg 01/27/23

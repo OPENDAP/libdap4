@@ -35,6 +35,12 @@ then
   ls -lR $HOME/install/deps
 fi
 
+if test -n $os -a $os = rocky8
+then
+  export CPPFLAGS=-I/usr/include/tirpc
+  export LDFLAGS=-ltirpc
+fi
+
 # cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
 # using the docker run --volume option and set it to $TRAVIS_BUILD_DIR.
 cd $HOME/travis
