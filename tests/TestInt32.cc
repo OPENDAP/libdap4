@@ -105,11 +105,17 @@ bool TestInt32::read()
 	if (test_variable_sleep_interval > 0) sleep(test_variable_sleep_interval);
 
 	if (get_series_values()) {
+
+        // I added this in order to quell complaints from ASAN vis-a-vis
+        // runtime error: left shift of 1073741824 by 5 places cannot be represented in type 'dods_int32' (aka 'int')
+        // ndp 05/23/24
+        d_buf &= 0x07FFFFFF;
+
 		// This line stopped working when I upgraded the compiler on osx 10.9.
 		// to version Apple LLVM version 5.1 (clang-503.0.38) (based on LLVM 3.4svn)
 		// jhrg 3/12/14
 		// d_buf = d_buf * 32;
-		d_buf <<= 5;
+        d_buf <<= 5;
 		if (!d_buf)
 			d_buf = 32;
 
