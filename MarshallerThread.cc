@@ -213,9 +213,9 @@ MarshallerThread::~MarshallerThread()
  *
  */
 void MarshallerThread::start_thread(void* (*thread)(void *arg), ostream &out, char *byte_buf,
-    unsigned int bytes)
+    std::streamsize bytes)
 {
-    write_args *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, out, byte_buf,
+    auto *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, out, byte_buf,
         bytes);
     int status = pthread_create(&d_thread, &d_thread_attr, thread, args);
     if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
@@ -224,9 +224,9 @@ void MarshallerThread::start_thread(void* (*thread)(void *arg), ostream &out, ch
 /**
  * Write 'bytes' bytes from 'byte_buf' to the file descriptor 'fd'.
  */
-void MarshallerThread::start_thread(void* (*thread)(void *arg), int fd, char *byte_buf, unsigned int bytes)
+void MarshallerThread::start_thread(void* (*thread)(void *arg), int fd, char *byte_buf, std::streamsize bytes)
 {
-    write_args *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, fd, byte_buf,
+    auto *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, fd, byte_buf,
         bytes);
     int status = pthread_create(&d_thread, &d_thread_attr, thread, args);
     if (status != 0) throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
@@ -244,7 +244,7 @@ void MarshallerThread::start_thread(void* (*thread)(void *arg), int fd, char *by
 void *
 MarshallerThread::write_thread(void *arg)
 {
-    write_args *args = reinterpret_cast<write_args *>(arg);
+    auto *args = reinterpret_cast<write_args *>(arg);
 
     ChildLocker lock(args->d_mutex, args->d_cond, args->d_count); // RAII; will unlock on exit
 
@@ -257,7 +257,7 @@ MarshallerThread::write_thread(void *arg)
     // return (void*)-1;
 
     if (args->d_out_file != -1) {
-        int bytes_written = write(args->d_out_file, args->d_buf, args->d_num);
+        auto bytes_written = write(args->d_out_file, args->d_buf, args->d_num);
         if (bytes_written != args->d_num)
             return (void*) -1;
     }
@@ -283,7 +283,7 @@ MarshallerThread::write_thread(void *arg)
     }
 #endif
 
-    return 0;
+    return nullptr;
 }
 
 /**
@@ -301,12 +301,12 @@ MarshallerThread::write_thread(void *arg)
 void *
 MarshallerThread::write_thread_part(void *arg)
 {
-    write_args *args = reinterpret_cast<write_args *>(arg);
+    auto *args = reinterpret_cast<write_args *>(arg);
 
     ChildLocker lock(args->d_mutex, args->d_cond, args->d_count); // RAII; will unlock on exit
 
     if (args->d_out_file != -1) {
-        int bytes_written = write(args->d_out_file, args->d_buf, args->d_num);
+        auto bytes_written = write(args->d_out_file, args->d_buf, args->d_num);
         if (bytes_written != args->d_num) return (void*) -1;
     }
     else {
@@ -322,6 +322,6 @@ MarshallerThread::write_thread_part(void *arg)
     delete [] args->d_buf;
     delete args;
 
-    return 0;
+    return nullptr;
 }
 
