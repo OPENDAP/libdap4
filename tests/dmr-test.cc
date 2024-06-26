@@ -301,8 +301,6 @@ main(int argc, char *argv[])
     bool trans = false;
     bool intern = false;
     bool series_values = false;
-    bool constrained = false;
-    bool functional = false;
     bool ce_parser_debug = false;
     string name = "";
     string ce = "";
@@ -333,12 +331,10 @@ main(int argc, char *argv[])
         	break;
 
         case 'c':
-        	constrained = true;
         	ce = getopt.optarg;
         	break;
 
         case 'f':
-        	functional = true;
         	function = getopt.optarg;
         	break;
 
@@ -442,8 +438,7 @@ main(int argc, char *argv[])
 
         	if (print) {
         		XMLWriter xml;
-        		// received data never have send_p set; don't set 'constrained'
-        		client->print_dap4(xml, false /* constrained */);
+        		client->print_dap4(xml, false);
         		cout << xml.get_doc() << endl;
 
 				cout << "The data:" << endl;
@@ -462,7 +457,7 @@ main(int argc, char *argv[])
 
         	if (print) {
         		XMLWriter xml;
-        		dmr->print_dap4(xml, false /*constrained*/);
+        		dmr->print_dap4(xml, false);
         		cout << xml.get_doc() << endl;
 
 				cout << "The data:" << endl;

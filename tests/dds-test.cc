@@ -54,7 +54,7 @@ void test_class();
 
 int ddslex();
 
-extern YYSTYPE ddslval;
+extern DDSSTYPE ddslval;
 extern int ddsdebug;
 static bool print_ddx = false;
 
