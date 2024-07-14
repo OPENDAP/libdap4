@@ -4,5 +4,5 @@ repos:
     rev: master
     hooks:
       - id: clang-format
-        args: [-style=file *.cc *.h d4_ce/*.cc d4_ce/*.h d4_function/*.cc d4_function/*.h]
+        args: [*.cc *.h d4_ce/*.cc d4_ce/*.h d4_function/*.cc d4_function/*.h]
       # - id: clang-tidy
