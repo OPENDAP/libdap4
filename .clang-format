@@ -28,7 +28,7 @@ AlignConsecutiveDeclarations:
 AlignConsecutiveMacros:
   # Enabled:         false
   # AcrossEmptyLines: false
-  AcrossComments:  false
+  #AcrossComments:  false
   AlignCompound:   false
   AlignFunctionPointers: false
   PadOperators:    false

@@ -11,9 +11,10 @@ repos:
       # - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
-      - id: check-xml
+      # - id: check-xml
   - repo: https://github.com/pocc/pre-commit-hooks
-    rev: v1.3.5
+    rev: master
+    # rev was v1.3.5. jhrg 7/14/24
     hooks:
       - id: clang-format
         args: [-i, "*.cc", "*.h", "d4_ce/*.cc", "d4_ce/*.h", "d4_function/*.cc", "d4_function/*.h"]
