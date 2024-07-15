@@ -17,4 +17,5 @@ repos:
     hooks:
       - id: clang-format
         # See https://github.com/pre-commit/mirrors-clang-format/blob/main/.pre-commit-hooks.yaml
+        args: [--style=file, -i]
         'types_or': [c++, c, json]
