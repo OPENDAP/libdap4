@@ -6,8 +6,9 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
+      # Let clang-format handle this because otherwise test baselines will get hacked. jhrg 7/14/24
+      # - id: trailing-whitespace
+      # - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
       - id: check-xml
@@ -15,5 +16,5 @@ repos:
     rev: v1.3.5
     hooks:
       - id: clang-format
-        args: ["*.cc", "*.h", "d4_ce/*.cc", "d4_ce/*.h", "d4_function/*.cc", "d4_function/*.h"]
+        args: [-i, "*.cc", "*.h", "d4_ce/*.cc", "d4_ce/*.h", "d4_function/*.cc", "d4_function/*.h"]
       # - id: clang-tidy
