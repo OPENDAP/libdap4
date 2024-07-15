@@ -7,7 +7,7 @@ ColumnLimit:     120
 # IndentWidth:     2 jhrg 7/15/24
 IndentWidth:     4
 # InsertNewlineAtEOF: false jhrg 7/15/24
-InsertNewlineAtEOF: true
+# InsertNewlineAtEOF: true
 # TabWidth:        8 jhrg 7/15/24
 TabWidth:        4
 ...
