@@ -25,6 +25,7 @@ AlignConsecutiveDeclarations:
   AlignCompound:   false
   AlignFunctionPointers: false
   PadOperators:    false
+# These fail on ubuntu.latest on github. jhrg 7/15/24
 # AlignConsecutiveMacros:
   # Enabled:         false
   # AcrossEmptyLines: false
@@ -93,7 +94,7 @@ BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
 BreakStringLiterals: true
-# ColumnLimit:     80
+# ColumnLimit:     80 jhrg 7/15/24
 ColumnLimit:     120
 CommentPragmas:  '^ IWYU pragma:'
 CompactNamespaces: false
@@ -135,11 +136,11 @@ IndentExternBlock: AfterExternBlock
 IndentGotoLabels: true
 IndentPPDirectives: None
 IndentRequiresClause: true
-# IndentWidth:     2
+# IndentWidth:     2 jhrg 7/15/24
 IndentWidth:     4
 IndentWrappedFunctionNames: false
 InsertBraces:    false
-# InsertNewlineAtEOF: false
+# InsertNewlineAtEOF: false jhrg 7/15/24
 InsertNewlineAtEOF: true
 InsertTrailingCommas: None
 IntegerLiteralSeparator:
@@ -170,7 +171,7 @@ PenaltyBreakBeforeFirstCallParameter: 19
 PenaltyBreakComment: 300
 PenaltyBreakFirstLessLess: 120
 PenaltyBreakOpenParenthesis: 0
-PenaltyBreakScopeResolution: 500
+# PenaltyBreakScopeResolution: 500. Not allowed by schema. jhrg 7/15/24
 PenaltyBreakString: 1000
 PenaltyBreakTemplateDeclaration: 10
 PenaltyExcessCharacter: 1000000
@@ -188,7 +189,7 @@ RequiresClausePosition: OwnLine
 RequiresExpressionIndentation: OuterScope
 SeparateDefinitionBlocks: Leave
 ShortNamespaceLines: 1
-SkipMacroDefinitionBody: false
+# SkipMacroDefinitionBody: false.  Not allowed by schema. jhrg 7/15/24
 SortIncludes:    CaseSensitive
 SortJavaStaticImport: Before
 SortUsingDeclarations: LexicographicNumeric
@@ -236,7 +237,8 @@ StatementAttributeLikeMacros:
 StatementMacros:
   - Q_UNUSED
   - QT_REQUIRE_VERSION
-TabWidth:        8
+# TabWidth:        8 jhrg 7/15/24
+TabWidth:        4
 UseTab:          Never
 VerilogBreakBetweenInstancePorts: true
 WhitespaceSensitiveMacros:
