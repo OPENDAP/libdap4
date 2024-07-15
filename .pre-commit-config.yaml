@@ -6,16 +6,19 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
-      # Let clang-format handle this because otherwise test baselines will get hacked. jhrg 7/14/24
-      # - id: trailing-whitespace
-      # - id: end-of-file-fixer
       - id: check-yaml
       - id: check-json
-      # - id: check-xml
-  - repo: https://github.com/pre-commit/mirrors-clang-format # https://github.com/pocc/pre-commit-hooks
-    rev: v18.1.8
+
+#  - repo: https://github.com/pre-commit/mirrors-clang-format # https://github.com/pocc/pre-commit-hooks
+#    rev: v18.1.8 # v1.3.5
+#    hooks:
+#      - id: clang-format
+#        # See https://github.com/pre-commit/mirrors-clang-format/blob/main/.pre-commit-hooks.yaml
+#        args: [--style=file, -i]
+#        'types_or': [c++, c, json]
+
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
     hooks:
       - id: clang-format
-        # See https://github.com/pre-commit/mirrors-clang-format/blob/main/.pre-commit-hooks.yaml
         args: [--style=file, -i]
-        'types_or': [c++, c, json]
