@@ -1,7 +1,18 @@
+# Consider using https://pre-commit.ci/
+# jhrg 7/14/24
+#
 fail_fast: false
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-xml
   - repo: https://github.com/pocc/pre-commit-hooks
-    rev: master
+    rev: v1.3.5
     hooks:
       - id: clang-format
         args: ["*.cc", "*.h", "d4_ce/*.cc", "d4_ce/*.h", "d4_function/*.cc", "d4_function/*.h"]
