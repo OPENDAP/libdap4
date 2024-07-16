@@ -6,6 +6,9 @@ xdr-datatypes-config.h
 config_dap.h
 config.h
 
+deflate.c
+xdrutil_ppc.c
+
 *.tab.cc
 *.tab.hh
 
