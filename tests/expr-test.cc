@@ -116,7 +116,6 @@ const string usage = "\
 \n  -d: Turn on expression parser debugging.\
 \n  -c: Print the constrained DDS (the one that will be returned\
 \n      prepended to a data transmission. Must also supply -p and -e \
-\n  -v: Verbose output\
 \n  -V: Print the version of expr-test\
 \n  -p: DDS-file: Read the DDS from DDS-file and create a DDS object,\
 \n      then prompt for an expression and parse that expression, given\
@@ -142,10 +141,9 @@ int main(int argc, char *argv[]) {
     int option_char;
     bool scanner_test = false, parser_test = false, evaluate_test = false;
     bool print_constrained = false;
-    bool whole_enchalada = false, constraint_expr = false;
-    bool whole_intern_enchalada = false;
+    bool whole_enchilada = false, constraint_expr = false;
+    bool whole_intern_enchilada = false;
     bool scan_string = false;
-    bool verbose = false;
     bool series_values = false;
     bool xml_syntax = false;
     string dds_file_name;
@@ -188,11 +186,11 @@ int main(int argc, char *argv[]) {
             print_constrained = true;
             break;
         case 'w':
-            whole_enchalada = true;
+            whole_enchilada = true;
             dds_file_name = getopt.optarg;
             break;
         case 'W':
-            whole_intern_enchalada = true;
+            whole_intern_enchilada = true;
             dds_file_name = getopt.optarg;
             break;
         case 'k':
@@ -201,9 +199,6 @@ int main(int argc, char *argv[]) {
             break;
         case 'f':
             dataset = getopt.optarg;
-            break;
-        case 'v':
-            verbose = true;
             break;
         case 'V':
             cerr << argv[0] << ": " << version << endl;
@@ -219,7 +214,7 @@ int main(int argc, char *argv[]) {
         }
 
     try {
-        if (!scanner_test && !parser_test && !evaluate_test && !whole_enchalada && !whole_intern_enchalada) {
+        if (!scanner_test && !parser_test && !evaluate_test && !whole_enchilada && !whole_intern_enchilada) {
             cerr << usage << endl;
             exit(1);
         }
@@ -244,10 +239,10 @@ int main(int argc, char *argv[]) {
             evaluate_dds(table, print_constrained, xml_syntax);
         }
 
-        if (whole_enchalada) {
+        if (whole_enchilada) {
             constrained_trans(dds_file_name, constraint_expr, constraint, series_values);
         }
-        if (whole_intern_enchalada) {
+        if (whole_intern_enchilada) {
             intern_data_test(dds_file_name, constraint_expr, constraint, series_values);
         }
     } catch (Error &e) {

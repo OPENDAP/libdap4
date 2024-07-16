@@ -39,7 +39,7 @@
 
 %code requires {
 
-#define YYSTYPE char *
+#define DASSTYPE char *
 #define ATTR_STRING_QUOTE_FIX
 #define YYERROR_VERBOSE 0
 
@@ -56,7 +56,6 @@
 #include "debug.h"
 #include "parser.h"
 #include "util.h"
-// #include "das.tab.hh"
 
 #ifdef TRACE_NEW
 #include "trace_new.h"
@@ -76,8 +75,6 @@ using namespace libdap ;
 // jhrg 
 
 #define DAS_OBJ(arg) ((DAS *)((parser_arg *)(arg))->_object)
-
-//#define YYPARSE_PARAM arg
 
 extern int das_line_num;	/* defined in das.lex */
 
@@ -123,12 +120,10 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
 
 } // code
 
-%require "2.4"
+%require "3.0"
 
 %parse-param {parser_arg *arg}
-%name-prefix "das"
-// This define should work, replacing name-prefix, but it does not.
-// %define api.prefix {das}
+%define api.prefix {das}
 %defines
 %debug
 %verbose
@@ -485,13 +480,6 @@ add_attribute(const string &type, const string &name, const string &value,
     }
     
     try {
-#if 0
-        // Special treatment for XML: remove the double quotes that were 
-        // included in the value by this parser.
-        if (type == OtherXML && is_quoted(value))
-            TOP_OF_STACK->append_attr(name, type, value.substr(1, value.size()-2));
-        else    
-#endif
 	    TOP_OF_STACK->append_attr(name, type, value);
     }
     catch (Error &e) {
@@ -539,15 +527,16 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
     // `<name_explanation.'. 
     
     if (attr->get_name().find("_dods_errors") != string::npos) {
-	attr->append_attr(name, type, value);
+	    attr->append_attr(name, type, value);
     }
     else {
-	string error_cont_name = attr->get_name() + "_dods_errors";
-	AttrTable *error_cont = attr->get_attr_table(error_cont_name);
+        string error_cont_name = attr->get_name() + "_dods_errors";
+        AttrTable *error_cont = attr->get_attr_table(error_cont_name);
 	if (!error_cont)
 	    error_cont = attr->append_container(error_cont_name);
 
 	error_cont->append_attr(name, type, value);
+
 #ifndef ATTR_STRING_QUOTE_FIX
     error_cont->append_attr(name + "_explanation", "String",
                 "\"" + msg + "\"");

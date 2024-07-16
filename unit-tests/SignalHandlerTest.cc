@@ -27,7 +27,9 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 
 #ifndef WIN32
+
 #include <unistd.h> // for alarm sleep
+
 #else
 #include <fcntl.h>
 #include <io.h>
@@ -47,11 +49,11 @@ namespace libdap {
 /** Test Handler. This is used with the SignalHandlerTest unit tests. */
 class TestHandler : public EventHandler {
 public:
-    int flag;
+    int flag = 0;
 
-    TestHandler() : flag(0) {}
+    TestHandler() = default;
 
-    virtual void handle_signal(int signum) {
+    void handle_signal(int signum) override {
         DBG(cerr << "signal number " << signum << " received" << endl);
         flag = 1;
     }
@@ -59,45 +61,38 @@ public:
 
 class SignalHandlerTest : public TestFixture {
 private:
-    SignalHandler *sh;
-    TestHandler *th;
+    SignalHandler *sh = nullptr;
+    std::unique_ptr<TestHandler> th = make_unique<TestHandler>();
 
 public:
-    SignalHandlerTest() {}
-    ~SignalHandlerTest() {}
+    SignalHandlerTest() = default;
 
-    void setUp() {
-        sh = SignalHandler::instance();
-        th = new TestHandler;
-    }
+    ~SignalHandlerTest() = default;
 
-    void tearDown() {
-        delete th;
-        th = 0;
-    }
+    void setUp() override { sh = SignalHandler::instance(); }
 
     // Tests for methods
     void register_handler_test() {
-        sh->register_handler(SIGALRM, th);
-        CPPUNIT_ASSERT(sh->d_signal_handlers[SIGALRM] == th);
+        SignalHandler::register_handler(SIGALRM, th.get());
+        CPPUNIT_ASSERT(sh->d_signal_handlers[SIGALRM] == th.get());
     }
 
     void remove_handler_test() {
-        sh->register_handler(SIGALRM, th);
-        CPPUNIT_ASSERT(sh->remove_handler(SIGALRM) == th);
+        SignalHandler::register_handler(SIGALRM, th.get());
+        CPPUNIT_ASSERT(SignalHandler::remove_handler(SIGALRM) == th.get());
     }
 
     void alarm_test() {
-        sh->register_handler(SIGALRM, th, true);
+        SignalHandler::register_handler(SIGALRM, th.get(), true);
         CPPUNIT_ASSERT(th->flag == 0);
         alarm(1);
 
         // sleep(2) also works _except_ when run with valgrind; reason
         // unknown. jhrg 4/26/13
-        int start, end;
-        start = end = time(0);
+        time_t start, end;
+        start = end = time(nullptr);
         while (end < start + 2)
-            end = time(0);
+            end = time(nullptr);
 
         DBG(cerr << "Event handler 'flag' value: " << th->flag << endl);
         CPPUNIT_ASSERT(th->flag == 1);
