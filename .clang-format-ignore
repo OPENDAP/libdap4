@@ -2,7 +2,20 @@
 # See https://clang.llvm.org/docs/ClangFormat.html
 
 gl/*
-conf/
+conf/*
 old/*
 VCPP/*
 win32/*
+
+dods-datatypes-config.h
+xdr-datatypes-config.h
+config_dap.h
+config.h
+
+*.tab.cc
+*.tab.hh
+
+lex.*.cc
+location.hh
+position.hh
+stack.hh
