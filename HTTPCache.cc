@@ -1261,7 +1261,7 @@ HTTPCache::get_conditional_request_headers(const string &url)
         if (!entry)
             throw Error(internal_error, "There is no cache entry for the URL: " + url);
 
-        if (entry->get_etag() != "")
+        if (!entry->get_etag().empty())
             headers.push_back(string("If-None-Match: ") + entry->get_etag());
 
         if (entry->get_lm() > 0) {
@@ -1292,16 +1292,6 @@ HTTPCache::get_conditional_request_headers(const string &url)
 
     return headers;
 }
-
-/** Functor/Predicate which orders two MIME headers based on the header name
-    only (discounting the value). */
-
-struct HeaderLess: binary_function<const string&, const string&, bool>
-{
-    bool operator()(const string &s1, const string &s2) const {
-        return s1.substr(0, s1.find(':')) < s2.substr(0, s2.find(':'));
-    }
-};
 
 /** Update the meta data for a response already in the cache. This method
     provides a way to merge response headers returned from a conditional GET
@@ -1339,10 +1329,13 @@ HTTPCache::update_response(const string &url, time_t request_time,
         // Merge the new headers with those in the persistent store. How:
         // Load the new headers into a set, then merge the old headers. Since
         // set<> ignores duplicates, old headers with the same name as a new
-        // header will got into the bit bucket. Define a special compare
+        // header will go into the bit bucket. Define a special compare
         // functor to make sure that headers are compared using only their
         // name and not their value too.
-        set<string, HeaderLess> merged_headers;
+        auto header_comp = [](const string &s1, const string &s2) {
+            return s1.substr(0, s1.find(':')) < s2.substr(0, s2.find(':'));
+        };
+        auto merged_headers  = set<string, decltype(header_comp)>( header_comp );
 
         // Load in the new headers
         copy(headers.begin(), headers.end(),
