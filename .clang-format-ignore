@@ -1,0 +1,8 @@
+# ignore files and directories
+# See https://clang.llvm.org/docs/ClangFormat.html
+
+gl/*
+conf/
+old/*
+VCPP/*
+win32/*
