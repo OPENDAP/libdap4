@@ -55,7 +55,7 @@ public:
     virtual ~Locker();
 
 private:
-    pthread_mutex_t& m_mutex;
+    pthread_mutex_t &m_mutex;
 
     Locker();
     Locker(const Locker &rhs);
@@ -77,9 +77,9 @@ public:
     virtual ~ChildLocker();
 
 private:
-    pthread_mutex_t& m_mutex;
-    pthread_cond_t& m_cond;
-    int& m_count;
+    pthread_mutex_t &m_mutex;
+    pthread_cond_t &m_cond;
+    int &m_count;
 
     ChildLocker();
     ChildLocker(const Locker &rhs);
@@ -115,28 +115,26 @@ private:
         pthread_cond_t &d_cond;
         int &d_count;
         std::string &d_error;
-        std::ostream &d_out;     // The output stream protected by the mutex, ...
-        int d_out_file;       // file descriptor; if not -1, use this.
-        char *d_buf;        // The data to write to the stream
-        int d_num;          // The size of d_buf
+        std::ostream &d_out; // The output stream protected by the mutex, ...
+        int d_out_file;      // file descriptor; if not -1, use this.
+        char *d_buf;         // The data to write to the stream
+        int d_num;           // The size of d_buf
 
         /**
          * Build args for an ostream. The file descriptor is set to -1
          */
-        write_args(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, std::ostream &s, char *vals, int num) :
-            d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(s), d_out_file(-1), d_buf(vals), d_num(num)
-        {
-        }
+        write_args(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, std::ostream &s, char *vals,
+                   int num)
+            : d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(s), d_out_file(-1), d_buf(vals), d_num(num) {}
 
         /**
          * Build args for a file descriptr. The ostream is set to cerr (because it is
          * a reference and has to be initialized to something).
          */
-        write_args(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, int fd, char *vals, int num) :
-            d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(std::cerr), d_out_file(fd), d_buf(vals), d_num(num)
-        {
-        }
-   };
+        write_args(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, int fd, char *vals, int num)
+            : d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(std::cerr), d_out_file(fd), d_buf(vals),
+              d_num(num) {}
+    };
 
 public:
     MarshallerThread();
@@ -148,8 +146,8 @@ public:
     int &get_child_thread_count() { return d_child_thread_count; }
     void increment_child_thread_count() { ++d_child_thread_count; }
 
-    void start_thread(void* (*thread)(void *arg), std::ostream &out, char *byte_buf, unsigned int bytes_written);
-    void start_thread(void* (*thread)(void *arg), int fd, char *byte_buf, unsigned int bytes_written);
+    void start_thread(void *(*thread)(void *arg), std::ostream &out, char *byte_buf, unsigned int bytes_written);
+    void start_thread(void *(*thread)(void *arg), int fd, char *byte_buf, unsigned int bytes_written);
 
     // These are static so they will have c-linkage - required because they
     // are passed to pthread_create()
@@ -157,6 +155,6 @@ public:
     static void *write_thread_part(void *arg);
 };
 
-}
+} // namespace libdap
 
 #endif /* MARSHALLERTHREAD_H_ */

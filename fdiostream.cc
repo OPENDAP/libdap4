@@ -29,7 +29,7 @@
 
 #include "fdiostream.h"
 #include <cstring> // for memcpy
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 #include "debug.h"
 
 namespace libdap {
@@ -40,62 +40,52 @@ namespace libdap {
  @param _close If true, close the file when the stream buffer is deleted.
  False by default.
  @see fdostream */
-fdoutbuf::fdoutbuf(int _fd, bool _close) :
-		fd(_fd), close(_close)
-{
-	setp(buffer, buffer + (bufferSize - 1));
-}
+fdoutbuf::fdoutbuf(int _fd, bool _close) : fd(_fd), close(_close) { setp(buffer, buffer + (bufferSize - 1)); }
 
 /** When deleting the stream buffer, be sure to call sync(). Close the
  associated file if specified. */
-fdoutbuf::~fdoutbuf()
-{
-	sync();
-	if (close) ::close(fd);
+fdoutbuf::~fdoutbuf() {
+    sync();
+    if (close)
+        ::close(fd);
 }
 
 // flush the characters in the buffer
-int fdoutbuf::flushBuffer()
-{
-	int num = pptr() - pbase();
-	if (write(1, buffer, num) != num) {
-		return EOF;
-	}
-	pbump(-num);
-	return num;
+int fdoutbuf::flushBuffer() {
+    int num = pptr() - pbase();
+    if (write(1, buffer, num) != num) {
+        return EOF;
+    }
+    pbump(-num);
+    return num;
 }
 
 /** Buffer full, write c and all previous characters */
-int fdoutbuf::overflow(int c)
-{
-	if (c != EOF) {
-		*pptr() = c;
-		pbump(1);
-	}
-	// flush the buffer
-	if (flushBuffer() == EOF) {
-		//Error
-		return EOF;
-	}
+int fdoutbuf::overflow(int c) {
+    if (c != EOF) {
+        *pptr() = c;
+        pbump(1);
+    }
+    // flush the buffer
+    if (flushBuffer() == EOF) {
+        // Error
+        return EOF;
+    }
 
-	return c;
+    return c;
 }
 
 /** synchronize with file/destination */
-int fdoutbuf::sync()
-{
-	if (flushBuffer() == EOF) {
-		// Error
-		return -1;
-	}
-	return 0;
+int fdoutbuf::sync() {
+    if (flushBuffer() == EOF) {
+        // Error
+        return -1;
+    }
+    return 0;
 }
 
 /** write multiple characters */
-std::streamsize fdoutbuf::xsputn(const char *s, std::streamsize num)
-{
-	return write(fd, s, num);
-}
+std::streamsize fdoutbuf::xsputn(const char *s, std::streamsize num) { return write(fd, s, num); }
 
 /*
  How the buffer works for input streams:
@@ -154,59 +144,57 @@ std::streamsize fdoutbuf::xsputn(const char *s, std::streamsize num)
  @param _close If true, close the open file when deleting the stream buffer.
  False by default.
  @see fdistream */
-fdinbuf::fdinbuf(int _fd, bool _close) :
-		fd(_fd), close(_close)
-{
-	setg(buffer + putBack, // beginning of put back area
-	buffer + putBack, // read position
-	buffer + putBack); // end position
+fdinbuf::fdinbuf(int _fd, bool _close) : fd(_fd), close(_close) {
+    setg(buffer + putBack,  // beginning of put back area
+         buffer + putBack,  // read position
+         buffer + putBack); // end position
 }
 
 /** Close the file if specified. */
-fdinbuf::~fdinbuf()
-{
-	if (close) ::close(fd);
+fdinbuf::~fdinbuf() {
+    if (close)
+        ::close(fd);
 }
 
 /** Insert new characters into the buffer */
-int fdinbuf::underflow()
-{
-	if (gptr() < egptr()) {
-		DBG(std::cerr << "underflow, no read" << std::endl);
-		return *gptr();
-	}
+int fdinbuf::underflow() {
+    if (gptr() < egptr()) {
+        DBG(std::cerr << "underflow, no read" << std::endl);
+        return *gptr();
+    }
 
-	// How many characters are in the 'put back' part of the buffer? Cap
-	// this number at putBack, which is nominally 128.
-	int numPutBack = gptr() - eback();
-	if (numPutBack > putBack) numPutBack = putBack;
+    // How many characters are in the 'put back' part of the buffer? Cap
+    // this number at putBack, which is nominally 128.
+    int numPutBack = gptr() - eback();
+    if (numPutBack > putBack)
+        numPutBack = putBack;
 
-	// copy characters previously read into the put back area of the
-	// buffer. In a typical call, putBack is 128 and numPutBack is 128 too.
-	// In this case the destination of memcpy is the start of the buffer and
-	// gptr() - numPutBack (the source of the copy) points to the last 128
-	// characters in the buffer.
-	memcpy(buffer + (putBack - numPutBack), gptr() - numPutBack, numPutBack);
+    // copy characters previously read into the put back area of the
+    // buffer. In a typical call, putBack is 128 and numPutBack is 128 too.
+    // In this case the destination of memcpy is the start of the buffer and
+    // gptr() - numPutBack (the source of the copy) points to the last 128
+    // characters in the buffer.
+    memcpy(buffer + (putBack - numPutBack), gptr() - numPutBack, numPutBack);
 
-	// read new characters
-	int num = read(fd, buffer + putBack, bufferSize - putBack);
-	DBG(std::cerr << "underflow, read returns: " << num << std::endl);
-	if (num <= 0) {
-		// Error or EOF; error < 0; EOF == 0
-		return EOF;
-	}
+    // read new characters
+    int num = read(fd, buffer + putBack, bufferSize - putBack);
+    DBG(std::cerr << "underflow, read returns: " << num << std::endl);
+    if (num <= 0) {
+        // Error or EOF; error < 0; EOF == 0
+        return EOF;
+    }
 
-	setg(buffer + (putBack - numPutBack), // beginning of put back area
-	buffer + putBack, // read position
-	buffer + putBack + num); // end of buffer
+    setg(buffer + (putBack - numPutBack), // beginning of put back area
+         buffer + putBack,                // read position
+         buffer + putBack + num);         // end of buffer
 
-	// return next character
+    // return next character
 #ifdef DODS_DEBUG
-	char c = *gptr();
-	DBG(std::cerr << "returning :" << c << std::endl);
-	return c;
+    char c = *gptr();
+    DBG(std::cerr << "returning :" << c << std::endl);
+    return c;
 #else
-	return *gptr();
+    return *gptr();
 #endif
 }
 
@@ -216,51 +204,49 @@ int fdinbuf::underflow()
  @param _close If true, close the open file when deleting the stream buffer.
  False by default.
  @see fpistream */
-fpinbuf::fpinbuf(FILE *_fp, bool _close) :
-		fp(_fp), close(_close)
-{
-	setg(buffer + putBack, // beginning of put back area
-	buffer + putBack, // read position
-	buffer + putBack); // end position
+fpinbuf::fpinbuf(FILE *_fp, bool _close) : fp(_fp), close(_close) {
+    setg(buffer + putBack,  // beginning of put back area
+         buffer + putBack,  // read position
+         buffer + putBack); // end position
 }
 
 /** Close the file if specified. */
-fpinbuf::~fpinbuf()
-{
-	if (close) fclose(fp);
+fpinbuf::~fpinbuf() {
+    if (close)
+        fclose(fp);
 }
 
 /** Insert new characters into the buffer */
-int fpinbuf::underflow()
-{
-	if (gptr() < egptr()) {
-		DBG(std::cerr << "underflow, no read" << std::endl);
-		return *gptr();
-	}
+int fpinbuf::underflow() {
+    if (gptr() < egptr()) {
+        DBG(std::cerr << "underflow, no read" << std::endl);
+        return *gptr();
+    }
 
-	// process size of putBack area
-	// use the number of characters read, but a maximum of putBack
-	int numPutBack = gptr() - eback();
-	if (numPutBack > putBack) numPutBack = putBack;
+    // process size of putBack area
+    // use the number of characters read, but a maximum of putBack
+    int numPutBack = gptr() - eback();
+    if (numPutBack > putBack)
+        numPutBack = putBack;
 
-	// copy characters previously read into the put back area of the
-	// buffer.
-	memcpy(buffer + (putBack - numPutBack), gptr() - numPutBack, numPutBack);
+    // copy characters previously read into the put back area of the
+    // buffer.
+    memcpy(buffer + (putBack - numPutBack), gptr() - numPutBack, numPutBack);
 
-	// read new characters
-	int num = fread(buffer + putBack, 1, bufferSize - putBack, fp);
-	DBG(std::cerr << "underflow, read returns: " << num << std::endl);
-	if (num == 0) {
-		// Error or EOF; use feof() or ferror() to test
-		return EOF;
-	}
+    // read new characters
+    int num = fread(buffer + putBack, 1, bufferSize - putBack, fp);
+    DBG(std::cerr << "underflow, read returns: " << num << std::endl);
+    if (num == 0) {
+        // Error or EOF; use feof() or ferror() to test
+        return EOF;
+    }
 
-	setg(buffer + (putBack - numPutBack), // beginning of put back area
-	buffer + putBack, // read position
-	buffer + putBack + num); // end of buffer
+    setg(buffer + (putBack - numPutBack), // beginning of put back area
+         buffer + putBack,                // read position
+         buffer + putBack + num);         // end of buffer
 
-	// return next character
-	return *gptr();
+    // return next character
+    return *gptr();
 }
 
-}
+} // namespace libdap

@@ -33,8 +33,8 @@
 
 #include <cstdlib>
 
-#include <signal.h>
 #include <pthread.h>
+#include <signal.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h> //for _exit
@@ -54,25 +54,21 @@ SignalHandler *SignalHandler::d_instance = 0;
 static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
 
 /// Private static void method.
-void
-SignalHandler::initialize_instance()
-{
+void SignalHandler::initialize_instance() {
     // MT-Safe if called via pthread_once or similar
     SignalHandler::d_instance = new SignalHandler;
     atexit(SignalHandler::delete_instance);
 }
 
 /// Private static void method.
-void
-SignalHandler::delete_instance()
-{
+void SignalHandler::delete_instance() {
     if (SignalHandler::d_instance) {
         for (int i = 0; i < NSIG; ++i) {
-        	// Fortify warns about a leak because the EventHandler objects
-        	// are not deleted, but that's OK - this is a singleton and
-        	// so the 'leak' is really just a constant amount of memory that
-        	// gets used.
-        	d_signal_handlers[i] = 0;
+            // Fortify warns about a leak because the EventHandler objects
+            // are not deleted, but that's OK - this is a singleton and
+            // so the 'leak' is really just a constant amount of memory that
+            // gets used.
+            d_signal_handlers[i] = 0;
             d_old_handlers[i] = 0;
         }
 
@@ -87,9 +83,7 @@ SignalHandler::delete_instance()
     handle_signal method.
 
     @param signum The number of the signal. */
-void
-SignalHandler::dispatcher(int signum)
-{
+void SignalHandler::dispatcher(int signum) {
     // Perform a sanity check...
     if (SignalHandler::d_signal_handlers[signum] != 0)
         // Dispatch the handler's hook method.
@@ -121,15 +115,12 @@ SignalHandler::dispatcher(int signum)
         default:
             throw Error(internal_error, "Signal handler operation on an unsupported signal.");
         }
-    }
-    else
+    } else
         old_handler(signum);
 }
 
 /** Get a pointer to the single instance of SignalHandler. */
-SignalHandler*
-SignalHandler::instance()
-{
+SignalHandler *SignalHandler::instance() {
     pthread_once(&instance_control, initialize_instance);
 
     return d_instance;
@@ -147,25 +138,25 @@ SignalHandler::instance()
     Instead run \e eh and then treat the signal as if the original action was
     SIG_IGN. Default is false.
     @return A pointer to the old EventHandler or null. */
-EventHandler *
-SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_default)
-{
+EventHandler *SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_default) {
     // Check first for improper use.
     switch (signum) {
 #ifndef WIN32
-        case SIGHUP:
-        case SIGKILL:
-        case SIGUSR1:
-        case SIGUSR2:
-        case SIGPIPE:
-        case SIGALRM:
+    case SIGHUP:
+    case SIGKILL:
+    case SIGUSR1:
+    case SIGUSR2:
+    case SIGPIPE:
+    case SIGALRM:
 #endif
-        case SIGINT:
-        case SIGTERM: break;
+    case SIGINT:
+    case SIGTERM:
+        break;
 
-        default: throw InternalErr(__FILE__, __LINE__,
-                string("Call to register_handler with unsupported signal (")
-                + long_to_string(signum) + string(")."));
+    default:
+        throw InternalErr(__FILE__, __LINE__,
+                          string("Call to register_handler with unsupported signal (") + long_to_string(signum) +
+                              string(")."));
     }
 
     // Save the old EventHandler
@@ -188,8 +179,7 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_def
 #ifdef SA_INTERUPT
         sa.sa_flags |= SA_INTERUPT;
 #endif
-    }
-    else {
+    } else {
 #ifdef SA_RESTART
         sa.sa_flags |= SA_RESTART;
 #endif
@@ -216,9 +206,7 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_def
 /** Remove the event hander.
     @param signum The signal number of the handler to remove.
     @return The old event handler */
-EventHandler *
-SignalHandler::remove_handler(int signum)
-{
+EventHandler *SignalHandler::remove_handler(int signum) {
     EventHandler *old_eh = SignalHandler::d_signal_handlers[signum];
 
     SignalHandler::d_signal_handlers[signum] = 0;

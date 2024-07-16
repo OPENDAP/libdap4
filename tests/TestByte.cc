@@ -51,8 +51,8 @@
 #endif
 
 #ifdef WIN32
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
 #endif
 
@@ -76,46 +76,30 @@
 
 extern int test_variable_sleep_interval;
 
-void
-TestByte::_duplicate(const TestByte &ts)
-{
-    d_series_values = ts.d_series_values;
-}
+void TestByte::_duplicate(const TestByte &ts) { d_series_values = ts.d_series_values; }
 
-TestByte::TestByte(const string &n) : Byte(n), d_series_values(false)
-{
-	// For some reason, d_buf was set to '23' in the version checked in on
-	// 9/12/13, but that seems to break the EXPR regression tests and '255'
-	// seems to be the correct value. Since '23' is an odd choice, I'm leaving
-	// this comment as a reminder should this information be useful in the future.
-	// jhrg 10/1/13
+TestByte::TestByte(const string &n) : Byte(n), d_series_values(false) {
+    // For some reason, d_buf was set to '23' in the version checked in on
+    // 9/12/13, but that seems to break the EXPR regression tests and '255'
+    // seems to be the correct value. Since '23' is an odd choice, I'm leaving
+    // this comment as a reminder should this information be useful in the future.
+    // jhrg 10/1/13
     // d_buf = 23;
-	d_buf = 255;
+    d_buf = 255;
 }
 
-TestByte::TestByte(const string &n, const string &d)
-    : Byte(n, d), d_series_values(false)
-{
+TestByte::TestByte(const string &n, const string &d) : Byte(n, d), d_series_values(false) {
     // d_buf = 23;
-	d_buf = 255;
+    d_buf = 255;
 }
 
-BaseType *
-TestByte::ptr_duplicate()
-{
-    return new TestByte(*this);
-}
+BaseType *TestByte::ptr_duplicate() { return new TestByte(*this); }
 
-TestByte::TestByte(const TestByte &rhs) : Byte(rhs), TestCommon(rhs)
-{
-    _duplicate(rhs);
-}
+TestByte::TestByte(const TestByte &rhs) : Byte(rhs), TestCommon(rhs) { _duplicate(rhs); }
 
-TestByte &
-TestByte::operator=(const TestByte &rhs)
-{
+TestByte &TestByte::operator=(const TestByte &rhs) {
     if (this == &rhs)
-	return *this;
+        return *this;
 
     Byte::operator=(rhs); // run Constructor=
 
@@ -124,9 +108,7 @@ TestByte::operator=(const TestByte &rhs)
     return *this;
 }
 #if 1
-void
-TestByte::output_values(std::ostream &out)
-{
+void TestByte::output_values(std::ostream &out) {
     // value is a method where each return value is a different type so we have
     // to make calls to it from objects/methods where the type is statically
     // known.
@@ -134,20 +116,17 @@ TestByte::output_values(std::ostream &out)
 }
 #endif
 
-bool
-TestByte::read()
-{
+bool TestByte::read() {
     DBG(cerr << "Entering TestByte::read for " << name() << endl);
     if (read_p())
-	return true;
+        return true;
 
     if (test_variable_sleep_interval > 0)
-	sleep(test_variable_sleep_interval);
+        sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
-         d_buf++;
-    }
-    else {
+        d_buf++;
+    } else {
         d_buf = 255;
     }
 

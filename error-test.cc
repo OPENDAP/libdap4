@@ -35,15 +35,13 @@
 
 #include "config.h"
 
-static char rcsid[] not_used =
-    {"$Id$"
-    };
+static char rcsid[] not_used = {"$Id$"};
 
 #include <GetOpt.h>
 
 #include "Error.h"
-#include "parser.h"
 #include "Error.tab.hh"
+#include "parser.h"
 
 void test_scanner();
 void test_parser(Error &err);
@@ -53,7 +51,7 @@ void test_object(Error &err);
 void usage();
 
 int Errorlex();
-//int Errorparse(parser_arg *);
+// int Errorparse(parser_arg *);
 
 extern YYSTYPE Errorlval;
 extern int Errordebug;
@@ -117,87 +115,81 @@ main(int argc, char *argv[])
 #endif
 
 #ifdef WIN32
-    exit(0);  //  Cygwin/Dejagu test suites require this to succeed.
-    return;   //  Visual C++ requires this.
+    exit(0); //  Cygwin/Dejagu test suites require this to succeed.
+    return;  //  Visual C++ requires this.
 #endif
 }
 
-void
-usage()
-{
+void usage() {
 #ifdef WIN32
-    fprintf(stderr, "usage: error-test: [d][sp] <  filename ...\n") ;
+    fprintf(stderr, "usage: error-test: [d][sp] <  filename ...\n");
 #else
-    fprintf(stderr, "usage: error-test: [d][spo] <  filename ...\n") ;
+    fprintf(stderr, "usage: error-test: [d][spo] <  filename ...\n");
 #endif
-    fprintf(stderr, "       d: extra parser debugging information\n") ;
-    fprintf(stderr, "       s: run the scanner\n") ;
-    fprintf(stderr, "       p: run the parser\n") ;
+    fprintf(stderr, "       d: extra parser debugging information\n");
+    fprintf(stderr, "       s: run the scanner\n");
+    fprintf(stderr, "       p: run the parser\n");
 #ifdef WIN32
-    fprintf(stderr, "       o: evaluate the object, runs the parser\n") ;
+    fprintf(stderr, "       o: evaluate the object, runs the parser\n");
 #endif
 }
 
-void
-test_scanner()
-{
+void test_scanner() {
     int tok;
 
-    fprintf(stdout, "%s", prompt) ;   // first prompt
-    fflush(stdout) ;
+    fprintf(stdout, "%s", prompt); // first prompt
+    fflush(stdout);
     while ((tok = Errorlex())) {
         switch (tok) {
         case SCAN_ERROR:
-            fprintf(stdout, "ERROR\n") ;
+            fprintf(stdout, "ERROR\n");
             break;
         case SCAN_CODE:
-            fprintf(stdout, "CODE\n") ;
+            fprintf(stdout, "CODE\n");
             break;
         case SCAN_PTYPE:
-            fprintf(stdout, "PTYPE\n") ;
+            fprintf(stdout, "PTYPE\n");
             break;
         case SCAN_MSG:
-            fprintf(stdout, "MSG\n") ;
+            fprintf(stdout, "MSG\n");
             break;
         case SCAN_PROGRAM:
-            fprintf(stdout, "PROGRAM\n") ;
+            fprintf(stdout, "PROGRAM\n");
             break;
         case SCAN_STR:
-            fprintf(stdout, "%s\n", Errorlval.string) ;
+            fprintf(stdout, "%s\n", Errorlval.string);
             break;
         case SCAN_INT:
-            fprintf(stdout, "%d\n", Errorlval.integer) ;
+            fprintf(stdout, "%d\n", Errorlval.integer);
             break;
         case '{':
-            fprintf(stdout, "Left Brace\n") ;
+            fprintf(stdout, "Left Brace\n");
             break;
         case '}':
-            fprintf(stdout, "Right Brace\n") ;
+            fprintf(stdout, "Right Brace\n");
             break;
         case ';':
-            fprintf(stdout, "Semicolon\n") ;
+            fprintf(stdout, "Semicolon\n");
             break;
         case '=':
-            fprintf(stdout, "Assignment\n") ;
+            fprintf(stdout, "Assignment\n");
             break;
         default:
-            fprintf(stdout, "Error: Unrecognized input\n") ;
+            fprintf(stdout, "Error: Unrecognized input\n");
         }
-        fprintf(stdout, "%s", prompt) ;   // print prompt after output
-        fflush(stdout) ;
+        fprintf(stdout, "%s", prompt); // print prompt after output
+        fflush(stdout);
     }
 }
 
-void
-test_parser(Error &err)
-{
+void test_parser(Error &err) {
     int status = err.parse(stdin);
-    fprintf(stdout, "Status from parser: %d\n", status) ;
+    fprintf(stdout, "Status from parser: %d\n", status);
 
     if (err.OK())
-        fprintf(stdout, "Error passed OK check\n") ;
+        fprintf(stdout, "Error passed OK check\n");
     else
-        fprintf(stdout, "Error failed OK check\n") ;
+        fprintf(stdout, "Error failed OK check\n");
 
     err.print(stdout);
 }

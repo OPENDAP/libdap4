@@ -33,38 +33,38 @@
 //
 // jhrg 9/14/94
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "config.h"
 
 #include <sstream>
 
+#include "Array.h"
 #include "Byte.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
 #include "Float32.h"
 #include "Float64.h"
-#include "Str.h"
-#include "Url.h"
-#include "Array.h"
-#include "Structure.h"
-#include "Sequence.h"
 #include "Grid.h"
+#include "Int16.h"
+#include "Int32.h"
+#include "Sequence.h"
+#include "Str.h"
+#include "Structure.h"
+#include "UInt16.h"
+#include "UInt32.h"
+#include "Url.h"
 
-#include "DDS.h"
 #include "ConstraintEvaluator.h"
+#include "DDS.h"
 
 #include "D4Attributes.h"
 #include "D4Group.h"
 
-#include "XDRStreamMarshaller.h"
-#include "util.h"
-#include "debug.h"
-#include "InternalErr.h"
-#include "escaping.h"
 #include "DapIndent.h"
+#include "InternalErr.h"
+#include "XDRStreamMarshaller.h"
+#include "debug.h"
+#include "escaping.h"
+#include "util.h"
 
 using std::cerr;
 using std::endl;
@@ -107,8 +107,7 @@ Structure::m_duplicate(const Structure &s)
     @param n A string containing the name of the variable to be
     created.
 */
-Structure::Structure(const string &n) : Constructor(n, dods_structure_c)
-{}
+Structure::Structure(const string &n) : Constructor(n, dods_structure_c) {}
 
 /** The Structure server-side constructor requires the name of the variable
     to be created and the dataset name from which this variable is being
@@ -119,26 +118,17 @@ Structure::Structure(const string &n) : Constructor(n, dods_structure_c)
     @param d A string containing the name of the dataset from which this
     variable is being created.
 */
-Structure::Structure(const string &n, const string &d)
-    : Constructor(n, d, dods_structure_c)
-{}
+Structure::Structure(const string &n, const string &d) : Constructor(n, d, dods_structure_c) {}
 
 /** The Structure copy constructor. */
-Structure::Structure(const Structure &rhs) : Constructor(rhs)
-{
+Structure::Structure(const Structure &rhs) : Constructor(rhs) {
     DBG(cerr << "In Structure::copy_ctor for " << name() << endl);
-    //m_duplicate(rhs);
+    // m_duplicate(rhs);
 }
 
-Structure::~Structure()
-{
-}
+Structure::~Structure() {}
 
-BaseType *
-Structure::ptr_duplicate()
-{
-    return new Structure(*this);
-}
+BaseType *Structure::ptr_duplicate() { return new Structure(*this); }
 
 /**
  * Build a DAP4 Structure.
@@ -149,26 +139,24 @@ Structure::ptr_duplicate()
  * @param container
  * @return The new variable
  */
-void
-Structure::transform_to_dap4(D4Group *root, Constructor *container)
-{
-    DBG(cerr << __func__ <<"() -  BEGIN" << endl;);
-	// Here we create a new Structure and then use it
+void Structure::transform_to_dap4(D4Group *root, Constructor *container) {
+    DBG(cerr << __func__ << "() -  BEGIN" << endl;);
+    // Here we create a new Structure and then use it
     // as the target container for the transformed versions of
     // all the member variables by calling Constructor::transform_to_dap4() and
     // passing our new target Structure in as the target container.
-	Structure *dest = new Structure(name());
-    DBG(cerr << __func__ <<"() -  Calling Constructor::transform_to_dap4("<<
-        "'" << root->name() << "':" << (void*)root << ","
-        "'" << dest->name() << "':" << (void*)dest << ")"
-        << endl; );
-	Constructor::transform_to_dap4(root, dest);
-	container->add_var_nocopy(dest);
-	DBG(cerr << __func__ <<"() -  Added new Structure '" << dest->name() << "' (" << (void*)dest <<
-	    ") to the container '" << container->name() <<"'" << endl;);
-    DBG(cerr << __func__ <<"() -  END"<< endl;);
+    Structure *dest = new Structure(name());
+    DBG(cerr << __func__ << "() -  Calling Constructor::transform_to_dap4(" << "'" << root->name()
+             << "':" << (void *)root
+             << ","
+                "'"
+             << dest->name() << "':" << (void *)dest << ")" << endl;);
+    Constructor::transform_to_dap4(root, dest);
+    container->add_var_nocopy(dest);
+    DBG(cerr << __func__ << "() -  Added new Structure '" << dest->name() << "' (" << (void *)dest
+             << ") to the container '" << container->name() << "'" << endl;);
+    DBG(cerr << __func__ << "() -  END" << endl;);
 }
-
 
 /** @brief DAP4 to DAP2 transform
  *
@@ -176,9 +164,7 @@ Structure::transform_to_dap4(D4Group *root, Constructor *container)
  *
  * @return A pointer to the transformed variable
  */
-vector<BaseType *> *
-Structure::transform_to_dap2(AttrTable *)
-{
+vector<BaseType *> *Structure::transform_to_dap2(AttrTable *) {
     DBG(cerr << " " << __func__ << " BEGIN" << endl);
     Structure *dest = new Structure(name());
 
@@ -197,13 +183,13 @@ Structure::transform_to_dap2(AttrTable *)
     vector<BaseType *> dropped_vars;
     for (Structure::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
         vector<BaseType *> *new_vars = (*i)->transform_to_dap2(&dest->get_attr_table() /*attrs*/);
-        if (new_vars) {  // Might be un-mappable
-            // It's not so game on..
+        if (new_vars) { // Might be un-mappable
+                        // It's not so game on..
 #if 0
             vector<BaseType*>::iterator vIter = new_vars->begin();
             vector<BaseType*>::iterator end = new_vars->end();
 #endif
-            for (vector<BaseType*>::iterator vi = new_vars->begin(), ve = new_vars->end(); vi != ve ; ++vi ) {
+            for (vector<BaseType *>::iterator vi = new_vars->begin(), ve = new_vars->end(); vi != ve; ++vi) {
                 BaseType *new_var = (*vi);
                 new_var->set_parent(dest);
                 dest->add_var_nocopy(new_var);
@@ -211,19 +197,18 @@ Structure::transform_to_dap2(AttrTable *)
             }
             delete new_vars;
 
-        }
-        else {
+        } else {
             // Got a NULL, so we are dropping this var.
             dropped_vars.push_back(*i);
         }
     }
 
     AttrTable *dv_attr_table = make_dropped_vars_attr_table(&dropped_vars);
-    if(dv_attr_table){
-        dest->get_attr_table().append_container(dv_attr_table,dv_attr_table->get_name());
+    if (dv_attr_table) {
+        dest->get_attr_table().append_container(dv_attr_table, dv_attr_table->get_name());
     }
 
-    DBG(attrs->print(cerr,"",true););
+    DBG(attrs->print(cerr, "", true););
 
 #if 0
     // Since this does a copy we gotta delete the attrs when done
@@ -232,7 +217,7 @@ Structure::transform_to_dap2(AttrTable *)
     delete attrs;
 #endif
 
-    vector<BaseType *> *result =  new vector<BaseType *>();
+    vector<BaseType *> *result = new vector<BaseType *>();
     result->push_back(dest);
 
     DBG(cerr << " " << __func__ << " END" << endl);
@@ -240,26 +225,18 @@ Structure::transform_to_dap2(AttrTable *)
     return result;
 }
 
-
-
-
-
-Structure &
-Structure::operator=(const Structure &rhs)
-{
+Structure &Structure::operator=(const Structure &rhs) {
     if (this == &rhs)
         return *this;
     Constructor::operator=(rhs);
     return *this;
 }
 
-bool
-Structure::is_linear()
-{
+bool Structure::is_linear() {
     bool linear = true;
     for (Vars_iter i = d_vars.begin(); linear && i != d_vars.end(); i++) {
         if ((*i)->type() == dods_structure_c)
-            linear = linear && static_cast<Structure*>((*i))->is_linear();
+            linear = linear && static_cast<Structure *>((*i))->is_linear();
         else
             linear = linear && (*i)->is_simple_type();
     }
@@ -305,14 +282,12 @@ Structure::set_in_selection(bool state)
 }
 #endif
 /** @brief Traverse Structure, set Sequence leaf nodes. */
-void
-Structure::set_leaf_sequence(int level)
-{
+void Structure::set_leaf_sequence(int level) {
     for (Vars_iter i = var_begin(); i != var_end(); i++) {
         if ((*i)->type() == dods_sequence_c)
-        	static_cast<Sequence&>(**i).set_leaf_sequence(++level);
+            static_cast<Sequence &>(**i).set_leaf_sequence(++level);
         else if ((*i)->type() == dods_structure_c)
-        	static_cast<Structure&>(**i).set_leaf_sequence(level);
+            static_cast<Structure &>(**i).set_leaf_sequence(level);
     }
 }
 
@@ -678,15 +653,11 @@ exit:
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void
-Structure::dump(ostream &strm) const
-{
-    strm << DapIndent::LMarg << "Structure::dump - ("
-    << (void *)this << ")" << endl ;
-    DapIndent::Indent() ;
-    Constructor::dump(strm) ;
-    DapIndent::UnIndent() ;
+void Structure::dump(ostream &strm) const {
+    strm << DapIndent::LMarg << "Structure::dump - (" << (void *)this << ")" << endl;
+    DapIndent::Indent();
+    Constructor::dump(strm);
+    DapIndent::UnIndent();
 }
 
 } // namespace libdap
-

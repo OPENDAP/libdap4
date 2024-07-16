@@ -41,8 +41,8 @@
 
 #include <iostream>
 using std::cerr;
-using std::string;
 using std::endl;
+using std::string;
 #define FILE_N_LINE std::cerr << __FILE__ << ":" << __LINE__ << ": "
 
 #else
@@ -55,7 +55,7 @@ using std::endl;
 #define DBG(x) FILE_N_LINE, x
 #define DBGN(x) x
 #else
-#define DBG(x) /* x */
+#define DBG(x)  /* x */
 #define DBGN(x) /* x */
 #endif
 
@@ -71,7 +71,7 @@ using std::endl;
 #define DBG2(x) FILE_N_LINE, x
 #define DBG2N(x) x
 #else
-#define DBG2(x) /* x */
+#define DBG2(x)  /* x */
 #define DBG2n(x) /* x */
 #endif
 

@@ -25,8 +25,8 @@
 // Tests for the util functions in util.cc and escaping.cc
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <cstring>
 #include <string>
@@ -40,9 +40,8 @@ using namespace std;
 using namespace CppUnit;
 using namespace libdap;
 
-class util_mitTest: public TestFixture {
+class util_mitTest : public TestFixture {
 private:
-
 public:
     util_mitTest() = default;
     ~util_mitTest() = default;
@@ -73,13 +72,15 @@ public:
     void test_date_time_str_1() {
         time_t t = 726974999;
         DBG(cerr << "date_time_str(" << t << "): " << date_time_str(&t) << endl);
-        CPPUNIT_ASSERT_MESSAGE("date_time_str(726974999) should return a string", date_time_str(&t) == "Thu, 14 Jan 1993 01:29:59 GMT");
+        CPPUNIT_ASSERT_MESSAGE("date_time_str(726974999) should return a string",
+                               date_time_str(&t) == "Thu, 14 Jan 1993 01:29:59 GMT");
     }
 
     void test_date_time_str_2() {
         time_t t = 0;
         DBG(cerr << "date_time_str(" << t << "): " << date_time_str(&t) << endl);
-        CPPUNIT_ASSERT_MESSAGE("date_time_str(726974999) should return a string", date_time_str(&t) == "Thu, 01 Jan 1970 00:00:00 GMT");
+        CPPUNIT_ASSERT_MESSAGE("date_time_str(726974999) should return a string",
+                               date_time_str(&t) == "Thu, 01 Jan 1970 00:00:00 GMT");
     }
 
     // Tricky, in localtime, 0 it before 1 Jan 1970 (Wed, 31 Dec 1969 17:00:00), but we don't test
@@ -99,9 +100,11 @@ public:
     }
 
     void test_date_time_str_5() {
-        time_t t = 0x7FFFFFFF;  // unix time is unsigned
-        DBG(cerr << "date_time_str(" << t << "): " << date_time_str(&t) << endl); // 2147183648Fri Jan 15 2038 15:54:08 GMT+0000
-        CPPUNIT_ASSERT_MESSAGE("date_time_str(726974999) should return a string", date_time_str(&t) == "Tue, 19 Jan 2038 03:14:07 GMT");
+        time_t t = 0x7FFFFFFF; // unix time is unsigned
+        DBG(cerr << "date_time_str(" << t << "): " << date_time_str(&t)
+                 << endl); // 2147183648Fri Jan 15 2038 15:54:08 GMT+0000
+        CPPUNIT_ASSERT_MESSAGE("date_time_str(726974999) should return a string",
+                               date_time_str(&t) == "Tue, 19 Jan 2038 03:14:07 GMT");
     }
 
     void test_parse_time_1() {
@@ -115,7 +118,8 @@ public:
     void test_parse_time_2() {
         const char *time = "Thursday, 14-Jan-93 01:29:59 GMT";
         const unsigned int time_val = 726974999; // see https://www.unixtimestamp.com/
-        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64) << endl);
+        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64)
+                 << endl);
         CPPUNIT_ASSERT_MESSAGE("parse_time(Thursday, 14-Jan-93 01:29:59 GMT) should return a time.",
                                parse_time(time) == time_val);
         CPPUNIT_ASSERT_MESSAGE("parse_time(Thursday, 14-Jan-93 01:29:59 GMT) should return a time.",
@@ -126,18 +130,18 @@ public:
         // The leading comma is needed to use the first block of conversion code.
         const char *time = ",14-Jan-93 01:29:59";
         const unsigned int time_val = 726974999; // see https://www.unixtimestamp.com/
-        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64) << endl);
-        CPPUNIT_ASSERT_MESSAGE("parse_time(14-Jan-93 01:29:59) should return a time.",
-                               parse_time(time) == time_val);
+        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64)
+                 << endl);
+        CPPUNIT_ASSERT_MESSAGE("parse_time(14-Jan-93 01:29:59) should return a time.", parse_time(time) == time_val);
         CPPUNIT_ASSERT_MESSAGE("parse_time(14-Jan-93 01:29:59) should return a time.",
                                parse_time(time, false) == time_val);
     }
 
     void test_parse_time_4() {
         const char *time = ",14-Jan-9301:29:59";
-        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64) << endl);
-        CPPUNIT_ASSERT_MESSAGE("parse_time(14-Jan-9301:29:59) should return 0 (<18 chars).",
-                               parse_time(time) == 0);
+        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64)
+                 << endl);
+        CPPUNIT_ASSERT_MESSAGE("parse_time(14-Jan-9301:29:59) should return 0 (<18 chars).", parse_time(time) == 0);
         CPPUNIT_ASSERT_MESSAGE("parse_time(14-Jan-9301:29:59) should return 0 (<18 chars).",
                                parse_time(time, false) == 0);
     }
@@ -145,7 +149,8 @@ public:
     void test_parse_time_5() {
         const char *time = "Thu, 14 Jan 1993 01:29:59 GMT";
         const unsigned int time_val = 726974999;
-        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64) << endl);
+        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64)
+                 << endl);
         CPPUNIT_ASSERT_MESSAGE("parse_time(Thu, 14 Jan 1993 01:29:59 GMT) should return a time.",
                                parse_time(time) == time_val);
         CPPUNIT_ASSERT_MESSAGE("parse_time(Thu, 14 Jan 1993 01:29:59 GMT) should return a time.",
@@ -156,18 +161,18 @@ public:
         // The leading comma is needed to use the first block of conversion code.
         const char *time = ",14 Jan 1993 01:29:59";
         const unsigned int time_val = 726974999;
-        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64) << endl);
-        CPPUNIT_ASSERT_MESSAGE("parse_time(14 Jan 1993 01:29:59) should return a time.",
-                               parse_time(time) == time_val);
+        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64)
+                 << endl);
+        CPPUNIT_ASSERT_MESSAGE("parse_time(14 Jan 1993 01:29:59) should return a time.", parse_time(time) == time_val);
         CPPUNIT_ASSERT_MESSAGE("parse_time(14 Jan 1993 01:29:59) should return a time.",
                                parse_time(time, false) == time_val);
     }
 
     void test_parse_time_7() {
         const char *time = ",14 Jan 199301:29:59";
-        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64) << endl);
-        CPPUNIT_ASSERT_MESSAGE("parse_time(14 Jan 199301:29:59) should return 0 (<20 chars).",
-                               parse_time(time) == 0);
+        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64)
+                 << endl);
+        CPPUNIT_ASSERT_MESSAGE("parse_time(14 Jan 199301:29:59) should return 0 (<20 chars).", parse_time(time) == 0);
         CPPUNIT_ASSERT_MESSAGE("parse_time(14 Jan 199301:29:59) should return 0 (<20 chars).",
                                parse_time(time, false) == 0);
     }
@@ -176,7 +181,8 @@ public:
     void test_parse_time_8() {
         const char *time = "1993.01.14T01:29:59+00:00"; // cf. https://en.wikipedia.org/wiki/ISO_8601
         const unsigned int time_val = 726974999;
-        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64) << endl);
+        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64)
+                 << endl);
         CPPUNIT_ASSERT_MESSAGE("parse_time(Thu, 14 Jan 1993 01:29:59 GMT) should return 0 (length < 21).",
                                parse_time(time) == time_val);
         CPPUNIT_ASSERT_MESSAGE("parse_time(Thu, 14 Jan 1993 01:29:59 GMT) should return 0 (length < 21).",
@@ -185,7 +191,8 @@ public:
 
     void test_parse_time_9() {
         const char *time = "1993.01.14T01:29:59";
-        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64) << endl);
+        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64)
+                 << endl);
         CPPUNIT_ASSERT_MESSAGE("parse_time(Thu, 14 Jan 1993 01:29:59 GMT) should return 0 (length < 21).",
                                parse_time(time) == 0);
         CPPUNIT_ASSERT_MESSAGE("parse_time(Thu, 14 Jan 1993 01:29:59 GMT) should return 0 (length < 21).",
@@ -193,19 +200,19 @@ public:
     }
 
     void test_parse_time_10() {
-        const char *time = "Thursday, 14-Jan-93 24:29:59 GMT";  // 24 is not a valid hour
-        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64) << endl);
-        CPPUNIT_ASSERT_MESSAGE("parse_time(<hour value too large>) should return 0.",
-                               parse_time(time) == 0);
-        CPPUNIT_ASSERT_MESSAGE("parse_time(<hour value too large>) should return 0.",
-                               parse_time(time, false) == 0);
+        const char *time = "Thursday, 14-Jan-93 24:29:59 GMT"; // 24 is not a valid hour
+        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64)
+                 << endl);
+        CPPUNIT_ASSERT_MESSAGE("parse_time(<hour value too large>) should return 0.", parse_time(time) == 0);
+        CPPUNIT_ASSERT_MESSAGE("parse_time(<hour value too large>) should return 0.", parse_time(time, false) == 0);
     }
 
     // Mon 00 00:00:00 0000 GMT
     void test_parse_time_11() {
         const char *time = "Jan 14 01:29:59 1993 GMT";
         const unsigned int time_val = 726974999;
-        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64) << endl);
+        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64)
+                 << endl);
         CPPUNIT_ASSERT_MESSAGE("parse_time(Thursday Jan 14 01:29:59 1993 GMT) should return a time.",
                                parse_time(time) == time_val);
         CPPUNIT_ASSERT_MESSAGE("parse_time(Thursday Jan 14 01:29:59 1993 GMT) should return a time.",
@@ -216,7 +223,8 @@ public:
     void test_parse_time_12() {
         const char *time = "Jan 14 01:29:59 2022 GMT";
         const unsigned int time_val = 1642123799;
-        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64) << endl);
+        DBG(cerr << "parse_time(" << time << "): " << parse_time(time) << ", string length: " << strnlen(time, 64)
+                 << endl);
         CPPUNIT_ASSERT_MESSAGE("parse_time(Jan 14 01:29:59 2022 GMT) should return a time.",
                                parse_time(time) == time_val);
         CPPUNIT_ASSERT_MESSAGE("parse_time(Jan 14 01:29:59 2022 GMT) should return a time.",
@@ -226,7 +234,4 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(util_mitTest);
 
-int main(int argc, char*argv[])
-{
-    return run_tests<util_mitTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<util_mitTest>(argc, argv) ? 0 : 1; }

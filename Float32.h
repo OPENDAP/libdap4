@@ -36,7 +36,6 @@
 #ifndef _float32_h
 #define _float32_h 1
 
-
 #ifndef _dods_datatypes_h
 #include "dods-datatypes.h"
 #endif
@@ -49,8 +48,7 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 class DMR;
 
@@ -58,8 +56,7 @@ class DMR;
 
     @see BaseType
     */
-class Float32: public BaseType
-{
+class Float32 : public BaseType {
 protected:
     dods_float32 d_buf;
 
@@ -71,23 +68,16 @@ public:
 
     Float32 &operator=(const Float32 &rhs);
 
-    virtual ~Float32()
-    {}
+    virtual ~Float32() {}
 
     BaseType *ptr_duplicate() override;
 
-    unsigned int width(bool = false) const override
-    {
-        return sizeof(dods_float32);
-    }
+    unsigned int width(bool = false) const override { return sizeof(dods_float32); }
 
-    int64_t width_ll(bool = false) const override
-    {
-        return sizeof(dods_float32);
-    }
+    int64_t width_ll(bool = false) const override { return sizeof(dods_float32); }
 
     // DAP2
-    bool serialize(ConstraintEvaluator &eval, DDS &dds,  Marshaller &m, bool ce_eval = true) override;
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
     bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) override;
 
     // DAP4
@@ -101,10 +91,8 @@ public:
     virtual dods_float32 value() const;
     virtual bool set_value(dods_float32 f);
 
-    void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true) override;
-    void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true) override;
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
     bool ops(BaseType *b, int op) override;
     bool d4_ops(BaseType *b, int op) override;
@@ -115,4 +103,3 @@ public:
 } // namespace libdap
 
 #endif // _float32_h
-

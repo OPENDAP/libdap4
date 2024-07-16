@@ -8,6 +8,6 @@ ColumnLimit: 120
 IndentWidth: 4
 # TabWidth: 8 jhrg 7/15/24
 TabWidth: 4
-# ObjCBlockIndentWidth: 2
-ObjCBlockIndentWidth: 0
+# AccessModifierOffset: -2 jhrg 7/15/24
+AccessModifierOffset: -4
 ...

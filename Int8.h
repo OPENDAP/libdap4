@@ -34,20 +34,22 @@
 #include "BaseType.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief Holds an 8-bit signed integer value. */
 
-class Int8: public BaseType
-{
-	// This is used in BaseType *Vector::var(unsigned int i)
-	unsigned int val2buf(void *val, bool)  override {
-    	set_value(*reinterpret_cast<dods_int8*>(val));
-    	return sizeof(dods_int8);
+class Int8 : public BaseType {
+    // This is used in BaseType *Vector::var(unsigned int i)
+    unsigned int val2buf(void *val, bool) override {
+        set_value(*reinterpret_cast<dods_int8 *>(val));
+        return sizeof(dods_int8);
     }
-    unsigned int buf2val(void **) override { throw InternalErr(__FILE__, __LINE__, "buf2val: Not implemented for Int8"); }
-    void print_val(FILE *, string , bool) override { throw InternalErr(__FILE__, __LINE__, "print_val: Not implemented for Int8"); }
+    unsigned int buf2val(void **) override {
+        throw InternalErr(__FILE__, __LINE__, "buf2val: Not implemented for Int8");
+    }
+    void print_val(FILE *, string, bool) override {
+        throw InternalErr(__FILE__, __LINE__, "print_val: Not implemented for Int8");
+    }
 
 protected:
     dods_int8 d_buf;
@@ -55,25 +57,17 @@ protected:
 public:
     Int8(const string &n);
     Int8(const string &n, const string &d);
-    virtual ~Int8()
-    {}
+    virtual ~Int8() {}
 
     Int8(const Int8 &copy_from);
 
     Int8 &operator=(const Int8 &rhs);
 
-    BaseType *ptr_duplicate() override ;
+    BaseType *ptr_duplicate() override;
 
-    unsigned int width(bool = false) const override
-    {
-        return sizeof(dods_int8);
-    }
+    unsigned int width(bool = false) const override { return sizeof(dods_int8); }
 
-    int64_t width_ll(bool = false) const override
-    {
-        return sizeof(dods_int8);
-    }
-
+    int64_t width_ll(bool = false) const override { return sizeof(dods_int8); }
 
     // DAP4
     void compute_checksum(Crc32 &checksum) override;
@@ -91,10 +85,9 @@ public:
 
     bool is_dap4_projected(std::vector<std::string> &inventory) override;
 
-    void dump(ostream &strm) const  override;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
 
 #endif // _int16_h
-

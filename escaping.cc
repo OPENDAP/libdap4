@@ -61,13 +61,13 @@
 #include <ctype.h>
 
 #include <iomanip>
-#include <string>
 #include <sstream>
+#include <string>
 
-#include "GNURegex.h"
 #include "Error.h"
+#include "GNURegex.h"
 #include "InternalErr.h"
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 #include "debug.h"
 
 using namespace std;
@@ -78,18 +78,14 @@ namespace libdap {
 // to make testing them (see generalUtilTest.cc) easier to write. 5/7/2001
 // jhrg
 
-string
-hexstring(unsigned char val)
-{
+string hexstring(unsigned char val) {
     ostringstream buf;
     buf << hex << setw(2) << setfill('0') << static_cast<unsigned int>(val);
 
     return buf.str();
 }
 
-string
-unhexstring(string s)
-{
+string unhexstring(string s) {
     int val;
     istringstream ss(s);
     ss >> hex >> val;
@@ -99,19 +95,14 @@ unhexstring(string s)
     return string(tmp_str);
 }
 
-string
-octstring(unsigned char val)
-{
+string octstring(unsigned char val) {
     ostringstream buf;
-    buf << oct << setw(3) << setfill('0')
-    << static_cast<unsigned int>(val);
+    buf << oct << setw(3) << setfill('0') << static_cast<unsigned int>(val);
 
     return buf.str();
 }
 
-string
-unoctstring(string s)
-{
+string unoctstring(string s) {
     int val;
 
     istringstream ss(s);
@@ -149,16 +140,14 @@ unoctstring(string s)
     default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/.\\*"
     @see id2www_ce()
     @return The modified identifier. */
-string
-id2www(string in, const string &allowable)
-{
+string id2www(string in, const string &allowable) {
     string::size_type i = 0;
-    DBG(cerr<<"Input string: [" << in << "]" << endl);
+    DBG(cerr << "Input string: [" << in << "]" << endl);
     while ((i = in.find_first_not_of(allowable, i)) != string::npos) {
-	DBG(cerr<<"Found escapee: [" << in[i] << "]");
+        DBG(cerr << "Found escapee: [" << in[i] << "]");
         in.replace(i, 1, "%" + hexstring(in[i]));
-        DBGN(cerr<<" now the string is: " << in << endl);
-        i += 3;//i++;
+        DBGN(cerr << " now the string is: " << in << endl);
+        i += 3; // i++;
     }
 
     return in;
@@ -174,13 +163,7 @@ id2www(string in, const string &allowable)
     default: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/.\\"
     @see id2www()
     @return The modified identifier. */
-string
-id2www_ce(string in, const string &allowable)
-{
-    return id2www(in, allowable);
-
-
-}
+string id2www_ce(string in, const string &allowable) { return id2www(in, allowable); }
 
 /** Given a string that contains WWW escape sequences, translate those escape
     sequences back into the ASCII characters they represent. Return the
@@ -216,9 +199,7 @@ id2www_ce(string in, const string &allowable)
     escapes \e except those given. For example, to suppress translation of both
     spaces and the ampersand, pass "%20%26" for 'except'. default: ""
     @return The modified string. */
-string
-www2id(const string &in, const string &escape, const string &except)
-{
+string www2id(const string &in, const string &escape, const string &except) {
     string::size_type i = 0;
     string res = in;
     while ((i = res.find_first_of(escape, i)) != string::npos) {
@@ -233,15 +214,18 @@ www2id(const string &in, const string &escape, const string &except)
     return res;
 }
 
-static string
-entity(char c)
-{
+static string entity(char c) {
     switch (c) {
-    case '>': return "&gt;";
-    case '<': return "&lt;";
-    case '&': return "&amp;";
-    case '\'': return "&apos;";
-    case '\"': return "&quot;";
+    case '>':
+        return "&gt;";
+    case '<':
+        return "&lt;";
+    case '&':
+        return "&amp;";
+    case '\'':
+        return "&apos;";
+    case '\"':
+        return "&quot;";
     default:
         throw InternalErr(__FILE__, __LINE__, "Unrecognized character.");
     }
@@ -249,9 +233,7 @@ entity(char c)
 
 // Assumption: There are always exactly two octal digits in the input
 // and two hex digits in the result.
-string
-octal_to_hex(const string &octal_digits)
-{
+string octal_to_hex(const string &octal_digits) {
     int val;
 
     istringstream ss(octal_digits);
@@ -268,9 +250,7 @@ octal_to_hex(const string &octal_digits)
     @param not_allowed The set of characters that are not allowed in XML.
     default: ><&'(single quote)"(double quote)
     @return The modified identifier. */
-string
-id2xml(string in, const string &not_allowed)
-{
+string id2xml(string in, const string &not_allowed) {
     string::size_type i = 0;
 
     while ((i = in.find_first_of(not_allowed, i)) != string::npos) {
@@ -318,9 +298,7 @@ id2xml(string in, const string &not_allowed)
 
     @param in The string to modify.
     @return The modified string. */
-string
-xml2id(string in)
-{
+string xml2id(string in) {
     string::size_type i = 0;
 
     while ((i = in.find("&gt;", i)) != string::npos)
@@ -350,9 +328,7 @@ xml2id(string in)
 
     @param s The string to transform
     @return The modified string. */
-string
-esc2underscore(string s)
-{
+string esc2underscore(string s) {
     string::size_type pos;
     while ((pos = s.find('%')) != string::npos)
         s.replace(pos, 3, "_");
@@ -360,14 +336,12 @@ esc2underscore(string s)
     return s;
 }
 
-
 /** Escape non-printable characters and quotes from an HDF attribute.
     @param s The attribute to modify.
     @return The modified attribute. */
-string
-escattr(string s)
-{
-    const string printable = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"\n\t\r";
+string escattr(string s) {
+    const string printable =
+        " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"\n\t\r";
     const string ESC = "\\";
     const string DOUBLE_ESC = ESC + ESC;
     const string QUOTE = "\"";
@@ -398,31 +372,29 @@ escattr(string s)
 /** Escape non-printable characters and quotes from an HDF attribute.
     @param s The attribute to modify.
     @return The modified attribute. */
-string
-escattr_xml(string s)
-{
-    const string printable = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"\n\t\r";
+string escattr_xml(string s) {
+    const string printable =
+        " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~`!@#$%^&*()_-+={[}]|\\:;<,>.?/'\"\n\t\r";
 
     const string ESC = "\\";
-    const char null_char='\0';
+    const char null_char = '\0';
 
     string::size_type ind = 0;
 
-    // Unlike escaping the special characters for DAS, we don't need to handle quote or double quote. 
+    // Unlike escaping the special characters for DAS, we don't need to handle quote or double quote.
     // However, we would like to treate NULL as a printable character. Otherwise, a '\000'
     // will be added to many Nullterm string. Note: we have to search the '\0' character like
-    // the code below. Put the '\0' inside the string "printable" still doesn't recongize the '\0' as a printable character.
-    // KY 2022-08-22
+    // the code below. Put the '\0' inside the string "printable" still doesn't recongize the '\0' as a printable
+    // character. KY 2022-08-22
     while ((ind = s.find_first_not_of(printable, ind)) != string::npos) {
-        if (s[ind] != null_char) 
+        if (s[ind] != null_char)
             s.replace(ind, 1, ESC + octstring(s[ind]));
-        else 
+        else
             ind++;
     }
 
     return s;
 }
-
 
 /** Un-escape special characters, quotes and backslashes from an HDF
     attribute.
@@ -432,12 +404,10 @@ escattr_xml(string s)
     character!
 
     @param s The escaped attribute. @return The unescaped attribute. */
-string
-unescattr(string s)
-{
-    const Regex octal("\\\\[0-3][0-7][0-7]");  // matches 4 characters
-    const Regex esc_quote("\\\\\"");  // matches 3 characters
-    const Regex esc_esc("\\\\\\\\");      // matches 2 characters
+string unescattr(string s) {
+    const Regex octal("\\\\[0-3][0-7][0-7]"); // matches 4 characters
+    const Regex esc_quote("\\\\\"");          // matches 3 characters
+    const Regex esc_esc("\\\\\\\\");          // matches 2 characters
     const string ESC = "\\";
     const string QUOTE = "\"";
     int matchlen;
@@ -473,9 +443,7 @@ unescattr(string s)
     return s;
 }
 
-string
-munge_error_message(string msg)
-{
+string munge_error_message(string msg) {
     // First, add enclosing quotes if needed.
     if (*msg.begin() != '"')
         msg.insert(msg.begin(), '"');
@@ -495,11 +463,9 @@ munge_error_message(string msg)
     @param source
     @return result
  */
-string
-escape_double_quotes(string source)
-{
+string escape_double_quotes(string source) {
     string::size_type idx = 0;
-    while((idx = source.find('\"', idx)) != string::npos) {
+    while ((idx = source.find('\"', idx)) != string::npos) {
         source.replace(idx, 1, "\\\""); // a backslash and a double quote
         idx += 2;
     }
@@ -512,11 +478,9 @@ escape_double_quotes(string source)
     @param source
     @return result
  */
-string
-unescape_double_quotes(string source)
-{
+string unescape_double_quotes(string source) {
     string::size_type idx = 0;
-    while((idx = source.find("\\\"", idx)) != string::npos) {
+    while ((idx = source.find("\\\"", idx)) != string::npos) {
         source.replace(idx, 2, "\""); // a backslash and a double quote
         ++idx;
     }
@@ -525,4 +489,3 @@ unescape_double_quotes(string source)
 }
 
 } // namespace libdap
-

@@ -42,13 +42,12 @@ class DMR;
  * jhrg 9/5/13
  */
 
-class D4ResponseBuilder
-{
+class D4ResponseBuilder {
 
 protected:
-    std::string d_dataset;  		/// Name of the dataset/database
-    int d_timeout;  		/// Response timeout after N seconds
-    std::string d_default_protocol;	/// Version std::string for the library's default protocol version
+    std::string d_dataset;          /// Name of the dataset/database
+    int d_timeout;                  /// Response timeout after N seconds
+    std::string d_default_protocol; /// Version std::string for the library's default protocol version
 
     void initialize();
 
@@ -56,7 +55,7 @@ public:
     /** Make an empty instance. Use the set_*() methods to load with needed
         values. You must call at least set_dataset_name() or be requesting
         version information. */
-    D4ResponseBuilder() { initialize();  }
+    D4ResponseBuilder() { initialize(); }
 
     virtual ~D4ResponseBuilder();
 

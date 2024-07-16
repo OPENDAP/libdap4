@@ -39,9 +39,9 @@
 #include "Array.h"
 #include "TestCommon.h"
 
-using namespace libdap ;
+using namespace libdap;
 
-class TestArray: public Array, public TestCommon {
+class TestArray : public Array, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestArray &ts);
     unsigned int m_print_array(ostream &out, unsigned int index, unsigned int dims, unsigned int shape[]);
@@ -77,4 +77,3 @@ public:
 };
 
 #endif // _testarray_h
-

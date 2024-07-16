@@ -30,21 +30,21 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "BaseType.h"
-#include "Int8.h"
-#include "Int64.h"
-#include "UInt64.h"
-#include "Byte.h"
-#include "Float32.h"
 #include "Array.h"
-#include "Structure.h"
+#include "BaseType.h"
+#include "Byte.h"
 #include "D4Attributes.h"
+#include "Float32.h"
+#include "Int64.h"
+#include "Int8.h"
+#include "Structure.h"
+#include "UInt64.h"
 
 #include "D4BaseTypeFactory.h"
 #include "DMR.h"
 
-#include "DapObj.h"
 #include "D4Group.h"
+#include "DapObj.h"
 
 #include "run_tests_cppunit.h"
 
@@ -56,23 +56,19 @@ string truth(bool v) { return (v ? "true" : "false"); }
 
 namespace libdap {
 
-class IsDap4ProjectedTest: public CppUnit::TestFixture {
+class IsDap4ProjectedTest : public CppUnit::TestFixture {
 
 public:
-
     // Called once before everything gets tested
     IsDap4ProjectedTest() = default;
 
     // Called at the end of the test
     ~IsDap4ProjectedTest() override = default;
 
-    void setUp() override {
-        DBG(cerr << endl);
-    }
+    void setUp() override { DBG(cerr << endl); }
     /////////////////////////////////////////////////////////////////
     /// DAP2 AND DDS TESTS
     /////////////////////////////////////////////
-
 
     /**
      * basic variable test - true
@@ -91,7 +87,7 @@ public:
         DBG(cerr << prolog << "             inv.size(): " << inv.size() << endl);
         CPPUNIT_ASSERT(inv.size() == 1);
 
-        DBG(cerr << prolog << "      inv.at(0)->name(): " << inv.at(0)<< endl);
+        DBG(cerr << prolog << "      inv.at(0)->name(): " << inv.at(0) << endl);
         CPPUNIT_ASSERT(inv.at(0) == "Int8 ivar");
     }
 
@@ -125,7 +121,7 @@ public:
         avar.append_dim(15, "dim2");
         avar.set_send_p(true);
 
-        if(debug) {
+        if (debug) {
             cerr << prolog;
             avar.print_decl(cerr, " ", false, false, true);
             cerr << endl;
@@ -211,7 +207,6 @@ public:
         CPPUNIT_ASSERT(inv.empty() == true);
     }
 
-
     /**
      * basic variable attribute test - true
      * test if a basic var with dap4 attribute returns true
@@ -241,9 +236,9 @@ public:
     }
 
     /**
-    * basic variable attribute test - false
-    * test if a basic var with no dap4 attribute returns false
-    */
+     * basic variable attribute test - false
+     * test if a basic var with no dap4 attribute returns false
+     */
     void test_is_dap4_projected_attr_false() {
         Byte bvar("bvar");
         auto *d4a = new D4Attribute("d4a", attr_byte_c);
@@ -260,14 +255,14 @@ public:
     }
 
     /**
-    * array attribute test - true
-    * test if an array with dap4 attribute returns true
-    */
+     * array attribute test - true
+     * test if an array with dap4 attribute returns true
+     */
     void test_is_dap4_projected_attr_array_true() {
 
         Byte bvar("bvar");
         auto avar = unique_ptr<Array>(new Array("avar", &bvar));
-        avar->append_dim(10,"dim1");
+        avar->append_dim(10, "dim1");
 
         auto d4a = new D4Attribute("d4a", attr_int8_c);
         avar->attributes()->add_attribute_nocopy(d4a);
@@ -291,9 +286,9 @@ public:
     }
 
     /**
-    * array attribute test - false
-    * test if an array with no dap4 attribute returns false
-    */
+     * array attribute test - false
+     * test if an array with no dap4 attribute returns false
+     */
     void test_is_dap4_projected_attr_array_false() {
 
         Byte bvar("bvar");
@@ -313,9 +308,9 @@ public:
     }
 
     /**
-    * struct attribute test - true
-    * test if a struct with dap4 attribute returns true
-    */
+     * struct attribute test - true
+     * test if a struct with dap4 attribute returns true
+     */
     void test_is_dap4_projected_attr_struct_true() {
         auto svar = unique_ptr<Structure>(new Structure("svar"));
 
@@ -345,9 +340,9 @@ public:
     }
 
     /**
-    * struct attribute test - false
-    * test if a struct with no dap4 attribute returns false
-    */
+     * struct attribute test - false
+     * test if a struct with no dap4 attribute returns false
+     */
     void test_is_dap4_projected_attr_struct_false() {
         auto svar = unique_ptr<Structure>(new Structure("svar"));
 
@@ -357,7 +352,7 @@ public:
         avar->attributes()->add_attribute_nocopy(d4a);
         svar->add_var_nocopy(avar);
 
-        vector<string > inv;
+        vector<string> inv;
         bool result = svar->is_dap4_projected(inv);
 
         DBG(cerr << prolog << "structure.is_dap4_projected(): " << truth(result) << endl);
@@ -372,7 +367,6 @@ public:
         DBG(cerr << prolog << "                  inv.empty(): " << truth(inv.empty()) << endl);
         CPPUNIT_ASSERT(inv.empty() == true);
     }
-
 
     /////////////////////////////////////////////////////////////////
     /// DAP4 AND DMR TESTS
@@ -405,7 +399,6 @@ public:
 
         DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
         CPPUNIT_ASSERT(inv.at(0) == "Int8 /ivar");
-
     }
 
     /**
@@ -433,7 +426,6 @@ public:
         DBG(cerr << prolog << "             inv.empty(): " << truth(inv.empty()) << endl);
         CPPUNIT_ASSERT(inv.empty() == true);
     }
-
 
     /**
      * DMR variable test - true
@@ -483,7 +475,6 @@ public:
 
         DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
         CPPUNIT_ASSERT(inv.at(0) == "Int64 /iVar");
-
     }
 
     /**
@@ -532,7 +523,6 @@ public:
 
         DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
         CPPUNIT_ASSERT(inv.at(0) == "Int8 /ivar");
-
     }
 
     /**
@@ -568,8 +558,8 @@ public:
 
         Int8 ivar("ivar");
         auto avar = new Array("avar", &ivar);
-        avar->append_dim(10,"dim1");
-        avar->append_dim(20,"");
+        avar->append_dim(10, "dim1");
+        avar->append_dim(20, "");
         avar->set_send_p(true);
 
         auto svar = new Structure("svar");
@@ -601,7 +591,7 @@ public:
 
         Byte bvar("bvar");
         auto avar = new Array("avar", &bvar);
-        avar->append_dim(10,"dim1");
+        avar->append_dim(10, "dim1");
         avar->set_send_p(true);
 
         auto svar = new Structure("svar");
@@ -617,7 +607,6 @@ public:
 
         DBG(cerr << prolog << "             inv.empty(): " << truth(inv.empty()) << endl);
         CPPUNIT_ASSERT(inv.empty() == true);
-
     }
 
     /**
@@ -648,9 +637,9 @@ public:
     }
 
     /**
-    * dmr basic variable attribute test - false
-    * test if a dmr holding a basic var without dap4 attribute returns false
-    */
+     * dmr basic variable attribute test - false
+     * test if a dmr holding a basic var without dap4 attribute returns false
+     */
     void test_is_dap4_projected_dmr_attr_false() {
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
@@ -672,9 +661,9 @@ public:
     }
 
     /**
-    * dmr array attribute test - true
-    * test if a dmr holding an array with dap4 attribute returns true
-    */
+     * dmr array attribute test - true
+     * test if a dmr holding an array with dap4 attribute returns true
+     */
     void test_is_dap4_projected_dmr_attr_array_true() {
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
@@ -700,9 +689,9 @@ public:
     }
 
     /**
-    * dmr array attribute test - false
-    * test if a dmr holding an array without dap4 attribute returns false
-    */
+     * dmr array attribute test - false
+     * test if a dmr holding an array without dap4 attribute returns false
+     */
     void test_is_dap4_projected_dmr_attr_array_false() {
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
@@ -725,9 +714,9 @@ public:
     }
 
     /**
-    * dmr struct attribute test - true
-    * test if a dmr holding a struct with dap4 attribute returns true
-    */
+     * dmr struct attribute test - true
+     * test if a dmr holding a struct with dap4 attribute returns true
+     */
     void test_is_dap4_projected_dmr_attr_struct_true() {
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
@@ -735,7 +724,7 @@ public:
         auto d4a = new D4Attribute("d4a", attr_int8_c);
         Byte bvar("bvar");
         auto avar = new Array("avar", &bvar);
-        avar->append_dim(7,"");
+        avar->append_dim(7, "");
         avar->attributes()->add_attribute_nocopy(d4a);
 
         auto svar = new Structure("svar");
@@ -754,13 +743,12 @@ public:
 
         DBG(cerr << prolog << "       inv.at(0): " << inv.at(0) << endl);
         CPPUNIT_ASSERT(inv.at(0) == "Int8 /svar.bvar@d4a");
-
     }
 
     /**
-    * dmr struct attribute test - false
-    * test if a dmr holding a struct without dap4 attribute returns false
-    */
+     * dmr struct attribute test - false
+     * test if a dmr holding a struct without dap4 attribute returns false
+     */
     void test_is_dap4_projected_dmr_attr_struct_false() {
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
@@ -787,9 +775,9 @@ public:
     }
 
     /**
-    * dmr subgroup variable test - true
-    * test if a dmr holding a subgroup with dap4 vars returns true
-    */
+     * dmr subgroup variable test - true
+     * test if a dmr holding a subgroup with dap4 vars returns true
+     */
     void test_is_dap4_projected_dmr_subgroup_true() {
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
@@ -819,9 +807,9 @@ public:
     }
 
     /**
-    * dmr subgroup variable test - false
-    * test if a dmr holding a subgroup with no dap4 vars returns false
-    */
+     * dmr subgroup variable test - false
+     * test if a dmr holding a subgroup with no dap4 vars returns false
+     */
     void test_is_dap4_projected_dmr_subgroup_true_too() {
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
@@ -848,9 +836,9 @@ public:
     }
 
     /**
-    * dmr subgroup variable test - false
-    * test if a dmr holding a subgroup with no dap4 vars returns false
-    */
+     * dmr subgroup variable test - false
+     * test if a dmr holding a subgroup with no dap4 vars returns false
+     */
     void test_is_dap4_projected_nested_group_array_attr() {
         D4BaseTypeFactory f4;
         auto dmr = unique_ptr<DMR>(new DMR(&f4, "test"));
@@ -931,7 +919,6 @@ public:
 
         DBG(cerr << prolog << "       inv.at(2): " << inv.at(2) << endl);
         CPPUNIT_ASSERT(inv.at(2) == "Group /b_grp/c_grp/");
-
     }
     /**
      * dmr global dap4 attribute test.
@@ -978,7 +965,6 @@ public:
         CPPUNIT_ASSERT(inv.at(2) == "Group /b_grp/c_grp/");
     }
 
-
     /**
      * dmr global dap4 attribute test.
      * true
@@ -990,14 +976,14 @@ public:
 
         // auto svar_proto = new Structure("svar");
         Structure svar_proto("svar");
-        auto fvar =  new Float32("fvar");
+        auto fvar = new Float32("fvar");
         svar_proto.add_var_nocopy(fvar);
         auto d4var = new UInt64("d4var");
         svar_proto.add_var_nocopy(d4var);
 
         auto avar = new Array("avar", &svar_proto);
-        avar->append_dim(10,"dim1");
-        avar->append_dim(20,"");
+        avar->append_dim(10, "dim1");
+        avar->append_dim(20, "");
         avar->set_send_p(true);
 
         dmr->root()->add_var_nocopy(avar);
@@ -1016,9 +1002,9 @@ public:
     }
 
     /**
- * DMR Int8 variable test - true
- * test if DMR containing dap4 var [Int8] returns true
- */
+     * DMR Int8 variable test - true
+     * test if DMR containing dap4 var [Int8] returns true
+     */
     void test_dds_with_dap4_global_attr() {
 
         auto bvar = new Byte("bvar");
@@ -1033,7 +1019,7 @@ public:
 
         // Add an attribute that is a DAP4 type (Int8). NB: we don't care about the return
         // value here. jhrg 1/30/23
-        (void) dds.get_attr_table().append_attr("ima_d4thing","Int8","0");
+        (void)dds.get_attr_table().append_attr("ima_d4thing", "Int8", "0");
 
         vector<string> inv;
         bool result = dds.is_dap4_projected(inv);
@@ -1051,58 +1037,58 @@ public:
     ///////////////////////////////////////////////////////
     /// DDS/DAP2 Tests
 
-    CPPUNIT_TEST_SUITE( IsDap4ProjectedTest );
+    CPPUNIT_TEST_SUITE(IsDap4ProjectedTest);
 
-        CPPUNIT_TEST(test_is_dap4_projected_int8);
-        CPPUNIT_TEST(test_is_dap4_projected_byte);
+    CPPUNIT_TEST(test_is_dap4_projected_int8);
+    CPPUNIT_TEST(test_is_dap4_projected_byte);
 
-        CPPUNIT_TEST(test_is_dap4_projected_array_int8);
-        CPPUNIT_TEST(test_is_dap4_projected_array_byte);
+    CPPUNIT_TEST(test_is_dap4_projected_array_int8);
+    CPPUNIT_TEST(test_is_dap4_projected_array_byte);
 
-        CPPUNIT_TEST(test_is_dap4_projected_struct_int8);
-        CPPUNIT_TEST(test_is_dap4_projected_struct_byte);
+    CPPUNIT_TEST(test_is_dap4_projected_struct_int8);
+    CPPUNIT_TEST(test_is_dap4_projected_struct_byte);
 
-        CPPUNIT_TEST(test_is_dap4_projected_attr_true);
-        CPPUNIT_TEST(test_is_dap4_projected_attr_false);
+    CPPUNIT_TEST(test_is_dap4_projected_attr_true);
+    CPPUNIT_TEST(test_is_dap4_projected_attr_false);
 
-        CPPUNIT_TEST(test_is_dap4_projected_attr_array_true);
-        CPPUNIT_TEST(test_is_dap4_projected_attr_array_false);
+    CPPUNIT_TEST(test_is_dap4_projected_attr_array_true);
+    CPPUNIT_TEST(test_is_dap4_projected_attr_array_false);
 
-        CPPUNIT_TEST(test_is_dap4_projected_attr_struct_true);
-        CPPUNIT_TEST(test_is_dap4_projected_attr_struct_false);
+    CPPUNIT_TEST(test_is_dap4_projected_attr_struct_true);
+    CPPUNIT_TEST(test_is_dap4_projected_attr_struct_false);
 
-        ///////////////////////////////////////////////////////
-        /// DMR/DAP4 Tests
+    ///////////////////////////////////////////////////////
+    /// DMR/DAP4 Tests
 
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_ddsint8);
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_ddsbyte);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_ddsint8);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_ddsbyte);
 
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_int8);
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_int64);
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_byte);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_int8);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_int64);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_byte);
 
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_array_int8);
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_array_byte);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_array_int8);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_array_byte);
 
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_struct_int8);
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_struct_byte);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_struct_int8);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_struct_byte);
 
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_true);
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_false);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_true);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_false);
 
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_array_true);
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_array_false);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_array_true);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_array_false);
 
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_struct_true);
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_struct_false);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_struct_true);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_attr_struct_false);
 
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_subgroup_true);
-        CPPUNIT_TEST(test_is_dap4_projected_dmr_subgroup_true_too);
-        CPPUNIT_TEST(test_is_dap4_projected_nested_group_array_attr);
-        CPPUNIT_TEST(test_is_dap4_projected_global_d4_attr);
-        CPPUNIT_TEST(alternate_test);
-        CPPUNIT_TEST(test_is_dap4_projected_array_of_struct_with_d4);
-        CPPUNIT_TEST(test_dds_with_dap4_global_attr);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_subgroup_true);
+    CPPUNIT_TEST(test_is_dap4_projected_dmr_subgroup_true_too);
+    CPPUNIT_TEST(test_is_dap4_projected_nested_group_array_attr);
+    CPPUNIT_TEST(test_is_dap4_projected_global_d4_attr);
+    CPPUNIT_TEST(alternate_test);
+    CPPUNIT_TEST(test_is_dap4_projected_array_of_struct_with_d4);
+    CPPUNIT_TEST(test_dds_with_dap4_global_attr);
 
     CPPUNIT_TEST_SUITE_END();
 };
@@ -1111,8 +1097,4 @@ CPPUNIT_TEST_SUITE_REGISTRATION(IsDap4ProjectedTest);
 
 } // namespace libdap
 
-int main(int argc, char *argv[])
-{
-    return run_tests<libdap::IsDap4ProjectedTest>(argc, argv) ? 0: 1;
-}
-
+int main(int argc, char *argv[]) { return run_tests<libdap::IsDap4ProjectedTest>(argc, argv) ? 0 : 1; }

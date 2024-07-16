@@ -36,7 +36,6 @@
 #ifndef _float64_h
 #define _float64_h 1
 
-
 #ifndef _dods_datatypes_h
 #include "dods-datatypes.h"
 #endif
@@ -49,24 +48,21 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief Holds a 64-bit (double precision) floating point value.
 
 @see BaseType
 */
 
-class Float64: public BaseType
-{
+class Float64 : public BaseType {
 protected:
     dods_float64 d_buf;
 
 public:
     Float64(const string &n);
     Float64(const string &n, const string &d);
-    virtual ~Float64()
-    {}
+    virtual ~Float64() {}
 
     Float64(const Float64 &copy_from);
 
@@ -74,15 +70,9 @@ public:
 
     BaseType *ptr_duplicate() override;
 
-    unsigned int width(bool = false) const override
-    {
-        return sizeof(dods_float64);
-    }
+    unsigned int width(bool = false) const override { return sizeof(dods_float64); }
 
-    int64_t width_ll(bool = false) const override
-    {
-        return sizeof(dods_float64);
-    }
+    int64_t width_ll(bool = false) const override { return sizeof(dods_float64); }
 
     // DAP2
     bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
@@ -99,18 +89,15 @@ public:
     virtual dods_float64 value() const;
     virtual bool set_value(dods_float64 val);
 
-    void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true) override;
-    void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true) override;
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
     bool ops(BaseType *b, int op) override;
     bool d4_ops(BaseType *b, int op) override;
 
-    void dump(ostream &strm) const  override;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
 
 #endif // _float64_h
-

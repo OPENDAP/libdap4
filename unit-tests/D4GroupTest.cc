@@ -25,72 +25,62 @@
 #include "config.h"
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
-#include "D4Group.h"
 #include "D4Attributes.h"
+#include "D4Group.h"
 
-#include "crc.h"
 #include "Byte.h"
 #include "Int64.h"
 #include "Structure.h"
 #include "XMLWriter.h"
+#include "crc.h"
 #include "debug.h"
 
-#include "testFile.h"
 #include "run_tests_cppunit.h"
+#include "testFile.h"
 #include "test_config.h"
 
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
-class D4GroupTest: public TestFixture {
+class D4GroupTest : public TestFixture {
 private:
     XMLWriter *xml;
     D4Group *root, *named;
 
 public:
-    D4GroupTest() :
-        xml(0), root(0), named(0)
-    {
-    }
+    D4GroupTest() : xml(0), root(0), named(0) {}
 
-    ~D4GroupTest()
-    {
-    }
+    ~D4GroupTest() {}
 
-    void setUp()
-    {
+    void setUp() {
         root = new D4Group("/");
         named = new D4Group("test");
         xml = new XMLWriter;
     }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete xml;
         delete root;
         delete named;
     }
 
-    void load_group_with_scalars(D4Group *g)
-    {
+    void load_group_with_scalars(D4Group *g) {
         g->add_var_nocopy(new Byte("b"));
         g->add_var_nocopy(new Int64("i64"));
     }
 
-    void load_group_with_constructors_and_scalars(D4Group *g)
-    {
+    void load_group_with_constructors_and_scalars(D4Group *g) {
         Structure *s = new Structure("s");
         s->add_var_nocopy(new Byte("b"));
         s->add_var_nocopy(new Int64("i64"));
         g->add_var_nocopy(s);
     }
 
-    void load_group_with_nested_constructors_and_scalars(D4Group *g)
-    {
+    void load_group_with_nested_constructors_and_scalars(D4Group *g) {
         Structure *c = new Structure("c");
         c->add_var_nocopy(new Byte("b"));
         c->add_var_nocopy(new Int64("i64"));
@@ -101,8 +91,7 @@ public:
         g->add_var_nocopy(p);
     }
 
-    void load_group_with_stuff(D4Group *g)
-    {
+    void load_group_with_stuff(D4Group *g) {
         g->dims()->add_dim_nocopy(new D4Dimension("lat", 1024));
         g->dims()->add_dim_nocopy(new D4Dimension("lon", 1024));
         g->dims()->add_dim_nocopy(new D4Dimension("time", 20));
@@ -118,31 +107,26 @@ public:
         g->attributes()->add_attribute_nocopy(attr);
     }
 
-    void test_cons()
-    {
+    void test_cons() {
         D4Group g1 = D4Group("a", "b");
         CPPUNIT_ASSERT(g1.name() == "a" && g1.dataset() == "b");
     }
 
-    void test_assignment()
-    {
+    void test_assignment() {
         D4Group g1 = D4Group("a", "b");
         D4Group g2 = D4Group("c", "d");
-        //g2 = g1;
+        // g2 = g1;
         CPPUNIT_ASSERT(g2.name() == "c" && g2.dataset() == "d");
         g2 = g1;
         CPPUNIT_ASSERT(g2.name() == "a" && g2.dataset() == "b");
-
     }
 
-    void test_is_linear()
-    {
-        D4Group g1 = D4Group("a", "b");        
+    void test_is_linear() {
+        D4Group g1 = D4Group("a", "b");
         CPPUNIT_ASSERT(!g1.is_linear());
     }
 
-    void test_errors()
-    {
+    void test_errors() {
         D4Group g1 = D4Group("a", "b");
         Crc32 cs;
         Constructor *c = &g1;
@@ -153,8 +137,7 @@ public:
         CPPUNIT_ASSERT_THROW(c->compute_checksum(cs), InternalErr);
     }
 
-    void test_riter()
-    {
+    void test_riter() {
         load_group_with_scalars(root);
         int count = 0;
         for (Constructor::Vars_riter r = root->var_rbegin(); r != root->var_rend(); r++) {
@@ -162,9 +145,8 @@ public:
             count++;
         }
     }
-    
-    void test_get_iter()
-    {
+
+    void test_get_iter() {
         load_group_with_scalars(root);
         int count = 0;
         for (Constructor::Vars_iter r = root->get_vars_iter(0); r != root->var_end(); r++) {
@@ -173,8 +155,7 @@ public:
         }
     }
 
-    void test_get_var_index()
-    {
+    void test_get_var_index() {
         load_group_with_scalars(root);
         BaseType *bt = root->get_var_index(0);
         CPPUNIT_ASSERT(bt->name() == "b");
@@ -182,25 +163,22 @@ public:
         CPPUNIT_ASSERT(bt->name() == "i64");
     }
 
-    void test_delete_var()
-    {
+    void test_delete_var() {
         load_group_with_scalars(root);
-        Constructor::Vars_iter r = root->get_vars_iter(0);        
+        Constructor::Vars_iter r = root->get_vars_iter(0);
         root->del_var(r);
         BaseType *bt = root->get_var_index(0);
-        CPPUNIT_ASSERT(bt->name() == "i64");        
+        CPPUNIT_ASSERT(bt->name() == "i64");
     }
 
-    void test_size()
-    {
+    void test_size() {
         D4Group g1 = D4Group("a", "b");
         CPPUNIT_ASSERT(g1.request_size(true) == 0);
     }
 
     // An empty D4Group object prints nothing; the XMLWriter class adds
     // a xml doc preface.
-    void test_print_empty()
-    {
+    void test_print_empty() {
         root->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_empty.xml");
@@ -209,8 +187,7 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_named_empty()
-    {
+    void test_print_named_empty() {
         named->print_dap4(*xml);
         string doc = xml->get_doc();
         string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/D4-xml/D4Group_named_empty.xml");
@@ -219,8 +196,7 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_with_vars()
-    {
+    void test_print_with_vars() {
         load_group_with_scalars(root);
 
         root->print_dap4(*xml);
@@ -231,8 +207,7 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_named_with_vars()
-    {
+    void test_print_named_with_vars() {
         load_group_with_scalars(named);
 
         named->print_dap4(*xml);
@@ -244,8 +219,7 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_with_vars_and_stuff()
-    {
+    void test_print_with_vars_and_stuff() {
         load_group_with_scalars(root);
         load_group_with_stuff(root);
 
@@ -257,8 +231,7 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_named_with_vars_and_stuff()
-    {
+    void test_print_named_with_vars_and_stuff() {
         load_group_with_scalars(named);
         load_group_with_stuff(named);
 
@@ -270,8 +243,7 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_find_var()
-    {
+    void test_find_var() {
         load_group_with_scalars(root);
         load_group_with_stuff(root);
 
@@ -298,8 +270,7 @@ public:
         CPPUNIT_ASSERT(btp->get_parent()->name() == "child" && btp->get_parent()->get_parent()->name() == "/");
     }
 
-    void test_find_var_2()
-    {
+    void test_find_var_2() {
         auto child = new D4Group("child");
         auto g_child_1 = new D4Group("g_child_1");
         auto g_child_2 = new D4Group("g_child_2");
@@ -332,8 +303,7 @@ public:
         CPPUNIT_ASSERT_MESSAGE("Looking for /child/g_child_2", bv_gc_4 == g_child_2);
     }
 
-    void test_print_everything()
-    {
+    void test_print_everything() {
         load_group_with_scalars(root);
         load_group_with_stuff(root);
 
@@ -355,8 +325,7 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_copy_ctor()
-    {
+    void test_print_copy_ctor() {
         load_group_with_scalars(root);
         load_group_with_stuff(root);
 
@@ -375,8 +344,7 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_print_assignment()
-    {
+    void test_print_assignment() {
         load_group_with_scalars(root);
         load_group_with_stuff(root);
 
@@ -395,8 +363,7 @@ public:
         CPPUNIT_ASSERT(doc == baseline);
     }
 
-    void test_fqn_1()
-    {
+    void test_fqn_1() {
         load_group_with_scalars(root);
 
         BaseType *btp = root->find_var("b");
@@ -404,8 +371,7 @@ public:
         CPPUNIT_ASSERT(btp->FQN() == "/b");
     }
 
-    void test_fqn_2()
-    {
+    void test_fqn_2() {
         load_group_with_constructors_and_scalars(root);
 
         BaseType *btp = root->find_var("s.b");
@@ -417,8 +383,7 @@ public:
         CPPUNIT_ASSERT(btp->FQN() == "/s.b");
     }
 
-    void test_fqn_3()
-    {
+    void test_fqn_3() {
         load_group_with_nested_constructors_and_scalars(root);
 
         BaseType *btp = root->find_var("p.c.b");
@@ -430,8 +395,7 @@ public:
         CPPUNIT_ASSERT(btp->FQN() == "/p.c.b");
     }
 
-    void test_fqn_4()
-    {
+    void test_fqn_4() {
         D4Group *local = new D4Group("child");
         load_group_with_nested_constructors_and_scalars(local);
         root->add_group_nocopy(local);
@@ -445,46 +409,43 @@ public:
         CPPUNIT_ASSERT(btp && btp->FQN() == "/child/p.c.b");
     }
 
-    CPPUNIT_TEST_SUITE (D4GroupTest);
+    CPPUNIT_TEST_SUITE(D4GroupTest);
 
-    CPPUNIT_TEST (test_assignment);
-    CPPUNIT_TEST (test_cons);
-    CPPUNIT_TEST (test_is_linear);
-    CPPUNIT_TEST (test_errors);
-    CPPUNIT_TEST (test_size);
-    CPPUNIT_TEST (test_riter);
-    CPPUNIT_TEST (test_get_iter);
-    CPPUNIT_TEST (test_get_var_index);
-    CPPUNIT_TEST (test_delete_var);
-    
-    CPPUNIT_TEST (test_print_empty);
+    CPPUNIT_TEST(test_assignment);
+    CPPUNIT_TEST(test_cons);
+    CPPUNIT_TEST(test_is_linear);
+    CPPUNIT_TEST(test_errors);
+    CPPUNIT_TEST(test_size);
+    CPPUNIT_TEST(test_riter);
+    CPPUNIT_TEST(test_get_iter);
+    CPPUNIT_TEST(test_get_var_index);
+    CPPUNIT_TEST(test_delete_var);
 
-    CPPUNIT_TEST (test_print_named_empty);
-    CPPUNIT_TEST (test_print_with_vars);
-    CPPUNIT_TEST (test_print_named_with_vars);
+    CPPUNIT_TEST(test_print_empty);
 
-    CPPUNIT_TEST (test_print_with_vars_and_stuff);
+    CPPUNIT_TEST(test_print_named_empty);
+    CPPUNIT_TEST(test_print_with_vars);
+    CPPUNIT_TEST(test_print_named_with_vars);
 
-    CPPUNIT_TEST (test_print_named_with_vars_and_stuff);
-    CPPUNIT_TEST (test_print_everything);
+    CPPUNIT_TEST(test_print_with_vars_and_stuff);
 
-    CPPUNIT_TEST (test_find_var);
-    CPPUNIT_TEST (test_find_var_2);
+    CPPUNIT_TEST(test_print_named_with_vars_and_stuff);
+    CPPUNIT_TEST(test_print_everything);
 
-    CPPUNIT_TEST (test_print_copy_ctor);
-    CPPUNIT_TEST (test_print_assignment);
+    CPPUNIT_TEST(test_find_var);
+    CPPUNIT_TEST(test_find_var_2);
 
-    CPPUNIT_TEST (test_fqn_1);
-    CPPUNIT_TEST (test_fqn_2);
-    CPPUNIT_TEST (test_fqn_3);
-    CPPUNIT_TEST (test_fqn_4);
+    CPPUNIT_TEST(test_print_copy_ctor);
+    CPPUNIT_TEST(test_print_assignment);
+
+    CPPUNIT_TEST(test_fqn_1);
+    CPPUNIT_TEST(test_fqn_2);
+    CPPUNIT_TEST(test_fqn_3);
+    CPPUNIT_TEST(test_fqn_4);
 
     CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (D4GroupTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(D4GroupTest);
 
-int main(int argc, char *argv[])
-{
-    return run_tests<D4GroupTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<D4GroupTest>(argc, argv) ? 0 : 1; }

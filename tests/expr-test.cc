@@ -35,68 +35,65 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include <stdio.h>
 #include <stdlib.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <string.h>
 #include <errno.h>
+#include <string.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string>
 
 #include "GetOpt.h"
 
 #include "BaseType.h"
+#include "Connect.h"
+#include "ConstraintEvaluator.h"
 #include "DDS.h"
 #include "DataDDS.h"
-#include "ConstraintEvaluator.h"
+#include "Error.h"
+#include "Response.h"
+#include "ResponseBuilder.h"
 #include "ServerFunctionsList.h"
 #include "XDRStreamMarshaller.h"
-#include "ResponseBuilder.h"
-#include "Response.h"
-#include "Connect.h"
-#include "Error.h"
 
-#include "TestSequence.h"
 #include "TestCommon.h"
+#include "TestSequence.h"
 #include "TestTypeFactory.h"
 
 #include "TestFunction.h"
 
-#include "parser.h"
-#include "expr.h"
 #include "ce_expr.tab.hh"
+#include "expr.h"
+#include "parser.h"
 #include "util.h"
 
 #include "debug.h"
 
 using namespace std;
 
-int test_variable_sleep_interval = 0;   // Used in Test* classes for testing
+int test_variable_sleep_interval = 0; // Used in Test* classes for testing
                                       // timeouts.
 
-#define CRLF "\r\n"             // Change this here and in mime_util.cc
+#define CRLF "\r\n" // Change this here and in mime_util.cc
 #define DODS_DDS_PRX "dods_dds"
 #define YY_BUFFER_STATE (void *)
 
-void test_scanner(const string & str);
+void test_scanner(const string &str);
 void test_scanner(bool show_prompt);
-void test_parser(ConstraintEvaluator & eval, DDS & table,
-                 const string & dds_name, string constraint);
-bool read_table(DDS & table, const string & name, bool print);
-void evaluate_dds(DDS & table, bool print_constrained, bool xml_syntax);
-void constrained_trans(const string & dds_name, const bool constraint_expr,
-                       const string & ce, const bool series_values);
-void intern_data_test(const string & dds_name, const bool constraint_expr,
-                 const string & ce, const bool series_values);
+void test_parser(ConstraintEvaluator &eval, DDS &table, const string &dds_name, string constraint);
+bool read_table(DDS &table, const string &name, bool print);
+void evaluate_dds(DDS &table, bool print_constrained, bool xml_syntax);
+void constrained_trans(const string &dds_name, const bool constraint_expr, const string &ce, const bool series_values);
+void intern_data_test(const string &dds_name, const bool constraint_expr, const string &ce, const bool series_values);
 
-int ce_exprlex();               // exprlex() uses the global ce_exprlval
-void ce_exprrestart(FILE * in);
+int ce_exprlex(); // exprlex() uses the global ce_exprlval
+void ce_exprrestart(FILE *in);
 
 // Glue routines declared in expr.lex
 void ce_expr_switch_to_buffer(void *new_buffer);
@@ -139,8 +136,7 @@ const string usage = "\
 \n      data printouts.\
 \n  -?: Print usage information";
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     GetOpt getopt(argc, argv, options.c_str());
 
     int option_char;
@@ -210,11 +206,11 @@ int main(int argc, char *argv[])
             verbose = true;
             break;
         case 'V':
-            cerr << argv[0] << ": " <<  version << endl;
+            cerr << argv[0] << ": " << version << endl;
             exit(0);
         case 'x':
-        	xml_syntax = true;
-        	break;
+            xml_syntax = true;
+            break;
         case '?':
         default:
             cerr << usage << endl;
@@ -223,8 +219,7 @@ int main(int argc, char *argv[])
         }
 
     try {
-        if (!scanner_test && !parser_test && !evaluate_test
-            && !whole_enchalada && !whole_intern_enchalada) {
+        if (!scanner_test && !parser_test && !evaluate_test && !whole_enchalada && !whole_intern_enchalada) {
             cerr << usage << endl;
             exit(1);
         }
@@ -255,12 +250,10 @@ int main(int argc, char *argv[])
         if (whole_intern_enchalada) {
             intern_data_test(dds_file_name, constraint_expr, constraint, series_values);
         }
-    }
-    catch(Error & e) {
-        cerr <<e.get_error_message() << endl;
+    } catch (Error &e) {
+        cerr << e.get_error_message() << endl;
         exit(1);
-    }
-    catch(exception & e) {
+    } catch (exception &e) {
         cerr << "Caught exception: " << e.what() << endl;
         exit(1);
     }
@@ -270,8 +263,7 @@ int main(int argc, char *argv[])
 
 // Instead of reading the tokens from stdin, read them from a string.
 
-void test_scanner(const string & str)
-{
+void test_scanner(const string &str) {
     ce_exprrestart(0);
     void *buffer = ce_expr_string(str.c_str());
     ce_expr_switch_to_buffer(buffer);
@@ -281,8 +273,7 @@ void test_scanner(const string & str)
     ce_expr_delete_buffer(buffer);
 }
 
-void test_scanner(bool show_prompt)
-{
+void test_scanner(bool show_prompt) {
     if (show_prompt)
         cout << prompt;
 
@@ -357,7 +348,7 @@ void test_scanner(bool show_prompt)
             break;
         }
 
-        cout << prompt << flush;  // print prompt after output
+        cout << prompt << flush; // print prompt after output
     }
 }
 
@@ -365,10 +356,7 @@ void test_scanner(bool show_prompt)
 // terminated by EOF. However, the EOF used to terminate the DDS also closes
 // stdin and thus the expr scanner exits immediately.
 
-void
-test_parser(ConstraintEvaluator & eval, DDS & dds, const string & dds_name,
-            string constraint)
-{
+void test_parser(ConstraintEvaluator &eval, DDS &dds, const string &dds_name, string constraint) {
     try {
         read_table(dds, dds_name, true);
 
@@ -377,15 +365,13 @@ test_parser(ConstraintEvaluator & eval, DDS & dds, const string & dds_name,
             char c[256];
             cin.getline(c, 256);
             if (!cin)
-                throw InternalErr(__FILE__, __LINE__,
-                                  "Could not read the constraint expression\n");
+                throw InternalErr(__FILE__, __LINE__, "Could not read the constraint expression\n");
             constraint = c;
         }
 
         eval.parse_constraint(constraint, dds);
-        fprintf(stdout, "Input parsed\n");      // Parser throws on failure.
-    }
-    catch(Error & e) {
+        fprintf(stdout, "Input parsed\n"); // Parser throws on failure.
+    } catch (Error &e) {
         cerr << e.get_error_message() << endl;
     }
 }
@@ -397,8 +383,7 @@ test_parser(ConstraintEvaluator & eval, DDS & dds, const string & dds_name,
 // Returns: true iff that DDS pasted the semantic_check() mfunc, otherwise
 // false.
 
-bool read_table(DDS & table, const string & name, bool print)
-{
+bool read_table(DDS &table, const string &name, bool print) {
     table.parse(name);
 
     if (print)
@@ -412,20 +397,18 @@ bool read_table(DDS & table, const string & name, bool print)
     }
 }
 
-void evaluate_dds(DDS & table, bool print_constrained, bool xml_syntax)
-{
+void evaluate_dds(DDS &table, bool print_constrained, bool xml_syntax) {
     if (print_constrained) {
-    	if (xml_syntax)
-    		table.print_xml(cout, print_constrained, "");
-    	else
-    		table.print_constrained(cout);
-    }
-    else {
+        if (xml_syntax)
+            table.print_xml(cout, print_constrained, "");
+        else
+            table.print_constrained(cout);
+    } else {
         for (DDS::Vars_iter p = table.var_begin(); p != table.var_end(); p++) {
-        	if (xml_syntax)
-        		(*p)->print_decl(cout, "", print_constrained);
-        	else
-        		(*p)->print_decl(cout, "", true, true);
+            if (xml_syntax)
+                (*p)->print_decl(cout, "", print_constrained);
+            else
+                (*p)->print_decl(cout, "", true, true);
         }
     }
 }
@@ -439,8 +422,7 @@ void evaluate_dds(DDS & table, bool print_constrained, bool xml_syntax)
 // header generation is not buried in the core software. This code simply
 // reads until the end of the header is found. 3/25/98 jhrg
 
-void parse_mime(FILE * data_source)
-{
+void parse_mime(FILE *data_source) {
     char line[256];
 
     fgets(line, 256, data_source);
@@ -449,10 +431,9 @@ void parse_mime(FILE * data_source)
         fgets(line, 256, data_source);
 }
 
-void set_series_values(DDS & dds, bool state)
-{
+void set_series_values(DDS &dds, bool state) {
     for (DDS::Vars_iter q = dds.var_begin(); q != dds.var_end(); q++) {
-        dynamic_cast < TestCommon & >(**q).set_series_values(state);
+        dynamic_cast<TestCommon &>(**q).set_series_values(state);
     }
 }
 
@@ -471,10 +452,8 @@ void set_series_values(DDS & dds, bool state)
 // to the output stream. After that, the marker `Data:' is written to the
 // output stream, followed by the binary data.
 
-void
-constrained_trans(const string & dds_name, const bool constraint_expr,
-                  const string & constraint, const bool series_values)
-{
+void constrained_trans(const string &dds_name, const bool constraint_expr, const string &constraint,
+                       const bool series_values) {
     // If the CE was not passed in, read it from the command line.
     string ce;
     if (!constraint_expr) {
@@ -485,8 +464,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
             throw InternalErr(__FILE__, __LINE__, "Could not read the constraint expression\n");
         }
         ce = c;
-    }
-    else {
+    } else {
         ce = constraint;
     }
 
@@ -507,7 +485,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     df.set_ce(ce);
     df.set_dataset_name(dds_name);
 
-    ofstream out("expr-test-data.bin", ios::out|ios::trunc|ios::binary);
+    ofstream out("expr-test-data.bin", ios::out | ios::trunc | ios::binary);
     df.send_data(out, server, eval, true);
     out.close();
 
@@ -518,7 +496,7 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     Connect c("http://dummy_argument");
 
     BaseTypeFactory factory;
-    DataDDS dds(&factory, "Test_data", "DAP/3.2");      // Must use DataDDS on receiving end
+    DataDDS dds(&factory, "Test_data", "DAP/3.2"); // Must use DataDDS on receiving end
 
     c.read_data(dds, &r);
 
@@ -538,10 +516,8 @@ constrained_trans(const string & dds_name, const bool constraint_expr,
     true.
     @param series_values True if TestTypes should generate 'series values'
     like the DTS. False selects the old-style values. */
-void
-intern_data_test(const string & dds_name, const bool constraint_expr,
-                 const string & constraint, const bool series_values)
-{
+void intern_data_test(const string &dds_name, const bool constraint_expr, const string &constraint,
+                      const bool series_values) {
     // If the CE was not passed in, read it from the command line.
     string ce;
     if (!constraint_expr) {
@@ -549,12 +525,10 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
         char c[256];
         cin.getline(c, 256);
         if (!cin) {
-            throw InternalErr(__FILE__, __LINE__,
-                              "Could not read the constraint expression\n");
+            throw InternalErr(__FILE__, __LINE__, "Could not read the constraint expression\n");
         }
         ce = c;
-    }
-    else {
+    } else {
         ce = constraint;
     }
 
@@ -571,9 +545,9 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
     // versatility 02/05/07 jhrg
     set_series_values(server, series_values);
 
-    eval.parse_constraint(ce, server);  // Throws Error if the ce doesn't parse.
+    eval.parse_constraint(ce, server); // Throws Error if the ce doesn't parse.
 
-    server.tag_nested_sequences();      // Tag Sequences as Parent or Leaf node.
+    server.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
     if (eval.function_clauses()) {
         DDS *fdds = eval.eval_function_clauses(server);
@@ -595,14 +569,13 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
             if ((*q)->send_p()) {
                 (*q)->print_decl(cout, "", false, false, true);
                 cout << " = ";
-                dynamic_cast<TestCommon&>(**q).output_values(cout);
+                dynamic_cast<TestCommon &>(**q).output_values(cout);
                 cout << ";\n";
             }
         }
 
         delete fdds;
-    }
-    else {
+    } else {
         for (DDS::Vars_iter i = server.var_begin(); i != server.var_end(); i++)
             if ((*i)->send_p())
                 (*i)->intern_data(eval, server);
@@ -619,7 +592,7 @@ intern_data_test(const string & dds_name, const bool constraint_expr,
             if ((*q)->send_p()) {
                 (*q)->print_decl(cout, "", false, false, true);
                 cout << " = ";
-                dynamic_cast<TestCommon&>(**q).output_values(cout);
+                dynamic_cast<TestCommon &>(**q).output_values(cout);
                 cout << ";\n";
             }
         }

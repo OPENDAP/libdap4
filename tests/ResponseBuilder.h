@@ -38,28 +38,24 @@ class DDS;
  * jhrg 6/11/13
  */
 
-class ResponseBuilder
-{
+class ResponseBuilder {
 public:
     friend class ResponseBuilderTest;
 
 protected:
-    std::string d_dataset;  		/// Name of the dataset/database
-    std::string d_dap2ce;  		    /// Constraint expression
-    std::string d_dap2_btp_func_ce;   /// The BTP functions, extracted from the CE
-    int d_timeout;  		/// Response timeout after N seconds
-    std::string d_default_protocol;	/// Version std::string for the library's default protocol version
+    std::string d_dataset;          /// Name of the dataset/database
+    std::string d_dap2ce;           /// Constraint expression
+    std::string d_dap2_btp_func_ce; /// The BTP functions, extracted from the CE
+    int d_timeout;                  /// Response timeout after N seconds
+    std::string d_default_protocol; /// Version std::string for the library's default protocol version
 
     void initialize();
 
 public:
-
     /** Make an empty instance. Use the set_*() methods to load with needed
         values. You must call at least set_dataset_name() or be requesting
         version information. */
-    ResponseBuilder() {
-        initialize();
-    }
+    ResponseBuilder() { initialize(); }
 
     virtual ~ResponseBuilder();
 
@@ -71,9 +67,11 @@ public:
     virtual std::string get_dataset_name() const;
     virtual void set_dataset_name(const std::string _dataset);
 
-    virtual void dataset_constraint(std::ostream &out, libdap::DDS &dds, libdap::ConstraintEvaluator &eval, bool ce_eval = true);
-    virtual void send_data(std::ostream &data_stream, libdap::DDS &dds, libdap::ConstraintEvaluator &eval, bool with_mime_headers = true);
+    virtual void dataset_constraint(std::ostream &out, libdap::DDS &dds, libdap::ConstraintEvaluator &eval,
+                                    bool ce_eval = true);
+    virtual void send_data(std::ostream &data_stream, libdap::DDS &dds, libdap::ConstraintEvaluator &eval,
+                           bool with_mime_headers = true);
 };
 
-}
+} // namespace libdap
 #endif // _response_builder_h

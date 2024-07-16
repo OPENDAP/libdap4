@@ -31,8 +31,7 @@
 #include "EventHandler.h"
 #include "InternalErr.h"
 
-namespace libdap
-{
+namespace libdap {
 
 typedef void Sigfunc(int); // Plauger, 1992
 
@@ -63,8 +62,7 @@ typedef void Sigfunc(int); // Plauger, 1992
 
     @see EventHandler
     @author James Gallagher <jgallagher@opendap.org> */
-class SignalHandler
-{
+class SignalHandler {
 private:
     // Ensure we're a Singleton.
     SignalHandler() {}
@@ -106,8 +104,7 @@ public:
     ///
     virtual ~SignalHandler() = default;
 
-    EventHandler *register_handler(int signum, EventHandler *eh,
-                                   bool ignore_by_default = false);
+    EventHandler *register_handler(int signum, EventHandler *eh, bool ignore_by_default = false);
 
     EventHandler *remove_handler(int signum);
 };

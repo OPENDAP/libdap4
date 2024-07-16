@@ -30,18 +30,13 @@
 #include "Error.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** Thrown when the DDX response cannot be parsed.. */
-class DDXParseFailed : public Error
-{
+class DDXParseFailed : public Error {
 public:
-    DDXParseFailed() : Error("The DDX response document parse failed.")
-    {}
-    DDXParseFailed(const string &msg) :
-            Error(string("The DDX response document parse failed: ") + msg)
-    {}
+    DDXParseFailed() : Error("The DDX response document parse failed.") {}
+    DDXParseFailed(const string &msg) : Error(string("The DDX response document parse failed: ") + msg) {}
 };
 
 } // namespace libdap
