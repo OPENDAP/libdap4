@@ -3,9 +3,7 @@
 
 gl/*
 conf/*
-old/*
-VCPP/*
-win32/*
+
 
 dods-datatypes-config.h
 xdr-datatypes-config.h
@@ -15,7 +13,18 @@ config.h
 *.tab.cc
 *.tab.hh
 
-lex.*.cc
-location.hh
-position.hh
-stack.hh
+d4_ce/lex.*.cc
+d4_ce/location.hh
+d4_ce/position.hh
+d4_ce/stack.hh
+d4_ce/*.tab.cc
+d4_ce/*.tab.hh
+
+d4_ce/unit-tests/test_config.h
+
+d4_function/lex.*.cc
+d4_function/location.hh
+d4_function/position.hh
+d4_function/stack.hh
+d4_function/*.tab.cc
+d4_function/*.tab.hh

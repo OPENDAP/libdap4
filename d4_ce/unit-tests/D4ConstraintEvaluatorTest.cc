@@ -27,10 +27,10 @@
 
 #include <iostream>
 
-#include "DMR.h"
-#include "D4Group.h"
-#include "D4BaseTypeFactory.h"
 #include "Byte.h"
+#include "D4BaseTypeFactory.h"
+#include "D4Group.h"
+#include "DMR.h"
 
 #include "unit-tests/run_tests_cppunit.h"
 
@@ -53,7 +53,7 @@ public:
 };
 
 class D4ConstraintEvaluatorTest : public CppUnit::TestFixture {
-    
+
     CPPUNIT_TEST_SUITE(D4ConstraintEvaluatorTest);
 
     CPPUNIT_TEST(test_parse_valid_expression);
@@ -104,7 +104,7 @@ public:
         try {
             D4ConstraintEvaluator::throw_not_found("id", "ident");
             CPPUNIT_FAIL("Expected throw_not_found to throw an exception");
-        } catch (const Error& e) {
+        } catch (const Error &e) {
             // Verify specific error message and details (if applicable)
             CPPUNIT_ASSERT_EQUAL(e.get_error_code(), no_such_variable);
             // Additional assertions for message details based on implementation
@@ -124,21 +124,17 @@ public:
         try {
             D4ConstraintEvaluator::throw_not_array("id", "ident");
             CPPUNIT_FAIL("Expected throw_not_array to throw an exception");
-        } catch (const Error& e) {
+        } catch (const Error &e) {
             // Verify specific error message and details (if applicable)
             CPPUNIT_ASSERT_EQUAL(e.get_error_code(), no_such_variable);
             // Additional assertions for message details based on implementation
         }
 #endif
     }
-
 };
 
 } // namespace libdap
 
 CPPUNIT_TEST_SUITE_REGISTRATION(libdap::D4ConstraintEvaluatorTest);
 
-int main(int argc, char *argv[])
-{
-    return run_tests<libdap::D4ConstraintEvaluatorTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<libdap::D4ConstraintEvaluatorTest>(argc, argv) ? 0 : 1; }
