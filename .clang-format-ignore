@@ -1,10 +1,6 @@
 # ignore files and directories
 # See https://clang.llvm.org/docs/ClangFormat.html
 
-gl/*
-conf/*
-
-
 dods-datatypes-config.h
 xdr-datatypes-config.h
 config_dap.h
