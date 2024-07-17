@@ -36,57 +36,40 @@
 // for single level sequences - that is, it does *not* work for sequences
 // that contain other sequences. jhrg 2/2/98
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
-#include "config.h"
-#include "D4Group.h"
 #include "Constructor.h"
+#include "D4Group.h"
 #include "D4Sequence.h"
+#include "config.h"
 #include "debug.h"
 
-#include "TestSequence.h"
-#include "TestD4Sequence.h"
 #include "TestCommon.h"
+#include "TestD4Sequence.h"
+#include "TestSequence.h"
 
 using namespace libdap;
 
-void TestSequence::_duplicate(const TestSequence &ts)
-{
+void TestSequence::_duplicate(const TestSequence &ts) {
     d_current = ts.d_current;
     d_len = ts.d_len;
     d_series_values = ts.d_series_values;
 }
 
-BaseType *
-TestSequence::ptr_duplicate()
-{
-    return new TestSequence(*this);
-}
+BaseType *TestSequence::ptr_duplicate() { return new TestSequence(*this); }
 
-TestSequence::TestSequence(const string &n) :
-        Sequence(n), d_len(4), d_current(0), d_series_values(false)
-{
-}
+TestSequence::TestSequence(const string &n) : Sequence(n), d_len(4), d_current(0), d_series_values(false) {}
 
-TestSequence::TestSequence(const string &n, const string &d) :
-        Sequence(n, d), d_len(4), d_current(0), d_series_values(false)
-{
-}
+TestSequence::TestSequence(const string &n, const string &d)
+    : Sequence(n, d), d_len(4), d_current(0), d_series_values(false) {}
 
-TestSequence::TestSequence(const TestSequence &rhs) :
-        Sequence(rhs), TestCommon(rhs)
-{
-    _duplicate(rhs);
-}
+TestSequence::TestSequence(const TestSequence &rhs) : Sequence(rhs), TestCommon(rhs) { _duplicate(rhs); }
 
-TestSequence::~TestSequence()
-{
-}
+TestSequence::~TestSequence() {}
 
-TestSequence &
-TestSequence::operator=(const TestSequence &rhs)
-{
-    if (this == &rhs) return *this;
+TestSequence &TestSequence::operator=(const TestSequence &rhs) {
+    if (this == &rhs)
+        return *this;
 
     Sequence::operator=(rhs); // run Constructor=
 
@@ -95,37 +78,31 @@ TestSequence::operator=(const TestSequence &rhs)
     return *this;
 }
 
-void
-TestSequence::transform_to_dap4(D4Group *root, Constructor *container)
-{
+void TestSequence::transform_to_dap4(D4Group *root, Constructor *container) {
     TestD4Sequence *dest = new TestD4Sequence(name());
     Constructor::transform_to_dap4(root, dest);
     container->add_var_nocopy(dest);
 }
 
-void TestSequence::output_values(std::ostream &out)
-{
-    print_val(out, "", false);
-}
+void TestSequence::output_values(std::ostream &out) { print_val(out, "", false); }
 
 // Read values from text files. Sequence instances are stored on separate
 // lines. Line can be no more than 255 characters long.
 
-bool TestSequence::read()
-{
+bool TestSequence::read() {
     DBG(cerr << "Entering TestSequence::read for " << name() << endl);
 
-    if (read_p()) return true;
+    if (read_p())
+        return true;
 
     DBG(cerr << "current: " << d_current << ", length: " << d_len << endl);
     // When we get to the end of a Sequence, reset the row number counter so
     // that, in case this is an inner sequence, the next instance will be read
     // and the "Trying to back up in a Sequence" error won't be generated.
     if (++d_current > d_len) {
-        DBG(cerr << "Leaving TestSequence::read for " << name()
-                << " because d_current(" << d_current
-                << ") > d_len(" << d_len << ")" << endl);
-        d_current = 0;                  // reset
+        DBG(cerr << "Leaving TestSequence::read for " << name() << " because d_current(" << d_current << ") > d_len("
+                 << d_len << ")" << endl);
+        d_current = 0; // reset
         set_unsent_data(false);
         reset_row_number();
         // jhrg original version from 10/9/13: return false; // No more values
@@ -146,18 +123,14 @@ bool TestSequence::read()
     return false;
 }
 
-void TestSequence::set_series_values(bool sv)
-{
+void TestSequence::set_series_values(bool sv) {
     Vars_iter i = var_begin();
     while (i != var_end()) {
-        dynamic_cast<TestCommon&>(*(*i)).set_series_values(sv);
+        dynamic_cast<TestCommon &>(*(*i)).set_series_values(sv);
         ++i;
     }
 
     d_series_values = sv;
 }
 
-int TestSequence::length() const
-{
-    return 5;
-}
+int TestSequence::length() const { return 5; }

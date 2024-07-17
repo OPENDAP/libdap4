@@ -33,8 +33,8 @@
 
 class TestCommon {
 public:
-    TestCommon() { }
-    virtual ~TestCommon() { }
+    TestCommon() {}
+    virtual ~TestCommon() {}
 
     /** Write out values. Does not test the read_p property first.
 
@@ -62,4 +62,3 @@ public:
 };
 
 #endif // _test_common_h
-

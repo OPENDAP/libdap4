@@ -50,9 +50,7 @@ std::vector<Sigfunc *> SignalHandler::d_old_handlers{NSIG, nullptr};
     a child of EvenHandler) and calls it.
 
     @param signum The number of the signal. */
-void
-SignalHandler::dispatcher(int signum)
-{
+void SignalHandler::dispatcher(int signum) {
     // Perform a sanity check...
     if (d_signal_handlers[signum] != nullptr)
         // Dispatch the handler's hook method.
@@ -68,9 +66,7 @@ SignalHandler::dispatcher(int signum)
 }
 
 /** Get a pointer to the single instance of SignalHandler. */
-SignalHandler *
-SignalHandler::instance()
-{
+SignalHandler *SignalHandler::instance() {
     static SignalHandler instance;
     return &instance;
 }
@@ -87,27 +83,25 @@ SignalHandler::instance()
     Instead run \e eh and then treat the signal as if the original action was
     SIG_IGN. Default is false.
     @return A pointer to the old EventHandler or null. */
-EventHandler *
-SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_default)
-{
+EventHandler *SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_default) {
     // Check first for improper use.
     switch (signum) {
 #ifndef WIN32
-        case SIGHUP:
-        case SIGKILL:
-        case SIGUSR1:
-        case SIGUSR2:
-        case SIGPIPE:
-        case SIGALRM:
+    case SIGHUP:
+    case SIGKILL:
+    case SIGUSR1:
+    case SIGUSR2:
+    case SIGPIPE:
+    case SIGALRM:
 #endif
-        case SIGINT:
-        case SIGTERM:
-            break;
+    case SIGINT:
+    case SIGTERM:
+        break;
 
-        default:
-            throw InternalErr(__FILE__, __LINE__,
-                              string("Call to register_handler with unsupported signal (")
-                              + long_to_string(signum) + string(")."));
+    default:
+        throw InternalErr(__FILE__, __LINE__,
+                          string("Call to register_handler with unsupported signal (") + long_to_string(signum) +
+                              string(")."));
     }
 
     // Save the old EventHandler
@@ -118,7 +112,7 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_def
     // Register the dispatcher to handle this signal. See Stevens, Advanced
     // Programming in the UNIX Environment, p.298.
 #ifndef WIN32
-    struct sigaction sa{};
+    struct sigaction sa {};
     sa.sa_handler = dispatcher;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
@@ -130,14 +124,13 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_def
 #ifdef SA_INTERUPT
         sa.sa_flags |= SA_INTERUPT;
 #endif
-    }
-    else {
+    } else {
 #ifdef SA_RESTART
         sa.sa_flags |= SA_RESTART;
 #endif
     }
 
-    struct sigaction old_sa{}; // extract the old handler/action
+    struct sigaction old_sa {}; // extract the old handler/action
 
     if (sigaction(signum, &sa, &old_sa) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not register a signal handler.");
@@ -150,7 +143,7 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_def
         SignalHandler::d_old_handlers[signum] = SIG_IGN;
     else if (old_sa.sa_handler != &dispatcher)
         SignalHandler::d_old_handlers[signum] = old_sa.sa_handler;
-#endif  // ndef WIN32
+#endif // ndef WIN32
 
     return old_eh;
 }
@@ -158,9 +151,7 @@ SignalHandler::register_handler(int signum, EventHandler *eh, bool ignore_by_def
 /** Remove the event handler.
     @param signum The signal number of the handler to remove.
     @return The old event handler */
-EventHandler *
-SignalHandler::remove_handler(int signum)
-{
+EventHandler *SignalHandler::remove_handler(int signum) {
     EventHandler *old_eh = SignalHandler::d_signal_handlers[signum];
 
     SignalHandler::d_signal_handlers[signum] = nullptr;

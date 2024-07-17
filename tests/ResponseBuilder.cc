@@ -25,11 +25,11 @@
 #include "config.h"
 
 #include <signal.h>
-#include <unistd.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #ifdef HAVE_UUID_UUID_H
-#include <uuid/uuid.h>  // used to build CID header value for data ddx
+#include <uuid/uuid.h> // used to build CID header value for data ddx
 #elif defined(HAVE_UUID_H)
 #include <uuid.h>
 #else
@@ -39,53 +39,52 @@
 #ifndef WIN32
 #include <sys/wait.h>
 #else
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
 #endif
 
-#include <iostream>
-#include <string>
-#include <sstream>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 #include <cstring>
 #include <ctime>
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
+#include "Ancillary.h"
+#include "ConstraintEvaluator.h"
 #include "DAS.h"
 #include "DDS.h"
-#include "ConstraintEvaluator.h"
 #include "DDXParserSAX2.h"
-#include "Ancillary.h"
 #include "ResponseBuilder.h"
-#include "XDRStreamMarshaller.h"
 #include "XDRFileUnMarshaller.h"
+#include "XDRStreamMarshaller.h"
 
-//#include "DAPCache3.h"
-//#include "ResponseCache.h"
+// #include "DAPCache3.h"
+// #include "ResponseCache.h"
 
 #include "debug.h"
-#include "mime_util.h"	// for last_modified_time() and rfc_822_date()
 #include "escaping.h"
+#include "mime_util.h" // for last_modified_time() and rfc_822_date()
 #include "util.h"
 
 #ifndef WIN32
-#include "SignalHandler.h"
-#include "EventHandler.h"
 #include "AlarmHandler.h"
+#include "EventHandler.h"
+#include "SignalHandler.h"
 #endif
 
-#define CRLF "\r\n"             // Change here, expr-test.cc
+#define CRLF "\r\n" // Change here, expr-test.cc
 
 using namespace std;
 using namespace libdap;
 
 /** Called when initializing a ResponseBuilder that's not going to be passed
  command line arguments. */
-void ResponseBuilder::initialize()
-{
+void ResponseBuilder::initialize() {
     // Set default values. Don't use the C++ constructor initialization so
     // that a subclass can have more control over this process.
     d_dataset = "";
@@ -96,12 +95,11 @@ void ResponseBuilder::initialize()
     d_default_protocol = DAP_PROTOCOL_VERSION;
 }
 
-ResponseBuilder::~ResponseBuilder()
-{
-	// If an alarm was registered, delete it. The register code in SignalHandler
-	// always deletes the old alarm handler object, so only the one returned by
-	// remove_handler needs to be deleted at this point.
-	delete dynamic_cast<AlarmHandler*>(SignalHandler::instance()->remove_handler(SIGALRM));
+ResponseBuilder::~ResponseBuilder() {
+    // If an alarm was registered, delete it. The register code in SignalHandler
+    // always deletes the old alarm handler object, so only the one returned by
+    // remove_handler needs to be deleted at this point.
+    delete dynamic_cast<AlarmHandler *>(SignalHandler::instance()->remove_handler(SIGALRM));
 }
 
 /** Return the entire constraint expression in a string.  This
@@ -110,10 +108,7 @@ ResponseBuilder::~ResponseBuilder()
 
  @brief Get the constraint expression.
  @return A string object that contains the constraint expression. */
-string ResponseBuilder::get_ce() const
-{
-    return d_dap2ce;
-}
+string ResponseBuilder::get_ce() const { return d_dap2ce; }
 
 /** Set the constraint expression. This will filter the CE text removing
  * any 'WWW' escape characters except space. Spaces are left in the CE
@@ -125,10 +120,7 @@ string ResponseBuilder::get_ce() const
  * @@brief Set the CE
  * @param _ce The constraint expression
  */
-void ResponseBuilder::set_ce(string _ce)
-{
-    d_dap2ce = www2id(_ce, "%", "%20");
-}
+void ResponseBuilder::set_ce(string _ce) { d_dap2ce = www2id(_ce, "%", "%20"); }
 
 /** The ``dataset name'' is the filename or other string that the
  filter program will use to access the data. In some cases this
@@ -138,10 +130,7 @@ void ResponseBuilder::set_ce(string _ce)
 
  @brief Get the dataset name.
  @return A string object that contains the name of the dataset. */
-string ResponseBuilder::get_dataset_name() const
-{
-    return d_dataset;
-}
+string ResponseBuilder::get_dataset_name() const { return d_dataset; }
 
 /** Set the dataset name, which is a string used to access the dataset
  * on the machine running the server. That is, this is typically a pathname
@@ -153,10 +142,7 @@ string ResponseBuilder::get_dataset_name() const
  * @brief Set the dataset pathname.
  * @param ds The pathname (or equivalent) to the dataset.
  */
-void ResponseBuilder::set_dataset_name(const string ds)
-{
-    d_dataset = www2id(ds, "%", "%20");
-}
+void ResponseBuilder::set_dataset_name(const string ds) { d_dataset = www2id(ds, "%", "%20"); }
 #if 0
 /** Set the server's timeout value. A value of zero (the default) means no
  timeout.
@@ -196,9 +182,7 @@ void ResponseBuilder::establish_timeout(ostream &stream) const
  *  the rest of the CE (which can contain simple and slicing projection
  *  as well as other types of function calls).
  */
-void
-ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
-{
+void ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr) {
     string ce;
     if (!expr.empty())
         ce = expr;
@@ -213,7 +197,7 @@ ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
     string::size_type closing_paren = ce.find(")", pos);
     while (first_paren != string::npos && closing_paren != string::npos) {
         // Maybe a BTP function; get the name of the potential function
-        string name = ce.substr(pos, first_paren-pos);
+        string name = ce.substr(pos, first_paren - pos);
         DBG(cerr << "name: " << name << endl);
         // is this a BTP function
         btp_func f;
@@ -221,12 +205,11 @@ ResponseBuilder::split_ce(ConstraintEvaluator &eval, const string &expr)
             // Found a BTP function
             if (!btp_function_ce.empty())
                 btp_function_ce += ",";
-            btp_function_ce += ce.substr(pos, closing_paren+1-pos);
-            ce.erase(pos, closing_paren+1-pos);
+            btp_function_ce += ce.substr(pos, closing_paren + 1 - pos);
+            ce.erase(pos, closing_paren + 1 - pos);
             if (ce[pos] == ',')
                 ce.erase(pos, 1);
-        }
-        else {
+        } else {
             pos = closing_paren + 1;
             // exception?
             if (pos < ce.length() && ce.at(pos) == ',')
@@ -436,8 +419,7 @@ void ResponseBuilder::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval
 /**
  * Build/return the BLOB part of the DAP2 data response.
  */
-void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEvaluator & eval, bool ce_eval)
-{
+void ResponseBuilder::dataset_constraint(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool ce_eval) {
     DBG(cerr << "Inside dataset_constraint" << endl);
 
     dds.print_constrained(out);
@@ -452,8 +434,7 @@ void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEval
             if ((*i)->send_p()) {
                 (*i)->serialize(eval, dds, m, ce_eval);
             }
-    }
-    catch (Error & e) {
+    } catch (Error &e) {
         throw;
     }
 }
@@ -474,8 +455,7 @@ void ResponseBuilder::dataset_constraint(ostream &out, DDS & dds, ConstraintEval
  @param with_mime_headers If true, include the MIME headers in the response.
  Defaults to true.
  @return void */
-void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers)
-{
+void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvaluator &eval, bool with_mime_headers) {
     // Split constraint into two halves
     split_ce(eval);
 
@@ -488,8 +468,8 @@ void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvalua
         DDS *fdds = 0;
 
         // The BES code caches the function result
-            eval.parse_constraint(d_dap2_btp_func_ce, dds);
-            fdds = eval.eval_function_clauses(dds);
+        eval.parse_constraint(d_dap2_btp_func_ce, dds);
+        fdds = eval.eval_function_clauses(dds);
 
         DBG(fdds->print_constrained(cerr));
 
@@ -505,9 +485,9 @@ void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvalua
         fdds->tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
         if (fdds->get_response_limit() != 0 && fdds->get_request_size(true) > fdds->get_response_limit()) {
-            string msg = "The Request for " + long_to_string(dds.get_request_size(true) / 1024)
-                    + "KB is too large; requests for this user are limited to "
-                    + long_to_string(dds.get_response_limit() / 1024) + "KB.";
+            string msg = "The Request for " + long_to_string(dds.get_request_size(true) / 1024) +
+                         "KB is too large; requests for this user are limited to " +
+                         long_to_string(dds.get_response_limit() / 1024) + "KB.";
             throw Error(msg);
         }
 
@@ -518,27 +498,26 @@ void ResponseBuilder::send_data(ostream &data_stream, DDS &dds, ConstraintEvalua
         dataset_constraint(data_stream, *fdds, eval, false);
 
         delete fdds;
+    } else {
+
+        DBG(cerr << "Simple constraint" << endl);
+
+        eval.parse_constraint(d_dap2ce, dds); // Throws Error if the ce doesn't parse.
+
+        dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
+
+        if (dds.get_response_limit() != 0 && dds.get_request_size(true) > dds.get_response_limit()) {
+            string msg = "The Request for " + long_to_string(dds.get_request_size(true) / 1024) +
+                         "KB is too large; requests for this user are limited to " +
+                         long_to_string(dds.get_response_limit() / 1024) + "KB.";
+            throw Error(msg);
+        }
+
+        if (with_mime_headers)
+            set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
+
+        dataset_constraint(data_stream, dds, eval);
     }
-    else {
 
-	DBG(cerr << "Simple constraint" << endl);
-
-	eval.parse_constraint(d_dap2ce, dds); // Throws Error if the ce doesn't parse.
-
-	dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
-
-	if (dds.get_response_limit() != 0 && dds.get_request_size(true) > dds.get_response_limit()) {
-		string msg = "The Request for " + long_to_string(dds.get_request_size(true) / 1024)
-				+ "KB is too large; requests for this user are limited to "
-				+ long_to_string(dds.get_response_limit() / 1024) + "KB.";
-		throw Error(msg);
-	}
-
-	if (with_mime_headers)
-		set_mime_binary(data_stream, dods_data, x_plain, last_modified_time(d_dataset), dds.get_dap_version());
-
-	dataset_constraint(data_stream, dds, eval);
-    }
-
-	data_stream << flush;
+    data_stream << flush;
 }

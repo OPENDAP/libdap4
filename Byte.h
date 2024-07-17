@@ -48,8 +48,7 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** This class is used to hold eight bits of information.  No sign
     information is implied in its value.
@@ -57,8 +56,7 @@ namespace libdap
     @brief Holds a single byte.
     @see BaseType
     */
-class Byte: public BaseType
-{
+class Byte : public BaseType {
 protected:
     dods_byte d_buf;
 
@@ -66,22 +64,15 @@ public:
     Byte(const string &n);
     Byte(const string &n, const string &d);
 
-    virtual ~Byte()
-    {}
+    virtual ~Byte() {}
 
     Byte(const Byte &copy_from);
 
     Byte &operator=(const Byte &rhs);
 
-    unsigned int width(bool = false) const override
-    {
-        return sizeof(dods_byte);
-    }
+    unsigned int width(bool = false) const override { return sizeof(dods_byte); }
 
-    int64_t width_ll(bool = false) const override
-    {
-        return sizeof(dods_byte);
-    }
+    int64_t width_ll(bool = false) const override { return sizeof(dods_byte); }
 
     BaseType *ptr_duplicate() override;
 
@@ -107,10 +98,9 @@ public:
     bool d4_ops(BaseType *b, int op) override;
     std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 
-    void dump(ostream &strm) const  override;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
 
 #endif // _byte_h
-

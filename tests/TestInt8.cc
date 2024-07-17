@@ -10,12 +10,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -27,8 +27,8 @@
 #ifndef WIN32
 #include <unistd.h>
 #else
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
 #endif
 
@@ -36,66 +36,43 @@
 
 extern int test_variable_sleep_interval;
 
-void TestInt8::m_duplicate(const TestInt8 &ts)
-{
-	d_series_values = ts.d_series_values;
+void TestInt8::m_duplicate(const TestInt8 &ts) { d_series_values = ts.d_series_values; }
+
+TestInt8::TestInt8(const string &n) : Int8(n), d_series_values(false) { d_buf = 1; }
+
+TestInt8::TestInt8(const string &n, const string &d) : Int8(n, d), d_series_values(false) { d_buf = 1; }
+
+TestInt8::TestInt8(const TestInt8 &rhs) : Int8(rhs), TestCommon(rhs) { m_duplicate(rhs); }
+
+TestInt8 &TestInt8::operator=(const TestInt8 &rhs) {
+    if (this == &rhs)
+        return *this;
+
+    Int8::operator=(rhs); // run Constructor=
+
+    m_duplicate(rhs);
+
+    return *this;
 }
 
-TestInt8::TestInt8(const string &n) :
-		Int8(n), d_series_values(false)
-{
-	d_buf = 1;
-}
+BaseType *TestInt8::ptr_duplicate() { return new TestInt8(*this); }
 
-TestInt8::TestInt8(const string &n, const string &d) :
-		Int8(n, d), d_series_values(false)
-{
-	d_buf = 1;
-}
+void TestInt8::output_values(std::ostream &out) { print_val(out, "", false); }
 
-TestInt8::TestInt8(const TestInt8 &rhs) :
-		Int8(rhs), TestCommon(rhs)
-{
-	m_duplicate(rhs);
-}
+bool TestInt8::read() {
+    if (read_p())
+        return true;
 
-TestInt8 &
-TestInt8::operator=(const TestInt8 &rhs)
-{
-	if (this == &rhs) return *this;
+    if (test_variable_sleep_interval > 0)
+        sleep(test_variable_sleep_interval);
 
-	Int8::operator=(rhs); // run Constructor=
+    if (get_series_values()) {
+        d_buf = (dods_int8)(2 * d_buf);
+    } else {
+        d_buf = 127;
+    }
 
-	m_duplicate(rhs);
+    set_read_p(true);
 
-	return *this;
-}
-
-BaseType *
-TestInt8::ptr_duplicate()
-{
-	return new TestInt8(*this);
-}
-
-void TestInt8::output_values(std::ostream &out)
-{
-	print_val(out, "", false);
-}
-
-bool TestInt8::read()
-{
-	if (read_p()) return true;
-
-	if (test_variable_sleep_interval > 0) sleep (test_variable_sleep_interval);
-
-	if (get_series_values()) {
-		d_buf = (dods_int8) (2 * d_buf);
-	}
-	else {
-		d_buf = 127;
-	}
-
-	set_read_p(true);
-
-	return true;
+    return true;
 }

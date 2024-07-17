@@ -40,19 +40,19 @@
 #include <sstream>
 
 #include "D4Connect.h"
+#include "D4Group.h"
+#include "DMR.h"
 #include "HTTPConnect.h"
 #include "Response.h"
-#include "DMR.h"
-#include "D4Group.h"
 
 #include "D4ParserSax2.h"
-#include "chunked_stream.h"
-#include "chunked_istream.h"
 #include "D4StreamUnMarshaller.h"
+#include "chunked_istream.h"
+#include "chunked_stream.h"
 
+#include "debug.h"
 #include "escaping.h"
 #include "mime_util.h"
-#include "debug.h"
 
 using namespace std;
 
@@ -60,8 +60,7 @@ namespace libdap {
 
 /** This private method process data from both local and remote sources. It
  exists to eliminate duplication of code. */
-void D4Connect::process_dmr(DMR &dmr, Response &rs)
-{
+void D4Connect::process_dmr(DMR &dmr, Response &rs) {
     DBG(cerr << "Entering D4Connect::process_dmr" << endl);
 
     dmr.set_dap_version(rs.get_protocol());
@@ -82,7 +81,7 @@ void D4Connect::process_dmr(DMR &dmr, Response &rs)
         // Web errors (those reported in the return document's MIME header)
         // are processed by the WWW library.
         throw InternalErr(__FILE__, __LINE__,
-            "An error was reported by the remote httpd; this should have been processed by HTTPConnect.");
+                          "An error was reported by the remote httpd; this should have been processed by HTTPConnect.");
 
     case dap4_dmr: {
         // parse the DMR
@@ -93,16 +92,13 @@ void D4Connect::process_dmr(DMR &dmr, Response &rs)
             // Do not use that mode when parsing the DMR response - assume the DMR is
             // valid. jhrg 4/13/16
             parser.intern(*rs.get_cpp_stream(), &dmr);
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Exception: " << e.get_error_message() << endl;
             return;
-        }
-        catch (std::exception &e) {
+        } catch (std::exception &e) {
             cerr << "Exception: " << e.what() << endl;
             return;
-        }
-        catch (...) {
+        } catch (...) {
             cerr << "Exception: unknown error" << endl;
             return;
         }
@@ -117,11 +113,10 @@ void D4Connect::process_dmr(DMR &dmr, Response &rs)
 
 /** This private method process data from both local and remote sources. It
  exists to eliminate duplication of code. */
-void D4Connect::process_data(DMR &data, Response &rs)
-{
+void D4Connect::process_data(DMR &data, Response &rs) {
     DBG(cerr << "Entering D4Connect::process_data" << endl);
 
-    assert(rs.get_cpp_stream());	// DAP4 code uses cpp streams
+    assert(rs.get_cpp_stream()); // DAP4 code uses cpp streams
 
     data.set_dap_version(rs.get_protocol());
 
@@ -134,7 +129,8 @@ void D4Connect::process_data(DMR &data, Response &rs)
     case web_error:
         // Web errors (those reported in the return document's MIME header)
         // are processed by the WWW library.
-        throw InternalErr(__FILE__, __LINE__,
+        throw InternalErr(
+            __FILE__, __LINE__,
             "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 
     case dap4_data: {
@@ -158,16 +154,13 @@ void D4Connect::process_data(DMR &data, Response &rs)
 
             // '-2' to discard the CRLF pair
             parser.intern(chunk, chunk_size - 2, &data);
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Exception: " << e.get_error_message() << endl;
             return;
-        }
-        catch (std::exception &e) {
+        } catch (std::exception &e) {
             cerr << "Exception: " << e.what() << endl;
             return;
-        }
-        catch (...) {
+        } catch (...) {
             cerr << "Exception: unknown error" << endl;
             return;
         }
@@ -191,8 +184,7 @@ void D4Connect::process_data(DMR &data, Response &rs)
 
  @param rs Value/Result parameter. Dump version and type information here.
  */
-void D4Connect::parse_mime(Response &rs)
-{
+void D4Connect::parse_mime(Response &rs) {
     rs.set_version("dods/0.0"); // initial value; for backward compatibility.
     rs.set_protocol("2.0");
 
@@ -216,8 +208,7 @@ void D4Connect::parse_mime(Response &rs)
         else if (header == "xopendap-server") {
             DBG(cout << header << ": " << value << endl);
             rs.set_version(value);
-        }
-        else if (header == "xdap") {
+        } else if (header == "xdap") {
             DBG(cout << header << ": " << value << endl);
             rs.set_protocol(value);
         }
@@ -239,9 +230,8 @@ void D4Connect::parse_mime(Response &rs)
  @param uname Use this username for authentication. Null by default.
  @param password Password to use for authentication. Null by default.
  @brief Create an instance of Connect. */
-D4Connect::D4Connect(const string &url, string uname, string password) :
-    d_http(0), d_local(false), d_URL(""), d_UrlQueryString(""), d_server("unknown"), d_protocol("4.0")
-{
+D4Connect::D4Connect(const string &url, string uname, string password)
+    : d_http(0), d_local(false), d_URL(""), d_UrlQueryString(""), d_server("unknown"), d_protocol("4.0") {
     string name = prune_spaces(url);
 
     // Figure out if the URL starts with 'http', if so, make sure that we
@@ -270,10 +260,8 @@ D4Connect::D4Connect(const string &url, string uname, string password) :
                 cerr << msg.str() << endl;
                 // throw Error(malformed_expr, msg.str());
             }
-
         }
-    }
-    else {
+    } else {
         DBG(cerr << "Connect: The identifier is a local data source." << endl);
         d_local = true; // local in this case means non-DAP
     }
@@ -281,13 +269,12 @@ D4Connect::D4Connect(const string &url, string uname, string password) :
     set_credentials(uname, password);
 }
 
-D4Connect::~D4Connect()
-{
-    if (d_http) delete d_http;
+D4Connect::~D4Connect() {
+    if (d_http)
+        delete d_http;
 }
 
-std::string D4Connect::build_dap4_ce(const string requestSuffix, const string dap4ce)
-{
+std::string D4Connect::build_dap4_ce(const string requestSuffix, const string dap4ce) {
     std::stringstream url;
     bool needsAmpersand = false;
 
@@ -299,7 +286,8 @@ std::string D4Connect::build_dap4_ce(const string requestSuffix, const string da
     }
 
     if (dap4ce.length() > 0) {
-        if (needsAmpersand) url << "&";
+        if (needsAmpersand)
+            url << "&";
 
         url << DAP4_CE_QUERY_KEY << "=" << id2www_ce(dap4ce);
     }
@@ -312,8 +300,7 @@ std::string D4Connect::build_dap4_ce(const string requestSuffix, const string da
     return url.str();
 }
 
-void D4Connect::request_dmr(DMR &dmr, const string expr)
-{
+void D4Connect::request_dmr(DMR &dmr, const string expr) {
     string url = build_dap4_ce(".dmr", expr);
 
     Response *rs = 0;
@@ -343,10 +330,9 @@ void D4Connect::request_dmr(DMR &dmr, const string expr)
 
         default:
             throw InternalErr(__FILE__, __LINE__,
-                "Response type not handled (got " + long_to_string(rs->get_type()) + ").");
+                              "Response type not handled (got " + long_to_string(rs->get_type()) + ").");
         }
-    }
-    catch (...) {
+    } catch (...) {
         delete rs;
         throw;
     }
@@ -354,8 +340,7 @@ void D4Connect::request_dmr(DMR &dmr, const string expr)
     delete rs;
 }
 
-void D4Connect::request_dap4_data(DMR &dmr, const string expr)
-{
+void D4Connect::request_dap4_data(DMR &dmr, const string expr) {
     string url = build_dap4_ce(".dap", expr);
 
     Response *rs = 0;
@@ -408,10 +393,9 @@ void D4Connect::request_dap4_data(DMR &dmr, const string expr)
 
         default:
             throw InternalErr(__FILE__, __LINE__,
-                "Response type not handled (got " + long_to_string(rs->get_type()) + ").");
+                              "Response type not handled (got " + long_to_string(rs->get_type()) + ").");
         }
-    }
-    catch (...) {
+    } catch (...) {
         delete rs;
         throw;
     }
@@ -419,18 +403,18 @@ void D4Connect::request_dap4_data(DMR &dmr, const string expr)
     delete rs;
 }
 
-void D4Connect::read_dmr(DMR &dmr, Response &rs)
-{
+void D4Connect::read_dmr(DMR &dmr, Response &rs) {
     parse_mime(rs);
-    if (rs.get_type() == unknown_type) throw Error("Unknown response type.");
+    if (rs.get_type() == unknown_type)
+        throw Error("Unknown response type.");
 
     read_dmr_no_mime(dmr, rs);
 }
 
-void D4Connect::read_dmr_no_mime(DMR &dmr, Response &rs)
-{
+void D4Connect::read_dmr_no_mime(DMR &dmr, Response &rs) {
     // Assume callers know what they are doing
-    if (rs.get_type() == unknown_type) rs.set_type(dap4_dmr);
+    if (rs.get_type() == unknown_type)
+        rs.set_type(dap4_dmr);
 
     switch (rs.get_type()) {
     case dap4_dmr:
@@ -443,18 +427,18 @@ void D4Connect::read_dmr_no_mime(DMR &dmr, Response &rs)
     }
 }
 
-void D4Connect::read_data(DMR &data, Response &rs)
-{
+void D4Connect::read_data(DMR &data, Response &rs) {
     parse_mime(rs);
-    if (rs.get_type() == unknown_type) throw Error("Unknown response type.");
+    if (rs.get_type() == unknown_type)
+        throw Error("Unknown response type.");
 
     read_data_no_mime(data, rs);
 }
 
-void D4Connect::read_data_no_mime(DMR &data, Response &rs)
-{
+void D4Connect::read_data_no_mime(DMR &data, Response &rs) {
     // Assume callers know what they are doing
-    if (rs.get_type() == unknown_type) rs.set_type(dap4_data);
+    if (rs.get_type() == unknown_type)
+        rs.set_type(dap4_data);
 
     switch (rs.get_type()) {
     case dap4_data:
@@ -472,17 +456,17 @@ void D4Connect::read_data_no_mime(DMR &data, Response &rs)
  @param u The username.
  @param p The password.
  @see extract_auth_info() */
-void D4Connect::set_credentials(string u, string p)
-{
-    if (d_http) d_http->set_credentials(u, p);
+void D4Connect::set_credentials(string u, string p) {
+    if (d_http)
+        d_http->set_credentials(u, p);
 }
 
 /** Set the \e accept deflate property.
  @param deflate True if the client can accept compressed responses, False
  otherwise. */
-void D4Connect::set_accept_deflate(bool deflate)
-{
-    if (d_http) d_http->set_accept_deflate(deflate);
+void D4Connect::set_accept_deflate(bool deflate) {
+    if (d_http)
+        d_http->set_accept_deflate(deflate);
 }
 
 /** Set the \e XDAP-Accept property/header. This is used to send to a server
@@ -490,21 +474,20 @@ void D4Connect::set_accept_deflate(bool deflate)
 
  @param major The client dap protocol major version
  @param minor The client dap protocol minor version */
-void D4Connect::set_xdap_protocol(int major, int minor)
-{
-    if (d_http) d_http->set_xdap_protocol(major, minor);
+void D4Connect::set_xdap_protocol(int major, int minor) {
+    if (d_http)
+        d_http->set_xdap_protocol(major, minor);
 }
 
 /** Disable any further use of the client-side cache. In a future version
  of this software, this should be handled so that the www library is
  not initialized with the cache running by default. */
-void D4Connect::set_cache_enabled(bool cache)
-{
-    if (d_http) d_http->set_cache_enabled(cache);
+void D4Connect::set_cache_enabled(bool cache) {
+    if (d_http)
+        d_http->set_cache_enabled(cache);
 }
 
-bool D4Connect::is_cache_enabled()
-{
+bool D4Connect::is_cache_enabled() {
     if (d_http)
         return d_http->is_cache_enabled();
     else

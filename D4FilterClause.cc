@@ -31,20 +31,17 @@
 
 // Implementation for the CE Clause class.
 
-
 #include "config.h"
 
-#include "D4RValue.h"
 #include "D4FilterClause.h"
+#include "D4RValue.h"
 
 using namespace std;
 
 namespace libdap {
 
-void
-D4FilterClauseList::m_duplicate(const D4FilterClauseList &src)
-{
-    //D4FilterClauseList &non_c_src = const_cast<D4FilterClauseList &>(src);
+void D4FilterClauseList::m_duplicate(const D4FilterClauseList &src) {
+    // D4FilterClauseList &non_c_src = const_cast<D4FilterClauseList &>(src);
 
     for (D4FilterClauseList::citer i = src.cbegin(), e = src.cend(); i != e; ++i) {
         D4FilterClause *fc = *i;
@@ -52,8 +49,7 @@ D4FilterClauseList::m_duplicate(const D4FilterClauseList &src)
     }
 }
 
-D4FilterClauseList::~D4FilterClauseList()
-{
+D4FilterClauseList::~D4FilterClauseList() {
     for (D4FilterClauseList::iter i = d_clauses.begin(), e = d_clauses.end(); i != e; ++i) {
         delete *i;
     }
@@ -70,9 +66,7 @@ D4FilterClauseList::~D4FilterClauseList()
  * not currently in the DAP4 specification.
  * @return True if each of the clauses' value is true, otherwise false
  */
-bool
-D4FilterClauseList::value(DMR &dmr)
-{
+bool D4FilterClauseList::value(DMR &dmr) {
     for (D4FilterClauseList::iter i = d_clauses.begin(), e = d_clauses.end(); i != e; ++i) {
         if ((*i)->value(dmr) == false)
             return false;
@@ -91,9 +85,7 @@ D4FilterClauseList::value(DMR &dmr)
  * @return True if each clauses' value is true, false otherwise
  * @see D4FilterClauseList::value(DMR &dmr)
  */
-bool
-D4FilterClauseList::value()
-{
+bool D4FilterClauseList::value() {
     for (D4FilterClauseList::iter i = d_clauses.begin(), e = d_clauses.end(); i != e; ++i) {
         if ((*i)->value() == false)
             return false;
@@ -143,28 +135,28 @@ void D4FilterClause::m_duplicate(const D4FilterClause &rhs) {
  * @param dmr The DMR to use when evaluating a function
  * @return True if the clause is true, false otherwise.
  */
-bool D4FilterClause::value(DMR &dmr)
-{
-	switch (d_op) {
-	case null:
-		throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Found a null operator");
+bool D4FilterClause::value(DMR &dmr) {
+    switch (d_op) {
+    case null:
+        throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Found a null operator");
 
-	case less:
-	case greater:
-	case less_equal:
-	case greater_equal:
-	case equal:
-	case not_equal:
-	case match:
-		return cmp(d_op, d_arg1->value(dmr), d_arg2->value(dmr));
+    case less:
+    case greater:
+    case less_equal:
+    case greater_equal:
+    case equal:
+    case not_equal:
+    case match:
+        return cmp(d_op, d_arg1->value(dmr), d_arg2->value(dmr));
 
-	case ND:
-	case map:
-		throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Filter operator not implemented");
+    case ND:
+    case map:
+        throw InternalErr(__FILE__, __LINE__,
+                          "While evaluating a constraint filter clause: Filter operator not implemented");
 
-	default:
-		throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Unrecognized operator");
-	}
+    default:
+        throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Unrecognized operator");
+    }
 }
 
 /**
@@ -174,8 +166,7 @@ bool D4FilterClause::value(DMR &dmr)
  * DAP4 specification, so it's probably no great loss.
  * @return True if the clause is true, false otherwise.
  */
-bool D4FilterClause::value()
-{
+bool D4FilterClause::value() {
     switch (d_op) {
     case null:
         throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Found a null operator");
@@ -191,7 +182,8 @@ bool D4FilterClause::value()
 
     case ND:
     case map:
-        throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Filter operator not implemented");
+        throw InternalErr(__FILE__, __LINE__,
+                          "While evaluating a constraint filter clause: Filter operator not implemented");
 
     default:
         throw InternalErr(__FILE__, __LINE__, "While evaluating a constraint filter clause: Unrecognized operator");
@@ -204,9 +196,6 @@ bool D4FilterClause::value()
 // way to code this!
 //
 // Optimize the extraction of constant values.
-bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2)
-{
-    return arg1->d4_ops(arg2, op);
-}
+bool D4FilterClause::cmp(ops op, BaseType *arg1, BaseType *arg2) { return arg1->d4_ops(arg2, op); }
 
 } // namespace libdap

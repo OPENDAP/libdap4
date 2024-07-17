@@ -23,8 +23,8 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #ifndef TM_IN_SYS_TIME
 #include <time.h>
@@ -32,17 +32,17 @@
 #include <sys/time.h>
 #endif
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>   // for stat
-#include <string>
 #include <sstream>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h> // for stat
 
 #include "GNURegex.h"
 
 #include "Error.h"
-#include "mime_util.h"
 #include "debug.h"
+#include "mime_util.h"
 #include "run_tests_cppunit.h"
 #include "test_config.h"
 
@@ -50,47 +50,36 @@ using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
-class cgiUtilTest: public TestFixture {
+class cgiUtilTest : public TestFixture {
 private:
-
 protected:
-    bool re_match(Regex &r, const string &s)
-    {
+    bool re_match(Regex &r, const string &s) {
         int match = r.match(s.c_str(), s.length());
         DBG(cerr << "RE Match: " << match << endl);
-        return match == (int) s.length();
+        return match == (int)s.length();
     }
 
 public:
-    cgiUtilTest()
-    {
-    }
-    ~cgiUtilTest()
-    {
-    }
+    cgiUtilTest() {}
+    ~cgiUtilTest() {}
 
-    void setUp()
-    {
-    }
+    void setUp() {}
 
-    void tearDown()
-    {
-    }
+    void tearDown() {}
 
-    CPPUNIT_TEST_SUITE (cgiUtilTest);
+    CPPUNIT_TEST_SUITE(cgiUtilTest);
 #if 1
-    CPPUNIT_TEST (name_path_test);
-    CPPUNIT_TEST (set_mime_text_test);
-    CPPUNIT_TEST (rfc822_date_test);
-    CPPUNIT_TEST (last_modified_time_test);
-    CPPUNIT_TEST (read_multipart_headers_test);
+    CPPUNIT_TEST(name_path_test);
+    CPPUNIT_TEST(set_mime_text_test);
+    CPPUNIT_TEST(rfc822_date_test);
+    CPPUNIT_TEST(last_modified_time_test);
+    CPPUNIT_TEST(read_multipart_headers_test);
 #endif
-    CPPUNIT_TEST (get_next_mime_header_test);
+    CPPUNIT_TEST(get_next_mime_header_test);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void name_path_test()
-    {
+    void name_path_test() {
         CPPUNIT_ASSERT(name_path(string("stuff")) == "stuff");
         CPPUNIT_ASSERT(name_path(string("stuff.Z")) == "stuff.Z");
         CPPUNIT_ASSERT(name_path(string("/usr/local/src/stuff.Z")) == "stuff.Z");
@@ -102,10 +91,8 @@ public:
     }
 
     // See note above. jhrg 1/18/06
-    void set_mime_text_test()
-    {
-        Regex r1(
-            "HTTP/1.0 200 OK\r\n\
+    void set_mime_text_test() {
+        Regex r1("HTTP/1.0 200 OK\r\n\
 XDODS-Server: dods-test/0.00\r\n\
 XOPeNDAP-Server: dods-test/0.00\r\n\
 XDAP: .*\r\n\
@@ -119,8 +106,7 @@ Content-Description: dods_das\r\n\
         DBG(cerr << "DODS DAS" << endl << oss.str());
         CPPUNIT_ASSERT(re_match(r1, oss.str()));
 
-        Regex r2(
-            "HTTP/1.0 200 OK\r\n\
+        Regex r2("HTTP/1.0 200 OK\r\n\
 XDODS-Server: dods-test/0.00\r\n\
 XOPeNDAP-Server: dods-test/0.00\r\n\
 XDAP: .*\r\n\
@@ -135,10 +121,9 @@ Content-Description: dods_dds\r\n\
         DBG(cerr << "DODS DDS" << endl << oss.str());
         CPPUNIT_ASSERT(re_match(r2, oss.str()));
 
-        struct tm tm = { 0, 0, 0, 1, 0, 100, 0, 0, 0, 0, 0 }; // 1 Jan 2000
+        struct tm tm = {0, 0, 0, 1, 0, 100, 0, 0, 0, 0, 0}; // 1 Jan 2000
         time_t t = mktime(&tm);
-        Regex r3(
-            "HTTP/1.0 200 OK\r\n\
+        Regex r3("HTTP/1.0 200 OK\r\n\
 XDODS-Server: dods-test/0.00\r\n\
 XOPeNDAP-Server: dods-test/0.00\r\n\
 XDAP: .*\r\n\
@@ -154,11 +139,10 @@ Content-Description: dods_dds\r\n\
         CPPUNIT_ASSERT(re_match(r3, oss.str()));
     }
 
-    void rfc822_date_test()
-    {
+    void rfc822_date_test() {
         time_t t = 0;
         CPPUNIT_ASSERT(rfc822_date(t) == "Thu, 01 Jan 1970 00:00:00 GMT");
-        struct tm tm = { 0, 0, 0, 1, 0, 100, 0, 0, 0, 0, 0 }; // 1 Jan 2000
+        struct tm tm = {0, 0, 0, 1, 0, 100, 0, 0, 0, 0, 0}; // 1 Jan 2000
         t = mktime(&tm);
         // This test may fail for some locations since mktime interprets t as
         // the local time and returns the corresponding GMT time.
@@ -166,8 +150,7 @@ Content-Description: dods_dds\r\n\
         CPPUNIT_ASSERT(re_match(r1, rfc822_date(t)));
     }
 
-    void last_modified_time_test()
-    {
+    void last_modified_time_test() {
         time_t t = time(0);
         CPPUNIT_ASSERT(last_modified_time("no-such-file") == t);
         struct stat st;
@@ -177,47 +160,41 @@ Content-Description: dods_dds\r\n\
         CPPUNIT_ASSERT(last_modified_time("/etc/passwd") == st.st_mtime);
     }
 
-    void get_next_mime_header_test()
-    {
-        string test_file = (string) TEST_SRC_DIR + "/cgi-util-tests/multipart_mime_header1.txt";
+    void get_next_mime_header_test() {
+        string test_file = (string)TEST_SRC_DIR + "/cgi-util-tests/multipart_mime_header1.txt";
         FILE *in = fopen(test_file.c_str(), "r");
-        if (!in) CPPUNIT_FAIL("Could not open the mime header file.");
+        if (!in)
+            CPPUNIT_FAIL("Could not open the mime header file.");
 
         try {
             CPPUNIT_ASSERT(get_next_mime_header(in) == "--my_boundary");
             CPPUNIT_ASSERT(get_next_mime_header(in) == "Content-Type: Text/xml; charset=iso-8859-1");
             CPPUNIT_ASSERT(get_next_mime_header(in) == "Content-Description: dods-ddx");
             CPPUNIT_ASSERT(get_next_mime_header(in) == "Content-Id: <1234@opendap.org>");
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
 
         fclose(in);
     }
 
-    void read_multipart_headers_test()
-    {
-        string test_file = (string) TEST_SRC_DIR + "/cgi-util-tests/multipart_mime_header1.txt";
+    void read_multipart_headers_test() {
+        string test_file = (string)TEST_SRC_DIR + "/cgi-util-tests/multipart_mime_header1.txt";
         FILE *in = fopen(test_file.c_str(), "r");
-        if (!in) CPPUNIT_FAIL("Could not open the mime header file.");
+        if (!in)
+            CPPUNIT_FAIL("Could not open the mime header file.");
 
         try {
             read_multipart_headers(in, "text/xml", dods_ddx);
             CPPUNIT_ASSERT(true);
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
 
         fclose(in);
     }
-
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (cgiUtilTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(cgiUtilTest);
 
-int main(int argc, char*argv[])
-{
-    return run_tests<cgiUtilTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<cgiUtilTest>(argc, argv) ? 0 : 1; }

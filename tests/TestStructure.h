@@ -39,14 +39,14 @@
 #include "Structure.h"
 #include "TestCommon.h"
 
-using namespace libdap ;
+using namespace libdap;
 
 namespace libdap {
-	class D4Group;
-	class Constructor;
-}
+class D4Group;
+class Constructor;
+} // namespace libdap
 
-class TestStructure: public Structure, public TestCommon {
+class TestStructure : public Structure, public TestCommon {
     bool d_series_values;
     void m_duplicate(const TestStructure &ts);
 

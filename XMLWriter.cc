@@ -33,10 +33,11 @@
 #include <libxml/encoding.h>
 #include <libxml/xmlwriter.h>
 
-#include "XMLWriter.h"
 #include "InternalErr.h"
+#include "XMLWriter.h"
 
-// TODO - Bite the bullet and make the encoding UTF-8 as required by dap4. This will break a lot of tests but the baselines could be amended using  a bash script and sed.
+// TODO - Bite the bullet and make the encoding UTF-8 as required by dap4. This will break a lot of tests but the
+// baselines could be amended using  a bash script and sed.
 const char *ENCODING = "ISO-8859-1";
 const int XML_BUF_SIZE = 2000000;
 
@@ -63,7 +64,7 @@ XMLWriter::XMLWriter(const string &pad) {
         if (xmlTextWriterSetIndent(d_writer, pad.length()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Error starting indentation for response document ");
 
-        if (xmlTextWriterSetIndentString(d_writer, (const xmlChar*)pad.c_str()) < 0)
+        if (xmlTextWriterSetIndentString(d_writer, (const xmlChar *)pad.c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Error setting indentation for response document ");
 
         d_started = true;
@@ -74,17 +75,13 @@ XMLWriter::XMLWriter(const string &pad) {
          * declaration. MY_ENCODING defined at top of this file*/
         if (xmlTextWriterStartDocument(d_writer, NULL, ENCODING, NULL) < 0)
             throw InternalErr(__FILE__, __LINE__, "Error starting xml response document");
-    }
-    catch (InternalErr &e) {
+    } catch (InternalErr &e) {
         m_cleanup();
         throw;
     }
-
 }
 
-XMLWriter::~XMLWriter() {
-    m_cleanup();
-}
+XMLWriter::~XMLWriter() { m_cleanup(); }
 
 void XMLWriter::m_cleanup() {
     // make sure the buffer and writer are all cleaned up

@@ -13,12 +13,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -28,37 +28,37 @@
 
 #include "config.h"
 
+#include <dirent.h>
+#include <fcntl.h>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <dirent.h>
-#include <fcntl.h>
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 
-#include <string>
-#include <sstream>
-#include <vector>
-#include <cstring>
 #include <cerrno>
+#include <cstring>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "DAPCache3.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
-#include "InternalErr.h"
 #include "DapIndent.h"
+#include "InternalErr.h"
 #include "debug.h"
 
 #if 0
-#include "BESSyntaxUserError.h"
 #include "BESInternalError.h"
+#include "BESSyntaxUserError.h"
 
-#include "TheBESKeys.h"
 #include "BESDebug.h"
 #include "BESLog.h"
+#include "TheBESKeys.h"
 #endif
 using namespace std;
 using namespace libdap;
@@ -74,7 +74,6 @@ static const unsigned long long MAX_CACHE_SIZE_IN_MEGABYTES = (1ULL << 44);
 
 DAPCache3 *DAPCache3::d_instance = 0;
 
-
 /** @brief Private constructor that takes as arguments keys to the cache directory,
  * file prefix, and size of the cache to be looked up a configuration file
  *
@@ -88,9 +87,8 @@ DAPCache3 *DAPCache3::d_instance = 0;
  * @throws BESSyntaxUserError if keys not set, cache dir or prefix empty,
  * size is 0, or if cache dir does not exist.
  */
-DAPCache3::DAPCache3(const string &cache_dir, const string &prefix, unsigned long long size) :
-        d_cache_dir(cache_dir), d_prefix(prefix), d_max_cache_size_in_bytes(size)
-{
+DAPCache3::DAPCache3(const string &cache_dir, const string &prefix, unsigned long long size)
+    : d_cache_dir(cache_dir), d_prefix(prefix), d_max_cache_size_in_bytes(size) {
     m_initialize_cache_info();
 }
 
@@ -134,10 +132,8 @@ BESCache3::get_instance(BESKeys *keys, const string &cache_dir_key, const string
  * @param size_key How big should the cache be, in megabytes
  * @return A pointer to a DAPCache3 object
  */
-DAPCache3 *
-DAPCache3::get_instance(const string &cache_dir, const string &prefix, unsigned long long size)
-{
-    if (d_instance == 0){
+DAPCache3 *DAPCache3::get_instance(const string &cache_dir, const string &prefix, unsigned long long size) {
+    if (d_instance == 0) {
         d_instance = new DAPCache3(cache_dir, prefix, size);
 #if HAVE_ATEXIT
         atexit(delete_instance);
@@ -149,9 +145,7 @@ DAPCache3::get_instance(const string &cache_dir, const string &prefix, unsigned 
 /** Get an instance of the DAPCache3 object. This version is used when there's no
  * question that the cache has been instantiated.
  */
-DAPCache3 *
-DAPCache3::get_instance()
-{
+DAPCache3 *DAPCache3::get_instance() {
     if (d_instance == 0)
         throw InternalErr(__FILE__, __LINE__, "Tried to get the DAPCache3 instance, but it hasn't been created yet");
 
@@ -159,11 +153,11 @@ DAPCache3::get_instance()
 }
 
 static inline string get_errno() {
-	char *s_err = strerror(errno);
-	if (s_err)
-		return s_err;
-	else
-		return "Unknown error.";
+    char *s_err = strerror(errno);
+    if (s_err)
+        return s_err;
+    else
+        return "Unknown error.";
 }
 
 // Build a lock of a certain type.
@@ -196,8 +190,7 @@ inline int DAPCache3::m_get_descriptor(const string &file) {
  * @param fd The file descriptor to close.
  * @throws BESInternalError if either fnctl(2) or open(2) return an error.
  */
-static void unlock(int fd)
-{
+static void unlock(int fd) {
     if (fcntl(fd, F_SETLK, lock(F_UNLCK)) == -1) {
         throw InternalErr(__FILE__, __LINE__, "An error occurred trying to unlock the file" + get_errno());
     }
@@ -218,9 +211,8 @@ static void unlock(int fd)
 
  @exception Error is thrown to indicate a number of untoward
  events. */
-static bool getSharedLock(const string &file_name, int &ref_fd)
-{
-	DBG(cerr << "getSharedLock: " << file_name <<endl);
+static bool getSharedLock(const string &file_name, int &ref_fd) {
+    DBG(cerr << "getSharedLock: " << file_name << endl);
 
     int fd;
     if ((fd = open(file_name.c_str(), O_RDONLY)) < 0) {
@@ -236,12 +228,12 @@ static bool getSharedLock(const string &file_name, int &ref_fd)
     struct flock *l = lock(F_RDLCK);
     if (fcntl(fd, F_SETLKW, l) == -1) {
         close(fd);
-    	ostringstream oss;
-    	oss << "cache process: " << l->l_pid << " triggered a locking error: " << get_errno();
+        ostringstream oss;
+        oss << "cache process: " << l->l_pid << " triggered a locking error: " << get_errno();
         throw InternalErr(__FILE__, __LINE__, oss.str());
     }
 
-    DBG(cerr << "getSharedLock exit: " << file_name <<endl);
+    DBG(cerr << "getSharedLock exit: " << file_name << endl);
 
     // Success
     ref_fd = fd;
@@ -260,9 +252,8 @@ static bool getSharedLock(const string &file_name, int &ref_fd)
 
  @exception Error is thrown to indicate a number of untoward
  events. */
-static bool getExclusiveLock(string file_name, int &ref_fd)
-{
-	DBG(cerr << "getExclusiveLock: " << file_name <<endl);
+static bool getExclusiveLock(string file_name, int &ref_fd) {
+    DBG(cerr << "getExclusiveLock: " << file_name << endl);
 
     int fd;
     if ((fd = open(file_name.c_str(), O_RDWR)) < 0) {
@@ -278,12 +269,12 @@ static bool getExclusiveLock(string file_name, int &ref_fd)
     struct flock *l = lock(F_WRLCK);
     if (fcntl(fd, F_SETLKW, l) == -1) {
         close(fd);
-    	ostringstream oss;
-    	oss << "cache process: " << l->l_pid << " triggered a locking error: " << get_errno();
+        ostringstream oss;
+        oss << "cache process: " << l->l_pid << " triggered a locking error: " << get_errno();
         throw InternalErr(__FILE__, __LINE__, oss.str());
     }
 
-    DBG(cerr << "getExclusiveLock exit: " << file_name <<endl);
+    DBG(cerr << "getExclusiveLock exit: " << file_name << endl);
 
     // Success
     ref_fd = fd;
@@ -301,9 +292,8 @@ static bool getExclusiveLock(string file_name, int &ref_fd)
 
  @exception Error is thrown to indicate a number of untoward
  events. */
-static bool getExclusiveLockNB(string file_name, int &ref_fd)
-{
-	DBG(cerr << "getExclusiveLock_nonblocking: " << file_name <<endl);
+static bool getExclusiveLockNB(string file_name, int &ref_fd) {
+    DBG(cerr << "getExclusiveLock_nonblocking: " << file_name << endl);
 
     int fd;
     if ((fd = open(file_name.c_str(), O_RDWR)) < 0) {
@@ -326,14 +316,14 @@ static bool getExclusiveLockNB(string file_name, int &ref_fd)
 
         default: {
             close(fd);
-        	ostringstream oss;
-        	oss << "cache process: " << l->l_pid << " triggered a locking error: " << get_errno();
-        	throw InternalErr(__FILE__, __LINE__, oss.str());
+            ostringstream oss;
+            oss << "cache process: " << l->l_pid << " triggered a locking error: " << get_errno();
+            throw InternalErr(__FILE__, __LINE__, oss.str());
         }
         }
     }
 
-    DBG(cerr << "getExclusiveLock_nonblocking exit (true): " << file_name <<endl);
+    DBG(cerr << "getExclusiveLock_nonblocking exit (true): " << file_name << endl);
 
     // Success
     ref_fd = fd;
@@ -353,9 +343,8 @@ static bool getExclusiveLockNB(string file_name, int &ref_fd)
 
  @exception Error is thrown to indicate a number of untoward
  events. */
-static bool createLockedFile(string file_name, int &ref_fd)
-{
-	DBG(cerr << "createLockedFile: " << file_name <<endl);
+static bool createLockedFile(string file_name, int &ref_fd) {
+    DBG(cerr << "createLockedFile: " << file_name << endl);
 
     int fd;
     if ((fd = open(file_name.c_str(), O_CREAT | O_EXCL | O_RDWR, 0666)) < 0) {
@@ -371,12 +360,12 @@ static bool createLockedFile(string file_name, int &ref_fd)
     struct flock *l = lock(F_WRLCK);
     if (fcntl(fd, F_SETLKW, l) == -1) {
         close(fd);
-    	ostringstream oss;
-    	oss << "cache process: " << l->l_pid << " triggered a locking error: " << get_errno();
+        ostringstream oss;
+        oss << "cache process: " << l->l_pid << " triggered a locking error: " << get_errno();
         throw InternalErr(__FILE__, __LINE__, oss.str());
     }
 
-    DBG(cerr << "createLockedFile exit: " << file_name <<endl);
+    DBG(cerr << "createLockedFile exit: " << file_name << endl);
 
     // Success
     ref_fd = fd;
@@ -384,8 +373,7 @@ static bool createLockedFile(string file_name, int &ref_fd)
 }
 
 /** Private method */
-void DAPCache3::m_check_ctor_params()
-{
+void DAPCache3::m_check_ctor_params() {
     if (d_cache_dir.empty()) {
         string err = "The cache directory was not specified, must be non-empty";
         throw InternalErr(__FILE__, __LINE__, err);
@@ -424,13 +412,12 @@ void DAPCache3::m_check_ctor_params()
         throw InternalErr(__FILE__, __LINE__, msg.str());
     }
 #endif
-    DBG(cerr << "DAP Cache: directory " << d_cache_dir << ", prefix " << d_prefix
-            << ", max size " << d_max_cache_size_in_bytes << endl );
+    DBG(cerr << "DAP Cache: directory " << d_cache_dir << ", prefix " << d_prefix << ", max size "
+             << d_max_cache_size_in_bytes << endl);
 }
 
 /** Private method. */
-void DAPCache3::m_initialize_cache_info()
-{
+void DAPCache3::m_initialize_cache_info() {
     // The value set in configuration files, etc., is the size in megabytes. The private
     // variable holds the size in bytes (converted below).
     d_max_cache_size_in_bytes = min(d_max_cache_size_in_bytes, MAX_CACHE_SIZE_IN_MEGABYTES);
@@ -444,19 +431,18 @@ void DAPCache3::m_initialize_cache_info()
     // See if we can create it. If so, that means it doesn't exist. So make it and
     // set the cache initial size to zero.
     if (createLockedFile(d_cache_info, d_cache_info_fd)) {
-		// initialize the cache size to zero
-		unsigned long long size = 0;
-		if (write(d_cache_info_fd, &size, sizeof(unsigned long long)) != sizeof(unsigned long long))
-			throw InternalErr(__FILE__, __LINE__, "Could not write size info to the cache info file in startup!");
+        // initialize the cache size to zero
+        unsigned long long size = 0;
+        if (write(d_cache_info_fd, &size, sizeof(unsigned long long)) != sizeof(unsigned long long))
+            throw InternalErr(__FILE__, __LINE__, "Could not write size info to the cache info file in startup!");
 
-		// This leaves the d_cache_info_fd file descriptor open
-		unlock_cache();
-	}
-	else {
-		if ((d_cache_info_fd = open(d_cache_info.c_str(), O_RDWR)) == -1) {
-			throw InternalErr(__FILE__, __LINE__, get_errno());
-		}
-	}
+        // This leaves the d_cache_info_fd file descriptor open
+        unlock_cache();
+    } else {
+        if ((d_cache_info_fd = open(d_cache_info.c_str(), O_RDWR)) == -1) {
+            throw InternalErr(__FILE__, __LINE__, get_errno());
+        }
+    }
 
     DBG(cerr << "d_cache_info_fd: " << d_cache_info_fd << endl);
 }
@@ -502,7 +488,6 @@ BESCache3::BESCache3(BESKeys *keys, const string &cache_dir_key, const string &p
 }
 #endif
 
-
 /** Build the name of file that will holds the uncompressed data from
  * 'src' in the cache.
  *
@@ -518,8 +503,7 @@ BESCache3::BESCache3(BESKeys *keys, const string &cache_dir_key, const string &p
  * string) but do turn the string into a pathname located in the cache directory
  * with the cache prefix. the 'mangle' param is true by default.
  */
-string DAPCache3::get_cache_file_name(const string &src, bool mangle)
-{
+string DAPCache3::get_cache_file_name(const string &src, bool mangle) {
     string target = src;
 
     if (mangle) {
@@ -537,7 +521,7 @@ string DAPCache3::get_cache_file_name(const string &src, bool mangle)
     }
     DBG(cerr << "  d_cache_dir: '" << d_cache_dir << "'" << endl);
     DBG(cerr << "  d_prefix:    '" << d_prefix << "'" << endl);
-    DBG(cerr << "  target:      '" << target  << "'" << endl);
+    DBG(cerr << "  target:      '" << target << "'" << endl);
 
     return d_cache_dir + "/" + d_prefix + DAPCache3::DAP_CACHE_CHAR + target;
 }
@@ -559,16 +543,15 @@ string DAPCache3::get_cache_file_name(const string &src, bool mangle)
  * @throws Error if the attempt to get the (shared) lock failed for any
  * reason other than that the file does/did not exist.
  */
-bool DAPCache3::get_read_lock(const string &target, int &fd)
-{
-	lock_cache_read();
+bool DAPCache3::get_read_lock(const string &target, int &fd) {
+    lock_cache_read();
 
     bool status = getSharedLock(target, fd);
 
     DBG(cerr << "DAP Cache: read_lock: " << target << "(" << status << ")" << endl);
 
     if (status)
-    	m_record_descriptor(target, fd);
+        m_record_descriptor(target, fd);
 
     unlock_cache();
 
@@ -587,21 +570,19 @@ bool DAPCache3::get_read_lock(const string &target, int &fd)
  * descriptor reference is undefined - but likely -1).
  * @throws BESInternalError if any error except EEXIST is returned by open(2) or
  * if fcntl(2) returns an error. */
-bool DAPCache3::create_and_lock(const string &target, int &fd)
-{
-	lock_cache_write();
+bool DAPCache3::create_and_lock(const string &target, int &fd) {
+    lock_cache_write();
 
     bool status = createLockedFile(target, fd);
 
     DBG(cerr << "DAP Cache: create_and_lock: " << target << "(" << status << ")" << endl);
 
     if (status)
-    	m_record_descriptor(target, fd);
+        m_record_descriptor(target, fd);
 
     unlock_cache();
 
     return status;
-
 }
 
 /** @brief Transfer from an exclusive lock to a shared lock.
@@ -617,8 +598,7 @@ bool DAPCache3::create_and_lock(const string &target, int &fd)
  * @param fd The file descriptor that is exclusively locked and which, on
  * exit, will have a shared lock.
  */
-void DAPCache3::exclusive_to_shared_lock(int fd)
-{
+void DAPCache3::exclusive_to_shared_lock(int fd) {
     struct flock lock;
     lock.l_type = F_RDLCK;
     lock.l_whence = SEEK_SET;
@@ -639,8 +619,7 @@ void DAPCache3::exclusive_to_shared_lock(int fd)
  * @note This is intended to be used internally only but might be useful in
  * some settings.
  */
-void DAPCache3::lock_cache_write()
-{
+void DAPCache3::lock_cache_write() {
     DBG(cerr << "lock_cache - d_cache_info_fd: " << d_cache_info_fd << endl);
 
     if (fcntl(d_cache_info_fd, F_SETLKW, lock(F_WRLCK)) == -1) {
@@ -651,8 +630,7 @@ void DAPCache3::lock_cache_write()
 /** Get a shared lock on the 'cache info' file.
  *
  */
-void DAPCache3::lock_cache_read()
-{
+void DAPCache3::lock_cache_read() {
     DBG(cerr << "lock_cache - d_cache_info_fd: " << d_cache_info_fd << endl);
 
     if (fcntl(d_cache_info_fd, F_SETLKW, lock(F_RDLCK)) == -1) {
@@ -665,12 +643,12 @@ void DAPCache3::lock_cache_read()
  * @note This is intended to be used internally only bt might be useful in
  * some settings.
  */
-void DAPCache3::unlock_cache()
-{
+void DAPCache3::unlock_cache() {
     DBG(cerr << "DAP Cache: unlock: cache_info (fd: " << d_cache_info_fd << ")" << endl);
 
     if (fcntl(d_cache_info_fd, F_SETLK, lock(F_UNLCK)) == -1) {
-        throw InternalErr(__FILE__, __LINE__, "An error occurred trying to unlock the cache-control file" + get_errno());
+        throw InternalErr(__FILE__, __LINE__,
+                          "An error occurred trying to unlock the cache-control file" + get_errno());
     }
 }
 
@@ -685,8 +663,7 @@ void DAPCache3::unlock_cache()
  *
  * @param file_name The name of the file to unlock.
  * @throws BESInternalError */
-void DAPCache3::unlock_and_close(const string &file_name)
-{
+void DAPCache3::unlock_and_close(const string &file_name) {
     DBG(cerr << "DAP Cache: unlock file: " << file_name << endl);
 
     unlock(m_get_descriptor(file_name));
@@ -697,8 +674,7 @@ void DAPCache3::unlock_and_close(const string &file_name)
  * cannot be closed).
  * @param fd The descriptor of the file to unlock.
  * @throws BESInternalError */
-void DAPCache3::unlock_and_close(int fd)
-{
+void DAPCache3::unlock_and_close(int fd) {
     DBG(cerr << "DAP Cache: unlock fd: " << fd << endl);
 
     unlock(fd);
@@ -716,49 +692,47 @@ void DAPCache3::unlock_and_close(int fd)
  * @param target The name of the file
  * @return The new size of the cache
  */
-unsigned long long DAPCache3::update_cache_info(const string &target)
-{
-	try {
-		lock_cache_write();
+unsigned long long DAPCache3::update_cache_info(const string &target) {
+    try {
+        lock_cache_write();
 
-		if (lseek(d_cache_info_fd, 0, SEEK_SET) == -1)
-			throw InternalErr(__FILE__, __LINE__, "Could not rewind to front of cache info file.");
+        if (lseek(d_cache_info_fd, 0, SEEK_SET) == -1)
+            throw InternalErr(__FILE__, __LINE__, "Could not rewind to front of cache info file.");
 
-		// read the size from the cache info file
-		unsigned long long current_size;
-		if (read(d_cache_info_fd, &current_size, sizeof(unsigned long long)) != sizeof(unsigned long long))
-			throw InternalErr(__FILE__, __LINE__, "Could not get read size info from the cache info file!");
+        // read the size from the cache info file
+        unsigned long long current_size;
+        if (read(d_cache_info_fd, &current_size, sizeof(unsigned long long)) != sizeof(unsigned long long))
+            throw InternalErr(__FILE__, __LINE__, "Could not get read size info from the cache info file!");
 
-		struct stat buf;
-		int statret = stat(target.c_str(), &buf);
-		if (statret == 0)
-			current_size += buf.st_size;
-		else
-			throw InternalErr(__FILE__, __LINE__, "Could not read the size of the new file: " + target + " : " + get_errno());
+        struct stat buf;
+        int statret = stat(target.c_str(), &buf);
+        if (statret == 0)
+            current_size += buf.st_size;
+        else
+            throw InternalErr(__FILE__, __LINE__,
+                              "Could not read the size of the new file: " + target + " : " + get_errno());
 
-		DBG(cerr << "DAP Cache: cache size updated to: " << current_size << endl);
+        DBG(cerr << "DAP Cache: cache size updated to: " << current_size << endl);
 
-		if (lseek(d_cache_info_fd, 0, SEEK_SET) == -1)
-			throw InternalErr(__FILE__, __LINE__, "Could not rewind to front of cache info file.");
+        if (lseek(d_cache_info_fd, 0, SEEK_SET) == -1)
+            throw InternalErr(__FILE__, __LINE__, "Could not rewind to front of cache info file.");
 
-		if(write(d_cache_info_fd, &current_size, sizeof(unsigned long long)) != sizeof(unsigned long long))
-			throw InternalErr(__FILE__, __LINE__, "Could not write size info from the cache info file!");
+        if (write(d_cache_info_fd, &current_size, sizeof(unsigned long long)) != sizeof(unsigned long long))
+            throw InternalErr(__FILE__, __LINE__, "Could not write size info from the cache info file!");
 
-		unlock_cache();
-		return current_size;
-	}
-	catch (...) {
-		unlock_cache();
-		throw;
-	}
+        unlock_cache();
+        return current_size;
+    } catch (...) {
+        unlock_cache();
+        throw;
+    }
 }
 
 /** @brief look at the cache size; is it too large?
  * Look at the cache size and see if it is too big.
  *
  * @return True if the size is too big, false otherwise. */
-bool DAPCache3::cache_too_big(unsigned long long current_size) const
-{
+bool DAPCache3::cache_too_big(unsigned long long current_size) const {
     return current_size > d_max_cache_size_in_bytes;
 }
 
@@ -769,36 +743,29 @@ bool DAPCache3::cache_too_big(unsigned long long current_size) const
  *
  * @return The size of the cache.
  */
-unsigned long long DAPCache3::get_cache_size()
-{
-	try {
-		lock_cache_read();
+unsigned long long DAPCache3::get_cache_size() {
+    try {
+        lock_cache_read();
 
-		if (lseek(d_cache_info_fd, 0, SEEK_SET) == -1)
-	        throw InternalErr(__FILE__, __LINE__, "Could not rewind to front of cache info file.");
-		// read the size from the cache info file
-		unsigned long long current_size;
-		if(read(d_cache_info_fd, &current_size, sizeof(unsigned long long)) != sizeof(unsigned long long))
-		    throw InternalErr(__FILE__, __LINE__, "Could not get read size info from the cache info file!");
+        if (lseek(d_cache_info_fd, 0, SEEK_SET) == -1)
+            throw InternalErr(__FILE__, __LINE__, "Could not rewind to front of cache info file.");
+        // read the size from the cache info file
+        unsigned long long current_size;
+        if (read(d_cache_info_fd, &current_size, sizeof(unsigned long long)) != sizeof(unsigned long long))
+            throw InternalErr(__FILE__, __LINE__, "Could not get read size info from the cache info file!");
 
-		unlock_cache();
-	    return current_size;
-	}
-	catch(...) {
-		unlock_cache();
-		throw;
-	}
+        unlock_cache();
+        return current_size;
+    } catch (...) {
+        unlock_cache();
+        throw;
+    }
 }
 
-
-static bool entry_op(cache_entry &e1, cache_entry &e2)
-{
-    return e1.time < e2.time;
-}
+static bool entry_op(cache_entry &e1, cache_entry &e2) { return e1.time < e2.time; }
 
 /** Private. Get info about all of the files (size and last use time). */
-unsigned long long DAPCache3::m_collect_cache_dir_info(CacheFiles &contents)
-{
+unsigned long long DAPCache3::m_collect_cache_dir_info(CacheFiles &contents) {
     DIR *dip = opendir(d_cache_dir.c_str());
     if (!dip)
         throw InternalErr(__FILE__, __LINE__, "Unable to open cache directory " + d_cache_dir);
@@ -851,8 +818,7 @@ unsigned long long DAPCache3::m_collect_cache_dir_info(CacheFiles &contents)
  * shared read lock on the new file won't keep this process from deleting it (but
  * will keep other processes from deleting it).
  */
-void DAPCache3::update_and_purge(const string &new_file)
-{
+void DAPCache3::update_and_purge(const string &new_file) {
     DBG(cerr << "purge - starting the purge" << endl);
 
     try {
@@ -870,7 +836,8 @@ void DAPCache3::update_and_purge(const string &new_file)
             }
         }
 #endif
-        DBG(cerr << "purge - current and target size (in MB) " << computed_size/BYTES_PER_MEG  << ", " << d_target_size/BYTES_PER_MEG << endl );
+        DBG(cerr << "purge - current and target size (in MB) " << computed_size / BYTES_PER_MEG << ", "
+                 << d_target_size / BYTES_PER_MEG << endl);
 
         // This deletes files and updates computed_size
         if (cache_too_big(computed_size)) {
@@ -884,10 +851,11 @@ void DAPCache3::update_and_purge(const string &new_file)
                 // this process just added to the cache - don't purge that!
                 int cfile_fd;
                 if (i->name != new_file && getExclusiveLockNB(i->name, cfile_fd)) {
-                    DBG(cerr << "purge: " << i->name << " removed." << endl );
+                    DBG(cerr << "purge: " << i->name << " removed." << endl);
 
                     if (unlink(i->name.c_str()) != 0)
-                        throw InternalErr(__FILE__, __LINE__, "Unable to purge the file " + i->name + " from the cache: " + get_errno());
+                        throw InternalErr(__FILE__, __LINE__,
+                                          "Unable to purge the file " + i->name + " from the cache: " + get_errno());
 
                     unlock(cfile_fd);
                     computed_size -= i->size;
@@ -900,15 +868,15 @@ void DAPCache3::update_and_purge(const string &new_file)
 #endif
                 ++i;
 
-                DBG(cerr << "purge - current and target size (in MB) " << computed_size/BYTES_PER_MEG << ", " << d_target_size/BYTES_PER_MEG << endl );
+                DBG(cerr << "purge - current and target size (in MB) " << computed_size / BYTES_PER_MEG << ", "
+                         << d_target_size / BYTES_PER_MEG << endl);
             }
-
         }
 
         if (lseek(d_cache_info_fd, 0, SEEK_SET) == -1)
             throw InternalErr(__FILE__, __LINE__, "Could not rewind to front of cache info file.");
 
-        if(write(d_cache_info_fd, &computed_size, sizeof(unsigned long long)) != sizeof(unsigned long long))
+        if (write(d_cache_info_fd, &computed_size, sizeof(unsigned long long)) != sizeof(unsigned long long))
             throw InternalErr(__FILE__, __LINE__, "Could not write size info to the cache info file!");
 #if 0
         if (BESISDEBUG( "cache_contents" )) {
@@ -923,8 +891,7 @@ void DAPCache3::update_and_purge(const string &new_file)
         }
 #endif
         unlock_cache();
-    }
-    catch(...) {
+    } catch (...) {
         unlock_cache();
         throw;
     }
@@ -941,8 +908,7 @@ void DAPCache3::update_and_purge(const string &new_file)
  *
  * @param file The name of the file to purge.
  */
-void DAPCache3::purge_file(const string &file)
-{
+void DAPCache3::purge_file(const string &file) {
     DBG(cerr << "purge_file - starting the purge" << endl);
 
     try {
@@ -958,11 +924,11 @@ void DAPCache3::purge_file(const string &file)
                 size = buf.st_size;
             }
 
-            DBG(cerr << "purge_file: " << file << " removed." << endl );
+            DBG(cerr << "purge_file: " << file << " removed." << endl);
 
             if (unlink(file.c_str()) != 0)
                 throw InternalErr(__FILE__, __LINE__,
-                        "Unable to purge the file " + file + " from the cache: " + get_errno());
+                                  "Unable to purge the file " + file + " from the cache: " + get_errno());
 
             unlock(cfile_fd);
 
@@ -976,8 +942,7 @@ void DAPCache3::purge_file(const string &file)
         }
 
         unlock_cache();
-    }
-    catch (...) {
+    } catch (...) {
         unlock_cache();
         throw;
     }
@@ -990,9 +955,8 @@ void DAPCache3::purge_file(const string &file)
  *
  * @param strm C++ i/o stream to dump the information to
  */
-void DAPCache3::dump(ostream &strm) const
-{
-    strm << DapIndent::LMarg << "DAPCache3::dump - (" << (void *) this << ")" << endl;
+void DAPCache3::dump(ostream &strm) const {
+    strm << DapIndent::LMarg << "DAPCache3::dump - (" << (void *)this << ")" << endl;
     DapIndent::Indent();
     strm << DapIndent::LMarg << "cache dir: " << d_cache_dir << endl;
     strm << DapIndent::LMarg << "prefix: " << d_prefix << endl;

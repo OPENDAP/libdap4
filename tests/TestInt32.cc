@@ -33,16 +33,15 @@
 //
 // jhrg 1/12/95
 
-
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #ifndef WIN32
 #include <unistd.h>
 #else
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
 #endif
 
@@ -51,33 +50,17 @@
 
 extern int test_variable_sleep_interval;
 
-void
-TestInt32::_duplicate(const TestInt32 &ts)
-{
-    d_series_values = ts.d_series_values;
-}
+void TestInt32::_duplicate(const TestInt32 &ts) { d_series_values = ts.d_series_values; }
 
-TestInt32::TestInt32(const string &n) : Int32(n), d_series_values(false)
-{
-    d_buf = 1;
-}
+TestInt32::TestInt32(const string &n) : Int32(n), d_series_values(false) { d_buf = 1; }
 
-TestInt32::TestInt32(const string &n, const string &)
-    : Int32(n), d_series_values(false)
-{
-    d_buf = 1;
-}
+TestInt32::TestInt32(const string &n, const string &) : Int32(n), d_series_values(false) { d_buf = 1; }
 
-TestInt32::TestInt32(const TestInt32 &rhs) : Int32(rhs), TestCommon(rhs)
-{
-    _duplicate(rhs);
-}
+TestInt32::TestInt32(const TestInt32 &rhs) : Int32(rhs), TestCommon(rhs) { _duplicate(rhs); }
 
-TestInt32 &
-TestInt32::operator=(const TestInt32 &rhs)
-{
+TestInt32 &TestInt32::operator=(const TestInt32 &rhs) {
     if (this == &rhs)
-	return *this;
+        return *this;
 
     Int32::operator=(rhs); // run Constructor=
 
@@ -86,40 +69,32 @@ TestInt32::operator=(const TestInt32 &rhs)
     return *this;
 }
 
-BaseType *
-TestInt32::ptr_duplicate()
-{
-    return new TestInt32(*this);
-}
+BaseType *TestInt32::ptr_duplicate() { return new TestInt32(*this); }
 
-void
-TestInt32::output_values(std::ostream &out)
-{
-    print_val(out, "", false);
-}
+void TestInt32::output_values(std::ostream &out) { print_val(out, "", false); }
 
-bool TestInt32::read()
-{
-	if (read_p()) return true;
+bool TestInt32::read() {
+    if (read_p())
+        return true;
 
-	if (test_variable_sleep_interval > 0) sleep(test_variable_sleep_interval);
+    if (test_variable_sleep_interval > 0)
+        sleep(test_variable_sleep_interval);
 
-	if (get_series_values()) {
-		// This line stopped working when I upgraded the compiler on osx 10.9.
-		// to version Apple LLVM version 5.1 (clang-503.0.38) (based on LLVM 3.4svn)
-		// jhrg 3/12/14
-		// d_buf = d_buf * 32;
-		d_buf <<= 5;
-		if (!d_buf)
-			d_buf = 32;
+    if (get_series_values()) {
+        // This line stopped working when I upgraded the compiler on osx 10.9.
+        // to version Apple LLVM version 5.1 (clang-503.0.38) (based on LLVM 3.4svn)
+        // jhrg 3/12/14
+        // d_buf = d_buf * 32;
+        d_buf <<= 5;
+        if (!d_buf)
+            d_buf = 32;
 
-	    DBGN(cerr << __PRETTY_FUNCTION__ << "d_buf: " << d_buf << endl);
-	}
-	else {
-		d_buf = 123456789;
-	}
+        DBGN(cerr << __PRETTY_FUNCTION__ << "d_buf: " << d_buf << endl);
+    } else {
+        d_buf = 123456789;
+    }
 
-	set_read_p(true);
+    set_read_p(true);
 
-	return true;
+    return true;
 }

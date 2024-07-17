@@ -26,25 +26,24 @@
 
 #include <algorithm>
 
-#include "D4Attributes.h"
 #include "D4AttributeType.h"
+#include "D4Attributes.h"
 #include "InternalErr.h"
 
 #include "AttrTable.h"
 
-#include "util.h"
-#include "escaping.h"
-#include "debug.h"
 #include "DapIndent.h"
+#include "debug.h"
+#include "escaping.h"
+#include "util.h"
 
 namespace libdap {
 
 /** Convert an AttrType to it's string representation.
  @param at The Attribute Type.
  @return The type's string representation */
-string D4AttributeTypeToString(D4AttributeType at)
-{
-    switch(at) {
+string D4AttributeTypeToString(D4AttributeType at) {
+    switch (at) {
     case attr_null_c:
         return "null";
 
@@ -107,8 +106,7 @@ string D4AttributeTypeToString(D4AttributeType at)
     }
 }
 
-D4AttributeType StringToD4AttributeType(string s)
-{
+D4AttributeType StringToD4AttributeType(string s) {
     downcase(s);
 
     if (s == "container")
@@ -148,9 +146,7 @@ D4AttributeType StringToD4AttributeType(string s)
         return attr_null_c;
 }
 
-void
-D4Attribute::m_duplicate(const D4Attribute &src)
-{
+void D4Attribute::m_duplicate(const D4Attribute &src) {
     d_name = src.d_name;
     d_type = src.d_type;
     d_values = src.d_values;
@@ -160,28 +156,20 @@ D4Attribute::m_duplicate(const D4Attribute &src)
         d_attributes = 0;
 }
 
-D4Attribute::D4Attribute(const D4Attribute &src)
-{
-    m_duplicate(src);
-}
+D4Attribute::D4Attribute(const D4Attribute &src) { m_duplicate(src); }
 
-D4Attribute::~D4Attribute()
-{
-    delete d_attributes;
-}
+D4Attribute::~D4Attribute() { delete d_attributes; }
 
-D4Attribute &
-D4Attribute::operator=(const D4Attribute &rhs)
-{
-    if (this == &rhs) return *this;
+D4Attribute &D4Attribute::operator=(const D4Attribute &rhs) {
+    if (this == &rhs)
+        return *this;
     m_duplicate(rhs);
     return *this;
 }
 
-D4Attributes *
-D4Attribute::attributes()
-{
-    if (!d_attributes) d_attributes = new D4Attributes();
+D4Attributes *D4Attribute::attributes() {
+    if (!d_attributes)
+        d_attributes = new D4Attributes();
     return d_attributes;
 }
 
@@ -193,9 +181,7 @@ D4Attribute::attributes()
  *
  * @param at Read the DAP2 attributes from here.
  */
-void
-D4Attributes::transform_to_dap4(AttrTable &at)
-{
+void D4Attributes::transform_to_dap4(AttrTable &at) {
     // for every attribute in at, copy it to this.
     for (AttrTable::Attr_iter i = at.attr_begin(), e = at.attr_end(); i != e; ++i) {
         string name = at.get_name(i);
@@ -276,31 +262,64 @@ D4Attributes::transform_to_dap4(AttrTable &at)
     }
 }
 
-
 AttrType get_dap2_AttrType(D4AttributeType d4_type) {
     switch (d4_type) {
-            // These types are common between DAP4 and DAP2.
-        case attr_container_c: { return Attr_container; }
-        case attr_byte_c:      { return Attr_byte; }
-        case attr_int16_c:     { return Attr_int16; }
-        case attr_uint16_c:    { return Attr_uint16; }
-        case attr_int32_c:     { return Attr_int32; }
-        case attr_uint32_c:    { return Attr_uint32; }
-        case attr_float32_c:   { return Attr_float32; }
-        case attr_float64_c:   { return Attr_float64; }
-        case attr_str_c:       { return Attr_string; }
-        case attr_url_c:       { return Attr_url; }
-        case attr_otherxml_c:  { return Attr_other_xml; }
-        case attr_uint8_c:     { return Attr_byte; }
+        // These types are common between DAP4 and DAP2.
+    case attr_container_c: {
+        return Attr_container;
+    }
+    case attr_byte_c: {
+        return Attr_byte;
+    }
+    case attr_int16_c: {
+        return Attr_int16;
+    }
+    case attr_uint16_c: {
+        return Attr_uint16;
+    }
+    case attr_int32_c: {
+        return Attr_int32;
+    }
+    case attr_uint32_c: {
+        return Attr_uint32;
+    }
+    case attr_float32_c: {
+        return Attr_float32;
+    }
+    case attr_float64_c: {
+        return Attr_float64;
+    }
+    case attr_str_c: {
+        return Attr_string;
+    }
+    case attr_url_c: {
+        return Attr_url;
+    }
+    case attr_otherxml_c: {
+        return Attr_other_xml;
+    }
+    case attr_uint8_c: {
+        return Attr_byte;
+    }
 
-        // Types exclusive to DAP4
-        case attr_int8_c:      { return Attr_int8; }
-        case attr_int64_c:     { return Attr_int64; }
-        case attr_uint64_c:    { return Attr_uint64; }
-        case attr_enum_c:      { return Attr_enum; }
-        case attr_opaque_c:    { return Attr_opaque; }
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Unknown DAP4 attribute.");
+    // Types exclusive to DAP4
+    case attr_int8_c: {
+        return Attr_int8;
+    }
+    case attr_int64_c: {
+        return Attr_int64;
+    }
+    case attr_uint64_c: {
+        return Attr_uint64;
+    }
+    case attr_enum_c: {
+        return Attr_enum;
+    }
+    case attr_opaque_c: {
+        return Attr_opaque;
+    }
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown DAP4 attribute.");
     }
 }
 
@@ -309,8 +328,7 @@ AttrType get_dap2_AttrType(D4AttributeType d4_type) {
  *
  * @param d2_attr_table Load \arg d2_attr_table with the D4Attributes found in this object.
  */
-void D4Attributes::transform_attrs_to_dap2(AttrTable *d2_attr_table)
-{
+void D4Attributes::transform_attrs_to_dap2(AttrTable *d2_attr_table) {
     // for every attribute in d4_attrs, copy it to d2_attr_table.
     for (D4Attributes::D4AttributesIter i = attribute_begin(), e = attribute_end(); i != e; ++i) {
         string name = (*i)->name();
@@ -329,7 +347,7 @@ void D4Attributes::transform_attrs_to_dap2(AttrTable *d2_attr_table)
         }
         default: {
             for (D4Attribute::D4AttributeIter vi = (*i)->value_begin(), ve = (*i)->value_end(); vi != ve; vi++) {
-                d2_attr_table->append_attr(name, d2_attr_type_name, *vi,(*i)->get_utf8_str_flag());
+                d2_attr_table->append_attr(name, d2_attr_type_name, *vi, (*i)->get_utf8_str_flag());
             }
 
             break;
@@ -407,9 +425,7 @@ AttrTable *D4Attributes::get_AttrTable(const string name)
 }
 #endif
 
-D4Attribute *
-D4Attributes::find_depth_first(const string &name, D4AttributesIter i)
-{
+D4Attribute *D4Attributes::find_depth_first(const string &name, D4AttributesIter i) {
     if (i == attribute_end())
         return 0;
     else if ((*i)->name() == name)
@@ -420,24 +436,18 @@ D4Attributes::find_depth_first(const string &name, D4AttributesIter i)
         return find_depth_first(name, ++i);
 }
 
-D4Attribute *
-D4Attributes::find(const string &name)
-{
-    return find_depth_first(name, attribute_begin());
-}
+D4Attribute *D4Attributes::find(const string &name) { return find_depth_first(name, attribute_begin()); }
 
 /** Return a pointer to the D4Attribute object that has the given FQN.
  * @note A FQN for an attribute is a series of names separated by dots.
  */
-D4Attribute *
-D4Attributes::get(const string &fqn)
-{
+D4Attribute *D4Attributes::get(const string &fqn) {
     // name1.name2.name3
     // name1
     // name1.name2
     size_t pos = fqn.find('.');
     string part = fqn.substr(0, pos);
-    string rest= "";
+    string rest = "";
 
     if (pos != string::npos)
         rest = fqn.substr(pos + 1);
@@ -452,8 +462,7 @@ D4Attributes::get(const string &fqn)
                     return (*i)->attributes()->get(rest);
                 ++i;
             }
-        }
-        else {
+        } else {
             D4AttributesIter i = attribute_begin();
             while (i != attribute_end()) {
                 if ((*i)->name() == part)
@@ -474,10 +483,8 @@ D4Attributes::get(const string &fqn)
  * @see void D4Attributes::erase(const string &fqn) for code that
  * searches for a fully qualified attribute name and erases it.
  */
-void
-D4Attributes::erase_named_attribute(const string &name)
-{
-    for (auto &attr: d_attrs) {
+void D4Attributes::erase_named_attribute(const string &name) {
+    for (auto &attr : d_attrs) {
         if (attr->name() == name) {
             delete attr;
             attr = nullptr;
@@ -490,15 +497,13 @@ D4Attributes::erase_named_attribute(const string &name)
  * @brief Erase the given attribute.
  * @param fqn Fully Qualified Name for the attribute to remove.
  */
-void
-D4Attributes::erase(const string &fqn)
-{
+void D4Attributes::erase(const string &fqn) {
     // name1.name2.name3; part is name1 and rest is name2.name3
     // name1; part is name1 and rest is ""
     // name1.name2; part is name1 and rest is name2
     size_t pos = fqn.find('.');
     string part = fqn.substr(0, pos);
-    string rest= "";
+    string rest = "";
 
     if (pos != string::npos)
         rest = fqn.substr(pos + 1);
@@ -507,26 +512,24 @@ D4Attributes::erase(const string &fqn)
         if (!rest.empty()) {
             // in this case, we are not looking for a leaf node, so descend the
             // attribute container hierarchy.
-            for (auto &a: d_attrs) {
+            for (auto &a : d_attrs) {
                 if (a->name() == part && a->type() == attr_container_c) {
                     a->attributes()->erase(rest);
                 }
             }
-        }
-        else {
+        } else {
             erase_named_attribute(part);
         }
     }
 }
 
-void
-D4Attribute::print_dap4(XMLWriter &xml) const
-{
-    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Attribute") < 0)
+void D4Attribute::print_dap4(XMLWriter &xml) const {
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Attribute") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write Attribute element");
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "type", (const xmlChar*) D4AttributeTypeToString(type()).c_str()) < 0)
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"type",
+                                    (const xmlChar *)D4AttributeTypeToString(type()).c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for type");
 
     switch (type()) {
@@ -539,7 +542,7 @@ D4Attribute::print_dap4(XMLWriter &xml) const
     case attr_otherxml_c:
         if (num_values() != 1)
             throw Error("OtherXML attributes cannot be vector-valued.");
-        if (xmlTextWriterWriteRaw(xml.get_writer(), (const xmlChar*) value(0).c_str()) < 0)
+        if (xmlTextWriterWriteRaw(xml.get_writer(), (const xmlChar *)value(0).c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write OtherXML value");
         break;
 
@@ -554,13 +557,13 @@ D4Attribute::print_dap4(XMLWriter &xml) const
 #endif
         auto i = d_values.begin();
         while (i != d_values.end()) {
-            if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Value") < 0)
+            if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Value") < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write value element");
 #if 0
             if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) (*i++).c_str()) < 0)
 #endif
-            string s = (get_utf8_str_flag())?(*i++):escattr_xml(*i++);
-            if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) s.c_str()) < 0)
+            string s = (get_utf8_str_flag()) ? (*i++) : escattr_xml(*i++);
+            if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar *)s.c_str()) < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write attribute value");
 
             if (xmlTextWriterEndElement(xml.get_writer()) < 0)
@@ -569,15 +572,14 @@ D4Attribute::print_dap4(XMLWriter &xml) const
         break;
     }
 
-       
     default: {
         // Assume only valid types make it into instances
-        D4AttributeCIter i = d_values.begin();//value_begin();
+        D4AttributeCIter i = d_values.begin(); // value_begin();
         while (i != d_values.end()) {
-            if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Value") < 0)
+            if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Value") < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write value element");
 
-            if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar*) (*i++).c_str()) < 0)
+            if (xmlTextWriterWriteString(xml.get_writer(), (const xmlChar *)(*i++).c_str()) < 0)
                 throw InternalErr(__FILE__, __LINE__, "Could not write attribute value");
 
             if (xmlTextWriterEndElement(xml.get_writer()) < 0)
@@ -600,24 +602,19 @@ D4Attribute::print_dap4(XMLWriter &xml) const
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void
-D4Attribute::dump(ostream &strm) const
-{
+void D4Attribute::dump(ostream &strm) const {
     strm << DapIndent::LMarg << "D4Attribute::dump - (" << (void *)this << ")" << endl;
 
-    DapIndent::Indent() ;
+    DapIndent::Indent();
 
     XMLWriter xml;
     print_dap4(xml);
     strm << DapIndent::LMarg << xml.get_doc() << flush;
 
-    DapIndent::UnIndent() ;
+    DapIndent::UnIndent();
 }
 
-
-void
-D4Attributes::print_dap4(XMLWriter &xml) const
-{
+void D4Attributes::print_dap4(XMLWriter &xml) const {
     if (empty())
         return;
 
@@ -627,27 +624,25 @@ D4Attributes::print_dap4(XMLWriter &xml) const
     }
 }
 
-
 /**
  * Returns true if this Attribute is a dap4 type.
  * @param path
  * @param inventory
  * @return True of the attribute is a dap4 type, false otherwise
  */
-bool D4Attribute::is_dap4_type(const std::string &path, std::vector<std::string> &inventory)
-{
+bool D4Attribute::is_dap4_type(const std::string &path, std::vector<std::string> &inventory) {
     bool ima_d4_attr = false;
-    switch(type()){
-        case attr_int8_c:
-        case attr_int64_c:
-        case attr_uint64_c:
-            ima_d4_attr=true;
-            break;
-        case attr_container_c:
-            ima_d4_attr = attributes()->has_dap4_types(path ,inventory);
-            break;
-        default:
-            break;
+    switch (type()) {
+    case attr_int8_c:
+    case attr_int64_c:
+    case attr_uint64_c:
+        ima_d4_attr = true;
+        break;
+    case attr_container_c:
+        ima_d4_attr = attributes()->has_dap4_types(path, inventory);
+        break;
+    default:
+        break;
     }
     return ima_d4_attr;
 }
@@ -658,13 +653,12 @@ bool D4Attribute::is_dap4_type(const std::string &path, std::vector<std::string>
  * @param inventory
  * @return true when dap4 types are found, false otherwise.
  */
-bool D4Attributes::has_dap4_types(const std::string &path, std::vector<std::string> &inventory) const
-{
+bool D4Attributes::has_dap4_types(const std::string &path, std::vector<std::string> &inventory) const {
     bool has_d4_attr = false;
-    for (const auto attr: attributes()) {
+    for (const auto attr : attributes()) {
         string attr_fqn = path + "@" + attr->name();
         bool isa_d4_attr = attr->is_dap4_type(attr_fqn, inventory);
-        if(isa_d4_attr){
+        if (isa_d4_attr) {
             inventory.emplace_back(D4AttributeTypeToString(attr->type()) + " " + attr_fqn);
         }
         has_d4_attr |= isa_d4_attr;
@@ -680,20 +674,16 @@ bool D4Attributes::has_dap4_types(const std::string &path, std::vector<std::stri
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void
-D4Attributes::dump(ostream &strm) const
-{
+void D4Attributes::dump(ostream &strm) const {
     strm << DapIndent::LMarg << "D4Attributes::dump - (" << (void *)this << ")" << endl;
 
-    DapIndent::Indent() ;
+    DapIndent::Indent();
 
     XMLWriter xml;
     print_dap4(xml);
     strm << DapIndent::LMarg << xml.get_doc() << flush;
 
-    DapIndent::UnIndent() ;
+    DapIndent::UnIndent();
 }
 
-
 } // namespace libdap
-

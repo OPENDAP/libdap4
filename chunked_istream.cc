@@ -27,25 +27,25 @@
 
 #include "config.h"
 
-#include <stdint.h>
 #include <arpa/inet.h>
+#include <stdint.h>
 
 #include <cstring>
 #include <vector>
 
-#include "chunked_stream.h"
 #include "chunked_istream.h"
+#include "chunked_stream.h"
 
 #include "Error.h"
 
-//#define DODS_DEBUG
-//#define DODS_DEBUG2
+// #define DODS_DEBUG
+// #define DODS_DEBUG2
 #ifdef DODS_DEBUG
 #include <iostream>
 #endif
 
-#include "util.h"
 #include "debug.h"
+#include "util.h"
 
 namespace libdap {
 
@@ -80,83 +80,88 @@ namespace libdap {
  * bytes is found, an EOF is returned.
  * @return The character at the gptr() or EOF
  */
-std::streambuf::int_type
-chunked_inbuf::underflow()
-{
+std::streambuf::int_type chunked_inbuf::underflow() {
     DBG(cerr << "underflow..." << endl);
-    DBG2(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
+    DBG2(cerr << "eback(): " << (void *)eback() << ", gptr(): " << (void *)(gptr() - eback())
+              << ", egptr(): " << (void *)(egptr() - eback()) << endl);
 
-	// return the next character; uflow() increments the puffer pointer.
-	if (gptr() < egptr())
-		return traits_type::to_int_type(*gptr());
+    // return the next character; uflow() increments the puffer pointer.
+    if (gptr() < egptr())
+        return traits_type::to_int_type(*gptr());
 
-	// gptr() == egptr() so read more data from the underlying input source.
+    // gptr() == egptr() so read more data from the underlying input source.
 
-	// To read data from the chunked stream, first read the header
-	uint32_t header;
-	d_is.read((char *) &header, 4);
+    // To read data from the chunked stream, first read the header
+    uint32_t header;
+    d_is.read((char *)&header, 4);
 
-	// When the endian nature of the server is encoded in the chunk header, the header is
-	// sent using network byte order
-	header = ntohl(header);
+    // When the endian nature of the server is encoded in the chunk header, the header is
+    // sent using network byte order
+    header = ntohl(header);
 
-	// There are two 'EOF' cases: One where the END chunk is zero bytes and one where
-	// it holds data. In the latter case, bytes those will be read and moved into the
-	// buffer. Once those data are consumed, we'll be back here again and this read()
-	// will return EOF. See below for the other case...
-	if (d_is.eof()) return traits_type::eof();
+    // There are two 'EOF' cases: One where the END chunk is zero bytes and one where
+    // it holds data. In the latter case, bytes those will be read and moved into the
+    // buffer. Once those data are consumed, we'll be back here again and this read()
+    // will return EOF. See below for the other case...
+    if (d_is.eof())
+        return traits_type::eof();
 
-	// (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
-	if (!d_set_twiddle) {
-	    d_twiddle_bytes = (is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN));
-	    d_set_twiddle = true;
-	}
+    // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
+    if (!d_set_twiddle) {
+        d_twiddle_bytes = (is_host_big_endian() == (header & CHUNK_LITTLE_ENDIAN));
+        d_set_twiddle = true;
+    }
 
-	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
+    uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 
-	DBG(cerr << "underflow: chunk size from header: " << chunk_size << endl);
-	DBG(cerr << "underflow: chunk type from header: " << hex << (header & CHUNK_TYPE_MASK) << endl);
-	DBG(cerr << "underflow: chunk byte order from header: " << hex << (header & CHUNK_BIG_ENDIAN) << endl);
+    DBG(cerr << "underflow: chunk size from header: " << chunk_size << endl);
+    DBG(cerr << "underflow: chunk type from header: " << hex << (header & CHUNK_TYPE_MASK) << endl);
+    DBG(cerr << "underflow: chunk byte order from header: " << hex << (header & CHUNK_BIG_ENDIAN) << endl);
 
-	// Handle the case where the buffer is not big enough to hold the incoming chunk
-	if (chunk_size > d_buf_size) {
-		d_buf_size = chunk_size;
-		m_buffer_alloc();
-	}
+    // Handle the case where the buffer is not big enough to hold the incoming chunk
+    if (chunk_size > d_buf_size) {
+        d_buf_size = chunk_size;
+        m_buffer_alloc();
+    }
 
-	// If the END chunk has zero bytes, return EOF. See above for more information
-	if (chunk_size == 0 && (header & CHUNK_TYPE_MASK) == CHUNK_END) return traits_type::eof();
+    // If the END chunk has zero bytes, return EOF. See above for more information
+    if (chunk_size == 0 && (header & CHUNK_TYPE_MASK) == CHUNK_END)
+        return traits_type::eof();
 
-	// Read the chunk's data
-	d_is.read(d_buffer, chunk_size);
-	DBG2(cerr << "underflow: size read: " << d_is.gcount() << ", eof: " << d_is.eof() << ", bad: " << d_is.bad() << endl);
-	if (d_is.bad()) return traits_type::eof();
+    // Read the chunk's data
+    d_is.read(d_buffer, chunk_size);
+    DBG2(cerr << "underflow: size read: " << d_is.gcount() << ", eof: " << d_is.eof() << ", bad: " << d_is.bad()
+              << endl);
+    if (d_is.bad())
+        return traits_type::eof();
 
-	DBG2(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
-	setg(d_buffer, 						// beginning of put back area
-			d_buffer,                	// read position (gptr() == eback())
-			d_buffer + chunk_size);  	// end of buffer (egptr()) chunk_size == d_is.gcount() unless there's an error
+    DBG2(cerr << "eback(): " << (void *)eback() << ", gptr(): " << (void *)(gptr() - eback())
+              << ", egptr(): " << (void *)(egptr() - eback()) << endl);
+    setg(d_buffer,               // beginning of put back area
+         d_buffer,               // read position (gptr() == eback())
+         d_buffer + chunk_size); // end of buffer (egptr()) chunk_size == d_is.gcount() unless there's an error
 
-	DBG2(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
+    DBG2(cerr << "eback(): " << (void *)eback() << ", gptr(): " << (void *)(gptr() - eback())
+              << ", egptr(): " << (void *)(egptr() - eback()) << endl);
 
-	switch (header & CHUNK_TYPE_MASK) {
-	case CHUNK_END:
-		DBG2(cerr << "Found end chunk" << endl);
-		return traits_type::to_int_type(*gptr());
-	case CHUNK_DATA:
-		return traits_type::to_int_type(*gptr());
+    switch (header & CHUNK_TYPE_MASK) {
+    case CHUNK_END:
+        DBG2(cerr << "Found end chunk" << endl);
+        return traits_type::to_int_type(*gptr());
+    case CHUNK_DATA:
+        return traits_type::to_int_type(*gptr());
 
-	case CHUNK_ERR:
-		// this is pretty much the end of the show... Assume the buffer/chunk holds
-		// the error message text.
-		d_error = true;
-		d_error_message = string(d_buffer, chunk_size);
-		return traits_type::eof();
-	default:
-		d_error = true;
-		d_error_message = "Failed to read known chunk header type.";
-		return traits_type::eof();
-	}
+    case CHUNK_ERR:
+        // this is pretty much the end of the show... Assume the buffer/chunk holds
+        // the error message text.
+        d_error = true;
+        d_error_message = string(d_buffer, chunk_size);
+        return traits_type::eof();
+    default:
+        d_error = true;
+        d_error_message = "Failed to read known chunk header type.";
+        return traits_type::eof();
+    }
 }
 
 /**
@@ -175,45 +180,43 @@ chunked_inbuf::underflow()
  * number does not include the bytes read from the last chunk that won't
  * fit into \c s so this will never return a number greater than num.
  */
-std::streamsize
-chunked_inbuf::xsgetn(char* s, std::streamsize num)
-{
-	DBG(cerr << "xsgetn... num: " << num << endl);
+std::streamsize chunked_inbuf::xsgetn(char *s, std::streamsize num) {
+    DBG(cerr << "xsgetn... num: " << num << endl);
 
-	// if num is <= the chars currently in the buffer
-	if (num <= (egptr() - gptr())) {
-		memcpy(s, gptr(), num);
-		gbump(num);
+    // if num is <= the chars currently in the buffer
+    if (num <= (egptr() - gptr())) {
+        memcpy(s, gptr(), num);
+        gbump(num);
 
-		return traits_type::not_eof(num);
-	}
+        return traits_type::not_eof(num);
+    }
 
-	// else they asked for more
-	uint32_t bytes_left_to_read = num;
+    // else they asked for more
+    uint32_t bytes_left_to_read = num;
 
-	// are there any bytes in the buffer? if so grab them first
-	if (gptr() < egptr()) {
-		int bytes_to_transfer = egptr() - gptr();
-		memcpy(s, gptr(), bytes_to_transfer);
-		gbump(bytes_to_transfer);
-		s += bytes_to_transfer;
-		bytes_left_to_read -= bytes_to_transfer;
-	}
+    // are there any bytes in the buffer? if so grab them first
+    if (gptr() < egptr()) {
+        int bytes_to_transfer = egptr() - gptr();
+        memcpy(s, gptr(), bytes_to_transfer);
+        gbump(bytes_to_transfer);
+        s += bytes_to_transfer;
+        bytes_left_to_read -= bytes_to_transfer;
+    }
 
-	// We need to get more bytes from the underlying stream; at this
-	// point the internal buffer is empty.
+    // We need to get more bytes from the underlying stream; at this
+    // point the internal buffer is empty.
 
-	// read the remaining bytes to transfer, a chunk at a time,
-	// and put any leftover stuff in the buffer.
+    // read the remaining bytes to transfer, a chunk at a time,
+    // and put any leftover stuff in the buffer.
 
-	// note that when the code is here, gptr() == egptr(), so the
-	// next call to read() will fall through the previous tests and
-	// read at least one chunk here.
-	bool done = false;
+    // note that when the code is here, gptr() == egptr(), so the
+    // next call to read() will fall through the previous tests and
+    // read at least one chunk here.
+    bool done = false;
     while (!done) {
         // Get a chunk header
         uint32_t header;
-        d_is.read((char *) &header, 4);
+        d_is.read((char *)&header, 4);
 
         header = ntohl(header);
 
@@ -221,7 +224,8 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
         // it holds data. In the latter case, those will be read and moved into the
         // buffer. Once those data are consumed, we'll be back here again and this read()
         // will return EOF. See below for the other case...
-        if (d_is.eof()) return traits_type::eof();
+        if (d_is.eof())
+            return traits_type::eof();
 
         // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
         if (!d_set_twiddle) {
@@ -229,92 +233,94 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
             d_set_twiddle = true;
         }
 
-	    uint32_t chunk_size = header & CHUNK_SIZE_MASK;
-		DBG(cerr << "xsgetn: chunk size from header: " << chunk_size << endl);
-		DBG(cerr << "xsgetn: chunk type from header: " << hex << (header & CHUNK_TYPE_MASK) << endl);
-		DBG(cerr << "xsgetn: chunk byte order from header: " << hex << (header & CHUNK_BIG_ENDIAN) << endl);
+        uint32_t chunk_size = header & CHUNK_SIZE_MASK;
+        DBG(cerr << "xsgetn: chunk size from header: " << chunk_size << endl);
+        DBG(cerr << "xsgetn: chunk type from header: " << hex << (header & CHUNK_TYPE_MASK) << endl);
+        DBG(cerr << "xsgetn: chunk byte order from header: " << hex << (header & CHUNK_BIG_ENDIAN) << endl);
 
-		// handle error chunks here
-	    if ((header & CHUNK_TYPE_MASK) == CHUNK_ERR) {
-			d_error = true;
-			// Note that d_buffer is not used to avoid calling resize if it is too
-			// small to hold the error message. At this point, there's not much reason
-			// to optimize transport efficiency, however.
-			std::vector<char> message(chunk_size);
-			d_is.read(message.data(), chunk_size);
-			d_error_message = string(message.data(), chunk_size);
-			// leave the buffer and gptr(), ..., in a consistent state (empty)
-			setg(d_buffer, d_buffer, d_buffer);
-	    }
-	    // And zero-length END chunks here.
-	    else if (chunk_size == 0 && (header & CHUNK_TYPE_MASK) == CHUNK_END) {
-	    	return traits_type::not_eof(num-bytes_left_to_read);
-	    }
-	    // The next case is complicated because we read some data from the current
-	    // chunk into 's' an some into the internal buffer.
-	    else if (chunk_size > bytes_left_to_read) {
-			d_is.read(s, bytes_left_to_read);
-			if (d_is.bad()) return traits_type::eof();
+        // handle error chunks here
+        if ((header & CHUNK_TYPE_MASK) == CHUNK_ERR) {
+            d_error = true;
+            // Note that d_buffer is not used to avoid calling resize if it is too
+            // small to hold the error message. At this point, there's not much reason
+            // to optimize transport efficiency, however.
+            std::vector<char> message(chunk_size);
+            d_is.read(message.data(), chunk_size);
+            d_error_message = string(message.data(), chunk_size);
+            // leave the buffer and gptr(), ..., in a consistent state (empty)
+            setg(d_buffer, d_buffer, d_buffer);
+        }
+        // And zero-length END chunks here.
+        else if (chunk_size == 0 && (header & CHUNK_TYPE_MASK) == CHUNK_END) {
+            return traits_type::not_eof(num - bytes_left_to_read);
+        }
+        // The next case is complicated because we read some data from the current
+        // chunk into 's' an some into the internal buffer.
+        else if (chunk_size > bytes_left_to_read) {
+            d_is.read(s, bytes_left_to_read);
+            if (d_is.bad())
+                return traits_type::eof();
 
-			// Now slurp up the remain part of the chunk and store it in the buffer
-			uint32_t bytes_leftover = chunk_size - bytes_left_to_read;
-			// expand the internal buffer if needed
-		    if (bytes_leftover > d_buf_size) {
-		        d_buf_size = chunk_size;
-		        m_buffer_alloc();
-		    }
-		    // read the remain stuff in to d_buffer
-			d_is.read(d_buffer, bytes_leftover);
-			if (d_is.bad()) return traits_type::eof();
+            // Now slurp up the remain part of the chunk and store it in the buffer
+            uint32_t bytes_leftover = chunk_size - bytes_left_to_read;
+            // expand the internal buffer if needed
+            if (bytes_leftover > d_buf_size) {
+                d_buf_size = chunk_size;
+                m_buffer_alloc();
+            }
+            // read the remain stuff in to d_buffer
+            d_is.read(d_buffer, bytes_leftover);
+            if (d_is.bad())
+                return traits_type::eof();
 
-			setg(d_buffer, 										// beginning of put back area
-				 d_buffer,                						// read position (gptr() == eback())
-				 d_buffer + bytes_leftover /*d_is.gcount()*/); 	// end of buffer (egptr())
+            setg(d_buffer,                                     // beginning of put back area
+                 d_buffer,                                     // read position (gptr() == eback())
+                 d_buffer + bytes_leftover /*d_is.gcount()*/); // end of buffer (egptr())
 
-			bytes_left_to_read = 0 /* -= d_is.gcount()*/;
-		}
-		else {
-			// expand the internal buffer if needed
-		    if (chunk_size > d_buf_size) {
-		        d_buf_size = chunk_size;
-		        m_buffer_alloc();
-		    }
-		    // If we get a chunk that's zero bytes, Don't call read()
-		    // to save the kernel context switch overhead.
-			if (chunk_size > 0) {
-				d_is.read(s, chunk_size);
-				if (d_is.bad()) return traits_type::eof();
-				bytes_left_to_read -= chunk_size /*d_is.gcount()*/;
-				s += chunk_size;
-			}
-		}
+            bytes_left_to_read = 0 /* -= d_is.gcount()*/;
+        } else {
+            // expand the internal buffer if needed
+            if (chunk_size > d_buf_size) {
+                d_buf_size = chunk_size;
+                m_buffer_alloc();
+            }
+            // If we get a chunk that's zero bytes, Don't call read()
+            // to save the kernel context switch overhead.
+            if (chunk_size > 0) {
+                d_is.read(s, chunk_size);
+                if (d_is.bad())
+                    return traits_type::eof();
+                bytes_left_to_read -= chunk_size /*d_is.gcount()*/;
+                s += chunk_size;
+            }
+        }
 
-	    switch (header & CHUNK_TYPE_MASK) {
-	    case CHUNK_END:
-			DBG(cerr << "Found end chunk" << endl);
-	    	// in this case bytes_left_to_read can be > 0 because we ran out of data
-	    	// before reading all the requested bytes. The next read() call will return
-	    	// eof; this call returns the number of bytes read and transferred to 's'.
-	    	done = true;
-	    	break;
+        switch (header & CHUNK_TYPE_MASK) {
+        case CHUNK_END:
+            DBG(cerr << "Found end chunk" << endl);
+            // in this case bytes_left_to_read can be > 0 because we ran out of data
+            // before reading all the requested bytes. The next read() call will return
+            // eof; this call returns the number of bytes read and transferred to 's'.
+            done = true;
+            break;
 
-	    case CHUNK_DATA:
-	    	done = bytes_left_to_read == 0;
-	        break;
+        case CHUNK_DATA:
+            done = bytes_left_to_read == 0;
+            break;
 
-	    case CHUNK_ERR:
-			// this is pretty much the end of the show... The error message has
-	    	// already been read above
-			return traits_type::eof();
+        case CHUNK_ERR:
+            // this is pretty much the end of the show... The error message has
+            // already been read above
+            return traits_type::eof();
 
-	    default:
-			d_error = true;
-			d_error_message = "Failed to read known chunk header type.";
-			return traits_type::eof();
-	    }
-	}
+        default:
+            d_error = true;
+            d_error_message = "Failed to read known chunk header type.";
+            return traits_type::eof();
+        }
+    }
 
-	return traits_type::not_eof(num-bytes_left_to_read);
+    return traits_type::not_eof(num - bytes_left_to_read);
 }
 
 /**
@@ -329,20 +335,19 @@ chunked_inbuf::xsgetn(char* s, std::streamsize num)
  * @return The number of bytes read, which is exactly the size of the
  * next chunk in the stream. Returns EOF on error.
  */
-std::streambuf::int_type
-chunked_inbuf::read_next_chunk()
-{
-	// To read data from the chunked stream, first read the header
-	uint32_t header;
-	d_is.read((char *) &header, 4);
+std::streambuf::int_type chunked_inbuf::read_next_chunk() {
+    // To read data from the chunked stream, first read the header
+    uint32_t header;
+    d_is.read((char *)&header, 4);
 
     header = ntohl(header);
 
-	// There are two 'EOF' cases: One where the END chunk is zero bytes and one where
-	// it holds data. In the latter case, bytes those will be read and moved into the
-	// buffer. Once those data are consumed, we'll be back here again and this read()
-	// will return EOF. See below for the other case...
-	if (d_is.eof()) return traits_type::eof();
+    // There are two 'EOF' cases: One where the END chunk is zero bytes and one where
+    // it holds data. In the latter case, bytes those will be read and moved into the
+    // buffer. Once those data are consumed, we'll be back here again and this read()
+    // will return EOF. See below for the other case...
+    if (d_is.eof())
+        return traits_type::eof();
 
     // (header & CHUNK_LITTLE_ENDIAN) --> is the sender little endian
     if (!d_set_twiddle) {
@@ -350,53 +355,58 @@ chunked_inbuf::read_next_chunk()
         d_set_twiddle = true;
     }
 
-	uint32_t chunk_size = header & CHUNK_SIZE_MASK;
+    uint32_t chunk_size = header & CHUNK_SIZE_MASK;
 
-	DBG(cerr << "read_next_chunk: chunk size from header: " << chunk_size << endl);
-	DBG(cerr << "read_next_chunk: chunk type from header: " << hex << (header & CHUNK_TYPE_MASK) << endl);
-	DBG(cerr << "read_next_chunk: chunk byte order from header: " << hex << (header & CHUNK_BIG_ENDIAN) << endl);
+    DBG(cerr << "read_next_chunk: chunk size from header: " << chunk_size << endl);
+    DBG(cerr << "read_next_chunk: chunk type from header: " << hex << (header & CHUNK_TYPE_MASK) << endl);
+    DBG(cerr << "read_next_chunk: chunk byte order from header: " << hex << (header & CHUNK_BIG_ENDIAN) << endl);
 
-	// Handle the case where the buffer is not big enough to hold the incoming chunk
-	if (chunk_size > d_buf_size) {
-		d_buf_size = chunk_size;
-		m_buffer_alloc();
-	}
+    // Handle the case where the buffer is not big enough to hold the incoming chunk
+    if (chunk_size > d_buf_size) {
+        d_buf_size = chunk_size;
+        m_buffer_alloc();
+    }
 
-	// If the END chunk has zero bytes, return EOF. See above for more information
-	if (chunk_size == 0 && (header & CHUNK_TYPE_MASK) == CHUNK_END) return traits_type::eof();
+    // If the END chunk has zero bytes, return EOF. See above for more information
+    if (chunk_size == 0 && (header & CHUNK_TYPE_MASK) == CHUNK_END)
+        return traits_type::eof();
 
-	// Read the chunk's data
-	d_is.read(d_buffer, chunk_size);
-	DBG2(cerr << "read_next_chunk: size read: " << d_is.gcount() << ", eof: " << d_is.eof() << ", bad: " << d_is.bad() << endl);
-	if (d_is.bad()) return traits_type::eof();
+    // Read the chunk's data
+    d_is.read(d_buffer, chunk_size);
+    DBG2(cerr << "read_next_chunk: size read: " << d_is.gcount() << ", eof: " << d_is.eof() << ", bad: " << d_is.bad()
+              << endl);
+    if (d_is.bad())
+        return traits_type::eof();
 
-	DBG2(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
-	setg(d_buffer, 						// beginning of put back area
-			d_buffer,                	// read position (gptr() == eback())
-			d_buffer + chunk_size);  	// end of buffer (egptr()) chunk_size == d_is.gcount() unless there's an error
+    DBG2(cerr << "eback(): " << (void *)eback() << ", gptr(): " << (void *)(gptr() - eback())
+              << ", egptr(): " << (void *)(egptr() - eback()) << endl);
+    setg(d_buffer,               // beginning of put back area
+         d_buffer,               // read position (gptr() == eback())
+         d_buffer + chunk_size); // end of buffer (egptr()) chunk_size == d_is.gcount() unless there's an error
 
-	DBG2(cerr << "eback(): " << (void*)eback() << ", gptr(): " << (void*)(gptr()-eback()) << ", egptr(): " << (void*)(egptr()-eback()) << endl);
+    DBG2(cerr << "eback(): " << (void *)eback() << ", gptr(): " << (void *)(gptr() - eback())
+              << ", egptr(): " << (void *)(egptr() - eback()) << endl);
 
-	switch (header & CHUNK_TYPE_MASK) {
-	case CHUNK_END:
-		DBG(cerr << "Found end chunk" << endl);
-		return traits_type::not_eof(chunk_size);
+    switch (header & CHUNK_TYPE_MASK) {
+    case CHUNK_END:
+        DBG(cerr << "Found end chunk" << endl);
+        return traits_type::not_eof(chunk_size);
 
-	case CHUNK_DATA:
-		return traits_type::not_eof(chunk_size);
+    case CHUNK_DATA:
+        return traits_type::not_eof(chunk_size);
 
-	case CHUNK_ERR:
-		// this is pretty much the end of the show... Assume the buffer/chunk holds
-		// the error message text.
-		d_error = true;
-		d_error_message = string(d_buffer, chunk_size);
-		return traits_type::eof();
+    case CHUNK_ERR:
+        // this is pretty much the end of the show... Assume the buffer/chunk holds
+        // the error message text.
+        d_error = true;
+        d_error_message = string(d_buffer, chunk_size);
+        return traits_type::eof();
 
-	default:
-		d_error = true;
-		d_error_message = "Failed to read known chunk header type.";
-		return traits_type::eof();
-	}
+    default:
+        d_error = true;
+        d_error_message = "Failed to read known chunk header type.";
+        return traits_type::eof();
+    }
 }
 
-}
+} // namespace libdap

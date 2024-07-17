@@ -27,15 +27,15 @@
 #include "config.h"
 
 #include <BaseType.h>
+#include <TestArray.h>
 #include <TestFloat64.h>
 #include <TestStr.h>
-#include <TestArray.h>
 
-#include <Error.h>
 #include <DDS.h>
+#include <Error.h>
 
-#include "DMR.h"
 #include "D4RValue.h"
+#include "DMR.h"
 
 #include <debug.h>
 #include <util.h>
@@ -48,13 +48,11 @@ namespace libdap {
  * @brief scale a scalar or array variable
  * This does not work for DAP2 Grids; only Array and scalar variables.
  */
-void
-function_scale_dap2(int argc, BaseType * argv[], DDS &, BaseType **btpp)
-{
-    string info =
-    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
-    "<function name=\"scale\" version=\"1.1\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions\">\n" +
-    "</function>";
+void function_scale_dap2(int argc, BaseType *argv[], DDS &, BaseType **btpp) {
+    string info = string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+                  "<function name=\"scale\" version=\"1.1\" "
+                  "href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions\">\n" +
+                  "</function>";
 
     if (argc == 0) {
         Str *response = new TestStr("info");
@@ -66,17 +64,17 @@ function_scale_dap2(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     // Check for 2 arguments
     DBG(cerr << "argc = " << argc << endl);
     if (argc != 2)
-        throw Error(malformed_expr,"Wrong number of arguments to scale().");
+        throw Error(malformed_expr, "Wrong number of arguments to scale().");
 
     double m = extract_double_value(argv[1]);
 
-    DBG(cerr << "m: " << m << << endl);
+    DBG(cerr << "m: " << m < < < < endl);
 
     // Read the data, scale and return the result.
     BaseType *dest = 0;
     double *data;
     if (argv[0]->is_vector_type()) {
-        TestArray &source = static_cast<TestArray&>(*argv[0]);
+        TestArray &source = static_cast<TestArray &>(*argv[0]);
         source.read();
 
         data = extract_double_array(&source);
@@ -92,9 +90,8 @@ function_scale_dap2(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         delete[] data; // set_value copies.
 
         dest = result;
-    }
-    else if (argv[0]->is_simple_type() && !(argv[0]->type() == dods_str_c || argv[0]->type() == dods_url_c)) {
-    	argv[0]->read();
+    } else if (argv[0]->is_simple_type() && !(argv[0]->type() == dods_str_c || argv[0]->type() == dods_url_c)) {
+        argv[0]->read();
         double data = extract_double_value(argv[0]);
 
         data *= m;
@@ -103,9 +100,8 @@ function_scale_dap2(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 
         fdest->set_value(data);
         dest = fdest;
-    }
-    else {
-        throw Error(malformed_expr,"The scale() function works only for Arrays and scalars.");
+    } else {
+        throw Error(malformed_expr, "The scale() function works only for Arrays and scalars.");
     }
 
     *btpp = dest;
@@ -116,13 +112,11 @@ function_scale_dap2(int argc, BaseType * argv[], DDS &, BaseType **btpp)
  * @brief DAP4 scale a scalar or array variable
  * This does not work for DAP2 Grids; only Array and scalar variables.
  */
-BaseType *
-function_scale_dap4(D4RValueList *args, DMR &dmr)
-{
-    string info =
-    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
-    "<function name=\"scale\" version=\"1.1\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions\">\n" +
-    "</function>";
+BaseType *function_scale_dap4(D4RValueList *args, DMR &dmr) {
+    string info = string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+                  "<function name=\"scale\" version=\"1.1\" "
+                  "href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions\">\n" +
+                  "</function>";
 
     // DAP4 function porting information: in place of 'argc' use 'args.size()'
     if (args->size() == 0) {
@@ -141,17 +135,17 @@ function_scale_dap4(D4RValueList *args, DMR &dmr)
     // where 'n' is between 0 and args.size()-1. The line below is the DAP4 equivalent of 'argv[1].'
     double m = extract_double_value(args->get_rvalue(1)->value(dmr));
 
-    DBG(cerr << "m: " << m << << endl);
+    DBG(cerr << "m: " << m < < < < endl);
 
     // Read the data, scale and return the result.
-    //BaseType *dest = 0;
+    // BaseType *dest = 0;
     double *data;
     BaseType *arg0 = args->get_rvalue(0)->value(dmr); // DAP4 function porting: ... 'argv[0]'
     if (arg0->is_vector_type()) {
-        Array *source = dynamic_cast<Array*>(arg0);
+        Array *source = dynamic_cast<Array *>(arg0);
         if (!source)
-            throw Error(malformed_expr, string("Expected an Array as an argument, but got '"
-                + arg0->type_name()) + "' instead.");
+            throw Error(malformed_expr,
+                        string("Expected an Array as an argument, but got '" + arg0->type_name()) + "' instead.");
 
         if (!source->read_p())
             source->read();
@@ -170,9 +164,8 @@ function_scale_dap4(D4RValueList *args, DMR &dmr)
 
         // DAP4 function porting: return a BaseType* instead of using the value-result parameter
         return result;
-    }
-    else if (arg0->is_simple_type() && !(arg0->type() == dods_str_c || arg0->type() == dods_url_c)) {
-    	arg0->read();
+    } else if (arg0->is_simple_type() && !(arg0->type() == dods_str_c || arg0->type() == dods_url_c)) {
+        arg0->read();
         double data = extract_double_value(arg0);
 
         data *= m;
@@ -181,10 +174,9 @@ function_scale_dap4(D4RValueList *args, DMR &dmr)
 
         fdest->set_value(data);
         return fdest;
-    }
-    else {
-        throw Error(malformed_expr,"The scale() function works only for numerical arrays and scalars.");
+    } else {
+        throw Error(malformed_expr, "The scale() function works only for numerical arrays and scalars.");
     }
 }
 
-} // namesspace libdap
+} // namespace libdap

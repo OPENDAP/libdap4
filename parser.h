@@ -51,8 +51,7 @@
 #define FALSE 0
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** <tt>parser_arg</tt> is used to pass parameters to the bison parsers and get
     error codes and objects in return. If <tt>status()</tt> is true, then the
@@ -65,47 +64,26 @@ namespace libdap
     @brief Pass parameters by reference to a parser.
     */
 
-struct parser_arg
-{
-    void *_object;  // nominally a pointer to an object
-    Error *_error;  // a pointer to an Error object
-    int _status;  // parser status
+struct parser_arg {
+    void *_object; // nominally a pointer to an object
+    Error *_error; // a pointer to an Error object
+    int _status;   // parser status
 
-    parser_arg() : _object(0), _error(0), _status(1)
-    {}
-    parser_arg(void *obj) : _object(obj), _error(0), _status(1)
-    {}
-    virtual ~parser_arg()
-    {
+    parser_arg() : _object(0), _error(0), _status(1) {}
+    parser_arg(void *obj) : _object(obj), _error(0), _status(1) {}
+    virtual ~parser_arg() {
         if (_error) {
-            delete _error; _error = 0;
+            delete _error;
+            _error = 0;
         }
     }
 
-    void *object()
-    {
-        return _object;
-    }
-    void set_object(void *obj)
-    {
-        _object = obj;
-    }
-    Error *error()
-    {
-        return _error;
-    }
-    void set_error(Error *obj)
-    {
-        _error = obj;
-    }
-    int status()
-    {
-        return _status;
-    }
-    void set_status(int val = 0)
-    {
-        _status = val;
-    }
+    void *object() { return _object; }
+    void set_object(void *obj) { _object = obj; }
+    Error *error() { return _error; }
+    void set_error(Error *obj) { _error = obj; }
+    int status() { return _status; }
+    void set_status(int val = 0) { _status = val; }
 };
 
 /** <tt>parser_error()</tt> generates error messages for the various
@@ -127,10 +105,8 @@ struct parser_arg
     @brief Generate error messages for the various parsers.
     */
 //@{
-void parse_error(parser_arg *arg, const char *s, const int line_num = 0,
-                 const char *context = 0);
-void parse_error(const string &msg, const int line_num,
-                 const char *context = 0);
+void parse_error(parser_arg *arg, const char *s, const int line_num = 0, const char *context = 0);
+void parse_error(const string &msg, const int line_num, const char *context = 0);
 //@}
 
 } // namespace libdap
@@ -138,4 +114,3 @@ void parse_error(const string &msg, const int line_num,
 #include "parser-util.h"
 
 #endif // _parser_h
-

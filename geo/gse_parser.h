@@ -37,50 +37,27 @@ namespace libdap {
 class Grid;
 }
 
-namespace functions
-{
+namespace functions {
 
 class GSEClause;
 
 /** Argument to the GSE parser. Assumes all errors will be signaled by
     throws; Error objects are not returned. */
-struct gse_arg
-{
-    GSEClause *_gsec;           // The gse parsed.
-    libdap::Grid *_grid;                // The Grid being constrained.
-    int _status;                // The parser's status.
+struct gse_arg {
+    GSEClause *_gsec;    // The gse parsed.
+    libdap::Grid *_grid; // The Grid being constrained.
+    int _status;         // The parser's status.
 
-    gse_arg(): _gsec(0), _grid(0), _status(1)
-    {}
-    gse_arg(libdap::Grid *g): _gsec(0), _grid(g), _status(1)
-    {}
-    virtual ~gse_arg()
-    {}
+    gse_arg() : _gsec(0), _grid(0), _status(1) {}
+    gse_arg(libdap::Grid *g) : _gsec(0), _grid(g), _status(1) {}
+    virtual ~gse_arg() {}
 
-    void set_gsec(GSEClause *gsec)
-    {
-        _gsec = gsec;
-    }
-    GSEClause *get_gsec()
-    {
-        return _gsec;
-    }
-    void set_grid(libdap::Grid *g)
-    {
-        _grid = g;
-    }
-    libdap::Grid *get_grid()
-    {
-        return _grid;
-    }
-    void set_status(int stat)
-    {
-        _status = stat;
-    }
-    int get_status()
-    {
-        return _status;
-    }
+    void set_gsec(GSEClause *gsec) { _gsec = gsec; }
+    GSEClause *get_gsec() { return _gsec; }
+    void set_grid(libdap::Grid *g) { _grid = g; }
+    libdap::Grid *get_grid() { return _grid; }
+    void set_status(int stat) { _status = stat; }
+    int get_status() { return _status; }
 };
 
-} // namespace libdap
+} // namespace functions

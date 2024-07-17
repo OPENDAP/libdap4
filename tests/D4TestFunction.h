@@ -43,23 +43,20 @@ BaseType *function_scale_dap4(D4RValueList *args, DMR &dmr);
  * The LinearScaleFunction class encapsulates the linear_scale function 'function_linear_scale'
  * along with additional meta-data regarding its use and applicability.
  */
-class D4TestFunction: public ServerFunction {
+class D4TestFunction : public ServerFunction {
 public:
-	D4TestFunction()
-    {
-		setName("scale");
-		setDescriptionString("The scale() function is for testing.");
-		setUsageString("scale(var, num): scale var by num. var can be a scalar or an array");
-		setRole("http://services.opendap.org/dap4/server-side-function/scale");
-		setDocUrl("http://docs.opendap.org/index.php/Server_Side_Processing_Functions");
-		setFunction(function_scale_dap2);
-		setVersion("1.0");
+    D4TestFunction() {
+        setName("scale");
+        setDescriptionString("The scale() function is for testing.");
+        setUsageString("scale(var, num): scale var by num. var can be a scalar or an array");
+        setRole("http://services.opendap.org/dap4/server-side-function/scale");
+        setDocUrl("http://docs.opendap.org/index.php/Server_Side_Processing_Functions");
+        setFunction(function_scale_dap2);
+        setVersion("1.0");
 
-		setFunction(function_scale_dap4);
+        setFunction(function_scale_dap4);
     }
-    virtual ~D4TestFunction()
-    {
-    }
+    virtual ~D4TestFunction() {}
 };
 
-} // libdap namespace
+} // namespace libdap

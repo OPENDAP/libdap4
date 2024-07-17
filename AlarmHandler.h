@@ -32,8 +32,7 @@
 
 #include "EventHandler.h"
 
-namespace libdap
-{
+namespace libdap {
 
 /** Handle the time out alarm. When an OPeNDAP server runs until the time out
     alarm is triggered, this class provides the concrete implementation of
@@ -42,30 +41,27 @@ namespace libdap
     @see EventHandler
     @see SignalHandler
     @author James Gallagher <jgallagher@opendap.org> */
-class AlarmHandler : public EventHandler
-{
+class AlarmHandler : public EventHandler {
 private:
-    FILE *d_file;  // Sink for the Error object.
+    FILE *d_file; // Sink for the Error object.
     string d_version;
 
 public:
     // Ensure that d_stream gets initialized...
-    AlarmHandler() : d_file( 0 )
-    {}
+    AlarmHandler() : d_file(0) {}
 
-    explicit AlarmHandler(FILE *s) : d_file(s)//, d_stream( cout )
+    explicit AlarmHandler(FILE *s)
+        : d_file(s) //, d_stream( cout )
     {}
 
     /** Store information to be used by the handler.
         @param out Write to this stream.
         @deprecated The stream param is ignored. Use the default constructor instead. */
-    explicit AlarmHandler(ostream &) : d_file(0)
-    {}
+    explicit AlarmHandler(ostream &) : d_file(0) {}
 
-    virtual ~AlarmHandler()
-    {
-        if( d_file )
-            fclose( d_file ) ;
+    virtual ~AlarmHandler() {
+        if (d_file)
+            fclose(d_file);
     }
 
     /** Handle an alarm signal. When one of our servers gets an alarm, that
@@ -79,14 +75,12 @@ public:
 
     @param signum We know it is SIGALRM; here as a check
     @return Never returns; calls exit after sending the Error object. */
-    virtual void handle_signal(int signum)
-    {
+    virtual void handle_signal(int signum) {
         if (signum != SIGALRM)
             throw Error("SIGALRM handler caught another signal!");
 
         throw Error("Timeout");
     }
-
 };
 
 } // namespace libdap

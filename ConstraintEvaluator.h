@@ -27,11 +27,10 @@
 
 #include <vector>
 
-#include "expr.h"
 #include "RValue.h"
+#include "expr.h"
 
-namespace libdap
-{
+namespace libdap {
 
 class DDS;
 class DataDDS;
@@ -39,15 +38,14 @@ struct Clause;
 class ServerFunctionsList;
 
 /** @brief Evaluate a constraint expression */
-class ConstraintEvaluator
-{
+class ConstraintEvaluator {
 private:
-    std::vector<Clause *> expr;      // List of CE Clauses
+    std::vector<Clause *> expr; // List of CE Clauses
 
-    std::vector<BaseType *> constants;// List of temporary objects
+    std::vector<BaseType *> constants; // List of temporary objects
 
-    ServerFunctionsList *d_functions_list;  // Known external functions from
-                                            // modules
+    ServerFunctionsList *d_functions_list; // Known external functions from
+                                           // modules
 
     // The default versions of these methods will break this class. Because
     // Clause does not support deep copies, that class will need to be modified
@@ -58,11 +56,11 @@ private:
     friend class func_name_is;
 
 public:
-    typedef std::vector<Clause *>::const_iterator Clause_citer ;
-    typedef std::vector<Clause *>::iterator Clause_iter ;
+    typedef std::vector<Clause *>::const_iterator Clause_citer;
+    typedef std::vector<Clause *>::iterator Clause_iter;
 
-    typedef std::vector<BaseType *>::const_iterator Constants_citer ;
-    typedef std::vector<BaseType *>::iterator Constants_iter ;
+    typedef std::vector<BaseType *>::const_iterator Constants_citer;
+    typedef std::vector<BaseType *>::iterator Constants_iter;
 
     ConstraintEvaluator();
 
@@ -92,7 +90,6 @@ public:
 
     void parse_constraint(const std::string &constraint, DDS &dds);
     void append_constant(BaseType *btp);
-
 };
 
 } // namespace libdap

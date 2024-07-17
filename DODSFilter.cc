@@ -33,29 +33,28 @@
 // filter programs which, along with a CGI program, comprise OPeNDAP servers.
 // jhrg 8/26/97
 
-
 #include "config.h"
 
 #include <signal.h>
 
 #ifndef WIN32
-#include <unistd.h>   // for getopt
 #include <sys/wait.h>
+#include <unistd.h> // for getopt
 #else
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
 #endif
 
-#include <iostream>
-#include <sstream>
-#include <string>
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 #ifdef HAVE_UUID_UUID_H
-#include <uuid/uuid.h>	// used to build CID header value for data ddx
+#include <uuid/uuid.h> // used to build CID header value for data ddx
 #elif defined(HAVE_UUID_H)
 #include <uuid.h>
 #else
@@ -64,31 +63,30 @@
 
 #include <GetOpt.h>
 
+#include "Ancillary.h"
 #include "DAS.h"
 #include "DDS.h"
-#include "debug.h"
-#include "mime_util.h"
-#include "Ancillary.h"
-#include "util.h"
-#include "escaping.h"
 #include "DODSFilter.h"
-#include "XDRStreamMarshaller.h"
 #include "InternalErr.h"
+#include "XDRStreamMarshaller.h"
+#include "debug.h"
+#include "escaping.h"
+#include "mime_util.h"
+#include "util.h"
 
 #ifndef WIN32
-#include "SignalHandler.h"
-#include "EventHandler.h"
 #include "AlarmHandler.h"
+#include "EventHandler.h"
+#include "SignalHandler.h"
 #endif
 
-#define CRLF "\r\n"             // Change here, expr-test.cc and DODSFilter.cc
+#define CRLF "\r\n" // Change here, expr-test.cc and DODSFilter.cc
 
 using namespace std;
 
 namespace libdap {
 
-const string usage =
-    "Usage: <handler name> -o <response> -u <url> [options ...] [data set]\n\
+const string usage = "Usage: <handler name> -o <response> -u <url> [options ...] [data set]\n\
     \n\
     options: -o <response>: DAS, DDS, DataDDS, DDX, BLOB or Version (Required)\n\
     -u <url>: The complete URL minus the CE (required for DDX)\n\
@@ -167,8 +165,7 @@ request. It is given in seconds since the start of the Unix epoch
 
 @brief DODSFilter constructor. */
 
-DODSFilter::DODSFilter(int argc, char *argv[]) throw(Error)
-{
+DODSFilter::DODSFilter(int argc, char *argv[]) throw(Error) {
     initialize(argc, argv);
 
     DBG(cerr << "d_comp: " << d_comp << endl);
@@ -184,15 +181,11 @@ DODSFilter::DODSFilter(int argc, char *argv[]) throw(Error)
     DBG(cerr << "d_timeout: " << d_timeout << endl);
 }
 
-DODSFilter::~DODSFilter()
-{
-}
+DODSFilter::~DODSFilter() {}
 
 /** Called when initializing a DODSFilter that's not going to be passed a
 command line arguments. */
-void
-DODSFilter::initialize()
-{
+void DODSFilter::initialize() {
     // Set default values. Don't use the C++ constructor initialization so
     // that a subclass can have more control over this process.
     d_comp = false;
@@ -204,7 +197,8 @@ DODSFilter::initialize()
     d_anc_dir = "";
     d_anc_file = "";
     d_cache_dir = "";
-    d_response = Unknown_Response;;
+    d_response = Unknown_Response;
+    ;
     d_anc_das_lmt = 0;
     d_anc_dds_lmt = 0;
     d_if_modified_since = -1;
@@ -231,9 +225,7 @@ not fully constructed.
 
 @param argc The argument count
 @param argv The vector of char * argument strings. */
-void
-DODSFilter::initialize(int argc, char *argv[])
-{
+void DODSFilter::initialize(int argc, char *argv[]) {
     initialize();
 
     d_program_name = argv[0];
@@ -247,9 +239,8 @@ DODSFilter::initialize(int argc, char *argv[])
     if (next_arg < argc) {
         d_dataset = argv[next_arg];
         d_dataset = www2id(d_dataset, "%", "%20");
-    }
-    else if (get_response() != Version_Response)
-        print_usage();   // Throws Error
+    } else if (get_response() != Version_Response)
+        print_usage(); // Throws Error
 }
 
 /** Processing the command line options passed to the filter is handled by
@@ -260,37 +251,54 @@ this method so that specializations can change the options easily.
 @return The index of the next, unprocessed, argument. This must be the
 identifier passed to the filter program that identifies the data source.
 It's often a file name. */
-int
-DODSFilter::process_options(int argc, char *argv[])
-{
+int DODSFilter::process_options(int argc, char *argv[]) {
     DBG(cerr << "Entering process_options... ");
 
     int option_char;
-    GetOpt getopt (argc, argv, "ce: v: d: f: r: l: o: u: t: ");
+    GetOpt getopt(argc, argv, "ce: v: d: f: r: l: o: u: t: ");
 
     while ((option_char = getopt()) != -1) {
         switch (option_char) {
-        case 'c': d_comp = true; break;
-        case 'e': set_ce(getopt.optarg); break;
-        case 'v': set_cgi_version(getopt.optarg); break;
-        case 'd': d_anc_dir = getopt.optarg; break;
-        case 'f': d_anc_file = getopt.optarg; break;
-        case 'r': d_cache_dir = getopt.optarg; break;
-        case 'o': set_response(getopt.optarg); break;
-        case 'u': set_URL(getopt.optarg); break;
-        case 't': d_timeout = atoi(getopt.optarg); break;
+        case 'c':
+            d_comp = true;
+            break;
+        case 'e':
+            set_ce(getopt.optarg);
+            break;
+        case 'v':
+            set_cgi_version(getopt.optarg);
+            break;
+        case 'd':
+            d_anc_dir = getopt.optarg;
+            break;
+        case 'f':
+            d_anc_file = getopt.optarg;
+            break;
+        case 'r':
+            d_cache_dir = getopt.optarg;
+            break;
+        case 'o':
+            set_response(getopt.optarg);
+            break;
+        case 'u':
+            set_URL(getopt.optarg);
+            break;
+        case 't':
+            d_timeout = atoi(getopt.optarg);
+            break;
         case 'l':
             d_conditional_request = true;
-            d_if_modified_since
-            = static_cast<time_t>(strtol(getopt.optarg, NULL, 10));
+            d_if_modified_since = static_cast<time_t>(strtol(getopt.optarg, NULL, 10));
             break;
-        case 'h': print_usage();
+        case 'h':
+            print_usage();
             break;
-                                 // exit(1);
-                                 // Removed 12/29/2011; exit should
-                                 // not be called by a library. NB:
-                                 // print_usage() throws Error.
-        default: print_usage();  // Throws Error
+            // exit(1);
+            // Removed 12/29/2011; exit should
+            // not be called by a library. NB:
+            // print_usage() throws Error.
+        default:
+            print_usage(); // Throws Error
             break;
         }
     }
@@ -304,11 +312,7 @@ DODSFilter::process_options(int argc, char *argv[])
 
 @return True if the request is conditional.
 @see get_request_if_modified_since(). */
-bool
-DODSFilter::is_conditional() const
-{
-    return d_conditional_request;
-}
+bool DODSFilter::is_conditional() const { return d_conditional_request; }
 
 /** Set the CGI/Server version number. Servers use this when answering
 requests for version information. The version `number' should include
@@ -323,22 +327,14 @@ since it is usually called by Perl code. It makes more sense to have
 the actual C++ software set the version string.
 
 @param version A version string for this server. */
-void
-DODSFilter::set_cgi_version(string version)
-{
-    d_cgi_ver = version;
-}
+void DODSFilter::set_cgi_version(string version) { d_cgi_ver = version; }
 
 /** Return the version information passed to the instance when it was
 created. This string is passed to the DODSFilter ctor using the -v
 option.
 
 @return The version string supplied at initialization. */
-string
-DODSFilter::get_cgi_version() const
-{
-    return d_cgi_ver;
-}
+string DODSFilter::get_cgi_version() const { return d_cgi_ver; }
 
 /** Return the entire constraint expression in a string.  This
 includes both the projection and selection clauses, but not the
@@ -346,17 +342,9 @@ question mark.
 
 @brief Get the constraint expression.
 @return A string object that contains the constraint expression. */
-string
-DODSFilter::get_ce() const
-{
-    return d_dap2ce;
-}
+string DODSFilter::get_ce() const { return d_dap2ce; }
 
-void
-DODSFilter::set_ce(string _ce)
-{
-    d_dap2ce = www2id(_ce, "%", "%20");
-}
+void DODSFilter::set_ce(string _ce) { d_dap2ce = www2id(_ce, "%", "%20"); }
 
 /** The ``dataset name'' is the filename or other string that the
 filter program will use to access the data. In some cases this
@@ -366,34 +354,20 @@ access method.
 
 @brief Get the dataset name.
 @return A string object that contains the name of the dataset. */
-string
-DODSFilter::get_dataset_name() const
-{
-    return d_dataset;
-}
+string DODSFilter::get_dataset_name() const { return d_dataset; }
 
-void
-DODSFilter::set_dataset_name(const string ds)
-{
-    d_dataset = www2id(ds, "%", "%20");
-}
+void DODSFilter::set_dataset_name(const string ds) { d_dataset = www2id(ds, "%", "%20"); }
 
 /** Get the URL. This returns the URL, minus the constraint originally sent
 to the server.
 @return The URL. */
-string
-DODSFilter::get_URL() const
-{
-    return d_url;
-}
+string DODSFilter::get_URL() const { return d_url; }
 
 /** Set the URL. Set the URL sent to the server.
 @param url The URL, minus the constraint. */
-void
-DODSFilter::set_URL(const string &url)
-{
+void DODSFilter::set_URL(const string &url) {
     if (url.find('?') != url.npos)
-        print_usage();  // Throws Error
+        print_usage(); // Throws Error
 
     d_url = url;
 }
@@ -405,11 +379,7 @@ what you want. By default, this returns an empty string.
 @brief Get the version information for the dataset.
 @return A string object that contains the dataset version
 information.  */
-string
-DODSFilter::get_dataset_version() const
-{
-    return "";
-}
+string DODSFilter::get_dataset_version() const { return ""; }
 
 /** Set the response to be returned. Valid response names are "DAS", "DDS",
 "DataDDS, "Version".
@@ -417,48 +387,34 @@ DODSFilter::get_dataset_version() const
 @param r The name of the object.
 @exception InternalErr Thrown if the response is not one of the valid
 names. */
-void DODSFilter::set_response(const string &r)
-{
+void DODSFilter::set_response(const string &r) {
     if (r == "DAS" || r == "das") {
-	d_response = DAS_Response;
-	d_action = "das" ;
-    }
-    else if (r == "DDS" || r == "dds") {
-	d_response = DDS_Response;
-	d_action = "dds" ;
-    }
-    else if (r == "DataDDS" || r == "dods") {
-	d_response = DataDDS_Response;
-	d_action = "dods" ;
-    }
-    else if (r == "DDX" || r == "ddx") {
-	d_response = DDX_Response;
-	d_action = "ddx" ;
-    }
-    else if (r == "DataDDX" || r == "dataddx") {
-	d_response = DataDDX_Response;
-	d_action = "dataddx" ;
-    }
-    else if (r == "Version") {
-	d_response = Version_Response;
-	d_action = "version" ;
-    }
-    else
-	print_usage();   // Throws Error
+        d_response = DAS_Response;
+        d_action = "das";
+    } else if (r == "DDS" || r == "dds") {
+        d_response = DDS_Response;
+        d_action = "dds";
+    } else if (r == "DataDDS" || r == "dods") {
+        d_response = DataDDS_Response;
+        d_action = "dods";
+    } else if (r == "DDX" || r == "ddx") {
+        d_response = DDX_Response;
+        d_action = "ddx";
+    } else if (r == "DataDDX" || r == "dataddx") {
+        d_response = DataDDX_Response;
+        d_action = "dataddx";
+    } else if (r == "Version") {
+        d_response = Version_Response;
+        d_action = "version";
+    } else
+        print_usage(); // Throws Error
 }
 
 /** Get the enum name of the response to be returned. */
-DODSFilter::Response
-DODSFilter::get_response() const
-{
-    return d_response;
-}
+DODSFilter::Response DODSFilter::get_response() const { return d_response; }
 
 /** Get the string name of the response to be returned. */
-string DODSFilter::get_action() const
-{
-    return d_action;
-}
+string DODSFilter::get_action() const { return d_action; }
 
 /** Get the dataset's last modified time. This returns the time at which
     the dataset was last modified as defined by UNIX's notion of
@@ -480,11 +436,7 @@ string DODSFilter::get_action() const
     @return Time of the last modification in seconds since the epoch.
     @see get_das_last_modified_time()
     @see get_dds_last_modified_time() */
-time_t
-DODSFilter::get_dataset_last_modified_time() const
-{
-    return last_modified_time(d_dataset);
-}
+time_t DODSFilter::get_dataset_last_modified_time() const { return last_modified_time(d_dataset); }
 
 /** Get the last modified time for the dataset's DAS. This time, given in
     seconds since the epoch (1 Jan 1970 00:00:00 GMT), is the greater of
@@ -495,20 +447,14 @@ DODSFilter::get_dataset_last_modified_time() const
     @return Time of last modification of the DAS.
     @see get_dataset_last_modified_time()
     @see get_dds_last_modified_time() */
-time_t
-DODSFilter::get_das_last_modified_time(const string &anc_location) const
-{
-    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
-        << anc_location << "call faf(das) d_dataset=" << d_dataset
-        << " d_anc_file=" << d_anc_file << endl);
+time_t DODSFilter::get_das_last_modified_time(const string &anc_location) const {
+    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location=" << anc_location
+             << "call faf(das) d_dataset=" << d_dataset << " d_anc_file=" << d_anc_file << endl);
 
-    string name
-    = Ancillary::find_ancillary_file(d_dataset, "das",
-                          (anc_location == "") ? d_anc_dir : anc_location,
-                          d_anc_file);
+    string name =
+        Ancillary::find_ancillary_file(d_dataset, "das", (anc_location == "") ? d_anc_dir : anc_location, d_anc_file);
 
-    return max((name != "") ? last_modified_time(name) : 0,
-               get_dataset_last_modified_time());
+    return max((name != "") ? last_modified_time(name) : 0, get_dataset_last_modified_time());
 }
 
 /** Get the last modified time for the dataset's DDS. This time, given in
@@ -518,20 +464,14 @@ DODSFilter::get_das_last_modified_time(const string &anc_location) const
     @return Time of last modification of the DDS.
     @see get_dataset_last_modified_time()
     @see get_dds_last_modified_time() */
-time_t
-DODSFilter::get_dds_last_modified_time(const string &anc_location) const
-{
-    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
-        << anc_location << "call faf(dds) d_dataset=" << d_dataset
-        << " d_anc_file=" << d_anc_file << endl);
+time_t DODSFilter::get_dds_last_modified_time(const string &anc_location) const {
+    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location=" << anc_location
+             << "call faf(dds) d_dataset=" << d_dataset << " d_anc_file=" << d_anc_file << endl);
 
-    string name
-    = Ancillary::find_ancillary_file(d_dataset, "dds",
-                          (anc_location == "") ? d_anc_dir : anc_location,
-                          d_anc_file);
+    string name =
+        Ancillary::find_ancillary_file(d_dataset, "dds", (anc_location == "") ? d_anc_dir : anc_location, d_anc_file);
 
-    return max((name != "") ? last_modified_time(name) : 0,
-               get_dataset_last_modified_time());
+    return max((name != "") ? last_modified_time(name) : 0, get_dataset_last_modified_time());
 }
 
 /** Get the last modified time to be used for a particular data request.
@@ -547,21 +487,14 @@ DODSFilter::get_dds_last_modified_time(const string &anc_location) const
     @see get_dataset_last_modified_time()
     @see get_das_last_modified_time()
     @see get_dds_last_modified_time() */
-time_t
-DODSFilter::get_data_last_modified_time(const string &anc_location) const
-{
-    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location="
-        << anc_location << "call faf(both) d_dataset=" << d_dataset
-        << " d_anc_file=" << d_anc_file << endl);
+time_t DODSFilter::get_data_last_modified_time(const string &anc_location) const {
+    DBG(cerr << "DODSFilter::get_das_last_modified_time(anc_location=" << anc_location
+             << "call faf(both) d_dataset=" << d_dataset << " d_anc_file=" << d_anc_file << endl);
 
-    string dds_name
-    = Ancillary::find_ancillary_file(d_dataset, "dds",
-                          (anc_location == "") ? d_anc_dir : anc_location,
-                          d_anc_file);
-    string das_name
-    = Ancillary::find_ancillary_file(d_dataset, "das",
-                          (anc_location == "") ? d_anc_dir : anc_location,
-                          d_anc_file);
+    string dds_name =
+        Ancillary::find_ancillary_file(d_dataset, "dds", (anc_location == "") ? d_anc_dir : anc_location, d_anc_file);
+    string das_name =
+        Ancillary::find_ancillary_file(d_dataset, "das", (anc_location == "") ? d_anc_dir : anc_location, d_anc_file);
 
     time_t m = max((das_name != "") ? last_modified_time(das_name) : (time_t)0,
                    (dds_name != "") ? last_modified_time(dds_name) : (time_t)0);
@@ -578,11 +511,7 @@ DODSFilter::get_data_last_modified_time(const string &anc_location) const
     given with the request, this methods returns -1.
 
     @return If-Modified-Since time from a condition GET request. */
-time_t
-DODSFilter::get_request_if_modified_since() const
-{
-    return d_if_modified_since;
-}
+time_t DODSFilter::get_request_if_modified_since() const { return d_if_modified_since; }
 
 /** The <tt>cache_dir</tt> is used to hold the cached .dds and .das files.
     By default, this returns an empty string (store cache files in
@@ -590,28 +519,16 @@ DODSFilter::get_request_if_modified_since() const
 
     @brief Get the cache directory.
     @return A string object that contains the cache file directory.  */
-string
-DODSFilter::get_cache_dir() const
-{
-    return d_cache_dir;
-}
+string DODSFilter::get_cache_dir() const { return d_cache_dir; }
 
 /** Set the server's timeout value. A value of zero (the default) means no
     timeout.
 
     @param t Server timeout in seconds. Default is zero (no timeout). */
-void
-DODSFilter::set_timeout(int t)
-{
-    d_timeout = t;
-}
+void DODSFilter::set_timeout(int t) { d_timeout = t; }
 
 /** Get the server's timeout value. */
-int
-DODSFilter::get_timeout() const
-{
-    return d_timeout;
-}
+int DODSFilter::get_timeout() const { return d_timeout; }
 
 /** Use values of this instance to establish a timeout alarm for the server.
     If the timeout value is zero, do nothing.
@@ -624,9 +541,7 @@ DODSFilter::get_timeout() const
     sensible variant once libdap++ supports reliable error delivery. Dumb
     clients will never get the Error object... */
 
-void
-DODSFilter::establish_timeout(FILE *stream) const
-{
+void DODSFilter::establish_timeout(FILE *stream) const {
 #ifndef WIN32
     if (d_timeout > 0) {
         SignalHandler *sh = SignalHandler::instance();
@@ -637,9 +552,7 @@ DODSFilter::establish_timeout(FILE *stream) const
 #endif
 }
 
-void
-DODSFilter::establish_timeout(ostream &stream) const
-{
+void DODSFilter::establish_timeout(ostream &stream) const {
 #ifndef WIN32
     if (d_timeout > 0) {
         SignalHandler *sh = SignalHandler::instance();
@@ -650,7 +563,8 @@ DODSFilter::establish_timeout(ostream &stream) const
 #endif
 }
 
-static const char *emessage = "DODS internal server error; usage error. Please report this to the dataset maintainer, or to the opendap-tech@opendap.org mailing list.";
+static const char *emessage = "DODS internal server error; usage error. Please report this to the dataset maintainer, "
+                              "or to the opendap-tech@opendap.org mailing list.";
 
 /** This message is printed when the filter program is incorrectly
     invoked by the dispatch CGI.  This is an error in the server
@@ -661,9 +575,7 @@ static const char *emessage = "DODS internal server error; usage error. Please r
     broken.
 
     @brief Print usage information for a filter program. */
-void
-DODSFilter::print_usage() const
-{
+void DODSFilter::print_usage() const {
     // Write a message to the WWW server error log file.
     ErrMsgT(usage.c_str());
 
@@ -675,11 +587,7 @@ DODSFilter::print_usage() const
     the DODS core software, and (optionally) the dataset.
 
     @brief Send version information back to the client program. */
-void
-DODSFilter::send_version_info() const
-{
-    do_version(d_cgi_ver, get_dataset_version());
-}
+void DODSFilter::send_version_info() const { do_version(d_cgi_ver, get_dataset_version()); }
 
 /** This function formats and prints an ASCII representation of a
     DAS on stdout.  This has the effect of sending the DAS object
@@ -692,10 +600,7 @@ DODSFilter::send_version_info() const
     @param with_mime_headers If true (the default) send MIME headers.
     @return void
     @see DAS */
-void
-DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
-                     bool with_mime_headers) const
-{
+void DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location, bool with_mime_headers) const {
     ostringstream oss;
     send_das(oss, das, anc_location, with_mime_headers);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
@@ -712,28 +617,19 @@ DODSFilter::send_das(FILE *out, DAS &das, const string &anc_location,
     @param with_mime_headers If true (the default) send MIME headers.
     @return void
     @see DAS */
-void
-DODSFilter::send_das(ostream &out, DAS &das, const string &anc_location,
-                     bool with_mime_headers) const
-{
+void DODSFilter::send_das(ostream &out, DAS &das, const string &anc_location, bool with_mime_headers) const {
     time_t das_lmt = get_das_last_modified_time(anc_location);
-    if (is_conditional()
-        && das_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
+    if (is_conditional() && das_lmt <= get_request_if_modified_since() && with_mime_headers) {
         set_mime_not_modified(out);
-    }
-    else {
+    } else {
         if (with_mime_headers)
             set_mime_text(out, dods_das, d_cgi_ver, x_plain, das_lmt);
         das.print(out);
     }
-    out << flush ;
+    out << flush;
 }
 
-void
-DODSFilter::send_das(DAS &das, const string &anc_location,
-                     bool with_mime_headers) const
-{
+void DODSFilter::send_das(DAS &das, const string &anc_location, bool with_mime_headers) const {
     send_das(cout, das, anc_location, with_mime_headers);
 }
 
@@ -753,12 +649,8 @@ DODSFilter::send_das(DAS &das, const string &anc_location,
     @param with_mime_headers If true (the default) send MIME headers.
     @return void
     @see DDS */
-void
-DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
-                     bool constrained,
-                     const string &anc_location,
-                     bool with_mime_headers) const
-{
+void DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval, bool constrained, const string &anc_location,
+                          bool with_mime_headers) const {
     ostringstream oss;
     send_dds(oss, dds, eval, constrained, anc_location, with_mime_headers);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
@@ -780,26 +672,20 @@ DODSFilter::send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
     @param with_mime_headers If true (the default) send MIME headers.
     @return void
     @see DDS */
-void
-DODSFilter::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
-                     bool constrained,
-                     const string &anc_location,
-                     bool with_mime_headers) const
-{
+void DODSFilter::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool constrained,
+                          const string &anc_location, bool with_mime_headers) const {
     // If constrained, parse the constraint. Throws Error or InternalErr.
     if (constrained)
         eval.parse_constraint(d_dap2ce, dds);
 
     if (eval.functional_expression())
-        throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
+        throw Error("Function calls can only be used with data requests. To see the structure of the underlying data "
+                    "source, reissue the URL without the function.");
 
     time_t dds_lmt = get_dds_last_modified_time(anc_location);
-    if (is_conditional()
-        && dds_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
+    if (is_conditional() && dds_lmt <= get_request_if_modified_since() && with_mime_headers) {
         set_mime_not_modified(out);
-    }
-    else {
+    } else {
         if (with_mime_headers)
             set_mime_text(out, dods_dds, d_cgi_ver, x_plain, dds_lmt);
         if (constrained)
@@ -808,23 +694,17 @@ DODSFilter::send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
             dds.print(out);
     }
 
-    out << flush ;
+    out << flush;
 }
 
-void
-DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval,
-                     bool constrained, const string &anc_location,
-                     bool with_mime_headers) const
-{
+void DODSFilter::send_dds(DDS &dds, ConstraintEvaluator &eval, bool constrained, const string &anc_location,
+                          bool with_mime_headers) const {
     send_dds(cout, dds, eval, constrained, anc_location, with_mime_headers);
 }
 
 // 'lmt' unused. Should it be used to supply a LMT or removed from the
 // method? jhrg 8/9/05
-void
-DODSFilter::functional_constraint(BaseType &var, DDS &dds,
-                                  ConstraintEvaluator &eval, FILE *out) const
-{
+void DODSFilter::functional_constraint(BaseType &var, DDS &dds, ConstraintEvaluator &eval, FILE *out) const {
     ostringstream oss;
     functional_constraint(var, dds, eval, oss);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
@@ -832,49 +712,39 @@ DODSFilter::functional_constraint(BaseType &var, DDS &dds,
 
 // 'lmt' unused. Should it be used to supply a LMT or removed from the
 // method? jhrg 8/9/05
-void
-DODSFilter::functional_constraint(BaseType &var, DDS &dds,
-                                  ConstraintEvaluator &eval, ostream &out) const
-{
-    out << "Dataset {\n" ;
+void DODSFilter::functional_constraint(BaseType &var, DDS &dds, ConstraintEvaluator &eval, ostream &out) const {
+    out << "Dataset {\n";
     var.print_decl(out, "    ", true, false, true);
-    out << "} function_value;\n" ;
-    out << "Data:\n" ;
+    out << "} function_value;\n";
+    out << "Data:\n";
 
-    out << flush ;
+    out << flush;
 
     // Grab a stream that encodes using XDR.
-    XDRStreamMarshaller m( out ) ;
+    XDRStreamMarshaller m(out);
 
     try {
         // In the following call to serialize, suppress CE evaluation.
         var.serialize(eval, dds, m, false);
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         throw;
     }
 }
 
-void
-DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
-                               FILE * out, bool ce_eval) const
-{
+void DODSFilter::dataset_constraint(DDS &dds, ConstraintEvaluator &eval, FILE *out, bool ce_eval) const {
     ostringstream oss;
     dataset_constraint(dds, eval, oss, ce_eval);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void
-DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
-                               ostream &out, bool ce_eval) const
-{
+void DODSFilter::dataset_constraint(DDS &dds, ConstraintEvaluator &eval, ostream &out, bool ce_eval) const {
     // send constrained DDS
     dds.print_constrained(out);
-    out << "Data:\n" ;
-    out << flush ;
+    out << "Data:\n";
+    out << flush;
 
     // Grab a stream that encodes using XDR.
-    XDRStreamMarshaller m( out ) ;
+    XDRStreamMarshaller m(out);
 
     try {
         // Send all variables in the current projection (send_p())
@@ -883,17 +753,13 @@ DODSFilter::dataset_constraint(DDS & dds, ConstraintEvaluator & eval,
                 DBG(cerr << "Sending " << (*i)->name() << endl);
                 (*i)->serialize(eval, dds, m, ce_eval);
             }
-    }
-    catch (Error & e) {
+    } catch (Error &e) {
         throw;
     }
 }
 
-void
-DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
-                               ostream &out, const string &boundary,
-                               const string &start, bool ce_eval) const
-{
+void DODSFilter::dataset_constraint_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out, const string &boundary,
+                                        const string &start, bool ce_eval) const {
     // Write the MPM headers for the DDX (text/xml) part of the response
     set_mime_ddx_boundary(out, boundary, start, dods_ddx);
 
@@ -904,7 +770,7 @@ DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
     uuid_unparse(uu, uuid);
     char domain[256];
     if (getdomainname(domain, 255) != 0 || strlen(domain) == 0)
-	strncpy(domain, "opendap.org", 255);
+        strncpy(domain, "opendap.org", 255);
 
     string cid = string(uuid) + "@" + string(domain);
 
@@ -915,7 +781,7 @@ DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
     set_mime_data_boundary(out, boundary, cid, dap4_data, binary);
 
     // Grab a stream that encodes using XDR.
-    XDRStreamMarshaller m( out ) ;
+    XDRStreamMarshaller m(out);
 
     try {
         // Send all variables in the current projection (send_p())
@@ -924,8 +790,7 @@ DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
                 DBG(cerr << "Sending " << (*i)->name() << endl);
                 (*i)->serialize(eval, dds, m, ce_eval);
             }
-    }
-    catch (Error & e) {
+    } catch (Error &e) {
         throw;
     }
 }
@@ -946,11 +811,8 @@ DODSFilter::dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
     @param with_mime_headers If true, include the MIME headers in the response.
     Defaults to true.
     @return void */
-void
-DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
-                      FILE * data_stream, const string & anc_location,
-                      bool with_mime_headers) const
-{
+void DODSFilter::send_data(DDS &dds, ConstraintEvaluator &eval, FILE *data_stream, const string &anc_location,
+                           bool with_mime_headers) const {
     ostringstream oss;
     send_data(dds, eval, oss, anc_location, with_mime_headers);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), data_stream);
@@ -972,18 +834,13 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     @param with_mime_headers If true, include the MIME headers in the response.
     Defaults to true.
     @return void */
-void
-DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
-                      ostream & data_stream, const string & anc_location,
-                      bool with_mime_headers) const
-{
+void DODSFilter::send_data(DDS &dds, ConstraintEvaluator &eval, ostream &data_stream, const string &anc_location,
+                           bool with_mime_headers) const {
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
     // response.
     time_t data_lmt = get_data_last_modified_time(anc_location);
-    if (is_conditional()
-        && data_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
+    if (is_conditional() && data_lmt <= get_request_if_modified_since() && with_mime_headers) {
         set_mime_not_modified(data_stream);
         return;
     }
@@ -991,8 +848,8 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
-    eval.parse_constraint(d_dap2ce, dds);   // Throws Error if the ce doesn't
-					// parse.
+    eval.parse_constraint(d_dap2ce, dds); // Throws Error if the ce doesn't
+                                          // parse.
 
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
@@ -1020,21 +877,20 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     }
 #endif
     if (eval.function_clauses()) {
-	DDS *fdds = eval.eval_function_clauses(dds);
+        DDS *fdds = eval.eval_function_clauses(dds);
         if (with_mime_headers)
             set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
 
         dataset_constraint(*fdds, eval, data_stream, false);
-	delete fdds;
-    }
-    else {
+        delete fdds;
+    } else {
         if (with_mime_headers)
             set_mime_binary(data_stream, dods_data, d_cgi_ver, x_plain, data_lmt);
 
         dataset_constraint(dds, eval, data_stream);
     }
 
-    data_stream << flush ;
+    data_stream << flush;
 }
 
 /** Send the DDX response. The DDX never contains data, instead it holds a
@@ -1047,10 +903,7 @@ DODSFilter::send_data(DDS & dds, ConstraintEvaluator & eval,
     @param out Destination
     @param with_mime_headers If true, include the MIME headers in the response.
     Defaults to true. */
-void
-DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
-                     bool with_mime_headers) const
-{
+void DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out, bool with_mime_headers) const {
     ostringstream oss;
     send_ddx(dds, eval, oss, with_mime_headers);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
@@ -1066,28 +919,24 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
     @param out Destination
     @param with_mime_headers If true, include the MIME headers in the response.
     Defaults to true. */
-void
-DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
-                     bool with_mime_headers) const
-{
+void DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out, bool with_mime_headers) const {
     // If constrained, parse the constraint. Throws Error or InternalErr.
     if (!d_dap2ce.empty())
         eval.parse_constraint(d_dap2ce, dds);
 
     if (eval.functional_expression())
-        throw Error("Function calls can only be used with data requests. To see the structure of the underlying data source, reissue the URL without the function.");
+        throw Error("Function calls can only be used with data requests. To see the structure of the underlying data "
+                    "source, reissue the URL without the function.");
 
     time_t dds_lmt = get_dds_last_modified_time(d_anc_dir);
 
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
     // response.
-    if (is_conditional() && dds_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
+    if (is_conditional() && dds_lmt <= get_request_if_modified_since() && with_mime_headers) {
         set_mime_not_modified(out);
         return;
-    }
-    else {
+    } else {
         if (with_mime_headers)
             set_mime_text(out, dods_ddx, d_cgi_ver, x_plain, dds_lmt);
         dds.print_xml_writer(out, !d_dap2ce.empty(), "");
@@ -1114,19 +963,13 @@ DODSFilter::send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
     Defaults to true.
 
     @return void */
-void
-DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
-                      ostream & data_stream, const string &start,
-                      const string &boundary, const string & anc_location,
-                      bool with_mime_headers) const
-{
+void DODSFilter::send_data_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &data_stream, const string &start,
+                               const string &boundary, const string &anc_location, bool with_mime_headers) const {
     // If this is a conditional request and the server should send a 304
     // response, do that and exit. Otherwise, continue on and send the full
     // response.
     time_t data_lmt = get_data_last_modified_time(anc_location);
-    if (is_conditional()
-        && data_lmt <= get_request_if_modified_since()
-        && with_mime_headers) {
+    if (is_conditional() && data_lmt <= get_request_if_modified_since() && with_mime_headers) {
         set_mime_not_modified(data_stream);
         return;
     }
@@ -1134,8 +977,8 @@ DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
     establish_timeout(data_stream);
     dds.set_timeout(d_timeout);
 
-    eval.parse_constraint(d_dap2ce, dds);   // Throws Error if the ce doesn't
-					// parse.
+    eval.parse_constraint(d_dap2ce, dds); // Throws Error if the ce doesn't
+                                          // parse.
 
     dds.tag_nested_sequences(); // Tag Sequences as Parent or Leaf node.
 
@@ -1164,27 +1007,23 @@ DODSFilter::send_data_ddx(DDS & dds, ConstraintEvaluator & eval,
     }
 #endif
     if (eval.function_clauses()) {
-    	DDS *fdds = eval.eval_function_clauses(dds);
+        DDS *fdds = eval.eval_function_clauses(dds);
         if (with_mime_headers)
-            set_mime_multipart(data_stream, boundary, start, dods_data_ddx,
-        	    d_cgi_ver, x_plain, data_lmt);
-        data_stream << flush ;
+            set_mime_multipart(data_stream, boundary, start, dods_data_ddx, d_cgi_ver, x_plain, data_lmt);
+        data_stream << flush;
         dataset_constraint(*fdds, eval, data_stream, false);
-    	delete fdds;
-    }
-    else {
+        delete fdds;
+    } else {
         if (with_mime_headers)
-            set_mime_multipart(data_stream, boundary, start, dods_data_ddx,
-        	    d_cgi_ver, x_plain, data_lmt);
-        data_stream << flush ;
+            set_mime_multipart(data_stream, boundary, start, dods_data_ddx, d_cgi_ver, x_plain, data_lmt);
+        data_stream << flush;
         dataset_constraint_ddx(dds, eval, data_stream, boundary, start);
     }
 
-    data_stream << flush ;
+    data_stream << flush;
 
     if (with_mime_headers)
-	data_stream << CRLF << "--" << boundary << "--" << CRLF;
+        data_stream << CRLF << "--" << boundary << "--" << CRLF;
 }
 
 } // namespace libdap
-

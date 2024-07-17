@@ -34,8 +34,7 @@
 #include "BaseType.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 class ConstraintEvaluator;
 class Marshaller;
@@ -46,15 +45,16 @@ class UnMarshaller;
     @see BaseType
     */
 
-class Int64: public BaseType
-{
+class Int64 : public BaseType {
     unsigned int val2buf(void *val, bool) override {
-    	set_value(*reinterpret_cast<dods_int64*>(val));
-    	return sizeof(dods_int64);
+        set_value(*reinterpret_cast<dods_int64 *>(val));
+        return sizeof(dods_int64);
     }
-    //virtual unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
-    unsigned int buf2val(void **) override; 
-    void print_val(FILE *, string, bool) override { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
+    // virtual unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
+    unsigned int buf2val(void **) override;
+    void print_val(FILE *, string, bool) override {
+        throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64");
+    }
 
 protected:
     dods_int64 d_buf;
@@ -71,15 +71,9 @@ public:
 
     BaseType *ptr_duplicate() override;
 
-    unsigned int width(bool = false) const override
-    {
-        return sizeof(dods_int64);
-    }
+    unsigned int width(bool = false) const override { return sizeof(dods_int64); }
 
-    int64_t width_ll(bool = false) const override
-    {
-        return sizeof(dods_int64);
-    }
+    int64_t width_ll(bool = false) const override { return sizeof(dods_int64); }
 
     // DAP4
     void compute_checksum(Crc32 &checksum) override;
@@ -103,4 +97,3 @@ public:
 } // namespace libdap
 
 #endif // _int64_h
-

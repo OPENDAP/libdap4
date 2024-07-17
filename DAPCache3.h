@@ -13,12 +13,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -30,16 +30,16 @@
 #define DAPCache3_h_ 1
 
 // #include <algorithm>
+#include <list>
 #include <map>
 #include <string>
-#include <list>
 // #include <sstream>
 
 #include "DapObj.h"
 
 #if 0
-#include "BESObj.h"
 #include "BESDebug.h"
+#include "BESObj.h"
 
 class BESKeys;
 #endif
@@ -79,15 +79,15 @@ typedef std::list<cache_entry> CacheFiles;
  * close + unlock operations performed atomically. Other methods that operate
  * on the cache info file must only be called when the lock has been obtained.
  */
-class DAPCache3: public libdap::DapObj {
+class DAPCache3 : public libdap::DapObj {
 
 private:
-    static DAPCache3 * d_instance;
+    static DAPCache3 *d_instance;
 
     static const char DAP_CACHE_CHAR = '#';
 
-    string d_cache_dir;  /// pathname of the cache directory
-    string d_prefix;     /// tack this on the front of cache file name
+    string d_cache_dir; /// pathname of the cache directory
+    string d_prefix;    /// tack this on the front of cache file name
 
     /// How many megabytes can the cache hold before we have to purge
     unsigned long long d_max_cache_size_in_bytes;
@@ -122,13 +122,12 @@ private:
     FilesAndLockDescriptors d_locks;
 
     // Life-cycle control
-    virtual ~DAPCache3() { }
+    virtual ~DAPCache3() {}
     static void delete_instance();
 
 public:
     static DAPCache3 *get_instance(const string &cache_dir, const string &prefix, unsigned long long size);
     static DAPCache3 *get_instance();
-
 
     string get_cache_file_name(const string &src, bool mangle = true);
 
@@ -152,7 +151,7 @@ public:
     static BESCache3 *get_instance(BESKeys *keys, const string &cache_dir_key, const string &prefix_key, const string &size_key);
 #endif
 
-    virtual void dump(ostream &strm) const ;
+    virtual void dump(ostream &strm) const;
 };
 
 } // namespace libdap

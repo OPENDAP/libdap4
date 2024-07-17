@@ -30,8 +30,8 @@
 #include <cstdio>
 #include <fstream>
 
-#include "AISMerge.h"
 #include "AISExceptions.h"
+#include "AISMerge.h"
 #include "Response.h"
 
 namespace libdap {
@@ -48,17 +48,13 @@ namespace libdap {
     resource could not be opened. This method does not throw an exception for
     resources that cannot be opened because that can happen for a number of
     reasons which are hardly 'exceptional.' */
-Response *AISMerge::get_ais_resource(const string & res)
-{
-    if (res.find("http:") == 0
-        || res.find("file:") == 0 || res.find("https:") == 0) {
+Response *AISMerge::get_ais_resource(const string &res) {
+    if (res.find("http:") == 0 || res.find("file:") == 0 || res.find("https:") == 0) {
         return d_http.fetch_url(res);
-    }
-    else {
+    } else {
         FILE *s = fopen(res.c_str(), "r");
         if (!s)
-            throw Error("I could not open local AIS resource '"
-                        + res + "'.");
+            throw Error("I could not open local AIS resource '" + res + "'.");
         return new Response(s, 0);
     }
 }
@@ -76,8 +72,7 @@ Response *AISMerge::get_ais_resource(const string & res)
     @param primary The URL of the primary resource.
     @param das The target of the merge operation. This must already contain
     the DAS for \e primary. */
-void AISMerge::merge(const string & primary, DAS & das)
-{
+void AISMerge::merge(const string &primary, DAS &das) {
     if (!d_ais_db.has_resource(primary))
         return;
 
@@ -102,12 +97,9 @@ void AISMerge::merge(const string & primary, DAS & das)
             delete ais_resource;
             ais_resource = 0;
         }
-    }
-    catch (NoSuchPrimaryResource & e) {
-        throw
-        InternalErr(string
-                    ("I caught a 'NoSuchPrimaryResource' exception, it said:\n")
-                    + e.get_error_message() + string("\n"));
+    } catch (NoSuchPrimaryResource &e) {
+        throw InternalErr(string("I caught a 'NoSuchPrimaryResource' exception, it said:\n") + e.get_error_message() +
+                          string("\n"));
     }
 }
 

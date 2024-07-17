@@ -46,8 +46,7 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** When a DODS server receives a request from a DODS client, the
     server CGI script dispatches the request to one of several
@@ -75,8 +74,7 @@ namespace libdap
     @brief Common functions for DODS server filter programs.
     @author jhrg 8/26/97 */
 
-class DODSFilter
-{
+class DODSFilter {
 public:
     /** Types of responses DODSFilter know about. */
     enum Response {
@@ -91,26 +89,26 @@ public:
     };
 
 protected:
-    bool d_comp;  // True if the output should be compressed.
-    bool d_bad_options;  // True if the options (argc,argv) are bad.
+    bool d_comp;        // True if the output should be compressed.
+    bool d_bad_options; // True if the options (argc,argv) are bad.
     bool d_conditional_request;
 
     string d_program_name; // Name of the filter program
-    string d_dataset;  // Name of the dataset/database
-    string d_dap2ce;  // DAP2 Constraint expression
-    string d_cgi_ver;  // Version of CGI script (caller)
-    string d_anc_dir;  // Look here for ancillary files
-    string d_anc_file;  // Use this for ancillary file name
-    string d_cache_dir;  // Use this for cache files
-    string d_url;  // URL minus CE.
+    string d_dataset;      // Name of the dataset/database
+    string d_dap2ce;       // DAP2 Constraint expression
+    string d_cgi_ver;      // Version of CGI script (caller)
+    string d_anc_dir;      // Look here for ancillary files
+    string d_anc_file;     // Use this for ancillary file name
+    string d_cache_dir;    // Use this for cache files
+    string d_url;          // URL minus CE.
 
     Response d_response; // enum name of the response to generate
-    string d_action;  // string name of the response to generate
+    string d_action;     // string name of the response to generate
 
-    int d_timeout;  // Server timeout after N seconds
+    int d_timeout; // Server timeout after N seconds
 
-    time_t d_anc_das_lmt; // Last modified time of the anc. DAS.
-    time_t d_anc_dds_lmt; // Last modified time of the anc. DDS.
+    time_t d_anc_das_lmt;       // Last modified time of the anc. DAS.
+    time_t d_anc_dds_lmt;       // Last modified time of the anc. DDS.
     time_t d_if_modified_since; // Time from a conditional request.
 
     void initialize();
@@ -126,10 +124,7 @@ public:
         @todo Add methods to provide a way to set all of the parameters
         this class contains. They can currently only be set using the
         argc/argv command line parameters. */
-    DODSFilter()
-    {
-        initialize();
-    }
+    DODSFilter() { initialize(); }
     DODSFilter(int argc, char *argv[]) throw(Error);
 
     virtual ~DODSFilter();
@@ -176,61 +171,38 @@ public:
 
     virtual void send_version_info() const;
 
-    virtual void send_das(DAS &das, const string &anc_location = "",
-                          bool with_mime_headers = true) const;
-    virtual void send_das(ostream &out, DAS &das, const string &anc_location = "",
-                          bool with_mime_headers = true) const;
+    virtual void send_das(DAS &das, const string &anc_location = "", bool with_mime_headers = true) const;
+    virtual void send_das(ostream &out, DAS &das, const string &anc_location = "", bool with_mime_headers = true) const;
 
-    virtual void send_dds(DDS &dds, ConstraintEvaluator &eval,
-                          bool constrained = false,
-                          const string &anc_location = "",
-                          bool with_mime_headers = true) const;
-    virtual void send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval,
-                          bool constrained = false,
-                          const string &anc_location = "",
-                          bool with_mime_headers = true) const;
+    virtual void send_dds(DDS &dds, ConstraintEvaluator &eval, bool constrained = false,
+                          const string &anc_location = "", bool with_mime_headers = true) const;
+    virtual void send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool constrained = false,
+                          const string &anc_location = "", bool with_mime_headers = true) const;
     // deprecated
-    virtual void functional_constraint(BaseType &var, DDS &dds,
-                                       ConstraintEvaluator &eval, ostream &out) const;
+    virtual void functional_constraint(BaseType &var, DDS &dds, ConstraintEvaluator &eval, ostream &out) const;
 
-    virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
-                                    ostream &out, bool ce_eval = true) const;
-    virtual void dataset_constraint_ddx(DDS & dds, ConstraintEvaluator & eval,
-                                   ostream &out, const string &boundary,
-                                   const string &start,
-                                   bool ce_eval = true) const;
+    virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval, ostream &out, bool ce_eval = true) const;
+    virtual void dataset_constraint_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out, const string &boundary,
+                                        const string &start, bool ce_eval = true) const;
 
-    virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
-                           ostream &data_stream,
-                           const string &anc_location = "",
+    virtual void send_data(DDS &dds, ConstraintEvaluator &eval, ostream &data_stream, const string &anc_location = "",
                            bool with_mime_headers = true) const;
-    virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out,
-                          bool with_mime_headers = true) const;
-    virtual void send_data_ddx(DDS &dds, ConstraintEvaluator &eval,
-                           ostream &data_stream, const string &start,
-                           const string &boundary,
-                           const string &anc_location = "",
-                           bool with_mime_headers = true) const;
+    virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out, bool with_mime_headers = true) const;
+    virtual void send_data_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &data_stream, const string &start,
+                               const string &boundary, const string &anc_location = "",
+                               bool with_mime_headers = true) const;
 
     virtual void establish_timeout(FILE *stream) const;
-    virtual void send_das(FILE *out, DAS &das, const string &anc_location = "",
-                          bool with_mime_headers = true) const;
-    virtual void send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval,
-                          bool constrained = false,
-                          const string &anc_location = "",
-                          bool with_mime_headers = true) const;
+    virtual void send_das(FILE *out, DAS &das, const string &anc_location = "", bool with_mime_headers = true) const;
+    virtual void send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval, bool constrained = false,
+                          const string &anc_location = "", bool with_mime_headers = true) const;
     // deprecated
-    virtual void functional_constraint(BaseType &var, DDS &dds,
-                                       ConstraintEvaluator &eval, FILE *out) const;
+    virtual void functional_constraint(BaseType &var, DDS &dds, ConstraintEvaluator &eval, FILE *out) const;
 
-    virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval,
-                                    FILE *out, bool ce_eval = true) const;
-    virtual void send_data(DDS &dds, ConstraintEvaluator &eval,
-                           FILE *data_stream,
-                           const string &anc_location = "",
+    virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval, FILE *out, bool ce_eval = true) const;
+    virtual void send_data(DDS &dds, ConstraintEvaluator &eval, FILE *data_stream, const string &anc_location = "",
                            bool with_mime_headers = true) const;
-    virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out,
-                          bool with_mime_headers = true) const;
+    virtual void send_ddx(DDS &dds, ConstraintEvaluator &eval, FILE *out, bool with_mime_headers = true) const;
 };
 
 } // namespace libdap

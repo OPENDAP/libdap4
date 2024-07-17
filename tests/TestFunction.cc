@@ -27,12 +27,12 @@
 #include "config.h"
 
 #include <BaseType.h>
+#include <TestArray.h>
 #include <TestFloat64.h>
 #include <TestStr.h>
-#include <TestArray.h>
 
-#include <Error.h>
 #include <DDS.h>
+#include <Error.h>
 
 #include <debug.h>
 #include <util.h>
@@ -45,13 +45,11 @@ namespace libdap {
  * @brief scale a scalar or array variable
  * This does not work for DAP2 Grids; only Array and scalar variables.
  */
-void
-function_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
-{
-    string info =
-    string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
-    "<function name=\"scale\" version=\"1.0\" href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions\">\n" +
-    "</function>";
+void function_scale(int argc, BaseType *argv[], DDS &, BaseType **btpp) {
+    string info = string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n") +
+                  "<function name=\"scale\" version=\"1.0\" "
+                  "href=\"http://docs.opendap.org/index.php/Server_Side_Processing_Functions\">\n" +
+                  "</function>";
 
     if (argc == 0) {
         Str *response = new TestStr("info");
@@ -63,17 +61,17 @@ function_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
     // Check for 2 arguments
     DBG(cerr << "argc = " << argc << endl);
     if (argc != 2)
-        throw Error(malformed_expr,"Wrong number of arguments to scale().");
+        throw Error(malformed_expr, "Wrong number of arguments to scale().");
 
     double m = extract_double_value(argv[1]);
 
-    DBG(cerr << "m: " << m << << endl);
+    DBG(cerr << "m: " << m < < < < endl);
 
     // Read the data, scale and return the result.
     BaseType *dest = 0;
     double *data;
     if (argv[0]->is_vector_type()) {
-        TestArray &source = static_cast<TestArray&>(*argv[0]);
+        TestArray &source = static_cast<TestArray &>(*argv[0]);
         source.read();
 
         data = extract_double_array(&source);
@@ -89,9 +87,8 @@ function_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
         delete[] data; // set_value copies.
 
         dest = result;
-    }
-    else if (argv[0]->is_simple_type() && !(argv[0]->type() == dods_str_c || argv[0]->type() == dods_url_c)) {
-    	argv[0]->read();
+    } else if (argv[0]->is_simple_type() && !(argv[0]->type() == dods_str_c || argv[0]->type() == dods_url_c)) {
+        argv[0]->read();
         double data = extract_double_value(argv[0]);
 
         data *= m;
@@ -100,9 +97,8 @@ function_scale(int argc, BaseType * argv[], DDS &, BaseType **btpp)
 
         fdest->set_value(data);
         dest = fdest;
-    }
-    else {
-        throw Error(malformed_expr,"The scale() function works only for Arrays and scalars.");
+    } else {
+        throw Error(malformed_expr, "The scale() function works only for Arrays and scalars.");
     }
 
     *btpp = dest;

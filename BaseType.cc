@@ -35,38 +35,38 @@
 
 #include "config.h"
 
-#include <cstdio>  // for stdin and stdout
+#include <cstdio> // for stdin and stdout
 
 #include <sstream>
 #include <string>
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
+#include "Array.h"
 #include "BaseType.h"
 #include "Byte.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
 #include "Float32.h"
 #include "Float64.h"
-#include "Str.h"
-#include "Url.h"
-#include "Array.h"
-#include "Structure.h"
-#include "Sequence.h"
 #include "Grid.h"
+#include "Int16.h"
+#include "Int32.h"
+#include "Sequence.h"
+#include "Str.h"
+#include "Structure.h"
+#include "UInt16.h"
+#include "UInt32.h"
+#include "Url.h"
 
 #include "D4Attributes.h"
+#include "D4BaseTypeFactory.h"
 #include "DMR.h"
 #include "XMLWriter.h"
-#include "D4BaseTypeFactory.h"
 
 #include "InternalErr.h"
 
-#include "util.h"
-#include "escaping.h"
 #include "DapIndent.h"
+#include "escaping.h"
+#include "util.h"
 
 #include "debug.h"
 
@@ -82,9 +82,7 @@ namespace libdap {
 
     @brief Perform a deep copy.
     @param bt The source object. */
-void
-BaseType::m_duplicate(const BaseType &bt)
-{
+void BaseType::m_duplicate(const BaseType &bt) {
     DBG(cerr << "In BaseType::m_duplicate for " << bt.name() << endl);
 
     d_name = bt.d_name;
@@ -97,7 +95,7 @@ BaseType::m_duplicate(const BaseType &bt)
 
     d_parent = bt.d_parent; // copy pointers 6/4/2001 jhrg
 
-    d_attr = bt.d_attr;  // Deep copy.
+    d_attr = bt.d_attr; // Deep copy.
 
     if (bt.d_attributes)
         d_attributes = new D4Attributes(*bt.d_attributes); // deep copy
@@ -124,10 +122,8 @@ BaseType::m_duplicate(const BaseType &bt)
     @param is_dap4 True if this is a DAP4 variable. Default is False
     @see Type */
 BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
-: d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false),
-  d_parent(0), d_attributes(0), d_is_dap4(is_dap4),
-  d_in_selection(false), d_is_synthesized(false)
-{}
+    : d_name(n), d_type(t), d_dataset(""), d_is_read(false), d_is_send(false), d_parent(0), d_attributes(0),
+      d_is_dap4(is_dap4), d_in_selection(false), d_is_synthesized(false) {}
 
 /** The BaseType constructor needs a name, a dataset, and a type.
     The BaseType class exists to provide data to
@@ -142,20 +138,16 @@ BaseType::BaseType(const string &n, const Type &t, bool is_dap4)
     @param is_dap4 True if this is a DAP4 variable.
     @see Type */
 BaseType::BaseType(const string &n, const string &d, const Type &t, bool is_dap4)
-: d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false),
-  d_parent(0), d_attributes(0), d_is_dap4(is_dap4),
-  d_in_selection(false), d_is_synthesized(false)
-{}
+    : d_name(n), d_type(t), d_dataset(d), d_is_read(false), d_is_send(false), d_parent(0), d_attributes(0),
+      d_is_dap4(is_dap4), d_in_selection(false), d_is_synthesized(false) {}
 
 /** @brief The BaseType copy constructor. */
-BaseType::BaseType(const BaseType &copy_from) : DapObj()
-{
+BaseType::BaseType(const BaseType &copy_from) : DapObj() {
     DBG(cerr << "In BaseTpe::copy_ctor for " << copy_from.name() << endl);
     m_duplicate(copy_from);
 }
 
-BaseType::~BaseType()
-{
+BaseType::~BaseType() {
     DBG2(cerr << "Entering ~BaseType (" << this << ")" << endl);
 
     if (d_attributes)
@@ -164,9 +156,7 @@ BaseType::~BaseType()
     DBG2(cerr << "Exiting ~BaseType" << endl);
 }
 
-BaseType &
-BaseType::operator=(const BaseType &rhs)
-{
+BaseType &BaseType::operator=(const BaseType &rhs) {
     if (this == &rhs)
         return *this;
     m_duplicate(rhs);
@@ -177,8 +167,7 @@ BaseType::operator=(const BaseType &rhs)
     debugging when regular inspection w/ddd or gdb isn't enough.
 
     @return A string which shows the object's internal stuff. */
-string BaseType::toString()
-{
+string BaseType::toString() {
     ostringstream oss;
     oss << "BaseType (" << this << "):" << endl
         << "          _name: " << name() << endl
@@ -208,18 +197,15 @@ string BaseType::toString()
  *
  * @return A pointer to the transformed variable
  */
-void
-BaseType::transform_to_dap4(D4Group */*root*/, Constructor *container)
-{
+void BaseType::transform_to_dap4(D4Group * /*root*/, Constructor *container) {
     BaseType *dest = ptr_duplicate();
     // If it's already a DAP4 object then we can just return it!
-    if(!is_dap4()){
+    if (!is_dap4()) {
         dest->attributes()->transform_to_dap4(get_attr_table());
         dest->set_is_dap4(true);
     }
     container->add_var_nocopy(dest);
 }
-
 
 /** @brief DAP4 to DAP2 transform
  *
@@ -251,9 +237,7 @@ BaseType::transform_to_dap4(D4Group */*root*/, Constructor *container)
  * of their member variables in the vector. DAP4 types with no representation in DAP2
  * (ex: UInt64) the will return a NULL pointer and so this must be tested!
  */
-std::vector<BaseType *> *
-BaseType::transform_to_dap2(AttrTable *)
-{
+std::vector<BaseType *> *BaseType::transform_to_dap2(AttrTable *) {
     BaseType *dest = this->ptr_duplicate();
     // convert the d4 attributes to a dap2 attribute table.
     // HK-403. jhrg 6/17/19
@@ -269,11 +253,10 @@ BaseType::transform_to_dap2(AttrTable *)
 
     dest->set_is_dap4(false);
 
-    vector<BaseType *> *result =  new vector<BaseType *>();
+    vector<BaseType *> *result = new vector<BaseType *>();
     result->push_back(dest);
     return result;
 }
-
 
 /** @brief dumps information about this object
  *
@@ -283,41 +266,34 @@ BaseType::transform_to_dap2(AttrTable *)
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void
-BaseType::dump(ostream &strm) const
-{
-    strm << DapIndent::LMarg << "BaseType::dump - ("
-        << (void *)this << ")" << endl ;
-    DapIndent::Indent() ;
+void BaseType::dump(ostream &strm) const {
+    strm << DapIndent::LMarg << "BaseType::dump - (" << (void *)this << ")" << endl;
+    DapIndent::Indent();
 
-    strm << DapIndent::LMarg << "name: " << name() << endl ;
-    strm << DapIndent::LMarg << "type: " << type_name() << endl ;
-    strm << DapIndent::LMarg << "dataset: " << d_dataset << endl ;
-    strm << DapIndent::LMarg << "read_p: " << d_is_read << endl ;
-    strm << DapIndent::LMarg << "send_p: " << d_is_send << endl ;
-    strm << DapIndent::LMarg << "synthesized_p: " << d_is_synthesized << endl ;
+    strm << DapIndent::LMarg << "name: " << name() << endl;
+    strm << DapIndent::LMarg << "type: " << type_name() << endl;
+    strm << DapIndent::LMarg << "dataset: " << d_dataset << endl;
+    strm << DapIndent::LMarg << "read_p: " << d_is_read << endl;
+    strm << DapIndent::LMarg << "send_p: " << d_is_send << endl;
+    strm << DapIndent::LMarg << "synthesized_p: " << d_is_synthesized << endl;
     strm << DapIndent::LMarg << "d_is_dap4: " << d_is_dap4 << endl;
-    strm << DapIndent::LMarg << "parent: " << (void *)d_parent << endl ;
-    strm << DapIndent::LMarg << "attributes: " << endl ;
-    DapIndent::Indent() ;
+    strm << DapIndent::LMarg << "parent: " << (void *)d_parent << endl;
+    strm << DapIndent::LMarg << "attributes: " << endl;
+    DapIndent::Indent();
 
     if (d_attributes)
         d_attributes->dump(strm);
     else
-        d_attr.dump(strm) ;
+        d_attr.dump(strm);
 
-    DapIndent::UnIndent() ;
+    DapIndent::UnIndent();
 
-    DapIndent::UnIndent() ;
+    DapIndent::UnIndent();
 }
 
 /** @brief Returns the name of the class instance.
  */
-string
-BaseType::name() const
-{
-    return d_name;
-}
+string BaseType::name() const { return d_name; }
 
 /**
  * Return the FQN for this variable. This will include the D4 Group
@@ -325,9 +301,7 @@ BaseType::name() const
  *
  * @return The FQN in a string
  */
-string
-BaseType::FQN() const
-{
+string BaseType::FQN() const {
     if (get_parent() == 0)
         return name();
     else if (get_parent()->type() == dods_group_c)
@@ -337,9 +311,7 @@ BaseType::FQN() const
 }
 
 /** @brief Sets the name of the class instance. */
-void
-BaseType::set_name(const string &n)
-{
+void BaseType::set_name(const string &n) {
     string name = n;
     d_name = www2id(name); // www2id writes into its param.
 }
@@ -351,30 +323,16 @@ BaseType::set_name(const string &n)
     of a data file or an identifier used to read data from a relational
     database.
  */
-string
-BaseType::dataset() const
-{
-    return d_dataset;
-}
+string BaseType::dataset() const { return d_dataset; }
 
 /** @brief Returns the type of the class instance. */
-Type
-BaseType::type() const
-{
-    return d_type;
-}
+Type BaseType::type() const { return d_type; }
 
 /** @brief Sets the type of the class instance. */
-void
-BaseType::set_type(const Type &t)
-{
-    d_type = t;
-}
+void BaseType::set_type(const Type &t) { d_type = t; }
 
 /** @brief Returns the type of the class instance as a string. */
-string
-BaseType::type_name() const
-{
+string BaseType::type_name() const {
     if (is_dap4())
         return libdap::D4type_name(d_type);
     else
@@ -386,30 +344,18 @@ BaseType::type_name() const
     @return True if the instance is a scalar numeric, String or URL variable,
     False otherwise. Arrays (even of simple types) return False.
     @see is_vector_type() */
-bool
-BaseType::is_simple_type() const
-{
-    return libdap::is_simple_type(type());
-}
+bool BaseType::is_simple_type() const { return libdap::is_simple_type(type()); }
 
 /** @brief Returns true if the instance is a vector (i.e., array) type
     variable.
     @return True if the instance is an Array, False otherwise. */
-bool
-BaseType::is_vector_type() const
-{
-    return libdap::is_vector_type(type());
-}
+bool BaseType::is_vector_type() const { return libdap::is_vector_type(type()); }
 
 /** @brief Returns true if the instance is a constructor (i.e., Structure,
     Sequence or Grid) type variable.
     @return True if the instance is a Structure, Sequence or Grid, False
     otherwise. */
-bool
-BaseType::is_constructor_type() const
-{
-    return libdap::is_constructor_type(type());
-}
+bool BaseType::is_constructor_type() const { return libdap::is_constructor_type(type()); }
 
 /** Return a count of the total number of variables in this variable.
     This is used to count the number of variables held by a constructor
@@ -436,31 +382,19 @@ BaseType::is_constructor_type() const
     declaration.  If TRUE, it counts the simple members, and adds
     that to the sum of the counts for the compound members.
     This parameter has no effect for simple type variables. */
-int
-BaseType::element_count(bool)
-{
-    return 1;
-}
+int BaseType::element_count(bool) { return 1; }
 
 /** Returns true if the variable is a synthesized variable. A synthesized
     variable is one that is added to the dataset by the server (usually
     with a `projection function'. */
-bool
-BaseType::synthesized_p()
-{
-    return d_is_synthesized;
-}
+bool BaseType::synthesized_p() { return d_is_synthesized; }
 
 /** Set the synthesized flag. Before setting this flag be sure to set the
     <tt>read_p()</tt> state. Once this flag is set you cannot
     alter the state of the <tt>read_p</tt> flag!
 
     @see synthesized_p() */
-void
-BaseType::set_synthesized_p(bool state)
-{
-    d_is_synthesized = state;
-}
+void BaseType::set_synthesized_p(bool state) { d_is_synthesized = state; }
 
 // Return the state of d_is_read (true if the value of the variable has been
 // read (and is in memory) false otherwise).
@@ -473,11 +407,7 @@ BaseType::set_synthesized_p(bool state)
 
     @brief Has this variable been read?
     @return True if the variable's value(s) have been read, false otherwise. */
-bool
-BaseType::read_p()
-{
-    return d_is_read;
-}
+bool BaseType::read_p() { return d_is_read; }
 
 /** Sets the value of the <tt>read_p</tt> property. This indicates that the
     value(s) of this variable has/have been read. An implementation of the
@@ -509,9 +439,7 @@ BaseType::read_p()
     @see BaseType::read()
     @brief Sets the value of the \e read_p property.
     @param state Set the \e read_p property to this state. */
-void
-BaseType::set_read_p(bool state)
-{
+void BaseType::set_read_p(bool state) {
     // The this comment is/was wrong!
     // The is_synthesized property was not being used and the more I thought
     // about how this was coded, the more this code below seemed like a bad idea.
@@ -547,11 +475,7 @@ BaseType::set_read_p(bool state)
     @brief Should this variable be sent?
     @return True if the variable should be sent to the client, false
     otherwise. */
-bool
-BaseType::send_p()
-{
-    return d_is_send;
-}
+bool BaseType::send_p() { return d_is_send; }
 
 /** Sets the value of the <tt>send_p</tt> flag.  This
     function is meant to be called from within the constraint evaluator of
@@ -561,55 +485,34 @@ BaseType::send_p()
 
     @param state The logical state to set the <tt>send_p</tt> flag.
  */
-void
-BaseType::set_send_p(bool state)
-{
-    DBG2(cerr << "Calling BaseType::set_send_p() for: " << this->name()
-        << endl);
+void BaseType::set_send_p(bool state) {
+    DBG2(cerr << "Calling BaseType::set_send_p() for: " << this->name() << endl);
     d_is_send = state;
 }
-
 
 /** Get this variable's AttrTable. It's generally a bad idea to return a
     reference to a contained object, but in this case it seems that building
     an interface inside BaseType is overkill.
 
     Use the AttrTable methods to manipulate the table. */
-AttrTable &
-BaseType::get_attr_table()
-{
-    return d_attr;
-}
+AttrTable &BaseType::get_attr_table() { return d_attr; }
 
 /** Set this variable's attribute table.
     @param at Source of the attributes. */
-void
-BaseType::set_attr_table(const AttrTable &at)
-{
-    d_attr = at;
-}
+void BaseType::set_attr_table(const AttrTable &at) { d_attr = at; }
 
 /** DAP4 Attribute methods
  * @{
  */
-D4Attributes *
-BaseType::attributes()
-{
-    if (!d_attributes) d_attributes = new D4Attributes();
+D4Attributes *BaseType::attributes() {
+    if (!d_attributes)
+        d_attributes = new D4Attributes();
     return d_attributes;
 }
 
-void
-BaseType::set_attributes(D4Attributes *attrs)
-{
-    d_attributes = new D4Attributes(*attrs);
-}
+void BaseType::set_attributes(D4Attributes *attrs) { d_attributes = new D4Attributes(*attrs); }
 
-void
-BaseType::set_attributes_nocopy(D4Attributes *attrs)
-{
-    d_attributes = attrs;
-}
+void BaseType::set_attributes_nocopy(D4Attributes *attrs) { d_attributes = attrs; }
 ///@}
 
 /**
@@ -643,8 +546,7 @@ void BaseType::transfer_attributes(AttrTable *at_container) {
     DBG(cerr << __func__ << "() -  BEGIN name:'" << name() << "'" << endl);
 
     AttrTable *at = at_container->get_attr_table(name());
-    DBG(cerr << __func__ << "() - at: "<< (void *) at << endl);
-
+    DBG(cerr << __func__ << "() - at: " << (void *)at << endl);
 
     if (at) {
         at->set_is_global_attribute(false);
@@ -652,8 +554,9 @@ void BaseType::transfer_attributes(AttrTable *at_container) {
 
         AttrTable::Attr_iter at_p = at->attr_begin();
         while (at_p != at->attr_end()) {
-            DBG(cerr << __func__ << "() -  Attribute '" << at->get_name(at_p) << "' is type: " << at->get_type(at_p) << endl);
-            if (at->get_attr_type(at_p) == Attr_container){
+            DBG(cerr << __func__ << "() -  Attribute '" << at->get_name(at_p) << "' is type: " << at->get_type(at_p)
+                     << endl);
+            if (at->get_attr_type(at_p) == Attr_container) {
                 // An attribute container may actually represent a child member variable. When
                 // that's the case we don't want to add the container to the parent type, but
                 // rather let any child of BaseType deal with those containers in the child's
@@ -662,26 +565,24 @@ void BaseType::transfer_attributes(AttrTable *at_container) {
                 // to check for a child variable of the same name and, if one exists, we'll skip
                 // this AttrTable and let a child constructor class like Grid or Constructor
                 // deal with it.
-                BaseType *bt = var(at->get_name(at_p),true);
-                if(bt==0){
+                BaseType *bt = var(at->get_name(at_p), true);
+                if (bt == 0) {
                     DBG(cerr << __func__ << "() - Adding container '" << at->get_name(at_p) << endl);
                     get_attr_table().append_container(new AttrTable(*at->get_attr_table(at_p)), at->get_name(at_p));
-                }
-                else {
-                    DBG(cerr << __func__ << "() - Found child var: '"<< bt->type_name()<< " " << bt->name() << " (address:" << (void *) bt << ")" << endl);
+                } else {
+                    DBG(cerr << __func__ << "() - Found child var: '" << bt->type_name() << " " << bt->name()
+                             << " (address:" << (void *)bt << ")" << endl);
                     DBG(cerr << __func__ << "() -  Skipping container '" << at->get_name(at_p) << endl);
                 }
-            }
-            else {
+            } else {
                 DBG(cerr << __func__ << "() - Adding Attribute '" << at->get_name(at_p) << endl);
-                get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p),(*at_p)->is_utf8_str);
+                get_attr_table().append_attr(at->get_name(at_p), at->get_type(at_p), at->get_attr_vector(at_p),
+                                             (*at_p)->is_utf8_str);
             }
             at_p++;
         }
-    }
-    else {
+    } else {
         DBG(cerr << __func__ << "() - Unable to locate AttrTable '" << name() << "'  SKIPPING" << endl);
-
     }
 }
 
@@ -696,11 +597,7 @@ void BaseType::transfer_attributes(AttrTable *at_container) {
     See the grid (func_grid_select()) for an example.
     @see BaseType::read()
     @brief Is this variable part of the current selection? */
-bool
-BaseType::is_in_selection()
-{
-    return d_in_selection;
-}
+bool BaseType::is_in_selection() { return d_in_selection; }
 
 /** Set the \e in_selection property to \e state. This property indicates
     that the variable is used as a parameter to a constraint expression
@@ -711,11 +608,7 @@ BaseType::is_in_selection()
     @param state Set the \e in_selection property to this state.
     @see BaseType::read()
     @see BaseType::is_in_selection() for more information. */
-void
-BaseType::set_in_selection(bool state)
-{
-    d_in_selection = state;
-}
+void BaseType::set_in_selection(bool state) { d_in_selection = state; }
 
 // Protected method.
 /** Set the <tt>parent</tt> property for this variable.
@@ -726,12 +619,8 @@ BaseType::set_in_selection(bool state)
     if the variable has no parent (if it is at the top-level of a DAP2/3 DDS).
     @exception InternalErr thrown if called with anything other than a
     Constructor, Vector or Null. */
-void
-BaseType::set_parent(BaseType *parent)
-{
-    if (!dynamic_cast<Constructor *>(parent)
-        && !dynamic_cast<Vector *>(parent)
-        && parent != 0)
+void BaseType::set_parent(BaseType *parent) {
+    if (!dynamic_cast<Constructor *>(parent) && !dynamic_cast<Vector *>(parent) && parent != 0)
         throw InternalErr("Call to set_parent with incorrect variable type.");
 
     d_parent = parent;
@@ -744,15 +633,9 @@ BaseType::set_parent(BaseType *parent)
     returns null.
 
     @return A BaseType pointer to the variable's parent. */
-BaseType *
-BaseType::get_parent() const
-{
-    return d_parent;
-}
+BaseType *BaseType::get_parent() const { return d_parent; }
 
-BaseType *
-BaseType::get_ancestor()
-{
+BaseType *BaseType::get_ancestor() {
     if (d_parent)
         return d_parent->get_ancestor();
     else
@@ -760,9 +643,7 @@ BaseType::get_ancestor()
 }
 
 // Documented in the header file.
-BaseType *
-BaseType::var(const string &/*name*/, bool /*exact_match*/, btp_stack */*s*/)
-{
+BaseType *BaseType::var(const string & /*name*/, bool /*exact_match*/, btp_stack * /*s*/) {
     return static_cast<BaseType *>(0);
 }
 
@@ -782,11 +663,7 @@ BaseType::var(const string &/*name*/, bool /*exact_match*/, btp_stack */*s*/)
     the alternate form of var(...) and specify exactly what you'd like to do.
 
     @return A pointer to the named variable. */
-BaseType *
-BaseType::var(const string &, btp_stack &)
-{
-    return static_cast<BaseType *>(0);
-}
+BaseType *BaseType::var(const string &, btp_stack &) { return static_cast<BaseType *>(0); }
 
 /** Adds a variable to an instance of a constructor class, such as Array,
     Structure <em>et cetera</em>. This function is only used by those
@@ -817,15 +694,9 @@ BaseType::var(const string &, btp_stack &)
     meaningful for Grid variables.
 
     @see Part */
-void
-BaseType::add_var(BaseType *, Part)
-{
-    throw InternalErr(__FILE__, __LINE__, "BaseType::add_var unimplemented");
-}
+void BaseType::add_var(BaseType *, Part) { throw InternalErr(__FILE__, __LINE__, "BaseType::add_var unimplemented"); }
 
-void
-BaseType::add_var_nocopy(BaseType *, Part)
-{
+void BaseType::add_var_nocopy(BaseType *, Part) {
     throw InternalErr(__FILE__, __LINE__, "BaseType::add_var_nocopy unimplemented");
 }
 
@@ -887,10 +758,10 @@ BaseType::add_var_nocopy(BaseType *, Part)
 
     @brief Read data into a local buffer.
 
-	@todo Modify the D4 serialize code so that it supports the true/false
-	behavior of read() for arrays.
+    @todo Modify the D4 serialize code so that it supports the true/false
+    behavior of read() for arrays.
 
-	@todo Modify all of the stock handlers so they conform to this!
+    @todo Modify all of the stock handlers so they conform to this!
 
     @return False means more data remains to be read, True indicates that no
     more data need to be read. For Sequence and D4Sequence, this method will
@@ -901,27 +772,26 @@ BaseType::add_var_nocopy(BaseType *, Part)
     True.
 
     @see BaseType */
-bool
-BaseType::read()
-{
+bool BaseType::read() {
     if (d_is_read)
         return true;
 
     throw InternalErr("Unimplemented BaseType::read() method called for the variable named: " + name());
 }
 
-void
-BaseType::intern_data(ConstraintEvaluator &, DDS &/*dds*/)
-{
+void BaseType::intern_data(ConstraintEvaluator &, DDS & /*dds*/) {
 #if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_on();
 #endif
     if (is_dap4())
-        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (").append(name()).append(")."), __FILE__, __LINE__);
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (")
+                        .append(name())
+                        .append(")."),
+                    __FILE__, __LINE__);
 
     DBG2(cerr << "BaseType::intern_data: " << name() << endl);
     if (!read_p())
-        read();          // read() throws Error and InternalErr
+        read(); // read() throws Error and InternalErr
 #if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_off();
 #endif
@@ -932,34 +802,24 @@ BaseType::intern_data(ConstraintEvaluator &, DDS &/*dds*/)
  * @param eval Evaluator for a constraint expression
  * @param dmr DMR for the whole dataset
  */
-void
-BaseType::intern_data()
-{
+void BaseType::intern_data() {
     if (!read_p())
-        read();          // read() throws Error and InternalErr
+        read(); // read() throws Error and InternalErr
 }
 
-bool
-BaseType::serialize(ConstraintEvaluator &, DDS &,  Marshaller &, bool)
-{
+bool BaseType::serialize(ConstraintEvaluator &, DDS &, Marshaller &, bool) {
     throw InternalErr(__FILE__, __LINE__, "The DAP2 serialize() method has not been implemented for " + type_name());
 }
 
-bool
-BaseType::deserialize(UnMarshaller &, DDS *, bool)
-{
+bool BaseType::deserialize(UnMarshaller &, DDS *, bool) {
     throw InternalErr(__FILE__, __LINE__, "The DAP2 deserialize() method has not been implemented for " + type_name());
 }
 
-void
-BaseType::serialize(D4StreamMarshaller &, DMR &, /*ConstraintEvaluator &,*/ bool)
-{
+void BaseType::serialize(D4StreamMarshaller &, DMR &, /*ConstraintEvaluator &,*/ bool) {
     throw InternalErr(__FILE__, __LINE__, "The DAP4 serialize() method has not been implemented for " + type_name());
 }
 
-void
-BaseType::deserialize(D4StreamUnMarshaller &, DMR &)
-{
+void BaseType::deserialize(D4StreamUnMarshaller &, DMR &) {
     throw InternalErr(__FILE__, __LINE__, "The DAP4 deserialize() method has not been implemented for " + type_name());
 }
 
@@ -1005,10 +865,7 @@ BaseType::deserialize(D4StreamUnMarshaller &, DMR &)
     @see DDS
     @see DDS::CE
  */
-void
-BaseType::print_decl(FILE *out, string space, bool print_semi,
-    bool constraint_info, bool constrained)
-{
+void BaseType::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained) {
     ostringstream oss;
     print_decl(oss, space, print_semi, constraint_info, constrained);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
@@ -1056,26 +913,23 @@ BaseType::print_decl(FILE *out, string space, bool print_semi,
     @see DDS
     @see DDS::CE
  */
-void
-BaseType::print_decl(ostream &out, string space, bool print_semi,
-    bool constraint_info, bool constrained)
-{
+void BaseType::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained) {
     // if printing the constrained declaration, exit if this variable was not
     // selected.
     if (constrained && !send_p())
         return;
 
-    out << space << type_name() << " " << id2www(name()) ;
+    out << space << type_name() << " " << id2www(name());
 
     if (constraint_info) {
         if (send_p())
-            out << ": Send True" ;
+            out << ": Send True";
         else
-            out << ": Send False" ;
+            out << ": Send False";
     }
 
     if (print_semi)
-        out << ";\n" ;
+        out << ";\n";
 }
 
 /** Prints the value of the variable, with its declaration. This
@@ -1092,9 +946,7 @@ variables in different ways.
 function, and controls the leading spaces of the output.
 @param print_decl_p A boolean value controlling whether the
 variable declaration is printed as well as the value. */
-void
-BaseType::print_val(FILE *out, string space, bool print_decl_p)
-{
+void BaseType::print_val(FILE *out, string space, bool print_decl_p) {
     ostringstream oss;
     print_val(oss, space, print_decl_p);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
@@ -1107,9 +959,7 @@ BaseType::print_val(FILE *out, string space, bool print_decl_p)
     @param constrained If true, only print this if it's part part of the
     current projection. Default is False.
     @deprecated */
-void
-BaseType::print_xml(FILE *out, string space, bool constrained)
-{
+void BaseType::print_xml(FILE *out, string space, bool constrained) {
     XMLWriter xml(space);
     print_xml_writer(xml, constrained);
     fwrite(xml.get_doc(), sizeof(char), xml.get_doc_size(), out);
@@ -1122,9 +972,7 @@ BaseType::print_xml(FILE *out, string space, bool constrained)
     @param constrained If true, only print this if it's part part of the
     current projection. Default is False.
     @deprecated */
-void
-BaseType::print_xml(ostream &out, string space, bool constrained)
-{
+void BaseType::print_xml(ostream &out, string space, bool constrained) {
     XMLWriter xml(space);
     print_xml_writer(xml, constrained);
     out << xml.get_doc();
@@ -1136,17 +984,15 @@ BaseType::print_xml(ostream &out, string space, bool constrained)
     @param space Use this to indent child declarations. Default is "".
     @param constrained If true, only print this if it's part part of the
     current projection. Default is False. */
-void
-BaseType::print_xml_writer(XMLWriter &xml, bool constrained)
-{
+void BaseType::print_xml_writer(XMLWriter &xml, bool constrained) {
     if (constrained && !send_p())
         return;
 
-    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)type_name().c_str()) < 0)
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)type_name().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
 
     if (!name().empty())
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)name().c_str()) < 0)
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
     if (is_dap4())
@@ -1166,11 +1012,7 @@ BaseType::print_xml_writer(XMLWriter &xml, bool constrained)
  * @param constrained True if the response should show the variables subject
  * to the current constraint expression.
  */
-void
-BaseType::print_dap4(XMLWriter &xml, bool constrained)
-{
-    print_xml_writer(xml, constrained);
-}
+void BaseType::print_dap4(XMLWriter &xml, bool constrained) { print_xml_writer(xml, constrained); }
 
 // Compares the object's current state with the semantics of a particular
 // type. This will typically be defined in ctor classes (which have
@@ -1211,9 +1053,7 @@ BaseType::print_dap4(XMLWriter &xml, bool constrained)
 
     @see DDS::check_semantics
  */
-bool
-BaseType::check_semantics(string &msg, bool)
-{
+bool BaseType::check_semantics(string &msg, bool) {
     bool sem = (d_type != dods_null_c && name().length());
 
     if (!sem)
@@ -1258,9 +1098,7 @@ BaseType::check_semantics(string &msg, bool)
     @return The boolean value of the comparison.
     @see BaseType::d4_ops(BaseType *, int)
  */
-bool
-BaseType::ops(BaseType *, int)
-{
+bool BaseType::ops(BaseType *, int) {
     // Even though ops is a public method, it can never be called because
     // they will never have a BaseType object since this class is abstract,
     // however any of the child classes could by mistake call BaseType::ops
@@ -1284,11 +1122,7 @@ BaseType::ops(BaseType *, int)
  * @param op The infix relational operator
  * @return True if the expression is true, False otherwise.
  */
-bool
-BaseType::d4_ops(BaseType *, int)
-{
-    throw InternalErr(__FILE__, __LINE__, "Unimplemented operator.");
-}
+bool BaseType::d4_ops(BaseType *, int) { throw InternalErr(__FILE__, __LINE__, "Unimplemented operator."); }
 
 /**
  * @brief How many bytes does this variable use
@@ -1301,18 +1135,9 @@ BaseType::d4_ops(BaseType *, int)
  * @param constrained Should the current constraint be taken into account?
  * @return Bytes of storage
  */
-unsigned int
-BaseType::width(bool /* constrained */) const
-{
-    throw InternalErr(__FILE__, __LINE__, "not implemented");
-}
+unsigned int BaseType::width(bool /* constrained */) const { throw InternalErr(__FILE__, __LINE__, "not implemented"); }
 
-int64_t
-BaseType::width_ll(bool /* constrained */) const
-{
-    throw InternalErr(__FILE__, __LINE__, "not implemented");
-}
-
+int64_t BaseType::width_ll(bool /* constrained */) const { throw InternalErr(__FILE__, __LINE__, "not implemented"); }
 
 /**
  * When send_p() is true and the attributes contain dap4 data types then
@@ -1320,14 +1145,12 @@ BaseType::width_ll(bool /* constrained */) const
  * @param inventory is a value-result parameter
  * @return True when send_p() is true and the attributes contain dap4 data types, false otherwise
  */
-bool BaseType::is_dap4_projected(std::vector<string> &inventory)
-{
+bool BaseType::is_dap4_projected(std::vector<string> &inventory) {
     bool has_projected_dap4 = false;
-    if(send_p()) {
+    if (send_p()) {
         has_projected_dap4 = attributes()->has_dap4_types(FQN(), inventory);
     }
     return has_projected_dap4;
 }
-
 
 } // namespace libdap
