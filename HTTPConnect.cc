@@ -220,7 +220,7 @@ public:
 
 static size_t save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *resp_hdrs) {
     DBG2(cerr << "Inside the header parser." << endl);
-    vector<string> *hdrs = static_cast<vector<string> *>(resp_hdrs);
+    auto hdrs = static_cast<vector<string> *>(resp_hdrs);
 
     // Grab the header, minus the trailing newline. Or \r\n pair.
     string complete_line;
@@ -230,7 +230,7 @@ static size_t save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *
         complete_line.assign(static_cast<char *>(ptr), size * (nmemb - 1));
 
     // Store all non-empty headers that are not HTTP status codes
-    if (complete_line != "" && complete_line.find("HTTP") == string::npos) {
+    if (!complete_line.empty() && complete_line.find("HTTP") == string::npos) {
         DBG(cerr << "Header line: " << complete_line << endl);
         hdrs->push_back(complete_line);
     }
@@ -612,8 +612,9 @@ HTTPResponse *HTTPConnect::fetch_url(const string &url) {
 #endif
 
     // handle redirection case (2007-04-27, gaffigan@sfos.uaf.edu)
-    if (parser.get_location() != "" &&
-        url.substr(0, url.find("?", 0)).compare(parser.get_location().substr(0, url.find("?", 0))) != 0) {
+    if (!parser.get_location().empty() &&
+        url.substr(0, url.find('?')) != parser.get_location().substr(0, url.find('?'))) {
+        // url.substr(0, url.find('?', 0)).compare(parser.get_location().substr(0, url.find('?', 0))) != 0) {
         delete stream;
         return fetch_url(parser.get_location());
     }
@@ -775,7 +776,7 @@ void close_temp(FILE *s, const string &name) {
     in the cache.
 
     Return a Response pointer to fetch_url() which, in turn, uses
-    ParseHeaders to read stuff from d_headers and fills in the Response
+    ParseHeader to read stuff from d_headers and fills in the Response
     version and type fields. Thus this method and plain_fetch_url() only have
     to get the stream pointer set, the resources to release and d_headers.
 
