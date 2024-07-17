@@ -34,44 +34,43 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
-//#define DODS_DEBUG2
+// #define DODS_DEBUG
+// #define DODS_DEBUG2
 
 #include <algorithm>
-#include <string>
 #include <sstream>
+#include <string>
 
+#include "Array.h"
 #include "Byte.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
 #include "Float32.h"
 #include "Float64.h"
-#include "Str.h"
-#include "Url.h"
-#include "Array.h"
-#include "Structure.h"
-#include "Sequence.h"
 #include "Grid.h"
+#include "Int16.h"
+#include "Int32.h"
+#include "Sequence.h"
+#include "Str.h"
+#include "Structure.h"
+#include "UInt16.h"
+#include "UInt32.h"
+#include "Url.h"
 
 #include "Marshaller.h"
 #include "UnMarshaller.h"
 
-#include "debug.h"
+#include "DDS.h"
+#include "DataDDS.h"
 #include "Error.h"
 #include "InternalErr.h"
 #include "Sequence.h"
-#include "DDS.h"
-#include "DataDDS.h"
-#include "util.h"
-#include "InternalErr.h"
+#include "debug.h"
 #include "escaping.h"
+#include "util.h"
 
-#include "D4Attributes.h"
-#include "D4Sequence.h"
-#include "D4Group.h"
 #include "Constructor.h"
+#include "D4Attributes.h"
+#include "D4Group.h"
+#include "D4Sequence.h"
 #include "DMR.h"
 #include "DapIndent.h"
 
@@ -81,13 +80,12 @@ using namespace std;
 
 namespace libdap {
 
-static const unsigned char end_of_sequence = 0xA5; // binary pattern 1010 0101
+static const unsigned char end_of_sequence = 0xA5;   // binary pattern 1010 0101
 static const unsigned char start_of_instance = 0x5A; // binary pattern 0101 1010
 
 // Private member functions
 
-void Sequence::m_duplicate(const Sequence &s)
-{
+void Sequence::m_duplicate(const Sequence &s) {
     DBG(cerr << "In Sequence::m_duplicate" << endl);
 
     d_row_number = s.d_row_number;
@@ -110,7 +108,7 @@ void Sequence::m_duplicate(const Sequence &s)
         // Copy the BaseType objects from a row to new BaseType objects.
         // Push new BaseType objects onto new row.
         for (BaseTypeRow::iterator bt_row_iter = src_bt_row_ptr->begin(); bt_row_iter != src_bt_row_ptr->end();
-                bt_row_iter++) {
+             bt_row_iter++) {
             BaseType *src_bt_ptr = *bt_row_iter;
             BaseType *dest_bt_ptr = src_bt_ptr->ptr_duplicate();
             dest_bt_row_ptr->push_back(dest_bt_ptr);
@@ -120,33 +118,20 @@ void Sequence::m_duplicate(const Sequence &s)
     }
 }
 
-static void write_end_of_sequence(Marshaller &m)
-{
-    m.put_opaque((char *) &end_of_sequence, 1);
-}
+static void write_end_of_sequence(Marshaller &m) { m.put_opaque((char *)&end_of_sequence, 1); }
 
-static void write_start_of_instance(Marshaller &m)
-{
-    m.put_opaque((char *) &start_of_instance, 1);
-}
+static void write_start_of_instance(Marshaller &m) { m.put_opaque((char *)&start_of_instance, 1); }
 
-static unsigned char read_marker(UnMarshaller &um)
-{
+static unsigned char read_marker(UnMarshaller &um) {
     unsigned char marker;
-    um.get_opaque((char *) &marker, 1);
+    um.get_opaque((char *)&marker, 1);
 
     return marker;
 }
 
-static bool is_start_of_instance(unsigned char marker)
-{
-    return (marker == start_of_instance);
-}
+static bool is_start_of_instance(unsigned char marker) { return (marker == start_of_instance); }
 
-static bool is_end_of_sequence(unsigned char marker)
-{
-    return (marker == end_of_sequence);
-}
+static bool is_end_of_sequence(unsigned char marker) { return (marker == end_of_sequence); }
 
 // Public member functions
 
@@ -158,11 +143,9 @@ static bool is_end_of_sequence(unsigned char marker)
  created.
 
  @brief The Sequence constructor. */
-Sequence::Sequence(const string &n) :
-        Constructor(n, dods_sequence_c), d_row_number(-1), d_starting_row_number(-1), d_row_stride(1), d_ending_row_number(
-                -1), d_unsent_data(false), d_wrote_soi(false), d_leaf_sequence(false), d_top_most(false)
-{
-}
+Sequence::Sequence(const string &n)
+    : Constructor(n, dods_sequence_c), d_row_number(-1), d_starting_row_number(-1), d_row_stride(1),
+      d_ending_row_number(-1), d_unsent_data(false), d_wrote_soi(false), d_leaf_sequence(false), d_top_most(false) {}
 
 /** The Sequence server-side constructor requires the name of the variable
  to be created and the dataset name from which this variable is being
@@ -174,25 +157,14 @@ Sequence::Sequence(const string &n) :
  variable is being created.
 
  @brief The Sequence server-side constructor. */
-Sequence::Sequence(const string &n, const string &d) :
-		Constructor(n, d, dods_sequence_c), d_row_number(-1), d_starting_row_number(-1),
-		d_row_stride(1), d_ending_row_number(-1), d_unsent_data(false),
-		d_wrote_soi(false), d_leaf_sequence(false), d_top_most(false)
-{
-}
+Sequence::Sequence(const string &n, const string &d)
+    : Constructor(n, d, dods_sequence_c), d_row_number(-1), d_starting_row_number(-1), d_row_stride(1),
+      d_ending_row_number(-1), d_unsent_data(false), d_wrote_soi(false), d_leaf_sequence(false), d_top_most(false) {}
 
 /** @brief The Sequence copy constructor. */
-Sequence::Sequence(const Sequence &rhs) :
-        Constructor(rhs)
-{
-    m_duplicate(rhs);
-}
+Sequence::Sequence(const Sequence &rhs) : Constructor(rhs) { m_duplicate(rhs); }
 
-BaseType *
-Sequence::ptr_duplicate()
-{
-    return new Sequence(*this);
-}
+BaseType *Sequence::ptr_duplicate() { return new Sequence(*this); }
 
 /**
  * Build a D4Sequence from a DAP2 Sequence.
@@ -208,13 +180,11 @@ Sequence::ptr_duplicate()
  * @param container Load the result into this container
  * @return The new D4Sequence
  */
-void
-Sequence::transform_to_dap4(D4Group *root, Constructor *container)
-{
+void Sequence::transform_to_dap4(D4Group *root, Constructor *container) {
     D4Sequence *dest;
     // If it's already a DAP4 object then we can just return it!
-    if(is_dap4()){
-        dest = static_cast<D4Sequence*>(ptr_duplicate());
+    if (is_dap4()) {
+        dest = static_cast<D4Sequence *>(ptr_duplicate());
         dest->set_length(-1);
         container->add_var_nocopy(dest);
         return;
@@ -225,32 +195,27 @@ Sequence::transform_to_dap4(D4Group *root, Constructor *container)
     container->add_var_nocopy(dest);
 }
 
-static inline void delete_bt(BaseType *bt_ptr)
-{
+static inline void delete_bt(BaseType *bt_ptr) {
     delete bt_ptr;
     bt_ptr = 0;
 }
 
-static inline void delete_rows(BaseTypeRow *bt_row_ptr)
-{
+static inline void delete_rows(BaseTypeRow *bt_row_ptr) {
     for_each(bt_row_ptr->begin(), bt_row_ptr->end(), delete_bt);
 
     delete bt_row_ptr;
     bt_row_ptr = 0;
 }
 
-Sequence::~Sequence()
-{
+Sequence::~Sequence() {
     try {
-        Sequence::clear_local_data();   // make the call explicit in a destructor
-    }
-    catch (const std::exception &) {
+        Sequence::clear_local_data(); // make the call explicit in a destructor
+    } catch (const std::exception &) {
         // It's hard to know what to do - Log it when we can, but that can fail, too.
     }
 }
 
-void Sequence::clear_local_data()
-{
+void Sequence::clear_local_data() {
     if (!d_values.empty()) {
         for_each(d_values.begin(), d_values.end(), delete_rows);
         d_values.resize(0);
@@ -259,10 +224,9 @@ void Sequence::clear_local_data()
     set_read_p(false);
 }
 
-Sequence &
-Sequence::operator=(const Sequence &rhs)
-{
-    if (this == &rhs) return *this;
+Sequence &Sequence::operator=(const Sequence &rhs) {
+    if (this == &rhs)
+        return *this;
     Constructor::operator=(rhs);
     m_duplicate(rhs);
     return *this;
@@ -271,13 +235,9 @@ Sequence::operator=(const Sequence &rhs)
 /**
  * The Sequence class will be streamlined for DAP4.
  */
-bool Sequence::is_dap2_only_type()
-{
-    return true;
-}
+bool Sequence::is_dap2_only_type() { return true; }
 
-string Sequence::toString()
-{
+string Sequence::toString() {
     ostringstream oss;
 
     oss << BaseType::toString();
@@ -291,8 +251,7 @@ string Sequence::toString()
     return oss.str();
 }
 
-bool Sequence::is_linear()
-{
+bool Sequence::is_linear() {
     bool linear = true;
     bool seq_found = false;
     for (Vars_iter iter = d_vars.begin(); linear && iter != d_vars.end(); iter++) {
@@ -306,11 +265,9 @@ bool Sequence::is_linear()
             }
             seq_found = true;
             linear = static_cast<Sequence *>((*iter))->is_linear();
-        }
-        else if ((*iter)->type() == dods_structure_c) {
-            linear = static_cast<Structure*>((*iter))->is_linear();
-        }
-        else {
+        } else if ((*iter)->type() == dods_structure_c) {
+            linear = static_cast<Structure *>((*iter))->is_linear();
+        } else {
             // A linear sequence cannot have Arrays, Lists or Grids.
             linear = (*iter)->is_simple_type();
         }
@@ -323,10 +280,9 @@ bool Sequence::is_linear()
  @param row Get row number <i>row</i> from the sequence.
  @return A BaseTypeRow object (vector<BaseType *>). Null if there's no such
  row number as \e row. */
-BaseTypeRow *
-Sequence::row_value(size_t row)
-{
-    if (row >= d_values.size()) return 0;   //nullptr
+BaseTypeRow *Sequence::row_value(size_t row) {
+    if (row >= d_values.size())
+        return 0; // nullptr
     return d_values[row];
 }
 
@@ -336,36 +292,25 @@ Sequence::row_value(size_t row)
  @see SequenceValues
  @see BaseTypeRow
  @param values Set the value of this Sequence. */
-void Sequence::set_value(SequenceValues &values)
-{
-    d_values = values;
-}
+void Sequence::set_value(SequenceValues &values) { d_values = values; }
 
 /** Get the value for this sequence.
  @return The SequenceValues object for this Sequence. */
-SequenceValues Sequence::value()
-{
-    return d_values;
-}
+SequenceValues Sequence::value() { return d_values; }
 
 /** Get the value for this sequence.
  @return The SequenceValues object for this Sequence. */
-SequenceValues &
-Sequence::value_ref()
-{
-    return d_values;
-}
+SequenceValues &Sequence::value_ref() { return d_values; }
 
 /** @brief Get the BaseType pointer to the named variable of a given row.
  @param row Read from <i>row</i> in the sequence.
  @param name Return <i>name</i> from <i>row</i>.
  @return A BaseType which holds the variable and its value.
  @see number_of_rows */
-BaseType *
-Sequence::var_value(size_t row, const string &name)
-{
+BaseType *Sequence::var_value(size_t row, const string &name) {
     BaseTypeRow *bt_row_ptr = row_value(row);
-    if (!bt_row_ptr) return 0;
+    if (!bt_row_ptr)
+        return 0;
 
     BaseTypeRow::iterator bt_row_iter = bt_row_ptr->begin();
     BaseTypeRow::iterator bt_row_end = bt_row_ptr->end();
@@ -383,13 +328,13 @@ Sequence::var_value(size_t row, const string &name)
  @param i Return the $i^{th}$ variable from <i>row</i>.
  @return A BaseType which holds the variable and its value.
  @see number_of_rows */
-BaseType *
-Sequence::var_value(size_t row, size_t i)
-{
+BaseType *Sequence::var_value(size_t row, size_t i) {
     BaseTypeRow *bt_row_ptr = row_value(row);
-    if (!bt_row_ptr) return 0;
+    if (!bt_row_ptr)
+        return 0;
 
-    if (i >= bt_row_ptr->size()) return 0;
+    if (i >= bt_row_ptr->size())
+        return 0;
 
     return (*bt_row_ptr)[i];
 }
@@ -412,32 +357,22 @@ Sequence::var_value(size_t row, size_t i)
  @return The base implementation returns -1, indicating that the
  length is not known.  Sub-classes specific to a particular API
  will have a more complete implementation. */
-int Sequence::length() const
-{
-    return -1;
-}
+int Sequence::length() const { return -1; }
 
 // Hmmm. how is this different from length()?
-int Sequence::number_of_rows() const
-{
-    return d_values.size();
-}
+int Sequence::number_of_rows() const { return d_values.size(); }
 
 /** When reading a nested sequence, use this method to reset the internal
  row number counter. This is necessary so that the second, ... instances
  of the inner/nested sequence will start off reading row zero. */
-void Sequence::reset_row_number()
-{
-    d_row_number = -1;
-}
+void Sequence::reset_row_number() { d_row_number = -1; }
 
 /**
  * @brief A recursive version of reset_row_number()
  *
  * @param recur If true, reset the row number of child sequences as well
  */
-void Sequence::reset_row_number(bool recur)
-{
+void Sequence::reset_row_number(bool recur) {
     reset_row_number();
 
     if (recur)
@@ -498,17 +433,18 @@ void Sequence::reset_row_number(bool recur)
  @param eval Use this as the constraint expression evaluator.
  @param ce_eval If True, evaluate any CE, otherwise do not.
  */
-bool Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval)
-{
-    DBG2(cerr << "Entering Sequence::read_row for " << name() << ", row number " << row << ", current row " << d_row_number << endl);
-    if (row < d_row_number) throw InternalErr("Trying to back up inside a sequence!");
+bool Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval) {
+    DBG2(cerr << "Entering Sequence::read_row for " << name() << ", row number " << row << ", current row "
+              << d_row_number << endl);
+    if (row < d_row_number)
+        throw InternalErr("Trying to back up inside a sequence!");
 
     if (row == d_row_number) {
         DBG2(cerr << "Leaving Sequence::read_row for " << name() << endl);
         return false;
     }
 
-    bool eof = false;  // Start out assuming EOF is false.
+    bool eof = false; // Start out assuming EOF is false.
     while (!eof && d_row_number < row) {
         if (!read_p()) {
             // jhrg original version from 10/9/13 : eof = (read() == false);
@@ -518,7 +454,8 @@ bool Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_ev
         // Advance the row number if ce_eval is false (we're not supposed to
         // evaluate the selection) or both ce_eval and the selection are
         // true.
-        if (!eof && (!ce_eval || eval.eval_selection(dds, dataset()))) d_row_number++;
+        if (!eof && (!ce_eval || eval.eval_selection(dds, dataset())))
+            d_row_number++;
 
         set_read_p(false); // ...so that the next instance will be read
     }
@@ -541,8 +478,7 @@ bool Sequence::read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_ev
 // this method should never return true (which indicates that we're at the
 // end of a row-number constraint). If d_ending_row_number is not -1, then is
 // \e i at the end point? 6/1/2001 jhrg
-inline bool Sequence::is_end_of_rows(int i)
-{
+inline bool Sequence::is_end_of_rows(int i) {
     return ((d_ending_row_number == -1) ? false : (i > d_ending_row_number));
 }
 
@@ -606,8 +542,7 @@ inline bool Sequence::is_end_of_rows(int i)
  completely empty response.</li>
  </ol>
  */
-bool Sequence::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
-{
+bool Sequence::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval) {
     // Special case leaf sequences!
     bool status = false;
 
@@ -623,8 +558,7 @@ bool Sequence::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, boo
 // another Sequence as one of its fields _and_ that child Sequence triggers
 // the actual transmission of values.
 
-bool Sequence::serialize_parent_part_one(DDS &dds, ConstraintEvaluator &eval, Marshaller &m)
-{
+bool Sequence::serialize_parent_part_one(DDS &dds, ConstraintEvaluator &eval, Marshaller &m) {
     DBG2(cerr << "Entering serialize_parent_part_one for " << name() << endl);
 
     int i = (d_starting_row_number != -1) ? d_starting_row_number : 0;
@@ -653,7 +587,8 @@ bool Sequence::serialize_parent_part_one(DDS &dds, ConstraintEvaluator &eval, Ma
             // the method that triggers actually sending values. Thus the leaf
             // sequence must be the lowest level sequence with values whose send_p
             // property is true.
-            if ((*iter)->send_p() && (*iter)->type() == dods_sequence_c) (*iter)->serialize(eval, dds, m);
+            if ((*iter)->send_p() && (*iter)->type() == dods_sequence_c)
+                (*iter)->serialize(eval, dds, m);
         }
 
         set_read_p(false); // ...so this will read the next instance
@@ -673,7 +608,7 @@ bool Sequence::serialize_parent_part_one(DDS &dds, ConstraintEvaluator &eval, Ma
         d_wrote_soi = false;
     }
 
-    return true;  // Signal errors with exceptions.
+    return true; // Signal errors with exceptions.
 }
 
 // If we are here then we know that this is 'parent sequence' and that the
@@ -686,12 +621,12 @@ bool Sequence::serialize_parent_part_one(DDS &dds, ConstraintEvaluator &eval, Ma
 //
 // NB: This code only works if the child sequences appear after all other
 // variables.
-void Sequence::serialize_parent_part_two(DDS &dds, ConstraintEvaluator &eval, Marshaller &m)
-{
+void Sequence::serialize_parent_part_two(DDS &dds, ConstraintEvaluator &eval, Marshaller &m) {
     DBG(cerr << "Entering serialize_parent_part_two for " << name() << endl);
 
     BaseType *btp = get_parent();
-    if (btp && btp->type() == dods_sequence_c) static_cast<Sequence&>(*btp).serialize_parent_part_two(dds, eval, m);
+    if (btp && btp->type() == dods_sequence_c)
+        static_cast<Sequence &>(*btp).serialize_parent_part_two(dds, eval, m);
 
     if (d_unsent_data) {
         DBG(cerr << "Writing Start of Instance marker" << endl);
@@ -701,22 +636,20 @@ void Sequence::serialize_parent_part_two(DDS &dds, ConstraintEvaluator &eval, Ma
         // In this loop serialize will signal an error with an exception.
         for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
             // Send all the non-sequence variables
-            DBG(cerr << "Sequence::serialize_parent_part_two(), serializing "
-                    << (*iter)->name() << endl);
+            DBG(cerr << "Sequence::serialize_parent_part_two(), serializing " << (*iter)->name() << endl);
             if ((*iter)->send_p() && (*iter)->type() != dods_sequence_c) {
                 DBG(cerr << "Send P is true, sending " << (*iter)->name() << endl);
                 (*iter)->serialize(eval, dds, m, false);
             }
         }
 
-        d_unsent_data = false;              // read should set this.
+        d_unsent_data = false; // read should set this.
     }
 }
 
 // This code is only run by a leaf sequence. Note that a one level sequence
 // is also a leaf sequence.
-bool Sequence::serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m, bool ce_eval)
-{
+bool Sequence::serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m, bool ce_eval) {
     DBG(cerr << "Entering Sequence::serialize_leaf for " << name() << endl);
     int i = (d_starting_row_number != -1) ? d_starting_row_number : 0;
 
@@ -737,7 +670,8 @@ bool Sequence::serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m
     // Sequence that really is the parent of a leaf sequence.
     if (status && !is_end_of_rows(i)) {
         BaseType *btp = get_parent();
-        if (btp && btp->type() == dods_sequence_c) static_cast<Sequence&>(*btp).serialize_parent_part_two(dds, eval, m);
+        if (btp && btp->type() == dods_sequence_c)
+            static_cast<Sequence &>(*btp).serialize_parent_part_two(dds, eval, m);
     }
 
     d_wrote_soi = false;
@@ -750,8 +684,7 @@ bool Sequence::serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m
 
         // In this loop serialize will signal an error with an exception.
         for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
-            DBG(cerr << "Sequence::serialize_leaf(), serializing "
-                    << (*iter)->name() << endl);
+            DBG(cerr << "Sequence::serialize_leaf(), serializing " << (*iter)->name() << endl);
             if ((*iter)->send_p()) {
                 DBG(cerr << "Send P is true, sending " << (*iter)->name() << endl);
                 (*iter)->serialize(eval, dds, m, false);
@@ -771,7 +704,7 @@ bool Sequence::serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m
         write_end_of_sequence(m);
     }
 
-    return true;  // Signal errors with exceptions.
+    return true; // Signal errors with exceptions.
 }
 
 /** This method is used to evaluate a constraint and based on those results
@@ -796,11 +729,14 @@ bool Sequence::serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m
 
  @param eval Use this constraint evaluator
  @param dds This DDS holds the variables for the data source */
-void Sequence::intern_data(ConstraintEvaluator &eval, DDS &dds)
-{
-    DBG(cerr << "Sequence::intern_data - for " << name() << endl); DBG2(cerr << "    intern_data, values: " << &d_values << endl);
+void Sequence::intern_data(ConstraintEvaluator &eval, DDS &dds) {
+    DBG(cerr << "Sequence::intern_data - for " << name() << endl);
+    DBG2(cerr << "    intern_data, values: " << &d_values << endl);
     if (is_dap4())
-        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (").append(name()).append(")."), __FILE__, __LINE__);
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (")
+                        .append(name())
+                        .append(")."),
+                    __FILE__, __LINE__);
 
     // Why use a stack instead of return values? We need the stack because
     // Sequences nested three of more levels deep will lose the middle
@@ -812,8 +748,8 @@ void Sequence::intern_data(ConstraintEvaluator &eval, DDS &dds)
     intern_data_private(eval, dds, sequence_values_stack);
 }
 
-void Sequence::intern_data_private(ConstraintEvaluator &eval, DDS &dds, sequence_values_stack_t &sequence_values_stack)
-{
+void Sequence::intern_data_private(ConstraintEvaluator &eval, DDS &dds,
+                                   sequence_values_stack_t &sequence_values_stack) {
     DBG(cerr << "Entering intern_data_private for " << name() << endl);
 
     if (is_leaf_sequence())
@@ -822,9 +758,8 @@ void Sequence::intern_data_private(ConstraintEvaluator &eval, DDS &dds, sequence
         intern_data_parent_part_one(dds, eval, sequence_values_stack);
 }
 
-void Sequence::intern_data_parent_part_one(DDS & dds, ConstraintEvaluator & eval,
-        sequence_values_stack_t & sequence_values_stack)
-{
+void Sequence::intern_data_parent_part_one(DDS &dds, ConstraintEvaluator &eval,
+                                           sequence_values_stack_t &sequence_values_stack) {
     DBG(cerr << "Entering intern_data_parent_part_one for " << name() << endl);
 
     int i = (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
@@ -849,7 +784,7 @@ void Sequence::intern_data_parent_part_one(DDS & dds, ConstraintEvaluator & eval
             if ((*iter)->send_p()) {
                 switch ((*iter)->type()) {
                 case dods_sequence_c:
-                    static_cast<Sequence&>(**iter).intern_data_private(eval, dds, sequence_values_stack);
+                    static_cast<Sequence &>(**iter).intern_data_private(eval, dds, sequence_values_stack);
                     break;
 
                 default:
@@ -859,7 +794,7 @@ void Sequence::intern_data_parent_part_one(DDS & dds, ConstraintEvaluator & eval
             }
         }
 
-        set_read_p(false);      // ...so this will read the next instance
+        set_read_p(false); // ...so this will read the next instance
 
         status = read_row(i, dds, eval, false);
     }
@@ -873,7 +808,7 @@ void Sequence::intern_data_parent_part_one(DDS & dds, ConstraintEvaluator & eval
     // were pushed onto the stack, so there is nothing to pop.
     if (sequence_values_stack.size() > orig_stack_size) {
         DBG2(cerr << "    popping d_values (" << sequence_values_stack.top()
-                << ") off stack; size: " << sequence_values_stack.size() << endl);
+                  << ") off stack; size: " << sequence_values_stack.size() << endl);
         sequence_values_stack.pop();
     }
 
@@ -881,13 +816,12 @@ void Sequence::intern_data_parent_part_one(DDS & dds, ConstraintEvaluator & eval
 }
 
 void Sequence::intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
-        sequence_values_stack_t &sequence_values_stack)
-{
+                                           sequence_values_stack_t &sequence_values_stack) {
     DBG(cerr << "Entering intern_data_parent_part_two for " << name() << endl);
 
     BaseType *btp = get_parent();
     if (btp && btp->type() == dods_sequence_c) {
-        static_cast<Sequence&>(*btp).intern_data_parent_part_two(dds, eval, sequence_values_stack);
+        static_cast<Sequence &>(*btp).intern_data_parent_part_two(dds, eval, sequence_values_stack);
     }
 
     DBG2(cerr << "    stack size: " << sequence_values_stack.size() << endl);
@@ -902,18 +836,15 @@ void Sequence::intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
 
             if ((*iter)->send_p() && (*iter)->type() != dods_sequence_c) {
                 row_data->push_back((*iter)->ptr_duplicate());
-            }
-            else if ((*iter)->send_p()) { //Sequence; must be the last variable
-                Sequence *tmp = dynamic_cast<Sequence*>((*iter)->ptr_duplicate());
+            } else if ((*iter)->send_p()) { // Sequence; must be the last variable
+                Sequence *tmp = dynamic_cast<Sequence *>((*iter)->ptr_duplicate());
                 if (!tmp) {
                     delete row_data;
                     throw InternalErr(__FILE__, __LINE__, "Expected a Sequence.");
                 }
                 row_data->push_back(tmp);
-                DBG2(cerr << "    pushing d_values of " << tmp->name()
-                        << " (" << &(tmp->d_values)
-                        << ") on stack; size: " << sequence_values_stack.size()
-                        << endl);
+                DBG2(cerr << "    pushing d_values of " << tmp->name() << " (" << &(tmp->d_values)
+                          << ") on stack; size: " << sequence_values_stack.size() << endl);
                 // This pushes the d_values field of the newly created leaf
                 // Sequence onto the stack. The code then returns to intern
                 // _data_for_leaf() where this value will be used.
@@ -921,8 +852,7 @@ void Sequence::intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
             }
         }
 
-        DBG2(cerr << "    pushing values for " << name()
-                << " to " << values << endl);
+        DBG2(cerr << "    pushing values for " << name() << " to " << values << endl);
         values->push_back(row_data);
         set_unsent_data(false);
     }
@@ -930,15 +860,16 @@ void Sequence::intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
     DBG(cerr << "Leaving intern_data_parent_part_two for " << name() << endl);
 }
 
-void Sequence::intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval, sequence_values_stack_t &sequence_values_stack)
-{
+void Sequence::intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval,
+                                    sequence_values_stack_t &sequence_values_stack) {
     DBG(cerr << "Entering intern_data_for_leaf for " << name() << endl);
 
     int i = (get_starting_row_number() != -1) ? get_starting_row_number() : 0;
 
     DBG2(cerr << "    reading row " << i << endl);
     bool status = read_row(i, dds, eval, true);
-    DBG2(cerr << "    status: " << status << endl); DBG2(cerr << "    ending row number: " << get_ending_row_number() << endl);
+    DBG2(cerr << "    status: " << status << endl);
+    DBG2(cerr << "    ending row number: " << get_ending_row_number() << endl);
 
     if (status && (get_ending_row_number() == -1 || i <= get_ending_row_number())) {
         BaseType *btp = get_parent();
@@ -946,7 +877,7 @@ void Sequence::intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval, sequenc
             // This call will read the values for the parent sequences and
             // then allocate a new instance for the leaf and push that onto
             // the stack.
-            static_cast<Sequence&>(*btp).intern_data_parent_part_two(dds, eval, sequence_values_stack);
+            static_cast<Sequence &>(*btp).intern_data_parent_part_two(dds, eval, sequence_values_stack);
         }
 
         // intern_data_parent_part_two pushes the d_values field of the leaf
@@ -966,18 +897,17 @@ void Sequence::intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval, sequenc
                 }
             }
 
-            DBG2(cerr << "    pushing values for " << name()
-                    << " to " << values << endl);
+            DBG2(cerr << "    pushing values for " << name() << " to " << values << endl);
             // Save the row_data to values().
             values->push_back(row_data);
 
-            set_read_p(false);      // ...so this will read the next instance
+            set_read_p(false); // ...so this will read the next instance
             // Read the ith row into this object's fields
             status = read_row(i, dds, eval, true);
         }
 
         DBG2(cerr << "    popping d_values (" << sequence_values_stack.top()
-                << ") off stack; size: " << sequence_values_stack.size() << endl);
+                  << ") off stack; size: " << sequence_values_stack.size() << endl);
         sequence_values_stack.pop();
     }
 
@@ -1004,8 +934,7 @@ void Sequence::intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval, sequenc
  that there are more rows to be read. This version always reads the
  entire sequence, so it always returns false.
  */
-bool Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
-{
+bool Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse) {
 #if 0
     // Nathan's tip - this is something that should never happen
     DataDDS *dd = dynamic_cast<DataDDS *>(dds);
@@ -1026,24 +955,22 @@ bool Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
         // Grab the sequence stream's marker.
         unsigned char marker = read_marker(um);
         if (is_end_of_sequence(marker))
-            break;  // EXIT the while loop here!!!
+            break; // EXIT the while loop here!!!
         else if (is_start_of_instance(marker)) {
             d_row_number++;
-            DBG2(cerr << "Reading row " << d_row_number << " of "
-                    << name() << endl);
+            DBG2(cerr << "Reading row " << d_row_number << " of " << name() << endl);
             BaseTypeRow *bt_row_ptr = new BaseTypeRow;
             // Read the instance's values, building up the row
             for (Vars_iter iter = d_vars.begin(); iter != d_vars.end(); iter++) {
                 BaseType *bt_ptr = (*iter)->ptr_duplicate();
                 bt_ptr->deserialize(um, dds, reuse);
-                DBG2(cerr << "Deserialized " << bt_ptr->name() << " ("
-                        << bt_ptr << ") = "); DBG2(bt_ptr->print_val(stderr, ""));
+                DBG2(cerr << "Deserialized " << bt_ptr->name() << " (" << bt_ptr << ") = ");
+                DBG2(bt_ptr->print_val(stderr, ""));
                 bt_row_ptr->push_back(bt_ptr);
             }
             // Append this row to those accumulated.
             d_values.push_back(bt_row_ptr);
-        }
-        else
+        } else
             throw Error("I could not read the expected Sequence data stream marker!");
     };
 
@@ -1063,10 +990,7 @@ bool Sequence::deserialize(UnMarshaller &um, DDS *dds, bool reuse)
 
  @brief Get the starting row number.
  @return The starting row number. */
-int Sequence::get_starting_row_number()
-{
-    return d_starting_row_number;
-}
+int Sequence::get_starting_row_number() { return d_starting_row_number; }
 
 /** Return the row stride number if the sequence was constrained using
  row numbers (instead of, or in addition to, a relational constraint).
@@ -1078,10 +1002,7 @@ int Sequence::get_starting_row_number()
 
  @brief Get the row stride.
  @return The row stride. */
-int Sequence::get_row_stride()
-{
-    return d_row_stride;
-}
+int Sequence::get_row_stride() { return d_row_stride; }
 
 /** Return the ending row number if the sequence was constrained using
  row numbers (instead of, or in addition to, a relational constraint).
@@ -1094,10 +1015,7 @@ int Sequence::get_row_stride()
 
  @brief Get the ending row number.
  @return The ending row number. */
-int Sequence::get_ending_row_number()
-{
-    return d_ending_row_number;
-}
+int Sequence::get_ending_row_number() { return d_ending_row_number; }
 
 /** Set the start, stop and stride for a row-number type constraint.
  This should be used only when the sequence is constrained using the
@@ -1107,25 +1025,24 @@ int Sequence::get_ending_row_number()
  @param start The starting row number. The first row is row zero.
  @param stop The ending row number. The 20th row is row 19.
  @param stride The stride. A stride of two skips every other row. */
-void Sequence::set_row_number_constraint(int start, int stop, int stride)
-{
-    if (stop < start) throw Error(malformed_expr, "Starting row number must precede the ending row number.");
+void Sequence::set_row_number_constraint(int start, int stop, int stride) {
+    if (stop < start)
+        throw Error(malformed_expr, "Starting row number must precede the ending row number.");
 
     d_starting_row_number = start;
     d_row_stride = stride;
     d_ending_row_number = stop;
 }
 
-void Sequence::print_one_row(FILE *out, int row, string space, bool print_row_num)
-{
+void Sequence::print_one_row(FILE *out, int row, string space, bool print_row_num) {
     ostringstream oss;
     print_one_row(oss, row, space, print_row_num);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Sequence::print_one_row(ostream &out, int row, string space, bool print_row_num)
-{
-    if (print_row_num) out << "\n" << space << row << ": ";
+void Sequence::print_one_row(ostream &out, int row, string space, bool print_row_num) {
+    if (print_row_num)
+        out << "\n" << space << row << ": ";
 
     out << "{ ";
 
@@ -1141,9 +1058,9 @@ void Sequence::print_one_row(ostream &out, int row, string space, bool print_row
     // Print the first value
     while (j < elements && !bt_ptr) {
         bt_ptr = var_value(row, j++);
-        if (bt_ptr) {  // data
+        if (bt_ptr) { // data
             if (bt_ptr->type() == dods_sequence_c)
-                static_cast<Sequence*>(bt_ptr)->print_val_by_rows(out, space + "    ", false, print_row_num);
+                static_cast<Sequence *>(bt_ptr)->print_val_by_rows(out, space + "    ", false, print_row_num);
             else
                 bt_ptr->print_val(out, space, false);
         }
@@ -1152,10 +1069,10 @@ void Sequence::print_one_row(ostream &out, int row, string space, bool print_row
     // Print the remaining values
     while (j < elements) {
         bt_ptr = var_value(row, j++);
-        if (bt_ptr) {  // data
+        if (bt_ptr) { // data
             out << ", ";
             if (bt_ptr->type() == dods_sequence_c)
-                static_cast<Sequence*>(bt_ptr)->print_val_by_rows(out, space + "    ", false, print_row_num);
+                static_cast<Sequence *>(bt_ptr)->print_val_by_rows(out, space + "    ", false, print_row_num);
             else
                 bt_ptr->print_val(out, space, false);
         }
@@ -1164,15 +1081,13 @@ void Sequence::print_one_row(ostream &out, int row, string space, bool print_row
     out << " }";
 }
 
-void Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p, bool print_row_numbers)
-{
+void Sequence::print_val_by_rows(FILE *out, string space, bool print_decl_p, bool print_row_numbers) {
     ostringstream oss;
     print_val_by_rows(oss, space, print_decl_p, print_row_numbers);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p, bool print_row_numbers)
-{
+void Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p, bool print_row_numbers) {
     if (print_decl_p) {
         print_decl(out, space, false);
         out << " = ";
@@ -1190,28 +1105,21 @@ void Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p, 
 
     out << " }";
 
-    if (print_decl_p) out << ";\n";
+    if (print_decl_p)
+        out << ";\n";
 }
 
-void Sequence::print_val(FILE *out, string space, bool print_decl_p)
-{
+void Sequence::print_val(FILE *out, string space, bool print_decl_p) {
     print_val_by_rows(out, space, print_decl_p, false);
 }
 
-void Sequence::print_val(ostream &out, string space, bool print_decl_p)
-{
+void Sequence::print_val(ostream &out, string space, bool print_decl_p) {
     print_val_by_rows(out, space, print_decl_p, false);
 }
 
-void Sequence::set_leaf_p(bool state)
-{
-    d_leaf_sequence = state;
-}
+void Sequence::set_leaf_p(bool state) { d_leaf_sequence = state; }
 
-bool Sequence::is_leaf_sequence()
-{
-    return d_leaf_sequence;
-}
+bool Sequence::is_leaf_sequence() { return d_leaf_sequence; }
 
 /** @brief Mark the Sequence which holds the leaf elements.
 
@@ -1237,11 +1145,11 @@ bool Sequence::is_leaf_sequence()
  @param lvl The current level of the Sequence. a \e lvl of 1 indicates the
  topmost Sequence. The default value is 1.
  @see Sequence::serialize_leaf() */
-void Sequence::set_leaf_sequence(int lvl)
-{
+void Sequence::set_leaf_sequence(int lvl) {
     bool has_child_sequence = false;
 
-    if (lvl == 1) d_top_most = true;
+    if (lvl == 1)
+        d_top_most = true;
 
     DBG2(cerr << "Processing sequence " << name() << endl);
 
@@ -1253,13 +1161,13 @@ void Sequence::set_leaf_sequence(int lvl)
         // in serialize_leaf() and serialize_parent_part_one()).
         if ((*iter)->type() == dods_sequence_c && (*iter)->send_p()) {
             if (has_child_sequence)
-                throw Error("This implementation does not support more than one nested sequence at a level. Contact the server administrator.");
+                throw Error("This implementation does not support more than one nested sequence at a level. Contact "
+                            "the server administrator.");
 
             has_child_sequence = true;
-            static_cast<Sequence&>(**iter).set_leaf_sequence(++lvl);
-        }
-        else if ((*iter)->type() == dods_structure_c) {
-            static_cast<Structure&>(**iter).set_leaf_sequence(lvl);
+            static_cast<Sequence &>(**iter).set_leaf_sequence(++lvl);
+        } else if ((*iter)->type() == dods_structure_c) {
+            static_cast<Structure &>(**iter).set_leaf_sequence(lvl);
         }
     }
 
@@ -1279,9 +1187,8 @@ void Sequence::set_leaf_sequence(int lvl)
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void Sequence::dump(ostream &strm) const
-{
-    strm << DapIndent::LMarg << "Sequence::dump - (" << (void *) this << ")" << endl;
+void Sequence::dump(ostream &strm) const {
+    strm << DapIndent::LMarg << "Sequence::dump - (" << (void *)this << ")" << endl;
     DapIndent::Indent();
     Constructor::dump(strm);
     strm << DapIndent::LMarg << "# rows deserialized: " << d_row_number << endl;
@@ -1300,4 +1207,3 @@ void Sequence::dump(ostream &strm) const
 }
 
 } // namespace libdap
-

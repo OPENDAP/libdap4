@@ -28,27 +28,21 @@
 #ifndef WIN64
 #include <unistd.h>
 #else
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
 #endif
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "TestD4Opaque.h"
 #include "debug.h"
 
 extern int test_variable_sleep_interval;
 
-void
-TestD4Opaque::m_duplicate(const TestD4Opaque &ts)
-{
-    d_series_values = ts.d_series_values;
-}
+void TestD4Opaque::m_duplicate(const TestD4Opaque &ts) { d_series_values = ts.d_series_values; }
 
-void
-TestD4Opaque::m_set_values(int start)
-{
+void TestD4Opaque::m_set_values(int start) {
     dods_opaque values;
     values.push_back(start);
     values.push_back(2 * start);
@@ -59,24 +53,15 @@ TestD4Opaque::m_set_values(int start)
     set_value(values);
 }
 
-TestD4Opaque::TestD4Opaque(const string &n) : D4Opaque(n), d_series_values(false)
-{
-}
+TestD4Opaque::TestD4Opaque(const string &n) : D4Opaque(n), d_series_values(false) {}
 
-TestD4Opaque::TestD4Opaque(const string &n, const string &d) : D4Opaque(n, d), d_series_values(false)
-{
-}
+TestD4Opaque::TestD4Opaque(const string &n, const string &d) : D4Opaque(n, d), d_series_values(false) {}
 
-TestD4Opaque::TestD4Opaque(const TestD4Opaque &rhs) : D4Opaque(rhs), TestCommon(rhs)
-{
-    m_duplicate(rhs);
-}
+TestD4Opaque::TestD4Opaque(const TestD4Opaque &rhs) : D4Opaque(rhs), TestCommon(rhs) { m_duplicate(rhs); }
 
-TestD4Opaque &
-TestD4Opaque::operator=(const TestD4Opaque &rhs)
-{
+TestD4Opaque &TestD4Opaque::operator=(const TestD4Opaque &rhs) {
     if (this == &rhs)
-	return *this;
+        return *this;
 
     D4Opaque::operator=(rhs); // run Constructor=
 
@@ -85,37 +70,30 @@ TestD4Opaque::operator=(const TestD4Opaque &rhs)
     return *this;
 }
 
-BaseType *
-TestD4Opaque::ptr_duplicate()
-{
-    return new TestD4Opaque(*this);
-}
+BaseType *TestD4Opaque::ptr_duplicate() { return new TestD4Opaque(*this); }
 
-void
-TestD4Opaque::output_values(std::ostream &out)
-{
-    print_val(out, "", false);
-}
+void TestD4Opaque::output_values(std::ostream &out) { print_val(out, "", false); }
 
 bool TestD4Opaque::read() {
     DBG(cerr << "Entering TestD4Opaque::read for " << name() << endl);
-    if (read_p()) return true;
+    if (read_p())
+        return true;
 
-    if (test_variable_sleep_interval > 0) sleep(test_variable_sleep_interval);
+    if (test_variable_sleep_interval > 0)
+        sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
         dods_opaque vals = value();
         m_set_values(vals[0] * 2);
-    }
-    else {
+    } else {
         m_set_values(1);
     }
 
     set_read_p(true);
 
     DBG(cerr << "In TestD4Opaque::read, d_buf = ");
-    DBGN(ostream_iterator<uint8_t> out_it (cerr," "));
-    DBGN(std::copy ( d_buf.begin(), d_buf.end(), out_it ));
+    DBGN(ostream_iterator<uint8_t> out_it(cerr, " "));
+    DBGN(std::copy(d_buf.begin(), d_buf.end(), out_it));
     DBGN(cerr << endl);
 
     return true;

@@ -41,17 +41,17 @@
 #include <winsock2.h>
 #include <xdr.h>
 #else
-#include <rpc/types.h>
 #include <netinet/in.h>
+#include <rpc/types.h>
 #include <rpc/xdr.h>
 #endif
 #endif
 
-#include <stdint.h>
 #include "crc.h"
+#include <stdint.h>
 
-#include "Marshaller.h"
 #include "InternalErr.h"
+#include "Marshaller.h"
 
 namespace libdap {
 
@@ -68,7 +68,7 @@ class MarshallerThread;
  * to use far fewer methods since all of the put_*() methods take different
  * types.
  */
-class D4StreamMarshaller: public Marshaller {
+class D4StreamMarshaller : public Marshaller {
 
 private:
 #if USE_XDR_FOR_IEEE754_ENCODING
@@ -86,7 +86,7 @@ private:
     // These are private so they won't ever get used.
     D4StreamMarshaller();
     D4StreamMarshaller(const D4StreamMarshaller &);
-    D4StreamMarshaller & operator=(const D4StreamMarshaller &);
+    D4StreamMarshaller &operator=(const D4StreamMarshaller &);
 
 #if USE_XDR_FOR_IEEE754_ENCODING
     void m_serialize_reals(char *val, int64_t num, int width, Type type);
@@ -123,25 +123,23 @@ public:
     virtual void put_url(const string &val);
 
     virtual void put_opaque(char *, unsigned int) {
-    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4; use put_opaque_dap4() instead.");
+        throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4; use put_opaque_dap4() instead.");
     }
 
     virtual void put_opaque_dap4(const char *val, int64_t len);
 
     // Never use put_int() to send length information in DAP4.
-    virtual void put_int(int) {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_length_prefix.");
-    }
+    virtual void put_int(int) { throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_length_prefix."); }
 
     virtual void put_vector(char *val, int64_t num_bytes);
     virtual void put_vector(char *val, int64_t num_elem, int elem_size);
     virtual void put_vector_float32(char *val, int64_t num_elem);
     virtual void put_vector_float64(char *val, int64_t num_elem);
 
-    virtual void put_vector(char *, int , Vector &) {
+    virtual void put_vector(char *, int, Vector &) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented; use other put_vector() versions.");
     }
-    virtual void put_vector(char *, int , int , Vector &) {
+    virtual void put_vector(char *, int, int, Vector &) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented; use other put_vector() versions.");
     }
 
@@ -154,10 +152,9 @@ public:
      * @see put_vector_part()
      * @see put_vector_end()
      */
-    virtual void put_vector_start(int /*num*/) {
-    }
+    virtual void put_vector_start(int /*num*/) {}
 
-    virtual void put_vector_part(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/);
+    virtual void put_vector_part(char * /*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/);
 
     /**
      * Close a vector when its values are written using put_vector_part().
@@ -167,8 +164,7 @@ public:
      * @see put_vector_start()
      * @see put_vector_part()
      */
-    virtual void put_vector_end() {
-    }
+    virtual void put_vector_end() {}
 
     virtual void dump(std::ostream &strm) const;
 };

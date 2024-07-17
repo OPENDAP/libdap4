@@ -33,8 +33,8 @@
 #include <map>
 #include <string>
 
-#include <expr.h>
 #include <D4Function.h>
+#include <expr.h>
 
 #include <ServerFunction.h>
 
@@ -45,7 +45,7 @@ class ConstraintEvaluator;
 
 class ServerFunctionsList {
 private:
-    static ServerFunctionsList * d_instance;
+    static ServerFunctionsList *d_instance;
     std::multimap<std::string, ServerFunction *> d_func_list;
 
     static void initialize_instance();
@@ -63,12 +63,12 @@ public:
     typedef std::multimap<std::string, ServerFunction *>::iterator SFLIter;
     typedef std::multimap<std::string, ServerFunction *>::const_iterator SFLCIter;
 
-    static ServerFunctionsList * TheList();
+    static ServerFunctionsList *TheList();
 
     virtual void add_function(ServerFunction *func);
 
     virtual bool find_function(const std::string &name, bool_func *f) const;
-    virtual bool find_function(const std::string &name, btp_func  *f) const;
+    virtual bool find_function(const std::string &name, btp_func *f) const;
     virtual bool find_function(const std::string &name, proj_func *f) const;
     virtual bool find_function(const std::string &name, D4Function *f) const;
 
@@ -79,6 +79,6 @@ public:
     virtual void getFunctionNames(std::vector<std::string> *names);
 };
 
-}
+} // namespace libdap
 
 #endif // I_ServerFunctionsList_h

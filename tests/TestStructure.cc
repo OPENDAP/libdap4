@@ -32,125 +32,99 @@
 //
 // jhrg 1/12/95
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
-#include "config.h"
-#include "D4Group.h"
 #include "Constructor.h"
+#include "D4Group.h"
+#include "config.h"
 #include "debug.h"
 
 #include "TestStructure.h"
 
 using namespace libdap;
 
-void TestStructure::m_duplicate(const TestStructure &ts)
-{
-	d_series_values = ts.d_series_values;
+void TestStructure::m_duplicate(const TestStructure &ts) { d_series_values = ts.d_series_values; }
+
+BaseType *TestStructure::ptr_duplicate() { return new TestStructure(*this); }
+
+TestStructure::TestStructure(const TestStructure &rhs) : Structure(rhs), TestCommon(rhs) { m_duplicate(rhs); }
+
+TestStructure &TestStructure::operator=(const TestStructure &rhs) {
+    if (this == &rhs)
+        return *this;
+
+    Structure::operator=(rhs); // run Constructor=
+
+    m_duplicate(rhs);
+
+    return *this;
 }
 
-BaseType *
-TestStructure::ptr_duplicate()
-{
-	return new TestStructure(*this);
+TestStructure::TestStructure(const string &n) : Structure(n), d_series_values(false) {}
+
+TestStructure::TestStructure(const string &n, const string &d) : Structure(n, d), d_series_values(false) {}
+
+TestStructure::~TestStructure() {}
+
+void TestStructure::output_values(std::ostream &out) {
+    out << "{ ";
+
+    bool value_written = false;
+    Vars_citer i = var_begin();
+
+    // Write the first (and maybe only) value.
+    while (i != var_end() && !value_written) {
+        if ((*i)->send_p()) {
+            (*i++)->print_val(out, "", false);
+            value_written = true;
+        } else {
+            ++i;
+        }
+    }
+    // Each subsequent value will be preceded by a comma
+    while (i != var_end()) {
+        if ((*i)->send_p()) {
+            out << ", ";
+            (*i++)->print_val(out, "", false);
+        } else {
+            ++i;
+        }
+    }
+
+    out << " }";
 }
 
-TestStructure::TestStructure(const TestStructure &rhs) :
-		Structure(rhs), TestCommon(rhs)
-{
-	m_duplicate(rhs);
-}
-
-TestStructure &
-TestStructure::operator=(const TestStructure &rhs)
-{
-	if (this == &rhs) return *this;
-
-	Structure::operator=(rhs); // run Constructor=
-
-	m_duplicate(rhs);
-
-	return *this;
-}
-
-TestStructure::TestStructure(const string &n) :
-		Structure(n), d_series_values(false)
-{
-}
-
-TestStructure::TestStructure(const string &n, const string &d) :
-		Structure(n, d), d_series_values(false)
-{
-}
-
-TestStructure::~TestStructure()
-{
-}
-
-void TestStructure::output_values(std::ostream &out)
-{
-	out << "{ ";
-
-	bool value_written = false;
-	Vars_citer i = var_begin();
-
-	// Write the first (and maybe only) value.
-	while (i != var_end() && !value_written) {
-		if ((*i)->send_p()) {
-			(*i++)->print_val(out, "", false);
-			value_written = true;
-		}
-		else {
-			++i;
-		}
-	}
-	// Each subsequent value will be preceded by a comma
-	while (i != var_end()) {
-		if ((*i)->send_p()) {
-			out << ", ";
-			(*i++)->print_val(out, "", false);
-		}
-		else {
-			++i;
-		}
-	}
-
-	out << " }";
-}
-
-void
-TestStructure::transform_to_dap4(D4Group *root, Constructor *container)
-{
+void TestStructure::transform_to_dap4(D4Group *root, Constructor *container) {
     TestStructure *dest = new TestStructure(name(), dataset());
-	Constructor::transform_to_dap4(root, dest);
-	container->add_var_nocopy(dest);
+    Constructor::transform_to_dap4(root, dest);
+    container->add_var_nocopy(dest);
 }
 
 // For this `Test' class, run the read mfunc for each of variables which
 // comprise the structure.
 
-bool TestStructure::read()
-{
-	if (read_p()) return true;
+bool TestStructure::read() {
+    if (read_p())
+        return true;
 
-	for (Vars_iter i = var_begin(); i != var_end(); i++) {
-                if ((*i)->type() == dods_sequence_c)
-                   (*i)->intern_data();
-		else if (!(*i)->read()) 
-			return false;
-	}
+    for (Vars_iter i = var_begin(); i != var_end(); i++) {
+        if ((*i)->type() == dods_sequence_c)
+            (*i)->intern_data();
+        else if (!(*i)->read())
+            return false;
+    }
 
-	set_read_p(true);
+    set_read_p(true);
 
-	return true;
+    return true;
 }
 
-void TestStructure::set_series_values(bool sv)
-{
-	Vars_iter i = var_begin();
-	while (i != var_end()) {
-		dynamic_cast<TestCommon&>(*(*i)).set_series_values(sv);
-		++i;
-	}
+void TestStructure::set_series_values(bool sv) {
+    Vars_iter i = var_begin();
+    while (i != var_end()) {
+        dynamic_cast<TestCommon &>(*(*i)).set_series_values(sv);
+        ++i;
+    }
 
-	d_series_values = sv;
+    d_series_values = sv;
 }

@@ -33,7 +33,6 @@
 //
 // jhrg 1/12/95
 
-
 #include "config.h"
 
 #include <string>
@@ -41,8 +40,8 @@
 #ifndef WIN32
 #include <unistd.h>
 #else
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
 #endif
 
@@ -51,33 +50,20 @@
 
 extern int test_variable_sleep_interval;
 
-void
-TestStr::_duplicate(const TestStr &ts)
-{
+void TestStr::_duplicate(const TestStr &ts) {
     d_series_values = ts.d_series_values;
     d_count = ts.d_count;
 }
 
+TestStr::TestStr(const string &n) : Str(n), d_series_values(false), d_count(0) {}
 
-TestStr::TestStr(const string &n) : Str(n), d_series_values(false), d_count(0)
-{
-}
+TestStr::TestStr(const string &n, const string &d) : Str(n, d), d_series_values(false), d_count(0) {}
 
-TestStr::TestStr(const string &n, const string &d)
-    : Str(n, d), d_series_values(false), d_count(0)
-{
-}
+TestStr::TestStr(const TestStr &rhs) : Str(rhs), TestCommon(rhs) { _duplicate(rhs); }
 
-TestStr::TestStr(const TestStr &rhs) : Str(rhs), TestCommon(rhs)
-{
-    _duplicate(rhs);
-}
-
-TestStr &
-TestStr::operator=(const TestStr &rhs)
-{
+TestStr &TestStr::operator=(const TestStr &rhs) {
     if (this == &rhs)
-	return *this;
+        return *this;
 
     Str::operator=(rhs); // run Constructor=
 
@@ -86,33 +72,26 @@ TestStr::operator=(const TestStr &rhs)
     return *this;
 }
 
-BaseType *
-TestStr::ptr_duplicate()
-{
-    return new TestStr(*this);
-}
+BaseType *TestStr::ptr_duplicate() { return new TestStr(*this); }
 
-void
-TestStr::output_values(std::ostream &out)
-{
-    print_val(out, "", false);
-}
+void TestStr::output_values(std::ostream &out) { print_val(out, "", false); }
 
-bool TestStr::read()
-{
-	if (read_p()) return true;
+bool TestStr::read() {
+    if (read_p())
+        return true;
 
-	if (test_variable_sleep_interval > 0) sleep(test_variable_sleep_interval);
+    if (test_variable_sleep_interval > 0)
+        sleep(test_variable_sleep_interval);
 
-	string dods_str_test;
-	if (get_series_values())
-	    dods_str_test = "Silly test string: " + long_to_string(++d_count);
-	else
-	    dods_str_test = "Silly test string: 1";
+    string dods_str_test;
+    if (get_series_values())
+        dods_str_test = "Silly test string: " + long_to_string(++d_count);
+    else
+        dods_str_test = "Silly test string: 1";
 
-	(void) val2buf(&dods_str_test);
+    (void)val2buf(&dods_str_test);
 
-	set_read_p(true);
+    set_read_p(true);
 
-	return true;
+    return true;
 }

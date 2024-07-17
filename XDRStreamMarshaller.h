@@ -41,7 +41,6 @@
 #include "Marshaller.h"
 #include "XDRUtils.h"
 
-
 namespace libdap {
 
 class BaseType;
@@ -51,11 +50,11 @@ class MarshallerThread;
  * @brief Marshaller that knows how serialize dap data objects to a C++ iostream using XDR
  *
  */
-class XDRStreamMarshaller: public Marshaller {
+class XDRStreamMarshaller : public Marshaller {
 private:
-    static char * d_buf;
+    static char *d_buf;
     XDR d_sink;
-    ostream & d_out;
+    ostream &d_out;
 
     int d_partial_put_byte_count;
 
@@ -103,4 +102,3 @@ public:
 } // namespace libdap
 
 #endif // I_XDRStreamMarshaller_h
-

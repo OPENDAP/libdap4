@@ -1,17 +1,17 @@
-#include <cppunit/TestFixture.h>
+#include <cppunit/CompilerOutputter.h>
 #include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/CompilerOutputter.h>
 
-#include <iostream>
 #include "TestArray.h"
 #include "TestInt16.h"
 #include "TestTypeFactory.h"
+#include <iostream>
 
-#include "util.h"
 #include "debug.h"
+#include "util.h"
 
 #include "run_tests_cppunit.h"
 
@@ -23,32 +23,27 @@ using namespace CppUnit;
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 // timeouts.
 
-class arrayT: public CppUnit::TestFixture {
+class arrayT : public CppUnit::TestFixture {
 
-    CPPUNIT_TEST_SUITE (arrayT);
+    CPPUNIT_TEST_SUITE(arrayT);
 
     CPPUNIT_TEST(arrayT_test);
 
-    CPPUNIT_TEST_SUITE_END( );
+    CPPUNIT_TEST_SUITE_END();
 
 private:
     /* TEST PRIVATE DATA */
     TestTypeFactory *factory;
 
 public:
-    void setUp()
-    {
-        factory = new TestTypeFactory;
-    }
+    void setUp() { factory = new TestTypeFactory; }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete factory;
         factory = 0;
     }
 
-    void arrayT_test()
-    {
+    void arrayT_test() {
         BaseType *bt = factory->NewInt16();
 
         TestArray ar("My Array", bt);
@@ -58,10 +53,11 @@ public:
 
         try {
             int w = ar.width(true);
-            DBG(cerr << "w = " << w << endl);DBG(cerr << "(int)bt->width() " << (int)bt->width() << endl);DBG(cerr << "L " << l << endl);
-            CPPUNIT_ASSERT(w == (l * (int ) bt->width()));
-        }
-        catch (InternalErr &e) {
+            DBG(cerr << "w = " << w << endl);
+            DBG(cerr << "(int)bt->width() " << (int)bt->width() << endl);
+            DBG(cerr << "L " << l << endl);
+            CPPUNIT_ASSERT(w == (l * (int)bt->width()));
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Unable to retrieve width");
         }
 
@@ -72,9 +68,8 @@ public:
 
         try {
             int w = ar.width();
-            CPPUNIT_ASSERT(w == (l * (int ) bt->width()));
-        }
-        catch (InternalErr &e) {
+            CPPUNIT_ASSERT(w == (l * (int)bt->width()));
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Unable to retrieve width");
         }
 
@@ -85,9 +80,8 @@ public:
 
         try {
             int w = ar.width();
-            CPPUNIT_ASSERT(w == (l * (int ) bt->width()));
-        }
-        catch (InternalErr &e) {
+            CPPUNIT_ASSERT(w == (l * (int)bt->width()));
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Unable to retrieve width");
         }
 
@@ -98,9 +92,8 @@ public:
 
         try {
             int w = ar.width();
-            CPPUNIT_ASSERT(w == (l * (int ) bt->width()));
-        }
-        catch (InternalErr &e) {
+            CPPUNIT_ASSERT(w == (l * (int)bt->width()));
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Unable to retrieve width");
         }
 
@@ -132,8 +125,7 @@ public:
         }
         if (diter != ar.dim_end() && i == dims.end()) {
             CPPUNIT_FAIL("too many dimensions");
-        }
-        else if (diter == ar.dim_end() && i != dims.end()) {
+        } else if (diter == ar.dim_end() && i != dims.end()) {
             CPPUNIT_FAIL("not enough dimensions");
         }
 
@@ -171,7 +163,4 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(arrayT);
 
-int main(int argc, char *argv[])
-{
-    return run_tests<arrayT>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<arrayT>(argc, argv) ? 0 : 1; }

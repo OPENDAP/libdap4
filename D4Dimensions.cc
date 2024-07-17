@@ -26,51 +26,48 @@
 
 #include <sstream>
 
-#include "XMLWriter.h"
 #include "D4Dimensions.h"
 #include "D4Group.h"
+#include "XMLWriter.h"
 
 #include "Error.h"
 #include "InternalErr.h"
 
 namespace libdap {
 
-void
-D4Dimension::set_size(const string &size)
-{
-	unsigned long value = 0;
-	istringstream iss(size);
-	iss >> value;
+void D4Dimension::set_size(const string &size) {
+    unsigned long value = 0;
+    istringstream iss(size);
+    iss >> value;
 
-	// First test if the stream is OK, then look to see if we read all
-	// of the chars.
-	if (!iss || !iss.eof()) throw Error("Invalid value '" + size + "' passed to D4Dimension::set_size.");
-	set_size(value);
+    // First test if the stream is OK, then look to see if we read all
+    // of the chars.
+    if (!iss || !iss.eof())
+        throw Error("Invalid value '" + size + "' passed to D4Dimension::set_size.");
+    set_size(value);
 }
 
 /**
  * @brief Get the FQN for the dimension
  * @return The D4Dimension as a fully qualified name.
  */
-string
-D4Dimension::fully_qualified_name() const
-{
-	string name = d_name;
+string D4Dimension::fully_qualified_name() const {
+    string name = d_name;
 
-	// d_parent is the D4Dimensions container and its parent is the Group where
-	// this Dimension is defined.
-	D4Group *grp = d_parent->parent();
-	while (grp) {
-		// The root group is named "/" (always); this avoids '//name'
-		name = (grp->name() == "/") ? "/" + name : grp->name() + "/" + name;
+    // d_parent is the D4Dimensions container and its parent is the Group where
+    // this Dimension is defined.
+    D4Group *grp = d_parent->parent();
+    while (grp) {
+        // The root group is named "/" (always); this avoids '//name'
+        name = (grp->name() == "/") ? "/" + name : grp->name() + "/" + name;
 
-		if (grp->get_parent())
-			grp = static_cast<D4Group*>(grp->get_parent());
-		else
-			grp = 0;
-	}
+        if (grp->get_parent())
+            grp = static_cast<D4Group *>(grp->get_parent());
+        else
+            grp = 0;
+    }
 
-	return name;
+    return name;
 }
 
 /**
@@ -79,29 +76,27 @@ D4Dimension::fully_qualified_name() const
  * @see print_dap4(XMLWriter &xml, bool print_fqn)
  * @param xml Print to this XMLWriter instance
  */
-void
-D4Dimension::print_dap4(XMLWriter &xml) const
-{
-	if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) "Dimension") < 0)
-		throw InternalErr(__FILE__, __LINE__, "Could not write Dimension element");
+void D4Dimension::print_dap4(XMLWriter &xml) const {
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Dimension") < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write Dimension element");
 
-	if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)d_name.c_str()) < 0)
-		throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)d_name.c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 #if 0
 	// Use FQNs when things are referenced, not when they are defined
 	if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)fully_qualified_name().c_str()) < 0)
 		throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 #endif
-	ostringstream oss;
-	if (d_constrained)
-	    oss << (d_c_stop - d_c_start) / d_c_stride + 1;
-	else
-	    oss << d_size;
-	if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "size", (const xmlChar*) oss.str().c_str()) < 0)
-		throw InternalErr(__FILE__, __LINE__, "Could not write attribute for size");
+    ostringstream oss;
+    if (d_constrained)
+        oss << (d_c_stop - d_c_start) / d_c_stride + 1;
+    else
+        oss << d_size;
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"size", (const xmlChar *)oss.str().c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for size");
 
-	if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-		throw InternalErr(__FILE__, __LINE__, "Could not end Dimension element");
+    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not end Dimension element");
 }
 
 #if 0
@@ -114,33 +109,27 @@ dim_name_eq(D4Dimension *d, const string name)
 }
 #endif
 
-D4Dimension *
-D4Dimensions::find_dim(const string &name)
-{
+D4Dimension *D4Dimensions::find_dim(const string &name) {
 #if 0
     D4DimensionsIter d = find_if(d_dims.begin(), d_dims.end(), bind2nd(ptr_fun(dim_name_eq), name));
 #endif
-    auto d = find_if(d_dims.begin(), d_dims.end(),
-                     [name](const D4Dimension *dim) { return name == dim->name(); });
-	return (d != d_dims.end()) ? *d: 0;
+    auto d = find_if(d_dims.begin(), d_dims.end(), [name](const D4Dimension *dim) { return name == dim->name(); });
+    return (d != d_dims.end()) ? *d : 0;
 }
 
-void
-D4Dimensions::print_dap4(XMLWriter &xml, bool constrained) const
-{
+void D4Dimensions::print_dap4(XMLWriter &xml, bool constrained) const {
     D4DimensionsCIter i = d_dims.begin();
     while (i != d_dims.end()) {
 #if 0
     	if (!constrained || parent()->find_first_var_that_uses_dimension(*i))
             (*i)->print_dap4(xml);
 #endif
-    	if (constrained) {
-    		if ((*i)->used_by_projected_var())
-    		    (*i)->print_dap4(xml);
-    	}
-    	else {
-    		(*i)->print_dap4(xml);
-    	}
+        if (constrained) {
+            if ((*i)->used_by_projected_var())
+                (*i)->print_dap4(xml);
+        } else {
+            (*i)->print_dap4(xml);
+        }
         ++i;
     }
 }

@@ -39,12 +39,11 @@
 #include <string>
 #include <vector>
 
+#include "Error.h"
 #include "Type.h"
 #include "parser-util.h"
-#include "Error.h"
 
-namespace libdap
-{
+namespace libdap {
 
 class BaseType;
 class DDS;
@@ -60,8 +59,8 @@ class ConstraintEvaluator;
 // build value instances without errors. jhrg 2/10/20
 
 typedef struct value {
-    bool is_range_value;    // true if this is part of a natural axes projection
-    Type type;   // Type is an enum defined in Type.h
+    bool is_range_value; // true if this is part of a natural axes projection
+    Type type;           // Type is an enum defined in Type.h
     union {
         unsigned int ui;
         int i;
@@ -79,20 +78,17 @@ typedef struct value {
 #if 0
             v.i = atoi(token.c_str());
 #endif
-        }
-        else if (check_uint32(token.c_str(), v.ui)) {
+        } else if (check_uint32(token.c_str(), v.ui)) {
             type = dods_uint32_c;
 #if 0
             v.ui = atoi(token.c_str());
 #endif
-        }
-        else if (check_float64(token.c_str(), v.f)) {
+        } else if (check_float64(token.c_str(), v.f)) {
             type = dods_float64_c;
 #if 0
             v.f = atof(token.c_str());
 #endif
-        }
-        else {
+        } else {
             type = dods_str_c;
             v.s = new std::string(token);
         }
@@ -104,20 +100,20 @@ typedef struct value {
      */
     void build_typed_instance(const std::string &token) {
         switch (type) {
-            case dods_uint32_c:
-                v.ui = get_uint32(token.c_str());
-                break;
-            case dods_int32_c:
-                v.i = get_int32(token.c_str());
-                break;
-            case dods_float64_c:
-                v.ui = get_float64(token.c_str());
-                break;
-            case dods_str_c:
-                v.s = new std::string(token);
-                break;
-            default:
-                throw Error("Expected an int32, unsigned int32, float64 or string token.");
+        case dods_uint32_c:
+            v.ui = get_uint32(token.c_str());
+            break;
+        case dods_int32_c:
+            v.i = get_int32(token.c_str());
+            break;
+        case dods_float64_c:
+            v.ui = get_float64(token.c_str());
+            break;
+        case dods_str_c:
+            v.s = new std::string(token);
+            break;
+        default:
+            throw Error("Expected an int32, unsigned int32, float64 or string token.");
         }
     }
 
@@ -126,33 +122,33 @@ typedef struct value {
     value() : is_range_value(false), type(dods_int32_c) { v.i = 0; }
 
     // set a value
-    value(const std::string &token, bool rv = false, Type t = dods_null_c) : is_range_value(rv),  type(t) {
+    value(const std::string &token, bool rv = false, Type t = dods_null_c) : is_range_value(rv), type(t) {
         if (type == dods_null_c)
             build_instance(token);
         else
             build_typed_instance(token);
     }
 
-    value(int val, bool rv = false, Type t = dods_null_c) : is_range_value(rv),  type(t) {
+    value(int val, bool rv = false, Type t = dods_null_c) : is_range_value(rv), type(t) {
         switch (type) {
-            case dods_uint32_c:
-                v.ui = val;
-                break;
-            case dods_int32_c:
-                v.i = val;
-                break;
-            default:
-                throw Error("Expected an int32 or unsigned int32 token.");
+        case dods_uint32_c:
+            v.ui = val;
+            break;
+        case dods_int32_c:
+            v.i = val;
+            break;
+        default:
+            throw Error("Expected an int32 or unsigned int32 token.");
         }
     }
 
-    value(unsigned int val, bool rv = false, Type t = dods_null_c) : is_range_value(rv),  type(t) {
+    value(unsigned int val, bool rv = false, Type t = dods_null_c) : is_range_value(rv), type(t) {
         switch (type) {
-            case dods_uint32_c:
-                v.ui = val;
-                break;
-            default:
-                throw Error("Expected an unsigned int32 token.");
+        case dods_uint32_c:
+            v.ui = val;
+            break;
+        default:
+            throw Error("Expected an unsigned int32 token.");
         }
     }
 

@@ -33,14 +33,13 @@
 //
 // 3/22/99 jhrg
 
-
 #include "config.h"
 
 #ifndef WIN32
 #include <unistd.h>
 #else
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
 #endif
 
@@ -48,33 +47,17 @@
 
 extern int test_variable_sleep_interval;
 
-void
-TestInt16::_duplicate(const TestInt16 &ts)
-{
-    d_series_values = ts.d_series_values;
-}
+void TestInt16::_duplicate(const TestInt16 &ts) { d_series_values = ts.d_series_values; }
 
-TestInt16::TestInt16(const string &n) : Int16(n), d_series_values(false)
-{
-    d_buf = 1;
-}
+TestInt16::TestInt16(const string &n) : Int16(n), d_series_values(false) { d_buf = 1; }
 
-TestInt16::TestInt16(const string &n, const string &d)
-    : Int16(n, d), d_series_values(false)
-{
-    d_buf = 1;
-}
+TestInt16::TestInt16(const string &n, const string &d) : Int16(n, d), d_series_values(false) { d_buf = 1; }
 
-TestInt16::TestInt16(const TestInt16 &rhs) : Int16(rhs), TestCommon(rhs)
-{
-    _duplicate(rhs);
-}
+TestInt16::TestInt16(const TestInt16 &rhs) : Int16(rhs), TestCommon(rhs) { _duplicate(rhs); }
 
-TestInt16 &
-TestInt16::operator=(const TestInt16 &rhs)
-{
+TestInt16 &TestInt16::operator=(const TestInt16 &rhs) {
     if (this == &rhs)
-	return *this;
+        return *this;
 
     Int16::operator=(rhs); // run Constructor=
 
@@ -83,38 +66,26 @@ TestInt16::operator=(const TestInt16 &rhs)
     return *this;
 }
 
+BaseType *TestInt16::ptr_duplicate() { return new TestInt16(*this); }
 
-BaseType *
-TestInt16::ptr_duplicate()
-{
-    return new TestInt16(*this);
-}
+void TestInt16::output_values(std::ostream &out) { print_val(out, "", false); }
 
-void
-TestInt16::output_values(std::ostream &out)
-{
-    print_val(out, "", false);
-}
-
-bool
-TestInt16::read()
-{
+bool TestInt16::read() {
     if (read_p())
-	return true;
+        return true;
 
     if (test_variable_sleep_interval > 0)
-	sleep(test_variable_sleep_interval);
+        sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
         // Change for OSX 10.9 based on change needed for TestInt32.
         // jhrg 3/26/14
         d_buf <<= 4;
-		if (!d_buf)
-			d_buf = 16;
+        if (!d_buf)
+            d_buf = 16;
 
-       //d_buf = (short)(16 * d_buf);
-    }
-    else {
+        // d_buf = (short)(16 * d_buf);
+    } else {
         d_buf = 32000;
     }
 

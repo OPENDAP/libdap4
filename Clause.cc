@@ -33,17 +33,17 @@
 
 #include "config.h"
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 
-#include "expr.h"
 #include "Byte.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
-#include "DDS.h"
 #include "Clause.h"
+#include "DDS.h"
+#include "Int16.h"
+#include "Int32.h"
+#include "UInt16.h"
+#include "UInt32.h"
+#include "expr.h"
 
 using std::cerr;
 using std::endl;
@@ -51,25 +51,20 @@ using std::endl;
 namespace libdap {
 
 Clause::Clause(const int oper, rvalue *a1, rvalue_list *rv)
-        : _op(oper), _b_func(0), _bt_func(0), _argc(0), _arg1(a1), _args(rv)
-{
+    : _op(oper), _b_func(0), _bt_func(0), _argc(0), _arg1(a1), _args(rv) {
     assert(OK());
 }
 #if 1
-Clause::Clause(bool_func func, rvalue_list *rv)
-        : _op(0), _b_func(func), _bt_func(0), _argc(0), _arg1(0), _args(rv)
-{
+Clause::Clause(bool_func func, rvalue_list *rv) : _op(0), _b_func(func), _bt_func(0), _argc(0), _arg1(0), _args(rv) {
     assert(OK());
 
-    if (_args)   // account for null arg list
+    if (_args) // account for null arg list
         _argc = _args->size();
     else
         _argc = 0;
 }
 #endif
-Clause::Clause(btp_func func, rvalue_list *rv)
-        : _op(0), _b_func(0), _bt_func(func), _argc(0), _arg1(0), _args(rv)
-{
+Clause::Clause(btp_func func, rvalue_list *rv) : _op(0), _b_func(0), _bt_func(func), _argc(0), _arg1(0), _args(rv) {
     assert(OK());
 
     if (_args)
@@ -78,33 +73,30 @@ Clause::Clause(btp_func func, rvalue_list *rv)
         _argc = 0;
 }
 
-Clause::Clause() : _op(0), _b_func(0), _bt_func(0), _argc(0), _arg1(0), _args(0)
-{}
+Clause::Clause() : _op(0), _b_func(0), _bt_func(0), _argc(0), _arg1(0), _args(0) {}
 
-static inline void
-delete_rvalue(rvalue *rv)
-{
-    delete rv; rv = 0;
+static inline void delete_rvalue(rvalue *rv) {
+    delete rv;
+    rv = 0;
 }
 
-Clause::~Clause()
-{
+Clause::~Clause() {
     if (_arg1) {
-        delete _arg1; _arg1 = 0;
+        delete _arg1;
+        _arg1 = 0;
     }
 
     if (_args) {
         // _args is a pointer to a vector<rvalue*> and we must must delete
         // each rvalue pointer here explicitly. 02/03/04 jhrg
         for_each(_args->begin(), _args->end(), delete_rvalue);
-        delete _args; _args = 0;
+        delete _args;
+        _args = 0;
     }
 }
 
 /** @brief Checks the "representation invariant" of a clause. */
-bool
-Clause::OK()
-{
+bool Clause::OK() {
     // Each clause object can contain one of: a relational clause, a boolean
     // function clause or a BaseType pointer function clause. It must have a
     // valid argument list.
@@ -119,24 +111,20 @@ Clause::OK()
     if (relational)
         return _arg1 && _args;
     else if (boolean || basetype)
-        return true;  // Until we check arguments...10/16/98 jhrg
+        return true; // Until we check arguments...10/16/98 jhrg
     else
         return false;
 }
 
 /** @brief Return true if the clause returns a boolean value. */
-bool
-Clause::boolean_clause()
-{
+bool Clause::boolean_clause() {
     assert(OK());
 
     return _op || _b_func;
 }
 
 /** @brief Return true if the clause returns a value in a BaseType pointer. */
-bool
-Clause::value_clause()
-{
+bool Clause::value_clause() {
     assert(OK());
 
     return (_bt_func != 0);
@@ -152,40 +140,33 @@ Clause::value_clause()
     @return True if the clause is true, false otherwise.
     @exception InternalErr if called for a clause that returns a
     BaseType pointer. */
-bool
-Clause::value(DDS &dds)
-{
+bool Clause::value(DDS &dds) {
     assert(OK());
     assert(_op || _b_func);
 
-    if (_op) {   // Is it a relational clause?
+    if (_op) { // Is it a relational clause?
         // rvalue::bvalue(...) returns the rvalue encapsulated in a
         // BaseType *.
         BaseType *btp = _arg1->bvalue(dds);
         // The list of rvalues is an implicit logical OR, so assume
         // FALSE and return TRUE for the first TRUE subclause.
         bool result = false;
-        for (rvalue_list_iter i = _args->begin();
-             i != _args->end() && !result;
-             i++) {
+        for (rvalue_list_iter i = _args->begin(); i != _args->end() && !result; i++) {
             result = result || btp->ops((*i)->bvalue(dds), _op);
         }
 
         return result;
-    }
-    else if (_b_func) {  // ...A bool function?
+    } else if (_b_func) { // ...A bool function?
         BaseType **argv = build_btp_args(_args, dds);
 
         bool result = false;
         (*_b_func)(_argc, argv, dds, &result);
-        delete[] argv;  // Cache me!
+        delete[] argv; // Cache me!
         argv = 0;
 
         return result;
-    }
-    else {
-        throw InternalErr(__FILE__, __LINE__,
-                          "A selection expression must contain only boolean clauses.");
+    } else {
+        throw InternalErr(__FILE__, __LINE__, "A selection expression must contain only boolean clauses.");
     }
 }
 
@@ -201,9 +182,7 @@ Clause::value(DDS &dds)
     @exception InternalErr if called for a clause that returns a
     boolean value. Not that this method itself \e does return a
     boolean value. */
-bool
-Clause::value(DDS &dds, BaseType **value)
-{
+bool Clause::value(DDS &dds, BaseType **value) {
     assert(OK());
     assert(_bt_func);
 
@@ -215,7 +194,7 @@ Clause::value(DDS &dds, BaseType **value)
 
         (*_bt_func)(_argc, argv, dds, value);
 
-        delete[] argv;  // Cache me!
+        delete[] argv; // Cache me!
         argv = 0;
 
         if (*value) {
@@ -234,14 +213,13 @@ Clause::value(DDS &dds, BaseType **value)
             (*value)->set_send_p(true);
             (*value)->set_read_p(true);
             return true;
-        }
-        else {
+        } else {
             return false;
         }
-    }
-    else {
+    } else {
         throw InternalErr(__FILE__, __LINE__,
-                          "Clause::value() was called in a context expecting a BaseType pointer return, but the Clause was boolean-valued instead.");
+                          "Clause::value() was called in a context expecting a BaseType pointer return, but the Clause "
+                          "was boolean-valued instead.");
     }
 }
 

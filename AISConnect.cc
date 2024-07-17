@@ -37,9 +37,7 @@ namespace libdap {
     data source.
     @exception AISDatabaseReadFailed Thrown if the AIS database listed in the
     <code>~/.dodsrc</code> file could not be opened. */
-AISConnect::AISConnect(const string &name) throw(AISDatabaseReadFailed)
-        : Connect(name), d_ais_merge(0)
-{
+AISConnect::AISConnect(const string &name) throw(AISDatabaseReadFailed) : Connect(name), d_ais_merge(0) {
     const string &ais_db = RCReader::instance()->get_ais_database();
     if (ais_db != "")
         d_ais_merge = new AISMerge(ais_db);
@@ -54,17 +52,15 @@ AISConnect::AISConnect(const string &name) throw(AISDatabaseReadFailed)
     @param ais Read the AIS information from this XML file.
     @exception AISDatabaseReadFailed Thrown if the AIS database listed in the
     <code>~/.dodsrc</code> file could not be opened. */
-AISConnect::AISConnect(const string &name, const string &ais)
-throw(AISDatabaseReadFailed)
-        : Connect(name), d_ais_merge(0)
-{
+AISConnect::AISConnect(const string &name, const string &ais) throw(AISDatabaseReadFailed)
+    : Connect(name), d_ais_merge(0) {
     d_ais_merge = new AISMerge(ais);
 }
 
 /** Destroy an AISConnect. */
-AISConnect::~AISConnect()
-{
-    delete d_ais_merge; d_ais_merge = 0;
+AISConnect::~AISConnect() {
+    delete d_ais_merge;
+    d_ais_merge = 0;
 }
 
 /** Request an AIS-enhanced DAS object. Read the DAS object for this virtual
@@ -75,9 +71,7 @@ AISConnect::~AISConnect()
     @exception Error Thrown if the DAS request fails due to user error.
     @exception InternalErr Thrown if either the DAS request or the AIS merge
     request fails. */
-void
-AISConnect::request_das(DAS &das)
-{
+void AISConnect::request_das(DAS &das) {
     Connect::request_das(das);
 
     if (d_ais_merge)

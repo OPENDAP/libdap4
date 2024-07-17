@@ -23,21 +23,21 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
-#include <string>
 #include <cstring>
+#include <string>
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
-#include "DDS.h"
 #include "ConstraintEvaluator.h"
+#include "DDS.h"
 
-#include "../tests/TestTypeFactory.h"
-#include "../tests/TestSequence.h"
 #include "../tests/TestInt32.h"
+#include "../tests/TestSequence.h"
 #include "../tests/TestStr.h"
+#include "../tests/TestTypeFactory.h"
 
 #include "GNURegex.h"
 
@@ -53,8 +53,7 @@ int test_variable_sleep_interval;
 
 //  Note: MS VC++ won't tolerate the embedded newlines in strings, hence the \n
 //  is explicit.
-static const char *s_as_string =
-    "BaseType \\(0x.*\\):\n\
+static const char *s_as_string = "BaseType \\(0x.*\\):\n\
           _name: s\n\
           _type: Sequence\n\
           _dataset: \n\
@@ -96,7 +95,7 @@ static Regex s_regex(s_as_string);
 
 namespace libdap {
 
-class SequenceTest: public TestFixture {
+class SequenceTest : public TestFixture {
 private:
     DDS *dds;
     TestSequence *s, *ss, *ps, *sss, *ts, *tts;
@@ -105,8 +104,7 @@ public:
     SequenceTest() = default;
     ~SequenceTest() = default;
 
-    void setUp()
-    {
+    void setUp() {
         // Set up a simple sequence. Used to test ctor, assigment, et cetera.
         s = new TestSequence("s");
         s->add_var_nocopy(new TestInt32("i1"));
@@ -136,7 +134,7 @@ public:
         tts->add_var_nocopy(new TestInt32("i2"));
         ts->add_var_nocopy(tts);
 
-        sss->add_var_nocopy(ts);	// This has to be here because add_var_nocopy adds
+        sss->add_var_nocopy(ts); // This has to be here because add_var_nocopy adds
         // copies of its argument.
         sss->set_series_values(true);
 
@@ -147,24 +145,22 @@ public:
         dds->add_var_nocopy(sss);
     }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete dds;
         dds = 0;
     }
 
-    bool re_match(Regex &r, const char *s)
-    {
+    bool re_match(Regex &r, const char *s) {
         int match_position = r.match(s, strlen(s));
-        DBG(cerr << "match position: " << match_position << " string length: " << (int )strlen(s) << endl);
-        return match_position == (int) strlen(s);
+        DBG(cerr << "match position: " << match_position << " string length: " << (int)strlen(s) << endl);
+        return match_position == (int)strlen(s);
     }
 
-    CPPUNIT_TEST_SUITE (SequenceTest);
+    CPPUNIT_TEST_SUITE(SequenceTest);
 
-    CPPUNIT_TEST (ctor_test);
-    CPPUNIT_TEST (assignment);
-    CPPUNIT_TEST (copy_ctor);
+    CPPUNIT_TEST(ctor_test);
+    CPPUNIT_TEST(assignment);
+    CPPUNIT_TEST(copy_ctor);
 #if 0
     CPPUNIT_TEST(test_set_leaf_sequence);
     CPPUNIT_TEST(test_set_leaf_sequence2);
@@ -395,31 +391,25 @@ public:
     }
 #endif
 
-    void assignment()
-    {
+    void assignment() {
         Sequence ts2 = *s;
         DBG(cerr << "ts2: " << ts2.toString() << endl);
         CPPUNIT_ASSERT(re_match(s_regex, ts2.toString().c_str()));
     }
 
-    void ctor_test()
-    {
+    void ctor_test() {
         DBG(cerr << "s: " << s->toString() << endl);
         CPPUNIT_ASSERT(re_match(s_regex, s->toString().c_str()));
     }
 
-    void copy_ctor()
-    {
+    void copy_ctor() {
         Sequence s2 = *s;
         CPPUNIT_ASSERT(re_match(s_regex, s2.toString().c_str()));
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (SequenceTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(SequenceTest);
 
-}
+} // namespace libdap
 
-int main(int argc, char*argv[])
-{
-    return run_tests<libdap::SequenceTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<libdap::SequenceTest>(argc, argv) ? 0 : 1; }

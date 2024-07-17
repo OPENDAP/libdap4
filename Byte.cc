@@ -33,41 +33,41 @@
 //
 // jhrg 9/7/94
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "config.h"
 
 #include <sstream>
 
-#include "Byte.h"           // synonymous with UInt8 and Char
-#include "Int8.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
-#include "Int64.h"
-#include "UInt64.h"
+#include "Byte.h" // synonymous with UInt8 and Char
 #include "Float32.h"
 #include "Float64.h"
+#include "Int16.h"
+#include "Int32.h"
+#include "Int64.h"
+#include "Int8.h"
 #include "Str.h"
+#include "UInt16.h"
+#include "UInt32.h"
+#include "UInt64.h"
 #include "Url.h"
 
 #include "DDS.h"
-#include "Operators.h"
 #include "Marshaller.h"
+#include "Operators.h"
 #include "UnMarshaller.h"
 
-#include "DMR.h"
 #include "D4Attributes.h"
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
+#include "DMR.h"
 
-#include "debug.h"
-#include "util.h"
-#include "parser.h"
-#include "dods-limits.h"
-#include "InternalErr.h"
 #include "DapIndent.h"
+#include "InternalErr.h"
+#include "debug.h"
+#include "dods-limits.h"
+#include "parser.h"
+#include "util.h"
 
 using std::cerr;
 using std::endl;
@@ -83,8 +83,7 @@ namespace libdap {
     created.
 
 */
-Byte::Byte(const string & n): BaseType(n, dods_byte_c), d_buf(0)
-{}
+Byte::Byte(const string &n) : BaseType(n, dods_byte_c), d_buf(0) {}
 
 /** This Byte constructor requires the name of the variable to be created
     and the name of the dataset from which this variable is being created.
@@ -96,21 +95,13 @@ Byte::Byte(const string & n): BaseType(n, dods_byte_c), d_buf(0)
     @param d A string containing the name of the dataset from which the
     variable is being created.
 */
-Byte::Byte(const string &n, const string &d): BaseType(n, d, dods_byte_c), d_buf(0)
-{}
+Byte::Byte(const string &n, const string &d) : BaseType(n, d, dods_byte_c), d_buf(0) {}
 
-Byte::Byte(const Byte & copy_from): BaseType(copy_from)
-{
-    d_buf = copy_from.d_buf;
-}
+Byte::Byte(const Byte &copy_from) : BaseType(copy_from) { d_buf = copy_from.d_buf; }
 
-BaseType *Byte::ptr_duplicate()
-{
-    return new Byte(*this);
-}
+BaseType *Byte::ptr_duplicate() { return new Byte(*this); }
 
-Byte & Byte::operator=(const Byte & rhs)
-{
+Byte &Byte::operator=(const Byte &rhs) {
     if (this == &rhs)
         return *this;
     BaseType::operator=(rhs);
@@ -128,20 +119,19 @@ Byte & Byte::operator=(const Byte & rhs)
     @return False if a failure to read, send or flush is detected, true
     otherwise.
 */
-bool Byte::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
-{
+bool Byte::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval) {
 #if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_on();
 #endif
     if (!read_p())
-        read();          // read() throws Error and InternalErr
+        read(); // read() throws Error and InternalErr
 
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
 #if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_off();
 #endif
-    m.put_byte( d_buf ) ;
+    m.put_byte(d_buf);
 
     return true;
 }
@@ -149,18 +139,13 @@ bool Byte::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool 
 /** @brief Deserialize the char on stdin and put the result in
     <tt>_BUF</tt>.
 */
-bool Byte::deserialize(UnMarshaller &um, DDS *, bool)
-{
-    um.get_byte( d_buf ) ;
+bool Byte::deserialize(UnMarshaller &um, DDS *, bool) {
+    um.get_byte(d_buf);
 
     return false;
 }
 
-void
-Byte::compute_checksum(Crc32 &checksum)
-{
-	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(d_buf));
-}
+void Byte::compute_checksum(Crc32 &checksum) { checksum.AddData(reinterpret_cast<uint8_t *>(&d_buf), sizeof(d_buf)); }
 
 /**
  * @brief Serialize a Byte
@@ -170,28 +155,21 @@ Byte::compute_checksum(Crc32 &checksum)
  * @param filter Unused
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
-void
-Byte::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
-{
+void Byte::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool) {
     if (!read_p())
-        read();          // read() throws Error
+        read(); // read() throws Error
 
-    m.put_byte( d_buf ) ;
+    m.put_byte(d_buf);
 }
 
-void
-Byte::deserialize(D4StreamUnMarshaller &um, DMR &)
-{
-    um.get_byte( d_buf ) ;
-}
+void Byte::deserialize(D4StreamUnMarshaller &um, DMR &) { um.get_byte(d_buf); }
 
 /** Store the value referenced by <i>val</i> in the object's internal
     buffer. <i>reuse</i> has no effect because this class does not
     dynamically allocate storage for the internal buffer.
 
     @return The size (in bytes) of the value's representation.  */
-unsigned int Byte::val2buf(void *val, bool)
-{
+unsigned int Byte::val2buf(void *val, bool) {
     // Jose Garcia
     // This method is public therefore, and I believe it has being designed
     // to be use by read which must be implemented on the surrogate library,
@@ -199,13 +177,12 @@ unsigned int Byte::val2buf(void *val, bool)
     if (!val)
         throw InternalErr("the incoming pointer does not contain any data.");
 
-    d_buf = *(dods_byte *) val;
+    d_buf = *(dods_byte *)val;
 
     return width();
 }
 
-unsigned int Byte::buf2val(void **val)
-{
+unsigned int Byte::buf2val(void **val) {
     // Jose Garcia
     // The same comment justifying throwing an Error in val2buf applies here.
     if (!val)
@@ -214,7 +191,7 @@ unsigned int Byte::buf2val(void **val)
     if (!*val)
         *val = new dods_byte;
 
-    *(dods_byte *) * val = d_buf;
+    *(dods_byte *)*val = d_buf;
 
     return width();
 }
@@ -223,8 +200,7 @@ unsigned int Byte::buf2val(void **val)
     @param value The value
     @return Always returns true; the return type of bool is for compatibility
     with the Passive* subclasses written by HAO. */
-bool Byte::set_value(dods_byte value)
-{
+bool Byte::set_value(dods_byte value) {
     d_buf = value;
     set_read_p(true);
 
@@ -233,30 +209,23 @@ bool Byte::set_value(dods_byte value)
 
 /** Get the value of this instance.
     @return The value. */
-dods_byte Byte::value() const
-{
-    return d_buf;
-}
+dods_byte Byte::value() const { return d_buf; }
 
-void Byte::print_val(FILE * out, string space, bool print_decl_p)
-{
+void Byte::print_val(FILE *out, string space, bool print_decl_p) {
     ostringstream oss;
     print_val(oss, space, print_decl_p);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Byte::print_val(ostream &out, string space, bool print_decl_p)
-{
+void Byte::print_val(ostream &out, string space, bool print_decl_p) {
     if (print_decl_p) {
         print_decl(out, space, false);
-        out << " = " << (int) d_buf << ";\n";
-    }
-    else
-        out << (int) d_buf;
+        out << " = " << (int)d_buf << ";\n";
+    } else
+        out << (int)d_buf;
 }
 
-bool Byte::ops(BaseType * b, int op)
-{
+bool Byte::ops(BaseType *b, int op) {
 
     // Extract the Byte arg's value.
     if (!read_p() && !read()) {
@@ -285,39 +254,35 @@ bool Byte::ops(BaseType * b, int op)
 /**
  * @see BaseType::d4_ops(BaseType *, int)
  */
-bool Byte::d4_ops(BaseType *b, int op)
-{
+bool Byte::d4_ops(BaseType *b, int op) {
     switch (b->type()) {
-        case dods_int8_c:
-            return Cmp<dods_byte, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
-        case dods_byte_c:
-            return Cmp<dods_byte, dods_byte>(op, d_buf, static_cast<Byte*>(b)->value());
-        case dods_int16_c:
-            return Cmp<dods_byte, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
-        case dods_uint16_c:
-            return Cmp<dods_byte, dods_uint16>(op, d_buf, static_cast<UInt16*>(b)->value());
-        case dods_int32_c:
-            return Cmp<dods_byte, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
-        case dods_uint32_c:
-            return Cmp<dods_byte, dods_uint32>(op, d_buf, static_cast<UInt32*>(b)->value());
-        case dods_int64_c:
-            return Cmp<dods_byte, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
-        case dods_uint64_c:
-            return Cmp<dods_byte, dods_uint64>(op, d_buf, static_cast<UInt64*>(b)->value());
-        case dods_float32_c:
-            return Cmp<dods_byte, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
-        case dods_float64_c:
-            return Cmp<dods_byte, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
-        case dods_str_c:
-        case dods_url_c:
-            throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
-        default:
-            throw Error(malformed_expr, "Relational operators only work with scalar types.");
+    case dods_int8_c:
+        return Cmp<dods_byte, dods_int8>(op, d_buf, static_cast<Int8 *>(b)->value());
+    case dods_byte_c:
+        return Cmp<dods_byte, dods_byte>(op, d_buf, static_cast<Byte *>(b)->value());
+    case dods_int16_c:
+        return Cmp<dods_byte, dods_int16>(op, d_buf, static_cast<Int16 *>(b)->value());
+    case dods_uint16_c:
+        return Cmp<dods_byte, dods_uint16>(op, d_buf, static_cast<UInt16 *>(b)->value());
+    case dods_int32_c:
+        return Cmp<dods_byte, dods_int32>(op, d_buf, static_cast<Int32 *>(b)->value());
+    case dods_uint32_c:
+        return Cmp<dods_byte, dods_uint32>(op, d_buf, static_cast<UInt32 *>(b)->value());
+    case dods_int64_c:
+        return Cmp<dods_byte, dods_int64>(op, d_buf, static_cast<Int64 *>(b)->value());
+    case dods_uint64_c:
+        return Cmp<dods_byte, dods_uint64>(op, d_buf, static_cast<UInt64 *>(b)->value());
+    case dods_float32_c:
+        return Cmp<dods_byte, dods_float32>(op, d_buf, static_cast<Float32 *>(b)->value());
+    case dods_float64_c:
+        return Cmp<dods_byte, dods_float64>(op, d_buf, static_cast<Float64 *>(b)->value());
+    case dods_str_c:
+    case dods_url_c:
+        throw Error(malformed_expr, "Relational operators can only compare compatible types (number, string).");
+    default:
+        throw Error(malformed_expr, "Relational operators only work with scalar types.");
     }
 }
-
-
-
 
 /** @brief DAP4 to DAP2 transform
  *
@@ -334,16 +299,14 @@ bool Byte::d4_ops(BaseType *b, int op)
  *
  * @return A pointer to the transformed variable
  */
-std::vector<BaseType *> *
-Byte::transform_to_dap2(AttrTable *parent_attr_table)
-{
+std::vector<BaseType *> *Byte::transform_to_dap2(AttrTable *parent_attr_table) {
     DBG(cerr << __func__ << "() - BEGIN" << endl;);
     vector<BaseType *> *vec = BaseType::transform_to_dap2(parent_attr_table);
-    if(vec->size()!=1){
+    if (vec->size() != 1) {
         ostringstream oss;
         oss << __func__ << "() -  Something Bad Happened. This transform should produce only ";
         oss << " a single BaseType yet it produced " << vec->size();
-        throw Error(internal_error,oss.str());
+        throw Error(internal_error, oss.str());
     }
 
     BaseType *dest = (*vec)[0];
@@ -353,10 +316,10 @@ Byte::transform_to_dap2(AttrTable *parent_attr_table)
     // This little bit of magic ensures that the DAP4 shenanigans
     // in which UInt8, Char , and Byte are synonymous is reduced
     // to the DAP2 simplicity of Byte.
-    if(type()!=dods_byte_c){
+    if (type() != dods_byte_c) {
         dest->set_type(dods_byte_c);
     }
-    DBG (dest->get_attr_table().print(cerr););
+    DBG(dest->get_attr_table().print(cerr););
 
     DBG(cerr << __func__ << "() - END" << endl;);
     return vec;
@@ -370,10 +333,8 @@ Byte::transform_to_dap2(AttrTable *parent_attr_table)
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void Byte::dump(ostream & strm) const
-{
-    strm << DapIndent::LMarg << "Byte::dump - ("
-    << (void *) this << ")" << endl;
+void Byte::dump(ostream &strm) const {
+    strm << DapIndent::LMarg << "Byte::dump - (" << (void *)this << ")" << endl;
     DapIndent::Indent();
     BaseType::dump(strm);
     strm << DapIndent::LMarg << "value: " << d_buf << endl;

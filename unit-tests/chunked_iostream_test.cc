@@ -23,19 +23,19 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string>
 
-#include "chunked_ostream.h"
 #include "chunked_istream.h"
+#include "chunked_ostream.h"
 
 #include "InternalErr.h"
 #include "run_tests_cppunit.h"
@@ -43,7 +43,7 @@
 
 #include "debug.h"
 
-const string path = (string) TEST_SRC_DIR + "/chunked-io";
+const string path = (string)TEST_SRC_DIR + "/chunked-io";
 
 using namespace std;
 using namespace CppUnit;
@@ -55,7 +55,7 @@ using namespace libdap;
  * sizes. There are three write functions and three read functions and
  * all combinations are tested.
  */
-class chunked_iostream_test: public TestFixture {
+class chunked_iostream_test : public TestFixture {
 private:
     // This should be big enough to do meaningful timing tests
     string big_file, big_file_2, big_file_3;
@@ -63,16 +63,12 @@ private:
     string small_file;
     // A modest sized text file - makes looking at the results easier
     string text_file;
-public:
-    chunked_iostream_test()
-    {
-    }
-    ~chunked_iostream_test()
-    {
-    }
 
-    void setUp()
-    {
+public:
+    chunked_iostream_test() {}
+    ~chunked_iostream_test() {}
+
+    void setUp() {
         big_file = path + "/test_big_binary_file.bin";
         big_file_2 = path + "/test_big_binary_file_2.bin";
         big_file_3 = path + "/test_big_binary_file_3.bin"; // not used yet
@@ -81,15 +77,13 @@ public:
         text_file = path + "/test_text_file.txt";
     }
 
-    void tearDown()
-    {
-    }
+    void tearDown() {}
 
-    void single_char_write(const string &file, int buf_size)
-    {
+    void single_char_write(const string &file, int buf_size) {
         fstream infile(file.c_str(), ios::in | ios::binary);
         DBG(cerr << "infile: " << file << endl);
-        if (!infile.good()) CPPUNIT_FAIL("File not open or eof");
+        if (!infile.good())
+            CPPUNIT_FAIL("File not open or eof");
 
         string out = file + ".chunked";
         fstream outfile(out.c_str(), ios::out | ios::binary);
@@ -112,10 +106,10 @@ public:
         chunked_outfile.flush();
     }
 
-    void write_128char_data(const string &file, int buf_size)
-    {
+    void write_128char_data(const string &file, int buf_size) {
         fstream infile(file.c_str(), ios::in | ios::binary);
-        if (!infile.good()) CPPUNIT_FAIL("File not open or eof");
+        if (!infile.good())
+            CPPUNIT_FAIL("File not open or eof");
 
         string out = file + ".chunked";
         fstream outfile(out.c_str(), ios::out | ios::binary);
@@ -138,10 +132,10 @@ public:
         chunked_outfile.flush();
     }
 
-    void write_9000char_data(const string &file, int buf_size)
-    {
+    void write_9000char_data(const string &file, int buf_size) {
         fstream infile(file.c_str(), ios::in | ios::binary);
-        if (!infile.good()) CPPUNIT_FAIL("File not open or eof");
+        if (!infile.good())
+            CPPUNIT_FAIL("File not open or eof");
 
         string out = file + ".chunked";
         fstream outfile(out.c_str(), ios::out | ios::binary);
@@ -171,10 +165,10 @@ public:
     // tries to send an End chunk with one or more bytes as opposed to
     // sending the last data chunk with fewer than buf_size and then sending a
     // zero length END chunk).
-    void write_24char_data_with_error_option(const string &file, int buf_size, bool error = false)
-    {
+    void write_24char_data_with_error_option(const string &file, int buf_size, bool error = false) {
         fstream infile(file.c_str(), ios::in | ios::binary);
-        if (!infile.good()) CPPUNIT_FAIL("File not open or eof");
+        if (!infile.good())
+            CPPUNIT_FAIL("File not open or eof");
 
         string out = file + ".chunked";
         fstream outfile(out.c_str(), ios::out | ios::binary);
@@ -192,10 +186,12 @@ public:
 
             infile.read(str, 24);
             num = infile.gcount();
-            if (num > 0 && !infile.eof()) chunked_outfile.write(str, num);
+            if (num > 0 && !infile.eof())
+                chunked_outfile.write(str, num);
 
             // Send an error chunk; the 24 bytes read here are lost...
-            if (error) throw Error("Testing error transmission");
+            if (error)
+                throw Error("Testing error transmission");
 
             infile.read(str, 24);
             num = infile.gcount();
@@ -214,17 +210,16 @@ public:
             // is sent with the remain chars, so removing flush() here ensures that we test
             // a non-empty END chunk.
             // chunked_outfile.flush();
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             chunked_outfile.write_err_chunk(e.get_error_message());
         }
     }
 
-    void single_char_read(const string &file, int buf_size)
-    {
+    void single_char_read(const string &file, int buf_size) {
         string in = file + ".chunked";
         fstream infile(in.c_str(), ios::in | ios::binary);
-        if (!infile.good()) CPPUNIT_FAIL("File not open or eof");
+        if (!infile.good())
+            CPPUNIT_FAIL("File not open or eof");
 #if BYTE_ORDER_PREFIX
         chunked_istream chunked_infile(infile, buf_size, 0x00);
 #else
@@ -247,16 +242,17 @@ public:
 
         DBG(cerr << "eof is :" << chunked_infile.eof() << ", num: " << num << endl);
 
-        if (num > 0 && !chunked_infile.bad()) outfile.write(&c, num);
+        if (num > 0 && !chunked_infile.bad())
+            outfile.write(&c, num);
 
         outfile.flush();
     }
 
-    void read_128char_data(const string &file, int buf_size)
-    {
+    void read_128char_data(const string &file, int buf_size) {
         string in = file + ".chunked";
         fstream infile(in.c_str(), ios::in | ios::binary);
-        if (!infile.good()) cerr << "File not open or eof" << endl;
+        if (!infile.good())
+            cerr << "File not open or eof" << endl;
         chunked_istream chunked_infile(infile, buf_size);
 
         string out = file + ".plain";
@@ -281,11 +277,11 @@ public:
         outfile.flush();
     }
 
-    void read_5000char_data(const string &file, int buf_size)
-    {
+    void read_5000char_data(const string &file, int buf_size) {
         string in = file + ".chunked";
         fstream infile(in.c_str(), ios::in | ios::binary);
-        if (!infile.good()) cerr << "File not open or eof" << endl;
+        if (!infile.good())
+            cerr << "File not open or eof" << endl;
         chunked_istream chunked_infile(infile, buf_size);
 
         string out = file + ".plain";
@@ -310,11 +306,11 @@ public:
         outfile.flush();
     }
 
-    void read_24char_data_with_error_option(const string &file, int buf_size)
-    {
+    void read_24char_data_with_error_option(const string &file, int buf_size) {
         string in = file + ".chunked";
         fstream infile(in.c_str(), ios::in | ios::binary);
-        if (!infile.good()) cerr << "File not open or eof" << endl;
+        if (!infile.good())
+            cerr << "File not open or eof" << endl;
         chunked_istream chunked_infile(infile, buf_size);
 
         string out = file + ".plain";
@@ -342,46 +338,42 @@ public:
             // using EOF. The error message is stored in the buffer and can be
             // detected and accessed using the error() error_message() methods
             // that both the buffer and istream classes have.
-            if (chunked_infile.error()) throw Error("Found an error in the stream");
+            if (chunked_infile.error())
+                throw Error("Found an error in the stream");
 
             if (num > 0 && !chunked_infile.bad()) {
                 outfile.write(str, num);
             }
 
             outfile.flush();
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             DBG(cerr << "Error chunk found: " << e.get_error_message() << endl);
             throw;
         }
     }
 
     // these are the tests
-    void test_write_1_read_1_small_file()
-    {
+    void test_write_1_read_1_small_file() {
         single_char_write(small_file, 32);
         single_char_read(small_file, 32);
         string cmp = "cmp " + small_file + " " + small_file + ".plain";
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_1_read_1_text_file()
-    {
+    void test_write_1_read_1_text_file() {
         single_char_write(text_file, 32);
         single_char_read(text_file, 32);
         string cmp = "cmp " + text_file + " " + text_file + ".plain";
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_1_read_1_big_file()
-    {
+    void test_write_1_read_1_big_file() {
         single_char_write(big_file, 28);
         single_char_read(big_file, 28);
         string cmp = "cmp " + big_file + " " + big_file + ".plain";
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
-    void test_write_1_read_1_big_file_2()
-    {
+    void test_write_1_read_1_big_file_2() {
         single_char_write(big_file_2, 28);
         single_char_read(big_file_2, 28);
         string cmp = "cmp " + big_file_2 + " " + big_file_2 + ".plain";
@@ -389,32 +381,28 @@ public:
     }
 
     // these are the tests
-    void test_write_1_read_128_small_file()
-    {
+    void test_write_1_read_128_small_file() {
         single_char_write(small_file, 32);
         read_128char_data(small_file, 32);
         string cmp = "cmp " + small_file + " " + small_file + ".plain";
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_1_read_128_text_file()
-    {
+    void test_write_1_read_128_text_file() {
         single_char_write(text_file, 32);
         read_128char_data(text_file, 32);
         string cmp = "cmp " + text_file + " " + text_file + ".plain";
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_1_read_128_big_file()
-    {
+    void test_write_1_read_128_big_file() {
         single_char_write(big_file, 28);
         read_128char_data(big_file, 28);
         string cmp = "cmp " + big_file + " " + big_file + ".plain";
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_1_read_128_big_file_2()
-    {
+    void test_write_1_read_128_big_file_2() {
         single_char_write(big_file_2, 28);
         read_128char_data(big_file_2, 28);
         string cmp = "cmp " + big_file_2 + " " + big_file_2 + ".plain";
@@ -423,16 +411,14 @@ public:
 
     // 24 char write units
 
-    void test_write_24_read_1_text_file()
-    {
+    void test_write_24_read_1_text_file() {
         write_24char_data_with_error_option(text_file, 32);
         single_char_read(text_file, 32);
         string cmp = "cmp " + text_file + " " + text_file + ".plain";
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_24_read_1_big_file()
-    {
+    void test_write_24_read_1_big_file() {
         write_24char_data_with_error_option(big_file, 1024);
         DBG(cerr << "Wrote the file" << endl);
 
@@ -441,8 +427,7 @@ public:
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_24_read_1_big_file_2()
-    {
+    void test_write_24_read_1_big_file_2() {
         write_24char_data_with_error_option(big_file_2, 1024);
         DBG(cerr << "Wrote the file" << endl);
 
@@ -451,16 +436,14 @@ public:
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_24_read_128_text_file()
-    {
+    void test_write_24_read_128_text_file() {
         write_24char_data_with_error_option(text_file, 32);
         read_128char_data(text_file, 32);
         string cmp = "cmp " + text_file + " " + text_file + ".plain";
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_24_read_128_big_file()
-    {
+    void test_write_24_read_128_big_file() {
         write_24char_data_with_error_option(big_file, 28);
         DBG(cerr << "Wrote the file" << endl);
 
@@ -469,8 +452,7 @@ public:
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_24_read_128_big_file_2()
-    {
+    void test_write_24_read_128_big_file_2() {
         write_24char_data_with_error_option(big_file_2, 28);
         read_128char_data(big_file_2, 28);
         string cmp = "cmp " + big_file_2 + " " + big_file_2 + ".plain";
@@ -478,16 +460,14 @@ public:
     }
 
     // 128 char writes
-    void test_write_128_read_1_text_file()
-    {
+    void test_write_128_read_1_text_file() {
         write_128char_data(text_file, 32);
         single_char_read(text_file, 32);
         string cmp = "cmp " + text_file + " " + text_file + ".plain";
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_128_read_1_big_file()
-    {
+    void test_write_128_read_1_big_file() {
         write_128char_data(big_file, 32);
         DBG(cerr << "Wrote the file" << endl);
 
@@ -496,8 +476,7 @@ public:
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_128_read_1_big_file_2()
-    {
+    void test_write_128_read_1_big_file_2() {
         write_128char_data(big_file_2, 32);
         DBG(cerr << "Wrote the file" << endl);
 
@@ -506,16 +485,14 @@ public:
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_128_read_128_text_file()
-    {
+    void test_write_128_read_128_text_file() {
         write_128char_data(text_file, 32);
         read_128char_data(text_file, 32);
         string cmp = "cmp " + text_file + " " + text_file + ".plain";
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_128_read_128_big_file()
-    {
+    void test_write_128_read_128_big_file() {
         write_128char_data(big_file, 28);
         DBG(cerr << "Wrote the file" << endl);
 
@@ -524,16 +501,14 @@ public:
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_128_read_128_big_file_2()
-    {
+    void test_write_128_read_128_big_file_2() {
         write_128char_data(big_file_2, 28);
         read_128char_data(big_file_2, 28);
         string cmp = "cmp " + big_file_2 + " " + big_file_2 + ".plain";
         CPPUNIT_ASSERT(system(cmp.c_str()) == 0);
     }
 
-    void test_write_9000_read_5000_big_file_3()
-    {
+    void test_write_9000_read_5000_big_file_3() {
         write_9000char_data(big_file_3, 4000);
         read_5000char_data(big_file_3, 3096);
         string cmp = "cmp " + big_file_3 + " " + big_file_3 + ".plain";
@@ -542,56 +517,51 @@ public:
 
     // Send an error
 
-    void test_write_24_read_24_big_file_2_error()
-    {
+    void test_write_24_read_24_big_file_2_error() {
         write_24char_data_with_error_option(big_file_2, 2048, true /*error*/);
         try {
             read_24char_data_with_error_option(big_file_2, 2048);
             CPPUNIT_FAIL("Should have caught an error message");
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_ASSERT(!e.get_error_message().empty());
         }
     }
 
-    CPPUNIT_TEST_SUITE (chunked_iostream_test);
+    CPPUNIT_TEST_SUITE(chunked_iostream_test);
 
-    CPPUNIT_TEST (test_write_1_read_1_small_file);
-    CPPUNIT_TEST (test_write_1_read_1_text_file);
-    CPPUNIT_TEST (test_write_1_read_1_big_file);
-    CPPUNIT_TEST (test_write_1_read_1_big_file_2);
+    CPPUNIT_TEST(test_write_1_read_1_small_file);
+    CPPUNIT_TEST(test_write_1_read_1_text_file);
+    CPPUNIT_TEST(test_write_1_read_1_big_file);
+    CPPUNIT_TEST(test_write_1_read_1_big_file_2);
 
-    CPPUNIT_TEST (test_write_1_read_128_small_file);
-    CPPUNIT_TEST (test_write_1_read_128_text_file);
-    CPPUNIT_TEST (test_write_1_read_128_big_file);
-    CPPUNIT_TEST (test_write_1_read_128_big_file_2);
+    CPPUNIT_TEST(test_write_1_read_128_small_file);
+    CPPUNIT_TEST(test_write_1_read_128_text_file);
+    CPPUNIT_TEST(test_write_1_read_128_big_file);
+    CPPUNIT_TEST(test_write_1_read_128_big_file_2);
 
-    CPPUNIT_TEST (test_write_24_read_1_text_file);
-    CPPUNIT_TEST (test_write_24_read_1_big_file);
-    CPPUNIT_TEST (test_write_24_read_1_big_file_2);
+    CPPUNIT_TEST(test_write_24_read_1_text_file);
+    CPPUNIT_TEST(test_write_24_read_1_big_file);
+    CPPUNIT_TEST(test_write_24_read_1_big_file_2);
 
-    CPPUNIT_TEST (test_write_24_read_128_text_file);
-    CPPUNIT_TEST (test_write_24_read_128_big_file);
-    CPPUNIT_TEST (test_write_24_read_128_big_file_2);
+    CPPUNIT_TEST(test_write_24_read_128_text_file);
+    CPPUNIT_TEST(test_write_24_read_128_big_file);
+    CPPUNIT_TEST(test_write_24_read_128_big_file_2);
 
-    CPPUNIT_TEST (test_write_128_read_1_text_file);
-    CPPUNIT_TEST (test_write_128_read_1_big_file);
-    CPPUNIT_TEST (test_write_128_read_1_big_file_2);
+    CPPUNIT_TEST(test_write_128_read_1_text_file);
+    CPPUNIT_TEST(test_write_128_read_1_big_file);
+    CPPUNIT_TEST(test_write_128_read_1_big_file_2);
 
-    CPPUNIT_TEST (test_write_128_read_128_text_file);
-    CPPUNIT_TEST (test_write_128_read_128_big_file);
-    CPPUNIT_TEST (test_write_128_read_128_big_file_2);
+    CPPUNIT_TEST(test_write_128_read_128_text_file);
+    CPPUNIT_TEST(test_write_128_read_128_big_file);
+    CPPUNIT_TEST(test_write_128_read_128_big_file_2);
 
-    CPPUNIT_TEST (test_write_24_read_24_big_file_2_error);
+    CPPUNIT_TEST(test_write_24_read_24_big_file_2_error);
 
-    CPPUNIT_TEST (test_write_9000_read_5000_big_file_3);
+    CPPUNIT_TEST(test_write_9000_read_5000_big_file_3);
 
     CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (chunked_iostream_test);
+CPPUNIT_TEST_SUITE_REGISTRATION(chunked_iostream_test);
 
-int main(int argc, char *argv[])
-{
-    return run_tests<chunked_iostream_test>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<chunked_iostream_test>(argc, argv) ? 0 : 1; }

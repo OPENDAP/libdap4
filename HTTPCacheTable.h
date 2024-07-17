@@ -25,19 +25,19 @@
 #ifndef _http_cache_table_h
 #define _http_cache_table_h
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include <pthread.h>
 
 #ifdef WIN32
-#include <io.h>   // stat for win32? 09/05/02 jhrg
+#include <io.h> // stat for win32? 09/05/02 jhrg
 #endif
 
 #include <cstring>
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 #ifndef _http_cache_h
 #include "HTTPCache.h"
@@ -59,25 +59,27 @@
 #include "debug.h"
 #endif
 
- //long_to_string(code));
-#define LOCK(m) do { \
-	int code = pthread_mutex_lock((m)); \
-	if (code != 0) \
-		throw InternalErr(__FILE__, __LINE__, string("Mutex lock: ") + strerror(code)); \
-    } while(0);
+// long_to_string(code));
+#define LOCK(m)                                                                                                        \
+    do {                                                                                                               \
+        int code = pthread_mutex_lock((m));                                                                            \
+        if (code != 0)                                                                                                 \
+            throw InternalErr(__FILE__, __LINE__, string("Mutex lock: ") + strerror(code));                            \
+    } while (0);
 
 //+ long_to_string(code));
-#define UNLOCK(m) do { \
-	int code = pthread_mutex_unlock((m)); \
-	if (code != 0) \
-		throw InternalErr(__FILE__, __LINE__, string("Mutex unlock: ") + strerror(code)); \
-    } while(0);
+#define UNLOCK(m)                                                                                                      \
+    do {                                                                                                               \
+        int code = pthread_mutex_unlock((m));                                                                          \
+        if (code != 0)                                                                                                 \
+            throw InternalErr(__FILE__, __LINE__, string("Mutex unlock: ") + strerror(code));                          \
+    } while (0);
 
 #define TRYLOCK(m) pthread_mutex_trylock((m))
 #define INIT(m) pthread_mutex_init((m), 0)
 #define DESTROY(m) pthread_mutex_destroy((m))
 
-//using namespace std;
+// using namespace std;
 
 namespace libdap {
 
@@ -126,7 +128,7 @@ public:
         time_t max_age; // From Cache-Control
 
         unsigned long size; // Size of cached entity body
-        bool range; // Range is not currently supported. 10/02/02 jhrg
+        bool range;         // Range is not currently supported. 10/02/02 jhrg
 
         time_t freshness_lifetime;
         time_t response_time;
@@ -136,7 +138,7 @@ public:
         bool no_cache; // This field is not saved in the index.
 
         int readers;
-        pthread_mutex_t d_response_lock; // set if being read
+        pthread_mutex_t d_response_lock;       // set if being read
         pthread_mutex_t d_response_write_lock; // set if being written
 
         // Allow HTTPCacheTable methods access and the test class, too
@@ -151,57 +153,20 @@ public:
         friend class DeleteBySize;
 
     public:
-        string get_cachename()
-        {
-            return cachename;
-        }
-        string get_etag()
-        {
-            return etag;
-        }
-        time_t get_lm()
-        {
-            return lm;
-        }
-        time_t get_expires()
-        {
-            return expires;
-        }
-        time_t get_max_age()
-        {
-            return max_age;
-        }
-        void set_size(unsigned long sz)
-        {
-            size = sz;
-        }
-        time_t get_freshness_lifetime()
-        {
-            return freshness_lifetime;
-        }
-        time_t get_response_time()
-        {
-            return response_time;
-        }
-        time_t get_corrected_initial_age()
-        {
-            return corrected_initial_age;
-        }
-        bool get_must_revalidate()
-        {
-            return must_revalidate;
-        }
-        void set_no_cache(bool state)
-        {
-            no_cache = state;
-        }
-        bool is_no_cache()
-        {
-            return no_cache;
-        }
+        string get_cachename() { return cachename; }
+        string get_etag() { return etag; }
+        time_t get_lm() { return lm; }
+        time_t get_expires() { return expires; }
+        time_t get_max_age() { return max_age; }
+        void set_size(unsigned long sz) { size = sz; }
+        time_t get_freshness_lifetime() { return freshness_lifetime; }
+        time_t get_response_time() { return response_time; }
+        time_t get_corrected_initial_age() { return corrected_initial_age; }
+        bool get_must_revalidate() { return must_revalidate; }
+        void set_no_cache(bool state) { no_cache = state; }
+        bool is_no_cache() { return no_cache; }
 
-        void lock_read_response()
-        {
+        void lock_read_response() {
             DBG(cerr << "Try locking read response... (" << hex << &d_response_lock << dec << ") ");
             int status = TRYLOCK(&d_response_lock);
             if (status != 0 /*&& status == EBUSY*/) {
@@ -213,45 +178,42 @@ public:
             readers++; // Record number of readers
 
             DBGN(cerr << "Done" << endl);
-
         }
 
-        void unlock_read_response()
-        {
+        void unlock_read_response() {
             readers--;
             if (readers == 0) {
                 DBG(cerr << "Unlocking read response... (" << hex << &d_response_lock << dec << ") ");
-                UNLOCK(&d_response_lock); DBGN(cerr << "Done" << endl);
+                UNLOCK(&d_response_lock);
+                DBGN(cerr << "Done" << endl);
             }
         }
 
-        void lock_write_response()
-        {
+        void lock_write_response() {
             DBG(cerr << "locking write response... (" << hex << &d_response_lock << dec << ") ");
             LOCK(&d_response_lock);
-            LOCK(&d_response_write_lock); DBGN(cerr << "Done" << endl);
+            LOCK(&d_response_write_lock);
+            DBGN(cerr << "Done" << endl);
         }
 
-        void unlock_write_response()
-        {
+        void unlock_write_response() {
             DBG(cerr << "Unlocking write response... (" << hex << &d_response_lock << dec << ") ");
             UNLOCK(&d_response_write_lock);
-            UNLOCK(&d_response_lock); DBGN(cerr << "Done" << endl);
+            UNLOCK(&d_response_lock);
+            DBGN(cerr << "Done" << endl);
         }
 
-        CacheEntry() :
-            url(""), hash(-1), hits(0), cachename(""), etag(""), lm(-1), expires(-1), date(-1), age(-1), max_age(-1), size(
-                0), range(false), freshness_lifetime(0), response_time(0), corrected_initial_age(0), must_revalidate(
-                false), no_cache(false), readers(0)
-        {
+        CacheEntry()
+            : url(""), hash(-1), hits(0), cachename(""), etag(""), lm(-1), expires(-1), date(-1), age(-1), max_age(-1),
+              size(0), range(false), freshness_lifetime(0), response_time(0), corrected_initial_age(0),
+              must_revalidate(false), no_cache(false), readers(0) {
             INIT(&d_response_lock);
             INIT(&d_response_write_lock);
         }
-        CacheEntry(const string &u) :
-            url(u), hash(-1), hits(0), cachename(""), etag(""), lm(-1), expires(-1), date(-1), age(-1), max_age(-1), size(
-                0), range(false), freshness_lifetime(0), response_time(0), corrected_initial_age(0), must_revalidate(
-                false), no_cache(false), readers(0)
-        {
+        CacheEntry(const string &u)
+            : url(u), hash(-1), hits(0), cachename(""), etag(""), lm(-1), expires(-1), date(-1), age(-1), max_age(-1),
+              size(0), range(false), freshness_lifetime(0), response_time(0), corrected_initial_age(0),
+              must_revalidate(false), no_cache(false), readers(0) {
             INIT(&d_response_lock);
             INIT(&d_response_write_lock);
             hash = get_hash(url);
@@ -266,7 +228,7 @@ public:
     typedef vector<CacheEntry *> CacheEntries;
     typedef CacheEntries::iterator CacheEntriesIter;
 
-    typedef CacheEntries **CacheTable;    // Array of pointers to CacheEntries
+    typedef CacheEntries **CacheTable; // Array of pointers to CacheEntries
 
     friend class HTTPCacheTest;
 
@@ -287,10 +249,7 @@ private:
     HTTPCacheTable &operator=(const HTTPCacheTable &);
     HTTPCacheTable();
 
-    CacheTable &get_cache_table()
-    {
-        return d_cache_table;
-    }
+    CacheTable &get_cache_table() { return d_cache_table; }
 
     CacheEntry *get_locked_entry_from_cache_table(int hash, const string &url); /*const*/
 
@@ -299,41 +258,17 @@ public:
     ~HTTPCacheTable();
 
     //@{ @name Accessors/Mutators
-    unsigned long get_current_size() const
-    {
-        return d_current_size;
-    }
-    void set_current_size(unsigned long sz)
-    {
-        d_current_size = sz;
-    }
+    unsigned long get_current_size() const { return d_current_size; }
+    void set_current_size(unsigned long sz) { d_current_size = sz; }
 
-    unsigned int get_block_size() const
-    {
-        return d_block_size;
-    }
-    void set_block_size(unsigned int sz)
-    {
-        d_block_size = sz;
-    }
+    unsigned int get_block_size() const { return d_block_size; }
+    void set_block_size(unsigned int sz) { d_block_size = sz; }
 
-    int get_new_entries() const
-    {
-        return d_new_entries;
-    }
-    void increment_new_entries()
-    {
-        ++d_new_entries;
-    }
+    int get_new_entries() const { return d_new_entries; }
+    void increment_new_entries() { ++d_new_entries; }
 
-    string get_cache_root()
-    {
-        return d_cache_root;
-    }
-    void set_cache_root(const string &cr)
-    {
-        d_cache_root = cr;
-    }
+    string get_cache_root() { return d_cache_root; }
+    void set_cache_root(const string &cr) { d_cache_root = cr; }
     //@}
 
     void delete_expired_entries(time_t time = 0);

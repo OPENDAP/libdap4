@@ -50,9 +50,9 @@
 #include "Byte.h"
 #include "TestCommon.h"
 
-using namespace libdap ;
+using namespace libdap;
 
-class TestByte: public Byte, public TestCommon {
+class TestByte : public Byte, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestByte &ts);
 
@@ -76,4 +76,3 @@ public:
 };
 
 #endif // _testbyte_h
-

@@ -36,38 +36,38 @@
 // #define DODS_DEBUG
 #include "config.h"
 
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 
-#include <unistd.h>  // for stat
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h> // for stat
 
 #ifdef WIN32
 #define FALSE 0
 // Win32 does not define F_OK. 08/21/02 jhrg
 #define F_OK 0
 #define DIR_SEP_STRING "\\"
-#define DIR_SEP_CHAR   '\\'
+#define DIR_SEP_CHAR '\\'
 #include <direct.h>
 #else
 #define DIR_SEP_STRING "/"
-#define DIR_SEP_CHAR   '/'
+#define DIR_SEP_CHAR '/'
 #endif
 
 #include <pthread.h>
 
 #include <fstream>
 
-#include "debug.h"
-#include "RCReader.h"
 #include "Error.h"
+#include "RCReader.h"
+#include "debug.h"
 
 using namespace std;
 
 namespace libdap {
 
-RCReader* RCReader::_instance = 0;
+RCReader *RCReader::_instance = 0;
 
 // This variable (instance_control) is used to ensure that in a MT
 // environment _instance is correctly initialized. See the get_instance
@@ -78,8 +78,7 @@ static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
  default .dodsrc file. Nominally this will use the defaults for each thing
  that might be read from the configuration file. */
 
-bool RCReader::write_rc_file(const string &pathname)
-{
+bool RCReader::write_rc_file(const string &pathname) {
     DBG(cerr << "Writing the RC file to " << pathname << endl);
     ofstream fpo(pathname.c_str());
 
@@ -113,8 +112,9 @@ bool RCReader::write_rc_file(const string &pathname)
         fpo << "# PROXY_SERVER=[http://][username:password@]host[:port]" << endl;
         if (!d_dods_proxy_server_host.empty()) {
             fpo << "PROXY_SERVER=" << d_dods_proxy_server_protocol << "://"
-                    << (d_dods_proxy_server_userpw.empty() ? "" : d_dods_proxy_server_userpw + "@")
-                            + d_dods_proxy_server_host + ":" + long_to_string(d_dods_proxy_server_port) << endl;
+                << (d_dods_proxy_server_userpw.empty() ? "" : d_dods_proxy_server_userpw + "@") +
+                       d_dods_proxy_server_host + ":" + long_to_string(d_dods_proxy_server_port)
+                << endl;
         }
 
         fpo << "# NO_PROXY_FOR=<host|domain>" << endl;
@@ -139,8 +139,7 @@ bool RCReader::write_rc_file(const string &pathname)
     return false;
 }
 
-bool RCReader::read_rc_file(const string &pathname)
-{
+bool RCReader::read_rc_file(const string &pathname) {
     DBG(cerr << "Reading the RC file from " << pathname << endl);
 
     ifstream fpi(pathname.c_str());
@@ -151,61 +150,53 @@ bool RCReader::read_rc_file(const string &pathname)
         // overwritten.
         char *value;
         // TODO Replace with a vector<char>
-        //char *tempstr = new char[1024];
+        // char *tempstr = new char[1024];
         vector<char> tempstr(1024);
         int tokenlength;
         while (true) {
             fpi.getline(tempstr.data(), 1023);
-            if (!fpi.good()) break;
+            if (!fpi.good())
+                break;
 
             value = strchr(tempstr.data(), '=');
-            if (!value) continue;
+            if (!value)
+                continue;
             tokenlength = value - tempstr.data();
             value++;
 
             if ((strncmp(tempstr.data(), "USE_CACHE", 9) == 0) && tokenlength == 9) {
                 _dods_use_cache = atoi(value) ? true : false;
-            }
-            else if ((strncmp(tempstr.data(), "MAX_CACHE_SIZE", 14) == 0) && tokenlength == 14) {
+            } else if ((strncmp(tempstr.data(), "MAX_CACHE_SIZE", 14) == 0) && tokenlength == 14) {
                 _dods_cache_max = atoi(value);
-            }
-            else if ((strncmp(tempstr.data(), "MAX_CACHED_OBJ", 14) == 0) && tokenlength == 14) {
+            } else if ((strncmp(tempstr.data(), "MAX_CACHED_OBJ", 14) == 0) && tokenlength == 14) {
                 _dods_cached_obj = atoi(value);
-            }
-            else if ((strncmp(tempstr.data(), "IGNORE_EXPIRES", 14) == 0) && tokenlength == 14) {
+            } else if ((strncmp(tempstr.data(), "IGNORE_EXPIRES", 14) == 0) && tokenlength == 14) {
                 _dods_ign_expires = atoi(value);
-            }
-            else if ((strncmp(tempstr.data(), "DEFLATE", 7) == 0) && tokenlength == 7) {
+            } else if ((strncmp(tempstr.data(), "DEFLATE", 7) == 0) && tokenlength == 7) {
                 _dods_deflate = atoi(value) ? true : false;
-            }
-            else if ((strncmp(tempstr.data(), "CACHE_ROOT", 10) == 0) && tokenlength == 10) {
+            } else if ((strncmp(tempstr.data(), "CACHE_ROOT", 10) == 0) && tokenlength == 10) {
                 d_cache_root = value;
-                if (d_cache_root[d_cache_root.length() - 1] != DIR_SEP_CHAR) d_cache_root += string(DIR_SEP_STRING);
-            }
-            else if ((strncmp(tempstr.data(), "DEFAULT_EXPIRES", 15) == 0) && tokenlength == 15) {
+                if (d_cache_root[d_cache_root.length() - 1] != DIR_SEP_CHAR)
+                    d_cache_root += string(DIR_SEP_STRING);
+            } else if ((strncmp(tempstr.data(), "DEFAULT_EXPIRES", 15) == 0) && tokenlength == 15) {
                 _dods_default_expires = atoi(value);
-            }
-            else if ((strncmp(tempstr.data(), "ALWAYS_VALIDATE", 15) == 0) && tokenlength == 15) {
+            } else if ((strncmp(tempstr.data(), "ALWAYS_VALIDATE", 15) == 0) && tokenlength == 15) {
                 _dods_always_validate = atoi(value);
-            }
-            else if ((strncmp(tempstr.data(), "VALIDATE_SSL", 12) == 0) && tokenlength == 12) {
+            } else if ((strncmp(tempstr.data(), "VALIDATE_SSL", 12) == 0) && tokenlength == 12) {
                 d_validate_ssl = atoi(value);
-            }
-            else if (strncmp(tempstr.data(), "AIS_DATABASE", 12) == 0 && tokenlength == 12) {
+            } else if (strncmp(tempstr.data(), "AIS_DATABASE", 12) == 0 && tokenlength == 12) {
                 d_ais_database = value;
-            }
-            else if (strncmp(tempstr.data(), "COOKIE_JAR", 10) == 0 && tokenlength == 10) {
+            } else if (strncmp(tempstr.data(), "COOKIE_JAR", 10) == 0 && tokenlength == 10) {
                 // if the value of COOKIE_JAR starts with a slash, use it as
                 // is. However, if it does not start with a slash, prefix it
                 // with the directory that contains the .dodsrc file.
                 if (value[0] == '/') {
                     d_cookie_jar = value;
-                }
-                else {
+                } else {
                     d_cookie_jar = d_rc_file_path.substr(0, d_rc_file_path.find(".dodsrc")) + string(value);
-                } DBG(cerr << "set cookie jar to: " << d_cookie_jar << endl);
-            }
-            else if ((strncmp(tempstr.data(), "PROXY_SERVER", 12) == 0) && tokenlength == 12) {
+                }
+                DBG(cerr << "set cookie jar to: " << d_cookie_jar << endl);
+            } else if ((strncmp(tempstr.data(), "PROXY_SERVER", 12) == 0) && tokenlength == 12) {
                 // Setup a proxy server for all requests.
                 // The original syntax was <protocol>,<machine> where the
                 // machine could also contain the user/pass and port info.
@@ -221,10 +212,10 @@ bool RCReader::read_rc_file(const string &pathname)
                     d_dods_proxy_server_protocol = proxy.substr(0, comma);
                     downcase(d_dods_proxy_server_protocol);
                     if (d_dods_proxy_server_protocol != "http")
-                        throw Error("The only supported protocol for a proxy server is \"HTTP\". Correct your \".dodsrc\" file.");
+                        throw Error("The only supported protocol for a proxy server is \"HTTP\". Correct your "
+                                    "\".dodsrc\" file.");
                     proxy = proxy.substr(comma + 1);
-                }
-                else {
+                } else {
                     d_dods_proxy_server_protocol = "http";
                 }
 
@@ -239,8 +230,7 @@ bool RCReader::read_rc_file(const string &pathname)
                 if (at_sign != string::npos) { // has userpw
                     d_dods_proxy_server_userpw = proxy.substr(0, at_sign);
                     proxy = proxy.substr(at_sign + 1);
-                }
-                else
+                } else
                     d_dods_proxy_server_userpw = "";
 
                 // Get host and look for a port number
@@ -248,13 +238,11 @@ bool RCReader::read_rc_file(const string &pathname)
                 if (colon != string::npos) {
                     d_dods_proxy_server_host = proxy.substr(0, colon);
                     d_dods_proxy_server_port = strtol(proxy.substr(colon + 1).c_str(), 0, 0);
-                }
-                else {
+                } else {
                     d_dods_proxy_server_host = proxy;
                     d_dods_proxy_server_port = 80;
                 }
-            }
-            else if ((strncmp(tempstr.data(), "NO_PROXY_FOR", 12) == 0) && tokenlength == 12) {
+            } else if ((strncmp(tempstr.data(), "NO_PROXY_FOR", 12) == 0) && tokenlength == 12) {
                 // Setup a proxy server for all requests.
                 string no_proxy = value;
                 string::size_type comma = no_proxy.find(',');
@@ -265,8 +253,7 @@ bool RCReader::read_rc_file(const string &pathname)
                     d_dods_no_proxy_for_protocol = "http";
                     d_dods_no_proxy_for_host = no_proxy;
                     d_dods_no_proxy_for = true;
-                }
-                else {
+                } else {
                     d_dods_no_proxy_for_protocol = no_proxy.substr(0, comma);
                     d_dods_no_proxy_for_host = no_proxy.substr(comma + 1);
                     d_dods_no_proxy_for = true;
@@ -274,12 +261,12 @@ bool RCReader::read_rc_file(const string &pathname)
             }
         }
 
-        //delete [] tempstr; tempstr = 0;
+        // delete [] tempstr; tempstr = 0;
 
         fpi.close(); // Close the .dodsrc file. 12/14/99 jhrg
 
         return true;
-    }  // End of cache file parsing.
+    } // End of cache file parsing.
 
     return false;
 }
@@ -287,19 +274,18 @@ bool RCReader::read_rc_file(const string &pathname)
 // Helper for check_env_var(). This is its main logic, separated out for the
 // cases under WIN32 where we don't use an environment variable.  09/19/03
 // jhrg
-string RCReader::check_string(string env_var)
-{
+string RCReader::check_string(string env_var) {
     DBG(cerr << "Entering check_string... (" << env_var << ")" << endl);
     struct stat stat_info;
 
     if (stat(env_var.c_str(), &stat_info) != 0) {
         DBG(cerr << "stat returned non-zero" << endl);
-        return "";  // ENV VAR not a file or dir, bail
+        return ""; // ENV VAR not a file or dir, bail
     }
 
     if (S_ISREG(stat_info.st_mode)) {
         DBG(cerr << "S_ISREG: " << S_ISREG(stat_info.st_mode) << endl);
-        return env_var;  // ENV VAR is a file, use it
+        return env_var; // ENV VAR is a file, use it
     }
 
     // ENV VAR is a directory, does it contain .dodsrc? Can we create
@@ -342,10 +328,10 @@ string RCReader::check_string(string env_var)
 
  @return The pathname to the RC file or "" if another variable/method
  should be used to find/create the RC file. */
-string RCReader::check_env_var(const string &variable_name)
-{
+string RCReader::check_env_var(const string &variable_name) {
     char *ev = getenv(variable_name.c_str());
-    if (!ev || strlen(ev) == 0) return "";
+    if (!ev || strlen(ev) == 0)
+        return "";
 
     return check_string(ev);
 }
@@ -367,8 +353,8 @@ RCReader::RCReader() // throw (Error) jhrg 7/2/15
     _dods_deflate = 0;
     d_validate_ssl = 1;
 
-    //flags for PROXY_SERVER=<protocol>,<host url>
-    // New syntax PROXY_SERVER=[http://][user:pw@]host[:port]
+    // flags for PROXY_SERVER=<protocol>,<host url>
+    //  New syntax PROXY_SERVER=[http://][user:pw@]host[:port]
     d_dods_proxy_server_protocol = "";
     d_dods_proxy_server_host = "";
     d_dods_proxy_server_port = 0;
@@ -383,8 +369,8 @@ RCReader::RCReader() // throw (Error) jhrg 7/2/15
     _dods_proxy_for_proxy_host_url = "";
     _dods_proxy_for_regexp_flags = 0;
 
-    //flags for NO_PROXY_FOR=<protocol>,<host>,<port>
-    // New syntax NO_PROXY_FOR=<host|domain>
+    // flags for NO_PROXY_FOR=<protocol>,<host>,<port>
+    //  New syntax NO_PROXY_FOR=<host|domain>
     d_dods_no_proxy_for = false;
     d_dods_no_proxy_for_protocol = ""; // deprecated
     d_dods_no_proxy_for_host = "";
@@ -404,27 +390,26 @@ RCReader::RCReader() // throw (Error) jhrg 7/2/15
     }
     //  Normally, I'd prefer this for WinNT-based systems.
     if (d_rc_file_path.empty())
-    d_rc_file_path = check_env_var("APPDATA");
+        d_rc_file_path = check_env_var("APPDATA");
     if (d_rc_file_path.empty())
-    d_rc_file_path = check_env_var("TEMP");
+        d_rc_file_path = check_env_var("TEMP");
     if (d_rc_file_path.empty())
-    d_rc_file_path = check_env_var("TMP");
+        d_rc_file_path = check_env_var("TMP");
 #else
     d_rc_file_path = check_env_var("DODS_CONF");
-    if (d_rc_file_path.empty()) d_rc_file_path = check_env_var("HOME");
+    if (d_rc_file_path.empty())
+        d_rc_file_path = check_env_var("HOME");
 #endif
     DBG(cerr << "Looking for .dodsrc in: " << d_rc_file_path << endl);
 
-    if (!d_rc_file_path.empty()) read_rc_file(d_rc_file_path);
+    if (!d_rc_file_path.empty())
+        read_rc_file(d_rc_file_path);
 }
 
-RCReader::~RCReader()
-{
-}
+RCReader::~RCReader() {}
 
 /** Static void private method. */
-void RCReader::delete_instance()
-{
+void RCReader::delete_instance() {
     if (RCReader::_instance) {
         delete RCReader::_instance;
         RCReader::_instance = 0;
@@ -432,8 +417,7 @@ void RCReader::delete_instance()
 }
 
 /** Static void private method. */
-void RCReader::initialize_instance()
-{
+void RCReader::initialize_instance() {
     DBGN(cerr << "RCReader::initialize_instance() ... ");
 
     RCReader::_instance = new RCReader;
@@ -442,9 +426,7 @@ void RCReader::initialize_instance()
     DBG(cerr << "exiting." << endl);
 }
 
-RCReader*
-RCReader::instance()
-{
+RCReader *RCReader::instance() {
     DBG(cerr << "Entring RCReader::instance" << endl);
     // The instance_control variable is defined at the top of this file.
     // 08/07/02 jhrg

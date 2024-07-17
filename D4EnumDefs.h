@@ -25,10 +25,10 @@
 #ifndef D4ENUMDEF_H_
 #define D4ENUMDEF_H_
 
-#include <string>
-#include <vector>
 #include <algorithm>
 #include <functional>
+#include <string>
+#include <vector>
 
 #include "BaseType.h"
 
@@ -53,8 +53,7 @@ class D4EnumDef {
 
     vector<tuple> d_tuples;
 
-    void m_duplicate(const D4EnumDef &rhs)
-    {
+    void m_duplicate(const D4EnumDef &rhs) {
         d_name = rhs.d_name;
         d_type = rhs.d_type;
         d_parent = rhs.d_parent;
@@ -68,14 +67,13 @@ public:
 
     D4EnumDef() : d_name(""), d_type(dods_null_c), d_parent(0) {}
     D4EnumDef(const string &n, const Type &t, D4EnumDefs *e = 0) : d_name(n), d_type(t), d_parent(e) {}
-    D4EnumDef(const D4EnumDef &rhs) {
-        m_duplicate(rhs);
-    }
+    D4EnumDef(const D4EnumDef &rhs) { m_duplicate(rhs); }
 
-    virtual ~D4EnumDef() { }
+    virtual ~D4EnumDef() {}
 
     D4EnumDef &operator=(const D4EnumDef &rhs) {
-        if (this == &rhs) return *this;
+        if (this == &rhs)
+            return *this;
         m_duplicate(rhs);
         return *this;
     }
@@ -91,9 +89,7 @@ public:
 
     bool empty() const { return d_tuples.empty(); }
 
-    void add_value(const string &label, long long value) {
-        d_tuples.push_back(tuple(label, value));
-    }
+    void add_value(const string &label, long long value) { d_tuples.push_back(tuple(label, value)); }
 
     D4EnumValueIter value_begin() { return d_tuples.begin(); }
     D4EnumValueIter value_end() { return d_tuples.end(); }
@@ -106,39 +102,38 @@ public:
 
 /** The Enumerations defined for a Group. */
 class D4EnumDefs {
-    vector<D4EnumDef*> d_enums;
+    vector<D4EnumDef *> d_enums;
 
-    D4Group *d_parent;		// the group that holds this set of D4EnumDefs; weak pointer, don't delete
+    D4Group *d_parent; // the group that holds this set of D4EnumDefs; weak pointer, don't delete
 
     void m_print_enum(XMLWriter &xml, D4EnumDef *e) const;
 
     void m_duplicate(const D4EnumDefs &rhs) {
         D4EnumDefCIter i = rhs.d_enums.begin();
         while (i != rhs.d_enums.end()) {
-            d_enums.push_back(new D4EnumDef(**i++));    // deep copy
+            d_enums.push_back(new D4EnumDef(**i++)); // deep copy
         }
 
         d_parent = rhs.d_parent;
     }
 
 public:
-    typedef vector<D4EnumDef*>::iterator D4EnumDefIter;
-    typedef vector<D4EnumDef*>::const_iterator D4EnumDefCIter;
+    typedef vector<D4EnumDef *>::iterator D4EnumDefIter;
+    typedef vector<D4EnumDef *>::const_iterator D4EnumDefCIter;
 
     D4EnumDefs() : d_parent(0) {}
-    D4EnumDefs(const D4EnumDefs &rhs) {
-        m_duplicate(rhs);
-    }
+    D4EnumDefs(const D4EnumDefs &rhs) { m_duplicate(rhs); }
 
     virtual ~D4EnumDefs() {
         D4EnumDefIter i = d_enums.begin();
-        while(i != d_enums.end()) {
+        while (i != d_enums.end()) {
             delete *i++;
         }
     }
 
     D4EnumDefs &operator=(const D4EnumDefs &rhs) {
-        if (this == &rhs) return *this;
+        if (this == &rhs)
+            return *this;
         m_duplicate(rhs);
         return *this;
     }
@@ -152,11 +147,9 @@ public:
      *
      * @param enum_def The enumeration.
      */
-    void add_enum(D4EnumDef *enum_def) {
-    	add_enum_nocopy(new D4EnumDef(*enum_def));
-    }
+    void add_enum(D4EnumDef *enum_def) { add_enum_nocopy(new D4EnumDef(*enum_def)); }
     void add_enum_nocopy(D4EnumDef *enum_def) {
-    	enum_def->set_parent(this);
+        enum_def->set_parent(this);
         d_enums.push_back(enum_def);
     }
 
@@ -177,8 +170,8 @@ public:
      * @param i iterator
      */
     void insert_enum(D4EnumDef *enum_def, D4EnumDefIter i) {
-    	D4EnumDef *enum_def_copy = new D4EnumDef(*enum_def);
-    	enum_def_copy->set_parent(this);
+        D4EnumDef *enum_def_copy = new D4EnumDef(*enum_def);
+        enum_def_copy->set_parent(this);
         d_enums.insert(i, enum_def_copy);
     }
 

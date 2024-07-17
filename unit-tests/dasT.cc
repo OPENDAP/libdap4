@@ -1,15 +1,15 @@
-#include <cppunit/TestFixture.h>
+#include <cppunit/CompilerOutputter.h>
 #include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/CompilerOutputter.h>
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <sys/stat.h> 
 #include <fcntl.h>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <sys/stat.h>
 #include <unistd.h>
 
 // #define DODS_DEBUG
@@ -18,20 +18,16 @@
 
 #include "testFile.h"
 
-#include "InternalErr.h"
 #include "Error.h"
+#include "InternalErr.h"
 #include "run_tests_cppunit.h"
 #include "test_config.h"
-
 
 using namespace std;
 using namespace libdap;
 using namespace CppUnit;
 
-
-
-string dprint =
-    "\
+string dprint = "\
 Attributes {\n\
     c1 {\n\
         v1 {\n\
@@ -61,7 +57,7 @@ Attributes {\n\
 }\n\
 ";
 
-class dasT: public CppUnit::TestFixture {
+class dasT : public CppUnit::TestFixture {
 
     CPPUNIT_TEST_SUITE(dasT);
     CPPUNIT_TEST(dasT_test);
@@ -76,16 +72,11 @@ private:
     /* TEST PRIVATE DATA */
 
 public:
-    void setUp()
-    {
-    }
+    void setUp() {}
 
-    void tearDown()
-    {
-    }
+    void tearDown() {}
 
-    void dasT_test()
-    {
+    void dasT_test() {
         DAS das;
         CPPUNIT_ASSERT(das.get_size() == 0);
         CPPUNIT_ASSERT(das.container_name().empty());
@@ -168,13 +159,12 @@ public:
         // print to stream and compare results
         ostringstream strm;
         das.print(strm);
-        //cout << strm.str() << endl;
-        //cout << dprint << endl;
+        // cout << strm.str() << endl;
+        // cout << dprint << endl;
         CPPUNIT_ASSERT(strm.str() == dprint);
     }
 
-    void das_file_test()
-    {
+    void das_file_test() {
         DAS d;
         FILE *fp;
         string file = (string)TEST_SRC_DIR + "/dds-testsuite/test.1.das";
@@ -186,8 +176,7 @@ public:
         CPPUNIT_ASSERT_THROW(d.parse(""), Error);
     }
 
-    void das_file_2_test()
-    {
+    void das_file_2_test() {
         DAS d;
         int fp;
         string file = (string)TEST_SRC_DIR + "/dds-testsuite/test.1.das";
@@ -198,25 +187,22 @@ public:
         CPPUNIT_ASSERT(d.get_size() == 2);
     }
 
-    void das_dump_test()
-    {
+    void das_dump_test() {
         DAS das;
-        ostringstream strm;        
+        ostringstream strm;
         das.container_name("c1");
         das.dump(strm);
         CPPUNIT_ASSERT(strm.str().find("current container: c1") != string::npos);
     }
 
-    void das_dump_2_test()
-    {
+    void das_dump_2_test() {
         DAS das;
-        ostringstream strm;        
+        ostringstream strm;
         das.dump(strm);
         CPPUNIT_ASSERT(strm.str().find("current container: NONE") != string::npos);
     }
 
-    void das_erase_test()
-    {
+    void das_erase_test() {
         DAS das;
         das.container_name("c1");
         AttrTable *v1 = new AttrTable;
@@ -226,14 +212,10 @@ public:
         das.erase();
         CPPUNIT_ASSERT(das.get_size() == 0);
     }
-
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (dasT);
+CPPUNIT_TEST_SUITE_REGISTRATION(dasT);
 
 /* NOTHING NEEDS TO BE CHANGED BELOW HERE */
 
-int main(int argc, char*argv[])
-{
-    return run_tests<dasT>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<dasT>(argc, argv) ? 0 : 1; }

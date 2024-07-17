@@ -26,7 +26,6 @@
 #ifndef _uint64_h
 #define _uint64_h 1
 
-
 #ifndef _dods_datatypes_h
 #include "dods-datatypes.h"
 #endif
@@ -39,22 +38,22 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief Holds a 64-bit unsigned integer.
 
     @see BaseType */
 
-class UInt64: public BaseType
-{
-	unsigned int val2buf(void *val, bool)  override {
-    	set_value(*reinterpret_cast<dods_uint64*>(val));
-    	return sizeof(dods_uint64);
+class UInt64 : public BaseType {
+    unsigned int val2buf(void *val, bool) override {
+        set_value(*reinterpret_cast<dods_uint64 *>(val));
+        return sizeof(dods_uint64);
     }
-    //virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
+    // virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
     unsigned int buf2val(void **) override;
-    void print_val(FILE *, string, bool)  override { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
+    void print_val(FILE *, string, bool) override {
+        throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64");
+    }
 
 protected:
     dods_uint64 d_buf;
@@ -62,8 +61,7 @@ protected:
 public:
     UInt64(const string &n);
     UInt64(const string &n, const string &d);
-    virtual ~UInt64()
-    {}
+    virtual ~UInt64() {}
 
     UInt64(const UInt64 &copy_from);
 
@@ -71,15 +69,9 @@ public:
 
     BaseType *ptr_duplicate() override;
 
-    unsigned int width(bool = false) const override
-    {
-        return sizeof(dods_uint64);
-    }
+    unsigned int width(bool = false) const override { return sizeof(dods_uint64); }
 
-    int64_t width_ll(bool = false) const override
-    {
-        return sizeof(dods_uint64);
-    }
+    int64_t width_ll(bool = false) const override { return sizeof(dods_uint64); }
 
     // DAP4
     void compute_checksum(Crc32 &checksum) override;
@@ -89,7 +81,7 @@ public:
     virtual dods_uint64 value() const;
     virtual bool set_value(dods_uint64 val);
 
-    void print_val(ostream &out, string space = "",  bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
     bool ops(BaseType *b, int op) override;
     bool d4_ops(BaseType *b, int op) override;
@@ -97,10 +89,9 @@ public:
 
     bool is_dap4_projected(std::vector<string> &inventory) override;
 
-    void dump(ostream &strm) const  override;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
 
 #endif // _uint64_h
-

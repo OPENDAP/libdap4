@@ -7,8 +7,7 @@
 
 #include <inttypes.h>
 
-namespace libdap
-{
+namespace libdap {
 
 typedef int32_t dods_int32;
 
@@ -22,7 +21,7 @@ typedef uint8_t dods_byte;
 
 typedef double dods_float64;
 
-typedef float dods_float32;		
+typedef float dods_float32;
 
 // Added for DAP4
 typedef int8_t dods_int8;

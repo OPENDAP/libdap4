@@ -26,10 +26,10 @@
 #ifndef ais_resources_h
 #define ais_resources_h
 
-#include <string>
 #include <iostream>
-#include <vector>
 #include <map>
+#include <string>
+#include <vector>
 
 #include "GNURegex.h"
 
@@ -43,8 +43,7 @@
 
 using namespace std;
 
-namespace libdap
-{
+namespace libdap {
 
 typedef vector<Resource> ResourceVector;
 typedef ResourceVector::iterator ResourceVectorIter;
@@ -67,8 +66,7 @@ typedef ResourceVector::const_iterator ResourceVectorCIter;
     and the 'ancillary resource' is the stuff you're trying to jam into it.
 
     @brief Manage AIS resources. */
-class AISResources
-{
+class AISResources {
 private:
     // The AIS database is broken into two parts. The entries where the primary
     // resource is a URL are stored in a map<> while the primaries that are
@@ -83,7 +81,7 @@ private:
     typedef ResourceRegexps::iterator ResourceRegexpsIter;
     typedef ResourceRegexps::const_iterator ResourceRegexpsCIter;
 
-    ResourceMap d_db;  // This holds the URL resources
+    ResourceMap d_db;     // This holds the URL resources
     ResourceRegexps d_re; // This holds the regular expression res.
 
 #if 0
@@ -121,21 +119,16 @@ private:
 
 public:
     /** Build an empty instance. */
-    AISResources()
-    {}
+    AISResources() {}
     AISResources(const string &database) throw(AISDatabaseReadFailed);
 
-    virtual ~AISResources()
-    {}
+    virtual ~AISResources() {}
 
-    virtual void add_url_resource(const string &url,
-                                  const Resource &ancillary);
+    virtual void add_url_resource(const string &url, const Resource &ancillary);
     virtual void add_url_resource(const string &url, const ResourceVector &rv);
 
-    virtual void add_regexp_resource(const string &regexp,
-                                     const Resource &ancillary);
-    virtual void add_regexp_resource(const string &regexp,
-                                     const ResourceVector &rv);
+    virtual void add_regexp_resource(const string &regexp, const Resource &ancillary);
+    virtual void add_regexp_resource(const string &regexp, const ResourceVector &rv);
 
     virtual bool has_resource(const string &primary) const;
 

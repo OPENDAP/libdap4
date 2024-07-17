@@ -58,8 +58,7 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 class D4Grup;
 class XMLWriter;
@@ -119,26 +118,23 @@ class XMLWriter;
     @see Array
     */
 
-class Grid: public Constructor
-{
+class Grid : public Constructor {
 private:
-    //BaseType *d_array_var;	// weak pointer to the
+    // BaseType *d_array_var;	// weak pointer to the
     bool d_is_array_set;
 
 protected: // subclasses need access [mjohnson 11 nov 2009]
     void m_duplicate(const Grid &s);
 
 public:
-
     Grid(const string &n);
     Grid(const string &n, const string &d);
     Grid(const Grid &rhs);
     virtual ~Grid();
 
-    typedef std::vector<BaseType *>::const_iterator Map_citer ;
-    typedef std::vector<BaseType *>::iterator Map_iter ;
-    typedef std::vector<BaseType *>::reverse_iterator Map_riter ;
-
+    typedef std::vector<BaseType *>::const_iterator Map_citer;
+    typedef std::vector<BaseType *>::iterator Map_iter;
+    typedef std::vector<BaseType *>::reverse_iterator Map_riter;
 
     Grid &operator=(const Grid &rhs);
     virtual BaseType *ptr_duplicate();
@@ -150,9 +146,9 @@ public:
     virtual void add_var(BaseType *bt, Part part);
     virtual void add_var_nocopy(BaseType *bt, Part part);
 
-    virtual void set_array(Array* p_new_arr);
-    virtual Array* add_map(Array* p_new_map, bool add_copy);
-    virtual Array* prepend_map(Array* p_new_map, bool add_copy);
+    virtual void set_array(Array *p_new_arr);
+    virtual Array *add_map(Array *p_new_map, bool add_copy);
+    virtual Array *prepend_map(Array *p_new_map, bool add_copy);
 
     BaseType *array_var();
     Array *get_array();
@@ -165,41 +161,32 @@ public:
 
     virtual void clear_constraint();
 
-    virtual void print_decl(ostream &out, string space = "    ",
-                            bool print_semi = true,
-                            bool constraint_info = false,
+    virtual void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
                             bool constrained = false);
 
-    virtual void print_xml(ostream &out, string space = "    ",
-                           bool constrained = false);
+    virtual void print_xml(ostream &out, string space = "    ", bool constrained = false);
     virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
 
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
 
-    virtual void print_decl(FILE *out, string space = "    ",
-                            bool print_semi = true,
-                            bool constraint_info = false,
+    virtual void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
                             bool constrained = false);
-    virtual void print_xml(FILE *out, string space = "    ",
-                           bool constrained = false);
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
+    virtual void print_xml(FILE *out, string space = "    ", bool constrained = false);
+    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
 
     virtual void transfer_attributes(AttrTable *at_container);
 
     virtual bool check_semantics(string &msg, bool all = false);
 
-    Map_iter map_begin() ;
-    Map_iter map_end() ;
-    Map_riter map_rbegin() ;
-    Map_riter map_rend() ;
+    Map_iter map_begin();
+    Map_iter map_end();
+    Map_riter map_rbegin();
+    Map_riter map_rend();
     Map_iter get_map_iter(int i);
 
-    virtual void dump(ostream &strm) const ;
+    virtual void dump(ostream &strm) const;
 };
 
 } // namespace libdap
 
 #endif // _grid_h
-

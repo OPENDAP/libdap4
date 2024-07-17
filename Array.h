@@ -48,10 +48,9 @@
 #include "Vector.h"
 #endif
 
-//#include "D4Dimensions.h"
+// #include "D4Dimensions.h"
 
-namespace libdap
-{
+namespace libdap {
 class D4Group;
 class D4Maps;
 class XMLWriter;
@@ -119,8 +118,7 @@ const int DODS_MAX_ARRAY = DODS_INT_MAX;
     @see Vector
     @see dimension */
 
-class Array: public Vector
-{
+class Array : public Vector {
 public:
     /** Information about a dimension. Each Array has one or more dimensions.
         For each of an Array's dimensions, a corresponding instance of this
@@ -132,18 +130,17 @@ public:
 
         @note This struct is public because its type is used in public
         typedefs. */
-    struct dimension
-    {
-    	// In DAP2, the name and size of a dimension is stored here, along
-    	// with information about any constraint. In DAP4, either the name
-    	// and size are stored in the two fields below _or_ the name and
-    	// size information comes from a dimension object defined in a
-    	// group that is referenced by the 'dim' pointer. Do not free this
-    	// pointer; it is shared between the array and the Group where the
-    	// Dimension is defined. To keep Array manageable to implement, size
-    	// will be set here using the value from 'dim' if it is not null.
-        int64_t  size;  ///< The unconstrained dimension size.
-        string name;    ///< The name of this dimension.
+    struct dimension {
+        // In DAP2, the name and size of a dimension is stored here, along
+        // with information about any constraint. In DAP4, either the name
+        // and size are stored in the two fields below _or_ the name and
+        // size information comes from a dimension object defined in a
+        // group that is referenced by the 'dim' pointer. Do not free this
+        // pointer; it is shared between the array and the Group where the
+        // Dimension is defined. To keep Array manageable to implement, size
+        // will be set here using the value from 'dim' if it is not null.
+        int64_t size; ///< The unconstrained dimension size.
+        string name;  ///< The name of this dimension.
 
         D4Dimension *dim; ///< If not null, a weak pointer to the D4Dimension
 
@@ -156,9 +153,9 @@ public:
         bool use_sdim_for_slice; ///< Used to control printing the DMR in data responses
 
         int64_t start;  ///< The constraint start index
-        int64_t  stop;  ///< The constraint end index
-        int64_t  stride;  ///< The constraint stride
-        int64_t  c_size;  ///< Size of dimension once constrained
+        int64_t stop;   ///< The constraint end index
+        int64_t stride; ///< The constraint stride
+        int64_t c_size; ///< Size of dimension once constrained
 
         dimension() : size(0), name(""), dim(0), use_sdim_for_slice(false) {
             // this information changes with each constraint expression
@@ -182,22 +179,23 @@ public:
     // The variable chunk and compression information need to be passed
     // between two BES modules. The ideal approach is to use the
     // dynamic_cast for a BES module to retrieve the information stored
-    // by another module. However, there are issues in the current BES 
-    // that prevent us from implementing in this way. 
-    // So we need to use libdap to do the job.  
-    struct var_chunk_info_t{
+    // by another module. However, there are issues in the current BES
+    // that prevent us from implementing in this way.
+    // So we need to use libdap to do the job.
+    struct var_chunk_info_t {
         unsigned int filter_mask;
         unsigned long long chunk_direct_io_offset;
         unsigned long long chunk_buffer_size;
         vector<unsigned long long> chunk_coords;
-    }; 
+    };
 
     struct var_storage_info {
         string filter;
-        vector<unsigned int>deflate_levels;
+        vector<unsigned int> deflate_levels;
         vector<size_t> chunk_dims;
         vector<var_chunk_info_t> var_chunk_info;
     };
+
 private:
     D4Maps *d_maps = nullptr;
 
@@ -214,15 +212,11 @@ private:
 protected:
     void _duplicate(const Array &a);
 
-    uint64_t print_array(FILE *out, uint64_t index,
-                             unsigned int dims, uint64_t shape[]);
+    uint64_t print_array(FILE *out, uint64_t index, unsigned int dims, uint64_t shape[]);
 
-    uint64_t print_array(ostream &out, uint64_t index,
-                             unsigned int dims, uint64_t shape[]);
+    uint64_t print_array(ostream &out, uint64_t index, unsigned int dims, uint64_t shape[]);
 
-    std::vector<dimension> &shape(){
-        return _shape;
-    }
+    std::vector<dimension> &shape() { return _shape; }
 
 public:
     /** A constant iterator used to access the various dimensions of an
@@ -258,7 +252,7 @@ public:
     void append_dim(int size, const string &name = "");
     void append_dim_ll(int64_t size, const string &name = "");
     void append_dim(D4Dimension *dim);
-    void prepend_dim(int size, const string& name = "");
+    void prepend_dim(int size, const string &name = "");
     void prepend_dim(D4Dimension *dim);
     void clear_all_dims();
     void rename_dim(const string &oldName = "", const string &newName = "");
@@ -270,11 +264,11 @@ public:
 
     virtual void clear_constraint(); // deprecated
 
-    virtual void update_length(int size = 0); // should be used internally only
+    virtual void update_length(int size = 0);                   // should be used internally only
     virtual void update_length_ll(unsigned long long size = 0); // should be used internally only
 
-    Dim_iter dim_begin() ;
-    Dim_iter dim_end() ;
+    Dim_iter dim_begin();
+    Dim_iter dim_end();
 
     virtual int dimension_size(Dim_iter i, bool constrained = false);
     virtual int dimension_start(Dim_iter i, bool constrained = false);
@@ -297,13 +291,10 @@ public:
 
     // These are all DAP2 output methods
 
-    void print_decl(ostream &out, string space = "    ",
-                            bool print_semi = true,
-                            bool constraint_info = false,
-                            bool constrained = false) override;
+    void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
+                    bool constrained = false) override;
 
-    void print_xml(ostream &out, string space = "    ",
-                           bool constrained = false) override;
+    void print_xml(ostream &out, string space = "    ", bool constrained = false) override;
 
     void print_xml_writer(XMLWriter &xml, bool constrained = false) override;
     virtual void print_xml_writer_core(XMLWriter &out, bool constrained, string tag);
@@ -313,36 +304,27 @@ public:
     virtual void print_xml_core(ostream &out, string space, bool constrained, string tag);
 
     // not used (?)
-    virtual void print_as_map_xml(ostream &out, string space = "    ",
-                                  bool constrained = false);
+    virtual void print_as_map_xml(ostream &out, string space = "    ", bool constrained = false);
 
-    void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
-    void print_xml(FILE *out, string space = "    ",
-                           bool constrained = false) override;
-    virtual void print_as_map_xml(FILE *out, string space = "    ",
-                                  bool constrained = false);
-    void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true) override;
-    void print_decl(FILE *out, string space = "    ",
-                            bool print_semi = true,
-                            bool constraint_info = false,
-                            bool constrained = false) override;
+    void print_xml(FILE *out, string space = "    ", bool constrained = false) override;
+    virtual void print_as_map_xml(FILE *out, string space = "    ", bool constrained = false);
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
+                    bool constrained = false) override;
 
     bool check_semantics(string &msg, bool all = false) override;
- 
 
     bool is_dap4_projected(std::vector<std::string> &projected_dap4_inventory) override;
 
     void dump(ostream &strm) const override;
 
     // The following methods are for direct IO optimization.
-    bool get_dio_flag() const {return direct_io_flag; }
-    void set_dio_flag( bool dio_flag_value = true) { direct_io_flag = dio_flag_value; }
-    var_storage_info & get_var_storage_info() {return vs_info;}
-    void set_var_storage_info(const var_storage_info &my_vs_info); 
-
+    bool get_dio_flag() const { return direct_io_flag; }
+    void set_dio_flag(bool dio_flag_value = true) { direct_io_flag = dio_flag_value; }
+    var_storage_info &get_var_storage_info() { return vs_info; }
+    void set_var_storage_info(const var_storage_info &my_vs_info);
 };
 
 } // namespace libdap
