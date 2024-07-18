@@ -7,6 +7,17 @@ that run before a commit is made. The hooks are used to check the code for
 formatting, style, and other issues. The pre-commit hooks are run automatically
 when you make a commit, and if any of the hooks fail, the commit is rejected.
 
+## TL;DR
+
+Install pre-commit and clang-format using brew, yum or apt-get.
+
+When you run ```git commit```, the pre-commit hooks will run automatically.
+
+If files need to be reformatted by clang-format, they will be and/but your 
+commit will fail. Rerun ```git commit``` and the commit should succeed. This
+works because the clang-format not only checks but is configured to modify
+the files in place.
+
 ## Background
 
 The pre-commit hooks are managed by the pre-commit framework (https://github.com/pre-commit).
