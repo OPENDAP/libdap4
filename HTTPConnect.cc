@@ -114,21 +114,17 @@ static const char *http_server_errors[SERVER_ERR_MAX - SERVER_ERR_MIN + 1] = {
     works for those code greater than or equal to 400. */
 static string http_status_to_string(int status) {
     if (status >= CLIENT_ERR_MIN && status <= CLIENT_ERR_MAX)
-        return string(http_client_errors[status - CLIENT_ERR_MIN]);
+        return {http_client_errors[status - CLIENT_ERR_MIN]};
     else if (status >= SERVER_ERR_MIN && status <= SERVER_ERR_MAX)
-        return string(http_server_errors[status - SERVER_ERR_MIN]);
+        return {http_server_errors[status - SERVER_ERR_MIN]};
     else
-        return string(
-            "Unknown Error: This indicates a problem with libdap++.\nPlease report this to support@opendap.org.");
+        return {"Unknown Error: This indicates a problem with libdap++.\nPlease report this to support@opendap.org."};
 }
 
 static ObjectType determine_object_type(const string &header_value) {
-    // DAP4 Data: application/vnd.opendap.dap4.data
-    // DAP4 DMR: application/vnd.opendap.dap4.dataset-metadata+xml
-
     string::size_type plus = header_value.find('+');
     string base_type;
-    string type_extension = "";
+    string type_extension;
     if (plus != string::npos) {
         base_type = header_value.substr(0, plus);
         type_extension = header_value.substr(plus + 1);
