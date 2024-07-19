@@ -57,6 +57,7 @@ using namespace std;
 
 namespace libdap {
 
+// This constructor is defined here so that D4Dimensions.h does not need to be included in Array.h
 Array::dimension::dimension(D4Dimension *d)
     : size(d->size()), name(d->name()), dim(d), use_sdim_for_slice(true), start(0), stop(size - 1), stride(1),
       c_size(size) {}

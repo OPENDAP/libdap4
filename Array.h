@@ -153,13 +153,13 @@ public:
         bool use_sdim_for_slice = false; ///< Used to control printing the DMR in data responses
 
         int64_t start = 0;  ///< The constraint start index
-        int64_t stop = 1;   ///< The constraint end index
+        int64_t stop = 0;   ///< The constraint end index
         int64_t stride = 1; ///< The constraint stride
         int64_t c_size = 0; ///< Size of dimension once constrained
 
         dimension() = default;
 
-        dimension(int64_t s, const string &n) : size(s), name(n), c_size(s) {}
+        dimension(int64_t s, string n) : size(s), name(std::move(n)), stop(s - 1), c_size(s) {}
 
         explicit dimension(D4Dimension *d);
     };
