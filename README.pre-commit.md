@@ -69,15 +69,14 @@ Here's an example of what happens when files are reformatted by clang-format and
 ```git commit``` command is run again:
 
 ```
-10:11:07.457: [libdap4] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false add --ignore-errors -A -f -- HTTPCacheTable.cc
-10:11:07.481: [libdap4] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false commit -F /private/var/folders/y_/8hk218l08xl6tr006s6j7zkh0000gq/T/git-commit-msg-.txt --
+10:11:07.481: [libdap4] git commit -a
 check yaml...........................................(no files to check)Skipped
 check json...........................................(no files to check)Skipped
 clang-format.............................................................Failed
 - hook id: clang-format
 - files were modified by this hook
-10:11:44.214: [libdap4] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false add --ignore-errors -A -f -- HTTPCacheTable.cc
-10:11:44.228: [libdap4] git -c credential.helper= -c core.quotepath=false -c log.showSignature=false commit -F /private/var/folders/y_/8hk218l08xl6tr006s6j7zkh0000gq/T/git-commit-msg-.txt --
+
+10:11:44.228: [libdap4] git commit -a
 check yaml...........................................(no files to check)Skipped
 check json...........................................(no files to check)Skipped
 clang-format.............................................................Passed

@@ -1,17 +1,23 @@
+
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+#if 0
+
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/TestAssert.h>
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
+// #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
+
+#endif
 
 #include "TestArray.h"
 #include "TestInt16.h"
 #include "TestTypeFactory.h"
-#include <iostream>
-
-#include "debug.h"
-#include "util.h"
 
 #include "run_tests_cppunit.h"
 
@@ -33,14 +39,14 @@ class arrayT : public CppUnit::TestFixture {
 
 private:
     /* TEST PRIVATE DATA */
-    TestTypeFactory *factory;
+    TestTypeFactory *factory{nullptr};
 
 public:
-    void setUp() { factory = new TestTypeFactory; }
+    void setUp() override { factory = new TestTypeFactory; }
 
-    void tearDown() {
+    void tearDown() override {
         delete factory;
-        factory = 0;
+        factory = nullptr;
     }
 
     void arrayT_test() {
@@ -52,13 +58,13 @@ public:
         CPPUNIT_ASSERT(l == -1);
 
         try {
-            int w = ar.width(true);
-            DBG(cerr << "w = " << w << endl);
-            DBG(cerr << "(int)bt->width() " << (int)bt->width() << endl);
+            unsigned int w = ar.width(true);
+            DBG(cerr << "w = " << (int)w << endl);
+            DBG(cerr << "bt->width() " << bt->width() << endl);
             DBG(cerr << "L " << l << endl);
-            CPPUNIT_ASSERT(w == (l * (int)bt->width()));
-        } catch (InternalErr &e) {
-            CPPUNIT_FAIL("Unable to retrieve width");
+            CPPUNIT_ASSERT(w == (l * bt->width()));
+        } catch (const InternalErr &e) {
+            CPPUNIT_FAIL(string("Unable to retrieve width: ") + e.get_error_message());
         }
 
         ar.append_dim(4, "dim1");
@@ -67,10 +73,10 @@ public:
         CPPUNIT_ASSERT(l == 4);
 
         try {
-            int w = ar.width();
-            CPPUNIT_ASSERT(w == (l * (int)bt->width()));
-        } catch (InternalErr &e) {
-            CPPUNIT_FAIL("Unable to retrieve width");
+            unsigned int w = ar.width();
+            CPPUNIT_ASSERT(w == (l * bt->width()));
+        } catch (const InternalErr &e) {
+            CPPUNIT_FAIL(string("Unable to retrieve width: ") + e.get_error_message());
         }
 
         ar.append_dim(3, "dim2");
@@ -79,10 +85,10 @@ public:
         CPPUNIT_ASSERT(l == 12);
 
         try {
-            int w = ar.width();
-            CPPUNIT_ASSERT(w == (l * (int)bt->width()));
-        } catch (InternalErr &e) {
-            CPPUNIT_FAIL("Unable to retrieve width");
+            unsigned int w = ar.width();
+            CPPUNIT_ASSERT(w == (l * bt->width()));
+        } catch (const InternalErr &e) {
+            CPPUNIT_FAIL(string("Unable to retrieve width: ") + e.get_error_message());
         }
 
         ar.append_dim(2, "dim3");
@@ -94,26 +100,28 @@ public:
             int w = ar.width();
             CPPUNIT_ASSERT(w == (l * (int)bt->width()));
         } catch (InternalErr &e) {
-            CPPUNIT_FAIL("Unable to retrieve width");
+            CPPUNIT_FAIL(string("Unable to retrieve width: ") + e.get_error_message());
         }
 
         vector<string> dims;
-        typedef vector<string>::const_iterator citer;
-        dims.push_back("dim1");
-        dims.push_back("dim2");
-        dims.push_back("dim3");
+        // using citer = vector<string>::const_iterator;
+        dims.emplace_back("dim1");
+        dims.emplace_back("dim2");
+        dims.emplace_back("dim3");
 
         vector<int> dimsize;
-        typedef vector<int>::const_iterator dsiter;
+        // using dsiter = vector<int>::const_iterator;
         dimsize.push_back(4);
         dimsize.push_back(3);
         dimsize.push_back(2);
 
+#if 0
         citer i = dims.begin();
         dsiter d = dimsize.begin();
-        Array::Dim_iter diter = ar.dim_begin();
-        i = dims.begin();
-        d = dimsize.begin();
+#endif
+        auto diter = ar.dim_begin();
+        auto i = dims.begin();
+        auto d = dimsize.begin();
         for (; diter != ar.dim_end() && i != dims.end(); diter++, i++, d++) {
             CPPUNIT_ASSERT(ar.dimension_name(diter) == (*i));
             if (ar.dimension_name(diter) == (*i)) {
