@@ -47,6 +47,8 @@
 // %define api.prefix { d4_ce }
 
 %code requires {
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+
 #define YYERROR_VERBOSE 0
 #include "D4ConstraintEvaluator.h"
 #include "escaping.h" // for www2id() used with WORD and STRING

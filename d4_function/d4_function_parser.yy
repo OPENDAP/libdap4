@@ -46,6 +46,7 @@
 // %define api.prefix { d4_function_ }
 
 %code requires {
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 
 #define YYERROR_VERBOSE 0
 

@@ -146,6 +146,8 @@ static ObjectType determine_object_type(const string &header_value) {
         return unknown_type;
 }
 
+#if 0
+
 /** Functor to parse the headers in the d_headers field. After the headers
     have been read off the wire and written into the d_headers field, scan
     them and set special fields for certain headers special to the DAP. */
@@ -198,6 +200,56 @@ public:
 
     string get_location() { return location; }
 };
+
+#endif
+
+struct OpendapHeaders {
+    ObjectType type = unknown_type; // What type of object is in the stream?
+    string server{"dods/0.0"};      // Server's version string.
+    string protocol{"2.0"};         // Server's protocol version.
+    string location;                // Url returned by server
+
+    OpendapHeaders() = default;
+
+    ObjectType get_object_type() { return type; }
+
+    string get_server() { return server; }
+
+    string get_protocol() { return protocol; }
+
+    string get_location() { return location; }
+};
+
+static void parse_header(const string &line, OpendapHeaders &headers) {
+    string name;
+    string value;
+    parse_mime_header(line, name, value);
+
+    // Content-Type is used to determine the content of DAP4 responses, but allow the
+    // Content-Description header to override CT o preserve operation with DAP2 servers.
+    // jhrg 11/12/13
+    if (headers.type == unknown_type && name == "content-type") {
+        headers.type = determine_object_type(value); // see above
+    }
+    if (name == "content-description" &&
+        !(headers.type == dap4_dmr || headers.type == dap4_data || headers.type == dap4_error)) {
+        headers.type = get_description_type(value); // defined in mime_util.cc
+    }
+    // The second test (== "dods/0.0") tests if xopendap-server has already
+    // been seen. If so, use that header in preference to the old
+    // XDODS-Server header. jhrg 2/7/06
+    else if (name == "xdods-server" && headers.server == "dods/0.0") {
+        headers.server = value;
+    } else if (name == "xopendap-server") {
+        headers.server = value;
+    } else if (name == "xdap") {
+        headers.protocol = value;
+    } else if (headers.server == "dods/0.0" && name == "server") {
+        headers.server = value;
+    } else if (name == "location") {
+        headers.location = value;
+    }
+}
 
 /** A libcurl callback function used to read response headers. Read headers,
     line by line, from ptr. The fourth param is really supposed to be a FILE
@@ -574,12 +626,12 @@ HTTPResponse *HTTPConnect::fetch_url(const string &url) {
     cout << "GET " << url << " HTTP/1.0" << endl;
 #endif
 
-    HTTPResponse *stream;
+    auto stream = unique_ptr<HTTPResponse>(nullptr);
 
-    if (/*d_http_cache && d_http_cache->*/ is_cache_enabled()) {
-        stream = caching_fetch_url(url);
+    if (is_cache_enabled()) {
+        stream.reset(caching_fetch_url(url));
     } else {
-        stream = plain_fetch_url(url);
+        stream.reset(plain_fetch_url(url));
     }
 
 #ifdef HTTP_TRACE
@@ -591,7 +643,11 @@ HTTPResponse *HTTPConnect::fetch_url(const string &url) {
     cout << ss.str();
 #endif
 
+#if 0
     ParseHeader parser;
+#endif
+
+    OpendapHeaders headers;
 
     // An apparent quirk of libcurl is that it does not pass the Content-type
     // header to the callback used to save them, but check and add it from the
@@ -601,34 +657,38 @@ HTTPResponse *HTTPConnect::fetch_url(const string &url) {
                                            HeaderMatch("Content-Type:")) == stream->get_headers()->end())
         stream->get_headers()->push_back("Content-Type: " + d_content_type);
 
+#if 0
     parser = for_each(stream->get_headers()->begin(), stream->get_headers()->end(), ParseHeader());
+#endif
+
+    for (auto const &line : *stream->get_headers()) {
+        parse_header(line, headers);
+    }
 
 #ifdef HTTP_TRACE
     cout << endl << endl;
 #endif
 
     // handle redirection case (2007-04-27, gaffigan@sfos.uaf.edu)
-    if (!parser.get_location().empty() &&
-        url.substr(0, url.find('?')) != parser.get_location().substr(0, url.find('?'))) {
-        // url.substr(0, url.find('?', 0)).compare(parser.get_location().substr(0, url.find('?', 0))) != 0) {
-        delete stream;
-        return fetch_url(parser.get_location());
+    if (!headers.get_location().empty() &&
+        url.substr(0, url.find('?')) != headers.get_location().substr(0, url.find('?'))) {
+        return fetch_url(headers.get_location());
     }
 
-    stream->set_type(parser.get_object_type()); // uses the value of content-description
+    stream->set_type(headers.get_object_type()); // uses the value of content-description
 
-    stream->set_version(parser.get_server());
-    stream->set_protocol(parser.get_protocol());
+    stream->set_version(headers.get_server());
+    stream->set_protocol(headers.get_protocol());
 
     if (d_use_cpp_streams) {
         stream->transform_to_cpp();
     }
 
-    return stream;
+    return stream.release();
 }
 
 // Look around for a reasonable place to put a temporary file. Check first
-// the value of the TMPDIR env var. If that does not yeild a path that's
+// the value of the TMPDIR env var. If that does not yield a path that's
 // writable (as defined by access(..., W_OK|R_OK)) then look at P_tmpdir (as
 // defined in stdio.h. If both come up empty, then use `./'.
 
@@ -941,7 +1001,7 @@ void HTTPConnect::set_accept_deflate(bool deflate) {
     if (d_accept_deflate) {
         if (find(d_request_headers.begin(), d_request_headers.end(), "Accept-Encoding: deflate, gzip, compress") ==
             d_request_headers.end())
-            d_request_headers.push_back(string("Accept-Encoding: deflate, gzip, compress"));
+            d_request_headers.emplace_back("Accept-Encoding: deflate, gzip, compress");
         DBG(copy(d_request_headers.begin(), d_request_headers.end(), ostream_iterator<string>(cerr, "\n")));
     } else {
         vector<string>::iterator i;
