@@ -29,6 +29,7 @@
 
 //#include "config.h"
 #pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma clang diagnostic ignored "-Wsign-compare"
 
 
 #include <string>
