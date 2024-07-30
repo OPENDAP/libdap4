@@ -35,20 +35,14 @@
 #include <io.h>
 #endif
 
-#include <algorithm>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
-#include <fstream>
-#include <functional>
 #include <iterator>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
-
-// #define DODS_DEBUG2
-// #define HTTP_TRACE
-// #define DODS_DEBUG
 
 #undef USE_GETENV
 
