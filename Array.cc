@@ -59,8 +59,7 @@ namespace libdap {
 
 // This constructor is defined here so that D4Dimensions.h does not need to be included in Array.h
 Array::dimension::dimension(D4Dimension *d)
-    : size(d->size()), name(d->name()), dim(d), use_sdim_for_slice(true), start(0), stop(size - 1), stride(1),
-      c_size(size) {}
+    : size(d->size()), name(d->name()), dim(d), use_sdim_for_slice(true), stop(size - 1), c_size(size) {}
 
 void Array::_duplicate(const Array &a) {
     _shape = a._shape;
@@ -1002,7 +1001,7 @@ void Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/) {
     }
 
     if (prototype()->is_constructor_type()) {
-        auto &c = static_cast<Constructor &>(*prototype());
+        auto const &c = static_cast<Constructor &>(*prototype());
 #if 0
         auto print_d4_constructor = [&xml, constrained](BaseType *btp) { btp->print_dap4(xml, constrained); };
         for_each(c.var_begin(), c.var_end(), print_d4_constructor);

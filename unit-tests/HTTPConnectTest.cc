@@ -28,15 +28,11 @@
 
 #include <algorithm>
 #include <cstring>
-#include <functional>
 #include <iterator>
 #include <string>
 
 #include "GNURegex.h"
 #include "HTTPConnect.h"
-#include "RCReader.h"
-
-#include "debug.h"
 
 #include "run_tests_cppunit.h"
 #include "test_config.h"
@@ -50,16 +46,15 @@ namespace libdap {
 
 class HTTPConnectTest : public TestFixture {
 private:
-    HTTPConnect *http{};
+    HTTPConnect *http = nullptr;
     string localhost_url, localhost_pw_url, localhost_digest_pw_url;
     string etag;
     string lm;
     string netcdf_das_url;
 
-    // char env_data[128];
+    static bool re_match(Regex &r, const char *s) { return r.match(s, (int)strlen(s)) == (int)strlen(s); }
 
-protected:
-    bool re_match(Regex &r, const char *s) { return r.match(s, strlen(s)) == (int)strlen(s); }
+#if 0
 
     struct REMatch : public unary_function<const string &, bool> {
         Regex &d_re;
@@ -82,9 +77,11 @@ protected:
         bool operator()(const string &arg) { return arg.find(d_header) == 0; }
     };
 
+#endif
+
 public:
     HTTPConnectTest() : http(nullptr) {}
-    ~HTTPConnectTest() override {}
+    ~HTTPConnectTest() override = default;
 
     void setUp() override {
         DBG(cerr << endl);
@@ -123,10 +120,10 @@ public:
         DBG(cerr << prolog << "netcdf_das_url: " << netcdf_das_url << endl);
     }
 
-    void tearDown() {
+    void tearDown() override {
         // normal code doesn't do this - it happens at exit() but not doing
         // this here make valgrind think there are leaks.
-        http->d_http_cache->delete_instance();
+        libdap::HTTPCache::delete_instance();
         delete http;
         http = nullptr;
         unsetenv("DODS_CONF");
@@ -499,11 +496,16 @@ public:
 
             // Should get five or six headers back.
             Regex header("X.*-Server: .*/.*");
-
-            CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(header)) != h->end());
+            CPPUNIT_ASSERT(find_if(h->begin(), h->end(), [&header](const string &str) {
+                               const char *s = str.c_str();
+                               return header.match(s, strlen(s)) == (int)strlen(s);
+                           }) != h->end());
 
             Regex protocol_header("X.*DAP: .*"); // Matches both XDAP and X-DAP
-            CPPUNIT_ASSERT(find_if(h->begin(), h->end(), REMatch(protocol_header)) != h->end());
+            CPPUNIT_ASSERT(find_if(h->begin(), h->end(), [&protocol_header](const string &str) {
+                               const char *s = str.c_str();
+                               return protocol_header.match(s, strlen(s)) == (int)strlen(s);
+                           }) != h->end());
 
             delete r;
             r = nullptr;
@@ -651,8 +653,8 @@ public:
         // Initially there should be no header and the protocol should be 2.0
         CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 2 && http->d_dap_client_protocol_minor == 0);
 
-        CPPUNIT_ASSERT(
-            count_if(http->d_request_headers.begin(), http->d_request_headers.end(), HeaderMatch("XDAP-Accept:")) == 0);
+        CPPUNIT_ASSERT(count_if(http->d_request_headers.begin(), http->d_request_headers.end(),
+                                [](const string &header) { return header.find("XDAP-Accept:") == 0; }) == 0);
 
         http->set_xdap_protocol(8, 9);
         CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 8 && http->d_dap_client_protocol_minor == 9);

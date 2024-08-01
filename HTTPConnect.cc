@@ -205,13 +205,13 @@ struct OpendapHeaders {
 
     OpendapHeaders() = default;
 
-    ObjectType get_object_type() { return type; }
+    ObjectType get_object_type() const { return type; }
 
-    string get_server() { return server; }
+    string get_server() const { return server; }
 
-    string get_protocol() { return protocol; }
+    string get_protocol() const { return protocol; }
 
-    string get_location() { return location; }
+    string get_location() const { return location; }
 };
 
 static void parse_header(const string &line, OpendapHeaders &headers) {
@@ -232,14 +232,11 @@ static void parse_header(const string &line, OpendapHeaders &headers) {
     // The second test (== "dods/0.0") tests if xopendap-server has already
     // been seen. If so, use that header in preference to the old
     // XDODS-Server header. jhrg 2/7/06
-    else if (name == "xdods-server" && headers.server == "dods/0.0") {
-        headers.server = value;
-    } else if (name == "xopendap-server") {
+    else if ((name == "xopendap-server") ||
+             ((name == "xdods-server" || name == "server") && headers.server == "dods/0.0")) {
         headers.server = value;
     } else if (name == "xdap") {
         headers.protocol = value;
-    } else if (headers.server == "dods/0.0" && name == "server") {
-        headers.server = value;
     } else if (name == "location") {
         headers.location = value;
     }
@@ -261,7 +258,6 @@ static void parse_header(const string &line, OpendapHeaders &headers) {
     libcurl will report an error. */
 
 static size_t save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *resp_hdrs) {
-    DBG2(cerr << "Inside the header parser." << endl);
     auto hdrs = static_cast<vector<string> *>(resp_hdrs);
 
     // Grab the header, minus the trailing newline. Or \r\n pair.
@@ -273,7 +269,6 @@ static size_t save_raw_http_headers(void *ptr, size_t size, size_t nmemb, void *
 
     // Store all non-empty headers that are not HTTP status codes
     if (!complete_line.empty() && complete_line.find("HTTP") == string::npos) {
-        DBG(cerr << "Header line: " << complete_line << endl);
         hdrs->push_back(complete_line);
     }
 
@@ -364,7 +359,7 @@ void HTTPConnect::www_lib_init() {
     curl_easy_setopt(d_curl, CURLOPT_FAILONERROR, 0);
 
     // This means libcurl will use Basic, Digest, GSS Negotiate, or NTLM,
-    // choosing the the 'safest' one supported by the server.
+    // choosing the 'safest' one supported by the server.
     // This requires curl 7.10.6 which is still in pre-release. 07/25/03 jhrg
     curl_easy_setopt(d_curl, CURLOPT_HTTPAUTH, (long)CURLAUTH_ANY);
 
@@ -405,6 +400,8 @@ void HTTPConnect::www_lib_init() {
     }
 }
 
+#if 0
+
 /** Functor to add a single string to a curl_slist. This is used to transfer
     a list of headers from a vector<string> object to a curl_slist. */
 
@@ -421,6 +418,8 @@ public:
 
     struct curl_slist *get_headers() { return d_cl; }
 };
+
+#endif
 
 /** Use libcurl to dereference a URL. Read the information referenced by \c
     url into the file pointed to by \c stream.
@@ -455,12 +454,17 @@ long HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp
 
     DBG(copy(d_request_headers.begin(), d_request_headers.end(), ostream_iterator<string>(cerr, "\n")));
 
-    BuildHeaders req_hdrs;
-    req_hdrs = for_each(d_request_headers.begin(), d_request_headers.end(), req_hdrs);
-    if (headers)
-        req_hdrs = for_each(headers->begin(), headers->end(), req_hdrs);
+    struct curl_slist *csl = nullptr;
+    for (auto &header : d_request_headers) {
+        csl = curl_slist_append(csl, header.c_str());
+    }
 
-    curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, req_hdrs.get_headers());
+    if (headers)
+        for (auto &header : *headers) {
+            csl = curl_slist_append(csl, header.c_str());
+        }
+
+    curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, csl);
 
     // Turn off the proxy for this URL?
     bool temporary_proxy = false;
@@ -473,7 +477,7 @@ long HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp
     // Assume username:password present *and* assume it's an HTTP URL; it *is*
     // HTTPConnect, after all. 7 is position after "http://"; the second arg
     // to substr() is the sub string length.
-    if (at_sign != url.npos)
+    if (at_sign != std::string::npos)
         d_upstring = url.substr(7, at_sign - 7);
 
     if (!d_upstring.empty())
@@ -490,7 +494,7 @@ long HTTPConnect::read_url(const string &url, FILE *stream, vector<string> *resp
     CURLcode res = curl_easy_perform(d_curl);
 
     // Free the header list and null the value in d_curl.
-    curl_slist_free_all(req_hdrs.get_headers());
+    curl_slist_free_all(csl);
     curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, 0);
 
     // Reset the proxy?
@@ -594,6 +598,8 @@ HTTPConnect::~HTTPConnect() {
     DBG2(cerr << "Leaving the HTTPConnect dtor" << endl);
 }
 
+#if 0
+
 /** Look for a certain header */
 class HeaderMatch : public unary_function<const string &, bool> {
     const string &d_header;
@@ -602,6 +608,8 @@ public:
     HeaderMatch(const string &header) : d_header(header) {}
     bool operator()(const string &arg) { return arg.find(d_header) == 0; }
 };
+
+#endif
 
 /** Dereference a URL. This method dereferences a URL and stores the result
     (i.e., it formulates an HTTP request and processes the HTTP server's
@@ -647,9 +655,13 @@ HTTPResponse *HTTPConnect::fetch_url(const string &url) {
     // header to the callback used to save them, but check and add it from the
     // saved state variable only if it's not there (without this a test failed
     // in HTTPCacheTest). jhrg 11/12/13
-    if (!d_content_type.empty() && find_if(stream->get_headers()->begin(), stream->get_headers()->end(),
-                                           HeaderMatch("Content-Type:")) == stream->get_headers()->end())
-        stream->get_headers()->push_back("Content-Type: " + d_content_type);
+    if (!d_content_type.empty()) {
+        auto i = find_if(stream->get_headers()->begin(), stream->get_headers()->end(),
+                         [](const string &arg) { return arg.find("Content-Type:") == 0; });
+        if (i == stream->get_headers()->end()) {
+            stream->get_headers()->push_back("Content-Type: " + d_content_type);
+        }
+    }
 
 #if 0
     parser = for_each(stream->get_headers()->begin(), stream->get_headers()->end(), ParseHeader());
@@ -778,7 +790,7 @@ string get_temp_file(FILE *&stream) throw(Error) {
 
     strncpy(pathname.data(), dods_temp.c_str(), dods_temp.length());
 
-    DBG(cerr << "pathanme: " << pathname.data() << " (" << dods_temp.length() + 1 << ")" << endl);
+    DBG(cerr << "pathname: " << pathname.data() << " (" << dods_temp.length() + 1 << ")" << endl);
 
     // Open truncated for update. NB: mkstemp() returns a file descriptor.
 #if defined(WIN32) || defined(TEST_WIN32_TEMPS)
@@ -849,8 +861,8 @@ HTTPResponse *HTTPConnect::caching_fetch_url(const string &url) {
         // url not in cache; get it and cache it
         DBGN(cerr << "no; getting response and caching." << endl);
         delete headers;
-        headers = 0;
-        time_t now = time(0);
+        headers = nullptr;
+        time_t now = time(nullptr);
         HTTPResponse *rs = plain_fetch_url(url);
         d_http_cache->cache_response(url, now, *(rs->get_headers()), rs->get_stream());
 
@@ -860,7 +872,7 @@ HTTPResponse *HTTPConnect::caching_fetch_url(const string &url) {
 
         if (d_http_cache->is_url_valid(url)) { // url in cache and valid
             DBGN(cerr << "and it's valid; using cached response." << endl);
-            HTTPCacheResponse *crs = new HTTPCacheResponse(s, 200, headers, file_name, d_http_cache);
+            auto *crs = new HTTPCacheResponse(s, 200, headers, file_name, d_http_cache);
             return crs;
         } else { // url in cache but not valid; validate
             DBGN(cerr << "but it's not valid; validating... ");
@@ -868,9 +880,9 @@ HTTPResponse *HTTPConnect::caching_fetch_url(const string &url) {
             d_http_cache->release_cached_response(s); // This closes 's'
             headers->clear();
             vector<string> cond_hdrs = d_http_cache->get_conditional_request_headers(url);
-            FILE *body = 0;
+            FILE *body = nullptr;
             string dods_temp = get_temp_file(body);
-            time_t now = time(0); // When was the request made (now).
+            time_t now = time(nullptr); // When was the request made (now).
             long http_status;
 
             try {
@@ -887,7 +899,7 @@ HTTPResponse *HTTPConnect::caching_fetch_url(const string &url) {
                 DBGN(cerr << "read a new response; caching." << endl);
 
                 d_http_cache->cache_response(url, now, /* *resp_hdrs*/ *headers, body);
-                HTTPResponse *rs = new HTTPResponse(body, http_status, /*resp_hdrs*/ headers, dods_temp);
+                auto *rs = new HTTPResponse(body, http_status, /*resp_hdrs*/ headers, dods_temp);
 
                 return rs;
             }
@@ -899,7 +911,7 @@ HTTPResponse *HTTPConnect::caching_fetch_url(const string &url) {
                 d_http_cache->update_response(url, now, /* *resp_hdrs*/ *headers);
                 string file_name;
                 FILE *hs = d_http_cache->get_cached_response(url, *headers, file_name);
-                HTTPCacheResponse *crs = new HTTPCacheResponse(hs, 304, headers, file_name, d_http_cache);
+                auto *crs = new HTTPCacheResponse(hs, 304, headers, file_name, d_http_cache);
                 return crs;
             }
 
@@ -942,9 +954,9 @@ HTTPResponse *HTTPConnect::plain_fetch_url(const string &url) {
     DBG(cerr << "Getting URL: " << url << endl);
     FILE *stream = 0;
     string dods_temp = get_temp_file(stream);
-    vector<string> *resp_hdrs = new vector<string>;
+    auto *resp_hdrs = new vector<string>;
 
-    int status = -1;
+    long status = -1;
     try {
         status = read_url(url, stream, resp_hdrs); // Throws Error.
         if (status >= 400) {
@@ -998,9 +1010,8 @@ void HTTPConnect::set_accept_deflate(bool deflate) {
             d_request_headers.emplace_back("Accept-Encoding: deflate, gzip, compress");
         DBG(copy(d_request_headers.begin(), d_request_headers.end(), ostream_iterator<string>(cerr, "\n")));
     } else {
-        vector<string>::iterator i;
-        i = remove_if(d_request_headers.begin(), d_request_headers.end(),
-                      [](const string &header) { return header == "Accept-Encoding: deflate, gzip, compress"; });
+        auto i = remove_if(d_request_headers.begin(), d_request_headers.end(),
+                           [](const string &header) { return header == "Accept-Encoding: deflate, gzip, compress"; });
         d_request_headers.erase(i, d_request_headers.end());
     }
 }
@@ -1015,8 +1026,8 @@ void HTTPConnect::set_accept_deflate(bool deflate) {
     @param minor The dap client minor protocol version */
 void HTTPConnect::set_xdap_protocol(int major, int minor) {
     // Look for, and remove if one exists, an XDAP-Accept header
-    vector<string>::iterator i;
-    i = find_if(d_request_headers.begin(), d_request_headers.end(), HeaderMatch("XDAP-Accept:"));
+    auto i = find_if(d_request_headers.begin(), d_request_headers.end(),
+                     [](const string &arg) { return arg.find("XDAP-Accept:") == 0; });
     if (i != d_request_headers.end())
         d_request_headers.erase(i);
 

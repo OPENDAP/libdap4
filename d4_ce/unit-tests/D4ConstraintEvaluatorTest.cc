@@ -89,7 +89,7 @@ public:
         std::string invalidExpr = "x$y";
         MockDMR dmr;
         D4ConstraintEvaluator evaluator(&dmr);
-        CPPUNIT_ASSERT_THROW(!evaluator.parse(invalidExpr), Error);
+        CPPUNIT_ASSERT_THROW(evaluator.parse(invalidExpr), Error);
     }
 
     void test_throw_not_found_prevent_xxs() {
