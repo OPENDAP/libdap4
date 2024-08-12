@@ -286,16 +286,23 @@ void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter) {
     // evaluates the filter expression
     read_sequence_values(filter);
 
-    // write D4Sequecne::length(); don't include the length in the checksum
+    // write D4Sequence::length(); don't include the length in the checksum
     m.put_count(d_length);
 
     // By this point the d_values object holds all and only the values to be sent;
     // use the serialize methods to send them (but no need to test send_p).
+    for (auto const &row : d_values) {
+        for (auto &var : *row) {
+            var->serialize(m, dmr, /*eval,*/ filter);
+        }
+    }
+#if 0
     for (D4SeqValues::iterator i = d_values.begin(), e = d_values.end(); i != e; ++i) {
         for (D4SeqRow::iterator j = (*i)->begin(), f = (*i)->end(); j != f; ++j) {
             (*j)->serialize(m, dmr, /*eval,*/ false);
         }
     }
+#endif
 
     DBGN(cerr << __PRETTY_FUNCTION__ << " END" << endl);
 }
@@ -306,11 +313,18 @@ void D4Sequence::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
     set_length(um_count);
 
     for (int64_t i = 0; i < d_length; ++i) {
-        D4SeqRow *row = new D4SeqRow;
+        auto row = new D4SeqRow;
+#if 1
+        for (auto &var : d_vars) {
+            var->deserialize(um, dmr);
+            row->push_back(var->ptr_duplicate());
+        }
+#else
         for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; ++i) {
             (*i)->deserialize(um, dmr);
             row->push_back((*i)->ptr_duplicate());
         }
+#endif
         d_values.push_back(row);
     }
 }
