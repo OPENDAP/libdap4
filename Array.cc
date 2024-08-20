@@ -90,7 +90,7 @@ void Array::_duplicate(const Array &a) {
 // should probably work this way too, but it doesn't. 9/21/2001 jhrg
 
 /** @deprecated Calling this method should never be necessary. It is used
- internally called whenever the size of the Array is changed, e.g., by a
+ internally and called whenever the size of the Array is changed, e.g., by a
  constraint.
 
  Changes the length property of the array.
@@ -112,6 +112,7 @@ void Array::update_length_ll(unsigned long long) {
 
     set_length_ll(length);
 }
+
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new - The dtor for Vector will delete this object.
 
@@ -218,7 +219,7 @@ void Array::transform_to_dap4(D4Group *root, Constructor *container) {
                 }
             }
             // At this point d4_dim's name and size == those of (*d) so just set
-            // the D4Dimension pointer so it matches the one in the D4Group.
+            // the D4Dimension pointer so that it matches the one in the D4Group.
             (*dap2_dim).dim = d4_dim;
         }
     }
@@ -227,8 +228,6 @@ void Array::transform_to_dap4(D4Group *root, Constructor *container) {
     dest->attributes()->transform_to_dap4(get_attr_table());
     dest->set_is_dap4(true);
     container->add_var_nocopy(dest);
-    DBG(cerr << __func__ << "() - END (array:" << name() << ")" << endl);
-    ;
 }
 
 bool Array::is_dap2_grid() {
