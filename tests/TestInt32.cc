@@ -85,7 +85,7 @@ bool TestInt32::read() {
         // to version Apple LLVM version 5.1 (clang-503.0.38) (based on LLVM 3.4svn)
         // jhrg 3/12/14
         // d_buf = d_buf * 32;
-
+        //
         //d_buf <<= 5;
         //if (!d_buf)
         //    d_buf = 32;
@@ -96,23 +96,19 @@ bool TestInt32::read() {
         //
         // Replaced with a slower but cautious version below - ndp 09/3/2024
 
-
         long long val = d_buf;
         val <<= 5;
-        if(val >= 4294967296){
+        if (val >= 4294967296) {
             d_buf = 32;
-        }
-        else {
+        } else {
             d_buf = 0xFFFFFFFF & val;
         }
-            
-
         DBGN(cerr << __PRETTY_FUNCTION__ << "d_buf: " << d_buf << endl);
+        
     } else {
         d_buf = 123456789;
     }
 
     set_read_p(true);
-
     return true;
 }
