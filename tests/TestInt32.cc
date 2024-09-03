@@ -86,13 +86,14 @@ bool TestInt32::read() {
         // jhrg 3/12/14
         // d_buf = d_buf * 32;
         //
-        //d_buf <<= 5;
-        //if (!d_buf)
+        // d_buf <<= 5;
+        // if (!d_buf)
         //    d_buf = 32;
-        // The above version caused runtime errors on OSX 14.6.1: 
+        // The above version caused runtime errors on OSX 14.6.1:
         //
-        //.  +TestInt32.cc:88:15: runtime error: left shift of 1073741824 by 5 places cannot be represented in type 'dods_int32' (aka 'int')
-        //   +SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior TestInt32.cc:88:15 in 
+        //.  +TestInt32.cc:88:15: runtime error: left shift of 1073741824 by 5 places cannot be represented in type
+        //'dods_int32' (aka 'int')
+        //   +SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior TestInt32.cc:88:15 in
         //
         // Replaced with a slower but cautious version below - ndp 09/3/2024
         long long val = d_buf;
@@ -103,7 +104,7 @@ bool TestInt32::read() {
             d_buf = 0xFFFFFFFF & val;
         }
         DBGN(cerr << __PRETTY_FUNCTION__ << "d_buf: " << d_buf << endl);
-        
+
     } else {
         d_buf = 123456789;
     }
