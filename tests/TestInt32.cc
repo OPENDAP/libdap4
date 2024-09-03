@@ -95,7 +95,6 @@ bool TestInt32::read() {
         //   +SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior TestInt32.cc:88:15 in 
         //
         // Replaced with a slower but cautious version below - ndp 09/3/2024
-
         long long val = d_buf;
         val <<= 5;
         if (val >= 4294967296) {
