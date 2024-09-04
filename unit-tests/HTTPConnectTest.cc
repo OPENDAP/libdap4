@@ -104,7 +104,8 @@ public:
         // etag = "\"2a008e-157-3fbcd139c2680\"";
         // etag = "\"181893-157-3fbcd139c2680\""; // On 10/13/14 we moved to a new httpd and the etag value changed.
         // etag ="\"157-3df1e87884680\""; // New httpd service, new etag, ndp - 01/11/21
-        etag = "\"157-3df0e26958000\""; // New httpd (dockerized), new etag. ndp - 12/06/22
+        // etag = "\"157-3df0e26958000\""; // New httpd (dockerized), new etag. ndp - 12/06/22
+        etag = "\"157-5ef05adba5432\""; // New deploymewnt in us-west, new etag. ndp - 09/04/24
         DBG(cerr << prolog << "etag: " << etag << endl);
         lm = "Wed, 13 Jul 2005 19:32:26 GMT";
         DBG(cerr << prolog << "lm: " << lm << endl);
