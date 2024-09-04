@@ -105,10 +105,13 @@ public:
         // etag = "\"181893-157-3fbcd139c2680\""; // On 10/13/14 we moved to a new httpd and the etag value changed.
         // etag ="\"157-3df1e87884680\""; // New httpd service, new etag, ndp - 01/11/21
         // etag = "\"157-3df0e26958000\""; // New httpd (dockerized), new etag. ndp - 12/06/22
-        etag = "\"157-5ef05adba5432\""; // New deploymewnt in us-west, new etag. ndp - 09/04/24
+        // lm = "Wed, 13 Jul 2005 19:32:26 GMT";
+        
+        etag = "\"157-5ef05adba5432\"";       // New deploymewnt in us-west, new etag. ndp - 09/04/24
+        lm = "Sun, 04 Dec 2022 19:35:52 GMT"; // New deploymewnt in us-west, new etag. ndp - 09/04/24
         DBG(cerr << prolog << "etag: " << etag << endl);
-        lm = "Wed, 13 Jul 2005 19:32:26 GMT";
         DBG(cerr << prolog << "lm: " << lm << endl);
+
         string u("jimg");
         string dt(":dods_test@");
         string dd(":dods_digest@");
@@ -188,7 +191,7 @@ public:
             DBG(cerr << prolog << "If-Modified-Since test. END " << endl);
 
             // Now test an etag
-            DBG(cerr << prolog << "ETag (If-None_Match) test. BEGIN (etag:" << etag << ")" << endl);
+            DBG(cerr << prolog << "ETag (If-None_Match) test. BEGIN (cached etag: " << etag << ")" << endl);
             resp_h->clear();
             request_h.clear();
             request_h.push_back(string("If-None-Match: ") + etag);
