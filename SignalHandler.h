@@ -26,8 +26,8 @@
 #ifndef signal_handler_h
 #define signal_handler_h
 
-#include <vector>
 #include <csignal>
+#include <vector>
 
 #include "EventHandler.h"
 #include "InternalErr.h"
@@ -99,8 +99,7 @@ public:
 
     virtual ~SignalHandler() = default;
 
-    static EventHandler *register_handler(int signum, EventHandler *eh,
-                                          bool ignore_by_default = false);
+    static EventHandler *register_handler(int signum, EventHandler *eh, bool ignore_by_default = false);
 
     static EventHandler *remove_handler(int signum);
 };

@@ -33,63 +33,62 @@
 #ifndef I_XDRStreamUnMarshaller_h
 #define I_XDRStreamUnMarshaller_h 1
 
+#include "config.h"
+
 #include <iostream>
 
-using std::istream ;
-using std::cin ;
+using std::cin;
+using std::istream;
 
 #include "UnMarshaller.h"
 #include "XDRUtils.h"
 
-namespace libdap
-{
+namespace libdap {
 
 const int XDR_DAP_BUFF_SIZE = 4096; // This will be compared to a signed int
 
 /** @brief unmarshaller that knows how to unmarshall/deserialize dap objects
  * using XDR from a file
  */
-class XDRStreamUnMarshaller : public UnMarshaller
-{
+class XDRStreamUnMarshaller : public UnMarshaller {
 private:
-    XDR 			d_source ;
-    istream &		d_in;
-    static char *	d_buf;
+    XDR d_source;
+    istream &d_in;
+    static char *d_buf;
 
-    				XDRStreamUnMarshaller() ;
-    				XDRStreamUnMarshaller( const XDRStreamUnMarshaller &um ) ;
-    XDRStreamUnMarshaller &	operator=( const XDRStreamUnMarshaller & ) ;
+    XDRStreamUnMarshaller();
+    XDRStreamUnMarshaller(const XDRStreamUnMarshaller &um);
+    XDRStreamUnMarshaller &operator=(const XDRStreamUnMarshaller &);
 
 public:
-    				XDRStreamUnMarshaller( istream &in ) ;
-    virtual			~XDRStreamUnMarshaller() ;
+    XDRStreamUnMarshaller(istream &in);
+    virtual ~XDRStreamUnMarshaller();
 
-    virtual void	get_byte( dods_byte &val ) ;
+    virtual void get_byte(dods_byte &val);
 
-    virtual void	get_int16( dods_int16 &val ) ;
-    virtual void	get_int32( dods_int32 &val ) ;
+    virtual void get_int16(dods_int16 &val);
+    virtual void get_int32(dods_int32 &val);
 
-    virtual void	get_float32( dods_float32 &val ) ;
-    virtual void	get_float64( dods_float64 &val ) ;
+    virtual void get_float32(dods_float32 &val);
+    virtual void get_float64(dods_float64 &val);
 
-    virtual void	get_uint16( dods_uint16 &val ) ;
-    virtual void	get_uint32( dods_uint32 &val ) ;
+    virtual void get_uint16(dods_uint16 &val);
+    virtual void get_uint32(dods_uint32 &val);
 
-    virtual void	get_str( string &val ) ;
-    virtual void	get_url( string &val ) ;
+    virtual void get_str(string &val);
+    virtual void get_url(string &val);
 
-    virtual void	get_opaque( char *val, unsigned int len ) ;
-    virtual void	get_int( int &val ) ;
+    virtual void get_opaque(char *val, unsigned int len);
+    virtual void get_int(int &val);
 
-    virtual void	get_vector( char **val, unsigned int &num, Vector &vec ) ;
-    virtual void	get_vector( char **val, unsigned int &num, int width, Vector &vec ) ;
+    virtual void get_vector(char **val, unsigned int &num, Vector &vec);
+    virtual void get_vector(char **val, unsigned int &num, int width, Vector &vec);
 
     virtual void get_vector(char **val, unsigned int &num, int width, Type type);
 
-    virtual void	dump(ostream &strm) const ;
-} ;
+    virtual void dump(ostream &strm) const;
+};
 
 } // namespace libdap
 
 #endif // I_XDRStreamUnMarshaller_h
-

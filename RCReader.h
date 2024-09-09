@@ -40,8 +40,7 @@
 
 using namespace std;
 
-namespace libdap
-{
+namespace libdap {
 
 /** Read the .dodsrc file. By default the file ~/.dodsrc is read. If the
     environment variable DODS_CONF is set, use that value as the pathname to
@@ -51,16 +50,15 @@ namespace libdap
     NB: DODS_CACHE_INIT is deprecated and may be removed in the future.
 
     @author Jose Garcia <jgarcia@ucar.edu> */
-class RCReader
-{
+class RCReader {
 private:
     string d_rc_file_path;
     string d_cache_root;
 
-    bool _dods_use_cache; // 0- Disabled 1- Enabled
-    unsigned int _dods_cache_max; // Max cache size in Mbytes
+    bool _dods_use_cache;          // 0- Disabled 1- Enabled
+    unsigned int _dods_cache_max;  // Max cache size in Mbytes
     unsigned int _dods_cached_obj; // Max cache entry size in Mbytes
-    int _dods_ign_expires; // 0- Honor expires 1- Ignore them
+    int _dods_ign_expires;         // 0- Honor expires 1- Ignore them
 
     // NB: NEVER_DEFLATE: I added this (12/1/99 jhrg) because libwww 5.2.9
     // cannot process compressed (i.e., deflated) documents in the cache.
@@ -74,7 +72,7 @@ private:
     //
     // Added back in, but with a better name (removed double negative).
     // 6/27/2002 jhrg
-    bool _dods_deflate;  // 1- request comp responses, 0- don't
+    bool _dods_deflate; // 1- request comp responses, 0- don't
 
     int _dods_default_expires; // 24 hours in seconds
     int _dods_always_validate; // Let libwww decide by default so set to 0
@@ -97,7 +95,7 @@ private:
     string _dods_proxy_for_proxy_host_url;
     int _dods_proxy_for_regexp_flags; // not used w/libcurl. 6/27/2002 jhrg
 
-    //flags for NO_PROXY_FOR=<protocol>,<host>,<port>
+    // flags for NO_PROXY_FOR=<protocol>,<host>,<port>
     bool d_dods_no_proxy_for; // true if no_proxy_for is used.
     string d_dods_no_proxy_for_protocol;
     string d_dods_no_proxy_for_host;
@@ -109,7 +107,7 @@ private:
 
     string d_cookie_jar;
 
-    static RCReader* _instance;
+    static RCReader *_instance;
 
     RCReader();
     ~RCReader();
@@ -129,75 +127,34 @@ private:
     friend class HTTPConnectTest;
 
 public:
-    static RCReader* instance();
+    static RCReader *instance();
 #if 0
     static RCReader* instance(const string &rc_file_path);
 #endif
     // GET METHODS
-    string get_dods_cache_root() const throw()
-    {
-        return d_cache_root;
-    }
-    bool get_use_cache() const throw()
-    {
-        return _dods_use_cache;
-    }
-    int get_max_cache_size()  const throw()
-    {
-        return _dods_cache_max;
-    }
-    unsigned int get_max_cached_obj() const throw()
-    {
-        return _dods_cached_obj;
-    }
-    int get_ignore_expires() const throw()
-    {
-        return _dods_ign_expires;
-    }
-    int get_default_expires() const throw()
-    {
-        return _dods_default_expires;
-    }
-    int get_always_validate() const throw()
-    {
-        return _dods_always_validate;
-    }
-    int get_validate_ssl() const throw()
-    {
-        return d_validate_ssl;
-    }
+    string get_dods_cache_root() const throw() { return d_cache_root; }
+    bool get_use_cache() const throw() { return _dods_use_cache; }
+    int get_max_cache_size() const throw() { return _dods_cache_max; }
+    unsigned int get_max_cached_obj() const throw() { return _dods_cached_obj; }
+    int get_ignore_expires() const throw() { return _dods_ign_expires; }
+    int get_default_expires() const throw() { return _dods_default_expires; }
+    int get_always_validate() const throw() { return _dods_always_validate; }
+    int get_validate_ssl() const throw() { return d_validate_ssl; }
 
-    bool get_deflate() const throw()
-    {
-        return _dods_deflate;
-    }
+    bool get_deflate() const throw() { return _dods_deflate; }
 
     /// Get the proxy server protocol
-    string get_proxy_server_protocol() const throw()
-    {
-        return d_dods_proxy_server_protocol;
-    }
+    string get_proxy_server_protocol() const throw() { return d_dods_proxy_server_protocol; }
     /// Get the proxy host
-    string get_proxy_server_host() const throw()
-    {
-        return d_dods_proxy_server_host;
-    }
+    string get_proxy_server_host() const throw() { return d_dods_proxy_server_host; }
     /// Get the proxy port
-    int get_proxy_server_port() const throw()
-    {
-        return d_dods_proxy_server_port;
-    }
+    int get_proxy_server_port() const throw() { return d_dods_proxy_server_port; }
     /// Get the proxy username and password
-    string get_proxy_server_userpw() const throw()
-    {
-        return d_dods_proxy_server_userpw;
-    }
+    string get_proxy_server_userpw() const throw() { return d_dods_proxy_server_userpw; }
     /// @deprecated
-    string get_proxy_server_host_url() const throw()
-    {
-        return (d_dods_proxy_server_userpw.empty() ? "" : d_dods_proxy_server_userpw + "@")
-               + d_dods_proxy_server_host
-               + ":" + long_to_string(d_dods_proxy_server_port);
+    string get_proxy_server_host_url() const throw() {
+        return (d_dods_proxy_server_userpw.empty() ? "" : d_dods_proxy_server_userpw + "@") + d_dods_proxy_server_host +
+               ":" + long_to_string(d_dods_proxy_server_port);
     }
 
     // The whole regex/proxy-for implementation needs reworking. We really
@@ -207,154 +164,64 @@ public:
     // going to disable the entire feature and see if anyone complains. If
     // they do, we can fix it. If not, one less thing to do... 06/17/04 jhrg
     /// @deprecated
-    bool is_proxy_for_used() throw()
-    {
-        return _dods_proxy_for;
-    }
+    bool is_proxy_for_used() throw() { return _dods_proxy_for; }
     /// @deprecated
-    string get_proxy_for_regexp() const throw()
-    {
-        return _dods_proxy_for_regexp;
-    }
+    string get_proxy_for_regexp() const throw() { return _dods_proxy_for_regexp; }
     /// @deprecated
-    string get_proxy_for_proxy_host_url() const throw()
-    {
-        return _dods_proxy_for_proxy_host_url;
-    }
+    string get_proxy_for_proxy_host_url() const throw() { return _dods_proxy_for_proxy_host_url; }
 
     /// @deprecated
-    int get_proxy_for_regexp_flags() const throw()
-    {
-        return _dods_proxy_for_regexp_flags;
-    }
+    int get_proxy_for_regexp_flags() const throw() { return _dods_proxy_for_regexp_flags; }
 
     // The whole no_proxy implementation also needs a rewrite. However, it is
     // useful as it is since the user can give a domain and there's often a
     // real need for suppressing proxy access for the local domain. The
     // ..._port() method is bogus, however, so it is deprecated. There's no
     // code that uses it. 06/17/04 jhrg
-    bool is_no_proxy_for_used() throw()
-    {
-        return d_dods_no_proxy_for;
-    }
-    string get_no_proxy_for_protocol() const throw()
-    {
-        return d_dods_no_proxy_for_protocol;
-    }
-    string get_no_proxy_for_host() const throw()
-    {
-        return d_dods_no_proxy_for_host;
-    }
+    bool is_no_proxy_for_used() throw() { return d_dods_no_proxy_for; }
+    string get_no_proxy_for_protocol() const throw() { return d_dods_no_proxy_for_protocol; }
+    string get_no_proxy_for_host() const throw() { return d_dods_no_proxy_for_host; }
 
     /// @deprecated
-    int    get_no_proxy_for_port() const throw()
-    {
-        return _dods_no_proxy_for_port;
-    }
+    int get_no_proxy_for_port() const throw() { return _dods_no_proxy_for_port; }
 
-    string get_ais_database() const throw()
-    {
-        return d_ais_database;
-    }
+    string get_ais_database() const throw() { return d_ais_database; }
 
-    string get_cookie_jar() const throw()
-    {
-	return d_cookie_jar;
-    }
+    string get_cookie_jar() const throw() { return d_cookie_jar; }
 
     // SET METHODS
-    void set_use_cache(bool b) throw()
-    {
-        _dods_use_cache = b;
-    }
-    void set_max_cache_size(int i) throw()
-    {
-        _dods_cache_max = i;
-    }
-    void set_max_cached_obj(int i) throw()
-    {
-        _dods_cached_obj = i;
-    }
-    void set_ignore_expires(int i) throw()
-    {
-        _dods_ign_expires = i;
-    }
-    void set_default_expires(int i) throw()
-    {
-        _dods_default_expires = i;
-    }
-    void set_always_validate(int i) throw()
-    {
-        _dods_always_validate = i;
-    }
-    void set_validate_ssl(int i) throw()
-    {
-        d_validate_ssl = i;
-    }
+    void set_use_cache(bool b) throw() { _dods_use_cache = b; }
+    void set_max_cache_size(int i) throw() { _dods_cache_max = i; }
+    void set_max_cached_obj(int i) throw() { _dods_cached_obj = i; }
+    void set_ignore_expires(int i) throw() { _dods_ign_expires = i; }
+    void set_default_expires(int i) throw() { _dods_default_expires = i; }
+    void set_always_validate(int i) throw() { _dods_always_validate = i; }
+    void set_validate_ssl(int i) throw() { d_validate_ssl = i; }
 
-    void set_deflate(bool b) throw()
-    {
-        _dods_deflate = b;
-    }
+    void set_deflate(bool b) throw() { _dods_deflate = b; }
 
-    void set_proxy_server_protocol(const string &s) throw()
-    {
-        d_dods_proxy_server_protocol = s;
-    }
-    void set_proxy_server_host(const string &s) throw()
-    {
-        d_dods_proxy_server_host = s;
-    }
-    void set_proxy_server_port(int l) throw()
-    {
-        d_dods_proxy_server_port = l;
-    }
-    void set_proxy_server_userpw(const string &s) throw()
-    {
-        d_dods_proxy_server_userpw = s;
-    }
+    void set_proxy_server_protocol(const string &s) throw() { d_dods_proxy_server_protocol = s; }
+    void set_proxy_server_host(const string &s) throw() { d_dods_proxy_server_host = s; }
+    void set_proxy_server_port(int l) throw() { d_dods_proxy_server_port = l; }
+    void set_proxy_server_userpw(const string &s) throw() { d_dods_proxy_server_userpw = s; }
 
     /// @deprecated
-    void set_proxy_server_host_url(const string &s) throw()
-    {
-        _dods_proxy_server_host_url = s;
-    }
+    void set_proxy_server_host_url(const string &s) throw() { _dods_proxy_server_host_url = s; }
 
     /// @deprecated
-    void set_proxy_for_regexp(const string &s) throw()
-    {
-        _dods_proxy_for_regexp = s;
-    }
+    void set_proxy_for_regexp(const string &s) throw() { _dods_proxy_for_regexp = s; }
     /// @deprecated
-    void set_proxy_for_proxy_host_url(const string &s) throw()
-    {
-        _dods_proxy_for_proxy_host_url = s;
-    }
+    void set_proxy_for_proxy_host_url(const string &s) throw() { _dods_proxy_for_proxy_host_url = s; }
     /// @deprecated
-    void set_proxy_for_regexp_flags(int i) throw()
-    {
-        _dods_proxy_for_regexp_flags = i;
-    }
+    void set_proxy_for_regexp_flags(int i) throw() { _dods_proxy_for_regexp_flags = i; }
 
-    void set_no_proxy_for_protocol(const string &s) throw()
-    {
-        d_dods_no_proxy_for_protocol = s;
-    }
-    void set_no_proxy_for_host(const string &s) throw()
-    {
-        d_dods_no_proxy_for_host = s;
-    }
+    void set_no_proxy_for_protocol(const string &s) throw() { d_dods_no_proxy_for_protocol = s; }
+    void set_no_proxy_for_host(const string &s) throw() { d_dods_no_proxy_for_host = s; }
 
     /// @deprecated
-    void set_no_proxy_for_port(int i) throw()
-    {
-        _dods_no_proxy_for_port = i;
-    }
+    void set_no_proxy_for_port(int i) throw() { _dods_no_proxy_for_port = i; }
 
-    void set_ais_database(const string &db) throw()
-    {
-        d_ais_database = db;
-    }
+    void set_ais_database(const string &db) throw() { d_ais_database = db; }
 };
 
 } // namespace libdap

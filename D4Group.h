@@ -22,8 +22,8 @@
 #ifndef D4GROUP_H_
 #define D4GROUP_H_
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 #include "Constructor.h"
 #include "D4Dimensions.h"
@@ -41,7 +41,7 @@ class Array;
  * variables by name where dots (.) in a fully qualified name serve as
  * separators.
  */
-class D4Group :public Constructor {
+class D4Group : public Constructor {
 private:
     // Note that because Constructor is a BaseType, this class inherits
     // both a back pointer to its parent, an AttrTable and, directly from the
@@ -57,7 +57,7 @@ private:
 
     // This is a pointer so that the factory class(es) that return pointers
     // work as expected when making Groups.
-    vector<D4Group*> d_groups;
+    vector<D4Group *> d_groups;
 
     BaseType *m_find_map_source_helper(const string &name);
 
@@ -65,8 +65,8 @@ protected:
     void m_duplicate(const D4Group &g);
 
 public:
-    typedef vector<D4Group*>::iterator groupsIter;
-    typedef vector<D4Group*>::const_iterator groupsCIter;
+    typedef vector<D4Group *>::iterator groupsIter;
+    typedef vector<D4Group *>::const_iterator groupsCIter;
 
     D4Group(const string &name);
     D4Group(const string &name, const string &dataset);
@@ -82,8 +82,9 @@ public:
     // TODO Wire up the new D4Dimensions object to have this group as its parent. jhrg 8/22/22
     /// Get the dimensions defined for this Group
     D4Dimensions *dims() {
-    	// If not built yet, make one and set this as parent.
-        if (!d_dims) d_dims = new D4Dimensions(this);
+        // If not built yet, make one and set this as parent.
+        if (!d_dims)
+            d_dims = new D4Dimensions(this);
         return d_dims;
     }
 
@@ -98,8 +99,8 @@ public:
     /// Get  the enumerations defined for this Group
     D4EnumDefs *enum_defs() {
         if (!d_enum_defs) {
-        	d_enum_defs = new D4EnumDefs;
-        	d_enum_defs->set_parent(this);
+            d_enum_defs = new D4EnumDefs;
+            d_enum_defs->set_parent(this);
         }
         return d_enum_defs;
     }
@@ -109,7 +110,7 @@ public:
 
     BaseType *find_var(const string &name);
 
-    const vector<D4Group*> &groups() const { return d_groups; }
+    const vector<D4Group *> &groups() const { return d_groups; }
 
     /// Get an iterator to the start of the values
     groupsIter grp_begin() { return d_groups.begin(); }
@@ -117,16 +118,14 @@ public:
     /// Get an iterator to the end of the values
     groupsIter grp_end() { return d_groups.end(); }
 
-    void add_group(const D4Group *g) {
-    	add_group_nocopy(new D4Group(*g));
-    }
+    void add_group(const D4Group *g) { add_group_nocopy(new D4Group(*g)); }
 
     void add_group_nocopy(D4Group *g) {
-    	g->set_parent(this);
+        g->set_parent(this);
         d_groups.push_back(g);
     }
     void insert_group_nocopy(D4Group *g, groupsIter i) {
-    	g->set_parent(this);
+        g->set_parent(this);
         d_groups.insert(i, g);
     }
 

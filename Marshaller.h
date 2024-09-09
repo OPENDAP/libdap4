@@ -37,9 +37,9 @@
 #include <vector>
 
 #include "DapObj.h"
+#include "InternalErr.h"
 #include "Type.h"
 #include "dods-datatypes.h"
-#include "InternalErr.h"
 
 namespace libdap {
 
@@ -47,7 +47,7 @@ class Vector;
 
 /** @brief abstract base class used to marshal/serialize dap data objects
  */
-class Marshaller: public DapObj {
+class Marshaller : public DapObj {
 public:
     virtual void put_byte(dods_byte val) = 0;
 
@@ -76,9 +76,7 @@ public:
      *
      * @param num The number of elements to write
      */
-    virtual void put_vector_start(int /*num*/) {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
-    }// = 0;
+    virtual void put_vector_start(int /*num*/) { throw InternalErr(__FILE__, __LINE__, "Not Implemented yet"); } // = 0;
 
     /**
      * Write one part of a vector's contents.
@@ -88,16 +86,14 @@ public:
      * @param width The number of bytes per value
      * @param type The DAP2 data type for each value
      */
-    virtual void put_vector_part(char */*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/) {
+    virtual void put_vector_part(char * /*val*/, unsigned int /*num*/, int /*width*/, Type /*type*/) {
         throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
-    }// = 0;
+    } // = 0;
 
     /**
      * Close a vector written using put_vector_part()
      */
-    virtual void put_vector_end() {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented yet");
-    }// = 0;
+    virtual void put_vector_end() { throw InternalErr(__FILE__, __LINE__, "Not Implemented yet"); } // = 0;
 
     virtual void dump(std::ostream &strm) const = 0;
 };
@@ -105,4 +101,3 @@ public:
 } // namespace libdap
 
 #endif // A_Marshaller_h
-

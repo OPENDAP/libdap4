@@ -27,16 +27,15 @@
 
 #include <cassert>
 
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cstdint>
 
-#include "DapObj.h"
 #include "BaseType.h"
+#include "DapObj.h"
 
-namespace libdap
-{
+namespace libdap {
 
 const string c_dap40_namespace = "http://xml.opendap.org/ns/DAP/4.0#";
 
@@ -54,8 +53,7 @@ class DDS;
  * of a DAP4 dataset are held by the D4Group instance (which is a child
  * of Constructor).
  */
-class DMR : public DapObj
-{
+class DMR : public DapObj {
 private:
     D4BaseTypeFactory *d_factory = nullptr;
 
@@ -141,7 +139,7 @@ public:
      */
     //@{
     std::string filename() const { return d_filename; }
-    void set_filename(const std::string &fn) { d_filename = fn;}
+    void set_filename(const std::string &fn) { d_filename = fn; }
     //@}
 
     std::string dap_version() const { return d_dap_version; }
@@ -169,7 +167,7 @@ public:
      * @return The maximum allowable response size. A value of 0 means there is no
      * limit (default).
      */
-    long response_limit() const { return (long) d_max_response_size_kb; }
+    long response_limit() const { return (long)d_max_response_size_kb; }
 
     /**
      * @brief Get the maximum response size, in KB. Zero indicates no limit.
@@ -183,18 +181,14 @@ public:
      * is given in kilobytes.
      * @param size The maximum size of the response in kilobytes.
      */
-     void set_response_limit(long size) {
-        d_max_response_size_kb = size;
-     }
+    void set_response_limit(long size) { d_max_response_size_kb = size; }
 
     /**
      * Set the maximum response size. Zero is the default value and indicates there is no limit.
      * The size is given in kilobytes.
      * @param size The maximum size of the response in kilobytes.
      */
-    void set_response_limit_kb(const uint64_t &size) {
-        d_max_response_size_kb = size;
-    }
+    void set_response_limit_kb(const uint64_t &size) { d_max_response_size_kb = size; }
 
     /// Get the estimated response size, in kilobytes
     long request_size(bool constrained);
@@ -209,11 +203,9 @@ public:
     /**
      * @return Returns true if the total data bytes requested exceeds the set limit, false otherwise.
      */
-    bool too_big() {
-        return d_max_response_size_kb != 0 && request_size_kb(true) > d_max_response_size_kb;
-    }
+    bool too_big() { return d_max_response_size_kb != 0 && request_size_kb(true) > d_max_response_size_kb; }
 
-    /// Set the flag that marks the expression constraint as empty. 
+    /// Set the flag that marks the expression constraint as empty.
     void set_ce_empty(bool ce_empty) { d_ce_empty = ce_empty; }
 
     /// Get the flag that marks the expression constraint as empty.
@@ -234,9 +226,8 @@ public:
     void dump(std::ostream &strm) const override;
 
     // The following methods are for direct IO optimization.
-    bool get_global_dio_flag() const {return global_dio_flag; }
-    void set_global_dio_flag( bool dio_flag_value = true) { global_dio_flag = dio_flag_value; }
- 
+    bool get_global_dio_flag() const { return global_dio_flag; }
+    void set_global_dio_flag(bool dio_flag_value = true) { global_dio_flag = dio_flag_value; }
 };
 
 } // namespace libdap

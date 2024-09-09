@@ -37,10 +37,9 @@
 #ifndef _das_h
 #define _das_h 1
 
-
 #include <cstdio>
-#include <string>
 #include <iostream>
+#include <string>
 
 #ifndef _attrtable_h
 #include "AttrTable.h"
@@ -48,8 +47,7 @@
 
 using std::cout;
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief Hold attribute data for a DAP2 dataset.
 
@@ -118,37 +116,36 @@ namespace libdap
 
     @see DDS
     @see AttrTable */
-class DAS : public DapObj
-{
+class DAS : public DapObj {
 private:
     // The DAS support the notion of a current attribute table for a given
     // container. Containers are used by the BES to support datasets that
     // are built using several files (but not exactly the same way as
     // NCML builds them.
-    AttrTable *d_container ;
-    string d_container_name ;
+    AttrTable *d_container;
+    string d_container_name;
 
     // A DAS is a shell around an attribute table. Since tables can be nested,
     // there is one top-level table and the attribute tables for individual
     // variables are its children.
-    AttrTable d_attrs ;
+    AttrTable d_attrs;
 
     void duplicate(const DAS &src);
 
 public:
-    DAS() : DapObj(), d_container( 0 ) { }
+    DAS() : DapObj(), d_container(0) {}
     DAS(const DAS &das) { duplicate(das); }
 
-    virtual ~DAS() { }
+    virtual ~DAS() {}
 
-    DAS & operator=(const DAS &rhs);
+    DAS &operator=(const DAS &rhs);
 
     /** @brief Returns the name of the current attribute container when multiple
      * files used to build this DAS
      */
-    virtual string container_name() const {return d_container_name; }
+    virtual string container_name() const { return d_container_name; }
 
-    virtual void container_name( const string &cn ) ;
+    virtual void container_name(const string &cn);
 
     /** @brief Returns the current attribute container when multiple files
      * used to build this DAS.
@@ -164,17 +161,17 @@ public:
      * datasets being used to construct this DAS
      */
     virtual AttrTable *get_top_level_attributes() {
-		if (d_container)
-			return d_container;
-		return &d_attrs;
-	}
+        if (d_container)
+            return d_container;
+        return &d_attrs;
+    }
 
-    virtual void erase() ;
+    virtual void erase();
 
-    virtual unsigned int get_size() const ;
+    virtual unsigned int get_size() const;
 
-    AttrTable::Attr_iter var_begin() ;
-    AttrTable::Attr_iter var_end() ;
+    AttrTable::Attr_iter var_begin();
+    AttrTable::Attr_iter var_end();
 
     string get_name(AttrTable::Attr_iter &i);
     AttrTable *get_table(AttrTable::Attr_iter &i);
@@ -192,7 +189,7 @@ public:
     virtual void print(FILE *out, bool dereference = false);
     virtual void print(ostream &out, bool dereference = false);
 
-    virtual void dump(ostream &strm) const ;
+    virtual void dump(ostream &strm) const;
 };
 
 } // namespace libdap

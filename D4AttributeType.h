@@ -36,7 +36,7 @@ enum D4AttributeType {
     attr_byte_c,
     attr_int16_c,
     attr_uint16_c,
-    attr_int32_c,  // Added `attr_' to fix clash with IRIX 5.3.
+    attr_int32_c, // Added `attr_' to fix clash with IRIX 5.3.
     attr_uint32_c,
     attr_float32_c,
     attr_float64_c,

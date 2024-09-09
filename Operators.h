@@ -35,7 +35,7 @@
 #ifndef _operators_h
 #define _operators_h
 
-#include "GNURegex.h"  // GNU Regex class used for string =~ op.
+#include "GNURegex.h" // GNU Regex class used for string =~ op.
 
 #include "ce_expr.tab.hh"
 
@@ -49,28 +49,26 @@ namespace libdap {
  @see rops
  @see USCmp
  @see SUCmp */
-template<class T1, class T2>
-bool Cmp(int op, T1 v1, T2 v2)
-{
-	DBGN(cerr << __PRETTY_FUNCTION__ << v1 << " " << op << " " << v2 << endl);
+template <class T1, class T2> bool Cmp(int op, T1 v1, T2 v2) {
+    DBGN(cerr << __PRETTY_FUNCTION__ << v1 << " " << op << " " << v2 << endl);
 
     switch (op) {
-        case SCAN_EQUAL:
-            return v1 == v2;
-        case SCAN_NOT_EQUAL:
-            return v1 != v2;
-        case SCAN_GREATER:
-            return v1 > v2;
-        case SCAN_GREATER_EQL:
-            return v1 >= v2;
-        case SCAN_LESS:
-            return v1 < v2;
-        case SCAN_LESS_EQL:
-            return v1 <= v2;
-        case SCAN_REGEXP:
-            throw Error(malformed_expr, "Regular expressions are supported for strings only.");
-        default:
-            throw Error(malformed_expr, "Unrecognized operator.");
+    case SCAN_EQUAL:
+        return v1 == v2;
+    case SCAN_NOT_EQUAL:
+        return v1 != v2;
+    case SCAN_GREATER:
+        return v1 > v2;
+    case SCAN_GREATER_EQL:
+        return v1 >= v2;
+    case SCAN_LESS:
+        return v1 < v2;
+    case SCAN_LESS_EQL:
+        return v1 <= v2;
+    case SCAN_REGEXP:
+        throw Error(malformed_expr, "Regular expressions are supported for strings only.");
+    default:
+        throw Error(malformed_expr, "Unrecognized operator.");
     }
 }
 
@@ -165,28 +163,26 @@ bool SUCmp(int op, T1 v1, UT2 v2)
  This class is one implementation of the comparison policy used by rops.
 
  @see rops */
-template<class T1, class T2>
-bool StrCmp(int op, T1 v1, T2 v2)
-{
+template <class T1, class T2> bool StrCmp(int op, T1 v1, T2 v2) {
     switch (op) {
-        case SCAN_EQUAL:
-            return v1 == v2;
-        case SCAN_NOT_EQUAL:
-            return v1 != v2;
-        case SCAN_GREATER:
-            return v1 > v2;
-        case SCAN_GREATER_EQL:
-            return v1 >= v2;
-        case SCAN_LESS:
-            return v1 < v2;
-        case SCAN_LESS_EQL:
-            return v1 <= v2;
-        case SCAN_REGEXP: {
-            Regex r(v2);
-            return r.match(v1.c_str(), v1.length()) > 0;
-        }
-        default:
-            throw Error(malformed_expr, "Unrecognized operator.");
+    case SCAN_EQUAL:
+        return v1 == v2;
+    case SCAN_NOT_EQUAL:
+        return v1 != v2;
+    case SCAN_GREATER:
+        return v1 > v2;
+    case SCAN_GREATER_EQL:
+        return v1 >= v2;
+    case SCAN_LESS:
+        return v1 < v2;
+    case SCAN_LESS_EQL:
+        return v1 <= v2;
+    case SCAN_REGEXP: {
+        Regex r(v2);
+        return r.match(v1.c_str(), v1.length()) > 0;
+    }
+    default:
+        throw Error(malformed_expr, "Unrecognized operator.");
     }
 }
 

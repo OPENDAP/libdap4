@@ -26,12 +26,11 @@
 #ifndef _httpconnect_h
 #define _httpconnect_h
 
-
 #include <string>
 
 #include <curl/curl.h>
-//No longer used in CURL - pwest April 09, 2012
-//#include <curl/types.h>
+// No longer used in CURL - pwest April 09, 2012
+// #include <curl/types.h>
 #include <curl/easy.h>
 
 #ifndef _rc_reader_h_
@@ -57,8 +56,7 @@
 using std::string;
 using std::vector;
 
-namespace libdap
-{
+namespace libdap {
 
 extern int www_trace;
 extern int www_trace_extensive;
@@ -70,21 +68,20 @@ extern int dods_keep_temps;
 
     @author jhrg */
 
-class HTTPConnect
-{
+class HTTPConnect {
 private:
     CURL *d_curl;
     RCReader *d_rcr;
     HTTPCache *d_http_cache;
 
     char d_error_buffer[CURL_ERROR_SIZE]; // A human-readable message.
-    std::string d_content_type; // apparently read by libcurl; this is valid only after curl_easy_perform()
+    std::string d_content_type;           // apparently read by libcurl; this is valid only after curl_easy_perform()
 
     bool d_accept_deflate;
 
-    string d_username;  // extracted from URL
-    string d_password;  // extracted from URL
-    string d_upstring;  // used to pass info into curl
+    string d_username; // extracted from URL
+    string d_password; // extracted from URL
+    string d_upstring; // used to pass info into curl
 
     string d_cookie_jar;
 
@@ -93,11 +90,10 @@ private:
     int d_dap_client_protocol_major;
     int d_dap_client_protocol_minor;
 
-    bool d_use_cpp_streams;	// Build HTTPResponse objects using fstream and not FILE*
+    bool d_use_cpp_streams; // Build HTTPResponse objects using fstream and not FILE*
 
     void www_lib_init();
-    long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs,
-                  const vector<string> *headers = 0);
+    long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs, const vector<string> *headers = 0);
 
     HTTPResponse *plain_fetch_url(const string &url);
     HTTPResponse *caching_fetch_url(const string &url);
@@ -107,8 +103,7 @@ private:
 
     void extract_auth_info(string &url);
 
-    friend size_t save_raw_http_header(void *ptr, size_t size, size_t nmemb,
-                                       void *http_connect);
+    friend size_t save_raw_http_header(void *ptr, size_t size, size_t nmemb, void *http_connect);
     friend class HTTPConnectTest;
     friend class ParseHeader;
 
@@ -119,8 +114,8 @@ protected:
     break this object). */
     //@{
     HTTPConnect();
-	HTTPConnect(const HTTPConnect &);
-	HTTPConnect &operator=(const HTTPConnect &);
+    HTTPConnect(const HTTPConnect &);
+    HTTPConnect &operator=(const HTTPConnect &);
     //@}
 
 public:

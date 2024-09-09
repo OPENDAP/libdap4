@@ -10,12 +10,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -23,36 +23,33 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <cstring>
-#include <string>
 #include <memory>
+#include <string>
 
 #include <unistd.h>
 
 #include "GNURegex.h"
 
-#include "BaseType.h"
-#include "Grid.h"
 #include "Array.h"
-#include "Float32.h"
+#include "BaseType.h"
 #include "D4Dimensions.h"
+#include "Float32.h"
+#include "Grid.h"
 
+#include "debug.h"
 #include "run_tests_cppunit.h"
 #include "test_config.h"
-#include "debug.h"
 
 using namespace CppUnit;
 using namespace std;
 
-
-
-
 namespace libdap {
 
-class GridTest: public TestFixture {
+class GridTest : public TestFixture {
 private:
     Grid *d_grid = nullptr;
     Array *d_array = nullptr;
@@ -63,21 +60,20 @@ public:
 
     ~GridTest() = default;
 
-    void setUp()
-    {
+    void setUp() {
         unique_ptr<Float32> d_array_proto(new Float32("array_proto"));
         // The name() for the array will be "array_proto"
         d_array = new Array("grid_array", d_array_proto.get());
 
         d_array->append_dim(4, "dimension");
-        dods_float32 buffer_array[4] = { 10.1, 11.2, 12.3, 13.4 };
+        dods_float32 buffer_array[4] = {10.1, 11.2, 12.3, 13.4};
         d_array->val2buf(buffer_array);
 
         unique_ptr<Float32> d_map_proto(new Float32("map_proto"));
         d_map = new Array("grid_map", d_map_proto.get());
 
         d_map->append_dim(4, "dimension");
-        dods_float32 buffer_map[4] = { 0.1, 1.2, 2.3, 3.4 };
+        dods_float32 buffer_map[4] = {0.1, 1.2, 2.3, 3.4};
         d_map->val2buf(buffer_map);
 
         d_grid = new Grid("grid");
@@ -88,18 +84,16 @@ public:
     }
 
     void tearDown() {
-        delete d_grid;      // frees the array and map(s)
+        delete d_grid; // frees the array and map(s)
     }
 
-    bool re_match(Regex &r, const char *s)
-    {
+    bool re_match(Regex &r, const char *s) {
         int match_position = r.match(s, strlen(s));
-        DBG(cerr << "match position: " << match_position
-            << " string length: " << (int)strlen(s) << endl);
-        return match_position == (int) strlen(s);
+        DBG(cerr << "match position: " << match_position << " string length: " << (int)strlen(s) << endl);
+        return match_position == (int)strlen(s);
     }
 
-    CPPUNIT_TEST_SUITE (GridTest);
+    CPPUNIT_TEST_SUITE(GridTest);
 
     CPPUNIT_TEST(test_get_array);
     CPPUNIT_TEST(test_using_var_begin);
@@ -113,8 +107,7 @@ public:
 
     CPPUNIT_TEST_SUITE_END();
 
-    void test_get_array()
-    {
+    void test_get_array() {
         DBG(cerr << "d_grid->get_array()->name(): " << d_grid->get_array()->name() << endl);
         CPPUNIT_ASSERT(d_grid->get_array()->name() == "array_proto");
         DBG(cerr << "d_grid->get_array(): " << hex << d_grid->get_array() << endl);
@@ -123,8 +116,7 @@ public:
     }
 
     // Constructor::vars_begin(). The first variable in the 'vars' vector is the array
-    void test_using_var_begin()
-    {
+    void test_using_var_begin() {
         DBG(cerr << "(*d_grid->var_begin())->name(): " << (*d_grid->var_begin())->name() << endl);
         CPPUNIT_ASSERT((*d_grid->var_begin())->name() == "array_proto");
         DBG(cerr << "*d_grid->var_begin(): " << hex << *d_grid->var_begin() << endl);
@@ -132,8 +124,7 @@ public:
         CPPUNIT_ASSERT(*d_grid->var_begin() == d_array);
     }
 
-    void test_get_vars_iter_for_array()
-    {
+    void test_get_vars_iter_for_array() {
         DBG(cerr << "(*d_grid->get_vars_iter(0))->name(): " << (*d_grid->get_vars_iter(0))->name() << endl);
         CPPUNIT_ASSERT((*d_grid->get_vars_iter(0))->name() == "array_proto");
         DBG(cerr << "*d_grid->get_vars_iter(0): " << hex << *d_grid->get_vars_iter(0) << endl);
@@ -141,8 +132,7 @@ public:
         CPPUNIT_ASSERT(*d_grid->get_vars_iter(0) == d_array);
     }
 
-    void test_get_var_index_for_array()
-    {
+    void test_get_var_index_for_array() {
         DBG(cerr << "d_grid->get_var_index(0)->name(): " << d_grid->get_var_index(0)->name() << endl);
         CPPUNIT_ASSERT(d_grid->get_var_index(0)->name() == "array_proto");
         DBG(cerr << "d_grid->get_var_index(0): " << hex << d_grid->get_var_index(0) << endl);
@@ -150,8 +140,7 @@ public:
         CPPUNIT_ASSERT(d_grid->get_var_index(0) == d_array);
     }
 
-    void test_get_vars_iter_for_map()
-    {
+    void test_get_vars_iter_for_map() {
         DBG(cerr << "(*d_grid->get_vars_iter(1))->name(): " << (*d_grid->get_vars_iter(1))->name() << endl);
         CPPUNIT_ASSERT((*d_grid->get_vars_iter(1))->name() == "map_proto");
         DBG(cerr << "*d_grid->get_vars_iter(1): " << hex << *d_grid->get_vars_iter(1) << endl);
@@ -159,8 +148,7 @@ public:
         CPPUNIT_ASSERT(*d_grid->get_vars_iter(1) == d_map);
     }
 
-    void test_get_var_index_for_map()
-    {
+    void test_get_var_index_for_map() {
         DBG(cerr << "d_grid->get_var_index(1)->name(): " << d_grid->get_var_index(1)->name() << endl);
         CPPUNIT_ASSERT(d_grid->get_var_index(1)->name() == "map_proto");
         DBG(cerr << "d_grid->get_var_index(1): " << hex << d_grid->get_var_index(1) << endl);
@@ -168,8 +156,7 @@ public:
         CPPUNIT_ASSERT(d_grid->get_var_index(1) == d_map);
     }
 
-    void test_get_map_iter()
-    {
+    void test_get_map_iter() {
         DBG(cerr << "(*d_grid->get_map_iter(0))->name(): " << (*d_grid->get_map_iter(0))->name() << endl);
         CPPUNIT_ASSERT((*d_grid->get_map_iter(0))->name() == "map_proto");
         DBG(cerr << "*d_grid->get_map_iter(0): " << hex << *d_grid->get_map_iter(0) << endl);
@@ -177,8 +164,7 @@ public:
         CPPUNIT_ASSERT(*d_grid->get_map_iter(0) == d_map);
     }
 
-    void test_map_begin()
-    {
+    void test_map_begin() {
         DBG(cerr << "(*d_grid->map_begin())->name(): " << (*d_grid->map_begin())->name() << endl);
         CPPUNIT_ASSERT((*d_grid->map_begin())->name() == "map_proto");
         DBG(cerr << "*d_grid->map_begin(): " << hex << *d_grid->map_begin() << endl);
@@ -187,8 +173,7 @@ public:
     }
 
     // because there is only one map, the first map and the last map are the same
-    void test_map_rbegin()
-    {
+    void test_map_rbegin() {
         DBG(cerr << "(*d_grid->map_rbegin())->name(): " << (*d_grid->map_rbegin())->name() << endl);
         CPPUNIT_ASSERT((*d_grid->map_rbegin())->name() == "map_proto");
         DBG(cerr << "*d_grid->map_rbegin(): " << hex << *d_grid->map_rbegin() << endl);
@@ -197,11 +182,8 @@ public:
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (GridTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(GridTest);
 
 } // namespace libdap
 
-int main(int argc, char *argv[])
-{
-    return run_tests<libdap::GridTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<libdap::GridTest>(argc, argv) ? 0 : 1; }

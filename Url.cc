@@ -47,9 +47,8 @@ namespace libdap {
     created.
 
 */
-Url::Url(const string &n) : Str(n)
-{
-    set_type(dods_url_c);  // override the type set by Str
+Url::Url(const string &n) : Str(n) {
+    set_type(dods_url_c); // override the type set by Str
 }
 
 /** The URL server-side constructor requires the name of the variable
@@ -60,15 +59,10 @@ Url::Url(const string &n) : Str(n)
     @param d A string containing the name of the dataset from which this
     variable is being created.
 */
-Url::Url(const string &n, const string &d) : Str(n, d)
-{
-    set_type(dods_url_c);  // override the type set by Str
+Url::Url(const string &n, const string &d) : Str(n, d) {
+    set_type(dods_url_c); // override the type set by Str
 }
 
-BaseType *
-Url::ptr_duplicate()
-{
-    return new Url(*this);
-}
+BaseType *Url::ptr_duplicate() { return new Url(*this); }
 
 } // namespace libdap

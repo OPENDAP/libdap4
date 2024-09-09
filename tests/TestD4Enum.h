@@ -26,13 +26,12 @@
 #ifndef _testd4enum_h
 #define _testd4enum_h 1
 
-
 #include "D4Enum.h"
 #include "TestCommon.h"
 
-using namespace libdap ;
+using namespace libdap;
 
-class TestD4Enum: public D4Enum, public TestCommon {
+class TestD4Enum : public D4Enum, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestD4Enum &ts);
 
@@ -56,4 +55,3 @@ public:
 };
 
 #endif //_testd4enum_h
-

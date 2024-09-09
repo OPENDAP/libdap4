@@ -84,7 +84,7 @@ LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
 EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	    \
-	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec.in libdap.spec VCPP	\
+	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec.in libdap.spec	\
 	dods-datatypes-static.h xdr-datatypes-static.h dap-config-pkgconfig     \
 	$(LEX_YACC_EXTRA) getdap.man1 dap-config.man1 getdap4.man1
 

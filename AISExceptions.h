@@ -30,38 +30,27 @@
 #include "Error.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** Thrown when a client asks for the AIS resources for an unknown primary
     resource. */
-class NoSuchPrimaryResource : public Error
-{
+class NoSuchPrimaryResource : public Error {
 public:
-    NoSuchPrimaryResource(): Error("The primary resource given has no matching entry in the AIS database.")
-    {}
+    NoSuchPrimaryResource() : Error("The primary resource given has no matching entry in the AIS database.") {}
 };
 
 /** Thrown when the AIS database/document cannot be read. */
-class AISDatabaseReadFailed : public Error
-{
+class AISDatabaseReadFailed : public Error {
 public:
-    AISDatabaseReadFailed() : Error("The AIS database read failed.")
-    {}
-    explicit AISDatabaseReadFailed(const string &msg) :
-            Error(string("The AIS database read failed: ") + msg)
-    {}
+    AISDatabaseReadFailed() : Error("The AIS database read failed.") {}
+    explicit AISDatabaseReadFailed(const string &msg) : Error(string("The AIS database read failed: ") + msg) {}
 };
 
 /** Thrown when the AIS database/document cannot be written. */
-class AISDatabaseWriteFailed : public Error
-{
+class AISDatabaseWriteFailed : public Error {
 public:
-    AISDatabaseWriteFailed() : Error("The AIS database write failed.")
-    {}
-    explicit AISDatabaseWriteFailed(const string &msg) :
-            Error(string("The AIS database write failed: ") + msg)
-    {}
+    AISDatabaseWriteFailed() : Error("The AIS database write failed.") {}
+    explicit AISDatabaseWriteFailed(const string &msg) : Error(string("The AIS database write failed: ") + msg) {}
 };
 
 } // namespace libdap

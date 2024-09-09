@@ -26,15 +26,13 @@
 #ifndef _response_too_big_err_h
 #define _response_too_big_err_h 1
 
-
 #include <string>
 
 #ifndef _error_h
 #include "Error.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** ResponseTooBigErr is thrown by HTTPCache::parse_header and write_body if
     the response that's being cached is too big. The HTTPCache methods
@@ -42,8 +40,7 @@ namespace libdap
 
     @author jhrg */
 
-class ResponseTooBigErr: public Error
-{
+class ResponseTooBigErr : public Error {
 
 public:
     ResponseTooBigErr(const string &msg);

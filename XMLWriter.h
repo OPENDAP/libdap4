@@ -46,7 +46,7 @@ private:
 
     std::string d_doc;
 
-    void m_cleanup() ;
+    void m_cleanup();
 
 public:
     XMLWriter(const std::string &pad = "    ");

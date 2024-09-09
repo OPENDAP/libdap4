@@ -25,74 +25,70 @@
 #include "config.h"
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <sstream>
 #include <string.h>
 
+#include "Array.h"
 #include "Byte.h"
-#include "Int8.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
-#include "Int64.h"
-#include "UInt64.h"
 #include "Float32.h"
 #include "Float64.h"
-#include "Str.h"
-#include "Url.h"
-#include "Array.h"
-#include "Structure.h"
-#include "Sequence.h"
 #include "Grid.h"
+#include "Int16.h"
+#include "Int32.h"
+#include "Int64.h"
+#include "Int8.h"
+#include "Sequence.h"
+#include "Str.h"
+#include "Structure.h"
+#include "UInt16.h"
+#include "UInt32.h"
+#include "UInt64.h"
+#include "Url.h"
 #include "crc.h"
 
 #include "DDS.h"
 
 #include "GNURegex.h"
 
-#include "util.h"
-#include "debug.h"
 #include "ce_expr.tab.hh"
+#include "debug.h"
+#include "util.h"
 
-#include "testFile.h"
 #include "run_tests_cppunit.h"
+#include "testFile.h"
 #include "test_config.h"
 
-
-
-
 #undef DBG
-#define DBG(x) do { if (debug) {x;} } while(false)
+#define DBG(x)                                                                                                         \
+    do {                                                                                                               \
+        if (debug) {                                                                                                   \
+            x;                                                                                                         \
+        }                                                                                                              \
+    } while (false)
 
 using namespace CppUnit;
 using namespace std;
 
 namespace libdap {
 
-class Int64Test: public TestFixture {
+class Int64Test : public TestFixture {
 private:
     Int64 *i1, *i2;
     char a[1024];
-    
-public:
-    Int64Test() : i1(0), i2(0)
-    {
-    }
-    ~Int64Test()
-    {
-    }
 
-    void setUp()
-    {
+public:
+    Int64Test() : i1(0), i2(0) {}
+    ~Int64Test() {}
+
+    void setUp() {
         i1 = new Int64("a", "b");
         i2 = new Int64("e");
     }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete i1;
         delete i2;
     }
@@ -113,15 +109,12 @@ public:
 
     CPPUNIT_TEST_SUITE_END();
 
-    void cons_Int64_test()
-    {
-        CPPUNIT_ASSERT(i1->value() == 0 && i1->dataset() == "b" && i1->name() == "a" &&
-                       i1->type() == dods_int64_c);
+    void cons_Int64_test() {
+        CPPUNIT_ASSERT(i1->value() == 0 && i1->dataset() == "b" && i1->name() == "a" && i1->type() == dods_int64_c);
         CPPUNIT_ASSERT(i2->value() == 0);
     }
 
-    void checksum_test()
-    {
+    void checksum_test() {
         Crc32 cs;
         i2->compute_checksum(cs);
     }
@@ -130,7 +123,7 @@ public:
     // {
     //     int i = 42;
     //     i2->val2buf(&i, true);
-    //     CPPUNIT_ASSERT(i2->value() == 42);        
+    //     CPPUNIT_ASSERT(i2->value() == 42);
     //     CPPUNIT_ASSERT_THROW(i2->val2buf(NULL, true), InternalErr);
     // }
 
@@ -145,23 +138,18 @@ public:
     //     CPPUNIT_ASSERT(i2->buf2val(&v2) == 4 && *(int *)v2 == 0);
     // }
 
-    void set_value_test()
-    {
-        CPPUNIT_ASSERT(i2->set_value(42) && i2->value() == 42);        
-    }
+    void set_value_test() { CPPUNIT_ASSERT(i2->set_value(42) && i2->value() == 42); }
 
-    void equals_test()
-    {
+    void equals_test() {
         Int64 i3 = Int64("a", "b");
         Int64 i4 = Int64("e");
         CPPUNIT_ASSERT(i4.set_value(42) && i4.value() == 42);
         i3 = i4;
         CPPUNIT_ASSERT(i3.value() == 42);
         i3 = i3;
-    }    
+    }
 
-    void type_compare_test()
-    {
+    void type_compare_test() {
         Byte b1 = Byte("a");
         Int8 i8 = Int8("a");
         Int16 i16 = Int16("a");
@@ -175,7 +163,7 @@ public:
         Url url = Url("a");
         Str str = Str("a");
         Array array = Array("a", &i16, true);
-        
+
         b1.set_value(42);
         i8.set_value(42);
         i16.set_value(42);
@@ -203,53 +191,45 @@ public:
         CPPUNIT_ASSERT_THROW(i64.d4_ops(&str, SCAN_EQUAL), Error);
         CPPUNIT_ASSERT_THROW(i64.d4_ops(&array, SCAN_EQUAL), Error);
         CPPUNIT_ASSERT_THROW(i64.ops(0, SCAN_EQUAL), Error);
-    }    
+    }
 
-    void ops_exception_1_test()
-    {
+    void ops_exception_1_test() {
         Byte b1 = Byte("a");
         Int64 i64 = Int64("a", "b");
         b1.set_read_p(false);
-        CPPUNIT_ASSERT_THROW(i64.ops(&b1, SCAN_EQUAL), InternalErr);        
-    }    
+        CPPUNIT_ASSERT_THROW(i64.ops(&b1, SCAN_EQUAL), InternalErr);
+    }
 
-    void ops_exception_2_test()
-    {
+    void ops_exception_2_test() {
         Byte b1 = Byte("a");
         Int64 i64 = Int64("a", "b");
         i64.set_read_p(false);
-        CPPUNIT_ASSERT_THROW(i64.ops(&b1, SCAN_EQUAL), InternalErr);        
-    }    
+        CPPUNIT_ASSERT_THROW(i64.ops(&b1, SCAN_EQUAL), InternalErr);
+    }
 
-    void dump_test()
-    {
+    void dump_test() {
         ofstream ofs("Int64Test_dump.output", ios::trunc);
         i1->set_value(21);
         i1->dump(ofs);
         ofs.close();
         ifstream ifs("Int64Test_dump.output");
-        while(!ifs.eof())
+        while (!ifs.eof())
             ifs >> a;
         ifs.close();
         CPPUNIT_ASSERT(!strcmp(a, "21"));
     }
 
-    void check_types()
-    {
+    void check_types() {
         Byte *b1 = new Byte("b");
         b1->set_value(14);
         i1->set_value(14);
-//        CPPUNIT_ASSERT(b1 == i1);
+        //        CPPUNIT_ASSERT(b1 == i1);
         delete b1;
     }
-
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(Int64Test);
 
 } // namespace libdap
 
-int main(int argc, char *argv[])
-{
-    return run_tests<Int64Test>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<Int64Test>(argc, argv) ? 0 : 1; }

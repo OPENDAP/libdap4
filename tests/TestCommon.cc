@@ -4,7 +4,7 @@
 #include "TestCommon.h"
 #include "InternalErr.h"
 
-using namespace libdap ;
+using namespace libdap;
 
 #if 0
 TestCommon::TestCommon()
