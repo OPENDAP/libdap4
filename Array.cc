@@ -240,7 +240,8 @@ bool Array::is_dap2_grid() {
         D4Maps *d4_maps = this->maps();
         is_grid = d4_maps->size(); // It can't be a grid if there are no maps...
 
-        // We also need to check if the number of maps is the same as the number of dimensions. If not, this is not a dap2 grid.
+        // We also need to check if the number of maps is the same as the number of dimensions. If not, this is not a
+        // dap2 grid.
         if (d4_maps->size() != ((int)dimensions()))
             is_grid = false;
         if (is_grid) {
@@ -259,9 +260,8 @@ bool Array::is_dap2_grid() {
                     i++;
                 }
             }
-        }
-        else {
-            DBG( cerr << __func__ << "() - Array '"<< name() << "' has no D4Maps." << endl);
+        } else {
+            DBG(cerr << __func__ << "() - Array '" << name() << "' has no D4Maps." << endl);
         }
     }
 
