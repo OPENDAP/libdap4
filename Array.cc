@@ -239,11 +239,17 @@ bool Array::is_dap2_grid() {
             throw InternalErr(__FILE__, __LINE__, string("Could not get the root group for ").append(this->name()));
         D4Maps *d4_maps = this->maps();
         is_grid = d4_maps->size(); // It can't be a grid if there are no maps...
+
+        // We also need to check if the number of maps is the same as the number of dimensions. If not, this is not a
+        // dap2 grid.
+        if (d4_maps->size() != ((int)dimensions()))
+            is_grid = false;
         if (is_grid) {
             DBG(cerr << __func__ << "() - Array '" << name() << "' has D4Maps." << endl);
             // hmmm this might be a DAP2 Grid...
             D4Maps::D4MapsIter i = d4_maps->map_begin();
             D4Maps::D4MapsIter e = d4_maps->map_end();
+
             while (i != e) {
                 DBG(cerr << __func__ << "() - Map '" << (*i)->array()->name() << " has " << (*i)->array()->_shape.size()
                          << " dimension(s)." << endl);
