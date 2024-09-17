@@ -64,3 +64,22 @@ to modify the source files 'in place' so when clang-format fails, it does so bec
 have been modified. In this case, you can run `git diff` to see the changes and then run and
 then run ```git commit``` again. On the second try, the commit should succeed. (I realize
 this is a bit of a hack, but we may be able to improve on it in the future - jhrg.)
+
+Here's an example of what happens when files are reformatted by clang-format and the 
+```git commit``` command is run again:
+
+```
+10:11:07.481: [libdap4] git commit -a
+check yaml...........................................(no files to check)Skipped
+check json...........................................(no files to check)Skipped
+clang-format.............................................................Failed
+- hook id: clang-format
+- files were modified by this hook
+
+10:11:44.228: [libdap4] git commit -a
+check yaml...........................................(no files to check)Skipped
+check json...........................................(no files to check)Skipped
+clang-format.............................................................Passed
+[remove-warnings-1 b43ed266] More warnings removed
+ 1 file changed, 84 insertions(+), 13 deletions(-)
+```
