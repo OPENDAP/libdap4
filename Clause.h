@@ -34,7 +34,6 @@
 #ifndef _clause_h
 #define _clause_h
 
-
 #ifndef _expr_h
 #include "expr.h"
 #endif
@@ -43,8 +42,7 @@
 #include "RValue.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** The selection part of a a DAP constraint expression may contain one or
     more clauses, separated by ampersands (\&). This is modeled in the DDS
@@ -87,8 +85,7 @@ namespace libdap
 
     @brief Holds a fragment of a constraint expression.
     @see DDS::parse_constraint */
-struct Clause
-{
+struct Clause {
 
 private:
     /** The relational operator, if any. */
@@ -100,9 +97,9 @@ private:
     BaseType. */
     btp_func _bt_func;
 
-    int _argc;   // arg count
-    rvalue *_arg1;  // only for operator
-    rvalue_list *_args;  // vector arg
+    int _argc;          // arg count
+    rvalue *_arg1;      // only for operator
+    rvalue_list *_args; // vector arg
 
     Clause(const Clause &);
     Clause &operator=(const Clause &);

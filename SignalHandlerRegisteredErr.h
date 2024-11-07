@@ -32,30 +32,24 @@
 #include "Error.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** SignalHandlerRegisteredErr is thrown by HTTPCache::instance() if a signal
     handler is already registered.
 
     @author jhrg */
 
-class SignalHandlerRegisteredErr: public Error
-{
+class SignalHandlerRegisteredErr : public Error {
 
 public:
-    SignalHandlerRegisteredErr(const string &msg) : Error()
-    {
+    SignalHandlerRegisteredErr(const string &msg) : Error() {
         _error_code = unknown_error;
         _error_message = "";
         _error_message += "A caching error was encountered:\n";
         _error_message += msg + "\n";
     }
 
-    SignalHandlerRegisteredErr() : Error()
-    {
-        _error_code = unknown_error;
-    }
+    SignalHandlerRegisteredErr() : Error() { _error_code = unknown_error; }
 };
 
 } // namespace libdap

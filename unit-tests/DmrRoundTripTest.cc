@@ -25,48 +25,56 @@
 #include "config.h"
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <sstream>
 
+#include "Array.h"
 #include "Byte.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
 #include "Float32.h"
 #include "Float64.h"
-#include "Str.h"
-#include "Url.h"
-#include "Array.h"
-#include "Structure.h"
-#include "Sequence.h"
 #include "Grid.h"
+#include "Int16.h"
+#include "Int32.h"
+#include "Sequence.h"
+#include "Str.h"
+#include "Structure.h"
+#include "UInt16.h"
+#include "UInt32.h"
+#include "Url.h"
 
+#include "D4BaseTypeFactory.h"
+#include "D4ParserSax2.h"
 #include "DDS.h"
 #include "DMR.h"
 #include "XMLWriter.h"
-#include "D4BaseTypeFactory.h"
-#include "D4ParserSax2.h"
 
 #include "GNURegex.h"
 
-#include "util.h"
 #include "debug.h"
+#include "util.h"
 
-#include "testFile.h"
 #include "run_tests_cppunit.h"
+#include "testFile.h"
 #include "test_config.h"
-
-
 
 static bool debug2 = false;
 
 #undef DBG
-#define DBG(x) do { if (debug) {x;} } while(false)
+#define DBG(x)                                                                                                         \
+    do {                                                                                                               \
+        if (debug) {                                                                                                   \
+            x;                                                                                                         \
+        }                                                                                                              \
+    } while (false)
 #undef DBG2
-#define DBG2(x) do { if (debug2) {x;} } while(false)
+#define DBG2(x)                                                                                                        \
+    do {                                                                                                               \
+        if (debug2) {                                                                                                  \
+            x;                                                                                                         \
+        }                                                                                                              \
+    } while (false)
 
 using namespace CppUnit;
 using namespace std;
@@ -74,27 +82,17 @@ using namespace libdap;
 
 static string THE_TESTS_DIR("/dmr-rt-testsuite/");
 
-class DmrRoundTripTest: public TestFixture {
+class DmrRoundTripTest : public TestFixture {
 private:
-
 public:
-    DmrRoundTripTest()
-    {
-    }
-    ~DmrRoundTripTest()
-    {
-    }
+    DmrRoundTripTest() {}
+    ~DmrRoundTripTest() {}
 
-    void setUp()
-    {
-    }
+    void setUp() {}
 
-    void tearDown()
-    {
-    }
+    void tearDown() {}
 
-    bool re_match(Regex &r, const string &s)
-    {
+    bool re_match(Regex &r, const string &s) {
         int match = r.match(s.c_str(), s.length());
         DBG(cerr << "Match: " << match << " should be: " << s.length() << endl);
         return match == static_cast<int>(s.length());
@@ -108,8 +106,7 @@ public:
      * @param attr
      * @return A pointer to the new DMR; caller must delete
      */
-    DMR *build_dmr(const string &dds_file, const string &das_file = "")
-    {
+    DMR *build_dmr(const string &dds_file, const string &das_file = "") {
         DBG(cerr << __func__ << "() - BEGIN" << endl);
         DBG(cerr << __func__ << "() - dds_file: " << dds_file << endl);
         DBG(cerr << __func__ << "() - das_file: " << das_file << endl);
@@ -134,8 +131,7 @@ public:
             D4BaseTypeFactory d4_factory;
             DBG(cerr << __func__ << "() - END" << endl);
             return new DMR(&d4_factory, dds);
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
         }
 
@@ -156,9 +152,8 @@ public:
             string prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
             string result_dmr(xml.get_doc());
             string baseline_dmr = read_test_baseline(prefix + dmr_baseline);
-            DBG(
-                cerr << "BASELINE DMR(" << baseline_dmr.size() << " chars): " << prefix + dmr_baseline << endl
-                    << baseline_dmr << endl);
+            DBG(cerr << "BASELINE DMR(" << baseline_dmr.size() << " chars): " << prefix + dmr_baseline << endl
+                     << baseline_dmr << endl);
             DBG(cerr << "RESULT DMR(" << result_dmr.size() << " chars): " << endl << result_dmr << endl);
 
             CPPUNIT_ASSERT(result_dmr == baseline_dmr);
@@ -168,9 +163,8 @@ public:
             dds->print(result_dds);
 
             string source_dds = read_test_baseline(prefix + dds_file);
-            DBG(
-                cerr << "SOURCE DDS(" << source_dds.size() << " chars): " << prefix + dds_file << endl << source_dds
-                    << endl);
+            DBG(cerr << "SOURCE DDS(" << source_dds.size() << " chars): " << prefix + dds_file << endl
+                     << source_dds << endl);
 
             DBG(cerr << "RESULT DDS(" << result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
             CPPUNIT_ASSERT(result_dds.str() == source_dds);
@@ -180,20 +174,16 @@ public:
                 dds->print_das(result_das);
 
                 string source_das = read_test_baseline(prefix + das_file);
-                DBG(
-                    cerr << "SOURCE DAS(" << source_das.size() << " chars): " << prefix + das_file << endl << source_das
-                        << endl);
+                DBG(cerr << "SOURCE DAS(" << source_das.size() << " chars): " << prefix + das_file << endl
+                         << source_das << endl);
 
-                DBG(
-                    cerr << "RESULT DAS(" << result_das.str().size() << " chars): " << endl << result_das.str()
-                        << endl);
+                DBG(cerr << "RESULT DAS(" << result_das.str().size() << " chars): " << endl
+                         << result_das.str() << endl);
                 CPPUNIT_ASSERT(result_das.str() == source_das);
-
             }
             delete dmr;
             delete dds;
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             delete dmr;
             CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
         }
@@ -210,70 +200,61 @@ public:
     }
 #endif
 
-    void test_dds_to_dmr_to_dds_1()
-    {
+    void test_dds_to_dmr_to_dds_1() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("attr_test_00.dds", "attr_test_00.dmr", "attr_test_00.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void test_dds_to_dmr_to_dds_2()
-    {
+    void test_dds_to_dmr_to_dds_2() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("test.1", "test.1.full.dmr", "test.1.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void test_dds_to_dmr_to_dds_3()
-    {
+    void test_dds_to_dmr_to_dds_3() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("fnoc1.nc.dds", "fnoc1.nc.dmr.xml", "fnoc1.nc.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void test_dds_to_dmr_to_dds_4()
-    {
+    void test_dds_to_dmr_to_dds_4() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("3B42.980909.5.HDF.dds", "3B42.980909.5.HDF.full.dmr", "3B42.980909.5.HDF.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
-    void test_dds_to_dmr_to_dds_5()
-    {
+    void test_dds_to_dmr_to_dds_5() {
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         test_roundtrip_template("S2000415.HDF.dds", "S2000415.HDF.full.dmr", "S2000415.HDF.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void test_grid_rt_01()
-    {
-        DBG(
-            cerr << endl << __func__ << "() - BEGIN: " << "Testing simple Grid->D4Array->Grid with 'correct' DAS."
-                << endl);
+    void test_grid_rt_01() {
+        DBG(cerr << endl
+                 << __func__ << "() - BEGIN: " << "Testing simple Grid->D4Array->Grid with 'correct' DAS." << endl);
         //       i_am_broken(__func__);
         test_roundtrip_template("attr_test_01.dds", "attr_test_01.dmr", "attr_test_01.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void test_grid_rt_02()
-    {
+    void test_grid_rt_02() {
         DBG(cerr << endl << __func__ << "() - BEGIN: " << "Testing Grid->D4Array->Grid with 'correct' DAS." << endl);
 #if 0
         i_am_broken(__func__);
 #endif
         test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr",
-            "coads_climatology.nc.correct.das");
+                                "coads_climatology.nc.correct.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-    void test_grid_rt_03()
-    {
+    void test_grid_rt_03() {
         DBG(cerr << endl << __func__ << "() - BEGIN: " << "Testing Grid->D4Array->Grid with flat DAS." << endl);
 #if 0
         i_am_broken(__func__);
 #endif
         test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.full.dmr",
-            "coads_climatology.nc.flat.das");
+                                "coads_climatology.nc.flat.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
-CPPUNIT_TEST_SUITE (DmrRoundTripTest);
+    CPPUNIT_TEST_SUITE(DmrRoundTripTest);
 
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_1);
     CPPUNIT_TEST(test_dds_to_dmr_to_dds_2);
@@ -289,9 +270,7 @@ CPPUNIT_TEST_SUITE (DmrRoundTripTest);
     CPPUNIT_TEST_FAIL(test_grid_rt_03);
 #endif
 
-    CPPUNIT_TEST_SUITE_END()
-    ;
-
+    CPPUNIT_TEST_SUITE_END();
 };
 
 // Temporarily turn off this test to reflect the change of escaping special characters.
@@ -300,7 +279,4 @@ CPPUNIT_TEST_SUITE (DmrRoundTripTest);
 CPPUNIT_TEST_SUITE_REGISTRATION(DmrRoundTripTest);
 #endif
 
-int main(int argc, char *argv[])
-{
-    return run_tests<DmrRoundTripTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<DmrRoundTripTest>(argc, argv) ? 0 : 1; }

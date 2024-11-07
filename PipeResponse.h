@@ -38,53 +38,42 @@
 
 using namespace std;
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief Encapsulate a response.
     This class provides special treatment for 'stream pipes.' It arranges
     to close them using pclose() instead of fclose(). */
-class PipeResponse: public Response
-{
+class PipeResponse : public Response {
 private:
     FILE *d_pstream;
 
 protected:
-
 public:
     /** @brief Initialize with a stream returned by popen().
-      
+
         Create an instance initialized to a stream returned by
-	popen(). By default get_type() and get_version() return
-	default values of unknown_type and "dods/0.0", respectively.
-	Note that this class closes the stream.
-        
-        @note Since Unix provides no easy way to differentiate between a 
+    popen(). By default get_type() and get_version() return
+    default values of unknown_type and "dods/0.0", respectively.
+    Note that this class closes the stream.
+
+        @note Since Unix provides no easy way to differentiate between a
         FILE* returned by fopen() or popen(), you're on your own here. Make
-        sure you use the correct type of FILE Pointer. 
-        
+        sure you use the correct type of FILE Pointer.
+
         @see Response
-        
+
         @param s Pointer to a pipe stream returned by popen().
         */
-    PipeResponse(FILE *s) : Response(0), d_pstream(s)
-    {}
+    PipeResponse(FILE *s) : Response(0), d_pstream(s) {}
 
     /** Close the stream. */
-    virtual ~PipeResponse()
-    {
+    virtual ~PipeResponse() {
         if (d_pstream)
             pclose(d_pstream);
     }
 
-    virtual FILE *get_stream() const
-    {
-        return d_pstream;
-    }
-    virtual void set_stream(FILE *s)
-    {
-        d_pstream = s;
-    }
+    virtual FILE *get_stream() const { return d_pstream; }
+    virtual void set_stream(FILE *s) { d_pstream = s; }
 };
 
 } // namespace libdap

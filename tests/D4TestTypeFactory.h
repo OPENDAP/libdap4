@@ -30,7 +30,7 @@
 
 #include "D4BaseTypeFactory.h"
 
-using namespace libdap ;
+using namespace libdap;
 
 /** A factory for the DAP4 TestByte, ...,  types.
     @author James Gallagher */

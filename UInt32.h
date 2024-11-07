@@ -36,7 +36,6 @@
 #ifndef _uint32_h
 #define _uint32_h 1
 
-
 #ifndef _dods_datatypes_h
 #include "dods-datatypes.h"
 #endif
@@ -49,23 +48,20 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief Holds a 32-bit unsigned integer.
 
     @see BaseType */
 
-class UInt32: public BaseType
-{
+class UInt32 : public BaseType {
 protected:
     dods_uint32 d_buf;
 
 public:
     UInt32(const string &n);
     UInt32(const string &n, const string &d);
-    virtual ~UInt32()
-    {}
+    virtual ~UInt32() {}
 
     UInt32(const UInt32 &copy_from);
 
@@ -73,18 +69,12 @@ public:
 
     BaseType *ptr_duplicate() override;
 
-    unsigned int width(bool = false) const override
-    {
-        return sizeof(dods_uint32);
-    }
+    unsigned int width(bool = false) const override { return sizeof(dods_uint32); }
 
-    int64_t width_ll(bool = false) const override
-    {
-        return sizeof(dods_uint32);
-    }
+    int64_t width_ll(bool = false) const override { return sizeof(dods_uint32); }
 
     // DAP2
-    bool serialize(ConstraintEvaluator &eval, DDS &dds,  Marshaller &m, bool ce_eval = true) override;
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
     bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) override;
 
     // DAP4
@@ -98,17 +88,14 @@ public:
     virtual dods_uint32 value() const;
     virtual bool set_value(dods_uint32 val);
 
-    void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true) override;
-    void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true) override;
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
     bool ops(BaseType *b, int op) override;
 
-    void dump(ostream &strm) const  override;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
 
 #endif // _uint32_h
-

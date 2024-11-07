@@ -31,17 +31,17 @@
 
 #include "config.h"
 
+#include <fcntl.h>
 #include <pthread.h>
 #include <sys/time.h>
-#include <fcntl.h>
 #include <unistd.h>
 
 #include <ostream>
 #include <sstream>
 
-#include "MarshallerThread.h"
 #include "Error.h"
 #include "InternalErr.h"
+#include "MarshallerThread.h"
 #include "debug.h"
 
 using namespace libdap;
@@ -128,6 +128,7 @@ Locker::~Locker() {
  * the invariant if there is an error and the code exits with a
  * summary return.
  */
+
 ChildLocker::ChildLocker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count): m_mutex(lock), m_cond(cond), m_count(count) {
     int status = pthread_mutex_lock(&m_mutex);
 
@@ -312,4 +313,3 @@ void *MarshallerThread::write_thread_part(void *arg) {
 
     return nullptr;
 }
-

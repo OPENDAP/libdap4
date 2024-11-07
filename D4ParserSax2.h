@@ -30,18 +30,17 @@
 
 #include <string.h>
 
-#include <string>
 #include <iostream>
 #include <map>
 #include <stack>
+#include <string>
 
 #include <libxml/parserInternals.h>
 
 #define CRLF "\r\n"
 #define D4_PARSE_BUFF_SIZE 1048576
 
-namespace libdap
-{
+namespace libdap {
 
 class DMR;
 class BaseType;
@@ -74,8 +73,7 @@ class D4Dimension;
     operator.
 
     @see DMR */
-class D4ParserSax2
-{
+class D4ParserSax2 {
 private:
     /** States used by DDXParserDAP4State. These are the states of the SAX parser
     state-machine. */
@@ -117,13 +115,13 @@ private:
 
         parser_end
     };
-    char d_parse_buffer[D4_PARSE_BUFF_SIZE+1]; // Buff size plus one byte for NULL termination.
+    char d_parse_buffer[D4_PARSE_BUFF_SIZE + 1]; // Buff size plus one byte for NULL termination.
 
     xmlSAXHandler d_dmr_sax_parser;
 
     // The results of the parse operation are stored in these fields.
     // This is passed into the parser using the intern() methods.
-    DMR *d_dmr;   // dump DMR here
+    DMR *d_dmr; // dump DMR here
     DMR *dmr() const { return d_dmr; }
 
     // These stacks hold the state of the parse as it progresses.
@@ -133,19 +131,19 @@ private:
     void pop_state() { s.pop(); }
     bool empty_state() const { return s.empty(); }
 
-    stack<BaseType*> btp_stack; // current variable(s)
+    stack<BaseType *> btp_stack; // current variable(s)
     void push_basetype(BaseType *btp) { btp_stack.push(btp); }
     BaseType *top_basetype() const { return btp_stack.top(); }
     void pop_basetype() { btp_stack.pop(); }
     bool empty_basetype() const { return btp_stack.empty(); }
 
-    stack<D4Group*> grp_stack; // current groups(s)
+    stack<D4Group *> grp_stack; // current groups(s)
     void push_group(D4Group *grp) { grp_stack.push(grp); }
     D4Group *top_group() const { return grp_stack.top(); }
     void pop_group() { grp_stack.pop(); }
     bool empty_group() const { return grp_stack.empty(); }
 
-    stack<D4Attributes*> d_attrs_stack; // DAP4 Attributes
+    stack<D4Attributes *> d_attrs_stack; // DAP4 Attributes
     void push_attributes(D4Attributes *attr) { d_attrs_stack.push(attr); }
     D4Attributes *top_attributes() const { return d_attrs_stack.top(); }
     void pop_attributes() { d_attrs_stack.pop(); }
@@ -168,14 +166,14 @@ private:
     unsigned int unknown_depth;
 
     // These are used for processing errors.
-    string d_error_msg;  // Error message(s), if any.
+    string d_error_msg;         // Error message(s), if any.
     xmlParserCtxtPtr d_context; // used for error message line numbers
 
     // These hold temporary values read during the parse.
     string dods_attr_name; // DAP4 attributes, not XML attributes
     string dods_attr_type; // ... not XML ...
-    string char_data;  // char data in value elements; null after use
-    string root_ns;     // What is the namespace of the root node (Group)
+    string char_data;      // char data in value elements; null after use
+    string root_ns;        // What is the namespace of the root node (Group)
 
     bool d_debug;
     bool debug() const { return d_debug; }
@@ -183,7 +181,7 @@ private:
     bool d_strict;
 
     class XMLAttribute {
-        public:
+    public:
         string prefix;
         string nsURI;
         string value;
@@ -195,20 +193,16 @@ private:
         }
 
         XMLAttribute() : prefix(""), nsURI(""), value("") {}
-        XMLAttribute(const string &p, const string &ns, const string &v)
-            : prefix(p), nsURI(ns), value(v) {}
+        XMLAttribute(const string &p, const string &ns, const string &v) : prefix(p), nsURI(ns), value(v) {}
         // 'attributes' as passed from libxml2 is a five element array but this
         // ctor gets the back four elements.
-        XMLAttribute(const xmlChar **attributes/*[4]*/) {
-            prefix = attributes[0] != 0 ? (const char *)attributes[0]: "";
-            nsURI = attributes[1] != 0 ? (const char *)attributes[1]: "";
+        XMLAttribute(const xmlChar **attributes /*[4]*/) {
+            prefix = attributes[0] != 0 ? (const char *)attributes[0] : "";
+            nsURI = attributes[1] != 0 ? (const char *)attributes[1] : "";
             value = string((const char *)attributes[2], (const char *)attributes[3]);
         }
-        XMLAttribute(const XMLAttribute &rhs) {
-            clone(rhs);
-        }
-        ~XMLAttribute() {
-        }
+        XMLAttribute(const XMLAttribute &rhs) { clone(rhs); }
+        ~XMLAttribute() {}
         XMLAttribute &operator=(const XMLAttribute &rhs) {
             if (this == &rhs)
                 return *this;
@@ -222,7 +216,7 @@ private:
 
     XMLAttrMap::iterator xml_attr_begin() { return xml_attrs.begin(); }
 
-    XMLAttrMap::iterator xml_attr_end() {  return xml_attrs.end(); }
+    XMLAttrMap::iterator xml_attr_end() { return xml_attrs.end(); }
 
     map<string, string> namespace_table;
 
@@ -237,7 +231,7 @@ private:
     void transfer_xml_attrs(const xmlChar **attrs, int nb_attributes);
     void transfer_xml_ns(const xmlChar **namespaces, int nb_namespaces);
     bool check_required_attribute(const string &attr);
-    bool check_attribute(const string & attr);
+    bool check_attribute(const string &attr);
     void process_variable_helper(Type t, ParseState s, const xmlChar **attrs, int nb_attributes);
 
     void process_enum_const_helper(const xmlChar **attrs, int nb_attributes);
@@ -258,14 +252,11 @@ private:
     friend class D4ParserSax2Test;
 
 public:
-    D4ParserSax2() :
-        d_dmr(0), d_enum_def(0), d_dim_def(0),
-        other_xml(""), other_xml_depth(0), unknown_depth(0),
-        d_error_msg(""), d_context(0),
-        dods_attr_name(""), dods_attr_type(""),
-        char_data(""), root_ns(""), d_debug(false), d_strict(true)
-    {
-        //xmlSAXHandler ddx_sax_parser;
+    D4ParserSax2()
+        : d_dmr(0), d_enum_def(0), d_dim_def(0), other_xml(""), other_xml_depth(0), unknown_depth(0), d_error_msg(""),
+          d_context(0), dods_attr_name(""), dods_attr_type(""), char_data(""), root_ns(""), d_debug(false),
+          d_strict(true) {
+        // xmlSAXHandler ddx_sax_parser;
         memset(&d_dmr_sax_parser, 0, sizeof(xmlSAXHandler));
 
         d_dmr_sax_parser.getEntity = &D4ParserSax2::dmr_get_entity;
@@ -309,16 +300,13 @@ public:
     static void dmr_start_document(void *parser);
     static void dmr_end_document(void *parser);
 
-    static void dmr_start_element(void *parser,
-            const xmlChar *localname, const xmlChar *prefix, const xmlChar *URI,
-            int nb_namespaces, const xmlChar **namespaces, int nb_attributes,
-            int nb_defaulted, const xmlChar **attributes);
-    static void dmr_end_element(void *parser, const xmlChar *localname,
-            const xmlChar *prefix, const xmlChar *URI);
+    static void dmr_start_element(void *parser, const xmlChar *localname, const xmlChar *prefix, const xmlChar *URI,
+                                  int nb_namespaces, const xmlChar **namespaces, int nb_attributes, int nb_defaulted,
+                                  const xmlChar **attributes);
+    static void dmr_end_element(void *parser, const xmlChar *localname, const xmlChar *prefix, const xmlChar *URI);
 
     static void dmr_get_characters(void *parser, const xmlChar *ch, int len);
-    static void dmr_ignoreable_whitespace(void *parser,
-            const xmlChar * ch, int len);
+    static void dmr_ignoreable_whitespace(void *parser, const xmlChar *ch, int len);
     static void dmr_get_cdata(void *parser, const xmlChar *value, int len);
 
     static xmlEntityPtr dmr_get_entity(void *parser, const xmlChar *name);

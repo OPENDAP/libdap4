@@ -34,14 +34,14 @@
 
 #include "config.h"
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <string>
 
+#include "DapIndent.h"
 #include "DataDDS.h"
 #include "debug.h"
-#include "DapIndent.h"
 
 using namespace std;
 
@@ -52,9 +52,7 @@ namespace libdap {
 /** Parse the version string. A string that does not parse causes the
     version to default to 0.0. This is better than throwing an Error since
     this method is called from a constructor. */
-void
-DataDDS::m_version_string_to_numbers()
-{
+void DataDDS::m_version_string_to_numbers() {
     string num = d_server_version.substr(d_server_version.find('/') + 1);
 
     if (!num.empty() && num.find('.') != string::npos) {
@@ -62,40 +60,34 @@ DataDDS::m_version_string_to_numbers()
         char c = 0;
 
         iss >> d_server_version_major;
-        iss >> c;               // This reads the `.' in the version string
+        iss >> c; // This reads the `.' in the version string
         iss >> d_server_version_minor;
 
         // Did it parse?
-        if (!(c == '.' && d_server_version_major > 0
-              && d_server_version_minor > 0)) {
+        if (!(c == '.' && d_server_version_major > 0 && d_server_version_minor > 0)) {
 
             d_server_version_major = 0;
             d_server_version_minor = 0;
         }
-    }
-    else {
+    } else {
         d_server_version_major = 0;
         d_server_version_minor = 0;
     }
 
-    DBG(cerr << "Server version: " << d_server_version_major << "." \
-        << d_server_version_minor << endl);
+    DBG(cerr << "Server version: " << d_server_version_major << "." << d_server_version_minor << endl);
 }
 
 /** Parse the protocol string. A string that does not parse causes the
     version to default to 2.0. This is better than throwing an Error since
     this method is called from a constructor. */
-void
-DataDDS::m_protocol_string_to_numbers()
-{
+void DataDDS::m_protocol_string_to_numbers() {
 
-    if (!d_protocol_version.empty() && d_protocol_version.find('.')
-        != string::npos) {
+    if (!d_protocol_version.empty() && d_protocol_version.find('.') != string::npos) {
         istringstream iss(d_protocol_version);
         char c = 0;
 
         iss >> d_server_protocol_major;
-        iss >> c;               // This reads the `.' in the version string
+        iss >> c; // This reads the `.' in the version string
         iss >> d_server_protocol_minor;
 
         // Did it parse?
@@ -103,14 +95,12 @@ DataDDS::m_protocol_string_to_numbers()
             d_server_protocol_major = 2;
             d_server_protocol_minor = 0;
         }
-    }
-    else {
+    } else {
         d_server_protocol_major = 2;
         d_server_protocol_minor = 0;
     }
 
-    DBG(cerr << "Server version: " << d_server_version_major << "." \
-        << d_server_version_minor << endl);
+    DBG(cerr << "Server version: " << d_server_version_major << "." << d_server_version_minor << endl);
 }
 
 /** @brief dumps information about this object
@@ -120,26 +110,17 @@ DataDDS::m_protocol_string_to_numbers()
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void
-DataDDS::dump(ostream &strm) const
-{
-    strm << DapIndent::LMarg << "DataDDS::dump - ("
-    << (void *)this << ")" << endl ;
-    DapIndent::Indent() ;
-    DDS::dump(strm) ;
-    strm << DapIndent::LMarg << "server version: " << d_server_version
-         << endl ;
-    strm << DapIndent::LMarg << "version major: " << d_server_version_major
-         << endl ;
-    strm << DapIndent::LMarg << "version minor: " << d_server_version_minor
-         << endl ;
-    strm << DapIndent::LMarg << "protocol version: " << d_protocol_version
-         << endl ;
-    strm << DapIndent::LMarg << "protocol major: " << d_server_protocol_major
-         << endl ;
-    strm << DapIndent::LMarg << "protocol minor: " << d_server_protocol_minor
-         << endl ;
-    DapIndent::UnIndent() ;
+void DataDDS::dump(ostream &strm) const {
+    strm << DapIndent::LMarg << "DataDDS::dump - (" << (void *)this << ")" << endl;
+    DapIndent::Indent();
+    DDS::dump(strm);
+    strm << DapIndent::LMarg << "server version: " << d_server_version << endl;
+    strm << DapIndent::LMarg << "version major: " << d_server_version_major << endl;
+    strm << DapIndent::LMarg << "version minor: " << d_server_version_minor << endl;
+    strm << DapIndent::LMarg << "protocol version: " << d_protocol_version << endl;
+    strm << DapIndent::LMarg << "protocol major: " << d_server_protocol_major << endl;
+    strm << DapIndent::LMarg << "protocol minor: " << d_server_protocol_minor << endl;
+    DapIndent::UnIndent();
 }
 
 // public
@@ -156,13 +137,10 @@ DataDDS::dump(ostream &strm) const
     @param v The server version.
     @param p The protocol version. */
 
-DataDDS::DataDDS(BaseTypeFactory *factory, const string &n, const string &v,
-                 const string &p)
-        : DDS(factory, n), d_server_version(v), d_protocol_version(p)
-{
+DataDDS::DataDDS(BaseTypeFactory *factory, const string &n, const string &v, const string &p)
+    : DDS(factory, n), d_server_version(v), d_protocol_version(p) {
     m_version_string_to_numbers();
     m_protocol_string_to_numbers();
 }
 
 } // namespace libdap
-

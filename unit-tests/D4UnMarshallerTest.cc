@@ -24,12 +24,12 @@
 
 #include "config.h"
 
-#include <cppunit/TestFixture.h>
+#include <cppunit/CompilerOutputter.h>
 #include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/CompilerOutputter.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -37,23 +37,18 @@
 #include <fcntl.h>
 #include <stdint.h>
 
-#include <iostream>
+#include <cstring>
 #include <fstream>
 #include <iomanip>
-#include <cstring>
+#include <iostream>
 
 #include "D4StreamUnMarshaller.h"
 
 #include "Type.h"
 
-
 #include "debug.h"
 #include "run_tests_cppunit.h"
 #include "test_config.h"
-
-
-
-
 
 #if WORDS_BIGENDIAN
 const static string path = string(TEST_SRC_DIR) + "/D4-marshaller/big-endian";
@@ -65,24 +60,23 @@ using namespace std;
 using namespace libdap;
 using namespace CppUnit;
 
-class D4UnMarshallerTest: public CppUnit::TestFixture {
+class D4UnMarshallerTest : public CppUnit::TestFixture {
 
-    CPPUNIT_TEST_SUITE (D4UnMarshallerTest);
+    CPPUNIT_TEST_SUITE(D4UnMarshallerTest);
 
-    CPPUNIT_TEST (test_scalars);
-    CPPUNIT_TEST (test_real_scalars);
-    CPPUNIT_TEST (test_str);
-    CPPUNIT_TEST (test_opaque);
-    CPPUNIT_TEST (test_vector);
+    CPPUNIT_TEST(test_scalars);
+    CPPUNIT_TEST(test_real_scalars);
+    CPPUNIT_TEST(test_str);
+    CPPUNIT_TEST(test_opaque);
+    CPPUNIT_TEST(test_vector);
 
-    CPPUNIT_TEST_SUITE_END( );
+    CPPUNIT_TEST_SUITE_END();
 
-    static inline bool is_host_big_endian()
-    {
+    static inline bool is_host_big_endian() {
 #ifdef COMPUTE_ENDIAN_AT_RUNTIME
 
         dods_int16 i = 0x0100;
-        char *c = reinterpret_cast<char*>(&i);
+        char *c = reinterpret_cast<char *>(&i);
         return *c;
 
 #else
@@ -97,20 +91,13 @@ class D4UnMarshallerTest: public CppUnit::TestFixture {
     }
 
 public:
-    D4UnMarshallerTest()
-    {
-    }
+    D4UnMarshallerTest() {}
 
-    void setUp()
-    {
-    }
+    void setUp() {}
 
-    void tearDown()
-    {
-    }
+    void tearDown() {}
 
-    void test_scalars()
-    {
+    void test_scalars() {
         fstream in;
         in.exceptions(ostream::failbit | ostream::badbit);
 
@@ -175,19 +162,16 @@ public:
             ck = dsm.get_checksum_str();
             DBG(cerr << "ck: " << ck << endl);
             CPPUNIT_ASSERT(ck == "d533eedc" || ck == "0f92ff9b");
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught an exception.");
-        }
-        catch (istream::failure &e) {
+        } catch (istream::failure &e) {
             cerr << "File error: " << e.what() << endl;
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
 
-    void test_real_scalars()
-    {
+    void test_real_scalars() {
         fstream in;
         in.exceptions(ostream::failbit | ostream::badbit);
 
@@ -210,19 +194,16 @@ public:
             ck = dsm.get_checksum_str();
             DBG(cerr << "ck: " << ck << endl);
             CPPUNIT_ASSERT(ck == "d5a3994b" || ck == "42abb362");
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught an exception.");
-        }
-        catch (istream::failure &e) {
+        } catch (istream::failure &e) {
             cerr << "File error: " << e.what() << endl;
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
 
-    void test_str()
-    {
+    void test_str() {
         fstream in;
         in.exceptions(ostream::failbit | ostream::badbit);
 
@@ -245,19 +226,16 @@ public:
             ck = dsm.get_checksum_str();
             DBG(cerr << "ck: " << ck << endl);
             CPPUNIT_ASSERT(ck == "41e10081");
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught an exception.");
-        }
-        catch (istream::failure &e) {
+        } catch (istream::failure &e) {
             cerr << "File error: " << e.what() << endl;
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
 
-    void test_opaque()
-    {
+    void test_opaque() {
         fstream in;
         in.exceptions(ostream::failbit | ostream::badbit);
 
@@ -278,19 +256,16 @@ public:
             CPPUNIT_ASSERT(ck == "199ad7f5");
 
             delete[] buf2;
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught an exception.");
-        }
-        catch (istream::failure &e) {
+        } catch (istream::failure &e) {
             cerr << "File error: " << e.what() << endl;
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
 
-    void test_vector()
-    {
+    void test_vector() {
         fstream in;
         in.exceptions(ostream::failbit | ostream::badbit);
 
@@ -301,7 +276,7 @@ public:
             D4StreamUnMarshaller dsm(in, 0);
 
             vector<unsigned char> buf1(32768);
-            dsm.get_vector(reinterpret_cast<char*>(buf1.data()), 32768);
+            dsm.get_vector(reinterpret_cast<char *>(buf1.data()), 32768);
             for (int i = 0; i < 32768; ++i)
                 CPPUNIT_ASSERT(buf1[i] == i % (1 << 7));
             string ck = dsm.get_checksum_str();
@@ -309,7 +284,7 @@ public:
             CPPUNIT_ASSERT(ck == "199ad7f5" || ck == "199ad7f5");
 
             vector<dods_int32> buf2(32768);
-            dsm.get_vector(reinterpret_cast<char*>(buf2.data()), 32768, sizeof(dods_int32));
+            dsm.get_vector(reinterpret_cast<char *>(buf2.data()), 32768, sizeof(dods_int32));
             for (int i = 0; i < 32768; ++i)
                 CPPUNIT_ASSERT(buf2[i] == i % (1 << 9));
             ck = dsm.get_checksum_str();
@@ -317,30 +292,25 @@ public:
             CPPUNIT_ASSERT(ck == "5c1bf29f" || ck == "8efd2d3d");
 
             vector<dods_float64> buf3(32768);
-            dsm.get_vector_float64(reinterpret_cast<char*>(buf3.data()), 32768);
+            dsm.get_vector_float64(reinterpret_cast<char *>(buf3.data()), 32768);
             for (int i = 0; i < 32768; ++i) {
-                if (buf3[i] != i % (1 << 9)) cerr << "buf3[" << i << "]: " << buf3[i] << endl;
+                if (buf3[i] != i % (1 << 9))
+                    cerr << "buf3[" << i << "]: " << buf3[i] << endl;
                 CPPUNIT_ASSERT(buf3[i] == i % (1 << 9));
             }
             ck = dsm.get_checksum_str();
             DBG(cerr << "ck: " << ck << endl);
             CPPUNIT_ASSERT(ck == "aafc2a91" || ck == "7bdf9931");
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught an exception.");
-        }
-        catch (istream::failure &e) {
+        } catch (istream::failure &e) {
             cerr << "File error: " << e.what() << endl;
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
-
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (D4UnMarshallerTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(D4UnMarshallerTest);
 
-int main(int argc, char*argv[])
-{
-    return run_tests<D4UnMarshallerTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<D4UnMarshallerTest>(argc, argv) ? 0 : 1; }

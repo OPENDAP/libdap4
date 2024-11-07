@@ -23,8 +23,8 @@
 #include <winsock2.h>
 #include <xdr.h>
 #else
-#include <rpc/types.h>
 #include <netinet/in.h>
+#include <rpc/types.h>
 #include <rpc/xdr.h>
 #endif
 
@@ -53,4 +53,3 @@
 #endif
 
 #endif /* __XDR_DATATYPES__ */
-

@@ -30,23 +30,21 @@
 
 #define DAP4_CE_QUERY_KEY "dap4.ce"
 
-namespace libdap
-{
+namespace libdap {
 
 class HTTPConnect;
 class DMR;
 class Response;
 
-class D4Connect
-{
+class D4Connect {
 private:
     HTTPConnect *d_http;
 
-    bool d_local;  // Is this a local connection?
-    std::string d_URL;  // URL to remote dataset (minus CE)
-    std::string d_UrlQueryString; 	// CE
+    bool d_local;                 // Is this a local connection?
+    std::string d_URL;            // URL to remote dataset (minus CE)
+    std::string d_UrlQueryString; // CE
 
-    std::string d_server; // Server implementation information (the XDAP-Server header)
+    std::string d_server;   // Server implementation information (the XDAP-Server header)
     std::string d_protocol; // DAP protocol from the server (XDAP)
 
     void process_data(DMR &data, Response &rs);

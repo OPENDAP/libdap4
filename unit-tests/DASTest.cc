@@ -23,8 +23,8 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <string>
 
@@ -33,72 +33,55 @@
 #include "run_tests_cppunit.h"
 #include "test_config.h"
 
-
-
 using namespace CppUnit;
 using namespace libdap;
 
-
-
-class DASTest: public TestFixture {
+class DASTest : public TestFixture {
 private:
     DAS *das, *das2;
 
 public:
-    DASTest()
-    {
-    }
-    ~DASTest()
-    {
-    }
+    DASTest() {}
+    ~DASTest() {}
 
-    void setUp()
-    {
+    void setUp() {
         das = new DAS();
         das2 = new DAS();
     }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete das;
         das = 0;
         delete das2;
         das2 = 0;
     }
 
-    CPPUNIT_TEST_SUITE (DASTest);
+    CPPUNIT_TEST_SUITE(DASTest);
 
-    CPPUNIT_TEST (error_values_test);
-    CPPUNIT_TEST (symbol_name_test);
+    CPPUNIT_TEST(error_values_test);
+    CPPUNIT_TEST(symbol_name_test);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void error_values_test()
-    {
+    void error_values_test() {
         try {
-            das->parse((string) TEST_SRC_DIR + "/das-testsuite/bad_value_test.1");
+            das->parse((string)TEST_SRC_DIR + "/das-testsuite/bad_value_test.1");
             DBG2(das->print(stderr));
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << e.get_error_message() << endl;
             CPPUNIT_ASSERT(!"Caught an unexpected Error object.");
         }
     }
 
-    void symbol_name_test()
-    {
-        das->parse((string) TEST_SRC_DIR + "/das-testsuite/test.34");
+    void symbol_name_test() {
+        das->parse((string)TEST_SRC_DIR + "/das-testsuite/test.34");
         CPPUNIT_ASSERT(das->get_table("var1")->get_attr("y#z", 0) == "15");
 
         string s = das->get_table("var1.component1.inner component")->get_attr("tag");
         CPPUNIT_ASSERT(s == "xyz123");
     }
-
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (DASTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(DASTest);
 
-int main(int argc, char*argv[])
-{
-    return run_tests<DASTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<DASTest>(argc, argv) ? 0 : 1; }

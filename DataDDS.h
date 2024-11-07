@@ -45,8 +45,7 @@
 #include "DDS.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** This class adds some useful state information to the DDS
     structure.  It is for use on the client side of the connection.
@@ -74,8 +73,7 @@ namespace libdap
     @see Connect
     */
 
-class DataDDS : public DDS
-{
+class DataDDS : public DDS {
 private:
     string d_server_version;
     int d_server_version_major;
@@ -89,57 +87,35 @@ private:
     void m_protocol_string_to_numbers();
 
 public:
-    DataDDS(BaseTypeFactory *factory, const string &n = "",
-            const string &v = "", const string &p = "");
+    DataDDS(BaseTypeFactory *factory, const string &n = "", const string &v = "", const string &p = "");
     // #ifdef DEFAULT_BASETYPE_FACTORY
     // DataDDS(const string &n = "", const string &v = "");
     // #endif
-    virtual ~DataDDS()
-    {}
+    virtual ~DataDDS() {}
 
     /** Sets the version string.  This typically looks something like:
     <tt>DODS/2.15</tt>, where ``2'' is the major version number, and ``15''
     the minor number. */
-    void set_version(const string &v)
-    {
+    void set_version(const string &v) {
         d_server_version = v;
         m_version_string_to_numbers();
     }
     /** @brief Get the server version string, unparsed. */
-    string get_version() const
-    {
-        return d_server_version;
-    }
+    string get_version() const { return d_server_version; }
     /** @brief Returns the major version number. */
-    int get_version_major() const
-    {
-        return d_server_version_major;
-    }
+    int get_version_major() const { return d_server_version_major; }
     /** @brief Returns the minor version number. */
-    int get_version_minor() const
-    {
-        return d_server_version_minor;
-    }
+    int get_version_minor() const { return d_server_version_minor; }
 
-    void set_protocol(const string &p)
-    {
+    void set_protocol(const string &p) {
         d_protocol_version = p;
         m_protocol_string_to_numbers();
     }
-    string get_protocol() const
-    {
-        return d_protocol_version;
-    }
-    int get_protocol_major() const
-    {
-        return d_server_protocol_major;
-    }
-    int get_protocol_minor() const
-    {
-        return d_server_protocol_minor;
-    }
+    string get_protocol() const { return d_protocol_version; }
+    int get_protocol_major() const { return d_server_protocol_major; }
+    int get_protocol_minor() const { return d_server_protocol_minor; }
 
-    virtual void dump(ostream &strm) const ;
+    virtual void dump(ostream &strm) const;
 };
 
 } // namespace libdap

@@ -25,10 +25,10 @@
 #ifndef KEYWORDS_H_
 #define KEYWORDS_H_
 
-#include <string>
-#include <set>
-#include <map>
 #include <list>
+#include <map>
+#include <set>
+#include <string>
 
 using namespace std;
 
@@ -84,6 +84,6 @@ public:
     virtual keyword_value get_keyword_value(const keyword &kw) const;
 };
 
-}
+} // namespace libdap
 
 #endif /* KEYWORDS_H_ */

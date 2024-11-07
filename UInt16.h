@@ -36,7 +36,6 @@
 #ifndef _uint16_h
 #define _uint16_h 1
 
-
 #ifndef _dods_datatypes_h
 #include "dods-datatypes.h"
 #endif
@@ -49,21 +48,18 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief Holds an unsigned 16-bit integer. */
 
-class UInt16: public BaseType
-{
+class UInt16 : public BaseType {
 protected:
     dods_uint16 d_buf;
 
 public:
     UInt16(const string &n);
     UInt16(const string &n, const string &d);
-    virtual ~UInt16()
-    {}
+    virtual ~UInt16() {}
 
     UInt16(const UInt16 &copy_from);
 
@@ -71,18 +67,12 @@ public:
 
     BaseType *ptr_duplicate() override;
 
-    unsigned int width(bool = false) const override
-    {
-        return sizeof(dods_uint16);
-    }
+    unsigned int width(bool = false) const override { return sizeof(dods_uint16); }
 
-    int64_t width_ll(bool = false) const override
-    {
-        return sizeof(dods_uint16);
-    }
+    int64_t width_ll(bool = false) const override { return sizeof(dods_uint16); }
 
     // DAP2
-    bool serialize(ConstraintEvaluator &eval, DDS &dds,  Marshaller &m, bool ce_eval = true) override;
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
     bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) override;
 
     // DAP4
@@ -96,17 +86,14 @@ public:
     virtual dods_uint16 value() const;
     virtual bool set_value(dods_uint16 val);
 
-    void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true) override;
-    void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true) override;
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
     bool ops(BaseType *b, int op) override;
 
-    void dump(ostream &strm) const  override;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
 
 #endif // _uint16_h
-

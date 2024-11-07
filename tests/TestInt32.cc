@@ -33,16 +33,15 @@
 //
 // jhrg 1/12/95
 
-
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #ifndef WIN32
 #include <unistd.h>
 #else
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
 #endif
 
@@ -51,33 +50,17 @@
 
 extern int test_variable_sleep_interval;
 
-void
-TestInt32::_duplicate(const TestInt32 &ts)
-{
-    d_series_values = ts.d_series_values;
-}
+void TestInt32::_duplicate(const TestInt32 &ts) { d_series_values = ts.d_series_values; }
 
-TestInt32::TestInt32(const string &n) : Int32(n), d_series_values(false)
-{
-    d_buf = 1;
-}
+TestInt32::TestInt32(const string &n) : Int32(n), d_series_values(false) { d_buf = 1; }
 
-TestInt32::TestInt32(const string &n, const string &)
-    : Int32(n), d_series_values(false)
-{
-    d_buf = 1;
-}
+TestInt32::TestInt32(const string &n, const string &) : Int32(n), d_series_values(false) { d_buf = 1; }
 
-TestInt32::TestInt32(const TestInt32 &rhs) : Int32(rhs), TestCommon(rhs)
-{
-    _duplicate(rhs);
-}
+TestInt32::TestInt32(const TestInt32 &rhs) : Int32(rhs), TestCommon(rhs) { _duplicate(rhs); }
 
-TestInt32 &
-TestInt32::operator=(const TestInt32 &rhs)
-{
+TestInt32 &TestInt32::operator=(const TestInt32 &rhs) {
     if (this == &rhs)
-	return *this;
+        return *this;
 
     Int32::operator=(rhs); // run Constructor=
 

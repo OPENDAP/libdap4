@@ -33,48 +33,47 @@
 //
 // jhrg 9/7/94
 
-
 #include "config.h"
 
 #include <sstream>
 
 #include "Byte.h"
 #if 0
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
 #include "Float32.h"
 #include "Float64.h"
+#include "Int16.h"
+#include "Int32.h"
+#include "UInt16.h"
+#include "UInt32.h"
 #endif
 #include "Str.h"
 #include "Url.h"
 
 #if 0
 #include "Array.h"
-#include "Structure.h"
-#include "Sequence.h"
 #include "Grid.h"
+#include "Sequence.h"
+#include "Structure.h"
 #endif
 
 #include "DDS.h"
 #include "Marshaller.h"
 #include "UnMarshaller.h"
 
-#include "DMR.h"
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
+#include "DMR.h"
 
 #include "util.h"
 
 #if 0
 #include "parser.h"
 #endif
-#include "Operators.h"
-#include "InternalErr.h"
-#include "escaping.h"
-#include "debug.h"
 #include "DapIndent.h"
+#include "InternalErr.h"
+#include "Operators.h"
+#include "debug.h"
+#include "escaping.h"
 
 using std::cerr;
 using std::endl;
@@ -89,8 +88,7 @@ namespace libdap {
     created.
 
 */
-Str::Str(const string &n) : BaseType(n, dods_str_c), d_buf("")
-{}
+Str::Str(const string &n) : BaseType(n, dods_str_c), d_buf("") {}
 
 /** The Str server-side constructor accepts the name of the variable and the
     dataset name from which this instance is created.
@@ -99,23 +97,13 @@ Str::Str(const string &n) : BaseType(n, dods_str_c), d_buf("")
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-Str::Str(const string &n, const string &d) : BaseType(n, d, dods_str_c), d_buf("")
-{}
+Str::Str(const string &n, const string &d) : BaseType(n, d, dods_str_c), d_buf("") {}
 
-Str::Str(const Str &copy_from) : BaseType(copy_from)
-{
-    d_buf = copy_from.d_buf;
-}
+Str::Str(const Str &copy_from) : BaseType(copy_from) { d_buf = copy_from.d_buf; }
 
-BaseType *
-Str::ptr_duplicate()
-{
-    return new Str(*this);
-}
+BaseType *Str::ptr_duplicate() { return new Str(*this); }
 
-Str &
-Str::operator=(const Str &rhs)
-{
+Str &Str::operator=(const Str &rhs) {
     if (this == &rhs)
         return *this;
     BaseType::operator=(rhs);
@@ -123,21 +111,11 @@ Str::operator=(const Str &rhs)
     return *this;
 }
 
-int
-Str::length() const
-{
-    return (int)d_buf.length();
-}
+int Str::length() const { return (int)d_buf.length(); }
 
-int64_t
-Str::length_ll() const
-{
-    return (int64_t)d_buf.length();
-}
+int64_t Str::length_ll() const { return (int64_t)d_buf.length(); }
 
-bool
-Str::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
-{
+bool Str::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval) {
 
     DBG(cerr << "Entering (" << this->name() << " [" << this << "])" << endl);
 #if USE_LOCAL_TIMEOUT_SCHEME
@@ -151,7 +129,7 @@ Str::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 #if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_off();
 #endif
-    m.put_str( d_buf ) ;
+    m.put_str(d_buf);
 
     DBG(cerr << "Exiting: buf = " << d_buf << endl);
 
@@ -160,18 +138,14 @@ Str::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
 
 // deserialize the string on stdin and put the result in BUF.
 
-bool
-Str::deserialize(UnMarshaller &um, DDS *, bool)
-{
-    um.get_str( d_buf ) ;
+bool Str::deserialize(UnMarshaller &um, DDS *, bool) {
+    um.get_str(d_buf);
 
     return false;
 }
 
-void
-Str::compute_checksum(Crc32 &checksum)
-{
-	checksum.AddData(reinterpret_cast<const uint8_t*>(d_buf.data()), d_buf.length());
+void Str::compute_checksum(Crc32 &checksum) {
+    checksum.AddData(reinterpret_cast<const uint8_t *>(d_buf.data()), d_buf.length());
 }
 
 /**
@@ -182,20 +156,14 @@ Str::compute_checksum(Crc32 &checksum)
  * @param filter Unused
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
-void
-Str::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
-{
+void Str::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool) {
     if (!read_p())
-        read();          // read() throws Error
+        read(); // read() throws Error
 
-    m.put_str( d_buf ) ;
+    m.put_str(d_buf);
 }
 
-void
-Str::deserialize(D4StreamUnMarshaller &um, DMR &)
-{
-    um.get_str( d_buf ) ;
-}
+void Str::deserialize(D4StreamUnMarshaller &um, DMR &) { um.get_str(d_buf); }
 
 /** Read the object's value and put a copy in the C++ string object
     referenced by \e **val. If \e *val is null, this method will allocate
@@ -206,23 +174,20 @@ Str::deserialize(D4StreamUnMarshaller &um, DMR &)
     @param val A pointer to null or to a string object.
     @return The sizeof(string*)
     @exception InternalErr Thrown if \e val is null. */
-unsigned int
-Str::buf2val(void **val)
-{
+unsigned int Str::buf2val(void **val) {
     // Jose Garcia
     // The same comment justifying throwing an Error in val2buf applies here.
     if (!val)
-        throw InternalErr(__FILE__, __LINE__,
-                          "No place to store a reference to the data.");
+        throw InternalErr(__FILE__, __LINE__, "No place to store a reference to the data.");
     // If *val is null, then the caller has not allocated storage for the
     // value; we must. If there is storage there, assume it is a string and
     // assign d_buf's value to that storage.
     if (!*val)
         *val = new string(d_buf);
     else
-        *static_cast<string*>(*val) = d_buf;
+        *static_cast<string *>(*val) = d_buf;
 
-    return sizeof(string*);
+    return sizeof(string *);
 }
 
 /** Store the value referenced by \e val in this object. Even though the
@@ -234,9 +199,7 @@ Str::buf2val(void **val)
     @param reuse Not used by this version of the method.
     @exception IntenalErr if \e val is null.
     @return The width of the pointer. */
-unsigned int
-Str::val2buf(void *val, bool)
-{
+unsigned int Str::val2buf(void *val, bool) {
     // Jose Garcia
     // This method is public therefore and I believe it has being designed
     // to be use by read which must be implemented on the surrogated library,
@@ -244,18 +207,16 @@ Str::val2buf(void *val, bool)
     if (!val)
         throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
 
-    d_buf = *static_cast<string*>(val);
+    d_buf = *static_cast<string *>(val);
 
-    return sizeof(string*);
+    return sizeof(string *);
 }
 
 /** Set the value of this instance.
     @param value The value
     @return Always returns true; the return type of bool is for compatibility
     with the Passive* subclasses written by HAO. */
-bool
-Str::set_value(const string &value)
-{
+bool Str::set_value(const string &value) {
     d_buf = value;
     set_read_p(true);
 
@@ -264,15 +225,9 @@ Str::set_value(const string &value)
 
 /** Get the value of this instance.
     @return The value. */
-string
-Str::value() const
-{
-    return d_buf;
-}
+string Str::value() const { return d_buf; }
 
-void
-Str::print_val(FILE *out, string space, bool print_decl_p)
-{
+void Str::print_val(FILE *out, string space, bool print_decl_p) {
     ostringstream oss;
     print_val(oss, space, print_decl_p);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
@@ -285,27 +240,18 @@ Str::print_val(FILE *out, string space, bool print_decl_p)
  * @param s The value to modify.
  * @return The modified value.
  */
-string
-Str::esc_string_variable_value(const string &s)
-{
-    return escattr(s);
-}
+string Str::esc_string_variable_value(const string &s) { return escattr(s); }
 
-void
-Str::print_val(ostream &out, string space, bool print_decl_p)
-{
+void Str::print_val(ostream &out, string space, bool print_decl_p) {
     if (print_decl_p) {
         print_decl(out, space, false);
-	    out << " = \"" << esc_string_variable_value(d_buf) << "\";" << endl;
-    }
-    else {
+        out << " = \"" << esc_string_variable_value(d_buf) << "\";" << endl;
+    } else {
         out << "\"" << esc_string_variable_value(d_buf) << "\"";
     }
 }
 
-bool
-Str::ops(BaseType *b, int op)
-{
+bool Str::ops(BaseType *b, int op) {
     // Extract the Byte arg's value.
     if (!read_p() && !read()) {
         // Jose Garcia
@@ -332,8 +278,7 @@ Str::ops(BaseType *b, int op)
 /**
  * @see BaseType::d4_ops(BaseType *, int)
  */
-bool Str::d4_ops(BaseType *b, int op)
-{
+bool Str::d4_ops(BaseType *b, int op) {
     switch (b->type()) {
     case dods_byte_c:
     case dods_int8_c:
@@ -347,9 +292,9 @@ bool Str::d4_ops(BaseType *b, int op)
     case dods_float64_c:
         throw Error(malformed_expr, "Relational operators can only compare compatible types (string, number).");
     case dods_str_c:
-        return StrCmp<string, string>(op, d_buf, static_cast<Str*>(b)->value());
+        return StrCmp<string, string>(op, d_buf, static_cast<Str *>(b)->value());
     case dods_url_c:
-        return StrCmp<string, string>(op, d_buf, static_cast<Url*>(b)->value());
+        return StrCmp<string, string>(op, d_buf, static_cast<Url *>(b)->value());
     default:
         throw Error(malformed_expr, "Relational operators only work with scalar types.");
     }
@@ -363,16 +308,12 @@ bool Str::d4_ops(BaseType *b, int op)
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void
-Str::dump(ostream &strm) const
-{
-    strm << DapIndent::LMarg << "Str::dump - ("
-    << (void *)this << ")" << endl ;
-    DapIndent::Indent() ;
-    BaseType::dump(strm) ;
-    strm << DapIndent::LMarg << "value: " << d_buf << endl ;
-    DapIndent::UnIndent() ;
+void Str::dump(ostream &strm) const {
+    strm << DapIndent::LMarg << "Str::dump - (" << (void *)this << ")" << endl;
+    DapIndent::Indent();
+    BaseType::dump(strm);
+    strm << DapIndent::LMarg << "value: " << d_buf << endl;
+    DapIndent::UnIndent();
 }
 
 } // namespace libdap
-

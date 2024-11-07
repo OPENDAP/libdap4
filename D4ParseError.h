@@ -28,18 +28,13 @@
 
 #include "Error.h"
 
-namespace libdap
-{
+namespace libdap {
 
 /** Thrown when the DMR document cannot be parsed. */
-class D4ParseError : public Error
-{
+class D4ParseError : public Error {
 public:
-    D4ParseError() : Error("The DMR response document parse failed.")
-    {}
-    explicit D4ParseError(const string &msg) :
-            Error(string("The DMR response document parse failed: ") + msg)
-    {}
+    D4ParseError() : Error("The DMR response document parse failed.") {}
+    explicit D4ParseError(const string &msg) : Error(string("The DMR response document parse failed: ") + msg) {}
 };
 
 } // namespace libdap

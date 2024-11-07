@@ -26,8 +26,7 @@
 #ifndef _http_cache_disconnected_mode_h
 #define _http_cache_disconnected_mode_h
 
-namespace libdap
-{
+namespace libdap {
 
 /** Disconnected Operation
 
@@ -44,11 +43,7 @@ namespace libdap
     HTTP/1.1 cache-control header to indicate that the proxy should operate in
     disconnected mode. */
 
-typedef enum {
-    DISCONNECT_NONE     = 0,
-    DISCONNECT_NORMAL   = 1,
-    DISCONNECT_EXTERNAL = 2
-} CacheDisconnectedMode;
+typedef enum { DISCONNECT_NONE = 0, DISCONNECT_NORMAL = 1, DISCONNECT_EXTERNAL = 2 } CacheDisconnectedMode;
 
 } // namespace libdap
 

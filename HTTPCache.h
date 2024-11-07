@@ -29,20 +29,19 @@
 #include <pthread.h>
 
 #ifdef WIN32
-#include <io.h>   // stat for win32? 09/05/02 jhrg
+#include <io.h> // stat for win32? 09/05/02 jhrg
 #endif
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 #include "HTTPCacheTable.h" // included for macros
 
 #include "HTTPCacheDisconnectedMode.h"
-//using namespace std;
+// using namespace std;
 
-namespace libdap
-{
+namespace libdap {
 
 class HTTPCacheTabe;
 
@@ -54,7 +53,7 @@ bool is_hop_by_hop_header(const string &header);
     <i>Clients that run as users lacking a writable HOME directory MUST
     disable this cache. Use Connect::set_cache_enable(false).</i>
 
-    The original design of this class was taken from the W3C libwww software, 
+    The original design of this class was taken from the W3C libwww software,
     written by Henrik Frystyk Nielsen, Copyright MIT
     1995. See the file MIT_COPYRIGHT. This software is a complete rewrite in
     C++ with additional features useful to the DODS and OPeNDAP projects.
@@ -89,19 +88,18 @@ bool is_hop_by_hop_header(const string &header);
     get_conditional_request_headers() would only lock when an entry is in use
     for writing. But I haven't done that.)
 
-	@todo Update documentation: get_cache_response() now also serves as 
-	is_url_in_cache() and is_url_valid() should only be called after a locked
-	cached response is accessed using get_cahced_response(). These lock the
-	cache for reading. The methods cache_response() and update_response()
-	lock an entry for writing.
-	
-	@todo Check that the lock-for-write and lock-for-read work together since
-	it's possible that an entry in use might have a stream of readers and never
-	free the 'read-lock' thus blocking a writer.
-	
+    @todo Update documentation: get_cache_response() now also serves as
+    is_url_in_cache() and is_url_valid() should only be called after a locked
+    cached response is accessed using get_cahced_response(). These lock the
+    cache for reading. The methods cache_response() and update_response()
+    lock an entry for writing.
+
+    @todo Check that the lock-for-write and lock-for-read work together since
+    it's possible that an entry in use might have a stream of readers and never
+    free the 'read-lock' thus blocking a writer.
+
     @author James Gallagher <jgallagher@opendap.org> */
-class HTTPCache
-{
+class HTTPCache {
 private:
     string d_cache_root;
     FILE *d_locked_open_file; // Lock for single process use.
@@ -112,9 +110,9 @@ private:
     bool d_expire_ignored;
     bool d_always_validate;
 
-    unsigned long d_total_size; // How much can we store?
-    unsigned long d_folder_size; // How much of that is meta data?
-    unsigned long d_gc_buffer; // How much memory needed as buffer?
+    unsigned long d_total_size;     // How much can we store?
+    unsigned long d_folder_size;    // How much of that is meta data?
+    unsigned long d_gc_buffer;      // How much memory needed as buffer?
     unsigned long d_max_entry_size; // Max individual entry size.
     int d_default_expiration;
 
@@ -124,12 +122,12 @@ private:
     // response (e.g., CacheEntry has a max_age field, too). These fields are
     // set when the set_cache_control method is called.
     time_t d_max_age;
-    time_t d_max_stale;  // -1: not set, 0:any response, >0 max time.
+    time_t d_max_stale; // -1: not set, 0:any response, >0 max time.
     time_t d_min_fresh;
 
     // Lock non-const methods (also ones that use the STL).
     pthread_mutex_t d_cache_mutex;
-    
+
     HTTPCacheTable *d_http_cache_table;
 
     // d_open_files is used by the interrupt handler to clean up
@@ -150,14 +148,14 @@ private:
     HTTPCache(string cache_root, bool force);
 
     static void delete_instance(); // Run by atexit (hence static)
-    
+
     void set_cache_root(const string &root = "");
     void create_cache_root(const string &cache_root);
-    
+
     // These will go away when the cache can be used by multiple processes.
     bool get_single_user_lock(bool force = false);
     void release_single_user_lock();
-    
+
     bool is_url_in_cache(const string &url);
 
     // I made these four methods so they could be tested by HTTPCacheTest.
@@ -206,31 +204,28 @@ public:
     vector<string> get_cache_control();
 
     void lock_cache_interface() {
-    	DBG(cerr << "Locking interface... ");
-    	LOCK(&d_cache_mutex);
-    	DBGN(cerr << "Done" << endl);
-    }    	
-    void unlock_cache_interface() {
-    	DBG(cerr << "Unlocking interface... " );
-    	UNLOCK(&d_cache_mutex);
-    	DBGN(cerr << "Done" << endl);
+        DBG(cerr << "Locking interface... ");
+        LOCK(&d_cache_mutex);
+        DBGN(cerr << "Done" << endl);
     }
-    
+    void unlock_cache_interface() {
+        DBG(cerr << "Unlocking interface... ");
+        UNLOCK(&d_cache_mutex);
+        DBGN(cerr << "Done" << endl);
+    }
+
     // This must lock for writing
-    bool cache_response(const string &url, time_t request_time,
-                        const vector<string> &headers, const FILE *body);
-    void update_response(const string &url, time_t request_time,
-                         const vector<string> &headers);
+    bool cache_response(const string &url, time_t request_time, const vector<string> &headers, const FILE *body);
+    void update_response(const string &url, time_t request_time, const vector<string> &headers);
 
     // This is separate from get_cached_response() because often an invalid
     // cache entry just needs a header update. That is best left to the HTTP
     // Connection code.
     bool is_url_valid(const string &url);
-    
+
     // Lock these for reading
     vector<string> get_conditional_request_headers(const string &url);
-    FILE *get_cached_response(const string &url, vector<string> &headers,
-			      			  string &cacheName);
+    FILE *get_cached_response(const string &url, vector<string> &headers, string &cacheName);
     FILE *get_cached_response(const string &url, vector<string> &headers);
     FILE *get_cached_response(const string &url);
 

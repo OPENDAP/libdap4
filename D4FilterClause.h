@@ -29,20 +29,19 @@
 #include <cassert>
 #include <vector>
 
-#include "ce_expr.tab.hh"   // Use the same codes for D4 as we use in DAP2
+#include "D4RValue.h"
 
-namespace libdap
-{
+#include "ce_expr.tab.hh" // Use the same codes for D4 as we use in DAP2
 
-class D4Rvalue;
+namespace libdap {
+
 class D4FilterClause;
 
 /**
  * @brief List of DAP4 Filter Clauses
  *
  */
-class D4FilterClauseList
-{
+class D4FilterClauseList {
 private:
     std::vector<D4FilterClause *> d_clauses;
 
@@ -52,7 +51,7 @@ public:
     typedef std::vector<D4FilterClause *>::iterator iter;
     typedef std::vector<D4FilterClause *>::const_iterator citer;
 
-    D4FilterClauseList() { }
+    D4FilterClauseList() {}
     D4FilterClauseList(const D4FilterClauseList &src) { m_duplicate(src); }
 
     D4FilterClauseList(D4FilterClause *c) { add_clause(c); }
@@ -68,13 +67,9 @@ public:
         return *this;
     }
 
-    void add_clause(D4FilterClause *c) {
-        d_clauses.push_back(c);
-    }
+    void add_clause(D4FilterClause *c) { d_clauses.push_back(c); }
 
-    D4FilterClause *get_clause(unsigned int i) {
-        return d_clauses.at(i);
-    }
+    D4FilterClause *get_clause(unsigned int i) { return d_clauses.at(i); }
 
     citer cbegin() const { return d_clauses.begin(); }
     citer cend() const { return d_clauses.end(); }
@@ -111,25 +106,24 @@ public:
  *
  * @note The 'ND' and 'map' ops are 'still just an idea' parts.
  */
-class D4FilterClause
-{
+class D4FilterClause {
 public:
-	enum ops {
-		// Stock relops
-		null = 0,
-		less = SCAN_LESS,
-		greater = SCAN_GREATER,
-		less_equal = SCAN_LESS_EQL,
-		greater_equal = SCAN_GREATER_EQL,
-		equal = SCAN_EQUAL,
-		not_equal = SCAN_NOT_EQUAL,
-		// Regex match for strings
-		match = SCAN_REGEXP,
-		// The mapping operator; not sure if this will be implemented
-		map,
-		// No Data 'operator' for array filtering; may not be impl'd
-		ND
-	};
+    enum ops {
+        // Stock relops
+        null = 0,
+        less = SCAN_LESS,
+        greater = SCAN_GREATER,
+        less_equal = SCAN_LESS_EQL,
+        greater_equal = SCAN_GREATER_EQL,
+        equal = SCAN_EQUAL,
+        not_equal = SCAN_NOT_EQUAL,
+        // Regex match for strings
+        match = SCAN_REGEXP,
+        // The mapping operator; not sure if this will be implemented
+        map,
+        // No Data 'operator' for array filtering; may not be impl'd
+        ND
+    };
 
 private:
     /** The operator */
@@ -137,13 +131,13 @@ private:
 
     D4RValue *d_arg1, *d_arg2;
 
-    D4FilterClause() : d_op(null), d_arg1(0), d_arg2(0) { }
+    D4FilterClause() : d_op(null), d_arg1(0), d_arg2(0) {}
 
     void m_duplicate(const D4FilterClause &rhs);
 
     // These methods factor out first the first argument and then the
     // second. I could write one really large cmp() for all of this...
-    //template<typename T> bool cmp(ops op, BaseType *arg1, T arg2);
+    // template<typename T> bool cmp(ops op, BaseType *arg1, T arg2);
     bool cmp(ops op, BaseType *arg1, BaseType *arg2);
 
     friend class D4FilterClauseList;
@@ -166,16 +160,13 @@ public:
      * @param arg1 The left-hand operand
      * @param arg2 The right-hand operand
      */
-    D4FilterClause(const ops op, D4RValue *arg1, D4RValue *arg2) :
-    	d_op(op), d_arg1(arg1), d_arg2(arg2) {
-    	assert(op != null && "null operator");
-    	assert(arg1 && "null arg1");
-    	assert(arg2 && "null arg2");
+    D4FilterClause(const ops op, D4RValue *arg1, D4RValue *arg2) : d_op(op), d_arg1(arg1), d_arg2(arg2) {
+        assert(op != null && "null operator");
+        assert(arg1 && "null arg1");
+        assert(arg2 && "null arg2");
     }
 
-    D4FilterClause(const D4FilterClause &src) {
-        m_duplicate(src);
-    }
+    D4FilterClause(const D4FilterClause &src) { m_duplicate(src); }
 
     D4FilterClause &operator=(const D4FilterClause &rhs) {
         if (this == &rhs)
@@ -187,8 +178,8 @@ public:
     }
 
     virtual ~D4FilterClause() {
-    	delete d_arg1;
-    	delete d_arg2;
+        delete d_arg1;
+        delete d_arg2;
     }
 
     // get the clause value; this version supports functional clauses

@@ -36,8 +36,8 @@
 #ifndef _util_h
 #define _util_h 1
 
-#include <cstdio>
 #include <cmath>
+#include <cstdio>
 #include <vector>
 
 #ifndef _basetype_h
@@ -46,22 +46,18 @@
 
 using std::iostream;
 
-namespace libdap
-{
+namespace libdap {
 
 class Array;
 
 /** Is \e lhs equal to \e rhs? Use epsilon to determine equality. */
-inline bool double_eq(double lhs, double rhs, double epsilon = 1.0e-5)
-{
-    return fabs(lhs - rhs) < epsilon;
-}
+inline bool double_eq(double lhs, double rhs, double epsilon = 1.0e-5) { return fabs(lhs - rhs) < epsilon; }
 
-string extract_string_argument(BaseType *arg) ;
-double extract_double_value(BaseType *arg) ;
-double *extract_double_array(Array *a) ;
-void extract_double_array(Array *a, vector<double> &dest) ;
-void set_array_using_double(Array *dest, double *src, int src_len) ;
+string extract_string_argument(BaseType *arg);
+double extract_double_value(BaseType *arg);
+double *extract_double_array(Array *a);
+void extract_double_array(Array *a, vector<double> &dest);
+void set_array_using_double(Array *dest, double *src, int src_len);
 
 bool is_host_big_endian();
 
@@ -145,8 +141,8 @@ string double_to_string(const double &num);
 //@}
 
 string path_to_filename(string path);
-int glob( const char *c, const char *s );
-time_t parse_time(const char * str, bool expand);
+int glob(const char *c, const char *s);
+time_t parse_time(const char *str, bool expand);
 bool size_ok(unsigned int sz, unsigned int nelem);
 bool pathname_ok(const string &path, bool strict = true);
 string dap_version();
