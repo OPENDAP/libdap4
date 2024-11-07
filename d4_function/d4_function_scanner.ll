@@ -28,6 +28,9 @@
 %{ /* -*- C++ -*- */
 
 //#include "config.h"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma clang diagnostic ignored "-Wsign-compare"
+
 
 #include <string>
 #include "Error.h"

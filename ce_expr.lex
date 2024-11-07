@@ -177,7 +177,7 @@ NEVER		[^\-+a-zA-Z0-9_/%.\\:,(){}[\]&<>=~]
 <quote><<EOF>>	{
                   BEGIN(INITIAL);   /* resetting the state is needed for reentrant parsers */
                   char msg[256];
-                  sprintf(msg, "Unterminated quote\n");
+                  snprintf(msg, sizeof(msg), "Unterminated quote\n");
                   YY_FATAL_ERROR(msg);
                 }
 

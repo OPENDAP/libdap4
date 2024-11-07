@@ -713,6 +713,8 @@ void Grid::print_xml(ostream &out, string space, bool constrained) {
     out << xml.get_doc();
 }
 
+#if 0
+
 class PrintGridFieldXMLWriter : public unary_function<BaseType *, void> {
     XMLWriter &d_xml;
     bool d_constrained;
@@ -729,6 +731,8 @@ public:
     }
 };
 
+#endif
+
 void Grid::print_xml_writer(XMLWriter &xml, bool constrained) {
     if (constrained && !send_p())
         return;
@@ -737,16 +741,26 @@ void Grid::print_xml_writer(XMLWriter &xml, bool constrained) {
         if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Structure") < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write Structure element");
 
-        if (!name().empty())
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name",
-                                            (const xmlChar *)name().c_str()) < 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+        if (!name().empty() &&
+            xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
         get_attr_table().print_xml_writer(xml);
 
         get_array()->print_xml_writer(xml, constrained);
 
+#if 0
         for_each(map_begin(), map_end(), PrintGridFieldXMLWriter(xml, constrained, "Array"));
+#endif
+
+        // Cannot easily use the range-based for loop here because the same container is
+        // used for the Grid Array and its Maps. jhrg 7/19/24
+        for (auto m = map_begin(); m != map_end(); ++m) {
+            auto a = dynamic_cast<Array *>(*m);
+            if (!a)
+                throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
+            a->print_xml_writer_core(xml, constrained, "Array");
+        }
 
         if (xmlTextWriterEndElement(xml.get_writer()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not end Structure element");
@@ -765,7 +779,18 @@ void Grid::print_xml_writer(XMLWriter &xml, bool constrained) {
 
         get_array()->print_xml_writer(xml, constrained);
 
+#if 0
         for_each(map_begin(), map_end(), PrintGridFieldXMLWriter(xml, constrained, "Map"));
+#endif
+
+        // Cannot easily use the range-based for loop here because the same container is
+        // used for the Grid Array and its Maps. jhrg 7/19/24
+        for (auto m = map_begin(); m != map_end(); ++m) {
+            auto a = dynamic_cast<Array *>(*m);
+            if (!a)
+                throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
+            a->print_xml_writer_core(xml, constrained, "Map");
+        }
 
         if (xmlTextWriterEndElement(xml.get_writer()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not end Grid element");
