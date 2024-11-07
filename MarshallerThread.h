@@ -124,7 +124,7 @@ private:
          * Build args for an ostream. The file descriptor is set to -1
          */
         write_args(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, std::ostream &s, char *vals,
-                   int num)
+          std::streamsize num)
             : d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(s), d_out_file(-1), d_buf(vals), d_num(num) {}
 
         /**
@@ -146,8 +146,8 @@ public:
     int &get_child_thread_count() { return d_child_thread_count; }
     void increment_child_thread_count() { ++d_child_thread_count; }
 
-    void start_thread(void *(*thread)(void *arg), std::ostream &out, char *byte_buf, unsigned int bytes_written);
-    void start_thread(void *(*thread)(void *arg), int fd, char *byte_buf, unsigned int bytes_written);
+    void start_thread(void* (*thread)(void *arg), std::ostream &out, char *byte_buf, std::streamsize bytes_written);
+    void start_thread(void* (*thread)(void *arg), int fd, char *byte_buf, std::streamsize bytes_written);
 
     // These are static so they will have c-linkage - required because they
     // are passed to pthread_create()

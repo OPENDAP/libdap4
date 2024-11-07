@@ -28,11 +28,14 @@
 
 #include <fcntl.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <cerrno>
+#include <cstdlib>
 
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <limits>       // std::numeric_limits
+#include <exception>      // std::exception
 
 #include "chunked_istream.h"
 #include "chunked_ostream.h"
@@ -43,11 +46,28 @@
 
 #include "debug.h"
 
-const string path = (string)TEST_SRC_DIR + "/chunked-io";
+#undef DBG
+#define DBG(x) do { if (debug) (x); } while(false)
+#define prolog string("chunked_iostream_test::").append(__func__).append("() - ")
+
+const string path = (string) TEST_SRC_DIR + "/chunked-io";
 
 using namespace std;
 using namespace CppUnit;
 using namespace libdap;
+
+
+string the_test_text="Stephen could remember an evening when he had sat there in the warm,\n"
+                    "deepening twilight, watching the sea; it had barely a ruffle on its surface,\n"
+                    "and yet the Sophie picked up enough moving air with her topgallants\n"
+                    "to draw a long straight whispering furrow across the water, a line\n"
+                    "brilliant with unearthly phosphorescence, visible for quarter of a mile behind her.\n"
+                    "Days and nights of unbelievable purity. Nights when the steady Ionian breeze\n"
+                    "rounded the square mainsail – not a brace to be touched, watch relieving watch –\n"
+                    "and he and Jack on deck, sawing away, sawing away, lost in their music,\n"
+                    "until the falling dew untuned their strings. And days when the perfection\n"
+                    "of dawn was so great, the emptiness so entire, that men were almost afraid to speak.\n";
+
 
 /**
  * The intent is to test writing to and reading from a chunked iostream,
@@ -68,7 +88,11 @@ public:
     chunked_iostream_test() {}
     ~chunked_iostream_test() {}
 
-    void setUp() {
+
+    void setUp()
+    {
+        DBG( cerr << "\n");
+
         big_file = path + "/test_big_binary_file.bin";
         big_file_2 = path + "/test_big_binary_file_2.bin";
         big_file_3 = path + "/test_big_binary_file_3.bin"; // not used yet
@@ -527,7 +551,110 @@ public:
         }
     }
 
-    CPPUNIT_TEST_SUITE(chunked_iostream_test);
+    string tf(bool val){
+        return val?"true":"false";
+    }
+
+    string check_stream(const chunked_ostream &os){
+        stringstream msg;
+        if ( !os.good() ){
+            msg << prolog << "chunked_outfile::good(): " <<  tf(os.good()) << ").\n";
+            msg << prolog << "chunked_outfile::eof():  " <<  tf(os.eof()) << ").\n";
+            msg << prolog << "chunked_outfile::fail(): " <<  tf(os.fail()) << ").\n";
+            msg << prolog << "chunked_outfile::bad():  " <<  tf(os.bad()) << ").\n";
+            msg << prolog << "file: " << __FILE__ << " line: "<< __LINE__ << "\n";
+        }
+        return msg.str();
+    }
+
+    bool write_chunked_file(string &out_file, const uint64_t target_size){
+        string error_msg;
+        fstream outfile(out_file.c_str(), ios::out | ios::binary);
+        chunked_ostream chunked_outfile(outfile, the_test_text.size());
+        error_msg = check_stream(chunked_outfile);
+        if(error_msg.empty()){
+            the_test_text.size();
+            uint64_t position = 0;
+            uint64_t remaining;
+            std::streamsize outnum;
+            while( position < target_size){
+                remaining = target_size - position;
+                if(the_test_text.size() < remaining){
+                    outnum = the_test_text.size();
+                }
+                else {
+                    outnum = remaining;
+                }
+                chunked_outfile.write(the_test_text.c_str(), outnum);
+                error_msg = check_stream(chunked_outfile);
+                if ( !error_msg.empty() ){
+                    cerr << error_msg;
+                    return false;
+                }
+                position += outnum;
+            }
+        }
+        return true;
+    }
+
+    uint64_t read_chunked_file(string ifile, string ofile, unsigned int bufsize){
+        fstream infile(ifile.c_str(), ios::in | ios::binary);
+        if (!infile.good()) cerr << "ERROR Failed to open or encountered eof for: " << ifile << "\n";
+        chunked_istream chunked_infile(infile, bufsize);
+
+        fstream outfile(ofile.c_str(), ios::out | ios::binary);
+        if (!outfile.good()) cerr << "ERROR Failed to open or encountered eof for: " << ofile << "\n";
+
+        char str[8096];
+        // int count = 1;
+        chunked_infile.read(str, 8096);
+        auto num = chunked_infile.gcount();
+
+        uint64_t sz = 0;
+        while (num > 0 && !chunked_infile.eof()) {
+            outfile.write(str, num);
+            sz += num;
+            chunked_infile.read(str, 8096);
+            num = chunked_infile.gcount();
+        }
+        if (num > 0 && !chunked_infile.bad()) {
+            outfile.write(str, num);
+            sz += num;
+        }
+        return sz;
+    }
+
+    /**
+    * 1GB = 1073741824 bytes
+    * 2GB = 2147483648 bytes
+    * 3GB = 3221225472 bytes
+    * 4GB = 4294967296 bytes
+    * 5GB = 5368709120 bytes
+    */
+    void write_then_read_large_chunked_file(){
+        DBG(cerr << "\n");
+
+        string chunked_filename = path + "/large-text-file.chunked";
+        DBG(cerr << prolog << "    chunked_filename: " << chunked_filename << "\n");
+
+        uint64_t target_size = 1073741824ULL * 5; // 1073741824 == 1GB
+        DBG(cerr << prolog << "         target_size: " << target_size << " bytes\n");
+
+        bool success  = write_chunked_file(chunked_filename, target_size);
+        CPPUNIT_ASSERT( success == true );
+
+        string plain_file_out = path + "/large-text-file.plain";
+        DBG(cerr << prolog << "      plain_file_out: " << plain_file_out << "\n");
+        auto size = read_chunked_file(chunked_filename, plain_file_out, 8096);
+        DBG(cerr << prolog << " read_chunked_file(): " << size << " bytes\n");
+
+        CPPUNIT_ASSERT( size == target_size );
+    }
+
+
+CPPUNIT_TEST_SUITE (chunked_iostream_test);
+
+    CPPUNIT_TEST (write_then_read_large_chunked_file);
 
     CPPUNIT_TEST(test_write_1_read_1_small_file);
     CPPUNIT_TEST(test_write_1_read_1_text_file);

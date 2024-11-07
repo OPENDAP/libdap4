@@ -69,46 +69,46 @@ TestInt32 &TestInt32::operator=(const TestInt32 &rhs) {
     return *this;
 }
 
-BaseType *TestInt32::ptr_duplicate() { return new TestInt32(*this); }
+BaseType *
+TestInt32::ptr_duplicate()
+{
+    return new TestInt32(*this);
+}
 
-void TestInt32::output_values(std::ostream &out) { print_val(out, "", false); }
+void
+TestInt32::output_values(std::ostream &out)
+{
+    print_val(out, "", false);
+}
 
-bool TestInt32::read() {
-    if (read_p())
-        return true;
+bool TestInt32::read()
+{
+	if (read_p()) return true;
 
-    if (test_variable_sleep_interval > 0)
-        sleep(test_variable_sleep_interval);
+	if (test_variable_sleep_interval > 0) sleep(test_variable_sleep_interval);
 
-    if (get_series_values()) {
-        // This line stopped working when I upgraded the compiler on osx 10.9.
-        // to version Apple LLVM version 5.1 (clang-503.0.38) (based on LLVM 3.4svn)
-        // jhrg 3/12/14
-        // d_buf = d_buf * 32;
-        //
-        // d_buf <<= 5;
-        // if (!d_buf)
-        //    d_buf = 32;
-        // The above version caused runtime errors on OSX 14.6.1:
-        //
-        //.  +TestInt32.cc:88:15: runtime error: left shift of 1073741824 by 5 places cannot be represented in type
-        //'dods_int32' (aka 'int')
-        //   +SUMMARY: UndefinedBehaviorSanitizer: undefined-behavior TestInt32.cc:88:15 in
-        //
-        // Replaced with a slower but cautious version below - ndp 09/3/2024
-        long long val = d_buf;
-        val <<= 5;
-        if (val >= 4294967296) {
-            d_buf = 32;
-        } else {
-            d_buf = 0xFFFFFFFF & val;
-        }
-        DBGN(cerr << __PRETTY_FUNCTION__ << "d_buf: " << d_buf << endl);
+	if (get_series_values()) {
 
-    } else {
-        d_buf = 123456789;
-    }
+        // I added this in order to quell complaints from ASAN vis-a-vis
+        // runtime error: left shift of 1073741824 by 5 places cannot be represented in type 'dods_int32' (aka 'int')
+        // ndp 05/23/24
+        d_buf &= 0x07FFFFFF;
 
-    set_read_p(true);
-    return true;
+		// This line stopped working when I upgraded the compiler on osx 10.9.
+		// to version Apple LLVM version 5.1 (clang-503.0.38) (based on LLVM 3.4svn)
+		// jhrg 3/12/14
+		// d_buf = d_buf * 32;
+        d_buf <<= 5;
+		if (!d_buf)
+			d_buf = 32;
+
+	    DBGN(cerr << __PRETTY_FUNCTION__ << "d_buf: " << d_buf << endl);
+	}
+	else {
+		d_buf = 123456789;
+	}
+
+	set_read_p(true);
+
+	return true;
 }
