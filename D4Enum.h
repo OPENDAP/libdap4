@@ -178,8 +178,8 @@ public:
 
     void dump(ostream &strm) const override;
 
-    unsigned int val2buf(void *, bool);
-    unsigned int buf2val(void **);
+    unsigned int val2buf(void *, bool) override;
+    unsigned int buf2val(void **) override;
 
     std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 };

@@ -94,14 +94,14 @@ private:
  */
 class MarshallerThread {
 private:
-    pthread_t d_thread;
+    pthread_t d_thread = 0;
     pthread_attr_t d_thread_attr;
 
     pthread_mutex_t d_out_mutex;
     pthread_cond_t d_out_cond;
 
-    int d_child_thread_count;   // 0 or 1
-    std::string d_thread_error; // non-null indicates an error
+    int d_child_thread_count = 0; // 0 or 1
+    std::string d_thread_error;   // non-null indicates an error
 
     /**
      * Used to pass information into the static methods that run the

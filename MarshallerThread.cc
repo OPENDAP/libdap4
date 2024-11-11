@@ -144,7 +144,7 @@ ChildLocker::~ChildLocker() {
     (void)pthread_mutex_unlock(&m_mutex);
 }
 
-MarshallerThread::MarshallerThread() : d_thread(nullptr), d_child_thread_count(0) {
+MarshallerThread::MarshallerThread() {
     if (pthread_attr_init(&d_thread_attr) != 0)
         throw Error(internal_error, "Failed to initialize pthread attributes.");
     if (pthread_attr_setdetachstate(&d_thread_attr, PTHREAD_CREATE_DETACHED /*PTHREAD_CREATE_JOINABLE*/) != 0)
