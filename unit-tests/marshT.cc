@@ -33,10 +33,10 @@
 #include "XDRFileUnMarshaller.h"
 #include "XDRStreamMarshaller.h"
 
+#include "debug.h"
+
 #include "run_tests_cppunit.h"
 #include "test_config.h"
-
-#include "debug.h"
 
 using std::cerr;
 using std::cout;

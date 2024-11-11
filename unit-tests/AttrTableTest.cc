@@ -63,7 +63,9 @@ class AttrTableTest : public TestFixture {
 private:
     AttrTable *at1;
     AttrTable *cont_a, *cont_b, *cont_c, *cont_ba, *cont_ca, *cont_caa;
+#if 0
     char a[1024];
+#endif
 
 public:
     AttrTableTest() {}
