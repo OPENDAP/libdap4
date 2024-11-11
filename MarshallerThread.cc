@@ -47,7 +47,9 @@
 using namespace libdap;
 using namespace std;
 
-#undef TIMING
+// Set TIMING to 1 to enable timing output
+#define TIMING 0
+
 #if TIMING
 bool MarshallerThread::print_time = false;
 
