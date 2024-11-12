@@ -79,7 +79,7 @@ void Array::_duplicate(const Array &a) {
 // should probably work this way too, but it doesn't. 9/21/2001 jhrg
 
 /** @deprecated Calling this method should never be necessary. It is used
- internally called whenever the size of the Array is changed, e.g., by a
+ internally and called whenever the size of the Array is changed, e.g., by a
  constraint.
 
  Changes the length property of the array.
@@ -101,6 +101,7 @@ void Array::update_length_ll(unsigned long long) {
 
     set_length_ll(length);
 }
+
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new - The dtor for Vector will delete this object.
 
@@ -206,7 +207,7 @@ void Array::transform_to_dap4(D4Group *root, Constructor *container) {
                 }
             }
             // At this point d4_dim's name and size == those of (*d) so just set
-            // the D4Dimension pointer so it matches the one in the D4Group.
+            // the D4Dimension pointer so that it matches the one in the D4Group.
             (*dap2_dim).dim = d4_dim;
         }
     }
@@ -215,8 +216,6 @@ void Array::transform_to_dap4(D4Group *root, Constructor *container) {
     dest->attributes()->transform_to_dap4(get_attr_table());
     dest->set_is_dap4(true);
     container->add_var_nocopy(dest);
-    DBG(cerr << __func__ << "() - END (array:" << name() << ")" << endl);
-    ;
 }
 
 bool Array::is_dap2_grid() {
@@ -228,11 +227,17 @@ bool Array::is_dap2_grid() {
             throw InternalErr(__FILE__, __LINE__, string("Could not get the root group for ").append(this->name()));
         D4Maps *d4_maps = this->maps();
         is_grid = d4_maps->size(); // It can't be a grid if there are no maps...
+
+        // We also need to check if the number of maps is the same as the number of dimensions. If not, this is not a
+        // dap2 grid.
+        if (d4_maps->size() != ((int)dimensions()))
+            is_grid = false;
         if (is_grid) {
             DBG(cerr << __func__ << "() - Array '" << name() << "' has D4Maps." << endl);
             // hmmm this might be a DAP2 Grid...
             D4Maps::D4MapsIter i = d4_maps->map_begin();
             D4Maps::D4MapsIter e = d4_maps->map_end();
+
             while (i != e) {
                 DBG(cerr << __func__ << "() - Map '" << (*i)->array()->name() << " has " << (*i)->array()->_shape.size()
                          << " dimension(s)." << endl);
