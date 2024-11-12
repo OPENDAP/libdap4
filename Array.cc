@@ -201,7 +201,6 @@ void Array::transform_to_dap4(D4Group *root, Constructor *container) {
                     d4_dim = new D4Dimension((*dap2_dim).name + "_" + name(), (*dap2_dim).size);
                     DBG(cerr << __func__ << "() -" << " Utilizing Name/Size Conflict Naming Artifice. name'"
                              << d4_dim->name() << "' (" << (void *)d4_dim << ")" << endl);
-                    ;
                     root_dims->add_dim_nocopy(d4_dim);
                 }
             }
@@ -216,7 +215,6 @@ void Array::transform_to_dap4(D4Group *root, Constructor *container) {
     dest->set_is_dap4(true);
     container->add_var_nocopy(dest);
     DBG(cerr << __func__ << "() - END (array:" << name() << ")" << endl);
-    ;
 }
 
 bool Array::is_dap2_grid() {
@@ -372,16 +370,13 @@ std::vector<BaseType *> *Array::transform_to_dap2(AttrTable *) {
         }
     }
 
-    vector<BaseType *> *result;
+    vector<BaseType *> *result = nullptr;
     if (dest) {
         result = new vector<BaseType *>();
         result->push_back(dest);
-    } else {
-        result = NULL;
     }
 
     DBG(cerr << __func__ << "() - END Array '" << name() << "'" << endl);
-    ;
     return result;
 }
 
@@ -972,6 +967,32 @@ public:
 };
 #endif
 
+void Array::print_dim_element(XMLWriter &xml, const dimension &d, bool constrained) {
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Dim") < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
+
+    string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
+    // If there is a name, there must be a Dimension (named dimension) in scope
+    // so write its name but not its size.
+    if (!constrained && !name.empty()) {
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+    } else if (d.use_sdim_for_slice) {
+        assert(!name.empty());
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+    } else {
+        ostringstream size;
+        size << (constrained ? d.c_size : d.size);
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"size",
+                                        (const xmlChar *)size.str().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+    }
+
+    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not end Dim element");
+}
+
 /**
  * @brief Print the DAP4 representation of an array.
  * @param xml
@@ -1001,79 +1022,14 @@ void Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/) {
     }
 
     if (prototype()->is_constructor_type()) {
-        auto const &c = static_cast<Constructor &>(*prototype());
-#if 0
-        auto print_d4_constructor = [&xml, constrained](BaseType *btp) { btp->print_dap4(xml, constrained); };
-        for_each(c.var_begin(), c.var_end(), print_d4_constructor);
-#endif
+        auto const &c = dynamic_cast<Constructor &>(*prototype());
         for (auto var : c.variables()) {
             var->print_dap4(xml, constrained);
         }
     }
 
-#if 0
-    // Drop the local_constraint which is per-array and use a per-dimension on instead
-    auto print_d4_array_dim_xml_writer = [&xml, constrained](Array::dimension &d) {
-        // This duplicates code in D4Dimensions (where D4Dimension::print_dap4() is defined
-        // because of the need to print the constrained size of a dimension. I think that
-        // the constraint information has to be kept here and not in the dimension (since they
-        // are shared dims). Could hack print_dap4() to take the constrained size, however.
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Dim") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
-
-        string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
-        // If there is a name, there must be a Dimension (named dimension) in scope
-        // so write its name but not its size.
-        if (!constrained && !name.empty()) {
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name.c_str()) <
-                0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-        } else if (d.use_sdim_for_slice) {
-            assert(!name.empty());
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name.c_str()) <
-                0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-        } else {
-            ostringstream size;
-            size << (constrained ? d.c_size : d.size);
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"size",
-                                            (const xmlChar *)size.str().c_str()) < 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-        }
-
-        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not end Dim element");
-    };
-
-    for_each(dim_begin(), dim_end(), print_d4_array_dim_xml_writer);
-#endif
-
     for (auto const &d : shape()) {
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Dim") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
-
-        string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
-        // If there is a name, there must be a Dimension (named dimension) in scope
-        // so write its name but not its size.
-        if (!constrained && !name.empty()) {
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name.c_str()) <
-                0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-        } else if (d.use_sdim_for_slice) {
-            assert(!name.empty());
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name.c_str()) <
-                0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-        } else {
-            ostringstream size;
-            size << (constrained ? d.c_size : d.size);
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"size",
-                                            (const xmlChar *)size.str().c_str()) < 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-        }
-
-        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not end Dim element");
+        print_dim_element(xml, d, constrained);
     }
 
     attributes()->print_dap4(xml);
@@ -1210,40 +1166,6 @@ void Array::print_as_map_xml_writer(XMLWriter &xml, bool constrained) {
     print_xml_writer_core(xml, constrained, "Map");
 }
 
-#if 0
-
-class PrintArrayDimXMLWriter: public unary_function<Array::dimension&, void> {
-=======
-class PrintArrayDimXMLWriter : public unary_function<Array::dimension &, void> {
->>>>>>> master
-    XMLWriter &xml;
-    bool d_constrained;
-
-public:
-    PrintArrayDimXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) {}
-
-    void operator()(Array::dimension &d) {
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"dimension") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write dimension element");
-
-        if (!d.name.empty())
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name",
-                                            (const xmlChar *)d.name.c_str()) < 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-
-        ostringstream size;
-        size << (d_constrained ? d.c_size : d.size);
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"size",
-                                        (const xmlChar *)size.str().c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-
-        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not end dimension element");
-    }
-};
-
-#endif
-
 void Array::print_xml_writer_core(XMLWriter &xml, bool constrained, string tag) {
     if (constrained && !send_p())
         return;
@@ -1262,29 +1184,6 @@ void Array::print_xml_writer_core(XMLWriter &xml, bool constrained, string tag) 
     btp->set_name("");
     btp->print_xml_writer(xml, constrained);
     btp->set_name(tmp_name);
-
-#if 0
-    auto print_array_dim_xml_writer = [&xml, constrained](Array::dimension &d) {
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"dimension") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write dimension element");
-
-        if (!d.name.empty())
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name",
-                                            (const xmlChar *)d.name.c_str()) < 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-
-        ostringstream size;
-        size << (constrained ? d.c_size : d.size);
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"size",
-                                        (const xmlChar *)size.str().c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-
-        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not end dimension element");
-    };
-
-    for_each(dim_begin(), dim_end(), print_array_dim_xml_writer);
-#endif
 
     for (auto const &d : shape()) {
         if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"dimension") < 0)
