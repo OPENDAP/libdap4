@@ -108,8 +108,8 @@ public:
         // lm = "Wed, 13 Jul 2005 19:32:26 GMT";
         etag = "\"157-5ef05adba5432\"";       // New deploymewnt in us-west, new etag. ndp - 09/04/24
         lm = "Sun, 04 Dec 2022 19:35:52 GMT"; // New deploymewnt in us-west, new etag. ndp - 09/04/24
-        DBG(cerr << prolog << "etag: " << etag<< endl);
-        DBG(cerr << prolog << "lm: " << lm<< endl);
+        DBG(cerr << prolog << "etag: " << etag << endl);
+        DBG(cerr << prolog << "lm: " << lm << endl);
 
         string u("jimg");
         string dt(":dods_test@");
@@ -126,7 +126,7 @@ public:
         DBG(cerr << prolog << "netcdf_das_url: " << netcdf_das_url << endl);
     }
 
-    void tearDown() {
+    void tearDown() override {
         // normal code doesn't do this - it happens at exit() but not doing
         // this here make valgrind think there are leaks.
         http->d_http_cache->delete_instance();
