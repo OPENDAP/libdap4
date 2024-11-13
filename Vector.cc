@@ -1378,7 +1378,7 @@ int64_t Vector::val2buf_ll(void *val, bool reuse) {
         throw InternalErr(__FILE__, __LINE__, "Vector::val2buf: bad type");
     }
 
-    return (unsigned int)width_ll(true);
+    return width_ll(true);
 }
 
 /**
