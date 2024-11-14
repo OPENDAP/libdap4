@@ -111,11 +111,7 @@ check-local:
 endif
 
 # If cppunit exists and big array test option are chosen, turn on BigArrayTest.
-if CPPUNIT
-if USE_BA
 UNIT_TESTS +=BigArrayTest
-endif
-endif
 
 # making these link statically makes them easier to debug and to use
 # with OSX's leaks tool. It also seems to force the linker to use the
