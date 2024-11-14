@@ -194,7 +194,7 @@ private:
     var_storage_info vs_info;
 
     void update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims);
-    void print_dim_element(XMLWriter &xml, const dimension &d, bool constrained);
+    void print_dim_element(const XMLWriter &xml, const dimension &d, bool constrained);
 
     friend class ArrayTest;
     friend class D4Group;

@@ -486,12 +486,6 @@ void Array::append_dim(int size, const string &name) {
 }
 
 void Array::append_dim_ll(int64_t size, const string &name) {
-
-#if 0
-    dimension d(size, www2id(name));
-    _shape.push_back(d);
-#endif
-
     _shape.emplace_back(size, www2id(name));
     update_length();
 }
@@ -869,33 +863,7 @@ D4Maps *Array::maps() {
     return d_maps;
 }
 
-#if 0
-/**
- * @brief Returns the width of the data, in bytes.
- * @param constrained if true, return the size of the array in bytes taking into
- * account the current constraints on various dimensions. False by default.
- * @return The number of bytes needed to store the array values.
- */
-unsigned int Array::width(bool constrained) const
-{
-
-    if (constrained) {
-        // This preserves the original method's semantics when we ask for the
-        // size of the constrained array but no constraint has been applied.
-        // In this case, length will be -1. Wrong, I know...
-        return length() * var()->width(constrained);
-    }
-    else {
-        int length = 1;
-        for (Dim_iter i = _shape.begin(); i != _shape.end(); i++) {
-            length *= dimension_size(i, false);
-        }
-        return length * var()->width(false);
-    }
-}
-#endif
-
-void Array::print_dim_element(XMLWriter &xml, const dimension &d, bool constrained) {
+void Array::print_dim_element(const XMLWriter &xml, const dimension &d, bool constrained) {
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Dim") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
 
@@ -1312,26 +1280,33 @@ bool Array::is_dap4_projected(std::vector<std::string> &inventory) {
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void Array::dump(ostream &strm) const {
-    strm << DapIndent::LMarg << "Array::dump - (" << (void *)this << ")" << endl;
+void Array::dump(std::ostream &strm) const {
+    strm << DapIndent::LMarg << "Array::dump - (" << static_cast<const void *>(this) << ")\n";
     DapIndent::Indent();
     Vector::dump(strm);
-    strm << DapIndent::LMarg << "shape:" << endl;
+
+    strm << DapIndent::LMarg << "shape:\n";
     DapIndent::Indent();
-    Dim_citer i = _shape.begin();
-    Dim_citer ie = _shape.end();
+
     unsigned int dim_num = 0;
-    for (; i != ie; i++) {
-        strm << DapIndent::LMarg << "dimension " << dim_num++ << ":" << endl;
+    for (const auto &dim : _shape) {
+        strm << DapIndent::LMarg << "dimension " << dim_num++ << ":\n";
         DapIndent::Indent();
-        strm << DapIndent::LMarg << "name: " << (*i).name << endl;
-        strm << DapIndent::LMarg << "size: " << (*i).size << endl;
-        strm << DapIndent::LMarg << "start: " << (*i).start << endl;
-        strm << DapIndent::LMarg << "stop: " << (*i).stop << endl;
-        strm << DapIndent::LMarg << "stride: " << (*i).stride << endl;
-        strm << DapIndent::LMarg << "constrained size: " << (*i).c_size << endl;
+
+        auto print_attr = [&strm](const std::string &name, const auto &value) {
+            strm << DapIndent::LMarg << name << ": " << value << '\n';
+        };
+
+        print_attr("name", dim.name);
+        print_attr("size", dim.size);
+        print_attr("start", dim.start);
+        print_attr("stop", dim.stop);
+        print_attr("stride", dim.stride);
+        print_attr("constrained size", dim.c_size);
+
         DapIndent::UnIndent();
     }
+
     DapIndent::UnIndent();
     DapIndent::UnIndent();
 }
