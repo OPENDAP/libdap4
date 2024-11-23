@@ -45,7 +45,7 @@ public:
     D4Opaque(const std::string &n) : BaseType(n, dods_opaque_c, true /*is_dap4*/), d_buf(0) {}
     D4Opaque(const std::string &n, const std::string &d) : BaseType(n, d, dods_opaque_c, true /*is_dap4*/), d_buf(0) {}
 
-    virtual ~D4Opaque() {}
+    ~D4Opaque() override {}
 
     D4Opaque(const D4Opaque &copy_from) : BaseType(copy_from) { d_buf = copy_from.d_buf; }
 
@@ -53,7 +53,7 @@ public:
 
     BaseType *ptr_duplicate() override { return new D4Opaque(*this); }
 
-    virtual void clear_local_data();
+    void clear_local_data() override;
 
     unsigned int width(bool = false) const override { return sizeof(vector<uint8_t>); }
 
@@ -61,7 +61,7 @@ public:
 
     // Return the length of the stored data or zero if no string has been
     // stored in the instance's internal buffer.
-    virtual int length() const { return d_buf.size(); }
+    int length() const override { return d_buf.size(); }
 
     // DAP2
     bool serialize(ConstraintEvaluator &, DDS &, Marshaller &, bool = true) override {
