@@ -111,7 +111,14 @@ check-local:
 endif
 
 # If cppunit exists and big array test option are chosen, turn on BigArrayTest.
+# Leave this as an if check for now. The BigArrayTest is too large and causes
+# Travis to kill the process before it finishes
+# kln 11/19/24
+if CPPUNIT
+if USE_BA
 UNIT_TESTS +=BigArrayTest
+endif
+endif
 
 # making these link statically makes them easier to debug and to use
 # with OSX's leaks tool. It also seems to force the linker to use the
