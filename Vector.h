@@ -235,8 +235,8 @@ public:
     unsigned int val2buf(void *val, bool reuse = false) override;
     unsigned int buf2val(void **val) override;
 
-    uint64_t val2buf_ll(void *val, bool reuse = false);
-    uint64_t buf2val_ll(void **val);
+    int64_t val2buf_ll(void *val, bool reuse = false);
+    int64_t buf2val_ll(void **val);
 
     void set_vec(unsigned int i, BaseType *val);
     void set_vec_nocopy(unsigned int i, BaseType *val);

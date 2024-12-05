@@ -1306,7 +1306,7 @@ unsigned int Vector::val2buf(void *val, bool reuse) {
     return ret_value;
 }
 
-uint64_t Vector::val2buf_ll(void *val, bool reuse) {
+int64_t Vector::val2buf_ll(void *val, bool reuse) {
     // Jose Garcia
 
     // Added for zero-length arrays - support in the handlers. jhrg 1/29/16
@@ -1378,7 +1378,7 @@ uint64_t Vector::val2buf_ll(void *val, bool reuse) {
         throw InternalErr(__FILE__, __LINE__, "Vector::val2buf: bad type");
     }
 
-    return (unsigned int)width_ll(true);
+    return width_ll(true);
 }
 
 /**
@@ -1476,7 +1476,7 @@ unsigned int Vector::buf2val(void **val) {
     }
 }
 
-uint64_t Vector::buf2val_ll(void **val) {
+int64_t Vector::buf2val_ll(void **val) {
     // Jose Garcia
     // The same comment in Vector::val2buf applies here!
     if (!val)
@@ -1511,8 +1511,8 @@ uint64_t Vector::buf2val_ll(void **val) {
         if (!*val)
             *val = new char[wid];
 
-        memcpy(*val, d_buf, (uint64_t)wid);
-        return (uint64_t)wid;
+        memcpy(*val, d_buf, wid);
+        return wid;
 
     case dods_str_c:
     case dods_url_c: {
@@ -1525,7 +1525,7 @@ uint64_t Vector::buf2val_ll(void **val) {
         for (int64_t i = 0; i < d_length_ll; ++i)
             *(static_cast<string *>(*val) + i) = d_str[i];
 
-        return (uint64_t)width_ll();
+        return width_ll();
     }
 
     default:
