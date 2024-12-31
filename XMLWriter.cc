@@ -38,7 +38,7 @@
 
 // TODO - Bite the bullet and make the encoding UTF-8 as required by dap4. This will break a lot of tests but the
 // baselines could be amended using  a bash script and sed.
-//const char *ENCODING = "ISO-8859-1";
+
 const int XML_BUF_SIZE = 2000000;
 
 using namespace libdap;
@@ -70,8 +70,6 @@ XMLWriter::XMLWriter(const string &pad, const string &ENCODING) {
         d_started = true;
         d_ended = false;
 
-        xpad = pad;
-
         /* Start the document with the xml default for the version,
          * encoding ISO 8859-1 and the default for the standalone
          * declaration. MY_ENCODING defined at top of this file*/
@@ -81,52 +79,7 @@ XMLWriter::XMLWriter(const string &pad, const string &ENCODING) {
         m_cleanup();
         throw;
     }
-
 }
-
-void XMLWriter::XMLWriter_utf8_encoding() {
-
-#if 0
-    if (d_writer) {
-        xmlFreeTextWriter(d_writer); // This frees both d_writer and d_doc_buf
-        d_writer = 0;
-    }
-#endif
-
-    m_cleanup();
-
-    try {
-    /* Create a new XmlWriter for memory, with no compression.
-    * Remark: there is no compression for this kind of xmlTextWriter */
-     if (!(d_doc_buf = xmlBufferCreateSize(XML_BUF_SIZE)))
-            throw InternalErr(__FILE__, __LINE__, "Error allocating the xml buffer");
-
-        xmlBufferSetAllocationScheme(d_doc_buf, XML_BUFFER_ALLOC_DOUBLEIT);
-
-    if (!(d_writer = xmlNewTextWriterMemory(d_doc_buf, 0)))
-            throw InternalErr(__FILE__, __LINE__, "Error allocating memory for xml writer");
-
-        if (xmlTextWriterSetIndent(d_writer, xpad.length()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Error starting indentation for response document ");
-
-        if (xmlTextWriterSetIndentString(d_writer, (const xmlChar *)xpad.c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Error setting indentation for response document ");
-
-        d_started = true;
-        d_ended = false;
-
-        /* Start the document with the xml default for the version,
-         * encoding ISO 8859-1 and the default for the standalone
-         * declaration. MY_ENCODING defined at top of this file*/
-        const char* encoding ="UTF-8";
-        if (xmlTextWriterStartDocument(d_writer, NULL, encoding, NULL) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Error starting xml response document");
-    } catch (InternalErr &e) {
-        m_cleanup();
-        throw;
-    }
-}
-
 
 XMLWriter::~XMLWriter() { m_cleanup(); }
 
