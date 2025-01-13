@@ -1,3 +1,10 @@
+News for version 3.21.1
+
+  - Initial support for UTF-8
+  - Improved production rules.
+  - Worked technical debt affecting large variables and large responses
+    (large >= 2Gb).
+
 News for version 3.21.0
 
 - Added new Direct I/O support so that modules written using libdap
