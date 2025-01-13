@@ -1,3 +1,181 @@
+2024-12-31  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #268 from OPENDAP/hyrax-1497
+	HYRAX-1497, Provide an option to use UTF-8 encoding …
+
+2024-12-31  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-1497, clean up code and follow clang-format
+
+2024-12-30  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-1497, first version to provide an option to use UTF-8 
+	encoding for the unescaped Unicode characters in DAP4.
+
+2024-12-05  Kodi Neumiller  <kneumiller@opendap.org>
+
+	Merge pull request #262 from OPENDAP/DmrppArray_uint
+	Changed buf2val_ll to return int64_t.
+
+2024-12-02  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Added the "if" check back for BigArrayTest
+
+2024-11-25  James Gallagher  <jgallagher@opendap.org>
+
+	Changed code so derrived classes won't trigger compiler 
+	warnings (#265)
+
+2024-11-14  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Turned on BigArrayTest all the time
+
+2024-11-13  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	removed the cast to unsigned int
+
+2024-11-12  James Gallagher  <jgallagher@opendap.org>
+
+	Update/refactoring for MarshallerThread - lingering int <-> streamsiz… (#264)
+	Update/refactoring for MarshallerThread - lingering int <-> streamsize issues.
+	Fixed initialization if MarshallerThread.
+	Some warnings also fixed
+
+2024-11-07  The Robot Travis  <54914793+travis-ci-opendap@users.noreply.github.com>
+	    ndp-opendap  <ndp@opendap.org>
+	    James Gallagher  <jgallagher@opendap.org>
+
+	Xsputn (#250)
+	Changed byte counts in MarshallerThread from int to std::streamsize
+	---------
+
+2024-11-07  Orion Poplawski  <orion@nwra.com>
+
+	Add #include <cstdint> ofor uint*_t types (#258)
+
+2024-11-07  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Changed buf2val_ll to return int64_t.
+
+2024-09-10  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #257 from OPENDAP/hyrax-1427
+	Hyrax 1427
+
+2024-09-09  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-1427, ensure the clang format
+
+	Merge branch 'master' into hyrax-1427
+
+	HYRAX-1427, fixed the issue when the number of coverage of some 
+	variables is not equal to the number of dimensions
+
+2024-09-04  Nathan Potter  <ndp@opendap.org>
+
+	Trying to quell the undefined-behavior errors (#256)
+	Trying to quell the undfeined-behavior errors from the address sanitizer.
+	Fixing etag and LMT values for test.opendap.org/test-304.html
+
+2024-08-20  James Gallagher  <jgallagher@opendap.org>
+
+	Updated comments.
+	[skip ci]
+
+2024-07-17  James Gallagher  <jgallagher@opendap.org>
+
+	Updated pre-commit README with TL;DR section
+	[skip-ci]
+
+	Added a README about the pre-commit scripts and GitHub action.
+	[skip-ci]
+
+	Pre commit 1 (#254)
+	Added a pre-commit config that will (re)format source code
+	This change will use the clang-format program to reformat C++ source code
+	to a particular standard. I will add a README describing the process and any
+	steps needed for local configuration.
+
+2024-06-25  James Gallagher  <jgallagher@opendap.org>
+
+	Update grammar files to remove the deprecation warnings. (#253)
+
+2024-06-10  James Gallagher  <jgallagher@opendap.org>
+
+	Switched to the rocky8 Docker image for RPM builds (#252)
+	Switched to the rocky8 Docker image for RPM builds
+	Added CPPFLAGS and LDFLAGS to build-rpm.sh
+	These are needed for RHEL8. Previously they were set in the
+	docker container used for the centos-stream8 build but are
+	not set (apparently) in the rocky8 container I made.
+
+2024-03-15  James Gallagher  <jgallagher@opendap.org>
+
+	Add undefined and ODR checks to the ASAN options (#249)
+	Remove ODR flag since it is not part of gcc's ASAN
+	Added -fsanitize=undefined  to two more Makefile.am files
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+	Refactored SignalHandler (a singleton) (#247)
+	Refactored SignalHandler (a singleton): Now uses the Meyers pattern.
+
+2024-03-11  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+2024-03-08  James Gallagher  <jgallagher@opendap.org>
+
+	Merged a PR from a fork - seemed to have issues in the final stage of CI/CD
+	The master branch build failed with a note about local and remote repos
+	not being in sync. This push to master should have fixed that.
+
+	Removed hyrax-deps from build and added -fsanitize=undefined to asan (#245)
+	Removed hyrax-deps from build and added -fsanitize=undefined to the ASAN 
+	options
+
+2024-03-08  Eli Schwartz  <eschwartz93@gmail.com>
+
+	configure: avoid broken bashisms (#243)
+	configure scripts are run with /bin/sh, and must use /bin/sh syntax rather 
+	than bashisms.
+	<<< is a bash specific syntax. Refrain from using it. Instead simply
+	echo into a pipe, which does the same thing.
+
+2024-02-26  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+	D4ce unit tests (#242)
+	Replaced C-style assert() statements with exceptions and tests.
+	I also wrote some unit tests for the D4ConstriantEvaluator class. It's not a 
+	complete set of tests, but I demonstrate the use of a 'mock' class in unit testing.
+
+2024-02-23  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+	D4ce assert refactor (#241)
+	Removed use of assert(). Other refactorings added for C++14.
+	Refactor D4FunctionEvaluator
+	Added #include <memory> to D4FunctionEvaluator.cc
+	More refactoring - change unsigned long long to int64_t
+	Refactor to reduce complexity of mark_array_variable in D4ConstraintEvaluator
+	Another refactor; reduce method complexity.
+
+2024-02-22  James Gallagher  <jgallagher@opendap.org>
+
+	Merge remote-tracking branch 'origin/master'
+
+2024-02-06  James Gallagher  <jgallagher@opendap.org>
+
+	Struct tm init fix (#240)
+	Ensure 'struct tm' instances are initialized
+
+2024-01-29  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
 2023-11-30  kyang2014  <kyang2014@users.noreply.github.com>
 
 	Merge pull request #234 from OPENDAP/hyrax-1247

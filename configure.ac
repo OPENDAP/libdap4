@@ -15,7 +15,7 @@ dnl 'pc' files and tarball for the source. See
 dnl libdap4/travis/travis_libdap_build_offset.sh for info about setting the
 dnl base value for the build number. jhrg 3/22/21
 
-AC_INIT(libdap, 3.21.0, opendap-tech@opendap.org)
+AC_INIT(libdap, 3.21.1, opendap-tech@opendap.org)
 
 dnl As an alternative, we can...
 dnl Read the version number from the file VERSION. The file must contain
@@ -106,9 +106,9 @@ dnl increment AGE, set REVISION to 0.
 dnl Interfaces removed or changed (BAD, breaks upward compatibility):
 dnl ==> Increment CURRENT, set AGE and REVISION to 0.
 
-DAPLIB_CURRENT=29
+DAPLIB_CURRENT=30
 DAPLIB_REVISION=0
-DAPLIB_AGE=2
+DAPLIB_AGE=3
 
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_REVISION)

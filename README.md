@@ -1,8 +1,17 @@
 
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
+
+## Updated for version 3.21.1 
+
+* Initial support for UTF-8
+* Improved production rules.
+* Worked technical debt affecting large variables and large responses
+    (large >= 2Gb).
 * Merge PR from fork regarding configure.ac use of bash-specific syntax.
 * Merge xsputn fix for Marshaller code and likely buffer size issues.
+
+
 
 ## Updated for version 3.21.0 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10564122.svg)](https://doi.org/10.5281/zenodo.10564122)
 
