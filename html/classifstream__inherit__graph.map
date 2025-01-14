@@ -1,0 +1,11 @@
+<map id="ifstream" name="ifstream">
+<area shape="rect" id="Node000001" title="STL class." alt="" coords="48,493,106,559"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="16,363,138,445"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,460,80,493,74,493,74,460"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="18,234,136,315"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="80,330,80,364,74,364,74,330"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,120,149,186"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="80,201,80,234,74,234,74,201"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="33,5,122,72"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="80,87,80,120,74,120,74,87"/>
+</map>
