@@ -368,13 +368,6 @@ void Grid::set_array(Array *p_new_arr) {
     }
 
     d_is_array_set = true;
-#if 0
-	// store the array pointer locally
-	d_array_var = p_new_arr;
-
-	// Set the  parent
-	d_array_var->set_parent(this);
-#endif
 }
 
 /**
@@ -527,15 +520,13 @@ void Grid::transfer_attributes(AttrTable *at_container) {
         DBG(cerr << __func__ << "() - Found AttrTable (" << at->get_name() << ":" << (void *)at << ")" << endl;);
         at->set_is_global_attribute(false);
 
-#if 0
-		// Removing this is left over from a previous version, unknown date.
-		// If the line is added back, some of the DMR round trip tests fail
-		// and the dapreader behavior is changed - tests that build responses
-		// from .dods and .das files fail when they include Grids. jhrg 5/23/18
-		//
-		// See also HYARX-766
-		array_var()->transfer_attributes(at);
-#endif
+        // Removing this is left over from a previous version, unknown date.
+        // If the line is added back, some of the DMR round trip tests fail
+        // and the dapreader behavior is changed - tests that build responses
+        // from .dods and .das files fail when they include Grids. jhrg 5/23/18
+        //
+        // See also HYARX-766
+        // array_var()->transfer_attributes(at);
 
         // If the AttrTable with the name of this Grid (which is also the
         // name of the Grid's Array) contains a child AttrTable with that
@@ -713,22 +704,6 @@ void Grid::print_xml(ostream &out, string space, bool constrained) {
     out << xml.get_doc();
 }
 
-class PrintGridFieldXMLWriter : public unary_function<BaseType *, void> {
-    XMLWriter &d_xml;
-    bool d_constrained;
-    string d_tag;
-
-public:
-    PrintGridFieldXMLWriter(XMLWriter &x, bool c, const string &t = "Map") : d_xml(x), d_constrained(c), d_tag(t) {}
-
-    void operator()(BaseType *btp) {
-        Array *a = dynamic_cast<Array *>(btp);
-        if (!a)
-            throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
-        a->print_xml_writer_core(d_xml, d_constrained, d_tag);
-    }
-};
-
 void Grid::print_xml_writer(XMLWriter &xml, bool constrained) {
     if (constrained && !send_p())
         return;
@@ -737,16 +712,22 @@ void Grid::print_xml_writer(XMLWriter &xml, bool constrained) {
         if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Structure") < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write Structure element");
 
-        if (!name().empty())
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name",
-                                            (const xmlChar *)name().c_str()) < 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+        if (!name().empty() &&
+            xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
         get_attr_table().print_xml_writer(xml);
 
         get_array()->print_xml_writer(xml, constrained);
 
-        for_each(map_begin(), map_end(), PrintGridFieldXMLWriter(xml, constrained, "Array"));
+        // Cannot easily use the range-based for loop here because the same container is
+        // used for the Grid Array and its Maps. jhrg 7/19/24
+        for (auto m = map_begin(); m != map_end(); ++m) {
+            auto a = dynamic_cast<Array *>(*m);
+            if (!a)
+                throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
+            a->print_xml_writer_core(xml, constrained, "Array");
+        }
 
         if (xmlTextWriterEndElement(xml.get_writer()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not end Structure element");
@@ -765,7 +746,14 @@ void Grid::print_xml_writer(XMLWriter &xml, bool constrained) {
 
         get_array()->print_xml_writer(xml, constrained);
 
-        for_each(map_begin(), map_end(), PrintGridFieldXMLWriter(xml, constrained, "Map"));
+        // Cannot easily use the range-based for loop here because the same container is
+        // used for the Grid Array and its Maps. jhrg 7/19/24
+        for (auto m = map_begin(); m != map_end(); ++m) {
+            auto a = dynamic_cast<Array *>(*m);
+            if (!a)
+                throw InternalErr(__FILE__, __LINE__, "Expected an Array.");
+            a->print_xml_writer_core(xml, constrained, "Map");
+        }
 
         if (xmlTextWriterEndElement(xml.get_writer()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not end Grid element");

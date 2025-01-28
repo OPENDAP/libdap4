@@ -34,16 +34,12 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG
-
-#include <algorithm>
 #include <functional>
 #include <sstream>
 
 #include "Array.h"
 #include "Grid.h"
 
-#include "D4Attributes.h"
 #include "D4Dimensions.h"
 #include "D4Enum.h"
 #include "D4EnumDefs.h"
@@ -56,21 +52,14 @@
 #include "InternalErr.h"
 #include "debug.h"
 #include "escaping.h"
-#include "util.h"
 
 using namespace std;
 
 namespace libdap {
 
-Array::dimension::dimension(D4Dimension *d) : dim(d), use_sdim_for_slice(true) {
-    size = d->size();
-    name = d->name();
-
-    start = 0;
-    stop = size - 1;
-    stride = 1;
-    c_size = size;
-}
+// This constructor is defined here so that D4Dimensions.h does not need to be included in Array.h
+Array::dimension::dimension(D4Dimension *d)
+    : size(d->size()), name(d->name()), dim(d), use_sdim_for_slice(true), stop(size - 1), c_size(size) {}
 
 void Array::_duplicate(const Array &a) {
     _shape = a._shape;
@@ -90,7 +79,7 @@ void Array::_duplicate(const Array &a) {
 // should probably work this way too, but it doesn't. 9/21/2001 jhrg
 
 /** @deprecated Calling this method should never be necessary. It is used
- internally and called whenever the size of the Array is changed, e.g., by a
+ internally called whenever the size of the Array is changed, e.g., by a
  constraint.
 
  Changes the length property of the array.
@@ -112,7 +101,6 @@ void Array::update_length_ll(unsigned long long) {
 
     set_length_ll(length);
 }
-
 // Construct an instance of Array. The (BaseType *) is assumed to be
 // allocated using new - The dtor for Vector will delete this object.
 
@@ -197,7 +185,6 @@ void Array::transform_to_dap4(D4Group *root, Constructor *container) {
             } else {
                 DBG(cerr << __func__ << "() -" << " Using Existing D4Dimension '" << d4_dim->name() << "' ("
                          << (void *)d4_dim << ")" << endl);
-                ;
 
                 if (d4_dim->size() != (unsigned long)(*dap2_dim).size) {
                     // TODO Revisit this decision. jhrg 3/18/14
@@ -214,12 +201,11 @@ void Array::transform_to_dap4(D4Group *root, Constructor *container) {
                     d4_dim = new D4Dimension((*dap2_dim).name + "_" + name(), (*dap2_dim).size);
                     DBG(cerr << __func__ << "() -" << " Utilizing Name/Size Conflict Naming Artifice. name'"
                              << d4_dim->name() << "' (" << (void *)d4_dim << ")" << endl);
-                    ;
                     root_dims->add_dim_nocopy(d4_dim);
                 }
             }
             // At this point d4_dim's name and size == those of (*d) so just set
-            // the D4Dimension pointer so that it matches the one in the D4Group.
+            // the D4Dimension pointer so it matches the one in the D4Group.
             (*dap2_dim).dim = d4_dim;
         }
     }
@@ -228,6 +214,7 @@ void Array::transform_to_dap4(D4Group *root, Constructor *container) {
     dest->attributes()->transform_to_dap4(get_attr_table());
     dest->set_is_dap4(true);
     container->add_var_nocopy(dest);
+    DBG(cerr << __func__ << "() - END (array:" << name() << ")" << endl);
 }
 
 bool Array::is_dap2_grid() {
@@ -239,17 +226,11 @@ bool Array::is_dap2_grid() {
             throw InternalErr(__FILE__, __LINE__, string("Could not get the root group for ").append(this->name()));
         D4Maps *d4_maps = this->maps();
         is_grid = d4_maps->size(); // It can't be a grid if there are no maps...
-
-        // We also need to check if the number of maps is the same as the number of dimensions. If not, this is not a
-        // dap2 grid.
-        if (d4_maps->size() != ((int)dimensions()))
-            is_grid = false;
         if (is_grid) {
             DBG(cerr << __func__ << "() - Array '" << name() << "' has D4Maps." << endl);
             // hmmm this might be a DAP2 Grid...
             D4Maps::D4MapsIter i = d4_maps->map_begin();
             D4Maps::D4MapsIter e = d4_maps->map_end();
-
             while (i != e) {
                 DBG(cerr << __func__ << "() - Map '" << (*i)->array()->name() << " has " << (*i)->array()->_shape.size()
                          << " dimension(s)." << endl);
@@ -286,7 +267,6 @@ bool Array::is_dap2_grid() {
  */
 std::vector<BaseType *> *Array::transform_to_dap2(AttrTable *) {
     DBG(cerr << __func__ << "() - BEGIN Array '" << name() << "'" << endl);
-    ;
 
     BaseType *dest;
     if (!is_dap4()) { // Don't convert a DAP2 thing
@@ -390,16 +370,13 @@ std::vector<BaseType *> *Array::transform_to_dap2(AttrTable *) {
         }
     }
 
-    vector<BaseType *> *result;
+    vector<BaseType *> *result = nullptr;
     if (dest) {
         result = new vector<BaseType *>();
         result->push_back(dest);
-    } else {
-        result = NULL;
     }
 
     DBG(cerr << __func__ << "() - END Array '" << name() << "'" << endl);
-    ;
     return result;
 }
 
@@ -509,12 +486,6 @@ void Array::append_dim(int size, const string &name) {
 }
 
 void Array::append_dim_ll(int64_t size, const string &name) {
-
-#if 0
-    dimension d(size, www2id(name));
-    _shape.push_back(d);
-#endif
-
     _shape.emplace_back(size, www2id(name));
     update_length();
 }
@@ -892,92 +863,31 @@ D4Maps *Array::maps() {
     return d_maps;
 }
 
-#if 0
-/**
- * @brief Returns the width of the data, in bytes.
- * @param constrained if true, return the size of the array in bytes taking into
- * account the current constraints on various dimensions. False by default.
- * @return The number of bytes needed to store the array values.
- */
-unsigned int Array::width(bool constrained) const
-{
+void Array::print_dim_element(const XMLWriter &xml, const dimension &d, bool constrained) {
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Dim") < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
 
-    if (constrained) {
-        // This preserves the original method's semantics when we ask for the
-        // size of the constrained array but no constraint has been applied.
-        // In this case, length will be -1. Wrong, I know...
-        return length() * var()->width(constrained);
+    string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
+    // If there is a name, there must be a Dimension (named dimension) in scope
+    // so write its name but not its size.
+    if (!constrained && !name.empty()) {
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+    } else if (d.use_sdim_for_slice) {
+        assert(!name.empty());
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name.c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+    } else {
+        ostringstream size;
+        size << (constrained ? d.c_size : d.size);
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"size",
+                                        (const xmlChar *)size.str().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
     }
-    else {
-        int length = 1;
-        for (Dim_iter i = _shape.begin(); i != _shape.end(); i++) {
-            length *= dimension_size(i, false);
-        }
-        return length * var()->width(false);
-    }
+
+    if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not end Dim element");
 }
-#endif
-
-class PrintD4ArrayDimXMLWriter : public unary_function<Array::dimension &, void> {
-    XMLWriter &xml;
-    // Was this variable constrained using local/direct slicing? i.e., is d_local_constraint set?
-    // If so, don't use shared dimensions; instead emit Dim elements that are anonymous.
-    bool d_constrained;
-
-public:
-    PrintD4ArrayDimXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) {}
-
-    void operator()(Array::dimension &d) {
-        // This duplicates code in D4Dimensions (where D4Dimension::print_dap4() is defined
-        // because of the need to print the constrained size of a dimension. I think that
-        // the constraint information has to be kept here and not in the dimension (since they
-        // are shared dims). Could hack print_dap4() to take the constrained size, however.
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Dim") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
-
-        string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
-        // If there is a name, there must be a Dimension (named dimension) in scope
-        // so write its name but not its size.
-        if (!d_constrained && !name.empty()) {
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name.c_str()) <
-                0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-        } else if (d.use_sdim_for_slice) {
-            assert(!name.empty());
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name.c_str()) <
-                0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-        } else {
-            ostringstream size;
-            size << (d_constrained ? d.c_size : d.size);
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"size",
-                                            (const xmlChar *)size.str().c_str()) < 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-        }
-
-        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not end Dim element");
-    }
-};
-
-class PrintD4ConstructorVarXMLWriter : public unary_function<BaseType *, void> {
-    XMLWriter &xml;
-    bool d_constrained;
-
-public:
-    PrintD4ConstructorVarXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) {}
-
-    void operator()(BaseType *btp) { btp->print_dap4(xml, d_constrained); }
-};
-
-class PrintD4MapXMLWriter : public unary_function<D4Map *, void> {
-    XMLWriter &xml;
-
-public:
-    PrintD4MapXMLWriter(XMLWriter &xml) : xml(xml) {}
-
-    void operator()(D4Map *m) { m->print_dap4(xml); }
-};
 
 /**
  * @brief Print the DAP4 representation of an array.
@@ -1008,17 +918,21 @@ void Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/) {
     }
 
     if (prototype()->is_constructor_type()) {
-        Constructor &c = static_cast<Constructor &>(*prototype());
-        for_each(c.var_begin(), c.var_end(), PrintD4ConstructorVarXMLWriter(xml, constrained));
-        // bind2nd(mem_fun_ref(&BaseType::print_dap4), xml));
+        auto const &c = dynamic_cast<Constructor &>(*prototype());
+        for (auto var : c.variables()) {
+            var->print_dap4(xml, constrained);
+        }
     }
 
-    // Drop the local_constraint which is per-array and use a per-dimension on instead
-    for_each(dim_begin(), dim_end(), PrintD4ArrayDimXMLWriter(xml, constrained));
+    for (auto const &d : shape()) {
+        print_dim_element(xml, d, constrained);
+    }
 
     attributes()->print_dap4(xml);
 
-    for_each(maps()->map_begin(), maps()->map_end(), PrintD4MapXMLWriter(xml));
+    auto print_d4_map = [&xml](D4Map *m) { m->print_dap4(xml); };
+
+    for_each(maps()->map_begin(), maps()->map_end(), print_d4_map);
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
@@ -1148,33 +1062,6 @@ void Array::print_as_map_xml_writer(XMLWriter &xml, bool constrained) {
     print_xml_writer_core(xml, constrained, "Map");
 }
 
-class PrintArrayDimXMLWriter : public unary_function<Array::dimension &, void> {
-    XMLWriter &xml;
-    bool d_constrained;
-
-public:
-    PrintArrayDimXMLWriter(XMLWriter &xml, bool c) : xml(xml), d_constrained(c) {}
-
-    void operator()(Array::dimension &d) {
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"dimension") < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write dimension element");
-
-        if (!d.name.empty())
-            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name",
-                                            (const xmlChar *)d.name.c_str()) < 0)
-                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-
-        ostringstream size;
-        size << (d_constrained ? d.c_size : d.size);
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"size",
-                                        (const xmlChar *)size.str().c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
-
-        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not end dimension element");
-    }
-};
-
 void Array::print_xml_writer_core(XMLWriter &xml, bool constrained, string tag) {
     if (constrained && !send_p())
         return;
@@ -1182,9 +1069,9 @@ void Array::print_xml_writer_core(XMLWriter &xml, bool constrained, string tag) 
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)tag.c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write " + tag + " element");
 
-    if (!name().empty())
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name().c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+    if (!name().empty() &&
+        xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name().c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
     get_attr_table().print_xml_writer(xml);
 
@@ -1194,7 +1081,24 @@ void Array::print_xml_writer_core(XMLWriter &xml, bool constrained, string tag) 
     btp->print_xml_writer(xml, constrained);
     btp->set_name(tmp_name);
 
-    for_each(dim_begin(), dim_end(), PrintArrayDimXMLWriter(xml, constrained));
+    for (auto const &d : shape()) {
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"dimension") < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write dimension element");
+
+        if (!d.name.empty())
+            if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name",
+                                            (const xmlChar *)d.name.c_str()) < 0)
+                throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+        ostringstream size;
+        size << (constrained ? d.c_size : d.size);
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"size",
+                                        (const xmlChar *)size.str().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
+
+        if (xmlTextWriterEndElement(xml.get_writer()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not end dimension element");
+    }
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end " + tag + " element");
@@ -1294,13 +1198,13 @@ void Array::print_val(ostream &out, string space, bool print_decl_p) {
 
     auto shape = new uint64_t[dimensions(true)];
     unsigned int index = 0;
-    for (Dim_iter i = _shape.begin(); i != _shape.end() && index < dimensions(true); ++i)
+    for (auto i = _shape.begin(); i != _shape.end() && index < dimensions(true); ++i)
         shape[index++] = dimension_size_ll(i, true);
 
     print_array(out, 0, dimensions(true), shape);
 
     delete[] shape;
-    shape = 0;
+    shape = nullptr;
 
     if (print_decl_p) {
         out << ";\n";
@@ -1376,26 +1280,33 @@ bool Array::is_dap4_projected(std::vector<std::string> &inventory) {
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void Array::dump(ostream &strm) const {
-    strm << DapIndent::LMarg << "Array::dump - (" << (void *)this << ")" << endl;
+void Array::dump(std::ostream &strm) const {
+    strm << DapIndent::LMarg << "Array::dump - (" << static_cast<const void *>(this) << ")\n";
     DapIndent::Indent();
     Vector::dump(strm);
-    strm << DapIndent::LMarg << "shape:" << endl;
+
+    strm << DapIndent::LMarg << "shape:\n";
     DapIndent::Indent();
-    Dim_citer i = _shape.begin();
-    Dim_citer ie = _shape.end();
+
     unsigned int dim_num = 0;
-    for (; i != ie; i++) {
-        strm << DapIndent::LMarg << "dimension " << dim_num++ << ":" << endl;
+    for (const auto &dim : _shape) {
+        strm << DapIndent::LMarg << "dimension " << dim_num++ << ":\n";
         DapIndent::Indent();
-        strm << DapIndent::LMarg << "name: " << (*i).name << endl;
-        strm << DapIndent::LMarg << "size: " << (*i).size << endl;
-        strm << DapIndent::LMarg << "start: " << (*i).start << endl;
-        strm << DapIndent::LMarg << "stop: " << (*i).stop << endl;
-        strm << DapIndent::LMarg << "stride: " << (*i).stride << endl;
-        strm << DapIndent::LMarg << "constrained size: " << (*i).c_size << endl;
+
+        auto print_attr = [&strm](const std::string &name, const auto &value) {
+            strm << DapIndent::LMarg << name << ": " << value << '\n';
+        };
+
+        print_attr("name", dim.name);
+        print_attr("size", dim.size);
+        print_attr("start", dim.start);
+        print_attr("stop", dim.stop);
+        print_attr("stride", dim.stride);
+        print_attr("constrained size", dim.c_size);
+
         DapIndent::UnIndent();
     }
+
     DapIndent::UnIndent();
     DapIndent::UnIndent();
 }

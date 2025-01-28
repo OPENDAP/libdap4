@@ -1129,15 +1129,6 @@ void DDS::print_xml(FILE *out, bool constrained, const string &blob) {
     @deprecated */
 void DDS::print_xml(ostream &out, bool constrained, const string &blob) { print_xml_writer(out, constrained, blob); }
 
-class VariablePrintXMLWriter : public unary_function<BaseType *, void> {
-    XMLWriter &d_xml;
-    bool d_constrained;
-
-public:
-    VariablePrintXMLWriter(XMLWriter &xml, bool constrained) : d_xml(xml), d_constrained(constrained) {}
-    void operator()(BaseType *bt) { bt->print_xml_writer(d_xml, d_constrained); }
-};
-
 /**
  * Print the DDX. This code uses the libxml2 'TextWriter' interface; something
  * that seems to be a good compromise between doing it by hand (although more
@@ -1203,7 +1194,9 @@ void DDS::print_xml_writer(ostream &out, bool constrained, const string &blob) {
     d_attr.print_xml_writer(xml);
 
     // Print each variable
-    for_each(var_begin(), var_end(), VariablePrintXMLWriter(xml, constrained));
+    for (auto const &var : variables()) {
+        var->print_xml_writer(xml, constrained);
+    }
 
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"blob") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write blob element");
@@ -1279,7 +1272,9 @@ void DDS::print_dmr(ostream &out, bool constrained) {
     d_attr.print_xml_writer(xml);
 
     // Print each variable
-    for_each(var_begin(), var_end(), VariablePrintXMLWriter(xml, constrained));
+    for (auto const &var : variables()) {
+        var->print_xml_writer(xml, constrained);
+    }
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end the top-level Group element");
