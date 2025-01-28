@@ -1129,19 +1129,6 @@ void DDS::print_xml(FILE *out, bool constrained, const string &blob) {
     @deprecated */
 void DDS::print_xml(ostream &out, bool constrained, const string &blob) { print_xml_writer(out, constrained, blob); }
 
-#if 0
-
-class VariablePrintXMLWriter : public unary_function<BaseType *, void> {
-    XMLWriter &d_xml;
-    bool d_constrained;
-
-public:
-    VariablePrintXMLWriter(XMLWriter &xml, bool constrained) : d_xml(xml), d_constrained(constrained) {}
-    void operator()(BaseType *bt) { bt->print_xml_writer(d_xml, d_constrained); }
-};
-
-#endif
-
 /**
  * Print the DDX. This code uses the libxml2 'TextWriter' interface; something
  * that seems to be a good compromise between doing it by hand (although more
@@ -1206,9 +1193,6 @@ void DDS::print_xml_writer(ostream &out, bool constrained, const string &blob) {
     // Print the global attributes
     d_attr.print_xml_writer(xml);
 
-#if 0
-    for_each(var_begin(), var_end(), VariablePrintXMLWriter(xml, constrained));
-#endif
     // Print each variable
     for (auto const &var : variables()) {
         var->print_xml_writer(xml, constrained);
