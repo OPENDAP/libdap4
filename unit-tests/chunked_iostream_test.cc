@@ -57,7 +57,7 @@ using namespace libdap;
 
 string the_test_text = "Stephen could remember an evening when he had sat there in the warm,\n"
                        "deepening twilight, watching the sea; it had barely a ruffle on its surface,\n"
-                       "and yet the Sophie picked up enough moving air with her top gallants\n"
+                       "and yet the Sophie picked up enough moving air with her topgallants\n"
                        "to draw a long straight whispering furrow across the water, a line\n"
                        "brilliant with unearthly phosphorescence, visible for quarter of a mile behind her.\n"
                        "Days and nights of unbelievable purity. Nights when the steady Ionian breeze\n"
