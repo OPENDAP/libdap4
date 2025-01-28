@@ -227,11 +227,7 @@ HTTPCache::HTTPCache(string cache_root, bool force)
       d_max_entry_size(MAX_CACHE_ENTRY_SIZE * MEGA), d_default_expiration(NO_LM_EXPIRATION), d_max_age(-1),
       d_max_stale(-1), d_min_fresh(-1), d_http_cache_table(0) {
     DBG(cerr << "Entering the constructor for " << this << "... ");
-#if 0
-	int status = pthread_once(&once_block, once_init_routine);
-	if (status != 0)
-		throw InternalErr(__FILE__, __LINE__, "Could not initialize the HTTP Cache mutex. Exiting.");
-#endif
+
     INIT(&d_cache_mutex);
 
     // This used to throw an Error object if we could not get the
@@ -1170,55 +1166,48 @@ vector<string> HTTPCache::get_conditional_request_headers(const string &url) {
     @param headers New headers, one header per string, returned in the
     response.
     @exception Error Thrown if the \c url is not in the cache. */
-
 void HTTPCache::update_response(const string &url, time_t request_time, const vector<string> &headers) {
     lock_cache_interface();
 
-    HTTPCacheTable::CacheEntry *entry = 0;
+    HTTPCacheTable::CacheEntry *entry = nullptr;
     DBG(cerr << "Updating the response headers for: " << url << endl);
 
     try {
         entry = d_http_cache_table->get_write_locked_entry_from_cache_table(url);
-        if (!entry)
+        if (!entry) {
             throw Error(internal_error, "There is no cache entry for the URL: " + url);
+        }
 
-        // Merge the new headers with the exiting HTTPCacheTable::CacheEntry object.
+        // Merge the new headers with the existing HTTPCacheTable::CacheEntry object.
         d_http_cache_table->parse_headers(entry, d_max_entry_size, headers);
 
-        // Update corrected_initial_age, freshness_lifetime, response_time.
+        // Update corrected_initial_age, freshness_lifetime, and response_time.
         d_http_cache_table->calculate_time(entry, d_default_expiration, request_time);
 
-        // Merge the new headers with those in the persistent store. How:
-        // Load the new headers into a set, then merge the old headers. Since
-        // set<> ignores duplicates, old headers with the same name as a new
-        // header will go into the bit bucket. Define a special compare
-        // functor to make sure that headers are compared using only their
-        // name and not their value too.
+        // Define a comparator lambda to sort headers by name only.
         auto header_comp = [](const string &s1, const string &s2) {
             return s1.substr(0, s1.find(':')) < s2.substr(0, s2.find(':'));
         };
-        auto merged_headers = set<string, decltype(header_comp)>(header_comp);
+        set<string, decltype(header_comp)> merged_headers(header_comp);
 
-        // Load in the new headers
-        copy(headers.begin(), headers.end(), inserter(merged_headers, merged_headers.begin()));
+        // Load the new headers
+        merged_headers.insert(headers.begin(), headers.end());
 
-        // Get the old headers and load them in.
+        // Get the old headers and load them into the set.
         vector<string> old_headers;
         read_metadata(entry->get_cachename(), old_headers);
-        copy(old_headers.begin(), old_headers.end(), inserter(merged_headers, merged_headers.begin()));
+        merged_headers.insert(old_headers.begin(), old_headers.end());
 
-        // Read the values back out. Use reverse iterators with back_inserter
-        // to preserve header order. NB: vector<> does not support push_front
-        // so we can't use front_inserter(). 01/09/03 jhrg
-        vector<string> result;
-        copy(merged_headers.rbegin(), merged_headers.rend(), back_inserter(result));
+        // Collect headers back in reverse order to maintain order in the result.
+        vector<string> result(merged_headers.rbegin(), merged_headers.rend());
 
         write_metadata(entry->get_cachename(), result);
+
         entry->unlock_write_response();
         unlock_cache_interface();
     } catch (...) {
         if (entry) {
-            entry->unlock_read_response();
+            entry->unlock_write_response();
         }
         unlock_cache_interface();
         throw;
