@@ -24,23 +24,15 @@
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-
-#include <cerrno>
 #include <cstdlib>
-#include <fcntl.h>
-#include <stdio.h>
 
 #include <exception> // std::exception
 #include <fstream>
 #include <iostream>
-#include <limits> // std::numeric_limits
 #include <string>
 
 #include "chunked_istream.h"
 #include "chunked_ostream.h"
-
-#include "InternalErr.h"
 
 #include "debug.h"
 
@@ -53,7 +45,9 @@
         if (debug)                                                                                                     \
             (x);                                                                                                       \
     } while (false)
+
 #define prolog string("chunked_iostream_test::").append(__func__).append("() - ")
+#define TIMING_TEST 0
 
 const string path = (string)TEST_SRC_DIR + "/chunked-io";
 
@@ -88,10 +82,10 @@ private:
     string text_file;
 
 public:
-    chunked_iostream_test() {}
-    ~chunked_iostream_test() {}
+    chunked_iostream_test() = default;
+    ~chunked_iostream_test() override = default;
 
-    void setUp() {
+    void setUp() override {
         DBG(cerr << "\n");
 
         big_file = path + "/test_big_binary_file.bin";
@@ -102,9 +96,9 @@ public:
         text_file = path + "/test_text_file.txt";
     }
 
-    void tearDown() {}
+    void tearDown() override {}
 
-    void single_char_write(const string &file, int buf_size) {
+    static void single_char_write(const string &file, int buf_size) {
         fstream infile(file.c_str(), ios::in | ios::binary);
         DBG(cerr << "infile: " << file << endl);
         if (!infile.good())
@@ -117,7 +111,7 @@ public:
 
         char c;
         infile.read(&c, 1);
-        int num = infile.gcount();
+        auto num = infile.gcount();
         while (num > 0 && !infile.eof()) {
             chunked_outfile.write(&c, num);
             infile.read(&c, 1);
@@ -131,7 +125,7 @@ public:
         chunked_outfile.flush();
     }
 
-    void write_128char_data(const string &file, int buf_size) {
+    static void write_128char_data(const string &file, int buf_size) {
         fstream infile(file.c_str(), ios::in | ios::binary);
         if (!infile.good())
             CPPUNIT_FAIL("File not open or eof");
@@ -143,7 +137,7 @@ public:
 
         char str[128];
         infile.read(str, 128);
-        int num = infile.gcount();
+        auto num = infile.gcount();
         while (num > 0 && !infile.eof()) {
             chunked_outfile.write(str, num);
             infile.read(str, 128);
@@ -157,7 +151,7 @@ public:
         chunked_outfile.flush();
     }
 
-    void write_9000char_data(const string &file, int buf_size) {
+    static void write_9000char_data(const string &file, int buf_size) {
         fstream infile(file.c_str(), ios::in | ios::binary);
         if (!infile.good())
             CPPUNIT_FAIL("File not open or eof");
@@ -169,7 +163,7 @@ public:
 
         char str[9000];
         infile.read(str, 9000);
-        int num = infile.gcount();
+        auto num = infile.gcount();
         while (num > 0 && !infile.eof()) {
             chunked_outfile.write(str, num);
             infile.read(str, 9000);
@@ -190,7 +184,7 @@ public:
     // tries to send an End chunk with one or more bytes as opposed to
     // sending the last data chunk with fewer than buf_size and then sending a
     // zero length END chunk).
-    void write_24char_data_with_error_option(const string &file, int buf_size, bool error = false) {
+    static void write_24char_data_with_error_option(const string &file, int buf_size, bool error = false) {
         fstream infile(file.c_str(), ios::in | ios::binary);
         if (!infile.good())
             CPPUNIT_FAIL("File not open or eof");
@@ -203,7 +197,7 @@ public:
         try {
             char str[24];
             infile.read(str, 24);
-            int num = infile.gcount();
+            auto num = infile.gcount();
             if (num > 0 && !infile.eof()) {
                 chunked_outfile.write(str, num);
                 chunked_outfile.flush();
@@ -240,7 +234,7 @@ public:
         }
     }
 
-    void single_char_read(const string &file, int buf_size) {
+    static void single_char_read(const string &file, int buf_size) {
         string in = file + ".chunked";
         fstream infile(in.c_str(), ios::in | ios::binary);
         if (!infile.good())
@@ -256,7 +250,7 @@ public:
         char c;
         int count = 1;
         chunked_infile.read(&c, 1);
-        int num = chunked_infile.gcount();
+        auto num = chunked_infile.gcount();
         DBG(cerr << "num: " << num << ", " << count++ << endl);
         while (num > 0 && !chunked_infile.eof()) {
             outfile.write(&c, num);
@@ -273,7 +267,7 @@ public:
         outfile.flush();
     }
 
-    void read_128char_data(const string &file, int buf_size) {
+    static void read_128char_data(const string &file, int buf_size) {
         string in = file + ".chunked";
         fstream infile(in.c_str(), ios::in | ios::binary);
         if (!infile.good())
@@ -286,7 +280,7 @@ public:
         char str[128];
         int count = 1;
         chunked_infile.read(str, 128);
-        int num = chunked_infile.gcount();
+        auto num = chunked_infile.gcount();
         DBG(cerr << "num: " << num << ", " << count++ << endl);
         while (num > 0 && !chunked_infile.eof()) {
             outfile.write(str, num);
@@ -302,7 +296,7 @@ public:
         outfile.flush();
     }
 
-    void read_5000char_data(const string &file, int buf_size) {
+    static void read_5000char_data(const string &file, int buf_size) {
         string in = file + ".chunked";
         fstream infile(in.c_str(), ios::in | ios::binary);
         if (!infile.good())
@@ -315,7 +309,7 @@ public:
         char str[5000];
         int count = 1;
         chunked_infile.read(str, 5000);
-        int num = chunked_infile.gcount();
+        auto num = chunked_infile.gcount();
         DBG(cerr << "num: " << num << ", " << count++ << endl);
         while (num > 0 && !chunked_infile.eof()) {
             outfile.write(str, num);
@@ -331,7 +325,7 @@ public:
         outfile.flush();
     }
 
-    void read_24char_data_with_error_option(const string &file, int buf_size) {
+    static void read_24char_data_with_error_option(const string &file, int buf_size) {
         string in = file + ".chunked";
         fstream infile(in.c_str(), ios::in | ios::binary);
         if (!infile.good())
@@ -342,17 +336,9 @@ public:
         fstream outfile(out.c_str(), ios::out | ios::binary);
 
         try {
-#if 0
-            chunked_infile.read(str, 24);
-            int num = chunked_infile.gcount();
-            if (num > 0 && !chunked_infile.eof()) {
-                outfile.write(str, num);
-                outfile.flush();
-            }
-#endif
             char str[24];
             chunked_infile.read(str, 24);
-            int num = chunked_infile.gcount();
+            auto num = chunked_infile.gcount();
             while (num > 0 && !chunked_infile.eof()) {
                 outfile.write(str, num);
                 chunked_infile.read(str, 24);
@@ -552,7 +538,7 @@ public:
         }
     }
 
-    string tf(bool val) { return val ? "true" : "false"; }
+    static string tf(bool val) { return val ? "true" : "false"; }
 
     string check_stream(const chunked_ostream &os) {
         stringstream msg;
@@ -579,9 +565,9 @@ public:
             while (position < target_size) {
                 remaining = target_size - position;
                 if (the_test_text.size() < remaining) {
-                    outnum = the_test_text.size();
+                    outnum = (std::streamsize)the_test_text.size();
                 } else {
-                    outnum = remaining;
+                    outnum = (std::streamsize)remaining;
                 }
                 chunked_outfile.write(the_test_text.c_str(), outnum);
                 error_msg = check_stream(chunked_outfile);
@@ -595,7 +581,7 @@ public:
         return true;
     }
 
-    uint64_t read_chunked_file(string ifile, string ofile, unsigned int bufsize) {
+    static uint64_t read_chunked_file(const string &ifile, const string &ofile, unsigned int bufsize) {
         fstream infile(ifile.c_str(), ios::in | ios::binary);
         if (!infile.good())
             cerr << "ERROR Failed to open or encountered eof for: " << ifile << "\n";
@@ -649,11 +635,15 @@ public:
         DBG(cerr << prolog << " read_chunked_file(): " << size << " bytes\n");
 
         CPPUNIT_ASSERT(size == target_size);
+
+        cerr << "Remember to delete the large files made by the write_then_read_large_chunked_file() test.\n";
     }
 
     CPPUNIT_TEST_SUITE(chunked_iostream_test);
 
+#if TIMING_TEST
     CPPUNIT_TEST(write_then_read_large_chunked_file);
+#endif
 
     CPPUNIT_TEST(test_write_1_read_1_small_file);
     CPPUNIT_TEST(test_write_1_read_1_text_file);
