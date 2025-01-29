@@ -27,7 +27,7 @@ AS_IF([test -f /etc/redhat-release && grep -q '8\.' /etc/redhat-release],
     dnl if this is RHEL8, then we need the tirpc library on CPPFLAGS and LDFLAGS
     [
         AC_MSG_NOTICE([Found a RHEL 8 or equivalent system...])
-        AS_IF([grep -q -v tirpc <<< $CPPFLAGS || grep -q -v tirpc <<< $LDFLAGS],
+        AS_IF([echo $CPPFLAGS | grep -q -v tirpc || echo $LDFLAGS | grep -q -v tirpc],
         dnl if either CPPFLAGS or LDFLAGS lack 'tirpc', error
         [
             AC_MSG_ERROR([Libdap4 on Redhat Linux 8 requires the tirpc library be included on CPPFLAGS and LDFLAGS])
@@ -39,4 +39,3 @@ AS_IF([test -f /etc/redhat-release && grep -q '8\.' /etc/redhat-release],
         AC_MSG_NOTICE([Not a RHEL 8 or equivalent system])
     ])
 ])
-

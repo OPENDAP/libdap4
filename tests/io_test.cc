@@ -7,15 +7,15 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include <stdio.h>
 #include <stdlib.h>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <string.h>
 #include <errno.h>
+#include <string.h>
 
 #include <iostream>
 #include <string>
@@ -24,9 +24,7 @@
 
 using namespace std;
 
-int
-main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 #if 0
     // Build a loopback pipe that uses c++ streams
     int fd[2];
@@ -61,4 +59,3 @@ main(int argc, char *argv[])
     cout << "info: " << info << endl;
 #endif
 }
-

@@ -23,7 +23,6 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-
 #include "config.h"
 
 #include <string>
@@ -32,13 +31,9 @@
 
 namespace libdap {
 
-ResponseTooBigErr::ResponseTooBigErr() : Error()
-{
-    _error_code = unknown_error;
-}
+ResponseTooBigErr::ResponseTooBigErr() : Error() { _error_code = unknown_error; }
 
-ResponseTooBigErr::ResponseTooBigErr(const string &msg) : Error()
-{
+ResponseTooBigErr::ResponseTooBigErr(const string &msg) : Error() {
     _error_code = unknown_error;
     _error_message = "";
     _error_message += "A caching error was encountered:\n";

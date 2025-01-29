@@ -18,7 +18,7 @@ CXXFLAGS_DEBUG = -g3 -O0
 # See: https://github.com/google/sanitizers/wiki/AddressSanitizer
 # jhrg 2/6/18
 if USE_ASAN
-ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
 endif
 
 if BUILD_DEVELOPER
@@ -87,7 +87,7 @@ LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
 EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	    \
-	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec.in libdap.spec VCPP	\
+	COPYRIGHT_W3C GNU/README doxy.conf.in libdap.spec.in libdap.spec	\
 	dods-datatypes-static.h xdr-datatypes-static.h dap-config-pkgconfig     \
 	$(LEX_YACC_EXTRA) getdap.man1 dap-config.man1 getdap4.man1
 
@@ -234,6 +234,11 @@ CLIENT_HDR = RCReader.h Connect.h Resource.h D4Connect.h Response.h \
 SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 
 #	ResponseBuilder.h ResponseCache.h
+
+.PHONY: clion-source-discovery
+clion-source-discovery:
+	$(MAKE) $(MFLAGS)
+	$(MAKE) $(MFLAGS) check
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support

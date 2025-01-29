@@ -24,12 +24,12 @@
 
 #include "config.h"
 
-#include <cppunit/TestFixture.h>
+#include <cppunit/CompilerOutputter.h>
 #include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/CompilerOutputter.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -37,55 +37,51 @@
 #include <fcntl.h>
 #include <stdint.h>
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
 #include <cstring>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
 
 #include "D4StreamMarshaller.h"
-
 
 #include "debug.h"
 #include "run_tests_cppunit.h"
 #include "test_config.h"
 
-
-
 static bool write_baselines = false;
-
 
 #if WORDS_BIGENDIAN
 const static string path = (string)TEST_SRC_DIR + "/D4-marshaller/big-endian";
 #else
-const static string path = (string) TEST_SRC_DIR + "/D4-marshaller/little-endian";
+const static string path = (string)TEST_SRC_DIR + "/D4-marshaller/little-endian";
 #endif
 
 using namespace std;
 using namespace libdap;
 using namespace CppUnit;
 
-class D4MarshallerTest: public CppUnit::TestFixture {
+class D4MarshallerTest : public CppUnit::TestFixture {
 
-    CPPUNIT_TEST_SUITE (D4MarshallerTest);
+    CPPUNIT_TEST_SUITE(D4MarshallerTest);
 
-    CPPUNIT_TEST (test_cmp);
-    CPPUNIT_TEST (test_scalars);
-    CPPUNIT_TEST (test_real_scalars);
-    CPPUNIT_TEST (test_str);
-    CPPUNIT_TEST (test_opaque);
-    CPPUNIT_TEST (test_vector);
+    CPPUNIT_TEST(test_cmp);
+    CPPUNIT_TEST(test_scalars);
+    CPPUNIT_TEST(test_real_scalars);
+    CPPUNIT_TEST(test_str);
+    CPPUNIT_TEST(test_opaque);
+    CPPUNIT_TEST(test_vector);
 
-    CPPUNIT_TEST_SUITE_END( );
+    CPPUNIT_TEST_SUITE_END();
 
     /**
      * Compare the contents of a file with a memory buffer
      */
-    bool cmp(const char *buf, unsigned int len, string file)
-    {
+    bool cmp(const char *buf, unsigned int len, string file) {
         fstream in;
         in.open(file.c_str(), fstream::binary | fstream::in);
-        if (!in) throw Error("Could not open file: " + file);
+        if (!in)
+            throw Error("Could not open file: " + file);
 
         vector<char> fbuf(len);
         in.read(fbuf.data(), len);
@@ -98,45 +94,36 @@ class D4MarshallerTest: public CppUnit::TestFixture {
         for (unsigned int i = 0; i < len; ++i)
             if (buf[i] != fbuf[i]) {
                 DBG(cerr << "Response differs from baseline at byte " << i << endl);
-                DBG(
-                    cerr << "Expected: " << setfill('0') << setw(2) << hex << (unsigned int )fbuf[i] << "; got: "
-                        << (unsigned int )buf[i] << dec << endl);
+                DBG(cerr << "Expected: " << setfill('0') << setw(2) << hex << (unsigned int)fbuf[i]
+                         << "; got: " << (unsigned int)buf[i] << dec << endl);
                 return false;
             }
 
         return true;
     }
 
-    void write_binary_file(const char *buf, int len, string file)
-    {
+    void write_binary_file(const char *buf, int len, string file) {
         fstream out;
         out.open(file.c_str(), fstream::binary | fstream::out);
-        if (!out) throw Error("Could not open file: " + file);
+        if (!out)
+            throw Error("Could not open file: " + file);
         out.write(buf, len);
     }
 
 public:
-    D4MarshallerTest()
-    {
-    }
+    D4MarshallerTest() {}
 
-    void setUp()
-    {
-    }
+    void setUp() {}
 
-    void tearDown()
-    {
-    }
+    void tearDown() {}
 
-    void test_cmp()
-    {
-        char buf[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+    void test_cmp() {
+        char buf[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
         DBG(cerr << "Path: " << path << endl);
         CPPUNIT_ASSERT(cmp(buf, 16, path + "/test_cmp.dat"));
     }
 
-    void test_scalars()
-    {
+    void test_scalars() {
         ostringstream oss;
         // computes checksums and writes data
         try {
@@ -182,15 +169,13 @@ public:
             if (write_baselines)
                 write_binary_file(oss.str().data(), oss.str().length(), path + "/test_scalars_1_bin.dat");
             CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), path + "/test_scalars_1_bin.dat"));
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
 
-    void test_real_scalars()
-    {
+    void test_real_scalars() {
         ostringstream oss;
         // computes checksums and writes data
         try {
@@ -211,15 +196,13 @@ public:
             if (write_baselines)
                 write_binary_file(oss.str().data(), oss.str().length(), path + "/test_scalars_2_bin.dat");
             CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), path + "/test_scalars_2_bin.dat"));
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
 
-    void test_str()
-    {
+    void test_str() {
         ostringstream oss;
         try {
             D4StreamMarshaller dsm(oss);
@@ -241,15 +224,13 @@ public:
             if (write_baselines)
                 write_binary_file(oss.str().data(), oss.str().length(), path + "/test_scalars_3_bin.dat");
             CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), path + "/test_scalars_3_bin.dat"));
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
 
-    void test_opaque()
-    {
+    void test_opaque() {
         ostringstream oss;
         try {
             D4StreamMarshaller dsm(oss);
@@ -259,7 +240,7 @@ public:
 
             dsm.reset_checksum();
 
-            dsm.put_opaque_dap4(reinterpret_cast<char*>(buf.data()), 32768);
+            dsm.put_opaque_dap4(reinterpret_cast<char *>(buf.data()), 32768);
             dsm.put_checksum();
             DBG(cerr << "test_opaque: checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
@@ -267,15 +248,13 @@ public:
             if (write_baselines)
                 write_binary_file(oss.str().data(), oss.str().length(), path + "/test_opaque_1_bin.dat");
             CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), path + "/test_opaque_1_bin.dat"));
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
 
-    void test_vector()
-    {
+    void test_vector() {
         ostringstream oss;
         try {
             D4StreamMarshaller dsm(oss);
@@ -285,7 +264,7 @@ public:
 
             dsm.reset_checksum();
 
-            dsm.put_vector(reinterpret_cast<char*>(buf1.data()), 32768);
+            dsm.put_vector(reinterpret_cast<char *>(buf1.data()), 32768);
             dsm.put_checksum();
             DBG(cerr << "test_vector: checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
@@ -294,7 +273,7 @@ public:
             for (int i = 0; i < 32768; ++i)
                 buf2[i] = i % (1 << 9);
 
-            dsm.put_vector(reinterpret_cast<char*>(buf2.data()), 32768, sizeof(dods_int32));
+            dsm.put_vector(reinterpret_cast<char *>(buf2.data()), 32768, sizeof(dods_int32));
             dsm.put_checksum();
             DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
             dsm.reset_checksum();
@@ -303,15 +282,14 @@ public:
             for (int i = 0; i < 32768; ++i)
                 buf3[i] = i % (1 << 9);
 
-            dsm.put_vector_float64(reinterpret_cast<char*>(buf3.data()), 32768);
+            dsm.put_vector_float64(reinterpret_cast<char *>(buf3.data()), 32768);
             dsm.put_checksum();
             DBG(cerr << "checksum: " << dsm.get_checksum() << endl);
 
             if (write_baselines)
                 write_binary_file(oss.str().data(), oss.str().length(), path + "/test_vector_1_bin.dat");
             CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), path + "/test_vector_1_bin.dat"));
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught an exception.");
         }
@@ -360,9 +338,6 @@ public:
 #endif
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (D4MarshallerTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(D4MarshallerTest);
 
-int main(int argc, char*argv[])
-{
-    return run_tests<D4MarshallerTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<D4MarshallerTest>(argc, argv) ? 0 : 1; }

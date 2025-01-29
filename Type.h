@@ -46,7 +46,7 @@ namespace libdap {
 */
 
 enum Part {
-    nil,   // nil is for types that don't have parts...
+    nil, // nil is for types that don't have parts...
     array,
     maps
 };
@@ -96,7 +96,7 @@ enum Type {
     dods_byte_c,
     dods_int16_c,
     dods_uint16_c,
-    dods_int32_c,  // Added `dods_' to fix clash with IRIX 5.3.
+    dods_int32_c, // Added `dods_' to fix clash with IRIX 5.3.
     dods_uint32_c,
     dods_float32_c,
     dods_float64_c,
@@ -111,7 +111,7 @@ enum Type {
     dods_grid_c,
 
     // Added for DAP4
-    dods_char_c,	// a synonym for UInt8 (and Byte)
+    dods_char_c, // a synonym for UInt8 (and Byte)
     dods_int8_c,
     dods_uint8_c,
 

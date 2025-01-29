@@ -85,8 +85,6 @@ using namespace libdap;
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
 #define YYERROR_VERBOSE 0
 
-// #define YYPARSE_PARAM arg
-
 extern int dds_line_num;	/* defined in dds.lex */
 
 } // code requires
@@ -119,11 +117,10 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 
 } // code
 
-%require "2.4"
+%require "3.0"
 
 %parse-param {parser_arg *arg}
-%name-prefix "dds"
-// %define api.prefix {dds}
+%define api.prefix {dds}
 %defines
 %debug
 %verbose

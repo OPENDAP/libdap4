@@ -55,7 +55,6 @@
 #ifndef _connect_h
 #define _connect_h
 
-
 #include <string>
 
 #ifndef _das_h
@@ -88,8 +87,7 @@
 
 using std::string;
 
-namespace libdap
-{
+namespace libdap {
 
 /** Connect objects are used as containers for information pertaining
     to the connection a user program makes to a dataset. The
@@ -126,18 +124,17 @@ namespace libdap
     @see Error
     @author jhrg */
 
-class Connect
-{
+class Connect {
 private:
-    bool _local;  // Is this a local connection?
+    bool _local; // Is this a local connection?
 
     HTTPConnect *d_http;
     string _URL;  // URL to remote dataset (minus CE)
-    string _proj;  // Projection part of initial CE.
+    string _proj; // Projection part of initial CE.
     string _sel;  // Selection of initial CE
 
-    string d_version;           // Server implementation information
-    string d_protocol;          // DAP protocol from the server
+    string d_version;  // Server implementation information
+    string d_protocol; // DAP protocol from the server
 
     void process_data(DataDDS &data, Response *rs);
     void process_data(DDS &data, Response *rs);
@@ -182,18 +179,12 @@ public:
 
         @see get_protocol()
         @deprecated */
-    string get_version()
-    {
-        return d_version;
-    }
+    string get_version() { return d_version; }
 
     /** Return the DAP protocol version of the most recent
         response. Before a response is made, this contains the string "2.0."
         */
-    string get_protocol()
-    {
-        return d_protocol;
-    }
+    string get_protocol() { return d_protocol; }
 
     virtual string request_version();
     virtual string request_protocol();

@@ -71,25 +71,22 @@ class XMLWriter;
 class D4Map {
     std::string d_name;
     std::string d_array_path; ///< The data source for the Map's values
-    Array *d_array = nullptr;   // the actual map data; cached weak pointer
+    Array *d_array = nullptr; // the actual map data; cached weak pointer
 
 public:
     D4Map() = default;
     ///@{
     /// Special constructors for object creation and deep copy
-    D4Map(std::string name, Array *array)
-            : d_name(std::move(name)), d_array(array) { }
+    D4Map(std::string name, Array *array) : d_name(std::move(name)), d_array(array) {}
     /// This ctor mimics older behavior - the parent arg is ignored now.
     /// @deprecated
-    D4Map(std::string name, Array *array, BaseType * /*parent*/)
-            : d_name(std::move(name)), d_array(array) { }
-    D4Map(std::string name, std::string array)
-            : d_name(std::move(name)), d_array_path(std::move(array)) { }
+    D4Map(std::string name, Array *array, BaseType * /*parent*/) : d_name(std::move(name)), d_array(array) {}
+    D4Map(std::string name, std::string array) : d_name(std::move(name)), d_array_path(std::move(array)) {}
     ///@}
-	virtual ~D4Map() = default;
+    virtual ~D4Map() = default;
 
-	const string& name() const { return d_name; }
-	void set_name(const string& name) { d_name = name; }
+    const string &name() const { return d_name; }
+    void set_name(const string &name) { d_name = name; }
 
     const std::string &get_array_path() const { return d_array_path; }
     ///@note We can set the path even if the referenced Array does not yet exist!
@@ -99,9 +96,9 @@ public:
     /// Ways to get the Array that holds a Map's values.
 
     ///@brief This will always return the correct pointer for a valid data set.
-    Array* array(D4Group *root);
+    Array *array(D4Group *root);
     ///@brief Only use this accessor in code that can deal with a nullptr return!
-    Array* array() const { return d_array; }
+    Array *array() const { return d_array; }
     ///@}
 
     void set_array(Array *array) {
@@ -109,7 +106,7 @@ public:
         d_array_path = array->FQN();
     }
 
-	virtual void print_dap4(XMLWriter &xml);
+    virtual void print_dap4(XMLWriter &xml);
 };
 
 /**
@@ -118,42 +115,45 @@ public:
  */
 class D4Maps {
 public:
-    typedef vector<D4Map*>::iterator D4MapsIter;
-    typedef vector<D4Map*>::const_iterator D4MapsCIter;
+    typedef vector<D4Map *>::iterator D4MapsIter;
+    typedef vector<D4Map *>::const_iterator D4MapsCIter;
 
 private:
-	vector<D4Map*> d_maps;
-	Array *d_parent;	// Array these Maps belong to; weak pointer
+    vector<D4Map *> d_maps;
+    const Array *d_parent; // Array these Maps belong to; weak pointer
 
-    ///@brief Used by the const copy ctor; we only know the source Array path is valid.
-	void m_duplicate(const D4Maps &maps) {
-		d_parent = maps.d_parent;
+    void m_duplicate(const D4Maps &maps, const Array *parent) {
+        d_parent = parent;
         d_maps.reserve(maps.size());
-        for (auto const map: maps.d_maps) {
+        for (auto const map : maps.d_maps) {
             d_maps.emplace_back(new D4Map(map->name(), map->get_array_path()));
         }
-	}
-
-public:
-    D4Maps() {}
-    D4Maps(Array* parent) : d_parent(parent) { }
-    D4Maps(const D4Maps &maps) { m_duplicate(maps); }
-    // Build valid Maps for a true deep copy of a whole dataset
-    //D4Maps(const D4Maps *maps, Array *parent, D4Group *root);
-    virtual ~D4Maps() {
-    	for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i)
-    		delete *i;
     }
 
-    D4Maps &operator=(const D4Maps &rhs);
+public:
+    D4Maps() = default;
+
+    // See comment below at operator=(). jhrg 9/12/23
+    D4Maps(const D4Maps &maps) = delete;
+
+    explicit D4Maps(const Array *parent) : d_parent(parent) {}
+    D4Maps(const D4Maps &maps, const Array *parent) { m_duplicate(maps, parent); }
+
+    virtual ~D4Maps() {
+        for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i)
+            delete *i;
+    }
+
+    // I deleted this because this class needs to set the _parent_ pointer to
+    // the Array that holds these maps. The one argument assignment operator
+    // provides no way to include that information. jhrg 9/12/23
+    D4Maps &operator=(const D4Maps &rhs) = delete;
 
     /**
      * Add a map. This does not test for duplicate names or Array pointers.
      * It assumes that the caller has done that!
      */
-    void add_map(D4Map *map) {
-    	d_maps.push_back(map);
-    }
+    void add_map(D4Map *map) { d_maps.push_back(map); }
 
     void remove_map(D4Map *map) {
         // TODO Refactor this to use erase() and find_if(). There is no reason
@@ -171,7 +171,7 @@ public:
         }
     }
 
-    D4Map* get_map(int i) { return d_maps.at(i); }
+    D4Map *get_map(int i) { return d_maps.at(i); }
 
     D4MapsIter map_begin() { return d_maps.begin(); }
     D4MapsIter map_end() { return d_maps.end(); }
@@ -180,8 +180,8 @@ public:
     bool empty() const { return d_maps.empty(); }
 
     virtual void print_dap4(XMLWriter &xml) {
-    	for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i)
-    		(*i)->print_dap4(xml);
+        for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i)
+            (*i)->print_dap4(xml);
     }
 };
 

@@ -30,8 +30,7 @@
 
 #include "Response.h"
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief Encapsulate a response read from stdin.
 
@@ -41,22 +40,20 @@ namespace libdap
     stream when it's done reading.
 
     @note Modified 10/25/13 to accommodate C++ istreams. */
-class StdinResponse: public Response
-{
+class StdinResponse : public Response {
 private:
     FILE *d_stdin;
     std::istream *d_cin;
 
 protected:
-
 public:
     /** @brief Initialize with standard input.
-      
+
         Create an instance initialized to standard input. When done, does
         not close stdin.
-        
+
         @see Response
-        
+
         @param s Pointer to standard input.
         */
     StdinResponse(FILE *s) : Response(), d_stdin(s), d_cin(0) {}

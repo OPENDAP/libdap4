@@ -20,7 +20,7 @@ CXXFLAGS_DEBUG = -g3 -O0
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 if USE_ASAN
-ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
 endif
 
 if BUILD_DEVELOPER

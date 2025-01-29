@@ -26,13 +26,13 @@
 #ifndef signal_handler_h
 #define signal_handler_h
 
-#include <signal.h>
+#include <csignal>
+#include <vector>
 
 #include "EventHandler.h"
 #include "InternalErr.h"
 
-namespace libdap
-{
+namespace libdap {
 
 typedef void Sigfunc(int); // Plauger, 1992
 
@@ -63,53 +63,45 @@ typedef void Sigfunc(int); // Plauger, 1992
 
     @see EventHandler
     @author James Gallagher <jgallagher@opendap.org> */
-class SignalHandler
-{
+class SignalHandler {
 private:
-    // Ensure we're a Singleton.
-    SignalHandler() {}
-    SignalHandler(const SignalHandler &) {}
-
-    // Singleton pointer.
-    static SignalHandler *d_instance;
-
     // Table of pointers to instances of EventHandlers. Since EventHandler is
     // abstract, the pointers will actually reference instances that are
     // children of EventHandler. NSIG is defined in signal.h but this may be
-    // a portability issue.
-    static EventHandler *d_signal_handlers[NSIG];
+    // a portability issue. This has to be static because it is used by a
+    // static method.
+    static std::vector<EventHandler *> d_signal_handlers;
 
     // This array holds the old signal handlers. Once the handler in
     // d_signal_handler[signum] is run, look here to see what the original
     // action was. This is important since libdap++ is often embedded in code
     // that already has a non-default signal handler for things like SIGINT.
-    static Sigfunc *d_old_handlers[NSIG];
+    static std::vector<Sigfunc *> d_old_handlers;
 
     // Entry point adapter installed into sigaction(). This must be a static
     // method (or a regular C-function) to conform to sigaction's interface.
     // this is the part of SignalHandler that uses the Adapter pattern.
     static void dispatcher(int signum);
 
-    // Delete the global instance. Call this with atexit().
-    static void delete_instance();
-
-    // Call this using pthread_once() to ensure there's only one instance
-    // when running in a MT world.
-    static void initialize_instance();
-
     friend class SignalHandlerTest;
+
     friend class HTTPCacheTest;
 
 public:
+    SignalHandler() = default;
+
+    SignalHandler(const SignalHandler &) = delete;
+    SignalHandler &operator=(const SignalHandler &) = delete;
+    SignalHandler(SignalHandler &&) = delete;
+    SignalHandler &operator=(SignalHandler &&) = delete;
+
     static SignalHandler *instance();
 
-    ///
     virtual ~SignalHandler() = default;
 
-    EventHandler *register_handler(int signum, EventHandler *eh,
-                                   bool ignore_by_default = false);
+    static EventHandler *register_handler(int signum, EventHandler *eh, bool ignore_by_default = false);
 
-    EventHandler *remove_handler(int signum);
+    static EventHandler *remove_handler(int signum);
 };
 
 } // namespace libdap

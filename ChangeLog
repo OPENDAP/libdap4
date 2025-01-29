@@ -1,3 +1,587 @@
+2024-12-31  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #268 from OPENDAP/hyrax-1497
+	HYRAX-1497, Provide an option to use UTF-8 encoding …
+
+2024-12-31  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-1497, clean up code and follow clang-format
+
+2024-12-30  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-1497, first version to provide an option to use UTF-8 
+	encoding for the unescaped Unicode characters in DAP4.
+
+2024-12-05  Kodi Neumiller  <kneumiller@opendap.org>
+
+	Merge pull request #262 from OPENDAP/DmrppArray_uint
+	Changed buf2val_ll to return int64_t.
+
+2024-12-02  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Added the "if" check back for BigArrayTest
+
+2024-11-25  James Gallagher  <jgallagher@opendap.org>
+
+	Changed code so derrived classes won't trigger compiler 
+	warnings (#265)
+
+2024-11-14  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Turned on BigArrayTest all the time
+
+2024-11-13  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	removed the cast to unsigned int
+
+2024-11-12  James Gallagher  <jgallagher@opendap.org>
+
+	Update/refactoring for MarshallerThread - lingering int <-> streamsiz… (#264)
+	Update/refactoring for MarshallerThread - lingering int <-> streamsize issues.
+	Fixed initialization if MarshallerThread.
+	Some warnings also fixed
+
+2024-11-07  The Robot Travis  <54914793+travis-ci-opendap@users.noreply.github.com>
+	    ndp-opendap  <ndp@opendap.org>
+	    James Gallagher  <jgallagher@opendap.org>
+
+	Xsputn (#250)
+	Changed byte counts in MarshallerThread from int to std::streamsize
+	---------
+
+2024-11-07  Orion Poplawski  <orion@nwra.com>
+
+	Add #include <cstdint> ofor uint*_t types (#258)
+
+2024-11-07  Kodi Neumiller  <kneumiller@mtech.edu>
+
+	Changed buf2val_ll to return int64_t.
+
+2024-09-10  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #257 from OPENDAP/hyrax-1427
+	Hyrax 1427
+
+2024-09-09  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-1427, ensure the clang format
+
+	Merge branch 'master' into hyrax-1427
+
+	HYRAX-1427, fixed the issue when the number of coverage of some 
+	variables is not equal to the number of dimensions
+
+2024-09-04  Nathan Potter  <ndp@opendap.org>
+
+	Trying to quell the undefined-behavior errors (#256)
+	Trying to quell the undfeined-behavior errors from the address sanitizer.
+	Fixing etag and LMT values for test.opendap.org/test-304.html
+
+2024-08-20  James Gallagher  <jgallagher@opendap.org>
+
+	Updated comments.
+	[skip ci]
+
+2024-07-17  James Gallagher  <jgallagher@opendap.org>
+
+	Updated pre-commit README with TL;DR section
+	[skip-ci]
+
+	Added a README about the pre-commit scripts and GitHub action.
+	[skip-ci]
+
+	Pre commit 1 (#254)
+	Added a pre-commit config that will (re)format source code
+	This change will use the clang-format program to reformat C++ source code
+	to a particular standard. I will add a README describing the process and any
+	steps needed for local configuration.
+
+2024-06-25  James Gallagher  <jgallagher@opendap.org>
+
+	Update grammar files to remove the deprecation warnings. (#253)
+
+2024-06-10  James Gallagher  <jgallagher@opendap.org>
+
+	Switched to the rocky8 Docker image for RPM builds (#252)
+	Switched to the rocky8 Docker image for RPM builds
+	Added CPPFLAGS and LDFLAGS to build-rpm.sh
+	These are needed for RHEL8. Previously they were set in the
+	docker container used for the centos-stream8 build but are
+	not set (apparently) in the rocky8 container I made.
+
+2024-03-15  James Gallagher  <jgallagher@opendap.org>
+
+	Add undefined and ODR checks to the ASAN options (#249)
+	Remove ODR flag since it is not part of gcc's ASAN
+	Added -fsanitize=undefined  to two more Makefile.am files
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+	Refactored SignalHandler (a singleton) (#247)
+	Refactored SignalHandler (a singleton): Now uses the Meyers pattern.
+
+2024-03-11  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+2024-03-08  James Gallagher  <jgallagher@opendap.org>
+
+	Merged a PR from a fork - seemed to have issues in the final stage of CI/CD
+	The master branch build failed with a note about local and remote repos
+	not being in sync. This push to master should have fixed that.
+
+	Removed hyrax-deps from build and added -fsanitize=undefined to asan (#245)
+	Removed hyrax-deps from build and added -fsanitize=undefined to the ASAN 
+	options
+
+2024-03-08  Eli Schwartz  <eschwartz93@gmail.com>
+
+	configure: avoid broken bashisms (#243)
+	configure scripts are run with /bin/sh, and must use /bin/sh syntax rather 
+	than bashisms.
+	<<< is a bash specific syntax. Refrain from using it. Instead simply
+	echo into a pipe, which does the same thing.
+
+2024-02-26  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+	D4ce unit tests (#242)
+	Replaced C-style assert() statements with exceptions and tests.
+	I also wrote some unit tests for the D4ConstriantEvaluator class. It's not a 
+	complete set of tests, but I demonstrate the use of a 'mock' class in unit testing.
+
+2024-02-23  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+	D4ce assert refactor (#241)
+	Removed use of assert(). Other refactorings added for C++14.
+	Refactor D4FunctionEvaluator
+	Added #include <memory> to D4FunctionEvaluator.cc
+	More refactoring - change unsigned long long to int64_t
+	Refactor to reduce complexity of mark_array_variable in D4ConstraintEvaluator
+	Another refactor; reduce method complexity.
+
+2024-02-22  James Gallagher  <jgallagher@opendap.org>
+
+	Merge remote-tracking branch 'origin/master'
+
+2024-02-06  James Gallagher  <jgallagher@opendap.org>
+
+	Struct tm init fix (#240)
+	Ensure 'struct tm' instances are initialized
+
+2024-01-29  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+2023-11-30  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #234 from OPENDAP/hyrax-1247
+	HYRAX-1247, adding two methods in DMR.h to handle direct IO.
+
+2023-11-30  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-1247, adding two methods in DMR.h to handle direct IO. Also
+	revise one similar method in Array.h
+
+2023-11-07  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+	Added the clion-source-discovery target to Makefile.am
+	[skip ci]
+
+2023-10-31  myang6  <myang6@hdfgroup.org>
+
+	Merge branch 'direct_chunk_io'
+
+	Add comments for the new method.
+
+2023-10-31  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #232 from OPENDAP/direct_chunk_io
+	add a public method to allocate the data buffer
+
+2023-10-16  myang6  <myang6@hdfgroup.org>
+
+	add a public method to allocate the data buffer with the number of
+	bytes, this is necessary to support direct chunk IO
+
+2023-09-26  Bo Anderson  <mail@boanderson.me>
+
+	Fix handling of libtirpc pkg-config files with -L flags (#228)
+
+2023-09-26  Dan Horák  <dan@danny.cz>
+
+	add missing include (#227)
+	With GCC 13 the <cstdint> header isn't included thru other headers any
+	more, thus include it explictly. Otherwise uint8_t or uint32_t type
+	remain undefined in Vector.cc.
+	Fixes: https://github.com/OPENDAP/libdap4/issues/226
+
+2023-09-14  James Gallagher  <jgallagher@opendap.org>
+
+	Fixed a bug where the copy ctor for D4Maps failed to correctly set the parent Array.
+	This broke the object memory cache added to the DMR++ code in Hyrax.
+
+2023-09-08  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #229 from OPENDAP/hyrax-1155
+	Hyrax 1155
+
+2023-09-07  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-1155, add comments to source code
+
+	Adding direct io offset
+
+2023-09-06  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-1155, add var chunk info to Array
+
+2023-05-24  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #225 from OPENDAP/hyrax-1049
+	Hyrax 1049
+
+2023-05-21  Muqun Yang  <myang6@hdfgroup.org>
+
+	 HYRAX-1049, reduce code smell
+
+	 HYRAX-1049, clean up the code
+
+	HYRAX-1049, ensure the group name doesn't include '/' in the routine
+	that checks the variables
+
+2023-05-19  Muqun Yang  <myang6@hdfgroup.org>
+
+	HYRAX-1049, add code to fix the DAP4 coverage finding issues. Not compiled/tested.
+
+2023-05-07  James Gallagher  <jgallagher@opendap.org>
+
+	Trigger a build against the latest hyrax-dependencies
+
+2023-05-04  James Gallagher  <jgallagher@opendap.org>
+
+	Updated README for hyrax-deps build
+
+2023-04-13  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #224 from OPENDAP/hyrax-974
+	HYRAX-974, add a API to set a variable. Code needs to be cleaned up.
+
+2023-04-13  myang6  <myang6@hdfgroup.org>
+
+	 HYRAX-974, add another sanity check for index
+
+	HYRAX-974, add comments for the set_var_index API.
+
+2023-04-11  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-974, add a API to set a variable. Code needs to be cleaned up.
+
+2023-03-13  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #222 from OPENDAP/hyrax-968
+	Hyrax 968
+
+2023-03-13  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-968, add a comment for the possible future optimization.
+
+2023-03-10  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-968, reduce a code smell and add some comments/code-clean-up.
+
+2023-03-09  Muqun Yang  <myang6@hdfgroup.org>
+
+	HYRAX-968, use a new way to remove the additional maps.
+
+2023-03-09  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-968, check the code to remove extra maps in the local constraint.
+
+2023-01-30  James Gallagher  <jgallagher@opendap.org>
+
+	Use C++14, fallback to 11. Fixed --enable-asan, too. (#220)
+	Use C++14, fallback to 11. Fixed --enable-asan, too.
+	Added an after_script to .travis.yml to upload test results to S3
+
+2023-01-27  James Gallagher  <jgallagher@opendap.org>
+	    Orion Poplawski  <orion@nwra.com>
+
+	Add missing cstdint include for uint32_t (#219)
+	Add missing cstdint include for uint32_t
+
+2023-01-27  James Gallagher  <jgallagher@opendap.org>
+
+	Removed the CentOS 7 build (#218)
+	Removed the CentOS 7 build
+
+2023-01-23  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #217 from OPENDAP/hyrax-913
+	Hyrax 913 - large array size for fileout netcdf
+
+2023-01-23  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-913, add override to a few methods to avoid the compiling warnings.
+
+2023-01-19  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-913, need to obtain the big array size with dimension_size_ll()
+
+2023-01-18  Nathan Potter  <ndp@opendap.org>
+
+	Dap4 attr handling (#216)
+	* Adding DAP2 attribute assement methods entry::is_dap4_type() and 
+	  AttrTable::has_dap4_types()
+	* Completed DDS::is_dap4_projected() implementation.
+	* Added unit test for a dap4 typed global attribute in the DDS
+
+2023-01-17  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #214 from OPENDAP/hyrax-868
+	Hyrax 868 - the large-array size support
+
+2023-01-17  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-868, change code according to Jame's suggestions.
+
+	remove a comment
+
+	HYRAX-868, change the big array unit test function names to make them more meaningful
+
+2023-01-13  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-868, fix some code smells and a few inconsistent issues detected by sonar cloud
+
+	HYRAX-868, remove some debugging info and fix an issue to use vector
+	reference to set values of a large array.
+
+2023-01-12  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-868, Make TestArray use the large array size handling methods.
+
+2023-01-09  myang6  <myang6@hdfgroup.org>
+
+	Merge branch 'master' into hyrax-868
+
+	HYRAX-868, use the large size APIs in the DAP4 expression constraint
+	code. Also add a few DBG lines.
+
+2023-01-07  Nathan Potter  <ndp@opendap.org>
+
+	Moving the functionality of is_dap4_projected() into libdap4 (#213)
+	* Moving the functionality of is_dap4_projected() into libdap4
+	* Adding is_dap4_projected() to DAP types.
+	* Dropping DDS tests
+	* Updaing CMakeLists.txt
+	* Fixed tests but needs behavioral review.
+	* Smell the flowers
+	* Added attribute checking and checking os send_p()
+	* Implemented is_da4_projected() with a vector<string> as the return value parameter
+	* Removed is_dap4_projected() implementations with vector<BaseType *> as it's returned value parameter
+	* Dropped old implementations of is_dap4_type() and has_dap4_types()
+	* Added test for dap4 attributes in the root group
+	* Comments
+	* Fixed PR concerns
+	* Updated is_dap4_projected in Array and Vector ot correctly handle COnstructor prototypes
+	* Fixed IsDap4ProjectedTest memory leaks. Questions remain tho...
+	* More test cleanup
+	* Fixed lifecycle of array prototype variables.
+	* Added const tag to an array variable loop
+	* Updated code comments
+
+2023-01-06  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-868, add more APIS for large array
+
+2023-01-03  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-868, start handling data capacity
+
+2022-12-30  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-868, add 64-bit support for value() and set_value()
+
+2022-12-29  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-868, add contraint methods and unit-tests for large array support.
+
+2022-12-28  myang6  <myang6@hdfgroup.org>
+
+	Merge branch 'master' into hyrax-868
+
+2022-12-07  Nathan Potter  <ndp@opendap.org>
+
+	Fixing changes to ETag. Made test code more flexible. (#212)
+	Fixing changes to ETag. Made test code more flexible.
+	Added .gitallowed for test stuff
+
+2022-12-05  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-868, make the simple big array val2buf, buf2val ,value,
+	set_value unit-tests pass. More discussion is needed on the full and
+	robust support.
+
+2022-12-02  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #211 from OPENDAP/hyrax-879
+	HYRAX-879, mostly use override to replace virtual for the virtual fun…
+
+2022-12-01  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-879, remove 2 code smells>
+
+	HYRAX-879, mostly use override to replace virtual for the virtual
+	functions in the derived classes.
+
+2022-11-14  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #210 from OPENDAP/BigArrayUTest
+	Big array unit test
+
+2022-11-14  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-863, remove two #if 0 #endif blocks and one unused variable.
+
+2022-11-14  Muqun Yang  <myang6@hdfgroup.org>
+
+	Merge branch 'master' into BigArrayUTest
+
+	HYRAX-863, adding the Big Array Test.
+
+2022-11-14  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #209 from OPENDAP/hyrax-865-new
+	HYRAX-865, Fix the memory leaks in the DDX parser.
+
+2022-11-14  Muqun Yang  <myang6@hdfgroup.org>
+
+	Add the unit tests for big array handling. Three tests are added: 1)
+	DAP4 val2buf and buf2val 2) DAP4 val2buf and value() 3) DAP2 set_value
+	and value().
+
+2022-11-11  Muqun Yang  <myang6@hdfgroup.org>
+
+	HYRAX-863, add first test template for the big array test.
+
+2022-11-11  myang6  <myang6@hdfgroup.org>
+
+	intermediate debugging stage
+
+	Merge branch 'master' into BigArrayUTest
+
+2022-11-10  Muqun Yang  <myang6@hdfgroup.org>
+
+	HYRAX-865, first cut to fix the memory leaks in the DDX parser.
+
+2022-11-08  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #208 from OPENDAP/hyrax-864
+	Hyrax 864
+
+2022-11-08  Muqun Yang  <myang6@hdfgroup.org>
+
+	HYRAX-864, revert back the change in del_attr_table() of AttrTable class. Explicitly release resources held by the Attribute table.
+
+2022-11-04  Kent Yang  <myang6@hdfgroup.org>
+
+	HYRAX-864, use unique ptr for some tests if possible.
+
+2022-11-03  Muqun Yang  <myang6@hdfgroup.org>
+
+	HYRAX-864, fixing unit-test memory leaks. delete_attr_table() has bugs that cause memory leaks.
+
+2022-11-03  Kent Yang  <myang6@hdfgroup.org>
+
+	HYRAX-864, the intermediate debugging stage.
+
+2022-11-02  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-863, trim the original ArrayTest code a bit
+
+	Adding an optional BigArray unit test to see if libdap can handle >4GB array. This check-in is only a skeleton. The BigArraytest is the same as the array test.
+
+2022-10-14  James Gallagher  <jgallagher@opendap.org>
+
+	Refactor sizes (#207)
+	Provide a new API for getting variable sizes and DDS/DMR 'response' sizes
+	This new API provides the size information using 64-bit integers, so that
+	we can support larger data arrays. The specific additions to the API are:
+	- Added BaseType::length_ll() and set_length_ll()
+	- Added width_ll()
+	- Updated the DMR::response_size_kb() to use width_ll()
+	- Updated the DDS::get_response_kb() to use the width_ll()
+	The length_ll() and width_ll() methods return signed int64_t which makes
+	integration with the BES handler code easier (since -1 is used as a sentinel
+	value). The response size methods return uint64_t.
+
+2022-10-03  Dan Horák  <dan@danny.cz>
+
+	add missing big endian baselines (#196)
+
+2022-09-22  kyang2014  <kyang2014@users.noreply.github.com>
+
+	Merge pull request #206 from OPENDAP/hyrax-804
+	Hyrax 804
+
+2022-09-22  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-804, add a section of code based on James' sugeestion. However, it failed a few tests. So leave a #if 0 for future investigation.
+
+	HYRAX-804, pass the utf8 flag when internally transforming between DAP2 and DAP4 objects.
+
+2022-09-20  myang6  <myang6@hdfgroup.org>
+
+	HYRAX-804, add a flag for utf8 string escaping for both DAP2 and DAP4.
+
+2022-09-19  James Gallagher  <jgallagher@opendap.org>
+
+	D4map fix v1 (#205)
+	The D4Maps have two modes of creation - one when the Array is being built by, e.g.,
+	a handler and one when an Array is part of a deep copy operation. In the first case
+	it's easy to know the pointer to the Array that is the source of the Map's values.
+	However, during a deep copy, it's not possible to know this because the source Array
+	cannot be accessed since the parent Array _does not yet exist_. In this case a
+	second ctor is used that stores the FQN of the Map's source Array. This FQN can be
+	read from the Map that is being copied. When the Map is then used (the whole dataset
+	must exist), the FQN can be used to find the actual source Array object.
+	Added a ctor that supports backward compat with code in the BES
+	Added test for d4map-fix-v1 and verified that it fails on the master branch
+
+2022-09-13  Dan Holloway  <d.holloway@opendap.org>
+
+	Merge pull request #204 from OPENDAP/dap4-grid-functions
+	Dap4 grid functions
+
+2022-09-12  dh-opendap  <dholloway@opendap.org>
+
+	Merging master branch (as of 9/12/2022) in dap4-grid-functions Merge
+	branch 'master' into dap4-grid-functions
+
+2022-09-07  ndp-opendap  <ndp@opendap.org>
+
+	More tagging phaffing
+
+	Adding tagging step to Travis build
+
+2022-09-02  Nathan Potter  <ndp@opendap.org>
+
+	Added methods that allow more monkeying around with arrays (#203)
+
+2022-09-02  James Gallagher  <jgallagher@opendap.org>
+
+	Refactor sizes (#193)
+	Added BaseType::;ength_ll() and set_length_ll()
+	Moved the implementation of length() and set_length() to Vector.h
+	Modified the BaseType::intern_data() for DAP2 so that it cannot be called with DAP4 types.
+	More changes - see Hyrax-790
+	Added #include <typeinfo> to Vector.cc
+	Also added support for 'master' --> 'main' for the default branch.
 ## -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 ##  libdap4-3.20.11-32
 ##  hyrax-1.16.8-25

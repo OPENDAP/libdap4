@@ -34,42 +34,41 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 #define FILE_UN_MARSHALLER 1
 
-#include <cstring>
 #include <cerrno>
+#include <cstring>
 
-#include <fstream>
 #include <algorithm>
+#include <fstream>
 
-#include "debug.h"
-#include "DataDDS.h"
 #include "Connect.h"
-#include "escaping.h"
+#include "DDXParserSAX2.h"
+#include "DataDDS.h"
 #include "HTTPResponse.h"
 #include "RCReader.h"
-#include "DDXParserSAX2.h"
+#include "debug.h"
+#include "escaping.h"
 #if FILE_UN_MARSHALLER
 #include "XDRFileUnMarshaller.h"
 #else
-#include "fdiostream.h"
 #include "XDRStreamUnMarshaller.h"
+#include "fdiostream.h"
 #endif
 #include "mime_util.h"
 
 using std::cerr;
 using std::endl;
 using std::ifstream;
-using std::ofstream;
 using std::min;
+using std::ofstream;
 
 namespace libdap {
 
 /** This private method process data from both local and remote sources. It
  exists to eliminate duplication of code. */
-void Connect::process_data(DataDDS &data, Response *rs)
-{
+void Connect::process_data(DataDDS &data, Response *rs) {
     DBG(cerr << "Entering Connect::process_data" << endl);
 
     data.set_version(rs->get_version());
@@ -77,18 +76,19 @@ void Connect::process_data(DataDDS &data, Response *rs)
 
     DBG(cerr << "Entering process_data: d_stream = " << rs << endl);
     switch (rs->get_type()) {
-        case dods_error: {
-            Error e;
-            if (!e.parse(rs->get_stream()))
-                throw InternalErr(__FILE__, __LINE__, "Could not parse the Error object returned by the server!");
-            throw e;
-        }
+    case dods_error: {
+        Error e;
+        if (!e.parse(rs->get_stream()))
+            throw InternalErr(__FILE__, __LINE__, "Could not parse the Error object returned by the server!");
+        throw e;
+    }
 
-        case web_error:
-            // Web errors (those reported in the return document's MIME header)
-            // are processed by the WWW library.
-            throw InternalErr(__FILE__, __LINE__,
-                    "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
+    case web_error:
+        // Web errors (those reported in the return document's MIME header)
+        // are processed by the WWW library.
+        throw InternalErr(
+            __FILE__, __LINE__,
+            "An error was reported by the remote httpd; this should have been processed by HTTPConnect..");
 
 #if 0
             // This code triggers a security warning from Coverity; since it is not used,
@@ -129,29 +129,28 @@ void Connect::process_data(DataDDS &data, Response *rs)
         }
 #endif
 
-        case dods_data:
-        default: {
-            // Parse the DDS; throw an exception on error.
-            data.parse(rs->get_stream());
+    case dods_data:
+    default: {
+        // Parse the DDS; throw an exception on error.
+        data.parse(rs->get_stream());
 #if FILE_UN_MARSHALLER
-            XDRFileUnMarshaller um(rs->get_stream());
+        XDRFileUnMarshaller um(rs->get_stream());
 #else
-            fpistream in ( rs->get_stream() );
-            XDRStreamUnMarshaller um( in );
+        fpistream in(rs->get_stream());
+        XDRStreamUnMarshaller um(in);
 #endif
-            // Load the DDS with data.
-            for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); i++) {
-                (*i)->deserialize(um, &data);
-            }
-            return;
+        // Load the DDS with data.
+        for (DDS::Vars_iter i = data.var_begin(); i != data.var_end(); i++) {
+            (*i)->deserialize(um, &data);
         }
+        return;
+    }
     }
 }
 
 /** This private method process data from both local and remote sources. It
     exists to eliminate duplication of code. */
-void Connect::process_data(DDS &data, Response *rs)
-{
+void Connect::process_data(DDS &data, Response *rs) {
     DBG(cerr << "Entering Connect::process_data" << endl);
 
     data.set_dap_version(rs->get_protocol());
@@ -168,7 +167,8 @@ void Connect::process_data(DDS &data, Response *rs)
     case web_error:
         // Web errors (those reported in the return document's MIME header)
         // are processed by the WWW library.
-        throw InternalErr(__FILE__, __LINE__,
+        throw InternalErr(
+            __FILE__, __LINE__,
             "An error was reported by the remote web server; this should have been processed by HTTPConnect.");
 
 #if 0
@@ -247,8 +247,7 @@ void Connect::process_data(DDS &data, Response *rs)
  @param data_source Read from this stream.
  @param rs Value/Result parameter. Dump version and type information here.
  */
-void Connect::parse_mime(Response *rs)
-{
+void Connect::parse_mime(Response *rs) {
     rs->set_version("dods/0.0"); // initial value; for backward compatibility.
     rs->set_protocol("2.0");
 
@@ -272,8 +271,7 @@ void Connect::parse_mime(Response *rs)
         else if (header == "xopendap-server:") {
             DBG(cout << header << ": " << value << endl);
             rs->set_version(value);
-        }
-        else if (header == "xdap:") {
+        } else if (header == "xdap:") {
             DBG(cout << header << ": " << value << endl);
             rs->set_protocol(value);
         }
@@ -296,9 +294,7 @@ void Connect::parse_mime(Response *rs)
  @param uname Use this username for authentication. Null by default.
  @param password Password to use for authentication. Null by default.
  @brief Create an instance of Connect. */
-Connect::Connect(const string &n, string uname, string password) :
-        d_http(0), d_version("unknown"), d_protocol("2.0")
-{
+Connect::Connect(const string &n, string uname, string password) : d_http(0), d_version("unknown"), d_protocol("2.0") {
     string name = prune_spaces(n);
 
     // Figure out if the URL starts with 'http', if so, make sure that we
@@ -317,21 +313,18 @@ Connect::Connect(const string &n, string uname, string password) :
             if (dotpos != expr.npos) {
                 _proj = expr.substr(0, dotpos);
                 _sel = expr.substr(dotpos); // XXX includes '&'
-            }
-            else {
+            } else {
                 _proj = expr;
                 _sel = "";
             }
-        }
-        else {
+        } else {
             _URL = name;
             _proj = "";
             _sel = "";
         }
 
         _local = false;
-    }
-    else {
+    } else {
         DBG(cerr << "Connect: The identifier is a local data source." << endl);
 
         d_http = 0;
@@ -342,8 +335,7 @@ Connect::Connect(const string &n, string uname, string password) :
     set_credentials(uname, password);
 }
 
-Connect::~Connect()
-{
+Connect::~Connect() {
     DBG2(cerr << "Entering the Connect dtor" << endl);
 
     if (d_http)
@@ -360,8 +352,7 @@ Connect::~Connect()
 
  @return The DAP version string.
  @see request_protocol() */
-string Connect::request_version()
-{
+string Connect::request_version() {
     string version_url = _URL + ".ver";
     if (_proj.length() + _sel.length())
         version_url = version_url + "?" + id2www_ce(_proj + _sel);
@@ -369,8 +360,7 @@ string Connect::request_version()
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(version_url);
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete rs;
         rs = 0;
         throw;
@@ -396,8 +386,7 @@ string Connect::request_version()
  response (e.g., from the last DDX response returned by the server).
 
  @return The DAP protocol version string. */
-string Connect::request_protocol()
-{
+string Connect::request_protocol() {
     string version_url = _URL + ".ver";
     if (_proj.length() + _sel.length())
         version_url = version_url + "?" + id2www_ce(_proj + _sel);
@@ -405,8 +394,7 @@ string Connect::request_protocol()
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(version_url);
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete rs;
         rs = 0;
         throw;
@@ -428,8 +416,7 @@ string Connect::request_protocol()
 
  @brief Get the DAS from a server.
  @param das Result. */
-void Connect::request_das(DAS &das)
-{
+void Connect::request_das(DAS &das) {
     string das_url = _URL + ".das";
     if (_proj.length() + _sel.length())
         das_url = das_url + "?" + id2www_ce(_proj + _sel);
@@ -437,8 +424,7 @@ void Connect::request_das(DAS &das)
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(das_url);
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete rs;
         rs = 0;
         throw;
@@ -448,36 +434,35 @@ void Connect::request_das(DAS &das)
     d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
-        case dods_error: {
-            Error e;
-            if (!e.parse(rs->get_stream())) {
-                delete rs;
-                rs = 0;
-                throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
-            }
+    case dods_error: {
+        Error e;
+        if (!e.parse(rs->get_stream())) {
             delete rs;
             rs = 0;
-            throw e;
+            throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
+        }
+        delete rs;
+        rs = 0;
+        throw e;
+    }
+
+    case web_error:
+        // We should never get here; a web error should be picked up read_url
+        // (called by fetch_url) and result in a thrown Error object.
+        break;
+
+    case dods_das:
+    default:
+        // DAS::parse throws an exception on error.
+        try {
+            das.parse(rs->get_stream()); // read and parse the das from a file
+        } catch (Error &e) {
+            delete rs;
+            rs = 0;
+            throw;
         }
 
-        case web_error:
-            // We should never get here; a web error should be picked up read_url
-            // (called by fetch_url) and result in a thrown Error object.
-            break;
-
-        case dods_das:
-        default:
-            // DAS::parse throws an exception on error.
-            try {
-                das.parse(rs->get_stream()); // read and parse the das from a file
-            }
-            catch (Error &e) {
-                delete rs;
-                rs = 0;
-                throw;
-            }
-
-            break;
+        break;
     }
 
     delete rs;
@@ -494,14 +479,12 @@ void Connect::request_das(DAS &das)
 
  @brief Get the DAS from a server.
  @param das Result. */
-void Connect::request_das_url(DAS &das)
-{
+void Connect::request_das_url(DAS &das) {
     string use_url = _URL + "?" + _proj + _sel;
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(use_url);
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete rs;
         rs = 0;
         throw;
@@ -511,36 +494,35 @@ void Connect::request_das_url(DAS &das)
     d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
-        case dods_error: {
-            Error e;
-            if (!e.parse(rs->get_stream())) {
-                delete rs;
-                rs = 0;
-                throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
-            }
+    case dods_error: {
+        Error e;
+        if (!e.parse(rs->get_stream())) {
             delete rs;
             rs = 0;
-            throw e;
+            throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
+        }
+        delete rs;
+        rs = 0;
+        throw e;
+    }
+
+    case web_error:
+        // We should never get here; a web error should be picked up read_url
+        // (called by fetch_url) and result in a thrown Error object.
+        break;
+
+    case dods_das:
+    default:
+        // DAS::parse throws an exception on error.
+        try {
+            das.parse(rs->get_stream()); // read and parse the das from a file
+        } catch (Error &e) {
+            delete rs;
+            rs = 0;
+            throw;
         }
 
-        case web_error:
-            // We should never get here; a web error should be picked up read_url
-            // (called by fetch_url) and result in a thrown Error object.
-            break;
-
-        case dods_das:
-        default:
-            // DAS::parse throws an exception on error.
-            try {
-                das.parse(rs->get_stream()); // read and parse the das from a file
-            }
-            catch (Error &e) {
-                delete rs;
-                rs = 0;
-                throw;
-            }
-
-            break;
+        break;
     }
 
     delete rs;
@@ -560,15 +542,13 @@ void Connect::request_das_url(DAS &das)
  @brief Get the DDS from a server.
  @param dds Result.
  @param expr Send this constraint expression to the server. */
-void Connect::request_dds(DDS &dds, string expr)
-{
+void Connect::request_dds(DDS &dds, string expr) {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
     if (dotpos != expr.npos) {
         proj = expr.substr(0, dotpos);
         sel = expr.substr(dotpos);
-    }
-    else {
+    } else {
         proj = expr;
         sel = "";
     }
@@ -578,8 +558,7 @@ void Connect::request_dds(DDS &dds, string expr)
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(dds_url);
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete rs;
         rs = 0;
         throw;
@@ -589,35 +568,34 @@ void Connect::request_dds(DDS &dds, string expr)
     d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
-        case dods_error: {
-            Error e;
-            if (!e.parse(rs->get_stream())) {
-                delete rs;
-                rs = 0;
-                throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
-            }
+    case dods_error: {
+        Error e;
+        if (!e.parse(rs->get_stream())) {
             delete rs;
             rs = 0;
-            throw e;
+            throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
         }
+        delete rs;
+        rs = 0;
+        throw e;
+    }
 
-        case web_error:
-            // We should never get here; a web error should be picked up read_url
-            // (called by fetch_url) and result in a thrown Error object.
-            break;
+    case web_error:
+        // We should never get here; a web error should be picked up read_url
+        // (called by fetch_url) and result in a thrown Error object.
+        break;
 
-        case dods_dds:
-        default:
-            // DDS::prase throws an exception on error.
-            try {
-                dds.parse(rs->get_stream()); // read and parse the dds from a file
-            }
-            catch (Error &e) {
-                delete rs;
-                rs = 0;
-                throw;
-            }
-            break;
+    case dods_dds:
+    default:
+        // DDS::prase throws an exception on error.
+        try {
+            dds.parse(rs->get_stream()); // read and parse the dds from a file
+        } catch (Error &e) {
+            delete rs;
+            rs = 0;
+            throw;
+        }
+        break;
     }
 
     delete rs;
@@ -640,14 +618,12 @@ void Connect::request_dds(DDS &dds, string expr)
 
  @brief Get the DDS from a server.
  @param dds Result. */
-void Connect::request_dds_url(DDS &dds)
-{
+void Connect::request_dds_url(DDS &dds) {
     string use_url = _URL + "?" + _proj + _sel;
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(use_url);
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete rs;
         rs = 0;
         throw;
@@ -657,35 +633,34 @@ void Connect::request_dds_url(DDS &dds)
     d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
-        case dods_error: {
-            Error e;
-            if (!e.parse(rs->get_stream())) {
-                delete rs;
-                rs = 0;
-                throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
-            }
+    case dods_error: {
+        Error e;
+        if (!e.parse(rs->get_stream())) {
             delete rs;
             rs = 0;
-            throw e;
+            throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
         }
+        delete rs;
+        rs = 0;
+        throw e;
+    }
 
-        case web_error:
-            // We should never get here; a web error should be picked up read_url
-            // (called by fetch_url) and result in a thrown Error object.
-            break;
+    case web_error:
+        // We should never get here; a web error should be picked up read_url
+        // (called by fetch_url) and result in a thrown Error object.
+        break;
 
-        case dods_dds:
-        default:
-            // DDS::prase throws an exception on error.
-            try {
-                dds.parse(rs->get_stream()); // read and parse the dds from a file
-            }
-            catch (Error &e) {
-                delete rs;
-                rs = 0;
-                throw;
-            }
-            break;
+    case dods_dds:
+    default:
+        // DDS::prase throws an exception on error.
+        try {
+            dds.parse(rs->get_stream()); // read and parse the dds from a file
+        } catch (Error &e) {
+            delete rs;
+            rs = 0;
+            throw;
+        }
+        break;
     }
 
     delete rs;
@@ -703,15 +678,13 @@ void Connect::request_dds_url(DDS &dds)
  @brief Get the DDX from a server.
  @param dds Result.
  @param expr Send this constraint expression to the server. */
-void Connect::request_ddx(DDS &dds, string expr)
-{
+void Connect::request_ddx(DDS &dds, string expr) {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
     if (dotpos != expr.npos) {
         proj = expr.substr(0, dotpos);
         sel = expr.substr(dotpos);
-    }
-    else {
+    } else {
         proj = expr;
         sel = "";
     }
@@ -721,8 +694,7 @@ void Connect::request_ddx(DDS &dds, string expr)
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(ddx_url);
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete rs;
         throw;
     }
@@ -731,39 +703,38 @@ void Connect::request_ddx(DDS &dds, string expr)
     d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
-        case dods_error: {
-            Error e;
-            if (!e.parse(rs->get_stream())) {
-                delete rs;
-                rs = 0;
-                throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
-            }
+    case dods_error: {
+        Error e;
+        if (!e.parse(rs->get_stream())) {
             delete rs;
-            throw e;
+            rs = 0;
+            throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
         }
+        delete rs;
+        throw e;
+    }
 
-        case web_error:
-            // We should never get here; a web error should be picked up read_url
-            // (called by fetch_url) and result in a thrown Error object.
-            break;
+    case web_error:
+        // We should never get here; a web error should be picked up read_url
+        // (called by fetch_url) and result in a thrown Error object.
+        break;
 
-        case dods_ddx:
-            try {
-                string blob;
+    case dods_ddx:
+        try {
+            string blob;
 
-                DDXParser ddxp(dds.get_factory());
-                ddxp.intern_stream(rs->get_stream(), &dds, blob);
-            }
-            catch (Error &e) {
-                delete rs;
-                throw;
-            }
-            break;
-
-        default:
-            ObjectType ot = rs->get_type();
+            DDXParser ddxp(dds.get_factory());
+            ddxp.intern_stream(rs->get_stream(), &dds, blob);
+        } catch (Error &e) {
             delete rs;
-            throw Error("Invalid response type when requesting a DDX response. Response type: " + long_to_string(ot));
+            throw;
+        }
+        break;
+
+    default:
+        ObjectType ot = rs->get_type();
+        delete rs;
+        throw Error("Invalid response type when requesting a DDX response. Response type: " + long_to_string(ot));
     }
 
     delete rs;
@@ -771,15 +742,13 @@ void Connect::request_ddx(DDS &dds, string expr)
 
 /** @brief The 'url' version of request_ddx
  @see Connect::request_ddx. */
-void Connect::request_ddx_url(DDS &dds)
-{
+void Connect::request_ddx_url(DDS &dds) {
     string use_url = _URL + "?" + _proj + _sel;
 
     Response *rs = 0;
     try {
         rs = d_http->fetch_url(use_url);
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete rs;
         throw;
     }
@@ -788,41 +757,40 @@ void Connect::request_ddx_url(DDS &dds)
     d_protocol = rs->get_protocol();
 
     switch (rs->get_type()) {
-        case dods_error: {
-            Error e;
-            if (!e.parse(rs->get_stream())) {
-                delete rs;
-                throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
-            }
+    case dods_error: {
+        Error e;
+        if (!e.parse(rs->get_stream())) {
             delete rs;
-            throw e;
+            throw InternalErr(__FILE__, __LINE__, "Could not parse error returned from server.");
         }
+        delete rs;
+        throw e;
+    }
 
-        case web_error:
-            // We should never get here; a web error should be picked up read_url
-            // (called by fetch_url) and result in a thrown Error object.
+    case web_error:
+        // We should never get here; a web error should be picked up read_url
+        // (called by fetch_url) and result in a thrown Error object.
+        delete rs;
+        throw InternalErr(__FILE__, __LINE__, "Web error.");
+
+    case dods_ddx:
+        try {
+            string blob;
+
+            DDXParser ddxp(dds.get_factory());
+            ddxp.intern_stream(rs->get_stream(), &dds, blob);
+        } catch (Error &e) {
             delete rs;
-            throw InternalErr(__FILE__, __LINE__, "Web error.");
-
-        case dods_ddx:
-            try {
-                string blob;
-
-                DDXParser ddxp(dds.get_factory());
-                ddxp.intern_stream(rs->get_stream(), &dds, blob);
-            }
-            catch (Error &e) {
-                delete rs;
-                throw;
-            }
-            break;
-
-        default: {
-            ObjectType ot = rs->get_type();
-            delete rs;
-
-            throw Error("Invalid response type when requesting a DDX response. Response type: " + long_to_string(ot));
+            throw;
         }
+        break;
+
+    default: {
+        ObjectType ot = rs->get_type();
+        delete rs;
+
+        throw Error("Invalid response type when requesting a DDX response. Response type: " + long_to_string(ot));
+    }
     }
 
     delete rs;
@@ -843,15 +811,13 @@ void Connect::request_ddx_url(DDS &dds)
  @brief Get the DAS from a server.
  @param data Result.
  @param expr Send this constraint expression to the server. */
-void Connect::request_data(DataDDS &data, string expr)
-{
+void Connect::request_data(DataDDS &data, string expr) {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
     if (dotpos != expr.npos) {
         proj = expr.substr(0, dotpos);
         sel = expr.substr(dotpos);
-    }
-    else {
+    } else {
         proj = expr;
         sel = "";
     }
@@ -869,8 +835,7 @@ void Connect::request_data(DataDDS &data, string expr)
         process_data(data, rs);
         delete rs;
         rs = 0;
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete rs;
         rs = 0;
         throw;
@@ -894,8 +859,7 @@ void Connect::request_data(DataDDS &data, string expr)
 
  @brief Get the DAS from a server.
  @param data Result. */
-void Connect::request_data_url(DataDDS &data)
-{
+void Connect::request_data_url(DataDDS &data) {
     string use_url = _URL + "?" + _proj + _sel;
     Response *rs = 0;
     // We need to catch Error exceptions to ensure calling close_output.
@@ -908,8 +872,7 @@ void Connect::request_data_url(DataDDS &data)
         process_data(data, rs);
         delete rs;
         rs = 0;
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete rs;
         rs = 0;
         throw;
@@ -917,15 +880,13 @@ void Connect::request_data_url(DataDDS &data)
 }
 
 // FIXME Unused?
-void Connect::request_data_ddx(DataDDS &data, string expr)
-{
+void Connect::request_data_ddx(DataDDS &data, string expr) {
     string proj, sel;
     string::size_type dotpos = expr.find('&');
     if (dotpos != expr.npos) {
         proj = expr.substr(0, dotpos);
         sel = expr.substr(dotpos);
-    }
-    else {
+    } else {
         proj = expr;
         sel = "";
     }
@@ -943,8 +904,7 @@ void Connect::request_data_ddx(DataDDS &data, string expr)
         process_data(data, rs);
         delete rs;
         rs = 0;
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete rs;
         rs = 0;
         throw;
@@ -952,8 +912,7 @@ void Connect::request_data_ddx(DataDDS &data, string expr)
 }
 
 // FIXME Unused?
-void Connect::request_data_ddx_url(DataDDS &data)
-{
+void Connect::request_data_ddx_url(DataDDS &data) {
     string use_url = _URL + "?" + _proj + _sel;
     Response *rs = 0;
     // We need to catch Error exceptions to ensure calling close_output.
@@ -966,8 +925,7 @@ void Connect::request_data_ddx_url(DataDDS &data)
         process_data(data, rs);
         delete rs;
         rs = 0;
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete rs;
         rs = 0;
         throw;
@@ -987,8 +945,7 @@ void Connect::request_data_ddx_url(DataDDS &data)
  @param data Result.
  @param rs Read from this Response object. */
 
-void Connect::read_data(DataDDS &data, Response *rs)
-{
+void Connect::read_data(DataDDS &data, Response *rs) {
     if (!rs)
         throw InternalErr(__FILE__, __LINE__, "Response object is null.");
 
@@ -997,9 +954,7 @@ void Connect::read_data(DataDDS &data, Response *rs)
 
     read_data_no_mime(data, rs);
 }
-void
-Connect::read_data(DDS &data, Response *rs)
-{
+void Connect::read_data(DDS &data, Response *rs) {
     if (!rs)
         throw InternalErr(__FILE__, __LINE__, "Response object is null.");
 
@@ -1014,14 +969,12 @@ Connect::read_data(DDS &data, Response *rs)
 // Assumptions:
 // #1 The current file position is past any MIME headers (if they were present).
 // #2 We must reset the FILE* position to the start of the DDS or DDX headers
-static void divine_type_information(Response *rs)
-{
+static void divine_type_information(Response *rs) {
     // Consume whitespace
     int c = getc(rs->get_stream());
     while (!feof(rs->get_stream()) && !ferror(rs->get_stream()) && isspace(c)) {
         c = getc(rs->get_stream());
     }
-
 
     if (ferror(rs->get_stream()))
         throw Error("Error reading response type information: " + string(strerror(errno)));
@@ -1034,15 +987,15 @@ static void divine_type_information(Response *rs)
     // with a DDS (;Dataset {' ...). I take into account that our parsers have
     // accepted both 'Dataset' and 'dataset' for a long time.
     switch (c) {
-        case '-':
-            rs->set_type(dods_data_ddx);
-            break;
-        case 'D':
-        case 'd':
-            rs->set_type(dods_data);
-            break;
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Could not determine type of response object in stream.");
+    case '-':
+        rs->set_type(dods_data_ddx);
+        break;
+    case 'D':
+    case 'd':
+        rs->set_type(dods_data);
+        break;
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Could not determine type of response object in stream.");
     }
 
     ungetc(c, rs->get_stream());
@@ -1060,28 +1013,26 @@ static void divine_type_information(Response *rs)
 
  @param data Result.
  @param rs Read from this Response object. */
-void Connect::read_data_no_mime(DataDDS &data, Response *rs)
-{
+void Connect::read_data_no_mime(DataDDS &data, Response *rs) {
     if (rs->get_type() == unknown_type)
         divine_type_information(rs);
 
     switch (rs->get_type()) {
-        case dods_data:
-            d_version = rs->get_version();
-            d_protocol = rs->get_protocol();
-            process_data(data, rs);
-            break;
-        case dods_data_ddx:
-            process_data(data, rs);
-            d_version = rs->get_version();
-            d_protocol = data.get_protocol();
-            break;
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Should have been a DataDDS or DataDDX.");
+    case dods_data:
+        d_version = rs->get_version();
+        d_protocol = rs->get_protocol();
+        process_data(data, rs);
+        break;
+    case dods_data_ddx:
+        process_data(data, rs);
+        d_version = rs->get_version();
+        d_protocol = data.get_protocol();
+        break;
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Should have been a DataDDS or DataDDX.");
     }
 }
-void Connect::read_data_no_mime(DDS &data, Response *rs)
-{
+void Connect::read_data_no_mime(DDS &data, Response *rs) {
     if (rs->get_type() == unknown_type)
         divine_type_information(rs);
 
@@ -1103,11 +1054,7 @@ void Connect::read_data_no_mime(DDS &data, Response *rs)
     }
 }
 
-bool
-Connect::is_local()
-{
-    return _local;
-}
+bool Connect::is_local() { return _local; }
 
 /** Return the Connect object's URL in a string.  The URL was set by
  the class constructor, and may not be reset.  If you want to
@@ -1125,8 +1072,7 @@ Connect::is_local()
  <tt>?</tt>).  If FALSE, any constraint expression will be removed from
  the URL.  The default is TRUE.
  */
-string Connect::URL(bool ce)
-{
+string Connect::URL(bool ce) {
     if (_local)
         throw InternalErr(__FILE__, __LINE__, "URL(): This call is only valid for a DAP data source.");
 
@@ -1144,8 +1090,7 @@ string Connect::URL(bool ce)
  @brief Get the Connect's constraint expression.
  @return A string containing the constraint expression (if any)
  submitted to the Connect object's constructor.  */
-string Connect::CE()
-{
+string Connect::CE() {
     if (_local)
         throw InternalErr(__FILE__, __LINE__, "CE(): This call is only valid for a DAP data source.");
 
@@ -1157,8 +1102,7 @@ string Connect::CE()
  @param u The username.
  @param p The password.
  @see extract_auth_info() */
-void Connect::set_credentials(string u, string p)
-{
+void Connect::set_credentials(string u, string p) {
     if (d_http)
         d_http->set_credentials(u, p);
 }
@@ -1166,8 +1110,7 @@ void Connect::set_credentials(string u, string p)
 /** Set the \e accept deflate property.
  @param deflate True if the client can accept compressed responses, False
  otherwise. */
-void Connect::set_accept_deflate(bool deflate)
-{
+void Connect::set_accept_deflate(bool deflate) {
     if (d_http)
         d_http->set_accept_deflate(deflate);
 }
@@ -1177,8 +1120,7 @@ void Connect::set_accept_deflate(bool deflate)
 
  @param major The client dap protocol major version
  @param minor The client dap protocol minor version */
-void Connect::set_xdap_protocol(int major, int minor)
-{
+void Connect::set_xdap_protocol(int major, int minor) {
     if (d_http)
         d_http->set_xdap_protocol(major, minor);
 }
@@ -1186,17 +1128,14 @@ void Connect::set_xdap_protocol(int major, int minor)
 /** Disable any further use of the client-side cache. In a future version
  of this software, this should be handled so that the www library is
  not initialized with the cache running by default. */
-void Connect::set_cache_enabled(bool cache)
-{
+void Connect::set_cache_enabled(bool cache) {
     if (d_http)
         d_http->set_cache_enabled(cache);
 }
 
-bool Connect::is_cache_enabled()
-{
+bool Connect::is_cache_enabled() {
     bool status;
-    DBG(cerr << "Entering is_cache_enabled (" << hex << d_http << dec
-            << ")... ");
+    DBG(cerr << "Entering is_cache_enabled (" << hex << d_http << dec << ")... ");
     if (d_http)
         status = d_http->is_cache_enabled();
     else

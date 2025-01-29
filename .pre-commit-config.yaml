@@ -1,0 +1,19 @@
+
+# See https://github.com/pre-commit for more information
+# jhrg 7/14/24
+
+fail_fast: false
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+      - id: check-json
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.8
+    hooks:
+      - id: clang-format
+        # See https://github.com/pre-commit/mirrors-clang-format/blob/main/.pre-commit-hooks.yaml
+        args: [--style=file, -i]
+        'types_or': [c++, c, json]

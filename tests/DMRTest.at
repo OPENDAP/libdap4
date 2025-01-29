@@ -162,6 +162,54 @@ m4_define([DMR_TRANS_CE], [
     AT_CLEANUP
 ])
 
+dnl Given a filename, remove the <Value> element of a DAP4 data response as
+dnl printed by getdap4 so that we dont have issues with comparing data values
+dnl on big- and little-endian machines. The value of the checksum is a function
+dnl of the bytes, so different word orders produce different checksums. jhrg 4/25/18
+dnl
+dnl Ripped from the BES modules/common/handler_tests_macros.m4 file. jhrg 1/22/24
+
+m4_define([REMOVE_DAP4_CHECKSUM], [dnl
+    sed 's@<Value>[[0-9a-f]]\{8\}</Value>@removed checksum@g' < $1 > $1.sed
+    dnl '
+    mv $1.sed $1
+])
+
+
+# Usage DMR_TRANS_C_NO_CRC <test_input> <ce> <baseline> <pass/xfail>
+# This code tests the values printed when the received document is decoded.
+# It is different from DMR_TRANS_CE in that it does not include the CRC32
+# checksum so that the test will work for both little- and big-endian machines.
+# jhrg 1/22/24
+m4_define([DMR_TRANS_CE_NO_CRC], [
+    # Test transmitting data (i.e., writing the Data DMR to a file and then decoding it)
+    # after applying a constraint expression to the source DMR.
+    AT_SETUP([trans ce no CRC $1 $2 $3])
+    AT_KEYWORDS([trans_ce])
+
+    input=$abs_srcdir/dmr-testsuite/$1
+    baseline=$abs_srcdir/dmr-testsuite/universal/$3
+
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        # // old version - sbl 9.4.19
+        # AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2"], [], [stdout], []) old version
+
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2"], [ignore], [stdout], [stderr])
+        REMOVE_DAP4_CHECKSUM([stdout])
+        AT_CHECK([cat stdout stderr > $baseline.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2" || true], [], [stdout], [stderr])
+        REMOVE_DAP4_CHECKSUM([stdout])
+        AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
+        AT_XFAIL_IF([test "X$4" = "Xxfail"])
+        ])
+
+    AT_CLEANUP
+])
+
+
 # Usage DMR_TRANS_FUNC_CE <test_input> <func expr> <ce> <baseline> <pass/xfail>
 # This code tests the values printed when the received document is decoded.
 m4_define([DMR_TRANS_FUNC_CE], [
@@ -304,7 +352,7 @@ DMR_TRANS([test_simple_4.xml], [pass])
 DMR_TRANS([test_simple_5.xml], [pass])
 DMR_TRANS([test_simple_6.xml], [pass])
 DMR_TRANS([test_simple_7.xml], [pass])
-DMR_TRANS([test_simple_8.xml], [xfail])
+DMR_TRANS([test_simple_8.xml], [pass])
 DMR_TRANS([test_simple_9.xml], [pass])
 DMR_TRANS([test_simple_9.1.xml], [pass])
 DMR_TRANS([test_simple_10.xml], [pass])
@@ -462,9 +510,12 @@ DMR_TRANS_CE([test_simple_7.xml], [s{i1;s}], [test_simple_7.xml.1.trans_base], [
 DMR_TRANS_CE([test_simple_7.xml], [s.i1], [test_simple_7.xml.2.trans_base], [pass])
 DMR_TRANS_CE([test_simple_7.xml], [s{i1}], [test_simple_7.xml.2.trans_base], [pass])
 
-DMR_TRANS_CE([test_simple_8.xml], [outer], [test_simple_8.xml.1.trans_base], [xfail])
-DMR_TRANS_CE([test_simple_8.xml], [outer.s.s], [test_simple_8.xml.2.trans_base], [xfail])
-DMR_TRANS_CE([test_simple_8.xml], [outer{s{s}}], [test_simple_8.xml.2.trans_base], [xfail])
+# Modified to use elided CRC - we have tested the CRC elsewhere and in the BES
+# we remove the CRC from both the output and the baselines to avoid making baselines
+# for both big- and little-endian machines. jhrg 1/22/24
+DMR_TRANS_CE_NO_CRC([test_simple_8.xml], [outer], [test_simple_8.xml.1.trans_base], [pass])
+DMR_TRANS_CE_NO_CRC([test_simple_8.xml], [outer.s.s], [test_simple_8.xml.2.trans_base], [pass])
+DMR_TRANS_CE_NO_CRC([test_simple_8.xml], [outer{s{s}}], [test_simple_8.xml.2.trans_base], [pass])
 
 DMR_TRANS_CE([test_array_7.xml], [s], [test_array_7.xml.1.trans_base], [pass])
 DMR_TRANS_CE([test_array_7.xml], [s{i1;s}], [test_array_7.xml.1.trans_base], [pass])

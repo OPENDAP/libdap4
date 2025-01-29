@@ -27,16 +27,17 @@
 
 #include <cassert>
 
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cstdint>
 
-#include "DapObj.h"
 #include "BaseType.h"
+#include "DapObj.h"
 
-namespace libdap
-{
+namespace libdap {
+
+const string c_dap40_namespace = "http://xml.opendap.org/ns/DAP/4.0#";
 
 class D4Group;
 class D4BaseTypeFactory;
@@ -52,10 +53,9 @@ class DDS;
  * of a DAP4 dataset are held by the D4Group instance (which is a child
  * of Constructor).
  */
-class DMR : public DapObj
-{
+class DMR : public DapObj {
 private:
-    D4BaseTypeFactory *d_factory;
+    D4BaseTypeFactory *d_factory = nullptr;
 
     /// The name of the dataset. This should not be the pathname to a file
     std::string d_name;
@@ -63,37 +63,42 @@ private:
     std::string d_filename;
 
     /// DAP protocol major version number. Should be '4'
-    int d_dap_major;
+    int d_dap_major = 4;
     /// DAP protocol minor version number.
-    int d_dap_minor;
+    int d_dap_minor = 0;
     /// String version of the DAP protocol number
-    std::string d_dap_version;
+    std::string d_dap_version = "4.0";
 
     /// The version of the DMR document
-    std::string d_dmr_version;
+    std::string d_dmr_version = "1.0";
 
     /// The URL for the request base
     std::string d_request_xml_base;
 
     /// The namespace to use when printing the XML serialization
-    std::string d_namespace;
+    std::string d_namespace = c_dap40_namespace;
 
     /// The maximum response size (in Kilo bytes)
-    uint64_t d_max_response_size_kb;
+    uint64_t d_max_response_size_kb = 0;
 
     /// Whether transferring the whole DMR(the expression constraint is empty)
-    bool d_ce_empty;
+    bool d_ce_empty = false;
 
     /// The root group; holds dimensions, enums, variables, groups, ...
-    D4Group *d_root;
+    D4Group *d_root = nullptr;
 
+    /// A global flag to indicate if we need to use direct IO
+    bool global_dio_flag = false;
+
+    bool utf8_xml_encoding = false;
     friend class DMRTest;
+    friend class MockDMR;
 
 protected:
     void m_duplicate(const DMR &dmr);
 
 public:
-    DMR();
+    DMR() = default;
     DMR(const DMR &dmr);
     explicit DMR(D4BaseTypeFactory *factory, const std::string &name = "");
 
@@ -135,7 +140,7 @@ public:
      */
     //@{
     std::string filename() const { return d_filename; }
-    void set_filename(const std::string &fn) { d_filename = fn;}
+    void set_filename(const std::string &fn) { d_filename = fn; }
     //@}
 
     std::string dap_version() const { return d_dap_version; }
@@ -163,7 +168,7 @@ public:
      * @return The maximum allowable response size. A value of 0 means there is no
      * limit (default).
      */
-    long response_limit() const { return (long) d_max_response_size_kb; }
+    long response_limit() const { return (long)d_max_response_size_kb; }
 
     /**
      * @brief Get the maximum response size, in KB. Zero indicates no limit.
@@ -177,18 +182,14 @@ public:
      * is given in kilobytes.
      * @param size The maximum size of the response in kilobytes.
      */
-     void set_response_limit(long size) {
-        d_max_response_size_kb = size;
-     }
+    void set_response_limit(long size) { d_max_response_size_kb = size; }
 
     /**
      * Set the maximum response size. Zero is the default value and indicates there is no limit.
      * The size is given in kilobytes.
      * @param size The maximum size of the response in kilobytes.
      */
-    void set_response_limit_kb(const uint64_t &size) {
-        d_max_response_size_kb = size;
-    }
+    void set_response_limit_kb(const uint64_t &size) { d_max_response_size_kb = size; }
 
     /// Get the estimated response size, in kilobytes
     long request_size(bool constrained);
@@ -203,11 +204,9 @@ public:
     /**
      * @return Returns true if the total data bytes requested exceeds the set limit, false otherwise.
      */
-    bool too_big() {
-        return d_max_response_size_kb != 0 && request_size_kb(true) > d_max_response_size_kb;
-    }
+    bool too_big() { return d_max_response_size_kb != 0 && request_size_kb(true) > d_max_response_size_kb; }
 
-    /// Set the flag that marks the expression constraint as empty. 
+    /// Set the flag that marks the expression constraint as empty.
     void set_ce_empty(bool ce_empty) { d_ce_empty = ce_empty; }
 
     /// Get the flag that marks the expression constraint as empty.
@@ -226,6 +225,14 @@ public:
     void print_dap4(XMLWriter &xml, bool constrained = false);
 
     void dump(std::ostream &strm) const override;
+
+    // The following methods are for direct IO optimization.
+    bool get_global_dio_flag() const { return global_dio_flag; }
+    void set_global_dio_flag(bool dio_flag_value = true) { global_dio_flag = dio_flag_value; }
+
+    // The following methods are for utf8_encoding.
+    bool get_utf8_xml_encoding() const { return utf8_xml_encoding; }
+    void set_utf8_xml_encoding(bool encoding_value = true) { utf8_xml_encoding = encoding_value; }
 };
 
 } // namespace libdap

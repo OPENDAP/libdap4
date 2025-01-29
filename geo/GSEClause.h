@@ -34,12 +34,12 @@
 #ifndef _gseclause_h
 #define _gseclause_h 1
 
-#include <string>
 #include <sstream>
+#include <string>
 
 #if 0
-#include <BaseType.h>
 #include <Array.h>
+#include <BaseType.h>
 #include <Grid.h>
 #endif
 
@@ -47,10 +47,9 @@ namespace libdap {
 class BaseType;
 class Array;
 class Grid;
-}
+} // namespace libdap
 
-namespace functions
-{
+namespace functions {
 
 enum relop {
     dods_nop_op,
@@ -70,8 +69,7 @@ enum relop {
     @author James Gallagher
     @see GridSelectionExpr */
 
-class GSEClause
-{
+class GSEClause {
 private:
     libdap::Array *d_map;
     // _value1, 2 and _op1, 2 hold the first and second operators and
@@ -85,28 +83,27 @@ private:
 
     string d_map_min_value, d_map_max_value;
 
-    GSEClause();  // Hidden default constructor.
+    GSEClause(); // Hidden default constructor.
 
-    GSEClause(const GSEClause &param); // Hide
+    GSEClause(const GSEClause &param);    // Hide
     GSEClause &operator=(GSEClause &rhs); // Hide
 
-    template<class T> void set_start_stop();
-    template<class T> void set_map_min_max_value(T min, T max);
+    template <class T> void set_start_stop();
+    template <class T> void set_map_min_max_value(T min, T max);
 
     void compute_indices();
 
 public:
     /** @name Constructors */
     //@{
-    GSEClause(libdap::Grid *grid, const string &map, const double value,
-              const relop op);
+    GSEClause(libdap::Grid *grid, const string &map, const double value, const relop op);
 
-    GSEClause(libdap::Grid *grid, const string &map, const double value1,
-              const relop op1, const double value2, const relop op2);
+    GSEClause(libdap::Grid *grid, const string &map, const double value1, const relop op1, const double value2,
+              const relop op2);
     //@}
 
     virtual ~GSEClause();
-    
+
     bool OK() const;
 
     /** @name Accessors */
@@ -137,4 +134,3 @@ public:
 } // namespace functions
 
 #endif // _gseclause_h
-

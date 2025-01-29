@@ -42,10 +42,10 @@
 #ifndef _basetype_h
 #define _basetype_h 1
 
-#include <vector>
-#include <stack>
 #include <iostream>
+#include <stack>
 #include <string>
+#include <vector>
 
 #include "AttrTable.h"
 #include "D4AttributeType.h"
@@ -53,8 +53,8 @@
 
 #include "InternalErr.h"
 
-#include "dods-datatypes.h"
 #include "Type.h"
+#include "dods-datatypes.h"
 
 #include "DapObj.h"
 
@@ -62,8 +62,7 @@ using namespace std;
 
 class Crc32;
 
-namespace libdap
-{
+namespace libdap {
 
 class ConstraintEvaluator;
 
@@ -112,19 +111,18 @@ class D4Attributes;
     the constraints
     to be returned. These cautions are outlined where they occur.
 
-	@note This class is ued by both DAP2 and DAP4.
+    @note This class is ued by both DAP2 and DAP4.
 
     @brief The basic data type for the DODS DAP types.  */
 
-class BaseType : public DapObj
-{
+class BaseType : public DapObj {
 private:
-    string d_name;  // name of the instance
-    Type d_type;   // instance's type
+    string d_name;    // name of the instance
+    Type d_type;      // instance's type
     string d_dataset; // name of the dataset used to create this BaseType
 
-    bool d_is_read;  // true if the value has been read
-    bool d_is_send;  // Is the variable in the projection?
+    bool d_is_read; // true if the value has been read
+    bool d_is_send; // Is the variable in the projection?
 
     // d_parent points to the Constructor or Vector which holds a particular
     // variable. It is null for simple variables. The Vector and Constructor
@@ -136,12 +134,12 @@ private:
 
     D4Attributes *d_attributes;
 
-    bool d_is_dap4;         // True if this is a DAP4 variable, false ... DAP2
+    bool d_is_dap4; // True if this is a DAP4 variable, false ... DAP2
 
     // These are non-empty only for DAP4 variables. Added 9/27/12 jhrg
 
     // These were/are used for DAP2 CEs, but not for DAP4 ones
-    bool d_in_selection; // Is the variable in the selection?
+    bool d_in_selection;   // Is the variable in the selection?
     bool d_is_synthesized; // true if the variable is synthesized
 
 protected:
@@ -181,14 +179,14 @@ public:
     virtual void clear_local_data() { set_read_p(false); }
 
     virtual bool is_dap4() const { return d_is_dap4; }
-    virtual void set_is_dap4(const bool v) { d_is_dap4 = v;}
+    virtual void set_is_dap4(const bool v) { d_is_dap4 = v; }
 
     /** Clone this instance. Allocate a new instance and copy \c *this into
-	it. This method must perform a deep copy.
+    it. This method must perform a deep copy.
 
         @note This method should \e not copy data values, but must copy all
         other fields in the object.
-	@return A newly allocated copy of \c this. */
+    @return A newly allocated copy of \c this. */
     virtual BaseType *ptr_duplicate() = 0;
 
     virtual string name() const;
@@ -199,7 +197,7 @@ public:
     virtual void set_type(const Type &t);
     virtual string type_name() const;
 
-    virtual string dataset() const ;
+    virtual string dataset() const;
 
     /**
      * @brief How many elements are in this variable? Uses -1 in places
@@ -226,12 +224,13 @@ public:
     virtual void set_length(int64_t) { /* empty since the length of a BaseType is always one element. jhrg 8/12/22 */ }
 
     /** @brief Set the number of elements in this variable
-    * This version of the function deprecates set_length() which is limited to
-    * 32-bit sizes. The field uses -1 as a sentinel value indicating that
-    * the Vector/Array holds no values.
-    * @param l The number of elements in the variable
-    */
-    virtual void set_length_ll(int64_t) { /* empty since the length of a BaseType is always one element. jhrg 8/12/22 */ }
+     * This version of the function deprecates set_length() which is limited to
+     * 32-bit sizes. The field uses -1 as a sentinel value indicating that
+     * the Vector/Array holds no values.
+     * @param l The number of elements in the variable
+     */
+    virtual void set_length_ll(int64_t) { /* empty since the length of a BaseType is always one element. jhrg 8/12/22 */
+    }
 
     virtual bool is_simple_type() const;
     virtual bool is_vector_type() const;
@@ -317,21 +316,15 @@ public:
 
     virtual int64_t width_ll(bool constrained = false) const;
 
-    virtual void print_decl(FILE *out, string space = "    ",
-                            bool print_semi = true,
-                            bool constraint_info = false,
+    virtual void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
                             bool constrained = false);
 
-    virtual void print_xml(FILE *out, string space = "    ",
-                           bool constrained = false);
+    virtual void print_xml(FILE *out, string space = "    ", bool constrained = false);
 
-    virtual void print_decl(ostream &out, string space = "    ",
-                            bool print_semi = true,
-                            bool constraint_info = false,
+    virtual void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
                             bool constrained = false);
 
-    virtual void print_xml(ostream &out, string space = "    ",
-                           bool constrained = false);
+    virtual void print_xml(ostream &out, string space = "    ", bool constrained = false);
 
     virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
 
@@ -340,56 +333,56 @@ public:
     /** @name Abstract Methods */
     //@{
     /** Reads the class data into the memory referenced by <i>val</i>.
-	The caller should either allocate enough storage to <i>val</i>
-	to hold the class data or set \c *val to null. If <i>*val</i>
-	is NULL, memory will be allocated by this function with
-	<tt>new()</tt>. If the memory is allocated this way, the
-	caller is responsible for deallocating that memory. Array and
-	values for simple types are stored as C would store an array.
+    The caller should either allocate enough storage to <i>val</i>
+    to hold the class data or set \c *val to null. If <i>*val</i>
+    is NULL, memory will be allocated by this function with
+    <tt>new()</tt>. If the memory is allocated this way, the
+    caller is responsible for deallocating that memory. Array and
+    values for simple types are stored as C would store an array.
 
     @deprecated Use value() in the leaf classes.
 
-	@brief Reads the class data.
+    @brief Reads the class data.
 
-	@param val A pointer to a pointer to the memory into which the
-	class data will be copied. If the value pointed to is NULL,
-	memory will be allocated to hold the data, and the pointer
-	value modified accordingly. The calling program is responsible
-	for deallocating the memory references by this pointer.
+    @param val A pointer to a pointer to the memory into which the
+    class data will be copied. If the value pointed to is NULL,
+    memory will be allocated to hold the data, and the pointer
+    value modified accordingly. The calling program is responsible
+    for deallocating the memory references by this pointer.
 
-	@return The size (in bytes) of the information copied to <i>val</i>.
+    @return The size (in bytes) of the information copied to <i>val</i>.
     */
     virtual unsigned int buf2val(void **val) = 0;
 
     /** Store the value pointed to by <i>val</i> in the object's
-	internal buffer. This function does not perform any checks, so
-	users must be sure that the thing pointed to can actually be
-	stored in the object's buffer.
+    internal buffer. This function does not perform any checks, so
+    users must be sure that the thing pointed to can actually be
+    stored in the object's buffer.
 
-	Only simple objects (Int, Float, Byte, and so on) and arrays
-	of these simple objects may be stored using this function. To
-	put data into more complex constructor types, use the
-	functions provided by that class.
+    Only simple objects (Int, Float, Byte, and so on) and arrays
+    of these simple objects may be stored using this function. To
+    put data into more complex constructor types, use the
+    functions provided by that class.
 
     @deprecated Use set_value() in the leaf classes.
 
-	@brief Loads class data.
+    @brief Loads class data.
 
-	@param val A pointer to the data to be inserted into the class
-	data buffer.
+    @param val A pointer to the data to be inserted into the class
+    data buffer.
 
-	@param reuse A boolean value, indicating whether the class
-	internal data storage can be reused or not. If this argument
-	is TRUE, the class buffer is assumed to be large enough to
-	hold the incoming data, and it is <i>not</i> reallocated. If
-	FALSE, new storage is allocated. If the internal buffer has
-	not been allocated at all, this argument has no effect. This
-	is currently used only in the Vector class.
+    @param reuse A boolean value, indicating whether the class
+    internal data storage can be reused or not. If this argument
+    is TRUE, the class buffer is assumed to be large enough to
+    hold the incoming data, and it is <i>not</i> reallocated. If
+    FALSE, new storage is allocated. If the internal buffer has
+    not been allocated at all, this argument has no effect. This
+    is currently used only in the Vector class.
 
-	@return The size (in bytes) of the information copied from
-	<i>val</i>.
-	@see Grid
-	@see Vector::val2buf */
+    @return The size (in bytes) of the information copied from
+    <i>val</i>.
+    @see Grid
+    @see Vector::val2buf */
     virtual unsigned int val2buf(void *val, bool reuse = false) = 0;
 
     /** Similar to using serialize() and deserialize() together in one object.
@@ -413,48 +406,48 @@ public:
     virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
 
     /** Sends the data from the indicated (local) dataset through the
-	connection identified by the Marshaller parameter. If the
-	data is not already incorporated into the DDS object, read the
-	data from the dataset. Once the data are sent (written to the
-	Marshaller), they are deleted from the object and the object
-	state is reset so that they will be read again if the read()
-	method is called.
+    connection identified by the Marshaller parameter. If the
+    data is not already incorporated into the DDS object, read the
+    data from the dataset. Once the data are sent (written to the
+    Marshaller), they are deleted from the object and the object
+    state is reset so that they will be read again if the read()
+    method is called.
 
-	This function is only used on the server side of the
-	client/server connection, and is generally only called from
-	the ResponseBuilder functions. It has no BaseType
-	implementation; each datatype child class supplies its own
-	implementation.
+    This function is only used on the server side of the
+    client/server connection, and is generally only called from
+    the ResponseBuilder functions. It has no BaseType
+    implementation; each datatype child class supplies its own
+    implementation.
 
-	@brief Move data to the net, then remove them from the object.
+    @brief Move data to the net, then remove them from the object.
 
     @param eval Use this as the constraint expression evaluator.
-	@param dds The Data Descriptor Structure object corresponding
-	to this dataset. See <i>The DODS User Manual</i> for
-	information about this structure.
-	@param m A marshaller used to serialize data types
-	@param ce_eval A boolean value indicating whether to evaluate
-	the DODS constraint expression that may accompany this
-	dataset. The constraint expression is stored in the <i>dds</i>.
-	@return This method always returns true. Older versions used
-	the return value to signal success or failure.
+    @param dds The Data Descriptor Structure object corresponding
+    to this dataset. See <i>The DODS User Manual</i> for
+    information about this structure.
+    @param m A marshaller used to serialize data types
+    @param ce_eval A boolean value indicating whether to evaluate
+    the DODS constraint expression that may accompany this
+    dataset. The constraint expression is stored in the <i>dds</i>.
+    @return This method always returns true. Older versions used
+    the return value to signal success or failure.
 
-	@note We changed the default behavior of this method so that it
-	calls BaseType::clear_local_data() once the values are sent. This,
-	combined with the behavior that read() is called by this method
-	just before data are sent, means that data for any given variable
-	remain in memory for the shortest time possible. Furthermore, since
-	variables are serialized one at a time, no more than one variable's
-	data will be in memory at any given time when using the default
-	behavior. Some code - code that uses intern_data() or server functions -
-	might alter this default behavior. Only Array (i.e. Vector), Sequence,
-	D4Sequence and D4Opaque types actually hold data in dynamically allocated
-	memory, so sonly those types have the new/changed behavior.
-	This change was made on 7/5/15.
+    @note We changed the default behavior of this method so that it
+    calls BaseType::clear_local_data() once the values are sent. This,
+    combined with the behavior that read() is called by this method
+    just before data are sent, means that data for any given variable
+    remain in memory for the shortest time possible. Furthermore, since
+    variables are serialized one at a time, no more than one variable's
+    data will be in memory at any given time when using the default
+    behavior. Some code - code that uses intern_data() or server functions -
+    might alter this default behavior. Only Array (i.e. Vector), Sequence,
+    D4Sequence and D4Opaque types actually hold data in dynamically allocated
+    memory, so sonly those types have the new/changed behavior.
+    This change was made on 7/5/15.
 
-	@exception InternalErr.
-	@exception Error.
-	@see DDS */
+    @exception InternalErr.
+    @exception Error.
+    @see DDS */
     virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
 
     /**
@@ -483,29 +476,29 @@ public:
     virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
 
     /** Receives data from the network connection identified by the
-	<tt>source</tt> parameter. The data is put into the class data
-	buffer according to the input <tt>dds</tt>.
+    <tt>source</tt> parameter. The data is put into the class data
+    buffer according to the input <tt>dds</tt>.
 
-	This function is only used on the client side of the DODS
-	client/server connection.
+    This function is only used on the client side of the DODS
+    client/server connection.
 
-	@brief Receive data from the net.
+    @brief Receive data from the net.
 
-	@param um An UnMarshaller that knows how to deserialize data types
-	@param dds The Data Descriptor Structure object corresponding
-	to this dataset. See <i>The DODS User Manual</i> for
-	information about this structure. This would have been
-	received from the server in an earlier transmission.
-	@param reuse A boolean value, indicating whether the class
-	internal data storage can be reused or not. If this argument
-	is TRUE, the class buffer is assumed to be large enough to
-	hold the incoming data, and it is <i>not</i> reallocated. If
-	FALSE, new storage is allocated. If the internal buffer has
-	not been allocated at all, this argument has no effect.
-	@return Always returns TRUE.
-	@exception Error when a problem reading from the UnMarshaller is
-	found.
-	@see DDS */
+    @param um An UnMarshaller that knows how to deserialize data types
+    @param dds The Data Descriptor Structure object corresponding
+    to this dataset. See <i>The DODS User Manual</i> for
+    information about this structure. This would have been
+    received from the server in an earlier transmission.
+    @param reuse A boolean value, indicating whether the class
+    internal data storage can be reused or not. If this argument
+    is TRUE, the class buffer is assumed to be large enough to
+    hold the incoming data, and it is <i>not</i> reallocated. If
+    FALSE, new storage is allocated. If the internal buffer has
+    not been allocated at all, this argument has no effect.
+    @return Always returns TRUE.
+    @exception Error when a problem reading from the UnMarshaller is
+    found.
+    @see DDS */
     virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
 
     /**
@@ -517,41 +510,40 @@ public:
     virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
 
     /** Prints the value of the variable, with its declaration. This
-	function is primarily intended for debugging DODS
-	applications. However, it can be overloaded and used to do
-	some useful things. Take a look at the asciival and writeval
-	clients, both of which overload this to output the values of
-	variables in different ways.
+    function is primarily intended for debugging DODS
+    applications. However, it can be overloaded and used to do
+    some useful things. Take a look at the asciival and writeval
+    clients, both of which overload this to output the values of
+    variables in different ways.
 
-	@brief Prints the value of the variable.
+    @brief Prints the value of the variable.
 
-	@param out The output stream on which to print the value.
-	@param space This value is passed to the print_decl()
-	function, and controls the leading spaces of the output.
-	@param print_decl_p A boolean value controlling whether the
-	variable declaration is printed as well as the value. */
+    @param out The output stream on which to print the value.
+    @param space This value is passed to the print_decl()
+    function, and controls the leading spaces of the output.
+    @param print_decl_p A boolean value controlling whether the
+    variable declaration is printed as well as the value. */
 
     virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
 
     /** Prints the value of the variable, with its declaration. This
-	function is primarily intended for debugging DODS
-	applications. However, it can be overloaded and used to do
-	some useful things. Take a look at the asciival and writeval
-	clients, both of which overload this to output the values of
-	variables in different ways.
+    function is primarily intended for debugging DODS
+    applications. However, it can be overloaded and used to do
+    some useful things. Take a look at the asciival and writeval
+    clients, both of which overload this to output the values of
+    variables in different ways.
 
-	@brief Prints the value of the variable.
+    @brief Prints the value of the variable.
 
-	@param out The output ostream on which to print the value.
-	@param space This value is passed to the print_decl()
-	function, and controls the leading spaces of the output.
-	@param print_decl_p A boolean value controlling whether the
-	variable declaration is printed as well as the value. */
+    @param out The output ostream on which to print the value.
+    @param space This value is passed to the print_decl()
+    function, and controls the leading spaces of the output.
+    @param print_decl_p A boolean value controlling whether the
+    variable declaration is printed as well as the value. */
     virtual void print_val(ostream &out, string space = "", bool print_decl_p = true) = 0;
     //@}
 
     virtual bool is_dap4_projected(std::vector<string> &projected_dap4_inventory);
-
 };
 
 } // namespace libdap

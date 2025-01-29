@@ -32,57 +32,47 @@
 
 class Crc32;
 
-namespace libdap
-{
+namespace libdap {
 
-class D4Opaque: public BaseType
-{
+class D4Opaque : public BaseType {
 public:
-	typedef std::vector<uint8_t> dods_opaque;
+    typedef std::vector<uint8_t> dods_opaque;
 
 protected:
     dods_opaque d_buf;
 
 public:
-    D4Opaque(const std::string &n) : BaseType(n, dods_opaque_c, true /*is_dap4*/), d_buf(0) { }
-    D4Opaque(const std::string &n, const std::string &d)  : BaseType(n, d, dods_opaque_c, true /*is_dap4*/), d_buf(0) { }
+    D4Opaque(const std::string &n) : BaseType(n, dods_opaque_c, true /*is_dap4*/), d_buf(0) {}
+    D4Opaque(const std::string &n, const std::string &d) : BaseType(n, d, dods_opaque_c, true /*is_dap4*/), d_buf(0) {}
 
-    virtual ~D4Opaque()  { }
+    ~D4Opaque() override {}
 
-    D4Opaque(const D4Opaque &copy_from) : BaseType(copy_from) {
-        d_buf = copy_from.d_buf;
-    }
+    D4Opaque(const D4Opaque &copy_from) : BaseType(copy_from) { d_buf = copy_from.d_buf; }
 
     D4Opaque &operator=(const D4Opaque &rhs);
 
-    BaseType *ptr_duplicate() override {  return new D4Opaque(*this); }
+    BaseType *ptr_duplicate() override { return new D4Opaque(*this); }
 
-    virtual void clear_local_data();
+    void clear_local_data() override;
 
-    unsigned int width(bool = false) const override
-    {
-        return sizeof(vector<uint8_t>);
-    }
+    unsigned int width(bool = false) const override { return sizeof(vector<uint8_t>); }
 
-    int64_t width_ll(bool = false) const override
-    {
-        return sizeof(vector<uint8_t>);
-    }
+    int64_t width_ll(bool = false) const override { return sizeof(vector<uint8_t>); }
 
     // Return the length of the stored data or zero if no string has been
     // stored in the instance's internal buffer.
-    virtual int length() const { return d_buf.size(); }
+    int length() const override { return d_buf.size(); }
 
     // DAP2
     bool serialize(ConstraintEvaluator &, DDS &, Marshaller &, bool = true) override {
-    	throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
+        throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
     }
     bool deserialize(UnMarshaller &, DDS *, bool = false) override {
-    	throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
+        throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
     }
 
     // DAP4
-    void compute_checksum(Crc32 &checksum) override ;
+    void compute_checksum(Crc32 &checksum) override;
     void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
 #if 0
     virtual void serialize_no_release(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
@@ -95,24 +85,20 @@ public:
     virtual bool set_value(const dods_opaque &value);
     virtual dods_opaque value() const;
 
-    void print_val(FILE *, std::string = "", bool = true)  override {
-    	throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
+    void print_val(FILE *, std::string = "", bool = true) override {
+        throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
     }
     void print_val(std::ostream &out, std::string space = "", bool print_decl_p = true) override;
 
-    //virtual void print_dap4(XMLWriter &xml, bool constrained = false);
+    // virtual void print_dap4(XMLWriter &xml, bool constrained = false);
 
-    bool ops(BaseType *, int)  override {
-        throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
-    }
+    bool ops(BaseType *, int) override { throw InternalErr(__FILE__, __LINE__, "Unimplemented method"); }
 
     std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 
     void dump(std::ostream &strm) const override;
-
 };
 
 } // namespace libdap
 
 #endif // _d4_opaque_h
-

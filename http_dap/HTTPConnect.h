@@ -26,9 +26,9 @@
 #ifndef _httpconnect_h
 #define _httpconnect_h
 
+#include <mutex>
 #include <string>
 #include <vector>
-#include <mutex>
 
 #include <curl/curl.h>
 
@@ -56,13 +56,13 @@ private:
     HTTPCache *d_http_cache = nullptr;
 
     char d_error_buffer[CURL_ERROR_SIZE]; // A human-readable message.
-    std::string d_content_type; // apparently read by libcurl; this is valid only after curl_easy_perform()
+    std::string d_content_type;           // apparently read by libcurl; this is valid only after curl_easy_perform()
 
     bool d_accept_deflate = false; // Use deflate encoding for HTTP requests
 
-    std::string d_username;  // extracted from URL
-    std::string d_password;  // extracted from URL
-    std::string d_upstring;  // used to pass info into curl
+    std::string d_username; // extracted from URL
+    std::string d_password; // extracted from URL
+    std::string d_upstring; // used to pass info into curl
 
     std::string d_cookie_jar;
 
@@ -71,7 +71,7 @@ private:
     int d_dap_client_protocol_major = 2;
     int d_dap_client_protocol_minor = 0;
 
-    bool d_use_cpp_streams;    // Build HTTPResponse objects using fstream and not FILE*
+    bool d_use_cpp_streams; // Build HTTPResponse objects using fstream and not FILE*
 
     bool d_verbose_runtime = false;
     bool d_cached_response = false;
@@ -80,7 +80,8 @@ private:
 
     void www_lib_init();
 
-    long read_url(const std::string &url, FILE *stream, std::vector<std::string> &resp_hdrs, const std::vector<std::string> &headers);
+    long read_url(const std::string &url, FILE *stream, std::vector<std::string> &resp_hdrs,
+                  const std::vector<std::string> &headers);
 
     long read_url(const std::string &url, FILE *stream, std::vector<std::string> &resp_hdrs);
 

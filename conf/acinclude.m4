@@ -563,7 +563,8 @@ AC_DEFUN([DODS_CHECK_SIZES], [dnl
     dap_xdrlib=
 	PKG_PROG_PKG_CONFIG([0.9.0])
 	PKG_CHECK_MODULES([TIRPC], [libtirpc >= 0.2.4],
-		[dap_xdrlib=`echo "${TIRPC_LIBS}" | sed -e 's/^-l//'`
+		[dap_xdrlib=tirpc
+		LIBS="${TIRPC_LIBS} ${LIBS}"
 		AC_SUBST([TIRPC_CFLAGS])
 		AC_SUBST([TIRPC_LIBS])
 		AC_DEFINE([HAVE_LIBTIRPC], [1], [Define to 1 to use libtirpc.])],
@@ -572,24 +573,21 @@ AC_DEFUN([DODS_CHECK_SIZES], [dnl
 	AS_IF(
 	[test "$dap_xdrlib" = ""],
     	[AC_SEARCH_LIBS([xdr_void],[c rpc nsl rpcsvc],[
-    	  dap_xdrlib=`echo $ac_res|sed -e 's/^-l//'`],[
-    	  AC_MSG_WARN(Cannot locate library containing xdr functions.)])])
+    	  if test "$ac_res" = "none required"; then
+    	    dap_xdrlib=c
+    	  else
+    	    dap_xdrlib=`echo $ac_res|sed -e 's/^-l//'`
+    	  fi],[
+    	  AC_MSG_WARN(Cannot locate library containing xdr functions.)
+    	  dap_xdrlib=c])])
 
-    # Added for autoconf 2.59 which appears to not use/set $ac_res. jhrg
-    if test -z "$dap_xdrlib" ; then dap_xdrlib=c; fi
-    if test "$dap_xdrlib" = "none required" ; then dap_xdrlib=c; fi
-    # I don't think this is needed for autoconf 2.61 but I have no idea about
-    # 2.59 - it doesn't seem to be hurting anything with 2.61. jhrg
-    if test "$dap_xdrlib" != "c" ; then
-       # Add to library list
-       AC_CHECK_LIB($dap_xdrlib,xdr_void)
-    fi
     # Now figure out what integer functions to use
     dap_xdrint=0
-    AC_CHECK_LIB($dap_xdrlib,[xdr_uint32_t],[dap_xdrint=1],[
-      AC_CHECK_LIB($dap_xdrlib,[xdr_u_int32_t],[dap_xdrint=2],[
-        AC_CHECK_LIB($dap_xdrlib,[xdr_uint],[dap_xdrint=3],[
-          AC_CHECK_LIB($dap_xdrlib,[xdr_u_int],[dap_xdrint=4],[])])])])
+    AS_IF([test "$dap_xdrlib" = "tirpc"],[dap_xdrint=1],[
+      AC_CHECK_LIB($dap_xdrlib,[xdr_uint32_t],[dap_xdrint=1],[
+        AC_CHECK_LIB($dap_xdrlib,[xdr_u_int32_t],[dap_xdrint=2],[
+          AC_CHECK_LIB($dap_xdrlib,[xdr_uint],[dap_xdrint=3],[
+             AC_CHECK_LIB($dap_xdrlib,[xdr_u_int],[dap_xdrint=4],[])])])])])
     case "$dap_xdrint" in
     1) # uint32_t
 	XDR_INT32=xdr_int32_t

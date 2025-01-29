@@ -23,36 +23,32 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
-#include <string>
 #include <sstream>
+#include <string>
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
-#include "DMR.h"
+#include "D4FilterClause.h"
 #include "D4Group.h"
 #include "D4RValue.h"
-#include "D4FilterClause.h"
+#include "DMR.h"
 
 #include "../tests/D4TestTypeFactory.h"
 #include "../tests/TestD4Sequence.h"
+#include "../tests/TestFloat32.h"
 #include "../tests/TestInt32.h"
 #include "../tests/TestStr.h"
-#include "../tests/TestFloat32.h"
 
-#include "testFile.h"
 #include "run_tests_cppunit.h"
+#include "testFile.h"
 #include "test_config.h"
-
 
 #include "GNURegex.h"
 
 #include "debug.h"
-
-
-
 
 using namespace CppUnit;
 using namespace std;
@@ -67,21 +63,15 @@ const static string two_clause_txt = "TestD4Sequence_two_clause.txt";
 
 namespace libdap {
 
-class D4SequenceTest: public TestFixture {
+class D4SequenceTest : public TestFixture {
 private:
     TestD4Sequence *s;
 
 public:
-    D4SequenceTest() :
-        s(0)
-    {
-    }
-    ~D4SequenceTest()
-    {
-    }
+    D4SequenceTest() : s(0) {}
+    ~D4SequenceTest() {}
 
-    void setUp()
-    {
+    void setUp() {
         // Set up a simple sequence. Used to test ctor, assigment, et cetera.
         s = new TestD4Sequence("s");
         s->add_var_nocopy(new TestInt32("i32"));
@@ -92,14 +82,12 @@ public:
         s->set_length(7);
     }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete s;
         s = 0;
     }
 
-    void ctor_test()
-    {
+    void ctor_test() {
         s->intern_data();
         CPPUNIT_ASSERT(s->length() == 7);
 
@@ -112,8 +100,7 @@ public:
         CPPUNIT_ASSERT(oss.str() == read_test_baseline(prefix + s_txt));
     }
 
-    void assignment_test()
-    {
+    void assignment_test() {
         TestD4Sequence ts = *s;
         ts.intern_data();
         CPPUNIT_ASSERT(ts.length() == 7);
@@ -122,11 +109,10 @@ public:
         ts.output_values(oss);
 
         DBG(cerr << "ts: " << oss.str() << endl);
-        //CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + s_txt));
+        // CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + s_txt));
     }
 
-    void copy_ctor_test()
-    {
+    void copy_ctor_test() {
         unique_ptr<TestD4Sequence> ts(new TestD4Sequence(*s));
         ts->intern_data();
 
@@ -136,13 +122,12 @@ public:
         ts->output_values(oss);
 
         DBG(cerr << "ts: " << oss.str() << endl);
-        //CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + s_txt));
+        // CPPUNIT_ASSERT(oss.str() == readTestBaseline(prefix + s_txt));
     }
 
-    void one_clause_test()
-    {
+    void one_clause_test() {
         D4RValue *arg1 = new D4RValue(s->var("i32"));
-        D4RValue *arg2 = new D4RValue((long long) 1024);
+        D4RValue *arg2 = new D4RValue((long long)1024);
         s->clauses().add_clause(new D4FilterClause(D4FilterClause::equal, arg1, arg2));
 
         s->intern_data();
@@ -158,14 +143,13 @@ public:
         CPPUNIT_ASSERT(oss.str() == read_test_baseline(prefix + one_clause_txt));
     }
 
-    void two_clause_test()
-    {
+    void two_clause_test() {
         D4RValue *arg1 = new D4RValue(s->var("i32"));
-        D4RValue *arg2 = new D4RValue((long long) 1024);
+        D4RValue *arg2 = new D4RValue((long long)1024);
         s->clauses().add_clause(new D4FilterClause(D4FilterClause::greater_equal, arg1, arg2));
 
         D4RValue *arg1_2 = new D4RValue(s->var("i32"));
-        D4RValue *arg2_2 = new D4RValue((long long) 1048576);
+        D4RValue *arg2_2 = new D4RValue((long long)1048576);
         s->clauses().add_clause(new D4FilterClause(D4FilterClause::less_equal, arg1_2, arg2_2));
 
         s->intern_data();
@@ -182,14 +166,13 @@ public:
         CPPUNIT_ASSERT(oss.str() == read_test_baseline(prefix + two_clause_txt));
     }
 
-    void two_variable_test()
-    {
+    void two_variable_test() {
         D4RValue *arg1 = new D4RValue(s->var("i32"));
-        D4RValue *arg2 = new D4RValue((long long) 1024);
+        D4RValue *arg2 = new D4RValue((long long)1024);
         s->clauses().add_clause(new D4FilterClause(D4FilterClause::greater_equal, arg1, arg2));
 
         D4RValue *arg1_2 = new D4RValue(s->var("f32"));
-        D4RValue *arg2_2 = new D4RValue((long long) 0.0);
+        D4RValue *arg2_2 = new D4RValue((long long)0.0);
         s->clauses().add_clause(new D4FilterClause(D4FilterClause::less, arg1_2, arg2_2));
 
         s->intern_data();
@@ -206,24 +189,21 @@ public:
         CPPUNIT_ASSERT(oss.str() == read_test_baseline(prefix + one_clause_txt));
     }
 
-    CPPUNIT_TEST_SUITE (D4SequenceTest);
+    CPPUNIT_TEST_SUITE(D4SequenceTest);
 
-    CPPUNIT_TEST (ctor_test);
-    CPPUNIT_TEST (assignment_test);
-    CPPUNIT_TEST (copy_ctor_test);
+    CPPUNIT_TEST(ctor_test);
+    CPPUNIT_TEST(assignment_test);
+    CPPUNIT_TEST(copy_ctor_test);
 
-    CPPUNIT_TEST (one_clause_test);
-    CPPUNIT_TEST (two_clause_test);
-    CPPUNIT_TEST (two_variable_test);
+    CPPUNIT_TEST(one_clause_test);
+    CPPUNIT_TEST(two_clause_test);
+    CPPUNIT_TEST(two_variable_test);
 
     CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (D4SequenceTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(D4SequenceTest);
 
-}
+} // namespace libdap
 
-int main(int argc, char*argv[])
-{
-    return run_tests<D4SequenceTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<D4SequenceTest>(argc, argv) ? 0 : 1; }

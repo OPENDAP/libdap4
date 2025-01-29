@@ -29,9 +29,9 @@
 #include "D4Opaque.h"
 #include "TestCommon.h"
 
-using namespace libdap ;
+using namespace libdap;
 
-class TestD4Opaque: public D4Opaque, public TestCommon {
+class TestD4Opaque : public D4Opaque, public TestCommon {
     bool d_series_values;
 
     void m_duplicate(const TestD4Opaque &ts);
@@ -57,4 +57,3 @@ public:
 };
 
 #endif //_testd4opaque_h
-

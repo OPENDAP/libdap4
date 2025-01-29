@@ -22,7 +22,6 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-
 #ifndef MEDIA_TYPES_H_
 #define MEDIA_TYPES_H_
 
@@ -48,7 +47,7 @@ static std::string WEB_ERR2 = "web-error";
 
 static std::string DAP4_DMR = "dap4-dmr";
 static std::string DAP4_DATA = "dap4-data";
-static std::string DAP4_ERR ="dap4-error";
+static std::string DAP4_ERR = "dap4-error";
 
 static const std::string DMR_Content_Type = "application/vnd.opendap.dap4.dataset-metadata";
 static const std::string DAP4_DATA_Content_Type = "application/vnd.opendap.dap4.data";

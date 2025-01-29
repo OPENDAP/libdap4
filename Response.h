@@ -27,13 +27,12 @@
 #define response_h
 
 #include <cstdio>
-#include <string>
 #include <fstream>
+#include <string>
 
 #include "ObjectType.h"
 
-namespace libdap
-{
+namespace libdap {
 
 /** Encapsulate a response. Instead of directly returning the FILE pointer
     from which a response is read, return an instance of this object. For a
@@ -48,8 +47,7 @@ namespace libdap
     a FileConnect class (or maybe the specifics of the connection type could
     be held in the Response object and HTTPConnect and the to-be-written
     FileConnect would not be needed). */
-class Response
-{
+class Response {
 private:
     /// The data stream
     FILE *d_stream = nullptr;
@@ -70,23 +68,22 @@ public:
     /** @name Suppressed default methods */
     /// @{
     Response(const Response &) = delete;
-    Response &operator=(const Response &) =delete;
+    Response &operator=(const Response &) = delete;
     /// @}
 
     /** Initialize with a stream. Create an instance initialized to a stream.
-	by default get_type() and get_version() return default values of
-	unknown_type and "dods/0.0", respectively. Specializations (see
-	HTTPResponse and HTTPConnect) may fill these fields in with other
-	values.
+    by default get_type() and get_version() return default values of
+    unknown_type and "dods/0.0", respectively. Specializations (see
+    HTTPResponse and HTTPConnect) may fill these fields in with other
+    values.
         @param s Read data from this stream.
         @param status The HTTP response status code.*/
-    explicit Response(FILE *s, int status = 0) : d_stream(s), d_status(status) { }
+    explicit Response(FILE *s, int status = 0) : d_stream(s), d_status(status) {}
 
-    explicit Response(std::fstream *s, int status = 0) : d_cpp_stream(s), d_status(status) { }
+    explicit Response(std::fstream *s, int status = 0) : d_cpp_stream(s), d_status(status) {}
 
     /** Close the stream. */
-    virtual ~Response()
-    {
+    virtual ~Response() {
         if (d_stream)
             fclose(d_stream);
         if (d_cpp_stream) {
@@ -97,7 +94,7 @@ public:
 
     /** @name getters */
     ///@{
-    virtual int get_status() const {  return d_status; }
+    virtual int get_status() const { return d_status; }
     virtual FILE *get_stream() const { return d_stream; }
     virtual std::istream *get_cpp_stream() const { return d_cpp_stream; }
 
@@ -111,7 +108,7 @@ public:
     virtual void set_status(int s) { d_status = s; }
 
     virtual void set_stream(FILE *s) { d_stream = s; }
-    virtual void set_cpp_stream(std::istream *s) { d_cpp_stream = dynamic_cast<std::fstream*>(s); }
+    virtual void set_cpp_stream(std::istream *s) { d_cpp_stream = dynamic_cast<std::fstream *>(s); }
 
     virtual void set_type(ObjectType o) { d_type = o; }
     virtual void set_version(const std::string &v) { d_version = v; }

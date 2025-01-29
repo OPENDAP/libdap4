@@ -26,8 +26,8 @@
 
 #include "config.h"
 
-#include <stdint.h>
 #include <cstring>
+#include <stdint.h>
 
 #include <fstream>
 #include <memory>
@@ -36,22 +36,22 @@
 
 #include <GetOpt.h>
 
-#include "BaseType.h"
 #include "Array.h"
+#include "BaseType.h"
 #include "D4Enum.h"
 
-#include "DMR.h"
 #include "D4Group.h"
 #include "D4StreamUnMarshaller.h"
-#include "chunked_ostream.h"
+#include "DMR.h"
 #include "chunked_istream.h"
+#include "chunked_ostream.h"
 
-#include "util.h"
-#include "InternalErr.h"
 #include "Error.h"
+#include "InternalErr.h"
+#include "util.h"
 
-#include "D4ResponseBuilder.h"
 #include "ConstraintEvaluator.h"
+#include "D4ResponseBuilder.h"
 
 #include "D4ParserSax2.h"
 #include "D4TestTypeFactory.h"
@@ -59,15 +59,15 @@
 
 #include "D4ConstraintEvaluator.h"
 #include "D4FunctionEvaluator.h"
-#include "ServerFunctionsList.h"
-#include "D4TestFunction.h"
 #include "D4RValue.h"
+#include "D4TestFunction.h"
+#include "ServerFunctionsList.h"
 
-#include "util.h"
-#include "mime_util.h"
 #include "debug.h"
+#include "mime_util.h"
+#include "util.h"
 
-int test_variable_sleep_interval = 0;   // Used in Test* classes for testing timeouts.
+int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeouts.
 
 using namespace libdap;
 
@@ -78,9 +78,7 @@ using namespace libdap;
  * @param print Once parsed, should the DMR object be printed?
  * @return true if the parse worked, false otherwise
  */
-DMR *
-test_dap4_parser(const string &name, bool debug, bool print)
-{
+DMR *test_dap4_parser(const string &name, bool debug, bool print) {
     D4TestTypeFactory *factory = new D4TestTypeFactory;
     DMR *dataset = new DMR(factory, path_to_filename(name));
 
@@ -88,13 +86,11 @@ test_dap4_parser(const string &name, bool debug, bool print)
         D4ParserSax2 parser;
         if (name == "-") {
             parser.intern(cin, dataset, debug);
-        }
-        else {
+        } else {
             fstream in(name.c_str(), ios_base::in);
             parser.intern(in, dataset, debug);
         }
-    }
-    catch(...) {
+    } catch (...) {
         delete factory;
         delete dataset;
         throw;
@@ -118,17 +114,16 @@ test_dap4_parser(const string &name, bool debug, bool print)
  * @param dmr Set for this DMR
  * @param state True to use the DTS-like values, false otherwise
  */
-void
-set_series_values(DMR *dmr, bool state)
-{
-	if (state == true)
-		dmr->root()->set_read_p(false);
+void set_series_values(DMR *dmr, bool state) {
+    if (state == true)
+        dmr->root()->set_read_p(false);
 
-	TestCommon *tc = dynamic_cast<TestCommon*>(dmr->root());
-	if (tc)
-		tc->set_series_values(state);
-	else
-		cerr << "Could not cast root group to TestCommon (" << dmr->root()->type_name() << ", " << dmr->root()->name() << ")" << endl;
+    TestCommon *tc = dynamic_cast<TestCommon *>(dmr->root());
+    if (tc)
+        tc->set_series_values(state);
+    else
+        cerr << "Could not cast root group to TestCommon (" << dmr->root()->type_name() << ", " << dmr->root()->name()
+             << ")" << endl;
 }
 
 /**
@@ -141,9 +136,8 @@ set_series_values(DMR *dmr, bool state)
  * @param series_values
  * @return The name of the file that hods the response.
  */
-string
-send_data(DMR *dataset, const string &constraint, const string &function, bool series_values, bool ce_parser_debug)
-{
+string send_data(DMR *dataset, const string &constraint, const string &function, bool series_values,
+                 bool ce_parser_debug) {
     set_series_values(dataset, series_values);
 
     // This will be used by the DMR that holds the results of running the functions.
@@ -152,46 +146,47 @@ send_data(DMR *dataset, const string &constraint, const string &function, bool s
     D4TestTypeFactory d4_factory;
     unique_ptr<DMR> function_result(new DMR(&d4_factory, "function_results"));
 
-	// The Function Parser
-	if (!function.empty()) {
-		ServerFunctionsList *sf_list = ServerFunctionsList::TheList();
-		ServerFunction *scale = new D4TestFunction;
-		sf_list->add_function(scale);
+    // The Function Parser
+    if (!function.empty()) {
+        ServerFunctionsList *sf_list = ServerFunctionsList::TheList();
+        ServerFunction *scale = new D4TestFunction;
+        sf_list->add_function(scale);
 
-		D4FunctionEvaluator parser(dataset, sf_list);
-		if (ce_parser_debug) parser.set_trace_parsing(true);
-		bool parse_ok = parser.parse(function);
-		if (!parse_ok)
-			Error("Function Expression failed to parse.");
-		else {
-			if (ce_parser_debug) cerr << "Function Parse OK" << endl;
+        D4FunctionEvaluator parser(dataset, sf_list);
+        if (ce_parser_debug)
+            parser.set_trace_parsing(true);
+        bool parse_ok = parser.parse(function);
+        if (!parse_ok)
+            Error("Function Expression failed to parse.");
+        else {
+            if (ce_parser_debug)
+                cerr << "Function Parse OK" << endl;
 
-			parser.eval(function_result.get());
+            parser.eval(function_result.get());
 
-			// Now use the results of running the functions for the remainder of the
-			// send_data operation.
-			dataset = function_result.release();
-		}
-	}
+            // Now use the results of running the functions for the remainder of the
+            // send_data operation.
+            dataset = function_result.release();
+        }
+    }
 
     D4ResponseBuilder rb;
     rb.set_dataset_name(dataset->name());
 
     string file_name = dataset->name() + "_data.bin";
-    ofstream out(file_name.c_str(), ios::out|ios::trunc|ios::binary);
+    ofstream out(file_name.c_str(), ios::out | ios::trunc | ios::binary);
 
-	if (!constraint.empty()) {
-		D4ConstraintEvaluator parser(dataset);
-		if (ce_parser_debug)
-		    parser.set_trace_parsing(true);
-		bool parse_ok = parser.parse(constraint);
-		if (!parse_ok)
-			throw Error("Constraint Expression failed to parse.");
-		else if (ce_parser_debug)
-		    cerr << "CE Parse OK" << endl;
-	}
-    else {
-    	dataset->root()->set_send_p(true);
+    if (!constraint.empty()) {
+        D4ConstraintEvaluator parser(dataset);
+        if (ce_parser_debug)
+            parser.set_trace_parsing(true);
+        bool parse_ok = parser.parse(constraint);
+        if (!parse_ok)
+            throw Error("Constraint Expression failed to parse.");
+        else if (ce_parser_debug)
+            cerr << "CE Parse OK" << endl;
+    } else {
+        dataset->root()->set_send_p(true);
     }
 
     rb.send_dap(out, *dataset, /*with mime headers*/ true, !constraint.empty());
@@ -200,9 +195,7 @@ send_data(DMR *dataset, const string &constraint, const string &function, bool s
     return file_name;
 }
 
-void
-intern_data(DMR *dataset, /*const string &constraint,*/ bool series_values)
-{
+void intern_data(DMR *dataset, /*const string &constraint,*/ bool series_values) {
     set_series_values(dataset, series_values);
 
     // Mark all variables to be sent in their entirety. No CEs are used
@@ -214,13 +207,11 @@ intern_data(DMR *dataset, /*const string &constraint,*/ bool series_values)
     dataset->root()->intern_data(/*checksum, *dataset, eval*/);
 }
 
-DMR *
-read_data_plain(const string &file_name, bool debug)
-{
+DMR *read_data_plain(const string &file_name, bool debug) {
     D4BaseTypeFactory *factory = new D4BaseTypeFactory;
     DMR *dmr = new DMR(factory, "Test_data");
 
-    fstream in(file_name.c_str(), ios::in|ios::binary);
+    fstream in(file_name.c_str(), ios::in | ios::binary);
 
     // Gobble up the response's initial set of MIME headers. Normally
     // a client would extract information from these headers.
@@ -237,32 +228,29 @@ read_data_plain(const string &file_name, bool debug)
         char chunk[chunk_size];
         cis.read(chunk, chunk_size);
         // parse char * with given size
-    	D4ParserSax2 parser;
+        D4ParserSax2 parser;
 
-    	// Mirror the behavior in D4Connect where we are permissive with DAP4
-    	// data responses' parsing, as per Hyrax-98 in Jira. jhrg 4/13/16
-    	parser.set_strict(false);
+        // Mirror the behavior in D4Connect where we are permissive with DAP4
+        // data responses' parsing, as per Hyrax-98 in Jira. jhrg 4/13/16
+        parser.set_strict(false);
 
-    	// '-2' to discard the CRLF pair
-        parser.intern(chunk, chunk_size-2, dmr, debug);
-    }
-    catch(Error &e) {
-    	delete factory;
-    	delete dmr;
-    	cerr << "Exception: " << e.get_error_message() << endl;
-    	return 0;
-    }
-    catch(std::exception &e) {
-    	delete factory;
-    	delete dmr;
-    	cerr << "Exception: " << e.what() << endl;
-    	return 0;
-    }
-    catch(...) {
-    	delete factory;
-    	delete dmr;
-    	cerr << "Exception: unknown error" << endl;
-    	return 0;
+        // '-2' to discard the CRLF pair
+        parser.intern(chunk, chunk_size - 2, dmr, debug);
+    } catch (Error &e) {
+        delete factory;
+        delete dmr;
+        cerr << "Exception: " << e.get_error_message() << endl;
+        return 0;
+    } catch (std::exception &e) {
+        delete factory;
+        delete dmr;
+        cerr << "Exception: " << e.what() << endl;
+        return 0;
+    } catch (...) {
+        delete factory;
+        delete dmr;
+        cerr << "Exception: unknown error" << endl;
+        return 0;
     }
 
     D4StreamUnMarshaller um(cis, cis.twiddle_bytes());
@@ -274,24 +262,21 @@ read_data_plain(const string &file_name, bool debug)
     return dmr;
 }
 
-static void usage()
-{
+static void usage() {
     cerr << "Usage: dmr-test -p|s|t|i <file> [-c <expr>] [-f <function expression>] [-d -x -e]" << endl
-            << "p: Parse a file (use \"-\" for stdin; if a ce or a function is passed those are parsed too)" << endl
-            << "s: Send: parse and then 'send' a response to a file" << endl
-            << "t: Transmit: parse, send and then read the response file" << endl
-            << "i: Intern values (ce and function will be ignored by this)" << endl
-            << "c: Constraint expression " << endl
-            << "f: Function expression" << endl
-            << "d: turn on detailed xml parser debugging" << endl
-            << "D: turn on detailed ce parser debugging" << endl
-            << "x: print the binary object(s) built by the parse, send, trans or intern operations." << endl
-            << "e: use sEries values." << endl;
+         << "p: Parse a file (use \"-\" for stdin; if a ce or a function is passed those are parsed too)" << endl
+         << "s: Send: parse and then 'send' a response to a file" << endl
+         << "t: Transmit: parse, send and then read the response file" << endl
+         << "i: Intern values (ce and function will be ignored by this)" << endl
+         << "c: Constraint expression " << endl
+         << "f: Function expression" << endl
+         << "d: turn on detailed xml parser debugging" << endl
+         << "D: turn on detailed ce parser debugging" << endl
+         << "x: print the binary object(s) built by the parse, send, trans or intern operations." << endl
+         << "e: use sEries values." << endl;
 }
 
-int
-main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     GetOpt getopt(argc, argv, "p:s:t:i:c:f:xdDeh?");
     int option_char;
     bool parse = false;
@@ -301,8 +286,6 @@ main(int argc, char *argv[])
     bool trans = false;
     bool intern = false;
     bool series_values = false;
-    bool constrained = false;
-    bool functional = false;
     bool ce_parser_debug = false;
     string name = "";
     string ce = "";
@@ -318,29 +301,27 @@ main(int argc, char *argv[])
             break;
 
         case 's':
-        	send = true;
-        	name = getopt.optarg;
-        	break;
+            send = true;
+            name = getopt.optarg;
+            break;
 
         case 't':
-        	trans = true;
-        	name = getopt.optarg;
-        	break;
+            trans = true;
+            name = getopt.optarg;
+            break;
 
         case 'i':
-        	intern = true;
-        	name = getopt.optarg;
-        	break;
+            intern = true;
+            name = getopt.optarg;
+            break;
 
         case 'c':
-        	constrained = true;
-        	ce = getopt.optarg;
-        	break;
+            ce = getopt.optarg;
+            break;
 
         case 'f':
-        	functional = true;
-        	function = getopt.optarg;
-        	break;
+            function = getopt.optarg;
+            break;
 
         case 'd':
             debug = true;
@@ -355,8 +336,8 @@ main(int argc, char *argv[])
             break;
 
         case 'e':
-        	series_values = true;
-        	break;
+            series_values = true;
+            break;
 
         case '?':
         case 'h':
@@ -369,117 +350,110 @@ main(int argc, char *argv[])
             return 1;
         }
 
-    if (! (parse || send || trans || intern)) {
+    if (!(parse || send || trans || intern)) {
         cerr << "Error: ";
         usage();
         return 1;
     }
 
     try {
-		if (parse) {
-			DMR *dmr = test_dap4_parser(name, debug, print);
+        if (parse) {
+            DMR *dmr = test_dap4_parser(name, debug, print);
 
-			// The CE Parser
-			if (!ce.empty()) {
-				try {
-					D4ConstraintEvaluator parser(dmr);
-					if (ce_parser_debug) parser.set_trace_parsing(true);
-					bool parse_ok = parser.parse(ce);
-					if (!parse_ok)
-						cout << "CE Parse Failed" << endl;
-					else
-						cout << "CE Parse OK" << endl;
-				}
-				catch (Error &e) {
-					cerr << "CE Parse error: " << e.get_error_message() << endl;
-				}
-				catch (...) {
-					cerr << "Ce Parse error: Unknown exception thrown by parser" << endl;
-				}
-			}
+            // The CE Parser
+            if (!ce.empty()) {
+                try {
+                    D4ConstraintEvaluator parser(dmr);
+                    if (ce_parser_debug)
+                        parser.set_trace_parsing(true);
+                    bool parse_ok = parser.parse(ce);
+                    if (!parse_ok)
+                        cout << "CE Parse Failed" << endl;
+                    else
+                        cout << "CE Parse OK" << endl;
+                } catch (Error &e) {
+                    cerr << "CE Parse error: " << e.get_error_message() << endl;
+                } catch (...) {
+                    cerr << "Ce Parse error: Unknown exception thrown by parser" << endl;
+                }
+            }
 
-			// The Function Parser
-			if (!function.empty()) {
-				try {
-					ServerFunctionsList *sf_list = ServerFunctionsList::TheList();
-				    ServerFunction *scale = new D4TestFunction;
-				    sf_list->add_function(scale);
+            // The Function Parser
+            if (!function.empty()) {
+                try {
+                    ServerFunctionsList *sf_list = ServerFunctionsList::TheList();
+                    ServerFunction *scale = new D4TestFunction;
+                    sf_list->add_function(scale);
 
-					D4FunctionEvaluator parser(dmr, sf_list);
-					if (ce_parser_debug) parser.set_trace_parsing(true);
-					bool parse_ok = parser.parse(function);
-					if (!parse_ok)
-						cout << "Function Parse Failed" << endl;
-					else
-						cout << "Function Parse OK" << endl;
-				}
-				catch (Error &e) {
-					cerr << "Function Parse error: " << e.get_error_message() << endl;
-				}
-				catch (...) {
-					cerr << "Function Parse error: Unknown exception thrown by parser" << endl;
-				}
-			}
+                    D4FunctionEvaluator parser(dmr, sf_list);
+                    if (ce_parser_debug)
+                        parser.set_trace_parsing(true);
+                    bool parse_ok = parser.parse(function);
+                    if (!parse_ok)
+                        cout << "Function Parse Failed" << endl;
+                    else
+                        cout << "Function Parse OK" << endl;
+                } catch (Error &e) {
+                    cerr << "Function Parse error: " << e.get_error_message() << endl;
+                } catch (...) {
+                    cerr << "Function Parse error: Unknown exception thrown by parser" << endl;
+                }
+            }
 
-			delete dmr;
-		}
+            delete dmr;
+        }
 
-		if (send) {
-        	DMR *dmr = test_dap4_parser(name, debug, print);
+        if (send) {
+            DMR *dmr = test_dap4_parser(name, debug, print);
 
-        	string file_name = send_data(dmr, ce, function, series_values, ce_parser_debug);
-        	if (print)
-        		cout << "Response file: " << file_name << endl;
-        	delete dmr;
+            string file_name = send_data(dmr, ce, function, series_values, ce_parser_debug);
+            if (print)
+                cout << "Response file: " << file_name << endl;
+            delete dmr;
         }
 
         if (trans) {
-        	DMR *dmr = test_dap4_parser(name, debug, print);
-        	string file_name = send_data(dmr, ce, function, series_values, ce_parser_debug);
-         	delete dmr;
+            DMR *dmr = test_dap4_parser(name, debug, print);
+            string file_name = send_data(dmr, ce, function, series_values, ce_parser_debug);
+            delete dmr;
 
-        	DMR *client = read_data_plain(file_name, debug);
+            DMR *client = read_data_plain(file_name, debug);
 
-        	if (print) {
-        		XMLWriter xml;
-        		// received data never have send_p set; don't set 'constrained'
-        		client->print_dap4(xml, false /* constrained */);
-        		cout << xml.get_doc() << endl;
+            if (print) {
+                XMLWriter xml;
+                client->print_dap4(xml, false);
+                cout << xml.get_doc() << endl;
+                cout << "The data:" << endl;
+            }
 
-				cout << "The data:" << endl;
-        	}
+            // if trans is used, the data are printed regardless of print's value
+            client->root()->print_val(cout, "", false);
+            cout << endl;
 
-        	// if trans is used, the data are printed regardless of print's value
-    		client->root()->print_val(cout, "", false);
-    		cout << endl;
-
-        	delete client;
+            delete client;
         }
 
         if (intern) {
-        	DMR *dmr = test_dap4_parser(name, debug, print);
-        	intern_data(dmr, /*ce,*/ series_values);
+            DMR *dmr = test_dap4_parser(name, debug, print);
+            intern_data(dmr, /*ce,*/ series_values);
 
-        	if (print) {
-        		XMLWriter xml;
-        		dmr->print_dap4(xml, false /*constrained*/);
-        		cout << xml.get_doc() << endl;
+            if (print) {
+                XMLWriter xml;
+                dmr->print_dap4(xml, false);
+                cout << xml.get_doc() << endl;
+                cout << "The data:" << endl;
+            }
 
-				cout << "The data:" << endl;
-        	}
+            // if trans is used, the data are printed regardless of print's value
+            dmr->root()->print_val(cout, /*space*/ "", false);
+            cout << endl;
 
-        	// if trans is used, the data are printed regardless of print's value
-    		dmr->root()->print_val(cout, /*space*/"", false);
-    		cout << endl;
-
-        	delete dmr;
+            delete dmr;
         }
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         cerr << "Error: " << e.get_error_message() << endl;
         return 1;
     }
 
     return 0;
 }
-

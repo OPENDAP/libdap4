@@ -28,14 +28,13 @@
 
 #include <string>
 
-#include "Type.h"
 #include "InternalErr.h"
+#include "Type.h"
 
 // Class declarations; Make sure to include the corresponding headers in the
 // implementation file.
 
-namespace libdap
-{
+namespace libdap {
 
 class Byte;
 class Int16;
@@ -77,13 +76,10 @@ class BaseType;
 
     @author James Gallagher
     @see DDS */
-class BaseTypeFactory
-{
+class BaseTypeFactory {
 public:
-    BaseTypeFactory()
-    {}
-    virtual ~BaseTypeFactory()
-    {}
+    BaseTypeFactory() {}
+    virtual ~BaseTypeFactory() {}
 
     /**
      * Build a new variable and return it using a BaseType pointer. The
@@ -101,9 +97,7 @@ public:
      *
      * @note added for DAP4
      */
-    virtual BaseTypeFactory *ptr_duplicate() const {
-        throw InternalErr(__FILE__, __LINE__, "Not Implemented.");
-    }
+    virtual BaseTypeFactory *ptr_duplicate() const { throw InternalErr(__FILE__, __LINE__, "Not Implemented."); }
 
     virtual Byte *NewByte(const string &n = "") const;
     virtual Int16 *NewInt16(const string &n = "") const;

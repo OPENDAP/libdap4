@@ -40,19 +40,17 @@
 #include <iostream>
 
 #include "BaseType.h"
-#include "expr.h"
-#include "RValue.h"
 #include "DDS.h"
+#include "RValue.h"
 #include "dods-limits.h"
+#include "expr.h"
 #include "util.h"
 
 using namespace std;
 
 namespace libdap {
 
-rvalue_list *
-make_rvalue_list(rvalue *rv)
-{
+rvalue_list *make_rvalue_list(rvalue *rv) {
     assert(rv);
 
     rvalue_list *rvals = new rvalue_list;
@@ -65,14 +63,11 @@ make_rvalue_list(rvalue *rv)
 //
 // Returns: A pointer to the updated rvalue_list.
 
-rvalue_list *
-append_rvalue_list(rvalue_list *rvals, rvalue *rv)
-{
+rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv) {
     rvals->push_back(rv);
 
     return rvals;
 }
-
 
 /** Build an argument list suitable for calling a \c btp_func,
     \c bool_func, and so on. Since this takes an rvalue_list and
@@ -84,26 +79,23 @@ append_rvalue_list(rvalue_list *rvals, rvalue *rv)
 
     @param args A list of RValue objects
     @param dds Use this DDS when evaluating functions */
-BaseType **
-build_btp_args(const rvalue_list *args, DDS &dds)
-{
+BaseType **build_btp_args(const rvalue_list *args, DDS &dds) {
     int argc = 0;
 
     if (args)
         argc = args->size();
 
     // Sanitize allocation size
-    if (!size_ok(sizeof(BaseType*), argc + 1))
-        throw Error(malformed_expr, string("Malformed argument list (")
-        + long_to_string(argc) + string(")."));
+    if (!size_ok(sizeof(BaseType *), argc + 1))
+        throw Error(malformed_expr, string("Malformed argument list (") + long_to_string(argc) + string(")."));
 
     // Add space for a null terminator
-    BaseType **argv = new BaseType*[argc + 1];
+    BaseType **argv = new BaseType *[argc + 1];
     argv[argc] = nullptr;
 
     if (argc) {
         int i = 0;
-        for (auto btp: *args) {
+        for (auto btp : *args) {
             argv[i++] = btp->bvalue(dds);
         }
 
@@ -130,34 +122,28 @@ build_btp_args(const rvalue_list *args, DDS &dds)
     return argv;
 #endif
 
-rvalue::rvalue(BaseType *bt): d_value(bt), d_func(0), d_args(0)
-{}
+rvalue::rvalue(BaseType *bt) : d_value(bt), d_func(0), d_args(0) {}
 
-rvalue::rvalue(btp_func f, vector<rvalue *> *a) : d_value(0), d_func(f), d_args(a)
-{}
+rvalue::rvalue(btp_func f, vector<rvalue *> *a) : d_value(0), d_func(f), d_args(a) {}
 
-rvalue::rvalue(): d_value(0), d_func(0), d_args(0)
-{}
+rvalue::rvalue() : d_value(0), d_func(0), d_args(0) {}
 
-rvalue::~rvalue()
-{
+rvalue::~rvalue() {
     // Deleting the BaseType pointers in value and args is a bad idea since
     // those might be variables in the dataset. The DDS dtor will take care
     // of deleting them. The constants wrapped in BaseType objects should be
     // pushed on the list of CE-allocated temp objects which the CE frees.
 
-	// ADB: the d_args vector still needs to be deleted
-	if (d_args != 0) {
-		for (std::vector<rvalue *>::iterator iter = d_args->begin(); iter != d_args->end(); ++iter) {
-			delete *iter;
-		}
-		delete d_args;
-	}
+    // ADB: the d_args vector still needs to be deleted
+    if (d_args != 0) {
+        for (std::vector<rvalue *>::iterator iter = d_args->begin(); iter != d_args->end(); ++iter) {
+            delete *iter;
+        }
+        delete d_args;
+    }
 }
 
-string
-rvalue::value_name()
-{
+string rvalue::value_name() {
     assert(d_value);
 
     return d_value->name();
@@ -170,13 +156,10 @@ rvalue::value_name()
 
     @param dds The dds to pass to a function.
 */
-BaseType *
-rvalue::bvalue(DDS &dds)
-{
-    if (d_value) {        // i.e., if this RValue is a BaseType
+BaseType *rvalue::bvalue(DDS &dds) {
+    if (d_value) { // i.e., if this RValue is a BaseType
         return d_value;
-    }
-    else if (d_func) {
+    } else if (d_func) {
         // If func is true, then args must be set. See the constructor.
         // 12/23/04 jhrg
         BaseType **argv = build_btp_args(d_args, dds);
@@ -184,11 +167,9 @@ rvalue::bvalue(DDS &dds)
         (*d_func)(d_args->size(), argv, dds, &ret_val);
         delete[] argv;
         return ret_val;
-    }
-    else {
+    } else {
         return 0;
     }
 }
 
 } // namespace libdap
-

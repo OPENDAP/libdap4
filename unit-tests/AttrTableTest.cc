@@ -25,33 +25,30 @@
 #include "config.h"
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <cstring>
-#include <string>
 #include <sstream>
+#include <string>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
-#include "GNURegex.h"
 #include "AttrTable.h"
+#include "GNURegex.h"
 #include "debug.h"
 
+#include "run_tests_cppunit.h"
 #include "testFile.h"
-#include "run_tests_cppunit.h"
-#include "run_tests_cppunit.h"
 #include "test_config.h"
-
 
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
-static string build_fqn(AttrTable *at, string fqn)
-{
+static string build_fqn(AttrTable *at, string fqn) {
     // The strange behavior at the top level is because the top level of an
     // AttrTable (i.e. the DAS) is anonymous. Another bad design... jhrg 2/8/06
     if (!at || !at->get_parent() || at->get_name().empty())
@@ -62,22 +59,19 @@ static string build_fqn(AttrTable *at, string fqn)
 
 namespace libdap {
 
-class AttrTableTest: public TestFixture {
+class AttrTableTest : public TestFixture {
 private:
     AttrTable *at1;
     AttrTable *cont_a, *cont_b, *cont_c, *cont_ba, *cont_ca, *cont_caa;
-    char a[1024];    
+#if 0
+    char a[1024];
+#endif
 
 public:
-    AttrTableTest()
-    {
-    }
-    ~AttrTableTest()
-    {
-    }
+    AttrTableTest() {}
+    ~AttrTableTest() {}
 
-    void setUp()
-    {
+    void setUp() {
         at1 = new AttrTable;
         cont_a = at1->append_container("a");
         cont_a->append_attr("size", "Int32", "7");
@@ -117,53 +111,47 @@ public:
         //      }
     }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete at1;
         at1 = 0;
     }
 
-    bool re_match(Regex &r, const char *s)
-    {
-        return r.match(s, strlen(s)) == (int) strlen(s);
-    }
+    bool re_match(Regex &r, const char *s) { return r.match(s, strlen(s)) == (int)strlen(s); }
 
-    CPPUNIT_TEST_SUITE (AttrTableTest);
+    CPPUNIT_TEST_SUITE(AttrTableTest);
 
-    CPPUNIT_TEST (clone_test);
-    CPPUNIT_TEST (find_container_test);
-    CPPUNIT_TEST (get_parent_test);
-    CPPUNIT_TEST (recurrsive_find_test);
-    CPPUNIT_TEST (find_test);
-    CPPUNIT_TEST (copy_ctor);
-    CPPUNIT_TEST (assignment);
-    CPPUNIT_TEST (erase_test);
-    CPPUNIT_TEST (names_with_spaces_test);
-    CPPUNIT_TEST (is_global_att_test);
-    CPPUNIT_TEST (add_container_alias_test);
-    CPPUNIT_TEST (attr_alias_test);
-    CPPUNIT_TEST (attr_alias_2_test);
-    CPPUNIT_TEST (containers_with_spaces_test);
-    CPPUNIT_TEST (get_attr_iter_test);
-    CPPUNIT_TEST (del_attr_table_test);
-    CPPUNIT_TEST (append_attr_vector_test);
-    CPPUNIT_TEST (print_xml_test);
-    CPPUNIT_TEST (print_simple_test);
+    CPPUNIT_TEST(clone_test);
+    CPPUNIT_TEST(find_container_test);
+    CPPUNIT_TEST(get_parent_test);
+    CPPUNIT_TEST(recurrsive_find_test);
+    CPPUNIT_TEST(find_test);
+    CPPUNIT_TEST(copy_ctor);
+    CPPUNIT_TEST(assignment);
+    CPPUNIT_TEST(erase_test);
+    CPPUNIT_TEST(names_with_spaces_test);
+    CPPUNIT_TEST(is_global_att_test);
+    CPPUNIT_TEST(add_container_alias_test);
+    CPPUNIT_TEST(attr_alias_test);
+    CPPUNIT_TEST(attr_alias_2_test);
+    CPPUNIT_TEST(containers_with_spaces_test);
+    CPPUNIT_TEST(get_attr_iter_test);
+    CPPUNIT_TEST(del_attr_table_test);
+    CPPUNIT_TEST(append_attr_vector_test);
+    CPPUNIT_TEST(print_xml_test);
+    CPPUNIT_TEST(print_simple_test);
 
     CPPUNIT_TEST_SUITE_END();
 
     // Tests for methods
 
     // This is to test for leaks in the clone() method.
-    void clone_test()
-    {
+    void clone_test() {
         AttrTable *att = new AttrTable;
         att->append_container(new AttrTable(*cont_a), "copy_of_a");
         delete att;
     }
 
-    void recurrsive_find_test()
-    {
+    void recurrsive_find_test() {
         AttrTable::Attr_iter location;
         AttrTable *a = at1->recurrsive_find("color", &location);
         CPPUNIT_ASSERT(a && a == cont_caa && a->get_name(location) == "color");
@@ -175,8 +163,7 @@ public:
         CPPUNIT_ASSERT(a && a == cont_b && a->get_name(location) == "ba");
     }
 
-    void get_parent_test()
-    {
+    void get_parent_test() {
         CPPUNIT_ASSERT(cont_caa->get_parent() == cont_ca);
         CPPUNIT_ASSERT(cont_ca->get_parent() == cont_c);
         CPPUNIT_ASSERT(cont_c->get_parent() == at1);
@@ -184,8 +171,7 @@ public:
         CPPUNIT_ASSERT(build_fqn(cont_caa, "color") == "c.ca.caa.color");
     }
 
-    void find_container_test()
-    {
+    void find_container_test() {
         AttrTable *tmp = at1->find_container("a");
         CPPUNIT_ASSERT(tmp != 0);
         CPPUNIT_ASSERT(tmp == cont_a);
@@ -199,32 +185,27 @@ public:
         CPPUNIT_ASSERT(at1->find_container("b.ba.name") == 0);
     }
 
-    void find_test()
-    {
+    void find_test() {
         AttrTable *tmp;
         AttrTable::Attr_iter iter;
         at1->find("a", &tmp, &iter);
         CPPUNIT_ASSERT(tmp && iter != tmp->attr_end() && tmp->is_container(iter) && tmp->get_name(iter) == "a");
         at1->find("a.size", &tmp, &iter);
-        CPPUNIT_ASSERT(
-            tmp && iter != tmp->attr_end() && !tmp->is_container(iter) && tmp->get_name(iter) == "size"
-                && tmp->get_attr(iter) == "7");
+        CPPUNIT_ASSERT(tmp && iter != tmp->attr_end() && !tmp->is_container(iter) && tmp->get_name(iter) == "size" &&
+                       tmp->get_attr(iter) == "7");
         at1->find("b.type", &tmp, &iter);
-        CPPUNIT_ASSERT(
-            tmp && iter != tmp->attr_end() && !tmp->is_container(iter) && tmp->get_name(iter) == "type"
-                && tmp->get_attr(iter) == "houses");
+        CPPUNIT_ASSERT(tmp && iter != tmp->attr_end() && !tmp->is_container(iter) && tmp->get_name(iter) == "type" &&
+                       tmp->get_attr(iter) == "houses");
         at1->find("c.ca.caa.color", &tmp, &iter);
-        CPPUNIT_ASSERT(
-            tmp && iter != tmp->attr_end() && !tmp->is_container(iter) && tmp->get_name(iter) == "color"
-                && tmp->get_attr(iter) == "red");
+        CPPUNIT_ASSERT(tmp && iter != tmp->attr_end() && !tmp->is_container(iter) && tmp->get_name(iter) == "color" &&
+                       tmp->get_attr(iter) == "red");
         at1->find("d.size", &tmp, &iter);
         CPPUNIT_ASSERT(!tmp);
         at1->find("c.size", &tmp, &iter);
         CPPUNIT_ASSERT(tmp == cont_c && iter == tmp->attr_end());
     }
 
-    void copy_ctor()
-    {
+    void copy_ctor() {
         AttrTable at2 = *at1;
         AttrTable::Attr_iter piter = at2.attr_begin();
         CPPUNIT_ASSERT(at2.get_name(piter) == "a");
@@ -240,8 +221,7 @@ public:
         CPPUNIT_ASSERT(at2.is_container(piter));
     }
 
-    void assignment()
-    {
+    void assignment() {
         AttrTable at2;
         at2 = *at1;
 
@@ -259,8 +239,7 @@ public:
         CPPUNIT_ASSERT(at2.is_container(piter));
     }
 
-    void erase_test()
-    {
+    void erase_test() {
         // Copy at1 to at2 and verify that at2 is full of stuff...
         AttrTable at2 = *at1;
         AttrTable::Attr_iter piter = at2.attr_begin();
@@ -281,8 +260,7 @@ public:
         CPPUNIT_ASSERT(at2.d_name == "");
     }
 
-    void names_with_spaces_test()
-    {
+    void names_with_spaces_test() {
         // Create an AttrTable where some names have spaces. The spaces
         // should be replaced by %20 escapes.
         // Replacing the spaces with %20 was the bad, old, behavior. Now
@@ -292,65 +270,56 @@ public:
         AttrTable *t = new AttrTable;
         t->append_attr("long name", "String", "first");
         t->append_attr("longer name", "String", "\"second test\"");
-        //string sof;
+        // string sof;
         ostringstream oss;
         t->print(oss, "");
-        //FILE2string(sof, of, t->print(of, ""));
-        // Now the string attribute is escaped. So the output of '"' becomes
-        // '/"'. We need to reflect this change in the comparision. KY 2022-08-24
+        // FILE2string(sof, of, t->print(of, ""));
+        //  Now the string attribute is escaped. So the output of '"' becomes
+        //  '/"'. We need to reflect this change in the comparision. KY 2022-08-24
         string attrs = "String long%20name \"first\";\n\
 String longer%20name \"\\\"second test\\\"\";";
- 
-        //CPPUNIT_ASSERT(sof.find(attrs) != string::npos);
-        // With the escaping 
+
+        // CPPUNIT_ASSERT(sof.find(attrs) != string::npos);
+        //  With the escaping
         CPPUNIT_ASSERT(oss.str().find(attrs) != string::npos);
         delete t;
         t = 0;
     }
 
-    void is_global_att_test()
-    {
+    void is_global_att_test() {
         for (AttrTable::Attr_iter iter = at1->attr_begin(); iter != at1->attr_end(); iter++) {
             at1->set_is_global_attribute(iter, true);
             CPPUNIT_ASSERT(at1->is_global_attribute(iter));
         }
     }
 
-    void add_container_alias_test()
-    {
-        CPPUNIT_ASSERT_THROW(at1->add_container_alias("a", at1), Error);
-    }
+    void add_container_alias_test() { CPPUNIT_ASSERT_THROW(at1->add_container_alias("a", at1), Error); }
 
-    void attr_alias_test()
-    {
+    void attr_alias_test() {
         at1->attr_alias("alias", at1, "a");
         CPPUNIT_ASSERT(at1->get_type("alias") == "Container");
     }
 
-    void attr_alias_2_test()
-    {
+    void attr_alias_2_test() {
         at1->attr_alias("alias", "a");
         CPPUNIT_ASSERT(at1->get_type("alias") == "Container");
     }
 
-    void containers_with_spaces_test()
-    {
+    void containers_with_spaces_test() {
         AttrTable *top = new AttrTable;
         try {
             AttrTable *cont = top->append_container("Data Field");
             cont->append_attr("long name", "String", "first");
             cont->add_value_alias(top, "an alias", "long name");
             CPPUNIT_ASSERT_THROW(cont->add_value_alias(top, "an alias", "long name"), Error);
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << e.get_error_message() << endl;
             CPPUNIT_ASSERT("Caught Error exception!" && false);
         }
         try {
             ostringstream oss;
             top->print(oss);
-            Regex r(
-                ".*Data%20Field \\{\n\
+            Regex r(".*Data%20Field \\{\n\
 .*String long%20name \"first\";\n\
 .*Alias an%20alias long%20name;\n\
 .*\\}\n");
@@ -358,15 +327,13 @@ String longer%20name \"\\\"second test\\\"\";";
             CPPUNIT_ASSERT(re_match(r, oss.str().c_str()));
             delete top;
             top = 0;
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << e.get_error_message() << endl;
             CPPUNIT_ASSERT("Caught Error exception!" && false);
         }
     }
 
-    void get_attr_iter_test()
-    {
+    void get_attr_iter_test() {
         int n = at1->get_size();
         CPPUNIT_ASSERT(n == 3);
 
@@ -383,8 +350,7 @@ String longer%20name \"\\\"second test\\\"\";";
         CPPUNIT_ASSERT(t1->get_attr(k, 0) == "houses");
     }
 
-    void del_attr_table_test()
-    {
+    void del_attr_table_test() {
         AttrTable *b = at1->find_container("b");
         AttrTable::Attr_iter i = b->attr_begin();
         CPPUNIT_ASSERT(b->get_name(i) == "number");
@@ -393,12 +359,12 @@ String longer%20name \"\\\"second test\\\"\";";
         AttrTable *ba = b->find_container("ba");
 
         b->del_attr_table(i);
-        // The current implementation of del_attr_table() 
+        // The current implementation of del_attr_table()
         // doesn't delete the attribute table itself.
         // Fixing this causes the failure of BES's NcML module tests.
         // So we have to explicitly release the resource to avoid the
         // memory leaks. This may be not necessary after the fix in
-        // https://bugs.earthdata.nasa.gov/browse/HYRAX-866. 
+        // https://bugs.earthdata.nasa.gov/browse/HYRAX-866.
         // KY 11-08-2022
         delete ba;
 
@@ -423,13 +389,13 @@ String longer%20name \"\\\"second test\\\"\";";
             CPPUNIT_ASSERT(at2->get_name(i) == "cont_at2");
 
             at2->del_attr_table(i);
-            
-            // The current implementation of del_attr_table() 
+
+            // The current implementation of del_attr_table()
             // doesn't delete the attribute table itself.
             // Fixing this causes the failure of BES's NcML module tests.
             // So we have to explicitly release the resource to avoid the
             // memory leaks. This may be not necessary after the fix in
-            // https://bugs.earthdata.nasa.gov/browse/HYRAX-866. 
+            // https://bugs.earthdata.nasa.gov/browse/HYRAX-866.
             // KY 11-08-2022
             delete cont_at2;
 
@@ -440,14 +406,12 @@ String longer%20name \"\\\"second test\\\"\";";
 
             delete at2;
             at2 = 0;
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             delete at2;
             at2 = 0;
             throw;
-        }
-        catch (...) {
+        } catch (...) {
             cerr << "caught an exception!" << endl;
             delete at2;
             at2 = 0;
@@ -455,8 +419,7 @@ String longer%20name \"\\\"second test\\\"\";";
         }
     }
 
-    void append_attr_vector_test()
-    {
+    void append_attr_vector_test() {
         // ("size", "Int32", "7")
         vector<string> vs;
         vs.push_back("8");
@@ -469,15 +432,13 @@ String longer%20name \"\\\"second test\\\"\";";
         CPPUNIT_ASSERT(cont_a->get_attr_num("size") == 3);
     }
 
-    void print_xml_test()
-    {
+    void print_xml_test() {
         ostringstream sof;
         at1->print_xml(sof);
         CPPUNIT_ASSERT(sof.str().find("<Attribute name=\"a\" type=\"Container\">") != string::npos);
     }
 
-    void print_simple_test()
-    {
+    void print_simple_test() {
         FILE *fp;
         fp = fopen("AttrTableTest_print_simple.output", "w");
         AttrTable::Attr_iter i = at1->simple_find("a");
@@ -485,18 +446,14 @@ String longer%20name \"\\\"second test\\\"\";";
         fclose(fp);
         ifstream ifs("AttrTableTest_print_simple.output");
         stringstream buf;
-        buf<<ifs.rdbuf();
-        CPPUNIT_ASSERT(buf.str().find("String type \"cars\";") != string::npos);        
+        buf << ifs.rdbuf();
+        CPPUNIT_ASSERT(buf.str().find("String type \"cars\";") != string::npos);
         ifs.close();
     }
-    
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (AttrTableTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(AttrTableTest);
 
 } // namespace libdap
 
-int main(int argc, char *argv[])
-{
-    return run_tests<AttrTableTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<AttrTableTest>(argc, argv) ? 0 : 1; }

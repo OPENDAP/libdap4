@@ -34,8 +34,7 @@
 // Class declarations; Make sure to include the corresponding headers in the
 // implementation file.
 
-namespace libdap
-{
+namespace libdap {
 
 class Byte;
 class Int8;
@@ -69,19 +68,14 @@ class BaseType;
  *  DAP4 dataset.
  *
  */
-class D4BaseTypeFactory: public BaseTypeFactory
-{
+class D4BaseTypeFactory : public BaseTypeFactory {
 public:
-    D4BaseTypeFactory()
-    {}
-    virtual ~D4BaseTypeFactory()
-    {}
+    D4BaseTypeFactory() {}
+    virtual ~D4BaseTypeFactory() {}
 
     virtual BaseType *NewVariable(Type t, const string &name) const;
 
-    virtual BaseTypeFactory *ptr_duplicate() const {
-        return new D4BaseTypeFactory;
-    }
+    virtual BaseTypeFactory *ptr_duplicate() const { return new D4BaseTypeFactory; }
 
     virtual Byte *NewByte(const string &n = "") const;
 

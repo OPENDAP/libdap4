@@ -36,39 +36,38 @@
 #ifndef _error_h
 #define _error_h
 
+#include <exception>
 #include <iostream>
 #include <string>
-#include <exception>
 
-#include <cstdio>  // For FILE *
+#include <cstdio> // For FILE *
 #include <utility>
 
 using std::cout;
-using std::string;
 using std::ostream;
+using std::string;
 
-namespace libdap
-{
+namespace libdap {
 
 /** The most common errors within DAP2 have special codes so that they
     can be spotted easily by the client software. Any error
     without a matching code gets the <tt>unknown_error</tt> code.
 
     @brief An enumerated type for common errors.  */
-typedef int ErrorCode; //using standard errno+netCDF error codes from server
+typedef int ErrorCode; // using standard errno+netCDF error codes from server
 
 /** @name Internal DAP errors */
 //@{
-#define    undefined_error   1000 ///< Undefined error code, an empty Error object was built
-#define    unknown_error     1001 ///< Unknown error (the default code) (HTTP 400)
-#define    internal_error    1002 ///< Internal server error (500)
-#define    no_such_file      1003 ///< (400)
-#define    no_such_variable  1004 ///< (400)
-#define    malformed_expr    1005 ///< (400)
-#define    no_authorization  1006 ///< (401)
-#define    cannot_read_file  1007 ///< (400)
-#define    not_implemented   1008 ///< Implies that it will/might be impl. (501)
-#define    dummy_message     1009 ///< @see Error.cc; end the array with ""
+#define undefined_error 1000  ///< Undefined error code, an empty Error object was built
+#define unknown_error 1001    ///< Unknown error (the default code) (HTTP 400)
+#define internal_error 1002   ///< Internal server error (500)
+#define no_such_file 1003     ///< (400)
+#define no_such_variable 1004 ///< (400)
+#define malformed_expr 1005   ///< (400)
+#define no_authorization 1006 ///< (401)
+#define cannot_read_file 1007 ///< (400)
+#define not_implemented 1008  ///< Implies that it will/might be impl. (501)
+#define dummy_message 1009    ///< @see Error.cc; end the array with ""
 //@}
 
 /** The Error class is used to transport error information from the server to
@@ -90,8 +89,7 @@ typedef int ErrorCode; //using standard errno+netCDF error codes from server
     @brief A class for error processing.
     @author jhrg */
 
-class Error : public std::exception
-{
+class Error : public std::exception {
 protected:
     ErrorCode _error_code;
     std::string _error_message;
@@ -100,7 +98,7 @@ protected:
 
 public:
     /** Specializations of Error should use this to set the error code and message. */
-    Error()  : exception(), _error_code(undefined_error) {}
+    Error() : exception(), _error_code(undefined_error) {}
 
     /** Create an instance with a specific code and message string. This ctor
      * provides a way to to use any code and string you'd like. The code can be
@@ -113,10 +111,9 @@ public:
      * @param msg The error message string.
      * @param file Name of the source file (optional)
      * @param line Line in the source file (optional)
-    **/
+     **/
     Error(ErrorCode ec, std::string msg, std::string file = "", int line = 0)
-        : exception(), _error_code(ec), _error_message(std::move(msg)), d_file(std::move(file)), d_line(line)
-        {}
+        : exception(), _error_code(ec), _error_message(std::move(msg)), d_file(std::move(file)), d_line(line) {}
 
     /** Create an instance with a specific message. The error code is set to
      * \c unknown_error.
@@ -126,13 +123,12 @@ public:
      * @param line Line in the source file (optional)
      * @see ErrorCode
      **/
-    explicit Error(std::string msg, std::string file = "" , int line = 0)
-        : exception(), _error_code(unknown_error), _error_message(std::move(msg)), d_file(std::move(file)), d_line(line)
-        {}
+    explicit Error(std::string msg, std::string file = "", int line = 0)
+        : exception(), _error_code(unknown_error), _error_message(std::move(msg)), d_file(std::move(file)),
+          d_line(line) {}
 
     Error(const Error &copy_from) noexcept
-        : exception(), _error_code(copy_from._error_code), _error_message(copy_from._error_message)
-        {}
+        : exception(), _error_code(copy_from._error_code), _error_message(copy_from._error_message) {}
 
     ~Error() override = default;
 
@@ -153,9 +149,7 @@ public:
     void set_line(int l) { d_line = l; }
 
     /// The pointer is valid only for the lifetime of the Error instance. jhrg 9/22/20
-    const char* what() const noexcept override {
-        return _error_message.c_str();
-    }
+    const char *what() const noexcept override { return _error_message.c_str(); }
 };
 
 } // namespace libdap

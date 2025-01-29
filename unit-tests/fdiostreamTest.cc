@@ -23,16 +23,16 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include <fcntl.h>
 #include <stdio.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string>
 
 #include "fdiostream.h"
@@ -45,48 +45,42 @@ using namespace std;
 using namespace CppUnit;
 using namespace libdap;
 
-class fdiostreamTest: public TestFixture {
+class fdiostreamTest : public TestFixture {
 private:
     string fdiostream_txt;
     string ff_test1_data;
+
 public:
-    fdiostreamTest()
-    {
-        //data = "Output from fdiostream";
+    fdiostreamTest() {
+        // data = "Output from fdiostream";
     }
-    ~fdiostreamTest()
-    {
-    }
+    ~fdiostreamTest() {}
 
-    void setUp()
-    {
-        fdiostream_txt = (string) TEST_SRC_DIR + "/fdiostream.txt";
-        ff_test1_data = (string) TEST_SRC_DIR + "/server-testsuite/ff_test1_ce1.data";
+    void setUp() {
+        fdiostream_txt = (string)TEST_SRC_DIR + "/fdiostream.txt";
+        ff_test1_data = (string)TEST_SRC_DIR + "/server-testsuite/ff_test1_ce1.data";
     }
 
-    void tearDown()
-    {
-    }
+    void tearDown() {}
 
-    CPPUNIT_TEST_SUITE (fdiostreamTest);
+    CPPUNIT_TEST_SUITE(fdiostreamTest);
 
-    CPPUNIT_TEST (write_file);
-    CPPUNIT_TEST (read_test);
-    CPPUNIT_TEST (readsome_test);
-    CPPUNIT_TEST (readsome_test2);
-    CPPUNIT_TEST (read_strings);
+    CPPUNIT_TEST(write_file);
+    CPPUNIT_TEST(read_test);
+    CPPUNIT_TEST(readsome_test);
+    CPPUNIT_TEST(readsome_test2);
+    CPPUNIT_TEST(read_strings);
 #if 1
-    CPPUNIT_TEST (read_test_file_ptr);
-    CPPUNIT_TEST (read_test_file_ptr_2);
-    CPPUNIT_TEST (read_test_unget_file_descriptor);
-    CPPUNIT_TEST (read_test_unget_file_ptr);
-    CPPUNIT_TEST (large_read_test);
-    CPPUNIT_TEST (large_read_test_file_pointer);
+    CPPUNIT_TEST(read_test_file_ptr);
+    CPPUNIT_TEST(read_test_file_ptr_2);
+    CPPUNIT_TEST(read_test_unget_file_descriptor);
+    CPPUNIT_TEST(read_test_unget_file_ptr);
+    CPPUNIT_TEST(large_read_test);
+    CPPUNIT_TEST(large_read_test_file_pointer);
 #endif
     CPPUNIT_TEST_SUITE_END();
 
-    void write_file()
-    {
+    void write_file() {
         int fd = open("tmp.txt", O_WRONLY | O_CREAT | O_TRUNC, 0777);
         CPPUNIT_ASSERT("write_file open tmp.txt" && fd != -1);
         fdostream out(fd);
@@ -106,8 +100,7 @@ public:
         CPPUNIT_ASSERT(string(buf) == "Output from fdiostream");
     }
 
-    void read_test()
-    {
+    void read_test() {
         int fd = open(fdiostream_txt.c_str(), O_RDONLY);
         CPPUNIT_ASSERT("read_test open fdiostream.txt" && fd != -1);
         fdistream in(fd, true);
@@ -127,8 +120,7 @@ public:
     // from the underlying input source. So, unless some other call is used
     // to fill the buffer, readsome() returns zero. See the next test for
     // more info.
-    void readsome_test()
-    {
+    void readsome_test() {
         int fd = open(fdiostream_txt.c_str(), O_RDONLY);
         CPPUNIT_ASSERT("readsome_test open fdiostream.txt" && fd != -1);
         fdistream in(fd, true);
@@ -148,8 +140,7 @@ public:
     // to get() triggers a read in underflow that grabs all the characters.
     // Given that the stream's input buffer has them all, readsome() returns
     // them.
-    void readsome_test2()
-    {
+    void readsome_test2() {
         int fd = open(fdiostream_txt.c_str(), O_RDONLY);
         CPPUNIT_ASSERT("readsome_test2 open fdiostream.txt" && fd != -1);
         fdistream in(fd, true);
@@ -164,8 +155,7 @@ public:
         CPPUNIT_ASSERT(string(buf) == "Output from fdiostream");
     }
 
-    void read_strings()
-    {
+    void read_strings() {
         int fd = open(fdiostream_txt.c_str(), O_RDONLY);
         CPPUNIT_ASSERT("read_strings open fdiostream.txt" && fd != -1);
         fdistream in(fd, true);
@@ -190,8 +180,7 @@ public:
     // than to hack fdistream, but I'm including this test just a reminder of
     // how the file descriptor can be reset to counter the buffering done by
     // FILE pointers.
-    void read_test_file_ptr()
-    {
+    void read_test_file_ptr() {
         FILE *fp = fopen(fdiostream_txt.c_str(), "r");
         CPPUNIT_ASSERT("read_test_file_ptr fopen fdiostream.txt" && fp != NULL);
         char word[7];
@@ -202,7 +191,8 @@ public:
 
         int pos = ftell(fp);
         int fd = fileno(fp);
-        if (lseek(fd, pos, SEEK_SET) < 0) DBG(cerr << "lseek error: Could not seek to " << pos << endl);
+        if (lseek(fd, pos, SEEK_SET) < 0)
+            DBG(cerr << "lseek error: Could not seek to " << pos << endl);
 
         fdistream in(fd, true);
         char buf[1024];
@@ -216,8 +206,7 @@ public:
     }
 
     // now test FILE*s using fpistream (not fd...)
-    void read_test_file_ptr_2()
-    {
+    void read_test_file_ptr_2() {
         FILE *fp = fopen(fdiostream_txt.c_str(), "r");
         CPPUNIT_ASSERT("read_test_file_ptr_2 fopen fdiostream.txt" && fp != NULL);
         char word[7];
@@ -238,8 +227,7 @@ public:
         CPPUNIT_ASSERT(string(buf) == " from fdiostream");
     }
 
-    void read_test_unget_file_descriptor()
-    {
+    void read_test_unget_file_descriptor() {
         int fd = open(fdiostream_txt.c_str(), O_RDONLY);
         CPPUNIT_ASSERT("read_test_unget_file_descriptor open fdiostream.txt" && fd != -1);
         fdistream in(fd, true);
@@ -261,8 +249,7 @@ public:
         CPPUNIT_ASSERT(string(buf) == "Output from fdiostream");
     }
 
-    void read_test_unget_file_ptr()
-    {
+    void read_test_unget_file_ptr() {
         FILE *fp = fopen(fdiostream_txt.c_str(), "r");
         CPPUNIT_ASSERT("read_test_unget_file_ptr open fdiostream.txt" && fp != NULL);
         fpistream in(fp, true);
@@ -284,8 +271,7 @@ public:
         CPPUNIT_ASSERT(string(buf) == "Output from fdiostream");
     }
 
-    void large_read_test()
-    {
+    void large_read_test() {
         int fd = open(ff_test1_data.c_str(), O_RDONLY);
         CPPUNIT_ASSERT("large_read_test open server-testsuite/ff_test1_ce1.data" && fd != -1);
         fdistream in(fd, true);
@@ -305,8 +291,7 @@ public:
         CPPUNIT_ASSERT(string(buf + num - 13) == "{ 1995 } };");
     }
 
-    void large_read_test_file_pointer()
-    {
+    void large_read_test_file_pointer() {
         FILE *fp = fopen(ff_test1_data.c_str(), "r");
         CPPUNIT_ASSERT("large_read_test_file_pointer open server-testsuite/ff_test1_ce1.data" && fp != NULL);
         fpistream in(fp, true);
@@ -325,12 +310,8 @@ public:
         DBG(cerr << "End of buf: '" << string(buf + num - 13) << "'" << endl);
         CPPUNIT_ASSERT(string(buf + num - 13) == "{ 1995 } };");
     }
-
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (fdiostreamTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(fdiostreamTest);
 
-int main(int argc, char*argv[])
-{
-    return run_tests<fdiostreamTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<fdiostreamTest>(argc, argv) ? 0 : 1; }

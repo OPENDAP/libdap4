@@ -31,7 +31,7 @@
 
 // The d4ce_parser.tab.cc and .hh files define and declare this class
 %define parser_class_name {D4CEParser}
-// %define api.parser.class {D4CEParser}
+//%define api.parser.class {D4CEParser} Waiting on RHEL8 to upgrade to bison 3.3. jhrg 7/19/24
 // D4CEParser is in this namespace
 %define api.namespace {libdap}
 
@@ -47,6 +47,8 @@
 // %define api.prefix { d4_ce }
 
 %code requires {
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+
 #define YYERROR_VERBOSE 0
 #include "D4ConstraintEvaluator.h"
 #include "escaping.h" // for www2id() used with WORD and STRING

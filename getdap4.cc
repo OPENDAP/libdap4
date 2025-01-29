@@ -36,33 +36,32 @@
 #include "config.h"
 
 #ifdef WIN32
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #endif
 
 #include <cstring>
-#include <string>
 #include <sstream>
-#include <unistd.h>     // getopt
+#include <string>
+#include <unistd.h> // getopt
 
-#include "DMR.h"
-#include "XMLWriter.h"
 #include "D4BaseTypeFactory.h"
+#include "D4Connect.h"
 #include "D4Group.h"
 #include "D4Sequence.h"
-#include "D4Connect.h"
-#include "HTTPResponse.h"
-#include "StdinResponse.h"
+#include "DMR.h"
 #include "HTTPConnect.h"
+#include "HTTPResponse.h"
 #include "RCReader.h"
+#include "StdinResponse.h"
+#include "XMLWriter.h"
 
 using namespace std;
 using namespace libdap;
 
 const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
 
-static void usage(const string &)
-{
+static void usage(const string &) {
     const char *message = R"(
     Usage: getdap4 [dD vVmzsM][-c <expr>][-m <num>] <url> [<url> ...]
            getdap4 [dD vVmzsM][-c <expr>][-m <num>] <file> [<file> ...]
@@ -105,8 +104,7 @@ static void usage(const string &)
 }
 
 // Used for raw http access/transfer
-bool read_data(FILE *fp)
-{
+bool read_data(FILE *fp) {
     if (!fp) {
         fprintf(stderr, "getdap4: Whoa!!! Null stream pointer.\n");
         return false;
@@ -116,14 +114,13 @@ bool read_data(FILE *fp)
     // transfers. fread() will handle both.
     char c = 0;
     while (fp && !feof(fp) && fread(&c, 1, 1, fp))
-        printf("%c", c);        // stick with stdio
+        printf("%c", c); // stick with stdio
 
     return true;
 }
 
-static void
-read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool mime_headers, bool get_dap4_data, bool get_dmr)
-{
+static void read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool mime_headers, bool get_dap4_data,
+                                    bool get_dmr) {
     if (mime_headers) {
         if (get_dap4_data)
             url->read_data(dmr, r);
@@ -131,8 +128,7 @@ read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool mime_headers
             url->read_dmr(dmr, r);
         else
             throw Error("Only supports Data or DMR responses");
-    }
-    else {
+    } else {
         if (get_dap4_data)
             url->read_data_no_mime(dmr, r);
         else if (get_dmr)
@@ -142,8 +138,7 @@ read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool mime_headers
     }
 }
 
-static void print_group_data(D4Group *g, bool print_rows = false)
-{
+static void print_group_data(D4Group *g, bool print_rows = false) {
     for (Constructor::Vars_iter i = g->var_begin(), e = g->var_end(); i != e; i++) {
         if (print_rows && (*i)->type() == dods_sequence_c)
             dynamic_cast<D4Sequence &>(**i).print_val_by_rows(cout);
@@ -156,8 +151,7 @@ static void print_group_data(D4Group *g, bool print_rows = false)
     }
 }
 
-static void print_data(DMR &dmr, bool print_rows = false)
-{
+static void print_data(DMR &dmr, bool print_rows = false) {
     cout << "The data:" << endl;
 
     D4Group *g = dmr.root();
@@ -177,16 +171,14 @@ static void print_data(DMR &dmr, bool print_rows = false)
  *  @param constrained Should the size of the whole DDS be used or should the
  *  current constraint be taken into account?
  */
-unsigned long long get_size(D4Group *grp, bool constrained = false)
-{
+unsigned long long get_size(D4Group *grp, bool constrained = false) {
     unsigned long long w = 0;
 
     for (auto var_itr = grp->var_begin(); var_itr != grp->var_end(); var_itr++) {
         if (constrained) {
             if ((*var_itr)->send_p())
                 w += (*var_itr)->width(constrained);
-        }
-        else {
+        } else {
             w += (*var_itr)->width(constrained);
         }
     }
@@ -197,14 +189,9 @@ unsigned long long get_size(D4Group *grp, bool constrained = false)
     return w;
 }
 
-unsigned long long get_size(DMR &dmr, bool constrained = false)
-{
-    return get_size(dmr.root(), constrained);
-}
+unsigned long long get_size(DMR &dmr, bool constrained = false) { return get_size(dmr.root(), constrained); }
 
-
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     int option_char;
 
     bool get_dmr = false;
@@ -226,44 +213,44 @@ int main(int argc, char *argv[])
 
     while ((option_char = getopt(argc, argv, "dDvVrm:Mzsc:S")) != -1) {
         switch (option_char) {
-            case 'd':
-                get_dmr = true;
-                break;
-            case 'D':
-                get_dap4_data = true;
-                break;
-            case 'v':
-                verbose = true;
-                break;
-            case 'V':
-                cerr << "getdap4 version: " << version << endl;
-                exit(0);
-            case 'S':
-                compute_size = true;
-                break;
-            case 'r':
-                report_errors = true;
-                break;
-            case 'm':
-                times = atoi(optarg);
-                break;
-            case 'z':
-                accept_deflate = true;
-                break;
-            case 's':
-                print_rows = true;
-                break;
-            case 'M':
-                mime_headers = false;
-                break;
-            case 'c':
-                expr = optarg;
-                break;
-            case 'h':
-            case '?':
-            default:
-                usage(argv[0]);
-                exit(1);
+        case 'd':
+            get_dmr = true;
+            break;
+        case 'D':
+            get_dap4_data = true;
+            break;
+        case 'v':
+            verbose = true;
+            break;
+        case 'V':
+            cerr << "getdap4 version: " << version << endl;
+            exit(0);
+        case 'S':
+            compute_size = true;
+            break;
+        case 'r':
+            report_errors = true;
+            break;
+        case 'm':
+            times = atoi(optarg);
+            break;
+        case 'z':
+            accept_deflate = true;
+            break;
+        case 's':
+            print_rows = true;
+            break;
+        case 'M':
+            mime_headers = false;
+            break;
+        case 'c':
+            expr = optarg;
+            break;
+        case 'h':
+        case '?':
+        default:
+            usage(argv[0]);
+            exit(1);
         }
     }
 
@@ -300,8 +287,7 @@ int main(int argc, char *argv[])
                             throw Error("Could not open standard input.");
 
                         read_response_from_file(url, dmr, r, mime_headers, get_dap4_data, get_dmr);
-                    }
-                    else {
+                    } else {
                         fstream f(argv[i], std::ios_base::in);
                         if (!f.is_open() || f.bad() || f.eof())
                             throw Error((string) "Could not open: " + argv[i]);
@@ -312,8 +298,8 @@ int main(int argc, char *argv[])
                     }
 
                     if (verbose)
-                        cerr << "DAP version: " << url->get_protocol().c_str() << " Server version: "
-                             << url->get_version().c_str() << endl;
+                        cerr << "DAP version: " << url->get_protocol().c_str()
+                             << " Server version: " << url->get_version().c_str() << endl;
 
                     // Always write the DMR
                     XMLWriter xml;
@@ -322,16 +308,14 @@ int main(int argc, char *argv[])
 
                     if (get_dap4_data)
                         print_data(dmr, print_rows);
-                }
-                catch (Error &e) {
+                } catch (Error &e) {
                     cerr << "Error: " << e.get_error_message() << endl;
                     delete url;
                     url = nullptr;
                     if (report_errors)
                         return EXIT_FAILURE;
                 }
-            }
-            else if (get_dmr) {
+            } else if (get_dmr) {
                 for (int j = 0; j < times; ++j) {
                     D4BaseTypeFactory factory;
                     DMR dmr(&factory);
@@ -350,16 +334,14 @@ int main(int argc, char *argv[])
                         if (compute_size) {
                             cout << "DMR References " << get_size(dmr) << " bytes of data," << endl;
                         }
-                    }
-                    catch (Error &e) {
+                    } catch (Error &e) {
                         cerr << e.get_error_message() << endl;
                         if (report_errors)
                             return EXIT_FAILURE;
-                        continue;       // Goto the next URL or exit the loop.
+                        continue; // Goto the next URL or exit the loop.
                     }
                 }
-            }
-            else if (get_dap4_data) {
+            } else if (get_dap4_data) {
                 for (int j = 0; j < times; ++j) {
                     D4BaseTypeFactory factory;
                     DMR dmr(&factory);
@@ -377,16 +359,14 @@ int main(int argc, char *argv[])
                         cout << xml.get_doc() << endl;
 
                         print_data(dmr, print_rows);
-                    }
-                    catch (Error &e) {
+                    } catch (Error &e) {
                         cerr << e.get_error_message() << endl;
                         if (report_errors)
                             return EXIT_FAILURE;
-                        continue;       // Goto the next URL or exit the loop.
+                        continue; // Goto the next URL or exit the loop.
                     }
                 }
-            }
-            else {
+            } else {
                 HTTPConnect http(RCReader::instance());
 
                 // This overrides the value set in the .dodsrc file.
@@ -401,15 +381,14 @@ int main(int argc, char *argv[])
                     try {
                         HTTPResponse *r = http.fetch_url(url_string);
                         if (verbose) {
-                            vector <string> &headers = r->get_headers();
+                            vector<string> &headers = r->get_headers();
                             copy(headers.begin(), headers.end(), ostream_iterator<string>(cout, "\n"));
                         }
                         if (!read_data(r->get_stream())) {
                             continue;
                         }
                         delete r;
-                    }
-                    catch (Error &e) {
+                    } catch (Error &e) {
                         cerr << e.get_error_message() << endl;
                         if (report_errors)
                             return EXIT_FAILURE;
@@ -421,22 +400,18 @@ int main(int argc, char *argv[])
             delete url;
             url = nullptr;
         }
-    }
-    catch (Error &e) {
+    } catch (Error &e) {
         delete url;
         if (e.get_error_code() == malformed_expr) {
             cerr << e.get_error_message() << endl;
             usage(argv[0]);
-        }
-        else {
+        } else {
             cerr << e.get_error_message() << endl;
-
         }
 
         cerr << "Exiting." << endl;
         return EXIT_FAILURE;
-    }
-    catch (exception &e) {
+    } catch (exception &e) {
         delete url;
         cerr << "C++ library exception: " << e.what() << endl;
         cerr << "Exiting." << endl;

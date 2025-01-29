@@ -32,10 +32,10 @@
 #include <unistd.h>
 #endif
 
-#include <iostream>
-#include <streambuf>
 #include <algorithm>
 #include <cstdio>
+#include <iostream>
+#include <streambuf>
 
 namespace libdap {
 
@@ -47,23 +47,23 @@ namespace libdap {
  @note Instead of using this class, use fdostream.
  @see fdostream
  */
-class fdoutbuf: public std::streambuf {
+class fdoutbuf : public std::streambuf {
 protected:
-	int fd;	// file descriptor
-	bool close;
-	static const int bufferSize = 4096; // Size of the data buffer
-	char buffer[bufferSize];	// data buffer
+    int fd; // file descriptor
+    bool close;
+    static const int bufferSize = 4096; // Size of the data buffer
+    char buffer[bufferSize];            // data buffer
 
 public:
-	fdoutbuf(int _fd, bool _close);
-	virtual ~fdoutbuf();
+    fdoutbuf(int _fd, bool _close);
+    virtual ~fdoutbuf();
 
 protected:
-	int flushBuffer();
+    int flushBuffer();
 
-	virtual int overflow(int c);
-	virtual int sync();
-	virtual std::streamsize xsputn(const char *s, std::streamsize num);
+    virtual int overflow(int c);
+    virtual int sync();
+    virtual std::streamsize xsputn(const char *s, std::streamsize num);
 };
 
 /** This specialization of ostream builds a fdoutbuf instance and binds it to
@@ -74,20 +74,18 @@ protected:
  two classes file_istream and file_ostream that can be initialized with
  either a file descriptor or a FILE pointer.
  */
-class fdostream: public std::ostream {
+class fdostream : public std::ostream {
 protected:
-	fdoutbuf buf;
+    fdoutbuf buf;
+
 public:
-	/** Make a new fdostream and initialize it to use a specific file descriptor.
-	 If the file descriptor does not reference an open file, the first
-	 attempt to write data will fail.
-	 @param _fd The file descriptor of an open file, socket, et cetera.
-	 @param _close If true, close the file when the output stream buffer is
-	 deleted. Default: false. */
-	fdostream(int _fd, bool _close = false) :
-			std::ostream(&buf), buf(_fd, _close)
-	{
-	}
+    /** Make a new fdostream and initialize it to use a specific file descriptor.
+     If the file descriptor does not reference an open file, the first
+     attempt to write data will fail.
+     @param _fd The file descriptor of an open file, socket, et cetera.
+     @param _close If true, close the file when the output stream buffer is
+     deleted. Default: false. */
+    fdostream(int _fd, bool _close = false) : std::ostream(&buf), buf(_fd, _close) {}
 };
 
 /** fdintbuf is a stream buffer specialization designed specifically for files
@@ -98,20 +96,20 @@ public:
  @note Instead of using this class, use fdistream.
  @see fdistream
  */
-class fdinbuf: public std::streambuf {
+class fdinbuf : public std::streambuf {
 protected:
-	int fd;	// file descriptor
-	bool close;
-	static const int bufferSize = 4096; // Size of the data buffer
-	static const int putBack = 128;
-	char buffer[bufferSize];	// data buffer
+    int fd; // file descriptor
+    bool close;
+    static const int bufferSize = 4096; // Size of the data buffer
+    static const int putBack = 128;
+    char buffer[bufferSize]; // data buffer
 
 public:
-	fdinbuf(int _fd, bool close);
-	virtual ~fdinbuf();
+    fdinbuf(int _fd, bool close);
+    virtual ~fdinbuf();
 
 protected:
-	virtual int underflow();
+    virtual int underflow();
 };
 
 /** This specialization of istream builds a fdinbuf instance and binds it to
@@ -123,14 +121,12 @@ protected:
  the file descriptor with functions like read(2).
  @see fpistream
  */
-class fdistream: public std::istream {
+class fdistream : public std::istream {
 protected:
-	fdinbuf buf;
+    fdinbuf buf;
+
 public:
-	fdistream(int fd, bool close = false) :
-			std::istream(&buf), buf(fd, close)
-	{
-	}
+    fdistream(int fd, bool close = false) : std::istream(&buf), buf(fd, close) {}
 };
 
 /** fpintbuf is a stream buffer specialization designed specifically for files
@@ -141,20 +137,20 @@ public:
  @note Instead of using this class, use fpistream.
  @see fpistream
  */
-class fpinbuf: public std::streambuf {
+class fpinbuf : public std::streambuf {
 protected:
-	FILE *fp;	// FILE *
-	bool close;
-	static const int bufferSize = 4096; // Size of the data buffer
-	static const int putBack = 128;
-	char buffer[bufferSize];	// data buffer
+    FILE *fp; // FILE *
+    bool close;
+    static const int bufferSize = 4096; // Size of the data buffer
+    static const int putBack = 128;
+    char buffer[bufferSize]; // data buffer
 
 public:
-	fpinbuf(FILE *_fp, bool _close);
-	virtual ~fpinbuf();
+    fpinbuf(FILE *_fp, bool _close);
+    virtual ~fpinbuf();
 
 protected:
-	virtual int underflow();
+    virtual int underflow();
 };
 
 /** This specialization of istream builds a fpinbuf instance and binds it to
@@ -167,16 +163,14 @@ protected:
  the file pointer with functions like fread(3).
  @see fdistream
  */
-class fpistream: public std::istream {
+class fpistream : public std::istream {
 protected:
-	fpinbuf buf;
+    fpinbuf buf;
+
 public:
-	fpistream(FILE *fp, bool close = false) :
-			std::istream(&buf), buf(fp, close)
-	{
-	}
+    fpistream(FILE *fp, bool close = false) : std::istream(&buf), buf(fp, close) {}
 };
 
-}
+} // namespace libdap
 
 #endif

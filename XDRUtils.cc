@@ -32,11 +32,11 @@
 
 #include "config.h"
 
+#include "Str.h"
 #include "XDRUtils.h"
 #include "debug.h"
-#include "Str.h"
 
-using namespace libdap ;
+using namespace libdap;
 
 // This function is used to allocate memory for, and initialize, a new XDR
 // pointer. It sets the stream associated with the (XDR *) to STREAM.
@@ -46,9 +46,7 @@ using namespace libdap ;
 
 //  These func's moved to xdrutil_ppc.* under the PPC as explained there
 #ifndef __POWERPC__
-XDR *
-new_xdrstdio(FILE *stream, enum xdr_op xop)
-{
+XDR *new_xdrstdio(FILE *stream, enum xdr_op xop) {
     XDR *xdr = new XDR;
 
     xdrstdio_create(xdr, stream, xop);
@@ -56,9 +54,7 @@ new_xdrstdio(FILE *stream, enum xdr_op xop)
     return xdr;
 }
 
-XDR *
-set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop)
-{
+XDR *set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop) {
     xdrstdio_create(xdr, stream, xop);
 
     return xdr;
@@ -67,12 +63,11 @@ set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop)
 // Delete an XDR pointer allocated using the above function. Do not close the
 // associated FILE pointer.
 
-void
-delete_xdrstdio(XDR *xdr)
-{
+void delete_xdrstdio(XDR *xdr) {
     xdr_destroy(xdr);
 
-    delete xdr; xdr = 0;
+    delete xdr;
+    xdr = 0;
 }
 #endif
 
@@ -90,31 +85,29 @@ delete_xdrstdio(XDR *xdr)
 // Returns: XDR's bool_t; TRUE if no errors are detected, FALSE
 // otherwise. The formal parameter BUF is modified as a side effect.
 
-extern "C" bool_t
-xdr_str(XDR *xdrs, string &buf)
-{
+extern "C" bool_t xdr_str(XDR *xdrs, string &buf) {
     DBG(cerr << "In xdr_str, xdrs: " << xdrs << endl);
 
     switch (xdrs->x_op) {
     case XDR_ENCODE: { // BUF is a pointer to a (string *)
-            const char *out_tmp = buf.c_str();
+        const char *out_tmp = buf.c_str();
 
-            return xdr_string(xdrs, (char **)&out_tmp, max_str_len);
-        }
+        return xdr_string(xdrs, (char **)&out_tmp, max_str_len);
+    }
 
     case XDR_DECODE: {
-            char *in_tmp = NULL;
+        char *in_tmp = NULL;
 
-            bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
-            if (!stat)
-                return stat;
-
-            buf = in_tmp;
-
-            free(in_tmp);
-
+        bool_t stat = xdr_string(xdrs, &in_tmp, max_str_len);
+        if (!stat)
             return stat;
-        }
+
+        buf = in_tmp;
+
+        free(in_tmp);
+
+        return stat;
+    }
 
     default:
         return 0;
@@ -141,22 +134,20 @@ namespace libdap {
     @brief Returns a function used to encode elements of an array.
     @return A C function used to encode data in the XDR format.
 */
-xdrproc_t
-XDRUtils::xdr_coder(const Type &t)
-{
+xdrproc_t XDRUtils::xdr_coder(const Type &t) {
     switch (t) {
     case dods_int16_c:
-        return (xdrproc_t) XDR_INT16;
+        return (xdrproc_t)XDR_INT16;
     case dods_uint16_c:
-        return (xdrproc_t) XDR_UINT16;
+        return (xdrproc_t)XDR_UINT16;
     case dods_int32_c:
-        return (xdrproc_t) XDR_INT32;
+        return (xdrproc_t)XDR_INT32;
     case dods_uint32_c:
-        return (xdrproc_t) XDR_UINT32;
+        return (xdrproc_t)XDR_UINT32;
     case dods_float32_c:
-        return (xdrproc_t) XDR_FLOAT32;
+        return (xdrproc_t)XDR_FLOAT32;
     case dods_float64_c:
-        return (xdrproc_t) XDR_FLOAT64;
+        return (xdrproc_t)XDR_FLOAT64;
     case dods_byte_c:
     case dods_str_c:
     case dods_url_c:
@@ -172,4 +163,3 @@ XDRUtils::xdr_coder(const Type &t)
 }
 
 } // namespace libdap
-

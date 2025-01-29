@@ -33,39 +33,38 @@
 //
 // jhrg 9/7/94
 
-
 #include "config.h"
 
 #include <sstream>
 
-#include "Byte.h"           // synonymous with UInt8 and Char
-#include "Int8.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
-#include "Int64.h"
-#include "UInt64.h"
+#include "Byte.h" // synonymous with UInt8 and Char
 #include "Float32.h"
 #include "Float64.h"
+#include "Int16.h"
+#include "Int32.h"
+#include "Int64.h"
+#include "Int8.h"
 #include "Str.h"
+#include "UInt16.h"
+#include "UInt32.h"
+#include "UInt64.h"
 #include "Url.h"
 
 #include "DDS.h"
 #include "Marshaller.h"
 #include "UnMarshaller.h"
 
-#include "DMR.h"
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
+#include "DMR.h"
 
-#include "util.h"
-#include "parser.h"
-#include "Operators.h"
-#include "dods-limits.h"
-#include "debug.h"
-#include "InternalErr.h"
 #include "DapIndent.h"
+#include "InternalErr.h"
+#include "Operators.h"
+#include "debug.h"
+#include "dods-limits.h"
+#include "parser.h"
+#include "util.h"
 
 using std::cerr;
 using std::endl;
@@ -77,8 +76,7 @@ namespace libdap {
     @param n A string containing the name of the variable to be created.
     variable is created
 */
-UInt32::UInt32(const string &n) : BaseType(n, dods_uint32_c), d_buf(0)
-{}
+UInt32::UInt32(const string &n) : BaseType(n, dods_uint32_c), d_buf(0) {}
 
 /** The UInt32 server-side constructor accepts the name of the variable and
     the dataset name from which this instance is created.
@@ -87,23 +85,13 @@ UInt32::UInt32(const string &n) : BaseType(n, dods_uint32_c), d_buf(0)
     @param d A string containing the name of the dataset from which this
     variable is created
 */
-UInt32::UInt32(const string &n, const string &d) : BaseType(n, d, dods_uint32_c), d_buf(0)
-{}
+UInt32::UInt32(const string &n, const string &d) : BaseType(n, d, dods_uint32_c), d_buf(0) {}
 
-UInt32::UInt32(const UInt32 &copy_from) : BaseType(copy_from)
-{
-    d_buf = copy_from.d_buf;
-}
+UInt32::UInt32(const UInt32 &copy_from) : BaseType(copy_from) { d_buf = copy_from.d_buf; }
 
-BaseType *
-UInt32::ptr_duplicate()
-{
-    return new UInt32(*this);
-}
+BaseType *UInt32::ptr_duplicate() { return new UInt32(*this); }
 
-UInt32 &
-UInt32::operator=(const UInt32 &rhs)
-{
+UInt32 &UInt32::operator=(const UInt32 &rhs) {
     if (this == &rhs)
         return *this;
     BaseType::operator=(rhs);
@@ -111,38 +99,30 @@ UInt32::operator=(const UInt32 &rhs)
     return *this;
 }
 
-bool
-UInt32::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval)
-{
+bool UInt32::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval) {
 #if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_on();
 #endif
     if (!read_p())
-        read();  // read() throws Error and InternalErr
+        read(); // read() throws Error and InternalErr
 
     if (ce_eval && !eval.eval_selection(dds, dataset()))
         return true;
 #if USE_LOCAL_TIMEOUT_SCHEME
     dds.timeout_off();
 #endif
-    m.put_uint32( d_buf ) ;
+    m.put_uint32(d_buf);
 
     return true;
 }
 
-bool
-UInt32::deserialize(UnMarshaller &um, DDS *, bool)
-{
-    um.get_uint32( d_buf ) ;
+bool UInt32::deserialize(UnMarshaller &um, DDS *, bool) {
+    um.get_uint32(d_buf);
 
     return false;
 }
 
-void
-UInt32::compute_checksum(Crc32 &checksum)
-{
-	checksum.AddData(reinterpret_cast<uint8_t*>(&d_buf), sizeof(d_buf));
-}
+void UInt32::compute_checksum(Crc32 &checksum) { checksum.AddData(reinterpret_cast<uint8_t *>(&d_buf), sizeof(d_buf)); }
 
 /**
  * @brief Serialize an Int8
@@ -152,41 +132,30 @@ UInt32::compute_checksum(Crc32 &checksum)
  * @param filter Unused
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
-void
-UInt32::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool)
-{
+void UInt32::serialize(D4StreamMarshaller &m, DMR &, /*ConstraintEvaluator &,*/ bool) {
     if (!read_p())
-        read();          // read() throws Error
+        read(); // read() throws Error
 
-    m.put_uint32( d_buf ) ;
+    m.put_uint32(d_buf);
 }
 
-void
-UInt32::deserialize(D4StreamUnMarshaller &um, DMR &)
-{
-    um.get_uint32( d_buf ) ;
-}
+void UInt32::deserialize(D4StreamUnMarshaller &um, DMR &) { um.get_uint32(d_buf); }
 
-unsigned int
-UInt32::val2buf(void *val, bool)
-{
+unsigned int UInt32::val2buf(void *val, bool) {
 
     // Jose Garcia
     // This method is public therefore and I believe it has being designed
     // to be use by read which must be implemented on the surrogated library,
     // thus if the pointer val is NULL, is an Internal Error.
     if (!val)
-        throw InternalErr(__FILE__, __LINE__,
-                          "The incoming pointer does not contain any data.");
+        throw InternalErr(__FILE__, __LINE__, "The incoming pointer does not contain any data.");
 
     d_buf = *(dods_uint32 *)val;
 
     return width();
 }
 
-unsigned int
-UInt32::buf2val(void **val)
-{
+unsigned int UInt32::buf2val(void **val) {
     // Jose Garcia
     // The same comment justifying throwing an Error in val2buf applies here.
     if (!val)
@@ -200,43 +169,30 @@ UInt32::buf2val(void **val)
     return width();
 }
 
-dods_uint32
-UInt32::value() const
-{
-    return d_buf;
-}
+dods_uint32 UInt32::value() const { return d_buf; }
 
-bool
-UInt32::set_value(dods_uint32 i)
-{
+bool UInt32::set_value(dods_uint32 i) {
     d_buf = i;
     set_read_p(true);
 
     return true;
 }
 
-void
-UInt32::print_val(FILE *out, string space, bool print_decl_p)
-{
+void UInt32::print_val(FILE *out, string space, bool print_decl_p) {
     ostringstream oss;
     print_val(oss, space, print_decl_p);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void
-UInt32::print_val(ostream &out, string space, bool print_decl_p)
-{
+void UInt32::print_val(ostream &out, string space, bool print_decl_p) {
     if (print_decl_p) {
         print_decl(out, space, false);
-	out << " = " << (unsigned int)d_buf << ";\n" ;
-    }
-    else
-	out << (unsigned int)d_buf ;
+        out << " = " << (unsigned int)d_buf << ";\n";
+    } else
+        out << (unsigned int)d_buf;
 }
 
-bool
-UInt32::ops(BaseType *b, int op)
-{
+bool UInt32::ops(BaseType *b, int op) {
     // Extract the Byte arg's value.
     if (!read_p() && !read()) {
         // Jose Garcia
@@ -258,28 +214,28 @@ UInt32::ops(BaseType *b, int op)
     }
 
     switch (b->type()) {
-        case dods_int8_c:
-            return Cmp<dods_uint32, dods_int8>(op, d_buf, static_cast<Int8*>(b)->value());
-        case dods_byte_c:
-            return Cmp<dods_uint32, dods_byte>(op, d_buf, static_cast<Byte*>(b)->value());
-        case dods_int16_c:
-            return Cmp<dods_uint32, dods_int16>(op, d_buf, static_cast<Int16*>(b)->value());
-        case dods_uint16_c:
-            return Cmp<dods_uint32, dods_uint16>(op, d_buf, static_cast<UInt16*>(b)->value());
-        case dods_int32_c:
-            return Cmp<dods_uint32, dods_int32>(op, d_buf, static_cast<Int32*>(b)->value());
-        case dods_uint32_c:
-            return Cmp<dods_uint32, dods_uint32>(op, d_buf, static_cast<UInt32*>(b)->value());
-        case dods_int64_c:
-            return Cmp<dods_uint32, dods_int64>(op, d_buf, static_cast<Int64*>(b)->value());
-        case dods_uint64_c:
-            return Cmp<dods_uint32, dods_uint64>(op, d_buf, static_cast<UInt64*>(b)->value());
-        case dods_float32_c:
-            return Cmp<dods_uint32, dods_float32>(op, d_buf, static_cast<Float32*>(b)->value());
-        case dods_float64_c:
-            return Cmp<dods_uint32, dods_float64>(op, d_buf, static_cast<Float64*>(b)->value());
-        default:
-            return false;
+    case dods_int8_c:
+        return Cmp<dods_uint32, dods_int8>(op, d_buf, static_cast<Int8 *>(b)->value());
+    case dods_byte_c:
+        return Cmp<dods_uint32, dods_byte>(op, d_buf, static_cast<Byte *>(b)->value());
+    case dods_int16_c:
+        return Cmp<dods_uint32, dods_int16>(op, d_buf, static_cast<Int16 *>(b)->value());
+    case dods_uint16_c:
+        return Cmp<dods_uint32, dods_uint16>(op, d_buf, static_cast<UInt16 *>(b)->value());
+    case dods_int32_c:
+        return Cmp<dods_uint32, dods_int32>(op, d_buf, static_cast<Int32 *>(b)->value());
+    case dods_uint32_c:
+        return Cmp<dods_uint32, dods_uint32>(op, d_buf, static_cast<UInt32 *>(b)->value());
+    case dods_int64_c:
+        return Cmp<dods_uint32, dods_int64>(op, d_buf, static_cast<Int64 *>(b)->value());
+    case dods_uint64_c:
+        return Cmp<dods_uint32, dods_uint64>(op, d_buf, static_cast<UInt64 *>(b)->value());
+    case dods_float32_c:
+        return Cmp<dods_uint32, dods_float32>(op, d_buf, static_cast<Float32 *>(b)->value());
+    case dods_float64_c:
+        return Cmp<dods_uint32, dods_float64>(op, d_buf, static_cast<Float64 *>(b)->value());
+    default:
+        return false;
     }
 }
 
@@ -291,16 +247,12 @@ UInt32::ops(BaseType *b, int op)
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void
-UInt32::dump(ostream &strm) const
-{
-    strm << DapIndent::LMarg << "UInt32::dump - ("
-    << (void *)this << ")" << endl ;
-    DapIndent::Indent() ;
-    BaseType::dump(strm) ;
-    strm << DapIndent::LMarg << "value: " << d_buf << endl ;
-    DapIndent::UnIndent() ;
+void UInt32::dump(ostream &strm) const {
+    strm << DapIndent::LMarg << "UInt32::dump - (" << (void *)this << ")" << endl;
+    DapIndent::Indent();
+    BaseType::dump(strm);
+    strm << DapIndent::LMarg << "value: " << d_buf << endl;
+    DapIndent::UnIndent();
 }
 
 } // namespace libdap
-

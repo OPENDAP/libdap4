@@ -23,25 +23,25 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
+#include <algorithm>
 #include <cstring>
+#include <functional>
 #include <iterator>
 #include <string>
-#include <algorithm>
-#include <functional>
 
 #include "GNURegex.h"
-#include "RCReader.h"
-#include "HTTPResponse.h"
 #include "HTTPCache.h"
 #include "HTTPConnect.h"
+#include "HTTPResponse.h"
+#include "RCReader.h"
 #include "debug.h"
 
+#include "remove_directory.h"
 #include "run_tests_cppunit.h"
 #include "test_config.h"
-#include "remove_directory.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -50,7 +50,7 @@ using namespace std;
 
 namespace libdap {
 
-class HTTPConnectTest: public TestFixture {
+class HTTPConnectTest : public TestFixture {
 private:
     unique_ptr<HTTPConnect> http = make_unique<HTTPConnect>(RCReader::instance());
     string localhost_url{"http://test.opendap.org/test-304.html"};
@@ -60,47 +60,34 @@ private:
     string lm{"Sun, 04 Dec 2022 19:35:52 GMT"};
     string netcdf_das_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.das"};
 
-    bool re_match(Regex & r, const char *s)
-    {
-        return r.match(s, strlen(s)) == (int) strlen(s);
-    }
+    bool re_match(Regex &r, const char *s) { return r.match(s, strlen(s)) == (int)strlen(s); }
 
-    struct REMatch: public unary_function<const string &, bool> {
+    struct REMatch : public unary_function<const string &, bool> {
         Regex &d_re;
-        explicit REMatch(Regex &re) :
-            d_re(re)
-        {
-        }
+        explicit REMatch(Regex &re) : d_re(re) {}
         ~REMatch() = default;
 
-        bool operator()(const string &str)
-        {
+        bool operator()(const string &str) {
             const char *s = str.c_str();
-            return d_re.match(s, strlen(s)) == (int) strlen(s);
+            return d_re.match(s, strlen(s)) == (int)strlen(s);
         }
     };
 
     // This is defined in HTTPConnect.cc but has to be defined here as well.
     // Don't know why... jhrg
-    class HeaderMatch: public unary_function<const string &, bool> {
+    class HeaderMatch : public unary_function<const string &, bool> {
         const string &d_header;
+
     public:
-        explicit HeaderMatch(const string &header) :
-            d_header(header)
-        {
-        }
-        bool operator()(const string &arg)
-        {
-            return arg.find(d_header) == 0;
-        }
+        explicit HeaderMatch(const string &header) : d_header(header) {}
+        bool operator()(const string &arg) { return arg.find(d_header) == 0; }
     };
 
 public:
     HTTPConnectTest() = default;
     ~HTTPConnectTest() override = default;
 
-    void setUp() override
-    {
+    void setUp() override {
         DBG(cerr << endl);
         DBG(cerr << prolog << "Setting the DODS_CONF env var" << endl);
         setenv("DODS_CONF", "cache-testsuite/dodsrc", 1);
@@ -110,7 +97,7 @@ public:
             cache->purge_cache();
         }
 
-        DBG(cerr << prolog << "localhost_url: " << localhost_url<< endl);
+        DBG(cerr << prolog << "localhost_url: " << localhost_url << endl);
 
         // Two request header values that will generate a 304 response to the
         // above URL. The values below much match the etag and last-modified
@@ -121,44 +108,43 @@ public:
         // etag = "\"2a008e-157-3fbcd139c2680\"";
         // etag = "\"181893-157-3fbcd139c2680\""; // On 10/13/14 we moved to a new httpd and the etag value changed.
         // etag ="\"157-3df1e87884680\""; // New httpd service, new etag, ndp - 01/11/21
-        //etag = "\"157-3df0e26958000\"";// New httpd (dockerized), new etag. ndp - 12/06/22
-        DBG(cerr << prolog << "etag: " << etag<< endl);
-        DBG(cerr << prolog << "lm: " << lm<< endl);
-        DBG(cerr << prolog << "localhost_pw_url: " << localhost_pw_url<< endl);
-        DBG(cerr << prolog << "localhost_digest_pw_url: " << localhost_digest_pw_url<< endl);
-        DBG(cerr << prolog << "netcdf_das_url: " << netcdf_das_url<< endl);
+        // etag = "\"157-3df0e26958000\"";// New httpd (dockerized), new etag. ndp - 12/06/22
+        DBG(cerr << prolog << "etag: " << etag << endl);
+        DBG(cerr << prolog << "lm: " << lm << endl);
+        DBG(cerr << prolog << "localhost_pw_url: " << localhost_pw_url << endl);
+        DBG(cerr << prolog << "localhost_digest_pw_url: " << localhost_digest_pw_url << endl);
+        DBG(cerr << prolog << "netcdf_das_url: " << netcdf_das_url << endl);
     }
 
-    CPPUNIT_TEST_SUITE (HTTPConnectTest);
+    CPPUNIT_TEST_SUITE(HTTPConnectTest);
 
-    CPPUNIT_TEST (read_url_test);
+    CPPUNIT_TEST(read_url_test);
 
-    CPPUNIT_TEST (fetch_url_test_1);
-    CPPUNIT_TEST (fetch_url_test_2);
-    CPPUNIT_TEST (fetch_url_test_3);
-    CPPUNIT_TEST (fetch_url_test_4);
+    CPPUNIT_TEST(fetch_url_test_1);
+    CPPUNIT_TEST(fetch_url_test_2);
+    CPPUNIT_TEST(fetch_url_test_3);
+    CPPUNIT_TEST(fetch_url_test_4);
 
-    CPPUNIT_TEST (fetch_url_test_1_cpp);
-    CPPUNIT_TEST (fetch_url_test_2_cpp);
-    CPPUNIT_TEST (fetch_url_test_3_cpp);
-    CPPUNIT_TEST (fetch_url_test_4_cpp);
+    CPPUNIT_TEST(fetch_url_test_1_cpp);
+    CPPUNIT_TEST(fetch_url_test_2_cpp);
+    CPPUNIT_TEST(fetch_url_test_3_cpp);
+    CPPUNIT_TEST(fetch_url_test_4_cpp);
 
-    CPPUNIT_TEST (get_response_headers_test);
-    CPPUNIT_TEST (server_version_test);
-    CPPUNIT_TEST (type_test);
+    CPPUNIT_TEST(get_response_headers_test);
+    CPPUNIT_TEST(server_version_test);
+    CPPUNIT_TEST(type_test);
 
-    CPPUNIT_TEST (cache_test);
-    CPPUNIT_TEST (cache_test_cpp);
+    CPPUNIT_TEST(cache_test);
+    CPPUNIT_TEST(cache_test_cpp);
 
-    CPPUNIT_TEST (set_accept_deflate_test);
-    CPPUNIT_TEST (set_xdap_protocol_test);
-    CPPUNIT_TEST (read_url_password_test);
-    CPPUNIT_TEST (read_url_password_test2);
+    CPPUNIT_TEST(set_accept_deflate_test);
+    CPPUNIT_TEST(set_xdap_protocol_test);
+    CPPUNIT_TEST(read_url_password_test);
+    CPPUNIT_TEST(read_url_password_test2);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void read_url_test()
-    {
+    void read_url_test() {
         vector<string> resp_h;
 
         try {
@@ -183,7 +169,7 @@ public:
             DBG(cerr << prolog << "If-Modified-Since test. END " << endl);
 
             // Now test an etag
-            DBG(cerr << prolog << "ETag (If-None_Match) test. BEGIN (etag:" << etag << ")"<< endl);
+            DBG(cerr << prolog << "ETag (If-None_Match) test. BEGIN (etag:" << etag << ")" << endl);
             resp_h.clear();
             request_h.clear();
             request_h.push_back(string("If-None-Match: ") + etag);
@@ -204,26 +190,21 @@ public:
             DBG(cerr << prolog << "Combined test. Returned http status: " << status << endl);
             DBG(copy(resp_h.begin(), resp_h.end(), ostream_iterator<string>(cerr, "\n")));
             CPPUNIT_ASSERT(status == 304);
-        }
-        catch (const Error & e) {
+        } catch (const Error &e) {
             CPPUNIT_FAIL(prolog + "Error: " + e.get_error_message());
         }
     }
 
-    void fetch_url_test_1()
-    {
+    void fetch_url_test_1() {
         DBG(cerr << "Entering fetch_url_test 1" << endl);
         char c;
         try {
             unique_ptr<HTTPResponse> stuff(http->fetch_url(localhost_url));
-            CPPUNIT_ASSERT(
-                fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                    && !feof(stuff->get_stream()));
-        }
-        catch (InternalErr & e) {
+            CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream()) &&
+                           !feof(stuff->get_stream()));
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error & e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -235,8 +216,7 @@ public:
         }
     }
 
-    void fetch_url_test_1_cpp()
-    {
+    void fetch_url_test_1_cpp() {
         DBG(cerr << "Entering fetch_url_test 1" << endl);
         http->set_use_cpp_streams(true);
         char c;
@@ -246,36 +226,30 @@ public:
             CPPUNIT_ASSERT(*(stuff->get_cpp_stream()));
             CPPUNIT_ASSERT(!stuff->get_cpp_stream()->bad());
             CPPUNIT_ASSERT(!stuff->get_cpp_stream()->eof());
-        }
-        catch (InternalErr &e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-        catch (std::exception &e) {
+        } catch (std::exception &e) {
             CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
         }
     }
 
-    void fetch_url_test_2()
-    {
+    void fetch_url_test_2() {
         DBG(cerr << "Entering fetch_url_test 2" << endl);
         char c;
         try {
             unique_ptr<HTTPResponse> stuff(http->fetch_url(netcdf_das_url));
             DBG2(char ln[1024]; while (!feof(stuff->get_stream())) {
-                    fgets(ln, 1024, stuff->get_stream()); cerr << ln;}
-                rewind(stuff->get_stream()));
+                fgets(ln, 1024, stuff->get_stream());
+                cerr << ln;
+            } rewind(stuff->get_stream()));
 
-            CPPUNIT_ASSERT(
-                fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                    && !feof(stuff->get_stream()));
-        }
-        catch (InternalErr & e) {
+            CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream()) &&
+                           !feof(stuff->get_stream()));
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error & e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -283,24 +257,22 @@ public:
         // is not called, then a failed test can leave the cache with locked
         // entries
         catch (const std::exception &e) {
-            CPPUNIT_FAIL("An exception was thrown from fetch_url_test_2: " + string(e.what()));        }
+            CPPUNIT_FAIL("An exception was thrown from fetch_url_test_2: " + string(e.what()));
+        }
     }
 
-    void fetch_url_test_2_cpp()
-    {
+    void fetch_url_test_2_cpp() {
         DBG(cerr << "Entering fetch_url_test 2" << endl);
         http->set_use_cpp_streams(true);
         char c;
         try {
             unique_ptr<HTTPResponse> stuff(http->fetch_url(netcdf_das_url));
             stuff->get_cpp_stream()->read(&c, 1);
-            CPPUNIT_ASSERT(
-                *(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() && !stuff->get_cpp_stream()->eof());
-        }
-        catch (InternalErr & e) {
+            CPPUNIT_ASSERT(*(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() &&
+                           !stuff->get_cpp_stream()->eof());
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error & e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -312,20 +284,16 @@ public:
         }
     }
 
-    void fetch_url_test_3()
-    {
+    void fetch_url_test_3() {
         DBG(cerr << "Entering fetch_url_test 3" << endl);
         char c;
         try {
             unique_ptr<HTTPResponse> stuff(http->fetch_url("file:///etc/passwd"));
-            CPPUNIT_ASSERT(
-                fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                    && !feof(stuff->get_stream()));
-        }
-        catch (InternalErr & e) {
+            CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream()) &&
+                           !feof(stuff->get_stream()));
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
-        }
-        catch (Error & e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -337,8 +305,7 @@ public:
         }
     }
 
-    void fetch_url_test_3_cpp()
-    {
+    void fetch_url_test_3_cpp() {
         DBG(cerr << "Entering fetch_url_test 3" << endl);
         http->set_use_cpp_streams(true);
         char c;
@@ -346,13 +313,11 @@ public:
             unique_ptr<HTTPResponse> stuff(http->fetch_url("file:///etc/passwd"));
 
             stuff->get_cpp_stream()->read(&c, 1);
-            CPPUNIT_ASSERT(
-                *(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() && !stuff->get_cpp_stream()->eof());
-        }
-        catch (InternalErr & e) {
+            CPPUNIT_ASSERT(*(stuff->get_cpp_stream()) && !stuff->get_cpp_stream()->bad() &&
+                           !stuff->get_cpp_stream()->eof());
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
-        }
-        catch (Error & e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -364,21 +329,17 @@ public:
         }
     }
 
-    void fetch_url_test_4()
-    {
+    void fetch_url_test_4() {
         DBG(cerr << "Entering fetch_url_test 4" << endl);
         char c;
         try {
             string url = (string) "file://" + TEST_SRC_DIR + "/test_config.h";
             unique_ptr<HTTPResponse> stuff(http->fetch_url(url));
-            CPPUNIT_ASSERT(
-                fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                    && !feof(stuff->get_stream()));
-        }
-        catch (InternalErr & e) {
+            CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream()) &&
+                           !feof(stuff->get_stream()));
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
-        }
-        catch (Error & e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -390,8 +351,7 @@ public:
         }
     }
 
-    void fetch_url_test_4_cpp()
-    {
+    void fetch_url_test_4_cpp() {
         DBG(cerr << "Entering fetch_url_test_4_cpp" << endl);
         http->set_use_cpp_streams(true);
         char c;
@@ -403,11 +363,9 @@ public:
             CPPUNIT_ASSERT(*(stuff->get_cpp_stream()));
             CPPUNIT_ASSERT(!stuff->get_cpp_stream()->bad());
             CPPUNIT_ASSERT(!stuff->get_cpp_stream()->eof());
-        }
-        catch (InternalErr & e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url" + e.get_error_message());
-        }
-        catch (Error & e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
         }
         // Catch the exception from a failed ASSERT and clean up. Deleting a
@@ -419,8 +377,7 @@ public:
         }
     }
 
-    void get_response_headers_test()
-    {
+    void get_response_headers_test() {
         try {
             unique_ptr<HTTPResponse> r(http->fetch_url(netcdf_das_url));
             vector<string> &h = r->get_headers();
@@ -432,19 +389,16 @@ public:
 
             CPPUNIT_ASSERT(find_if(h.begin(), h.end(), REMatch(header)) != h.end());
 
-            Regex protocol_header("X.*DAP: .*");	// Matches both XDAP and X-DAP
+            Regex protocol_header("X.*DAP: .*"); // Matches both XDAP and X-DAP
             CPPUNIT_ASSERT(find_if(h.begin(), h.end(), REMatch(protocol_header)) != h.end());
-        }
-        catch (InternalErr & e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr exception from get_response_headers: " + e.get_error_message());
-        }
-        catch (const std::exception &e) {
+        } catch (const std::exception &e) {
             CPPUNIT_FAIL("An exception was thrown from get_response_headers: " + string(e.what()));
         }
     }
 
-    void server_version_test()
-    {
+    void server_version_test() {
         // Response *r = nullptr;
         Regex protocol("^[0-9]+\\.[0-9]+$");
         try {
@@ -453,29 +407,24 @@ public:
             DBG(cerr << "r->get_version().c_str(): " << r->get_protocol().c_str() << endl);
 
             CPPUNIT_ASSERT(re_match(protocol, r->get_protocol().c_str()));
-        }
-        catch (InternalErr & e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr exception from server_version: " + e.get_error_message());
-        }
-        catch (const std::exception &e) {
+        } catch (const std::exception &e) {
             CPPUNIT_FAIL("An exception was thrown from server_version_test: " + string(e.what()));
         }
     }
 
-    void type_test()
-    {
+    void type_test() {
         try {
             unique_ptr<HTTPResponse> r(http->fetch_url(netcdf_das_url));
             DBG(cerr << "r->get_type(): " << r->get_type() << endl);
             CPPUNIT_ASSERT(r->get_type() == dods_das);
-        }
-        catch (InternalErr & e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr exception from type(): " + e.get_error_message());
         }
     }
 
-    void set_credentials_test()
-    {
+    void set_credentials_test() {
         http->set_credentials("jimg", "was_quit");
         unique_ptr<HTTPResponse> stuff(http->fetch_url("http://localhost/secret"));
 
@@ -484,14 +433,12 @@ public:
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1);
             CPPUNIT_ASSERT(!ferror(stuff->get_stream()));
             CPPUNIT_ASSERT(!feof(stuff->get_stream()));
-        }
-        catch (InternalErr & e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr exception from output: " + e.get_error_message());
         }
     }
 
-    void cache_test()
-    {
+    void cache_test() {
         DBG(cerr << endl << "Entering Caching tests." << endl);
         try {
             // The cache-testsuite/dodsrc file turns this off; all the other
@@ -513,14 +460,12 @@ public:
             DBG(cerr << "server_version_test" << endl);
             type_test();
             DBG(cerr << "type_test" << endl);
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL((string) "Error: " + e.get_error_message());
         }
     }
 
-    void cache_test_cpp()
-    {
+    void cache_test_cpp() {
         DBG(cerr << endl << "Entering Caching tests." << endl);
         try {
             // The cache-testsuite/dodsrc file turns this off; all the other
@@ -545,37 +490,30 @@ public:
 
             type_test();
             DBG(cerr << "type_test" << endl);
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL((string) "Error: " + e.get_error_message());
         }
     }
 
-    void set_accept_deflate_test()
-    {
+    void set_accept_deflate_test() {
         http->set_accept_deflate(false);
-        CPPUNIT_ASSERT(
-            count(http->d_request_headers.begin(), http->d_request_headers.end(),
-                "Accept-Encoding: deflate, gzip, compress") == 0);
+        CPPUNIT_ASSERT(count(http->d_request_headers.begin(), http->d_request_headers.end(),
+                             "Accept-Encoding: deflate, gzip, compress") == 0);
 
         http->set_accept_deflate(true);
-        CPPUNIT_ASSERT(
-            count(http->d_request_headers.begin(), http->d_request_headers.end(),
-                "Accept-Encoding: deflate, gzip, compress") == 1);
+        CPPUNIT_ASSERT(count(http->d_request_headers.begin(), http->d_request_headers.end(),
+                             "Accept-Encoding: deflate, gzip, compress") == 1);
 
         http->set_accept_deflate(true);
-        CPPUNIT_ASSERT(
-            count(http->d_request_headers.begin(), http->d_request_headers.end(),
-                "Accept-Encoding: deflate, gzip, compress") == 1);
+        CPPUNIT_ASSERT(count(http->d_request_headers.begin(), http->d_request_headers.end(),
+                             "Accept-Encoding: deflate, gzip, compress") == 1);
 
         http->set_accept_deflate(false);
-        CPPUNIT_ASSERT(
-            count(http->d_request_headers.begin(), http->d_request_headers.end(),
-                "Accept-Encoding: deflate, gzip, compress") == 0);
+        CPPUNIT_ASSERT(count(http->d_request_headers.begin(), http->d_request_headers.end(),
+                             "Accept-Encoding: deflate, gzip, compress") == 0);
     }
 
-    void set_xdap_protocol_test()
-    {
+    void set_xdap_protocol_test() {
         // Initially there should be no header and the protocol should be 2.0
         CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 2 && http->d_dap_client_protocol_minor == 0);
 
@@ -591,8 +529,7 @@ public:
         CPPUNIT_ASSERT(count(http->d_request_headers.begin(), http->d_request_headers.end(), "XDAP-Accept: 3.2") == 1);
     }
 
-    void read_url_password_test()
-    {
+    void read_url_password_test() {
         FILE *dump = fopen("/dev/null", "w");
         vector<string> resp_h;
         long status = http->read_url(localhost_pw_url, dump, resp_h);
@@ -603,8 +540,7 @@ public:
         CPPUNIT_ASSERT(status == 200);
     }
 
-    void read_url_password_test2()
-    {
+    void read_url_password_test2() {
         FILE *dump = fopen("/dev/null", "w");
         vector<string> resp_h;
         long status = http->read_url(localhost_digest_pw_url, dump, resp_h);
@@ -616,11 +552,8 @@ public:
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (HTTPConnectTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(HTTPConnectTest);
 
-}
+} // namespace libdap
 
-int main(int argc, char*argv[])
-{
-    return run_tests<libdap::HTTPConnectTest>(argc, argv) ? 0: 1;
-}
+int main(int argc, char *argv[]) { return run_tests<libdap::HTTPConnectTest>(argc, argv) ? 0 : 1; }

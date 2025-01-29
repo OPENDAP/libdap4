@@ -26,15 +26,14 @@
 #ifndef http_cache_interrupt_handler_h
 #define http_cache_interrupt_handler_h
 
+#include <algorithm>
 #include <csignal>
 #include <iostream>
-#include <algorithm>
 
-#include "HTTPCache.h"
 #include "EventHandler.h"
+#include "HTTPCache.h"
 
-namespace libdap
-{
+namespace libdap {
 
 /** Handle SIGINT for HTTPCache. When the cache is in use and the process is
     sent SIGINT, we must make sure that the cache is left in a consistent
@@ -45,8 +44,7 @@ namespace libdap
     @see SignalHandler
     @see HTTPCache
     @author James Gallagher <jgallagher@opendap.org> */
-class HTTPCacheInterruptHandler : public EventHandler
-{
+class HTTPCacheInterruptHandler : public EventHandler {
 public:
     ///
     HTTPCacheInterruptHandler() = default;
@@ -61,8 +59,7 @@ public:
     @param signum We know it is SIGINT; included here as a check and only
     when NDEBUG is not defined.
     @return Never returns. */
-    void handle_signal(int /*signum*/) override
-    {
+    void handle_signal(int /*signum*/) override {
 #if 0
         std::vector<std::string> *of = &HTTPCache::_instance->d_open_files;
 

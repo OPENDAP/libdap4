@@ -32,16 +32,14 @@
 
 class Crc32;
 
-namespace libdap
-{
+namespace libdap {
 
 class DMR;
 class XMLWriter;
 class D4StreamUnMarshaller;
 
 /** Common methods for all constructor types. */
-class Constructor: public BaseType
-{
+class Constructor : public BaseType {
 private:
     void m_duplicate(const Constructor &s);
 
@@ -51,24 +49,21 @@ protected:
     BaseType *m_leaf_match(const string &name, btp_stack *s = nullptr);
     BaseType *m_exact_match(const string &name, btp_stack *s = nullptr);
 
-    Constructor(const string &name, const Type &type, bool is_dap4 = false)
-        : BaseType(name, type, is_dap4) { }
+    Constructor(const string &name, const Type &type, bool is_dap4 = false) : BaseType(name, type, is_dap4) {}
     Constructor(const string &name, const string &dataset, const Type &type, bool is_dap4 = false)
-        : BaseType(name, dataset, type, is_dap4) { }
+        : BaseType(name, dataset, type, is_dap4) {}
 
-    Constructor(const Constructor &copy_from) : BaseType(copy_from) {
-        m_duplicate(copy_from);
-    }
+    Constructor(const Constructor &copy_from) : BaseType(copy_from) { m_duplicate(copy_from); }
 
 public:
-    typedef std::vector<BaseType *>::const_iterator Vars_citer ;
-    typedef std::vector<BaseType *>::iterator Vars_iter ;
-    typedef std::vector<BaseType *>::reverse_iterator Vars_riter ;
+    typedef std::vector<BaseType *>::const_iterator Vars_citer;
+    typedef std::vector<BaseType *>::iterator Vars_iter;
+    typedef std::vector<BaseType *>::reverse_iterator Vars_riter;
 
-    Constructor() = delete;     // Why? jhrg 4/25/22
+    Constructor() = delete; // Why? jhrg 4/25/22
 
     ~Constructor() override {
-        for (auto var: d_vars)
+        for (auto var : d_vars)
             delete var;
     }
 
@@ -105,13 +100,14 @@ public:
     Vars_riter var_rend();
     Vars_iter get_vars_iter(int i);
     BaseType *get_var_index(int i);
+    void set_var_index(BaseType *bt, int i);
 
     /**
-      * Get a const reference to the vector of BaseType pointers.
-      * @note Use this in range-based for loops to iterate over the variables.
-      * @return A const reference to the vector of BaseType pointers.
-      */
-    const vector<BaseType*> &variables() const { return d_vars; }
+     * Get a const reference to the vector of BaseType pointers.
+     * @note Use this in range-based for loops to iterate over the variables.
+     * @return A const reference to the vector of BaseType pointers.
+     */
+    const vector<BaseType *> &variables() const { return d_vars; }
 
     bool is_dap4_projected(std::vector<std::string> &inventory) override;
 

@@ -40,10 +40,9 @@
 
 // #ifndef _str_h
 #include "Str.h"
-//#endif
+// #endif
 
-namespace libdap
-{
+namespace libdap {
 
 class BaseType;
 
@@ -53,15 +52,14 @@ const unsigned int max_url_len = 255;
 
     @see BaseType
     @see Str */
-class Url: public Str {
+class Url : public Str {
 
 public:
     Url(const std::string &n);
     Url(const std::string &n, const std::string &d);
     Url(const std::string &n, Type t);
     Url(const std::string &n, const std::string &d, Type t);
-    virtual ~Url()
-    {}
+    virtual ~Url() {}
 
     virtual BaseType *ptr_duplicate();
 };
@@ -69,4 +67,3 @@ public:
 } // namespace libdap
 
 #endif // _url_h
-

@@ -24,7 +24,8 @@ endif
 CXXFLAGS_DEBUG = -g3 -O0
 
 if USE_ASAN
-ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+# old ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
 endif
 
 if BUILD_DEVELOPER
@@ -112,6 +113,9 @@ check-local:
 endif
 
 # If cppunit exists and big array test option are chosen, turn on BigArrayTest.
+# Leave this as an if check for now. The BigArrayTest is too large and causes
+# Travis to kill the process before it finishes
+# kln 11/19/24
 if CPPUNIT
 if USE_BA
 UNIT_TESTS +=BigArrayTest
