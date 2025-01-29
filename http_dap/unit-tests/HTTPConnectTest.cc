@@ -56,8 +56,8 @@ private:
     string localhost_url{"http://test.opendap.org/test-304.html"};
     string localhost_pw_url{"http://jimg:dods_test@test.opendap.org/basic/page.txt"};
     string localhost_digest_pw_url{"http://jimg:dods_digest@test.opendap.org/basic/page.txt"};
-    string etag{"\"157-3df0e26958000\""};
-    string lm{"Wed, 13 Jul 2005 19:32:26 GMT"};
+    string etag{"\"157-5ef05adba5432\""};
+    string lm{"Sun, 04 Dec 2022 19:35:52 GMT"};
     string netcdf_das_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.das"};
 
     bool re_match(Regex & r, const char *s)
