@@ -28,13 +28,7 @@
 
 #include <cstdio>
 
-#ifndef response_h
-#include "Response.h"
-#endif
-
-#ifndef _debug_h
-#include "debug.h"
-#endif
+#include "HTTPResponse.h"
 
 namespace libdap {
 
