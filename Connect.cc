@@ -44,11 +44,12 @@
 #include <fstream>
 
 #include "Connect.h"
+#include "DDXParserSAX2.h"
 #include "DataDDS.h"
+#include "HTTPResponse.h"
+#include "RCReader.h"
 #include "debug.h"
 #include "escaping.h"
-// #include "RCReader.h"
-#include "DDXParserSAX2.h"
 #if FILE_UN_MARSHALLER
 #include "XDRFileUnMarshaller.h"
 #else

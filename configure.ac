@@ -2,11 +2,7 @@
 dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.63)
-
-dnl AC_PREREQ([2.68]); Fails on CentOS 6. jhrg 3/26/19
-dnl m4_pattern_forbid([^_?(gl_[A-Z]|AX_|BISON_)])
-dnl m4_pattern_allow([^BISON_USE_NLS$])
+AC_PREREQ([2.69])
 
 dnl Set the version number here. Set the build number using --with-build
 dnl The version info is put in the VERSION file. The build number is used
@@ -34,8 +30,7 @@ dnl people building the source, it's not customary to supply a build number (i.e
 dnl if you're building the code for your own use, a build number seems like overkill).
 dnl jhrg 3/16/21
 AC_ARG_WITH([build],
-            [AC_HELP_STRING([--with-build=<number>],
-             [Inject the integer build number (default is to not define a build number)])],
+            [AS_HELP_STRING([--with-build=<number>],[Inject the integer build number (default is to not define a build number)])],
             [build_number=${withval}], [build_number=])
 
 dnl If a build number is given and valid (it must be an integer), use it. If it's
@@ -178,11 +173,11 @@ AS_IF([test -z "$CXX_STD_FLAG"],
 
 AC_SUBST(CXX_STD_FLAG)
 
-AM_PROG_LEX
+AM_PROG_LEX(noyywrap)
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_LIBTOOL
+LT_INIT
 
 dnl We really need bison and not yacc. If you use AC_PROG_YACC, the resulting 
 dnl Makefile will call bison -y which doesn't know how to make the parsers 
@@ -199,7 +194,7 @@ AS_VERSION_COMPARE(["$bison_version"], ["3.0"],
 	[ ],
 	[ ])
 
-AC_MSG_RESULT([found vesion $bison_version])
+AC_MSG_RESULT([found version $bison_version])
 
 dnl Checks for header files.
 AC_HEADER_DIRENT
@@ -587,7 +582,11 @@ AC_CONFIG_FILES([Makefile
                  d4_ce/Makefile
                  d4_ce/unit-tests/Makefile
                  d4_function/Makefile
-                 
+
+                 http_dap/Makefile
+                 http_dap/unit-tests/Makefile
+                 http_dap/unit-tests/cache-testsuite/Makefile
+
                  tests/Makefile
                  tests/atlocal
                  
