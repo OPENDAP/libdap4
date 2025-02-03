@@ -5,6 +5,8 @@
 #ifndef LIBDAP4_REMOVE_DIRECTORY_H
 #define LIBDAP4_REMOVE_DIRECTORY_H
 
-namespace libdap{ void remove_directory(const char *dir); }
+namespace libdap {
+void remove_directory(const char *dir);
+}
 
-#endif //LIBDAP4_REMOVE_DIRECTORY_H
+#endif // LIBDAP4_REMOVE_DIRECTORY_H

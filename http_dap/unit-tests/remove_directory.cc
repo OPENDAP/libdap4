@@ -2,9 +2,9 @@
 // Created by James Gallagher on 2/22/23.
 //
 
-#include <string>
 #include <cstring>
 #include <dirent.h>
+#include <string>
 
 #include "Error.h"
 #include "util.h"
@@ -27,8 +27,7 @@ void remove_directory(const char *dir) {
                 std::string path = std::string(dir) + "/" + entry->d_name;
                 if (entry->d_type == DT_DIR) {
                     remove_directory(path.c_str());
-                }
-                else {
+                } else {
                     if (std::remove(path.c_str()) == -1)
                         throw Error(prolog + "Could not remove file " + path + " (" + std::strerror(errno) + ")",
                                     __FILE__, __LINE__);

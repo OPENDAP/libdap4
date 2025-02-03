@@ -10,9 +10,9 @@
 
 #if 0
 
+#include "InternalErr.h"
 #include <cerrno>
 #include <cstring>
-#include "InternalErr.h"
 
 
 
@@ -27,17 +27,19 @@
 //#define DIR_SEPARATOR_STR "/"
 
 #if 0
-#define LOCK(m) do { \
-	int code = pthread_mutex_lock((m)); \
-	if (code != 0) \
-		throw InternalErr(__FILE__, __LINE__, string("Mutex lock: ") + strerror(code)); \
-    } while(0);
+#define LOCK(m)                                                                                                        \
+    do {                                                                                                               \
+        int code = pthread_mutex_lock((m));                                                                            \
+        if (code != 0)                                                                                                 \
+            throw InternalErr(__FILE__, __LINE__, string("Mutex lock: ") + strerror(code));                            \
+    } while (0);
 
-#define UNLOCK(m) do { \
-	int code = pthread_mutex_unlock((m)); \
-	if (code != 0) \
-		throw InternalErr(__FILE__, __LINE__, string("Mutex unlock: ") + strerror(code)); \
-    } while(0);
+#define UNLOCK(m)                                                                                                      \
+    do {                                                                                                               \
+        int code = pthread_mutex_unlock((m));                                                                          \
+        if (code != 0)                                                                                                 \
+            throw InternalErr(__FILE__, __LINE__, string("Mutex unlock: ") + strerror(code));                          \
+    } while (0);
 #endif
 
 // #define TRYLOCK(m) pthread_mutex_trylock((m))
@@ -53,6 +55,5 @@
 #define CACHE_META ".meta"
 #define CACHE_EMPTY_ETAG "@cache@"
 #endif
-
 
 #endif /* HTTPCACHEMACROS_H_ */

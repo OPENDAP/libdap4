@@ -21,14 +21,14 @@
 #ifndef LIBDAP4_MP_LOCK_GUARD_H
 #define LIBDAP4_MP_LOCK_GUARD_H
 
-#include <iostream>
 #include <exception>
+#include <iostream>
 #include <string>
 
+#include <cerrno>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <cerrno>
 
 namespace libdap {
 
@@ -64,9 +64,7 @@ public:
 
     void log(const std::string &msg) const override { std::cerr << "~mp_lock_guard: " << msg << std::endl; }
 
-    void error(const std::string &msg) const override {
-        throw std::runtime_error("mp_lock_guard: " + msg);
-    }
+    void error(const std::string &msg) const override { throw std::runtime_error("mp_lock_guard: " + msg); }
 };
 
 /**
@@ -80,19 +78,18 @@ public:
  */
 class mp_lock_guard {
 public:
-    enum class operation {
-        read, write
-    };
+    enum class operation { read, write };
+
 private:
     int d_fd = -1;
     bool d_locked = false;
-    bool d_released = false;    // Use this so instances can go out of scope without releasing the lock.
+    bool d_released = false; // Use this so instances can go out of scope without releasing the lock.
     operation d_op;
     const mp_lock_guard_logger &d_logger;
 
     void m_get_lock() {
         if (d_op == operation::write) {
-            struct flock lock{};
+            struct flock lock {};
             lock.l_type = F_WRLCK;
             lock.l_whence = SEEK_SET;
             lock.l_start = 0;
@@ -101,9 +98,8 @@ private:
             if (fcntl(d_fd, F_SETLKW, &lock) == -1) {
                 d_logger.error("Could not write lock the cache-control file: " + get_errno());
             }
-        }
-        else {
-            struct flock lock{};
+        } else {
+            struct flock lock {};
             lock.l_type = F_RDLCK;
             lock.l_whence = SEEK_SET;
             lock.l_start = 0;
@@ -145,7 +141,7 @@ public:
      */
     ~mp_lock_guard() {
         if (!d_released && d_locked) {
-            struct flock lock{};
+            struct flock lock {};
             lock.l_type = F_UNLCK;
             lock.l_whence = SEEK_SET;
             lock.l_start = 0;
@@ -167,7 +163,7 @@ public:
      * Unlock the cache.
      */
     static void unlock(int fd, const mp_lock_guard_logger &logger = mp_lock_guard_logger_default()) {
-        struct flock lock{};
+        struct flock lock {};
         lock.l_type = F_UNLCK;
         lock.l_whence = SEEK_SET;
         lock.l_start = 0;
@@ -181,4 +177,4 @@ public:
 
 } // namespace libdap
 
-#endif //LIBDAP4_MP_LOCK_GUARD_H
+#endif // LIBDAP4_MP_LOCK_GUARD_H

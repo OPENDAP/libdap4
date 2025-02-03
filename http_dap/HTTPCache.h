@@ -27,21 +27,21 @@
 #define _http_cache_h
 
 #include <iostream>
-#include <string>
-#include <vector>
 #include <memory>
 #include <mutex>
+#include <string>
+#include <vector>
 
 #include "HTTPCacheDisconnectedMode.h"
 
 #define DUMP_FREQUENCY (10) // Dump index every x loads
 
-#define NO_LM_EXPIRATION (24*3600) // 24 hours
+#define NO_LM_EXPIRATION (24 * 3600) // 24 hours
 
 #define MEGA (0x100000L)
-#define CACHE_TOTAL_SIZE (20) // Default cache size is 20M
-#define CACHE_FOLDER_PCT (10) // 10% of cache size for meta info etc.
-#define CACHE_GC_PCT (10)  // 10% of cache size free after GC
+#define CACHE_TOTAL_SIZE (20)    // Default cache size is 20M
+#define CACHE_FOLDER_PCT (10)    // 10% of cache size for meta info etc.
+#define CACHE_GC_PCT (10)        // 10% of cache size free after GC
 #define MIN_CACHE_TOTAL_SIZE (5) // 5M Min cache size
 #define MAX_CACHE_ENTRY_SIZE (3) // 3M Max size of single cached entry
 
@@ -57,7 +57,7 @@ bool is_hop_by_hop_header(const std::string &header);
     <i>Clients that run as users lacking a writable HOME directory MUST
     disable this cache. Use Connect::set_cache_enable(false).</i>
 
-    The original design of this class was taken from the W3C libwww software, 
+    The original design of this class was taken from the W3C libwww software,
     written by Henrik Frystyk Nielsen, Copyright MIT 1995. See the file
     MIT_COPYRIGHT. This software is a complete rewrite in C++ with additional
     features useful to the DODS and OPeNDAP projects.
@@ -92,16 +92,16 @@ bool is_hop_by_hop_header(const std::string &header);
     get_conditional_request_headers() would only lock when an entry is in use
     for writing. But I haven't done that.)
 
-	Update documentation: get_cache_response() now also serves as
-	is_url_in_cache() and is_url_valid() should only be called after a locked
-	cached response is accessed using get_cached_response(). These lock the
-	cache for reading. The methods cache_response() and update_response()
-	lock an entry for writing.
-	
-	Check that the lock-for-write and lock-for-read work together since
-	it's possible that an entry in use might have a stream of readers and never
-	free the 'read-lock' thus blocking a writer.
-	
+    Update documentation: get_cache_response() now also serves as
+    is_url_in_cache() and is_url_valid() should only be called after a locked
+    cached response is accessed using get_cached_response(). These lock the
+    cache for reading. The methods cache_response() and update_response()
+    lock an entry for writing.
+
+    Check that the lock-for-write and lock-for-read work together since
+    it's possible that an entry in use might have a stream of readers and never
+    free the 'read-lock' thus blocking a writer.
+
     @author James Gallagher <jgallagher@opendap.org> */
 class HTTPCache {
 private:
@@ -115,10 +115,10 @@ private:
     bool d_expire_ignored = false;
     bool d_always_validate = false;
 
-    unsigned long d_total_size = CACHE_TOTAL_SIZE * MEGA; // How much can we store?
+    unsigned long d_total_size = CACHE_TOTAL_SIZE * MEGA;              // How much can we store?
     unsigned long d_folder_size = CACHE_TOTAL_SIZE / CACHE_FOLDER_PCT; // How much of that is metadata?
-    unsigned long d_gc_buffer = CACHE_TOTAL_SIZE / CACHE_GC_PCT; // How much memory needed as buffer?
-    unsigned long d_max_entry_size = MAX_CACHE_ENTRY_SIZE * MEGA; // Max individual entry size.
+    unsigned long d_gc_buffer = CACHE_TOTAL_SIZE / CACHE_GC_PCT;       // How much memory needed as buffer?
+    unsigned long d_max_entry_size = MAX_CACHE_ENTRY_SIZE * MEGA;      // Max individual entry size.
     int d_default_expiration = NO_LM_EXPIRATION;
 
     std::vector<std::string> d_cache_control;
@@ -127,7 +127,7 @@ private:
     // response (e.g., CacheEntry has a max_age field, too). These fields are
     // set when the set_cache_control method is called.
     time_t d_max_age = -1;
-    time_t d_max_stale = -1;  // -1: not set, 0:any response, >0 max time.
+    time_t d_max_stale = -1; // -1: not set, 0:any response, >0 max time.
     time_t d_min_fresh = -1;
 
     // Lock non-const methods (also ones that use the STL).
@@ -195,11 +195,13 @@ private:
     class mp_lock_guard {
     public:
         enum class operation { read, write };
+
     private:
         int d_fd;
         bool d_locked = false;
-        bool d_released = false;    // Use this so instances can go out of scope without releasing the lock.
+        bool d_released = false; // Use this so instances can go out of scope without releasing the lock.
         operation d_op;
+
     public:
         mp_lock_guard() = delete;
 
@@ -214,11 +216,11 @@ private:
                 else
                     HTTPCache::m_lock_cache_read(d_fd);
                 d_locked = true;
-            }
-            catch (const std::exception &e) {
+            } catch (const std::exception &e) {
                 d_locked = false;
                 // Log this case.
-                std::cerr << "mp_lock_guard::mp_lock_guard() - Failed to lock the cache (" << e.what() << ")." << std::endl;
+                std::cerr << "mp_lock_guard::mp_lock_guard() - Failed to lock the cache (" << e.what() << ")."
+                          << std::endl;
             }
         }
 
@@ -227,10 +229,10 @@ private:
                 if (!d_released && d_locked) {
                     HTTPCache::m_unlock_cache(d_fd);
                 }
-            }
-            catch (const std::exception &e) {
+            } catch (const std::exception &e) {
                 // Log this case.
-                std::cerr << "mp_lock_guard::~mp_lock_guard() - Failed to release the cache lock (" << e.what() << ")." << std::endl;
+                std::cerr << "mp_lock_guard::~mp_lock_guard() - Failed to release the cache lock (" << e.what() << ")."
+                          << std::endl;
             }
         }
 
@@ -289,11 +291,10 @@ public:
     std::vector<std::string> get_cache_control() const;
 
     // This must lock for writing
-    bool cache_response(const std::string &url, time_t request_time,
-                        const std::vector<std::string> &headers, const FILE *body);
+    bool cache_response(const std::string &url, time_t request_time, const std::vector<std::string> &headers,
+                        const FILE *body);
 
-    void update_response(const std::string &url, time_t request_time,
-                         const std::vector<std::string> &headers);
+    void update_response(const std::string &url, time_t request_time, const std::vector<std::string> &headers);
 
     // This is separate from get_cached_response() because often an invalid
     // cache entry just needs a header update. That is best left to the HTTP

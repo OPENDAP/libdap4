@@ -23,8 +23,8 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <sys/stat.h>
 
@@ -33,14 +33,14 @@
 #include <string>
 #include <thread>
 
-#include "RCReader.h"
-#include "HTTPResponse.h"
 #include "HTTPCache.h"
 #include "HTTPConnect.h"
+#include "HTTPResponse.h"
+#include "RCReader.h"
 #include "debug.h"
 
-#include "test_config.h"
 #include "run_tests_cppunit.h"
+#include "test_config.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -51,9 +51,8 @@ const static string cache_dir{string(TEST_BUILD_DIR) + "/cache-testsuite/http_mt
 
 namespace libdap {
 
-inline static uint64_t file_size(FILE *fp)
-{
-    struct stat s{};
+inline static uint64_t file_size(FILE *fp) {
+    struct stat s {};
     fstat(fileno(fp), &s);
     return s.st_size;
 }
@@ -67,7 +66,7 @@ private:
     string basic_digest_pw_url{"http://jimg:dods_digest@test.opendap.org/basic/page.txt"};
     // The etag value needs to be updated when the server changes, etc.
     // Also, the value looks like a 'secret' to git secrets, which will complain. jhrg 2/23/23
-    string etag{"\"157-3df0e26958000\""};   // New httpd (dockerized), new etag. ndp - 12/06/22
+    string etag{"\"157-3df0e26958000\""}; // New httpd (dockerized), new etag. ndp - 12/06/22
     string lm{"Wed, 13 Jul 2005 19:32:26 GMT"};
     string netcdf_das_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.das"};
 
@@ -83,37 +82,34 @@ public:
             CPPUNIT_ASSERT_MESSAGE("The HTTPCache::instance() is null!", d_cache);
             DBG(cerr << "The HTTPCache root is: " << d_cache->get_cache_root() << endl);
             DBG(cerr << "The HTTPCache directory is: " << cache_dir << endl);
-            CPPUNIT_ASSERT_MESSAGE("The HTTPCache directory is not correct",
-                                   d_cache->get_cache_root() == cache_dir);
+            CPPUNIT_ASSERT_MESSAGE("The HTTPCache directory is not correct", d_cache->get_cache_root() == cache_dir);
             // Some tests disable the cache, so we need to make sure it's enabled.
             d_cache->set_cache_enabled(true);
             d_cache->purge_cache();
-        }
-        else {
+        } else {
             DBG(cerr << "Creating cache directory: " << cache_dir << endl);
             system(("mkdir -p " + cache_dir).c_str());
             DBG(system("ls -l cache-testsuite/http_*"));
         }
     }
 
-    CPPUNIT_TEST_SUITE (HTTPThreadsConnectTest);
+    CPPUNIT_TEST_SUITE(HTTPThreadsConnectTest);
 
-        CPPUNIT_TEST(fetch_url_test);
-        CPPUNIT_TEST(fetch_url_test_304_mt);
-        CPPUNIT_TEST(fetch_url_test_304_mt_w_cache);
-        CPPUNIT_TEST(fetch_url_test_nc_mt);
-        CPPUNIT_TEST(fetch_url_test_nc_mt_w_cache);
-        CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache);
-        CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache_multi_access);
-        CPPUNIT_TEST(fetch_url_test_302_urls_mt_w_cache_multi_access);
+    CPPUNIT_TEST(fetch_url_test);
+    CPPUNIT_TEST(fetch_url_test_304_mt);
+    CPPUNIT_TEST(fetch_url_test_304_mt_w_cache);
+    CPPUNIT_TEST(fetch_url_test_nc_mt);
+    CPPUNIT_TEST(fetch_url_test_nc_mt_w_cache);
+    CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache);
+    CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache_multi_access);
+    CPPUNIT_TEST(fetch_url_test_302_urls_mt_w_cache_multi_access);
 
-        CPPUNIT_TEST(fetch_url_test_cpp);
+    CPPUNIT_TEST(fetch_url_test_cpp);
 
     CPPUNIT_TEST_SUITE_END();
 
-    void fetch_url_test()
-    {
-        DBG(cerr << "Entering " << __func__  << endl);
+    void fetch_url_test() {
+        DBG(cerr << "Entering " << __func__ << endl);
         try {
             http = std::make_unique<HTTPConnect>(RCReader::instance());
             // Disable the cache for this test.
@@ -122,27 +118,22 @@ public:
 
             unique_ptr<HTTPResponse> stuff(http->fetch_url(url_304));
             char c;
-            CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream())
-                            && !feof(stuff->get_stream()));
-        }
-        catch (InternalErr &e) {
+            CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream()) &&
+                           !feof(stuff->get_stream()));
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-        catch (const std::exception &e) {
+        } catch (const std::exception &e) {
             CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        catch (...) {
+        } catch (...) {
             cerr << "Caught unknown exception" << endl;
             throw;
         }
     }
 
-    void fetch_url_test_cpp()
-    {
-        DBG(cerr << "Entering " << __func__  << endl);
+    void fetch_url_test_cpp() {
+        DBG(cerr << "Entering " << __func__ << endl);
         try {
             http = std::make_unique<HTTPConnect>(RCReader::instance());
             http->set_use_cpp_streams(true);
@@ -155,25 +146,20 @@ public:
             CPPUNIT_ASSERT(*(stuff->get_cpp_stream()));
             CPPUNIT_ASSERT(!stuff->get_cpp_stream()->bad());
             CPPUNIT_ASSERT(!stuff->get_cpp_stream()->eof());
-        }
-        catch (const InternalErr &e) {
+        } catch (const InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (const Error &e) {
+        } catch (const Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-        catch (const std::exception &e) {
+        } catch (const std::exception &e) {
             CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        catch (...) {
+        } catch (...) {
             cerr << "Caught unknown exception" << endl;
             throw;
         }
     }
 
-    void fetch_url_test_304_mt()
-    {
-        DBG(cerr << "Entering " << __func__  << endl);
+    void fetch_url_test_304_mt() {
+        DBG(cerr << "Entering " << __func__ << endl);
         try {
             auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
@@ -186,10 +172,8 @@ public:
                 DBG(cerr << "hc->is_cache_enabled()? " << boolalpha << hc->is_cache_enabled() << endl);
                 unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
                 char c;
-                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
-                               && c =='<'
-                               && !ferror(stuff->get_stream())
-                               && !feof(stuff->get_stream()));
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && c == '<' && !ferror(stuff->get_stream()) &&
+                               !feof(stuff->get_stream()));
                 DBG(cerr << "hc_lambda: " << url << ", " << c << endl);
             };
 
@@ -202,25 +186,20 @@ public:
             thread2.join();
             thread3.join();
             thread4.join();
-        }
-        catch (InternalErr &e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-        catch (const std::exception &e) {
+        } catch (const std::exception &e) {
             CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        catch (...) {
+        } catch (...) {
             cerr << "Caught unknown exception" << endl;
             throw;
         }
     }
 
-    void fetch_url_test_304_mt_w_cache()
-    {
-        DBG(cerr << "Entering " << __func__  << endl);
+    void fetch_url_test_304_mt_w_cache() {
+        DBG(cerr << "Entering " << __func__ << endl);
         try {
             auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
@@ -230,10 +209,8 @@ public:
             auto hc_lambda = [](const string &url, HTTPConnect *hc) {
                 unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
                 char c;
-                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
-                               && c =='<'
-                               && !ferror(stuff->get_stream())
-                               && !feof(stuff->get_stream()));
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && c == '<' && !ferror(stuff->get_stream()) &&
+                               !feof(stuff->get_stream()));
                 DBG(cerr << "hc_lambda: " << url << ", " << c << endl);
             };
 
@@ -246,25 +223,20 @@ public:
             thread2.join();
             thread3.join();
             thread4.join();
-        }
-        catch (InternalErr &e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-        catch (const std::exception &e) {
+        } catch (const std::exception &e) {
             CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        catch (...) {
+        } catch (...) {
             cerr << "Caught unknown exception" << endl;
             throw;
         }
     }
 
-    void fetch_url_test_nc_mt()
-    {
-        DBG(cerr << "Entering " << __func__  << endl);
+    void fetch_url_test_nc_mt() {
+        DBG(cerr << "Entering " << __func__ << endl);
         try {
             auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
@@ -275,10 +247,8 @@ public:
                 hc->set_cache_enabled(false);
                 unique_ptr<HTTPResponse> stuff(hc->fetch_url(url));
                 char c;
-                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1
-                               && c =='A'
-                               && !ferror(stuff->get_stream())
-                               && !feof(stuff->get_stream()));
+                CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && c == 'A' && !ferror(stuff->get_stream()) &&
+                               !feof(stuff->get_stream()));
                 DBG(cerr << "hc_lambda: " << url << ", " << c << endl);
             };
 
@@ -294,30 +264,30 @@ public:
 
             // None should be cached; the cache is disabled.
             int cached = 0;
-            if (http_1->is_cached_response()) cached++;
-            if (http_2->is_cached_response()) cached++;
-            if (http_3->is_cached_response()) cached++;
-            if (http_4->is_cached_response()) cached++;
-            CPPUNIT_ASSERT_MESSAGE("Three responses should be cached, one not (" + std::to_string(cached) + " was)", cached == 0);
-        }
-        catch (InternalErr &e) {
+            if (http_1->is_cached_response())
+                cached++;
+            if (http_2->is_cached_response())
+                cached++;
+            if (http_3->is_cached_response())
+                cached++;
+            if (http_4->is_cached_response())
+                cached++;
+            CPPUNIT_ASSERT_MESSAGE("Three responses should be cached, one not (" + std::to_string(cached) + " was)",
+                                   cached == 0);
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-        catch (const std::exception &e) {
+        } catch (const std::exception &e) {
             CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        catch (...) {
+        } catch (...) {
             cerr << "Caught unknown exception" << endl;
             throw;
         }
     }
 
-    void fetch_url_test_nc_mt_w_cache()
-    {
-        DBG(cerr << "Entering " << __func__  << endl);
+    void fetch_url_test_nc_mt_w_cache() {
+        DBG(cerr << "Entering " << __func__ << endl);
         try {
             auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
@@ -347,30 +317,30 @@ public:
 
             // Three should be cached; the cache is enabled.
             int cached = 0;
-            if (http_1->is_cached_response()) cached++;
-            if (http_2->is_cached_response()) cached++;
-            if (http_3->is_cached_response()) cached++;
-            if (http_4->is_cached_response()) cached++;
-            CPPUNIT_ASSERT_MESSAGE("Three responses should be cached; number cached: " + std::to_string(cached) + ".", cached == 3);
-        }
-        catch (InternalErr &e) {
+            if (http_1->is_cached_response())
+                cached++;
+            if (http_2->is_cached_response())
+                cached++;
+            if (http_3->is_cached_response())
+                cached++;
+            if (http_4->is_cached_response())
+                cached++;
+            CPPUNIT_ASSERT_MESSAGE("Three responses should be cached; number cached: " + std::to_string(cached) + ".",
+                                   cached == 3);
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-        catch (const std::exception &e) {
+        } catch (const std::exception &e) {
             CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        catch (...) {
+        } catch (...) {
             cerr << "Caught unknown exception" << endl;
             throw;
         }
     }
 
-    void fetch_url_test_diff_urls_mt_w_cache()
-    {
-        DBG(cerr << "Entering " << __func__  << endl);
+    void fetch_url_test_diff_urls_mt_w_cache() {
+        DBG(cerr << "Entering " << __func__ << endl);
         try {
             auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
@@ -407,25 +377,20 @@ public:
             CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !http_2->is_cached_response());
             CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !http_3->is_cached_response());
             CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !http_4->is_cached_response());
-        }
-        catch (InternalErr &e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-        catch (const std::exception &e) {
+        } catch (const std::exception &e) {
             CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        catch (...) {
+        } catch (...) {
             cerr << "Caught unknown exception" << endl;
             throw;
         }
     }
 
-    void fetch_url_test_diff_urls_mt_w_cache_multi_access()
-    {
-        DBG(cerr << "Entering " << __func__  << endl);
+    void fetch_url_test_diff_urls_mt_w_cache_multi_access() {
+        DBG(cerr << "Entering " << __func__ << endl);
         try {
             auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
@@ -502,25 +467,20 @@ public:
             CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_6->is_cached_response());
             CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_7->is_cached_response());
             CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_8->is_cached_response());
-        }
-        catch (InternalErr &e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-        catch (const std::exception &e) {
+        } catch (const std::exception &e) {
             CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        catch (...) {
+        } catch (...) {
             cerr << "Caught unknown exception" << endl;
             throw;
         }
     }
 
-    void fetch_url_test_302_urls_mt_w_cache_multi_access()
-    {
-        DBG(cerr << "Entering " << __func__  << endl);
+    void fetch_url_test_302_urls_mt_w_cache_multi_access() {
+        DBG(cerr << "Entering " << __func__ << endl);
         try {
             auto http_1 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_2 = std::make_unique<HTTPConnect>(RCReader::instance());
@@ -551,11 +511,16 @@ public:
 
             // Three should be cached; the cache is enabled.
             int cached = 0;
-            if (http_1->is_cached_response()) cached++;
-            if (http_2->is_cached_response()) cached++;
-            if (http_3->is_cached_response()) cached++;
-            if (http_4->is_cached_response()) cached++;
-            CPPUNIT_ASSERT_MESSAGE("Three responses should be cached; number cached: " + std::to_string(cached) + ".", cached == 3);
+            if (http_1->is_cached_response())
+                cached++;
+            if (http_2->is_cached_response())
+                cached++;
+            if (http_3->is_cached_response())
+                cached++;
+            if (http_4->is_cached_response())
+                cached++;
+            CPPUNIT_ASSERT_MESSAGE("Three responses should be cached; number cached: " + std::to_string(cached) + ".",
+                                   cached == 3);
 
             // Now we access the same URLs again. The cache should be used.
             std::thread thread5(hc_lambda, opendap_url, http_1.get());
@@ -582,17 +547,13 @@ public:
             DBG(cerr << "http_5->is_cached_response(): " << boolalpha << http_5->is_cached_response() << endl);
             CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_5->is_cached_response());
             CPPUNIT_ASSERT_MESSAGE("Response should be cached", http_6->is_cached_response());
-        }
-        catch (InternalErr &e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught an Error from fetch_url: " + e.get_error_message());
-        }
-        catch (const std::exception &e) {
+        } catch (const std::exception &e) {
             CPPUNIT_FAIL(string("Caught an std::exception from fetch_url: ") + e.what());
-        }
-        catch (...) {
+        } catch (...) {
             cerr << "Caught unknown exception" << endl;
             throw;
         }
@@ -669,12 +630,11 @@ public:
 #endif
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (HTTPThreadsConnectTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(HTTPThreadsConnectTest);
 
-}
+} // namespace libdap
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     bool passed = run_tests<libdap::HTTPThreadsConnectTest>(argc, argv) ? 0 : 1;
 
     system(("rm -rf " + cache_dir).c_str());

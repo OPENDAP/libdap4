@@ -25,18 +25,18 @@
 #ifndef _http_cache_table_h
 #define _http_cache_table_h
 
-#include <string>
-#include <vector>
 #include <map>
 #include <mutex>
+#include <string>
+#include <vector>
 
 // These are defined in HTTPCache.cc. jhrg 2/21/23
 extern const std::string CACHE_META;
 extern const std::string CACHE_INDEX;
 extern const std::string CACHE_EMPTY_ETAG;
 
-#define NO_LM_EXPIRATION (24*3600) // 24 hours
-#define MAX_LM_EXPIRATION (48*3600) // Max expiration from LM
+#define NO_LM_EXPIRATION (24 * 3600)  // 24 hours
+#define MAX_LM_EXPIRATION (48 * 3600) // Max expiration from LM
 
 // If using LM to find the expiration then take 10% and no more than
 // MAX_LM_EXPIRATION.
@@ -91,7 +91,7 @@ public:
         time_t max_age = -1; // From Cache-Control
 
         unsigned long size = 0; // Size of cached entity body
-        bool range = false; // Range is not currently supported. 10/02/02 jhrg
+        bool range = false;     // Range is not currently supported. 10/02/02 jhrg
 
         time_t freshness_lifetime = 0;
         time_t response_time = 0;
@@ -102,7 +102,7 @@ public:
 
         int readers = 0;
         std::mutex d_readers_lock;
-        std::mutex d_response_read_lock; // set if being read
+        std::mutex d_response_read_lock;  // set if being read
         std::mutex d_response_write_lock; // set if being written
 
         // Allow HTTPCacheTable methods access and the test class, too
@@ -113,53 +113,29 @@ public:
         friend class WriteOneCacheEntry;
 
     public:
-        std::string get_cachename() const {
-            return cachename;
-        }
+        std::string get_cachename() const { return cachename; }
 
-        std::string get_etag() const {
-            return etag;
-        }
+        std::string get_etag() const { return etag; }
 
-        time_t get_lm() const {
-            return lm;
-        }
+        time_t get_lm() const { return lm; }
 
-        time_t get_expires() const {
-            return expires;
-        }
+        time_t get_expires() const { return expires; }
 
-        time_t get_max_age() const {
-            return max_age;
-        }
+        time_t get_max_age() const { return max_age; }
 
-        void set_size(unsigned long sz) {
-            size = sz;
-        }
+        void set_size(unsigned long sz) { size = sz; }
 
-        time_t get_freshness_lifetime() const {
-            return freshness_lifetime;
-        }
+        time_t get_freshness_lifetime() const { return freshness_lifetime; }
 
-        time_t get_response_time() const {
-            return response_time;
-        }
+        time_t get_response_time() const { return response_time; }
 
-        time_t get_corrected_initial_age() const {
-            return corrected_initial_age;
-        }
+        time_t get_corrected_initial_age() const { return corrected_initial_age; }
 
-        bool get_must_revalidate() const {
-            return must_revalidate;
-        }
+        bool get_must_revalidate() const { return must_revalidate; }
 
-        void set_no_cache(bool state) {
-            no_cache = state;
-        }
+        void set_no_cache(bool state) { no_cache = state; }
 
-        bool is_no_cache() const {
-            return no_cache;
-        }
+        bool is_no_cache() const { return no_cache; }
 
         void lock_read_response() {
             // if the response_lock cannot be acquired, it might be a reader or a writer. If it is a writer, then
@@ -181,9 +157,7 @@ public:
             }
         }
 
-        void lock_write_response() {
-            std::lock(d_response_read_lock, d_response_write_lock);
-        }
+        void lock_write_response() { std::lock(d_response_read_lock, d_response_write_lock); }
 
         void unlock_write_response() {
             d_response_read_lock.unlock();
@@ -192,10 +166,8 @@ public:
 
         CacheEntry() = default;
 
-        explicit CacheEntry(std::string u) : url(std::move(u)) {
-            hash = get_hash(url);
-        }
-    };  // CacheEntry
+        explicit CacheEntry(std::string u) : url(std::move(u)) { hash = get_hash(url); }
+    }; // CacheEntry
 
     // Typedefs for CacheTable. A CacheTable is a vector of vectors of
     // CacheEntries. The outer vector is accessed using the hash value.
@@ -236,37 +208,21 @@ public:
     virtual ~HTTPCacheTable();
 
     //@{ @name Accessors/Mutators
-    unsigned long get_current_size() const {
-        return d_current_size;
-    }
+    unsigned long get_current_size() const { return d_current_size; }
 
-    void set_current_size(unsigned long sz) {
-        d_current_size = sz;
-    }
+    void set_current_size(unsigned long sz) { d_current_size = sz; }
 
-    unsigned int get_block_size() const {
-        return d_block_size;
-    }
+    unsigned int get_block_size() const { return d_block_size; }
 
-    void set_block_size(unsigned int sz) {
-        d_block_size = sz;
-    }
+    void set_block_size(unsigned int sz) { d_block_size = sz; }
 
-    int get_new_entries() const {
-        return d_new_entries;
-    }
+    int get_new_entries() const { return d_new_entries; }
 
-    void increment_new_entries() {
-        ++d_new_entries;
-    }
+    void increment_new_entries() { ++d_new_entries; }
 
-    std::string get_cache_root() const {
-        return d_cache_root;
-    }
+    std::string get_cache_root() const { return d_cache_root; }
 
-    void set_cache_root(const std::string &cr) {
-        d_cache_root = cr;
-    }
+    void set_cache_root(const std::string &cr) { d_cache_root = cr; }
     //@}
 
     void delete_expired_entries(time_t time = 0);
@@ -283,7 +239,8 @@ public:
     CacheEntry *get_write_locked_entry_from_cache_table(const std::string &url);
 
     void calculate_time(HTTPCacheTable::CacheEntry *entry, int default_expiration, time_t request_time);
-    void parse_headers(HTTPCacheTable::CacheEntry *entry, unsigned long max_entry_size, const std::vector<std::string> &headers);
+    void parse_headers(HTTPCacheTable::CacheEntry *entry, unsigned long max_entry_size,
+                       const std::vector<std::string> &headers);
 
     // These should move back to HTTPCache
     void bind_entry_to_data(CacheEntry *entry, FILE *body);
