@@ -457,11 +457,11 @@ string HTTPCache::get_cache_root() const { return d_cache_root; }
 
 void HTTPCache::create_cache_root(const string &cache_root) const {
     // Save the mask
-    mode_t mask = umask(0);
+    mode_t mask = umask(S_IRWXO);
 
     // Ignore the error if the directory exists
     errno = 0;
-    if (mkdir(cache_root.c_str(), 0777) < 0 && errno != EEXIST) {
+    if (mkdir(cache_root.c_str(), S_IRWXU | S_IRWXG) < 0 && errno != EEXIST) {
         umask(mask);
         throw Error("HTTPCache::create_cache_root: Could not create the directory for the cache at '" + cache_root +
                     "' (" + strerror(errno) + ").");
