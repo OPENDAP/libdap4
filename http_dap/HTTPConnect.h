@@ -26,37 +26,19 @@
 #ifndef _httpconnect_h
 #define _httpconnect_h
 
+#include <mutex>
 #include <string>
+#include <vector>
 
 #include <curl/curl.h>
-// No longer used in CURL - pwest April 09, 2012
-// #include <curl/types.h>
-#include <curl/easy.h>
 
-#ifndef _rc_reader_h_
-#include "RCReader.h"
-#endif
-
-#ifndef _object_type_h
-#include "ObjectType.h"
-#endif
-
-#ifndef _http_cache_h
 #include "HTTPCache.h"
-#endif
-
-#ifndef http_response_h
-#include "HTTPResponse.h"
-#endif
-
-#ifndef _util_h
-#include "util.h"
-#endif
-
-using std::string;
-using std::vector;
 
 namespace libdap {
+
+class RCReader;
+class HTTPCache;
+class HTTPResponse;
 
 extern int www_trace;
 extern int www_trace_extensive;
@@ -67,68 +49,89 @@ extern int dods_keep_temps;
     response is made available using a FILE pointer.
 
     @author jhrg */
-
 class HTTPConnect {
 private:
-    CURL *d_curl;
-    RCReader *d_rcr;
-    HTTPCache *d_http_cache;
+    CURL *d_curl = nullptr;
+    RCReader *d_rcr = nullptr;
+    HTTPCache *d_http_cache = nullptr;
 
     char d_error_buffer[CURL_ERROR_SIZE]; // A human-readable message.
     std::string d_content_type;           // apparently read by libcurl; this is valid only after curl_easy_perform()
 
-    bool d_accept_deflate;
+    bool d_accept_deflate = false; // Use deflate encoding for HTTP requests
 
-    string d_username; // extracted from URL
-    string d_password; // extracted from URL
-    string d_upstring; // used to pass info into curl
+    std::string d_username; // extracted from URL
+    std::string d_password; // extracted from URL
+    std::string d_upstring; // used to pass info into curl
 
-    string d_cookie_jar;
+    std::string d_cookie_jar;
 
-    vector<string> d_request_headers; // Request headers
+    std::vector<std::string> d_request_headers; // Request headers
 
-    int d_dap_client_protocol_major;
-    int d_dap_client_protocol_minor;
+    int d_dap_client_protocol_major = 2;
+    int d_dap_client_protocol_minor = 0;
 
     bool d_use_cpp_streams; // Build HTTPResponse objects using fstream and not FILE*
 
+    bool d_verbose_runtime = false;
+    bool d_cached_response = false;
+
+    std::mutex d_connect_mutex; // Used to lock the public interface.
+
     void www_lib_init();
-    long read_url(const string &url, FILE *stream, vector<string> *resp_hdrs, const vector<string> *headers = 0);
 
-    HTTPResponse *plain_fetch_url(const string &url);
-    HTTPResponse *caching_fetch_url(const string &url);
+    long read_url(const std::string &url, FILE *stream, std::vector<std::string> &resp_hdrs,
+                  const std::vector<std::string> &headers);
 
-    bool url_uses_proxy_for(const string &url);
-    bool url_uses_no_proxy_for(const string &url) throw();
+    long read_url(const std::string &url, FILE *stream, std::vector<std::string> &resp_hdrs);
 
-    void extract_auth_info(string &url);
+    HTTPResponse *plain_fetch_url(const std::string &url);
 
-    friend size_t save_raw_http_header(void *ptr, size_t size, size_t nmemb, void *http_connect);
+    HTTPResponse *caching_fetch_url(const std::string &url);
+
+    bool url_uses_proxy_for(const std::string &url);
+
+    bool url_uses_no_proxy_for(const std::string &url) noexcept;
+
+    void set_verbose_runtime(bool verbose) { d_verbose_runtime = verbose; }
+
+    bool is_cached_response() const { return d_cached_response; }
+
     friend class HTTPConnectTest;
+
+    friend class HTTPThreadsConnectTest;
+
     friend class ParseHeader;
 
-protected:
-    /** @name Suppress default methods
-    These methods are not supported and are implemented here as protected
-    methods to suppress the C++-supplied default versions (which will
-    break this object). */
-    //@{
-    HTTPConnect();
-    HTTPConnect(const HTTPConnect &);
-    HTTPConnect &operator=(const HTTPConnect &);
-    //@}
-
 public:
-    HTTPConnect(RCReader *rcr, bool use_cpp = false);
+    explicit HTTPConnect(RCReader *rcr, bool use_cpp = false);
+
+    /** @name Suppress default methods
+     These methods are not supported and are implemented here as protected
+     methods to suppress the C++-supplied default versions (which will
+     break this object). */
+    ///@{
+    HTTPConnect() = delete;
+
+    HTTPConnect(const HTTPConnect &) = delete;
+
+    HTTPConnect &operator=(const HTTPConnect &) = delete;
+    ///@}
 
     virtual ~HTTPConnect();
 
-    void set_credentials(const string &u, const string &p);
-    void set_accept_deflate(bool defalte);
+    void set_credentials(const std::string &u, const std::string &p);
+
+    void set_accept_deflate(bool deflate);
+
     void set_xdap_protocol(int major, int minor);
 
     bool use_cpp_streams() const { return d_use_cpp_streams; }
-    void set_use_cpp_streams(bool use_cpp_streams) { d_use_cpp_streams = use_cpp_streams; }
+
+    void set_use_cpp_streams(bool use_cpp_streams) {
+        std::lock_guard<std::mutex> lock(d_connect_mutex);
+        d_use_cpp_streams = use_cpp_streams;
+    }
 
     /** Set the cookie jar. This function sets the name of a file used to store
     cookies returned by servers. This will help with things like single
@@ -136,7 +139,10 @@ public:
 
     @param cookie_jar The pathname to the file that stores cookies. If this
     is the empty string saving cookies is disabled. */
-    void set_cookie_jar(const string &cookie_jar) { d_cookie_jar = cookie_jar; }
+    void set_cookie_jar(const std::string &cookie_jar) {
+        std::lock_guard<std::mutex> lock(d_connect_mutex);
+        d_cookie_jar = cookie_jar;
+    }
 
     /** Set the state of the HTTP cache. By default, the HTTP cache is
     enabled or disabled using the value of the \c USE_CACHE property in
@@ -144,14 +150,15 @@ public:
     program.
     @param enabled True to use the cache, False to disable. */
     void set_cache_enabled(bool enabled) {
+        std::lock_guard<std::mutex> lock(d_connect_mutex);
         if (d_http_cache)
             d_http_cache->set_cache_enabled(enabled);
     }
 
     /** Return the current state of the HTTP cache. */
-    bool is_cache_enabled() { return (d_http_cache) ? d_http_cache->is_cache_enabled() : false; }
+    bool is_cache_enabled() const { return (d_http_cache) != nullptr && d_http_cache->is_cache_enabled(); }
 
-    HTTPResponse *fetch_url(const string &url);
+    HTTPResponse *fetch_url(const std::string &url);
 };
 
 } // namespace libdap

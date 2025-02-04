@@ -43,6 +43,8 @@
 #include "D4Group.h"
 #include "DMR.h"
 #include "HTTPConnect.h"
+#include "HTTPResponse.h"
+#include "RCReader.h"
 #include "Response.h"
 
 #include "D4ParserSax2.h"

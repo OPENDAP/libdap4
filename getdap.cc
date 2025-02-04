@@ -49,9 +49,12 @@
 #include "GetOpt.h"
 
 #include "Connect.h"
+#include "HTTPResponse.h"
+#include "RCReader.h"
 #include "Response.h"
 #include "Sequence.h"
 #include "StdinResponse.h"
+#include "debug.h"
 
 using std::cerr;
 using std::endl;

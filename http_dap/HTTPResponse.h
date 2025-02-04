@@ -37,14 +37,10 @@
 #include <vector>
 
 #include "Response.h"
-#include "debug.h"
 #include "util.h"
 
 namespace libdap {
-
-// defined in HTTPConnect.cc
 extern int dods_keep_temps;
-extern void close_temp(FILE *s, const string &name);
 
 /** Encapsulate an http response. Instead of directly returning the FILE
     pointer from which a response is read and vector of headers, return an
@@ -54,18 +50,24 @@ extern void close_temp(FILE *s, const string &name);
     HTTPConnect? */
 class HTTPResponse : public Response {
 private:
-    std::vector<std::string> *d_headers; // Response headers
-    std::string d_file;                  // Temp file that holds response body
+    std::vector<std::string> d_headers; // Response headers
+    std::string d_file;                 // Temp file that holds response body
 
 protected:
+#if 0
     /** @name Suppressed default methods */
     //@{
-    HTTPResponse();
-    HTTPResponse(const HTTPResponse &rs);
-    HTTPResponse &operator=(const HTTPResponse &);
+    HTTPResponse() = default;
+    HTTPResponse(const HTTPResponse &rs) = delete;
+    HTTPResponse &operator=(const HTTPResponse &) = delete;
     //@}
+#endif
 
 public:
+    HTTPResponse() = default;
+    HTTPResponse(const HTTPResponse &rs) = delete;
+    HTTPResponse &operator=(const HTTPResponse &) = delete;
+
     /** Build an HTTPResponse object. An instance of this class is used to
     return an HTTP response (body and headers). If the response is really
     from a remote server, the current HTTP code stores the body in a
@@ -82,57 +84,27 @@ public:
     the instance that contains it is destroyed.
     @param temp_file Name a the temporary file that holds the response
     body; this file is deleted when this instance is deleted. */
-    HTTPResponse(FILE *s, int status, std::vector<std::string> *h, const std::string &temp_file)
-        : Response(s, status), d_headers(h), d_file(temp_file) {
-        DBG(cerr << "Headers: " << endl);
-        DBGN(copy(d_headers->begin(), d_headers->end(), ostream_iterator<string>(cerr, "\n")));
-        DBGN(cerr << "end of headers." << endl);
-    }
+    HTTPResponse(FILE *s, int status, const std::vector<std::string> &h, const std::string &temp_file)
+        : Response(s, status), d_headers(h), d_file(temp_file) {}
 
     /**
      * @brief Build a HTTPResponse using a cpp fstream
      * When working with DAP4 responses, use C++ streams for I/0.
-     * @todo Decide on how the temp files fit into DAP4
      * @param s
      * @param status
      * @param h
      * @param temp_file
      */
-    HTTPResponse(std::fstream *s, int status, std::vector<std::string> *h, const std::string &temp_file)
-        : Response(s, status), d_headers(h), d_file(temp_file) {
-        DBG(cerr << "Headers: " << endl);
-        DBGN(copy(d_headers->begin(), d_headers->end(), ostream_iterator<string>(cerr, "\n")));
-        DBGN(cerr << "end of headers." << endl);
-    }
+    HTTPResponse(std::fstream *s, int status, const std::vector<std::string> &h, const std::string &temp_file)
+        : Response(s, status), d_headers(h), d_file(temp_file) {}
 
     /** When an instance is destroyed, free the temporary resources: the
     temp_file and headers are deleted. If the tmp file name is "", it is
     not deleted. */
-    virtual ~HTTPResponse() {
-        DBG(cerr << "Freeing HTTPConnect resources (" + d_file + ")... ");
-
-        // This can always be done - if the cpp_stream is null, delete has no effect;
-        // if non-null in this class it was allocated in HTTPConnect::plain_fetch_url
-        // (or caching_fetch_url when that's implemented)
-        delete get_cpp_stream();
-        set_cpp_stream(0);
-
+    ~HTTPResponse() override {
         if (!dods_keep_temps && !d_file.empty()) {
-            if (get_stream()) {
-                close_temp(get_stream(), d_file);
-                set_stream(0);
-            } else {
-                (void)unlink(d_file.c_str());
-#if 0
-				long res = unlink(d_file.c_str());
-				if (res != 0) throw InternalErr(__FILE__, __LINE__, "!FAIL! " + long_to_string(res));
-#endif
-            }
+            (void)unlink(d_file.c_str());
         }
-
-        delete d_headers;
-
-        DBGN(cerr << endl);
     }
 
     /**
@@ -150,13 +122,13 @@ public:
 
     /** @name Accessors */
     //@{
-    virtual std::vector<std::string> *get_headers() const { return d_headers; }
+    virtual std::vector<std::string> &get_headers() { return d_headers; }
     virtual std::string get_file() const { return d_file; }
     //@}
 
     /** @name Mutators */
     //@{
-    virtual void set_headers(std::vector<std::string> *h) { d_headers = h; }
+    virtual void set_headers(std::vector<std::string> &h) { d_headers = h; }
     virtual void set_file(const std::string &n) { d_file = n; }
     //@}
 };
