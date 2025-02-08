@@ -28,7 +28,7 @@ AM_LDFLAGS =
 include $(top_srcdir)/coverage.mk
 
 noinst_LTLIBRARIES = libhttp_dap.la
-pkginclude_HEADERS = HTTPConnect.h HTTPCache.h HTTPCacheDisconnectedMode.h
+pkginclude_HEADERS = HTTPConnect.h HTTPCache.h HTTPCacheTable.h HTTPCacheDisconnectedMode.h
 
 BUILT_SOURCES =
 

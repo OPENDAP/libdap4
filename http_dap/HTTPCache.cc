@@ -64,6 +64,7 @@ const string DIR_SEPARATOR_CHAR{"/"};
 
 namespace libdap {
 
+#if 0
 std::unique_ptr<HTTPCache> HTTPCache::d_instance = nullptr;
 
 /** Get a pointer to the HTTP 1.1 compliant cache. If not already
@@ -98,6 +99,7 @@ HTTPCache *HTTPCache::instance(const string &cache_root) {
 
     return d_instance.get();
 }
+#endif
 
 /** Create an instance of the HTTP 1.1 compliant cache. This initializes the
     both the cache root and the path to the index file. It then reads the

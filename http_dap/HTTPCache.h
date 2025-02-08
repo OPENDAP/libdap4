@@ -33,6 +33,7 @@
 #include <vector>
 
 #include "HTTPCacheDisconnectedMode.h"
+#include "HTTPCacheTable.h"
 
 #define DUMP_FREQUENCY (10) // Dump index every x loads
 
@@ -133,15 +134,14 @@ private:
     // Lock non-const methods (also ones that use the STL).
     std::mutex d_cache_mutex;
 
-    std::unique_ptr<HTTPCacheTable> d_http_cache_table;
+    std::unique_ptr<HTTPCacheTable> d_http_cache_table = nullptr;
 
     // d_open_files is used by the interrupt handler to clean up
     std::vector<std::string> d_open_files;
 
+#if 0
     static std::unique_ptr<HTTPCache> d_instance;
-
-    friend class HTTPCacheTest; // Unit tests
-    friend class HTTPConnectTest;
+#endif
 
     void set_cache_root(const std::string &root = "");
 
@@ -181,7 +181,12 @@ private:
 
     void hits_gc();
 
+    // Private constructor to prevent direct instantiation
+    HTTPCache() {}
     explicit HTTPCache(const std::string &cache_root);
+
+    friend class HTTPCacheTest; // Unit tests
+    friend class HTTPConnectTest;
 
     /**
      * @brief Lock the cache for writing.
@@ -240,12 +245,45 @@ private:
     };
 
 public:
-    static HTTPCache *instance(const std::string &cache_root);
+    // Delete the copy constructor and assignment operator to prevent copying
+    HTTPCache(const HTTPCache &) = delete;
+    HTTPCache &operator=(const HTTPCache &) = delete;
 
+    virtual ~HTTPCache();
+
+    /** Get a pointer to the HTTP 1.1 compliant cache. If not already
+       instantiated, this creates an instance of the HTTP cache object and
+       initializes it to use \c cache_root as the location of the persistent
+       store. If there's an index (\c .index) file in that directory, it is read
+       as part of the initialization. If the cache has already been initialized,
+       this method returns a pointer to that instance. Note HTTPCache uses the
+       singleton pattern; A process may have only one instance of this object.
+       Also note that HTTPCache is MT-safe.
+
+       Default values: is_cache_enabled(): true, is_cache_protected(): false,
+       is_expire_ignored(): false, the total size of the cache is 20M, 2M of that
+       is reserved for response headers, during GC the cache is reduced to at
+       least 18M (total size - 10% of the total size), and the max size for an
+       individual entry is 3M. It is possible to change the size of the cache,
+       but not to make it smaller than 5M. If expiration information is not sent
+       with a response, it is assumed to expire in 24 hours.
+
+       @param cache_root The fully qualified pathname of the directory which
+       will hold the cache data (i.e., the persistent store).
+       @return A pointer to the HTTPCache object. */
+
+    static HTTPCache *instance(const std::string &cache_root = "") {
+        // Create a local static object the first time the function is called
+        static HTTPCache instance(cache_root);
+        return &instance;
+    }
     /**
      * @brief Return the singleton instance of the HTTPCache.
      * @note Only use this if you know the cache has been initialized.
      */
+#if 0
+    static HTTPCache *instance(const std::string &cache_root);
+
     static HTTPCache *instance() { return d_instance.get(); }
 
     HTTPCache() = delete;
@@ -253,8 +291,7 @@ public:
     HTTPCache(const HTTPCache &) = delete;
 
     HTTPCache &operator=(const HTTPCache &) = delete;
-
-    virtual ~HTTPCache();
+#endif
 
     std::string get_cache_root() const;
 
