@@ -33,7 +33,10 @@
 #include <vector>
 
 #include "HTTPCacheDisconnectedMode.h"
+
+#if 0
 #include "HTTPCacheTable.h"
+#endif
 
 #define DUMP_FREQUENCY (10) // Dump index every x loads
 
@@ -134,7 +137,7 @@ private:
     // Lock non-const methods (also ones that use the STL).
     std::mutex d_cache_mutex;
 
-    std::unique_ptr<HTTPCacheTable> d_http_cache_table = nullptr;
+    HTTPCacheTable *d_http_cache_table = nullptr;
 
     // d_open_files is used by the interrupt handler to clean up
     std::vector<std::string> d_open_files;

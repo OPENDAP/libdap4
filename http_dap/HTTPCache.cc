@@ -141,7 +141,7 @@ HTTPCache::HTTPCache(const string &cache_root) {
         else
             block_size = 4096;
 
-        d_http_cache_table = make_unique<HTTPCacheTable>(d_cache_root, block_size);
+        d_http_cache_table = new HTTPCacheTable(d_cache_root, block_size);
         d_cache_enabled = true;
     } catch (const Error &) {
         // Write to a log here. 2/18/23 jhrg
@@ -164,6 +164,7 @@ HTTPCache::~HTTPCache() {
             perform_garbage_collection();
 
         d_http_cache_table->cache_index_write();
+        delete d_http_cache_table;
     } catch (const Error &e) {
         // If the cache index cannot be written, we've got problems. However,
         // unless we're debugging, still free up the cache table in memory.
