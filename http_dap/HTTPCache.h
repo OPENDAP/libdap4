@@ -34,10 +34,6 @@
 
 #include "HTTPCacheDisconnectedMode.h"
 
-#if 0
-#include "HTTPCacheTable.h"
-#endif
-
 #define DUMP_FREQUENCY (10) // Dump index every x loads
 
 #define NO_LM_EXPIRATION (24 * 3600) // 24 hours
@@ -142,10 +138,6 @@ private:
     // d_open_files is used by the interrupt handler to clean up
     std::vector<std::string> d_open_files;
 
-#if 0
-    static std::unique_ptr<HTTPCache> d_instance;
-#endif
-
     void set_cache_root(const std::string &root = "");
 
     void create_cache_root(const std::string &cache_root) const;
@@ -184,8 +176,6 @@ private:
 
     void hits_gc();
 
-    // Private constructor to prevent direct instantiation
-    HTTPCache() {}
     explicit HTTPCache(const std::string &cache_root);
 
     friend class HTTPCacheTest; // Unit tests
@@ -249,6 +239,7 @@ private:
 
 public:
     // Delete the copy constructor and assignment operator to prevent copying
+    HTTPCache() = delete;
     HTTPCache(const HTTPCache &) = delete;
     HTTPCache &operator=(const HTTPCache &) = delete;
 
@@ -280,21 +271,6 @@ public:
         static HTTPCache instance(cache_root);
         return &instance;
     }
-    /**
-     * @brief Return the singleton instance of the HTTPCache.
-     * @note Only use this if you know the cache has been initialized.
-     */
-#if 0
-    static HTTPCache *instance(const std::string &cache_root);
-
-    static HTTPCache *instance() { return d_instance.get(); }
-
-    HTTPCache() = delete;
-
-    HTTPCache(const HTTPCache &) = delete;
-
-    HTTPCache &operator=(const HTTPCache &) = delete;
-#endif
 
     std::string get_cache_root() const;
 

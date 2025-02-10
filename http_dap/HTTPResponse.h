@@ -45,23 +45,12 @@ extern int dods_keep_temps;
 /** Encapsulate an http response. Instead of directly returning the FILE
     pointer from which a response is read and vector of headers, return an
     instance of this object.
+*/
 
-    @todo Maybe refactor so that the header parsing code is here and not in
-    HTTPConnect? */
 class HTTPResponse : public Response {
 private:
     std::vector<std::string> d_headers; // Response headers
     std::string d_file;                 // Temp file that holds response body
-
-protected:
-#if 0
-    /** @name Suppressed default methods */
-    //@{
-    HTTPResponse() = default;
-    HTTPResponse(const HTTPResponse &rs) = delete;
-    HTTPResponse &operator=(const HTTPResponse &) = delete;
-    //@}
-#endif
 
 public:
     HTTPResponse() = default;

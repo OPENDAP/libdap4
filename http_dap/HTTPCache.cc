@@ -64,43 +64,6 @@ const string DIR_SEPARATOR_CHAR{"/"};
 
 namespace libdap {
 
-#if 0
-std::unique_ptr<HTTPCache> HTTPCache::d_instance = nullptr;
-
-/** Get a pointer to the HTTP 1.1 compliant cache. If not already
-    instantiated, this creates an instance of the HTTP cache object and
-    initializes it to use \c cache_root as the location of the persistent
-    store. If there's an index (\c .index) file in that directory, it is read
-    as part of the initialization. If the cache has already been initialized,
-    this method returns a pointer to that instance. Note HTTPCache uses the
-    singleton pattern; A process may have only one instance of this object.
-    Also note that HTTPCache is MT-safe.
-
-    Default values: is_cache_enabled(): true, is_cache_protected(): false,
-    is_expire_ignored(): false, the total size of the cache is 20M, 2M of that
-    is reserved for response headers, during GC the cache is reduced to at
-    least 18M (total size - 10% of the total size), and the max size for an
-    individual entry is 3M. It is possible to change the size of the cache,
-    but not to make it smaller than 5M. If expiration information is not sent
-    with a response, it is assumed to expire in 24 hours.
-
-    @param cache_root The fully qualified pathname of the directory which
-    will hold the cache data (i.e., the persistent store).
-    @return A pointer to the HTTPCache object. */
-
-HTTPCache *HTTPCache::instance(const string &cache_root) {
-    if (d_instance == nullptr) {
-        static std::once_flag d_http_cache_init_once;
-        std::call_once(d_http_cache_init_once, [cache_root]() { d_instance.reset(new HTTPCache(cache_root)); });
-    }
-
-    // In the original code, handlers for SIGINT, TERM and PIPE were registered
-    // so that the index file could be saved before the process exited.
-
-    return d_instance.get();
-}
-#endif
-
 /** Create an instance of the HTTP 1.1 compliant cache. This initializes the
     both the cache root and the path to the index file. It then reads the
     cache index file if one is present.
