@@ -62,6 +62,10 @@ private:
     /// The HTTP response code
     int d_status = 0;
 
+protected:
+    // Hack for HTTPResponse which may allocate a fstream pointer in a setter. jhrg 2/5/25
+    bool d_delete_cpp_stream_ptr = false;
+
 public:
     Response() = default;
 
@@ -88,9 +92,8 @@ public:
             fclose(d_stream);
         if (d_cpp_stream) {
             d_cpp_stream->close();
-#if 0
-            delete d_cpp_stream;
-#endif
+            if (d_delete_cpp_stream_ptr)
+                delete d_cpp_stream;
         }
     }
 

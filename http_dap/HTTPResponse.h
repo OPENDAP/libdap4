@@ -52,7 +52,6 @@ class HTTPResponse : public Response {
 private:
     std::vector<std::string> d_headers; // Response headers
     std::string d_file;                 // Temp file that holds response body
-    std::fstream *d_locally_made_stream_ptr = nullptr;
 
 protected:
 #if 0
@@ -106,8 +105,6 @@ public:
         if (!dods_keep_temps && !d_file.empty()) {
             (void)unlink(d_file.c_str());
         }
-        if (d_locally_made_stream_ptr)
-            delete d_locally_made_stream_ptr;
     }
 
     /**
@@ -120,12 +117,12 @@ public:
         // code would not leave the FILE* open when it's not needed, but this implementation
         // can use the existing HTTPConnect and HTTPCache software with very minimal
         // (or no) modification. jhrg 11/8/13
+        set_cpp_stream(new std::fstream(d_file.c_str(), std::ios::in | std::ios::binary));
         // This hack was added to work around a memory leak introduced here but which surfaces
         // in the parent class. Deleting the fstream* in all cases can lead to a double free;
         // not deleting it in some cases leads to a leak. This set of classes should be redesigned.
         // jhrg 2/9/25
-        d_locally_made_stream_ptr = new std::fstream(d_file.c_str(), std::ios::in | std::ios::binary);
-        set_cpp_stream(d_locally_made_stream_ptr);
+        d_delete_cpp_stream_ptr = true;
     }
 
     /** @name Accessors */
