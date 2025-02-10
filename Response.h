@@ -88,7 +88,9 @@ public:
             fclose(d_stream);
         if (d_cpp_stream) {
             d_cpp_stream->close();
+#if 0
             delete d_cpp_stream;
+#endif
         }
     }
 
