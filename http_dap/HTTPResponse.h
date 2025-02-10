@@ -45,23 +45,12 @@ extern int dods_keep_temps;
 /** Encapsulate an http response. Instead of directly returning the FILE
     pointer from which a response is read and vector of headers, return an
     instance of this object.
+*/
 
-    @todo Maybe refactor so that the header parsing code is here and not in
-    HTTPConnect? */
 class HTTPResponse : public Response {
 private:
     std::vector<std::string> d_headers; // Response headers
     std::string d_file;                 // Temp file that holds response body
-
-protected:
-#if 0
-    /** @name Suppressed default methods */
-    //@{
-    HTTPResponse() = default;
-    HTTPResponse(const HTTPResponse &rs) = delete;
-    HTTPResponse &operator=(const HTTPResponse &) = delete;
-    //@}
-#endif
 
 public:
     HTTPResponse() = default;
@@ -118,6 +107,11 @@ public:
         // can use the existing HTTPConnect and HTTPCache software with very minimal
         // (or no) modification. jhrg 11/8/13
         set_cpp_stream(new std::fstream(d_file.c_str(), std::ios::in | std::ios::binary));
+        // This hack was added to work around a memory leak introduced here but which surfaces
+        // in the parent class. Deleting the fstream* in all cases can lead to a double free;
+        // not deleting it in some cases leads to a leak. This set of classes should be redesigned.
+        // jhrg 2/9/25
+        d_delete_cpp_stream_ptr = true;
     }
 
     /** @name Accessors */
