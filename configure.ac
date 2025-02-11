@@ -2,7 +2,7 @@
 dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.72])
+AC_PREREQ([2.69]) dnl this script was updated using 2.72. jhrg 2/11/25
 
 dnl Set the version number here. Set the build number using --with-build
 dnl The version info is put in the VERSION file. The build number is used
