@@ -26,9 +26,6 @@
 
 #include "config.h"
 
-#include <cstring>
-#include <stdint.h>
-
 #include <fstream>
 #include <memory>
 
@@ -37,20 +34,13 @@
 #include <GetOpt.h>
 
 #include "Array.h"
-#include "BaseType.h"
 #include "D4Enum.h"
 
 #include "D4Group.h"
 #include "D4StreamUnMarshaller.h"
 #include "DMR.h"
 #include "chunked_istream.h"
-#include "chunked_ostream.h"
 
-#include "Error.h"
-#include "InternalErr.h"
-#include "util.h"
-
-#include "ConstraintEvaluator.h"
 #include "D4ResponseBuilder.h"
 
 #include "D4ParserSax2.h"
@@ -63,9 +53,7 @@
 #include "D4TestFunction.h"
 #include "ServerFunctionsList.h"
 
-#include "debug.h"
 #include "mime_util.h"
-#include "util.h"
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeouts.
 
@@ -79,21 +67,15 @@ using namespace libdap;
  * @return true if the parse worked, false otherwise
  */
 DMR *test_dap4_parser(const string &name, bool debug, bool print) {
-    D4TestTypeFactory *factory = new D4TestTypeFactory;
-    DMR *dataset = new DMR(factory, path_to_filename(name));
+    D4TestTypeFactory factory;
+    auto dataset = make_unique<DMR>(&factory, path_to_filename(name));
 
-    try {
-        D4ParserSax2 parser;
-        if (name == "-") {
-            parser.intern(cin, dataset, debug);
-        } else {
-            fstream in(name.c_str(), ios_base::in);
-            parser.intern(in, dataset, debug);
-        }
-    } catch (...) {
-        delete factory;
-        delete dataset;
-        throw;
+    D4ParserSax2 parser;
+    if (name == "-") {
+        parser.intern(cin, dataset.get(), debug);
+    } else {
+        fstream in(name.c_str(), ios_base::in);
+        parser.intern(in, dataset.get(), debug);
     }
 
     cout << "Parse successful" << endl;
@@ -104,9 +86,8 @@ DMR *test_dap4_parser(const string &name, bool debug, bool print) {
         cout << xml.get_doc() << endl;
     }
 
-    delete factory;
-    dataset->set_factory(0);
-    return dataset;
+    dataset->set_factory(nullptr);
+    return dataset.release();
 }
 
 /**
@@ -115,10 +96,10 @@ DMR *test_dap4_parser(const string &name, bool debug, bool print) {
  * @param state True to use the DTS-like values, false otherwise
  */
 void set_series_values(DMR *dmr, bool state) {
-    if (state == true)
+    if (state)
         dmr->root()->set_read_p(false);
 
-    TestCommon *tc = dynamic_cast<TestCommon *>(dmr->root());
+    auto tc = dynamic_cast<TestCommon *>(dmr->root());
     if (tc)
         tc->set_series_values(state);
     else
@@ -144,7 +125,7 @@ string send_data(DMR *dataset, const string &constraint, const string &function,
     // It's declared at this scope because we (may) need it for the code beyond the
     // function parse/eval code that immediately follows. jhrg 3/12/14
     D4TestTypeFactory d4_factory;
-    unique_ptr<DMR> function_result(new DMR(&d4_factory, "function_results"));
+    auto function_result = make_unique<DMR>(&d4_factory, "function_results");
 
     // The Function Parser
     if (!function.empty()) {
@@ -157,7 +138,7 @@ string send_data(DMR *dataset, const string &constraint, const string &function,
             parser.set_trace_parsing(true);
         bool parse_ok = parser.parse(function);
         if (!parse_ok)
-            Error("Function Expression failed to parse.");
+            throw Error("Function Expression failed to parse.");
         else {
             if (ce_parser_debug)
                 cerr << "Function Parse OK" << endl;
@@ -195,21 +176,18 @@ string send_data(DMR *dataset, const string &constraint, const string &function,
     return file_name;
 }
 
-void intern_data(DMR *dataset, /*const string &constraint,*/ bool series_values) {
+void intern_data(DMR *dataset, bool series_values) {
     set_series_values(dataset, series_values);
 
     // Mark all variables to be sent in their entirety. No CEs are used
     // when 'interning' variables' data.
     dataset->root()->set_send_p(true);
-#if 0
-    Crc32 checksum;
-#endif
     dataset->root()->intern_data(/*checksum, *dataset, eval*/);
 }
 
 DMR *read_data_plain(const string &file_name, bool debug) {
-    D4BaseTypeFactory *factory = new D4BaseTypeFactory;
-    DMR *dmr = new DMR(factory, "Test_data");
+    auto factory = make_unique<D4BaseTypeFactory>();
+    auto dmr = make_unique<DMR>(factory.get(), "Test_data");
 
     fstream in(file_name.c_str(), ios::in | ios::binary);
 
@@ -220,46 +198,29 @@ DMR *read_data_plain(const string &file_name, bool debug) {
     chunked_istream cis(in, CHUNK_SIZE);
 
     // parse the DMR, stopping when the boundary is found.
-    try {
-        // force chunk read
-        // get chunk size
-        int chunk_size = cis.read_next_chunk();
-        // get chunk
-        char chunk[chunk_size];
-        cis.read(chunk, chunk_size);
-        // parse char * with given size
-        D4ParserSax2 parser;
 
-        // Mirror the behavior in D4Connect where we are permissive with DAP4
-        // data responses' parsing, as per Hyrax-98 in Jira. jhrg 4/13/16
-        parser.set_strict(false);
+    // force chunk read
+    // get chunk size
+    int chunk_size = cis.read_next_chunk();
+    // get chunk
+    vector<char> chunk(chunk_size);
+    cis.read(chunk.data(), chunk_size);
+    // parse char * with given size
+    D4ParserSax2 parser;
 
-        // '-2' to discard the CRLF pair
-        parser.intern(chunk, chunk_size - 2, dmr, debug);
-    } catch (Error &e) {
-        delete factory;
-        delete dmr;
-        cerr << "Exception: " << e.get_error_message() << endl;
-        return 0;
-    } catch (std::exception &e) {
-        delete factory;
-        delete dmr;
-        cerr << "Exception: " << e.what() << endl;
-        return 0;
-    } catch (...) {
-        delete factory;
-        delete dmr;
-        cerr << "Exception: unknown error" << endl;
-        return 0;
-    }
+    // Mirror the behavior in D4Connect where we are permissive with DAP4
+    // data responses' parsing, as per Hyrax-98 in Jira. jhrg 4/13/16
+    parser.set_strict(false);
+
+    // '-2' to discard the CRLF pair
+    parser.intern(chunk.data(), chunk_size - 2, dmr.get(), debug);
 
     D4StreamUnMarshaller um(cis, cis.twiddle_bytes());
 
     dmr->root()->deserialize(um, *dmr);
 
-    delete factory;
-    dmr->set_factory(0);
-    return dmr;
+    dmr->set_factory(nullptr);
+    return dmr.release();
 }
 
 static void usage() {
@@ -287,9 +248,9 @@ int main(int argc, char *argv[]) {
     bool intern = false;
     bool series_values = false;
     bool ce_parser_debug = false;
-    string name = "";
-    string ce = "";
-    string function = "";
+    string name;
+    string ce;
+    string function;
 
     // process options
 
@@ -452,6 +413,12 @@ int main(int argc, char *argv[]) {
         }
     } catch (Error &e) {
         cerr << "Error: " << e.get_error_message() << endl;
+        return 1;
+    } catch (std::exception &e) {
+        cerr << "Exception: " << e.what() << endl;
+        return 1;
+    } catch (...) {
+        cerr << "Exception: unknown error" << endl;
         return 1;
     }
 
