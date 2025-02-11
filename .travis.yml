@@ -82,7 +82,7 @@ before_install:
 
 install:
   # $HOME is /home/travis and $TRAVIS_BUILD_DIR is /home/travis/build/OPENDAP/libdap4
-  - which bison flex autoconf automake libtool
+  - which bison flex
   - bison --version
   - flex --version
   - autoconf --version
