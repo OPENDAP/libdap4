@@ -43,6 +43,7 @@ addons:
     - libcppunit-dev 
     - gcovr
     - libfl-dev   # needed for focal, but not xenial. jhrg 1/18/24
+    - libtool-bin
     # - openjdk-17-jre  # Removed, see hack in before_install: jhrg 1/23/24
     # remove support for debian packages. jhrg 2/23/21
     # - build-essential
