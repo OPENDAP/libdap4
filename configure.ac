@@ -2,7 +2,7 @@
 dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.69])
+AC_PREREQ([2.72])
 
 dnl Set the version number here. Set the build number using --with-build
 dnl The version info is put in the VERSION file. The build number is used
@@ -11,7 +11,7 @@ dnl 'pc' files and tarball for the source. See
 dnl libdap4/travis/travis_libdap_build_offset.sh for info about setting the
 dnl base value for the build number. jhrg 3/22/21
 
-AC_INIT(libdap, 3.21.1, opendap-tech@opendap.org)
+AC_INIT([libdap],[3.21.1],[opendap-tech@opendap.org])
 
 dnl As an alternative, we can...
 dnl Read the version number from the file VERSION. The file must contain
@@ -22,7 +22,7 @@ dnl But, this requires that the NEWS file have the version number AND build
 dnl number somewhere in the first 15 lines or the dist target will fail.
 dnl jhrg 3/17/21
 dnl https://stackoverflow.com/questions/8559456/read-a-version-number-from-a-file-in-configure-ac
-dnl AC_INIT([libdap], m4_normalize(m4_include([VERSION])), [opendap-tech@opendap.org])
+dnl AC_INIT([libdap],[m4_normalize(m4_include(VERSION))],[opendap-tech@opendap.org])
 
 dnl Provide a way to pass in a build number. This is used by CI/CD systems to record
 dnl each build. The version number is set by the value in AC_INIT (see above). For
@@ -198,7 +198,9 @@ AC_MSG_RESULT([found version $bison_version])
 
 dnl Checks for header files.
 AC_HEADER_DIRENT
-AC_HEADER_STDC
+AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_EGREP
+
 AC_HEADER_SYS_WAIT
 
 AC_CHECK_HEADERS_ONCE([fcntl.h malloc.h memory.h stddef.h stdlib.h string.h strings.h unistd.h pthread.h])
@@ -216,7 +218,6 @@ AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_CHECK_MEMBERS([struct stat.st_blksize])
-AC_HEADER_TIME
 AC_STRUCT_TM
 AC_C_VOLATILE
 AC_C_BIGENDIAN
@@ -230,8 +231,7 @@ AC_SUBST([ac_word_order])
 DODS_CHECK_SIZES
 
 AC_ARG_ENABLE([runtime-endian-check],
-    [AC_HELP_STRING([--enable-runtime-endian-check], 
-                    [Enable runtime tests for big- or little-endian byte order (default is NO)])])
+    [AS_HELP_STRING([--enable-runtime-endian-check],[Enable runtime tests for big- or little-endian byte order (default is NO)])])
 
 AS_IF([test "x$enable_runtime_endian_check" = "xyes"], [
     dnl Do the stuff needed for enabling the feature
@@ -249,7 +249,7 @@ gl_MODULES(regex btyeswap)
 
 gl_INIT
 
-AC_ARG_WITH([curl], [AC_HELP_STRING([--with-curl=pfx], [curl/libcurl prefix; overrides other tests including pkgconfig])],
+AC_ARG_WITH([curl], [AS_HELP_STRING([--with-curl=pfx],[curl/libcurl prefix; overrides other tests including pkgconfig])],
             with_curl_prefix="$withval", with_curl_prefix="")
 
 dnl I wrote these checks because we need the *-config scripts to build, so 
@@ -314,8 +314,7 @@ dnl ******** new version, breaks the bes package step ********
 dnl jhrg 8/31/20
 dnl
 dnl AC_ARG_WITH(xml2,
-dnl     [AC_HELP_STRING([--with-xml2=PFX],
-dnl         [Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.])],
+dnl     [AS_HELP_STRING([--with-xml2=PFX],[dnl         Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.])],
 dnl     [with_xml2_prefix="$withval"],
 dnl     [with_xml2_prefix=""])
 dnl
