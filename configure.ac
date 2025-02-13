@@ -198,8 +198,10 @@ AC_MSG_RESULT([found version $bison_version])
 
 dnl Checks for header files.
 AC_HEADER_DIRENT
-AC_CHECK_INCLUDES_DEFAULT
+# Use this once we can update to autoconf 2.70. jhrg 2/13/25 AC_CHECK_INCLUDES_DEFAULT
 AC_PROG_EGREP
+AC_CHECK_HEADERS([getopt.h limits.h locale.h])
+
 
 AC_HEADER_SYS_WAIT
 
