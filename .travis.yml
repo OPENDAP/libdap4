@@ -43,6 +43,7 @@ addons:
     - libcppunit-dev 
     - gcovr
     - libfl-dev   # needed for focal, but not xenial. jhrg 1/18/24
+    - libtool-bin
     # - openjdk-17-jre  # Removed, see hack in before_install: jhrg 1/23/24
     # remove support for debian packages. jhrg 2/23/21
     # - build-essential
@@ -85,8 +86,9 @@ install:
   - which bison flex
   - bison --version
   - flex --version
-  # - aws s3 cp s3://opendap.travis.build/hyrax-dependencies-build.tar.gz $TRAVIS_BUILD_DIR
-  # - tar -C $HOME -xzvf $TRAVIS_BUILD_DIR/hyrax-dependencies-build.tar.gz
+  - autoconf --version
+  - automake --version
+  - libtool --version
 
 before_script:
   - source travis/travis_libdap_build_offset.sh
