@@ -496,7 +496,9 @@ AS_IF([test "$prefix" = "NONE"],
 AC_ARG_ENABLE([asan], 
     [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
 
-ASAN_OPTIONS="-fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer"
+dnl Removed -fsanitize=undefined. jhrg 2/21/25
+
+ASAN_OPTIONS="-fsanitize=address -fno-omit-frame-pointer"
 CXX_FLAGS_CHECK([$ASAN_OPTIONS], [has_asan=yes], [has_asan=no])
 
 AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
