@@ -67,19 +67,20 @@ void D4Sequence::m_duplicate(const D4Sequence &s) {
     d_row_stride = s.d_row_stride;
 #endif
     // Deep copy for the values
-    for (D4SeqValues::const_iterator i = s.d_values.begin(), e = s.d_values.end(); i != e; ++i) {
-        D4SeqRow &row = **i;
-        D4SeqRow *dest = new D4SeqRow;
-        for (D4SeqRow::const_iterator j = row.begin(), e = row.end(); j != e; ++j) {
+    for (const auto &row :
+         s.d_values) { // D4SeqValues::const_iterator i = s.d_values.begin(), e = s.d_values.end(); i != e; ++i) {
+        // D4SeqRow &row = **i;
+        auto dest = make_unique<D4SeqRow>();
+        for (const auto &basetype : row) { // D4SeqRow::const_iterator j = row.begin(), e = row.end(); j != e; ++j) {
             // *j is a BaseType*
-            dest->push_back((*j)->ptr_duplicate());
+            dest->push_back(basetype->ptr_duplicate());
         }
 
-        d_values.push_back(dest);
+        d_values.push_back(dest.release());
     }
 
     d_copy_clauses = s.d_copy_clauses;
-    d_clauses = (s.d_clauses != 0) ? new D4FilterClauseList(*s.d_clauses) : 0; // deep copy if != 0
+    d_clauses = (s.d_clauses != nullptr) ? new D4FilterClauseList(*s.d_clauses) : nullptr; // deep copy if != 0
 }
 
 // Public member functions
@@ -161,8 +162,6 @@ D4Sequence &D4Sequence::operator=(const D4Sequence &rhs) {
  * @note This method is called by D4Sequence::serialize() and it will evaluate the
  * CE for each set of values read.
  *
- * @param dmr
- * @param eval
  * @param filter
  * @return False when read() indicates that the EOF was found, true otherwise.
  */
@@ -227,13 +226,13 @@ void D4Sequence::read_sequence_values(bool filter) {
     // evaluates the filter expression
     while (read_next_instance(filter)) {
         DBG(cerr << "read_sequence_values() - Adding row" << endl);
-        D4SeqRow *row = new D4SeqRow;
-        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
-            if ((*i)->send_p()) {
+        auto row = make_unique<D4SeqRow>();
+        for (auto &var : d_vars) { // Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; i++) {
+            if (var->send_p()) {
                 DBG(cerr << ":serialize() - reading data for " << (*i)->type_name() << " " << (*i)->name() << endl);
-                if ((*i)->type() == dods_sequence_c) {
+                if (var->type() == dods_sequence_c) {
                     DBG(cerr << "Reading child sequence values for " << (*i)->name() << endl);
-                    D4Sequence *d4s = static_cast<D4Sequence *>(*i);
+                    const auto d4s = static_cast<D4Sequence *>(var);
                     d4s->read_sequence_values(filter);
                     d4s->d_copy_clauses = false;
                     row->push_back(d4s->ptr_duplicate());
@@ -241,7 +240,7 @@ void D4Sequence::read_sequence_values(bool filter) {
                     row->back()->set_read_p(true);
                 } else {
                     // store the variable's value.
-                    row->push_back((*i)->ptr_duplicate());
+                    row->push_back(var->ptr_duplicate());
                     // the copy should have read_p true to prevent the serialize() call
                     // below in the nested for loops from triggering a second call to
                     // read().
@@ -251,7 +250,7 @@ void D4Sequence::read_sequence_values(bool filter) {
         }
 
         // When specializing this, use set_value()
-        d_values.push_back(row);
+        d_values.push_back(row.release());
         DBG(cerr << " read_sequence_values() - Row completed" << endl);
     }
 
@@ -296,36 +295,22 @@ void D4Sequence::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter) {
             var->serialize(m, dmr, /*eval,*/ filter);
         }
     }
-#if 0
-    for (D4SeqValues::iterator i = d_values.begin(), e = d_values.end(); i != e; ++i) {
-        for (D4SeqRow::iterator j = (*i)->begin(), f = (*i)->end(); j != f; ++j) {
-            (*j)->serialize(m, dmr, /*eval,*/ false);
-        }
-    }
-#endif
 
     DBGN(cerr << __PRETTY_FUNCTION__ << " END" << endl);
 }
 
 void D4Sequence::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
-    int64_t um_count = um.get_count();
+    const int64_t um_count = um.get_count();
 
     set_length(um_count);
 
     for (int64_t i = 0; i < d_length; ++i) {
-        auto row = new D4SeqRow;
-#if 1
-        for (auto &var : d_vars) {
+        auto row = make_unique<D4SeqRow>();
+        for (const auto &var : d_vars) {
             var->deserialize(um, dmr);
             row->push_back(var->ptr_duplicate());
         }
-#else
-        for (Vars_iter i = d_vars.begin(), e = d_vars.end(); i != e; ++i) {
-            (*i)->deserialize(um, dmr);
-            row->push_back((*i)->ptr_duplicate());
-        }
-#endif
-        d_values.push_back(row);
+        d_values.push_back(row.release());
     }
 }
 
@@ -370,7 +355,7 @@ virtual void set_row_number_constraint(int start, int stop, int stride) {
  row number as \e row. */
 D4SeqRow *D4Sequence::row_value(size_t row) {
     if (row >= d_values.size())
-        return 0;
+        return nullptr;
     return d_values[row];
 }
 
@@ -395,12 +380,12 @@ BaseType *D4Sequence::var_value(size_t row_num, const string &name) {
  @return A BaseType which holds the variable and its value.
  @see number_of_rows */
 BaseType *D4Sequence::var_value(size_t row_num, size_t i) {
-    D4SeqRow *row = row_value(row_num);
+    const D4SeqRow *row = row_value(row_num);
     if (!row)
-        return 0;
+        return nullptr;
 
     if (i >= row->size())
-        return 0;
+        return nullptr;
 
     return (*row)[i];
 }
@@ -411,14 +396,14 @@ void D4Sequence::print_one_row(ostream &out, int row, string space, bool print_r
 
     out << "{ ";
 
-    int elements = element_count();
+    const int elements = element_count();
     int j = 0;
     BaseType *bt_ptr = 0;
 
     // This version of print_one_row() works for both data read with
     // deserialize(), where each variable is assumed to have valid data, and
     // intern_data(), where some/many variables do not. Because of that, it's
-    // not correct to assume that all of the elements will be printed, which
+    // not correct to assume that all the elements will be printed, which
     // is what the old code did.
 
     // Print the first value
