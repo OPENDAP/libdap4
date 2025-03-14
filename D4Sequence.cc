@@ -71,7 +71,7 @@ void D4Sequence::m_duplicate(const D4Sequence &s) {
          s.d_values) { // D4SeqValues::const_iterator i = s.d_values.begin(), e = s.d_values.end(); i != e; ++i) {
         // D4SeqRow &row = **i;
         auto dest = make_unique<D4SeqRow>();
-        for (const auto &basetype : row) { // D4SeqRow::const_iterator j = row.begin(), e = row.end(); j != e; ++j) {
+        for (const auto &basetype : *row) { // D4SeqRow::const_iterator j = row.begin(), e = row.end(); j != e; ++j) {
             // *j is a BaseType*
             dest->push_back(basetype->ptr_duplicate());
         }
