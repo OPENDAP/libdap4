@@ -6,6 +6,8 @@
 
 /** \mainpage
 
+\showdate "%A %d-%m-%Y" 2015-3-14
+
 \section intro Introduction
 
 This reference documentation corresponds to version @PACKAGE_VERSION@ of libdap, a C++
