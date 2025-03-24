@@ -15,7 +15,7 @@ then
     if test -d $HTML_DOCS
     then
         git rm -rf $HTML_DOCS
-        git commit -m "Removed old docs"
+        PRE_COMMIT_ALLOW_NO_CONFIG=1 git commit -m "Removed old docs"
     fi
 fi
 
@@ -26,7 +26,7 @@ git checkout --quiet $BRANCH
 if test -d $HTML_DOCS
 then
     git rm -rf $HTML_DOCS
-    git commit -m "Removed old docs"
+    PRE_COMMIT_ALLOW_NO_CONFIG=1  git commit -m "Removed old docs"
 fi
 
 # Build the docs. Puts them in a top-level dir named 'html' and that
@@ -34,17 +34,22 @@ fi
 doxygen $DOXYGEN_CONF
 
 # Now switch to the gh-pages branch and commit and push the docs.
-# Use the --track to make sure we get the branch from origin. jhrg 3/24/25
-git checkout -q --track origin/gh-pages
+if git branch --list | grep gh-pages
+then
+    git checkout --quiet gh-pages
+else
+    # Use the --track to make sure we get the branch from origin. jhrg 3/24/25
+    git checkout --quiet --track origin/gh-pages
+fi
 
 # Add the new docs. The pre-commit part is needed because the repo
 # now uses a pre-commit operation for enforce formatting, but the
 # gh-pages branch lacks that. jhrg 3/24//25
 git add --force ${HTML_DOCS}
 PRE_COMMIT_ALLOW_NO_CONFIG=1 git commit -m "Added new docs"
-git push -q
+git push --quiet
 
 # Now go back to the working branch.
-git checkout -q $BRANCH
+git checkout --quiet $BRANCH
 
-git branch -d gh-pages
+git branch --quiet --delete gh-pages
