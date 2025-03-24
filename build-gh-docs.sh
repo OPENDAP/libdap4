@@ -8,7 +8,7 @@ BRANCH=`git branch | grep '*' | cut -d ' ' -f 2`
 
 if git branch --list | grep gh-pages
 then
-    git checkout -q gh-pages
+    git checkout --quiet gh-pages
 
     if test -d $HTML_DOCS
     then
@@ -17,7 +17,7 @@ then
     fi
 fi
 
-git checkout -q $BRANCH
+git checkout --quiet $BRANCH
 
 if test -d $HTML_DOCS
 then
@@ -30,12 +30,11 @@ fi
 doxygen $DOXYGEN_CONF
 
 # Now switch to the gh-pages branch and commit and push the docs.
-
-git checkout -q gh-pages
+git checkout --quiet --track origin/gh-pages
 
 git add --force ${HTML_DOCS}
 git commit -m "Added new docs"
-git push -q
+git push --quiet
 
-git checkout -q $BRANCH
+git checkout --quiet $BRANCH
 git branch -d gh-pages
