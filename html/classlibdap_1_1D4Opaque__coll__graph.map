@@ -1,0 +1,13 @@
+<map id="libdap::D4Opaque" name="libdap::D4Opaque">
+<area shape="rect" id="Node000001" title=" " alt="" coords="115,1229,267,1495"/>
+<area shape="rect" id="Node000002" href="$classlibdap_1_1BaseType.html" title="The basic data type for the DODS DAP types." alt="" coords="5,281,169,1167"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,1180,172,1229,167,1230,159,1180"/>
+<area shape="rect" id="Node000003" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects" alt="" coords="36,133,139,219"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="90,232,90,281,85,281,85,232"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="194,661,333,787"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="259,787,211,1213,206,1212,254,787"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="210,143,317,209"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="266,223,266,661,261,661,261,223"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="252,5,275,71"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="266,71,266,127,261,127,261,71"/>
+</map>

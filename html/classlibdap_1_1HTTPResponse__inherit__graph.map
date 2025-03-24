@@ -1,0 +1,7 @@
+<map id="libdap::HTTPResponse" name="libdap::HTTPResponse">
+<area shape="rect" id="Node000001" title=" " alt="" coords="25,739,177,1084"/>
+<area shape="rect" id="Node000003" href="$classlibdap_1_1HTTPCacheResponse.html" title=" " alt="" coords="5,1132,196,1357"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="103,1098,103,1132,98,1132,98,1098"/>
+<area shape="rect" id="Node000002" href="$classlibdap_1_1Response.html" title=" " alt="" coords="13,5,189,691"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="103,704,103,739,98,739,98,704"/>
+</map>
