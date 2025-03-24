@@ -1,9 +1,0 @@
-<map id="MarshallerThread.h" name="MarshallerThread.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="195,5,332,31"/>
-<area shape="rect" id="Node000002" href="$D4StreamMarshaller_8cc.html" title=" " alt="" coords="5,79,167,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="221,38,118,81,116,76,219,33"/>
-<area shape="rect" id="Node000003" href="$MarshallerThread_8cc.html" title=" " alt="" coords="191,79,335,104"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="266,44,266,78,261,78,261,44"/>
-<area shape="rect" id="Node000004" href="$XDRStreamMarshaller_8cc.html" title=" " alt="" coords="360,79,532,104"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="309,33,415,76,413,81,307,38"/>
-</map>

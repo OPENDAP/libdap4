@@ -1,4 +1,0 @@
-<map id="libdap::mp_lock_guard_logger_default" name="libdap::mp_lock_guard_logger_default">
-<area shape="rect" id="node1" title="Default logger for mp_lock_guard For this implementation of mp_lock_guard_logger, the log() method wr..." alt="" coords="9,189,187,355"/>
-<area shape="rect" id="node2" href="$classlibdap_1_1mp__lock__guard__logger.html" title="Interface for the logger used by mp_lock_guard The idea behind this abstract class (aka,..." alt="" coords="5,5,191,141"/>
-</map>

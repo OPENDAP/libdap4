@@ -1,9 +1,0 @@
-<map id="ServerFunction.h" name="ServerFunction.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="92,5,216,31"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,79,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,33,75,73,72,69,133,29"/>
-<area shape="rect" id="Node000003" href="$D4Function_8h.html" title=" " alt="" coords="103,79,205,104"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="157,31,157,65,151,65,151,31"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="229,79,287,104"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="174,29,230,68,227,73,171,33"/>
-</map>
