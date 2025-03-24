@@ -1139,7 +1139,7 @@ bool size_ok(unsigned int sz, unsigned int nelem) { return (sz > 0 && nelem < UI
 
 /** @brief Does the string name a potentially valid pathname?
  Test the given pathname to verify that it is a valid name. We define this
- as: Contains only printable characters; and Is less then 256 characters.
+ as: Contains only printable characters; and Is less than 256 characters.
  If \e strict is true, test that the pathname consists of only letters,
  digits, and underscore, dash and dot characters instead of the more general
  case where a pathname can be composed of any printable characters.

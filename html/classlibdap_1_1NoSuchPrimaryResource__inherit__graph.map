@@ -1,7 +1,0 @@
-<map id="libdap::NoSuchPrimaryResource" name="libdap::NoSuchPrimaryResource">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,492,213,557"/>
-<area shape="rect" id="Node000002" href="$classlibdap_1_1Error.html" title="A class for error processing." alt="" coords="35,119,184,444"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,458,112,492,107,492,107,458"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="61,5,157,71"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="112,84,112,119,107,119,107,84"/>
-</map>

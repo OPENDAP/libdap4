@@ -10,7 +10,7 @@ BRANCH=`git branch | grep '*' | cut -d ' ' -f 2`
 # if we happen to have a local checkout of gh-pages, remove the docs from it.
 if git branch --list | grep gh-pages
 then
-    git checkout -q gh-pages
+    git checkout --quiet gh-pages
 
     if test -d $HTML_DOCS
     then
@@ -20,7 +20,7 @@ then
 fi
 
 # Return to our current working branch
-git checkout -q $BRANCH
+git checkout --quiet $BRANCH
 
 # clean out the docs
 if test -d $HTML_DOCS
@@ -46,4 +46,5 @@ git push -q
 
 # Now go back to the working branch.
 git checkout -q $BRANCH
+
 git branch -d gh-pages

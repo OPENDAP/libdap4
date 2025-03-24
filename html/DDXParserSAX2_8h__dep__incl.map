@@ -1,9 +1,0 @@
-<map id="DDXParserSAX2.h" name="DDXParserSAX2.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="131,5,265,31"/>
-<area shape="rect" id="Node000002" href="$Connect_8cc.html" title=" " alt="" coords="5,79,95,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="161,39,77,81,75,76,159,34"/>
-<area shape="rect" id="Node000003" href="$D4ResponseBuilder_8cc.html" title=" " alt="" coords="119,79,277,104"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="201,44,201,78,195,78,195,44"/>
-<area shape="rect" id="Node000004" href="$DDXParserSAX2_8cc.html" title=" " alt="" coords="301,79,441,104"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="242,34,342,76,340,81,240,39"/>
-</map>

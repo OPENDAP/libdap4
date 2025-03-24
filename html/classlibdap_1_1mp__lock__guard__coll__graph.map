@@ -1,3 +1,0 @@
-<map id="libdap::mp_lock_guard" name="libdap::mp_lock_guard">
-<area shape="rect" id="Node000001" title="Lock the cache for writing. Implements RAII for the multi&#45;process write lock for the cache." alt="" coords="5,5,153,191"/>
-</map>
