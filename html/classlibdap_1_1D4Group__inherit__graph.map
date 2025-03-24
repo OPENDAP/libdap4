@@ -1,9 +1,0 @@
-<map id="libdap::D4Group" name="libdap::D4Group">
-<area shape="rect" id="Node000001" title=" " alt="" coords="18,1520,166,1805"/>
-<area shape="rect" id="Node000002" href="$classlibdap_1_1Constructor.html" title=" " alt="" coords="5,1072,179,1472"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,1486,95,1520,89,1520,89,1486"/>
-<area shape="rect" id="Node000003" href="$classlibdap_1_1BaseType.html" title="The basic data type for the DODS DAP types." alt="" coords="10,139,174,1024"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="95,1038,95,1072,89,1072,89,1038"/>
-<area shape="rect" id="Node000004" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects" alt="" coords="41,5,143,91"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="95,104,95,139,89,139,89,104"/>
-</map>

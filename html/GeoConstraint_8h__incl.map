@@ -1,9 +1,0 @@
-<map id="GeoConstraint.h" name="GeoConstraint.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="45,5,163,31"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,45,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="92,33,51,71,48,67,88,29"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="69,79,139,104"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="107,31,107,65,101,65,101,31"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="163,79,218,104"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="121,29,166,67,163,71,117,33"/>
-</map>
