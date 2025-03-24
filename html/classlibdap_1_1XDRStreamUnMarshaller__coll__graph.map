@@ -1,7 +1,0 @@
-<map id="libdap::XDRStreamUnMarshaller" name="libdap::XDRStreamUnMarshaller">
-<area shape="rect" id="Node000001" title="unmarshaller that knows how to unmarshall/deserialize dap objects using XDR from a file" alt="" coords="5,512,213,777"/>
-<area shape="rect" id="Node000002" href="$classlibdap_1_1UnMarshaller.html" title="abstract base class used to unmarshall/deserialize dap data objects" alt="" coords="41,139,177,464"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,478,112,512,107,512,107,478"/>
-<area shape="rect" id="Node000003" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects" alt="" coords="58,5,161,91"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="112,105,112,138,107,138,107,105"/>
-</map>

@@ -1,5 +1,0 @@
-<map id="libdap::PipeResponse" name="libdap::PipeResponse">
-<area shape="rect" id="Node000001" title="Encapsulate a response. This class provides special treatment for &#39;stream pipes.&#39; It arranges to clos..." alt="" coords="21,739,165,864"/>
-<area shape="rect" id="Node000002" href="$classlibdap_1_1Response.html" title=" " alt="" coords="5,5,181,691"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="96,704,96,738,91,738,91,704"/>
-</map>
