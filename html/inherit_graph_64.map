@@ -1,0 +1,21 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" title=" " alt="" coords="5,195,109,220"/>
+<area shape="rect" id="Node000001" href="$classlibdap_1_1Error.html" title="A class for error processing." alt="" coords="157,195,252,220"/>
+<area shape="poly" id="edge53_Node000000_Node000001" title=" " alt="" coords="123,205,157,205,157,210,123,210"/>
+<area shape="rect" id="Node000002" href="$classlibdap_1_1AISDatabaseReadFailed.html" title=" " alt="" coords="309,5,521,31"/>
+<area shape="poly" id="edge54_Node000001_Node000002" title=" " alt="" coords="210,180,222,148,241,110,266,73,298,41,322,29,324,33,302,45,270,76,245,113,227,150,215,182"/>
+<area shape="rect" id="Node000003" href="$classlibdap_1_1AISDatabaseWriteFailed.html" title=" " alt="" coords="328,55,503,95"/>
+<area shape="poly" id="edge55_Node000001_Node000003" title=" " alt="" coords="219,182,253,142,275,122,299,105,326,92,329,97,301,110,278,126,257,146,223,185"/>
+<area shape="rect" id="Node000004" href="$classlibdap_1_1D4ParseError.html" title=" " alt="" coords="342,120,489,145"/>
+<area shape="poly" id="edge56_Node000001_Node000004" title=" " alt="" coords="235,185,299,154,341,142,343,147,301,159,237,190"/>
+<area shape="rect" id="Node000005" href="$classlibdap_1_1DDXParseFailed.html" title=" " alt="" coords="333,169,497,195"/>
+<area shape="poly" id="edge57_Node000001_Node000005" title=" " alt="" coords="265,197,333,189,333,195,266,203"/>
+<area shape="rect" id="Node000006" href="$classlibdap_1_1InternalErr.html" title="A class for software fault reporting." alt="" coords="352,219,479,244"/>
+<area shape="poly" id="edge58_Node000001_Node000006" title=" " alt="" coords="266,212,352,221,351,227,266,217"/>
+<area shape="rect" id="Node000007" href="$classlibdap_1_1NoSuchPrimaryResource.html" title=" " alt="" coords="307,268,523,293"/>
+<area shape="poly" id="edge59_Node000001_Node000007" title=" " alt="" coords="240,224,301,253,345,265,343,270,299,258,237,229"/>
+<area shape="rect" id="Node000008" href="$classlibdap_1_1ResponseTooBigErr.html" title=" " alt="" coords="323,317,508,343"/>
+<area shape="poly" id="edge60_Node000001_Node000008" title=" " alt="" coords="224,230,257,268,278,287,301,302,331,315,329,320,299,307,275,291,253,272,220,233"/>
+<area shape="rect" id="Node000009" href="$classlibdap_1_1SignalHandlerRegisteredErr.html" title=" " alt="" coords="300,367,531,392"/>
+<area shape="poly" id="edge61_Node000001_Node000009" title=" " alt="" coords="217,232,248,293,272,325,302,352,326,364,323,369,298,356,268,329,244,296,212,234"/>
+</map>

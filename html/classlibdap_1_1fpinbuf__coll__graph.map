@@ -1,0 +1,13 @@
+<map id="libdap::fpinbuf" name="libdap::fpinbuf">
+<area shape="rect" id="Node000001" title=" " alt="" coords="166,148,263,253"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,104,71"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="98,79,168,149,164,153,95,82"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="128,5,179,71"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="168,70,192,132,187,134,163,72"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="203,5,242,71"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="221,71,219,95,217,132,212,131,213,94,216,71"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="274,5,302,71"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="281,72,261,125,257,134,252,132,256,123,276,70"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="371,5,411,71"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="382,72,369,100,350,126,316,154,280,176,277,171,313,150,346,122,364,97,377,70"/>
+</map>

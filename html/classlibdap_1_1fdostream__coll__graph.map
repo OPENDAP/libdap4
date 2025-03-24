@@ -1,0 +1,21 @@
+<map id="libdap::fdostream" name="libdap::fdostream">
+<area shape="rect" id="Node000001" title=" " alt="" coords="155,620,271,685"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="75,442,163,507"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="145,518,198,619,193,621,140,521"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="16,235,141,315"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="92,328,115,441,109,442,87,329"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,120,152,185"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="81,199,81,234,76,234,76,199"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="33,5,125,71"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="81,85,81,120,76,120,76,85"/>
+<area shape="rect" id="Node000006" href="$classlibdap_1_1fdoutbuf.html" title=" " alt="" coords="227,392,333,557"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="252,558,234,606,229,604,247,556"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="165,242,264,307"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="232,320,256,391,250,393,227,322"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="289,242,317,307"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="292,308,284,339,280,376,275,375,279,338,287,307"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="363,242,402,307"/>
+<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="377,308,356,369,344,391,339,389,351,367,372,307"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="436,242,476,307"/>
+<area shape="poly" id="edge9_Node000006_Node000010" title=" " alt="" coords="448,308,434,339,415,370,384,404,348,433,345,429,380,400,411,366,430,337,443,306"/>
+</map>

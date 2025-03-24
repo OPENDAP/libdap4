@@ -1,0 +1,9 @@
+<map id="libdap::Int32" name="libdap::Int32">
+<area shape="rect" id="Node000001" title="Holds a 32&#45;bit signed integer." alt="" coords="111,1088,263,1353"/>
+<area shape="rect" id="Node000002" href="$classlibdap_1_1BaseType.html" title="The basic data type for the DODS DAP types." alt="" coords="5,140,169,1025"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="161,1038,169,1087,164,1088,156,1039"/>
+<area shape="rect" id="Node000003" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects" alt="" coords="36,5,139,91"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="90,105,90,140,85,140,85,105"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="193,550,248,615"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="222,616,198,1072,192,1071,216,615"/>
+</map>

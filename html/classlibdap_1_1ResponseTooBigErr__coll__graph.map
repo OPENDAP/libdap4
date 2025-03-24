@@ -1,0 +1,13 @@
+<map id="libdap::ResponseTooBigErr" name="libdap::ResponseTooBigErr">
+<area shape="rect" id="Node000001" title=" " alt="" coords="51,592,229,677"/>
+<area shape="rect" id="Node000002" href="$classlibdap_1_1Error.html" title="A class for error processing." alt="" coords="65,277,215,543"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,557,143,592,137,592,137,557"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,135,101,200"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="72,212,95,276,90,278,67,214"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="126,135,154,200"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="143,200,143,261,137,261,137,200"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="219,135,291,200"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="247,201,228,254,224,264,219,261,223,252,242,199"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="195,5,314,85"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="257,99,257,134,252,134,252,99"/>
+</map>
