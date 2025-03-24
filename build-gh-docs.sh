@@ -4,8 +4,10 @@
 
 DOXYGEN_CONF=doxy.conf
 HTML_DOCS=html
+# Get the name of the current branch, it might not be master. jhrg 3/24/25
 BRANCH=`git branch | grep '*' | cut -d ' ' -f 2`
 
+# if we happen to have a local checkout of gh-pages, remove the docs from it.
 if git branch --list | grep gh-pages
 then
     git checkout -q gh-pages
@@ -17,8 +19,10 @@ then
     fi
 fi
 
+# Return to our current working branch
 git checkout -q $BRANCH
 
+# clean out the docs
 if test -d $HTML_DOCS
 then
     git rm -rf $HTML_DOCS
@@ -30,12 +34,16 @@ fi
 doxygen $DOXYGEN_CONF
 
 # Now switch to the gh-pages branch and commit and push the docs.
+# Use the --track to make sure we get the branch from origin. jhrg 3/24/25
+git checkout -q --track origin/gh-pages
 
-git checkout -q gh-pages
-
+# Add the new docs. The pre-commit part is needed because the repo
+# now uses a pre-commit operation for enforce formatting, but the
+# gh-pages branch lacks that. jhrg 3/24//25
 git add --force ${HTML_DOCS}
-git commit -m "Added new docs"
+PRE_COMMIT_ALLOW_NO_CONFIG=1 git commit -m "Added new docs"
 git push -q
 
+# Now go back to the working branch.
 git checkout -q $BRANCH
 git branch -d gh-pages
