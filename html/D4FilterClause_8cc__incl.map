@@ -1,0 +1,25 @@
+<map id="D4FilterClause.cc" name="D4FilterClause.cc">
+<area shape="rect" id="Node000001" title=" " alt="" coords="139,5,265,31"/>
+<area shape="rect" id="Node000002" href="$config_8h.html" title=" " alt="" coords="47,79,117,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="182,33,116,74,113,69,180,28"/>
+<area shape="rect" id="Node000003" href="$D4FilterClause_8h.html" title=" " alt="" coords="141,79,263,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="205,31,205,65,199,65,199,31"/>
+<area shape="rect" id="Node000006" href="$D4RValue_8h.html" title=" " alt="" coords="282,152,375,177"/>
+<area shape="poly" id="edge12_Node000001_Node000006" title=" " alt="" coords="223,29,250,50,277,77,300,108,318,138,314,141,296,111,273,80,246,54,219,33"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,152,71,177"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="175,107,80,149,78,144,172,102"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="98,225,157,251"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="182,106,157,126,136,153,128,182,127,212,122,212,123,182,132,151,153,123,178,102"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="225,102,296,143,293,147,223,106"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="147,152,257,177"/>
+<area shape="poly" id="edge11_Node000003_Node000011" title=" " alt="" coords="205,104,205,138,199,138,199,104"/>
+<area shape="poly" id="edge7_Node000006_Node000005" title=" " alt="" coords="295,180,170,225,169,220,293,175"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="199,225,253,251"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="312,180,257,219,253,215,309,175"/>
+<area shape="rect" id="Node000008" href="$D4Function_8h.html" title=" " alt="" coords="278,225,379,251"/>
+<area shape="poly" id="edge8_Node000006_Node000008" title=" " alt="" coords="331,177,331,211,326,211,326,177"/>
+<area shape="rect" id="Node000009" href="$dods-datatypes_8h.html" title=" " alt="" coords="404,225,528,251"/>
+<area shape="poly" id="edge9_Node000006_Node000009" title=" " alt="" coords="354,175,431,216,429,221,351,180"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="427,299,505,324"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="469,251,469,285,463,285,463,251"/>
+</map>

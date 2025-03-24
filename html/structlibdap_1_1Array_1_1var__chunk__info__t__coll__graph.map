@@ -1,0 +1,14 @@
+<map id="libdap::Array::var_chunk_info_t" name="libdap::Array::var_chunk_info_t">
+<area shape="rect" id="Node000001" title=" " alt="" coords="58,404,173,484"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,269,33,334"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="16,334,16,357,23,379,46,406,42,409,18,381,11,358,11,334"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="101,133,226,199"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="151,200,130,262,121,327,117,388,112,388,115,326,125,261,146,198"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="281,261,422,341"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="210,197,284,249,281,254,207,201"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="286,344,188,403,185,399,284,339"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="298,133,405,199"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="354,212,354,261,349,261,349,212"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="340,5,363,71"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="354,71,354,117,349,117,349,71"/>
+</map>
