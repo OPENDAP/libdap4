@@ -1,0 +1,28 @@
+var dods_limits_8h =
+[
+    [ "DODS_CHAR_BIT", "dods-limits_8h.html#ae185770eeb26cf848cdff12b945211cc", null ],
+    [ "DODS_DBL_DIG", "dods-limits_8h.html#ac4523cb9279e0eff130724282d97594b", null ],
+    [ "DODS_DBL_MAX", "dods-limits_8h.html#a0a8ce841d9d9ff15fe487b515f43ff81", null ],
+    [ "DODS_DBL_MIN", "dods-limits_8h.html#a10fd590362c76967923686f27ece6562", null ],
+    [ "DODS_FLT_DIG", "dods-limits_8h.html#a8a94e3d696ca16e9e5e489e73f53be5f", null ],
+    [ "DODS_FLT_MAX", "dods-limits_8h.html#ad7da9cfbfcb6059a68080545ea111ff1", null ],
+    [ "DODS_FLT_MIN", "dods-limits_8h.html#a77ab441ea39b83cf8d12a44fd62ddd0e", null ],
+    [ "DODS_INT_MAX", "dods-limits_8h.html#a74737b3524a570ac422e162af40f844a", null ],
+    [ "DODS_INT_MIN", "dods-limits_8h.html#a7ea3886c8d4ec9d6334d0e7d26100834", null ],
+    [ "DODS_LLONG_MAX", "dods-limits_8h.html#a5cfe9632b21e4c7e9b03a15c183097d0", null ],
+    [ "DODS_LLONG_MIN", "dods-limits_8h.html#ad956d17fbc66fd8f21b00f2db8080974", null ],
+    [ "DODS_LONG_MAX", "dods-limits_8h.html#a7fb10a7d3ed432375875528053df3288", null ],
+    [ "DODS_LONG_MIN", "dods-limits_8h.html#afbbac0e079ef48f264cdcb18fca37cc1", null ],
+    [ "DODS_MAX_ARRAY_INDEX", "dods-limits_8h.html#a57a464f08ef7b7ac0989af9b1605e59f", null ],
+    [ "DODS_MB_LEN_MAX", "dods-limits_8h.html#a6cc3006166b57be8df71a7b86e2811e3", null ],
+    [ "DODS_SCHAR_MAX", "dods-limits_8h.html#afba7c171648e13b1850f766a89397d7b", null ],
+    [ "DODS_SCHAR_MIN", "dods-limits_8h.html#a48b48d4f791ea49f793420110867ee75", null ],
+    [ "DODS_SHRT_MAX", "dods-limits_8h.html#a4f3fac0085c0b6353a644b54acb125bf", null ],
+    [ "DODS_SHRT_MIN", "dods-limits_8h.html#a28336326924e1305324550b91584f0c2", null ],
+    [ "DODS_UCHAR_MAX", "dods-limits_8h.html#a297f7e6ba7e129d4d8dcb595761de1df", null ],
+    [ "DODS_UCHAR_MIN", "dods-limits_8h.html#a7aae6327c40bdc6513f9d7c041b1ecac", null ],
+    [ "DODS_UINT_MAX", "dods-limits_8h.html#a548eb8440671a642cd537a9141b021f4", null ],
+    [ "DODS_ULLONG_MAX", "dods-limits_8h.html#adc5941d5ea180c5e98410534998264d1", null ],
+    [ "DODS_ULONG_MAX", "dods-limits_8h.html#a89280e4bcb83ce6a5923765b170eb54d", null ],
+    [ "DODS_USHRT_MAX", "dods-limits_8h.html#abbdf6079b091e5c281eab1f2aa96d4de", null ]
+];
