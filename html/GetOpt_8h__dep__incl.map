@@ -1,9 +1,0 @@
-<map id="GetOpt.h" name="GetOpt.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="139,5,215,31"/>
-<area shape="rect" id="Node000002" href="$DODSFilter_8cc.html" title=" " alt="" coords="5,79,112,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,40,81,81,78,76,144,36"/>
-<area shape="rect" id="Node000003" href="$GetOpt_8cc.html" title=" " alt="" coords="136,79,219,104"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="180,44,180,78,175,78,175,44"/>
-<area shape="rect" id="Node000004" href="$getdap_8cc.html" title=" " alt="" coords="243,79,323,104"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="208,36,266,76,263,81,205,41"/>
-</map>

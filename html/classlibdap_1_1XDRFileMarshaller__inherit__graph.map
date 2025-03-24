@@ -1,7 +1,0 @@
-<map id="libdap::XDRFileMarshaller" name="libdap::XDRFileMarshaller">
-<area shape="rect" id="Node000001" title="marshaller that knows how to marshall/serialize dap data objects to a file using XDR" alt="" coords="5,452,175,717"/>
-<area shape="rect" id="Node000002" href="$classlibdap_1_1Marshaller.html" title="abstract base class used to marshal/serialize dap data objects" alt="" coords="31,139,149,404"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,418,93,452,87,452,87,418"/>
-<area shape="rect" id="Node000003" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects" alt="" coords="39,5,141,91"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="93,104,93,138,87,138,87,104"/>
-</map>

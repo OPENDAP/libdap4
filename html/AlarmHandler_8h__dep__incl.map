@@ -1,7 +1,0 @@
-<map id="AlarmHandler.h" name="AlarmHandler.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="104,5,219,31"/>
-<area shape="rect" id="Node000002" href="$D4ResponseBuilder_8cc.html" title=" " alt="" coords="5,79,163,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,42,100,80,96,76,136,38"/>
-<area shape="rect" id="Node000003" href="$DODSFilter_8cc.html" title=" " alt="" coords="187,79,293,104"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="187,38,228,76,224,80,183,42"/>
-</map>

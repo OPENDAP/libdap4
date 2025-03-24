@@ -1,5 +1,0 @@
-<map id="libdap::BaseType" name="libdap::BaseType">
-<area shape="rect" id="Node000001" title="The basic data type for the DODS DAP types." alt="" coords="5,139,169,1024"/>
-<area shape="rect" id="Node000002" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects" alt="" coords="36,5,139,91"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,104,90,139,85,139,85,104"/>
-</map>

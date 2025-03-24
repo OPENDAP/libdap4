@@ -1,5 +1,0 @@
-<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="Node000000" href="$classlibdap_1_1mp__lock__guard__logger.html" title="Interface for the logger used by mp_lock_guard The idea behind this abstract class (aka,..." alt="" coords="5,5,161,45"/>
-<area shape="rect" id="Node000001" href="$classlibdap_1_1mp__lock__guard__logger__default.html" title="Default logger for mp_lock_guard For this implementation of mp_lock_guard_logger, the log() method wr..." alt="" coords="209,5,365,45"/>
-<area shape="poly" id="edge46_Node000000_Node000001" title=" " alt="" coords="175,23,209,23,209,28,175,28"/>
-</map>
