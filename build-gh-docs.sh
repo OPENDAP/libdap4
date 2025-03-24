@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Build the reference guide for this code and publish it using github.io.
 
 DOXYGEN_CONF=doxy.conf
 HTML_DOCS=html
 # Get the name of the current branch, it might not be master. jhrg 3/24/25
-BRANCH=`git branch | grep '*' | cut -d ' ' -f 2`
+BRANCH=$(git branch | grep '*' | cut -d ' ' -f 2)
 
 # if we happen to have a local checkout of gh-pages, remove the docs from it.
 if git branch --list | grep gh-pages
