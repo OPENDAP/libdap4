@@ -1,0 +1,23 @@
+<map id="libdap::fpistream" name="libdap::fpistream">
+<area shape="rect" id="Node000001" title=" " alt="" coords="207,560,319,625"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="111,412,193,477"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="187,487,240,558,236,562,183,490"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="18,235,139,315"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="104,326,140,410,135,413,99,329"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="5,120,152,185"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="81,199,81,234,76,234,76,199"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="33,5,125,71"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="81,85,81,120,76,120,76,85"/>
+<area shape="rect" id="Node000006" href="$classlibdap_1_1fpinbuf.html" title=" " alt="" coords="290,392,387,497"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="314,499,289,547,285,544,309,496"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="164,242,263,307"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="248,317,302,390,298,394,244,320"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="287,242,337,307"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="313,308,316,368,318,376,312,377,311,368,307,308"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="362,242,401,307"/>
+<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="376,308,358,377,353,376,371,307"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="425,242,453,307"/>
+<area shape="poly" id="edge9_Node000006_Node000010" title=" " alt="" coords="435,308,426,339,412,369,400,387,396,384,407,367,421,337,430,307"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="521,242,561,307"/>
+<area shape="poly" id="edge10_Node000006_Node000011" title=" " alt="" coords="536,308,523,340,502,370,480,389,455,405,404,428,402,424,452,400,477,385,498,366,518,337,531,306"/>
+</map>
