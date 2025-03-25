@@ -1,7 +1,0 @@
-<map id="libdap::DDS" name="libdap::DDS">
-<area shape="rect" id="Node000001" title=" " alt="" coords="11,139,147,624"/>
-<area shape="rect" id="Node000003" href="$classlibdap_1_1DataDDS.html" title="Holds a DAP2 DDS." alt="" coords="5,672,153,937"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="82,638,82,671,77,671,77,638"/>
-<area shape="rect" id="Node000002" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects" alt="" coords="28,5,131,91"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="82,104,82,139,77,139,77,104"/>
-</map>

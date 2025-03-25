@@ -1,9 +1,0 @@
-<map id="libdap::cache_entry" name="libdap::cache_entry">
-<area shape="rect" id="Node000001" title=" " alt="" coords="75,133,204,199"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,52,71"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="54,65,91,108,101,119,97,123,87,111,50,68"/>
-<area shape="rect" id="Node000003" title=" " alt="" coords="77,5,202,71"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="142,71,142,117,137,117,137,71"/>
-<area shape="rect" id="Node000004" title=" " alt="" coords="226,5,277,71"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="228,69,181,122,177,119,224,65"/>
-</map>
