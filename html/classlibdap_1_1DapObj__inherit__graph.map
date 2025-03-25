@@ -1,0 +1,81 @@
+<map id="libdap::DapObj" name="libdap::DapObj">
+<area shape="rect" id="Node000001" title="libdap base object for common functionality of libdap objects" alt="" coords="2588,5,2691,91"/>
+<area shape="rect" id="Node000002" href="$classlibdap_1_1AttrTable.html" title="Contains the attributes for a dataset." alt="" coords="1412,169,1579,994"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="2574,52,2339,59,2028,74,1877,86,1745,100,1645,119,1612,129,1592,141,1564,170,1560,166,1588,137,1610,125,1644,114,1744,95,1876,80,2028,69,2339,53,2574,47"/>
+<area shape="rect" id="Node000003" href="$classlibdap_1_1BaseType.html" title="The basic data type for the DODS DAP types." alt="" coords="1603,139,1767,1024"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="2575,56,2460,69,2322,87,2193,111,2141,126,2103,141,2052,172,2002,208,1912,289,1833,376,1769,459,1765,455,1829,373,1908,286,1999,204,2049,168,2101,136,2140,121,2192,106,2321,82,2459,63,2574,51"/>
+<area shape="rect" id="Node000026" href="$classlibdap_1_1D4Attribute.html" title=" " alt="" coords="2114,449,2253,714"/>
+<area shape="poly" id="edge25_Node000001_Node000026" title=" " alt="" coords="2575,58,2492,70,2400,87,2318,111,2287,125,2267,141,2241,173,2220,209,2204,248,2192,288,2178,370,2175,448,2169,448,2173,370,2186,287,2199,246,2215,207,2236,170,2263,137,2285,121,2316,106,2399,82,2491,64,2574,53"/>
+<area shape="rect" id="Node000027" href="$classlibdap_1_1D4Attributes.html" title=" " alt="" coords="2277,449,2439,714"/>
+<area shape="poly" id="edge26_Node000001_Node000027" title=" " alt="" coords="2576,66,2543,78,2510,94,2479,114,2453,140,2430,175,2411,212,2382,291,2366,373,2359,449,2353,448,2361,372,2377,290,2406,210,2425,172,2449,137,2476,110,2508,89,2541,73,2574,61"/>
+<area shape="rect" id="Node000028" href="$classlibdap_1_1DAPCache3.html" title="Implementation of a caching mechanism for compressed data. This cache uses simple advisory locking fo..." alt="" coords="2463,381,2623,781"/>
+<area shape="poly" id="edge27_Node000001_Node000028" title=" " alt="" coords="2632,104,2582,381,2577,381,2627,104"/>
+<area shape="rect" id="Node000029" href="$classlibdap_1_1DAS.html" title="Hold attribute data for a DAP2 dataset." alt="" coords="2648,269,2823,894"/>
+<area shape="poly" id="edge28_Node000001_Node000029" title=" " alt="" coords="2652,104,2682,268,2676,269,2647,104"/>
+<area shape="rect" id="Node000030" href="$classlibdap_1_1DDS.html" title=" " alt="" coords="2847,339,2983,824"/>
+<area shape="poly" id="edge29_Node000001_Node000030" title=" " alt="" coords="2705,59,2740,71,2775,87,2809,109,2837,137,2867,183,2889,233,2905,285,2916,338,2910,339,2900,286,2884,234,2862,185,2833,140,2806,113,2773,92,2738,76,2703,64"/>
+<area shape="rect" id="Node000032" href="$classlibdap_1_1DMR.html" title=" " alt="" coords="3008,439,3137,724"/>
+<area shape="poly" id="edge31_Node000001_Node000032" title=" " alt="" coords="2705,53,2784,66,2870,84,2947,107,2977,121,2997,137,3023,169,3043,204,3059,242,3071,282,3084,362,3088,438,3082,438,3079,362,3065,283,3054,244,3038,207,3018,172,2993,141,2974,126,2945,112,2869,89,2783,71,2704,59"/>
+<area shape="rect" id="Node000033" href="$classlibdap_1_1Marshaller.html" title="abstract base class used to marshal/serialize dap data objects" alt="" coords="3203,449,3321,714"/>
+<area shape="poly" id="edge32_Node000001_Node000033" title=" " alt="" coords="2704,48,2817,57,2950,73,3014,84,3071,98,3119,116,3152,137,3181,169,3205,205,3224,244,3239,285,3259,369,3267,448,3262,449,3254,370,3234,286,3219,246,3200,208,3177,172,3148,141,3116,121,3070,103,3013,89,2949,78,2816,62,2704,54"/>
+<area shape="rect" id="Node000037" href="$classlibdap_1_1UnMarshaller.html" title="abstract base class used to unmarshall/deserialize dap data objects" alt="" coords="3763,419,3899,744"/>
+<area shape="poly" id="edge36_Node000001_Node000037" title=" " alt="" coords="2704,49,2851,59,3034,77,3210,102,3282,118,3335,136,3402,171,3466,212,3528,258,3585,307,3686,405,3765,493,3761,497,3683,409,3582,311,3524,262,3463,217,3399,176,3333,141,3280,123,3209,107,3033,82,2850,65,2704,54"/>
+<area shape="rect" id="Node000004" href="$classlibdap_1_1Byte.html" title="Holds a single byte." alt="" coords="179,1139,331,1405"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="1594,1024,1591,1026,1561,1041,1511,1051,1446,1058,1367,1061,1179,1061,970,1055,760,1049,572,1047,426,1054,376,1062,345,1074,314,1103,291,1140,287,1138,310,1100,342,1070,374,1057,425,1049,572,1041,760,1043,970,1050,1179,1055,1367,1056,1445,1052,1510,1046,1559,1036,1589,1022,1591,1020"/>
+<area shape="rect" id="Node000005" href="$classlibdap_1_1Constructor.html" title=" " alt="" coords="355,1072,529,1472"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="1594,1024,1591,1026,1565,1039,1524,1048,1402,1057,1245,1058,1069,1055,892,1051,733,1051,610,1057,568,1064,542,1074,531,1083,527,1078,539,1070,567,1059,610,1052,733,1045,892,1046,1069,1050,1245,1053,1402,1052,1523,1042,1564,1034,1589,1022,1591,1020"/>
+<area shape="rect" id="Node000011" href="$classlibdap_1_1D4Enum.html" title="Holds a DAP4 enumeration." alt="" coords="553,1139,705,1405"/>
+<area shape="poly" id="edge10_Node000003_Node000011" title=" " alt="" coords="1594,1024,1592,1026,1559,1047,1517,1060,1469,1069,1414,1072,1291,1068,1158,1057,1024,1044,900,1038,844,1040,795,1046,752,1057,718,1074,688,1104,665,1141,660,1138,683,1100,715,1070,750,1052,794,1041,844,1035,900,1033,1024,1039,1158,1051,1291,1063,1414,1067,1468,1063,1516,1055,1556,1042,1588,1022,1591,1020"/>
+<area shape="rect" id="Node000012" href="$classlibdap_1_1D4Opaque.html" title=" " alt="" coords="729,1139,881,1405"/>
+<area shape="poly" id="edge11_Node000003_Node000012" title=" " alt="" coords="1594,1024,1592,1026,1565,1043,1532,1054,1493,1061,1449,1065,1351,1063,1245,1055,1138,1047,1039,1044,994,1046,955,1051,921,1060,894,1074,864,1104,841,1140,837,1138,860,1100,891,1070,919,1055,954,1046,994,1040,1039,1038,1138,1042,1245,1050,1351,1058,1449,1059,1493,1056,1531,1049,1563,1038,1588,1022,1591,1020"/>
+<area shape="rect" id="Node000013" href="$classlibdap_1_1Float32.html" title="Holds a 32&#45;bit floating point value." alt="" coords="905,1139,1057,1405"/>
+<area shape="poly" id="edge12_Node000003_Node000013" title=" " alt="" coords="1594,1024,1592,1026,1572,1039,1547,1048,1485,1057,1412,1058,1332,1054,1252,1050,1178,1049,1115,1056,1090,1064,1070,1074,1040,1104,1018,1140,1013,1137,1036,1100,1067,1070,1088,1059,1114,1051,1178,1044,1252,1045,1332,1049,1412,1053,1485,1052,1546,1043,1570,1034,1588,1022,1591,1020"/>
+<area shape="rect" id="Node000014" href="$classlibdap_1_1Float64.html" title="Holds a 64&#45;bit (double precision) floating point value." alt="" coords="1081,1139,1233,1405"/>
+<area shape="poly" id="edge13_Node000003_Node000014" title=" " alt="" coords="1595,1023,1592,1026,1570,1043,1549,1055,1506,1066,1463,1064,1421,1055,1378,1046,1335,1043,1291,1050,1269,1060,1246,1074,1217,1104,1195,1141,1190,1138,1213,1101,1243,1070,1266,1055,1290,1045,1335,1037,1379,1041,1422,1050,1464,1058,1505,1060,1547,1050,1567,1039,1588,1022,1591,1019"/>
+<area shape="rect" id="Node000015" href="$classlibdap_1_1Int16.html" title="Holds a 16&#45;bit signed integer value." alt="" coords="1257,1139,1409,1405"/>
+<area shape="poly" id="edge14_Node000003_Node000015" title=" " alt="" coords="1596,1022,1592,1026,1571,1043,1550,1051,1507,1053,1465,1053,1444,1060,1422,1074,1395,1104,1374,1140,1369,1138,1391,1101,1419,1070,1442,1055,1464,1048,1507,1047,1549,1046,1568,1038,1588,1022,1592,1018"/>
+<area shape="rect" id="Node000016" href="$classlibdap_1_1Int32.html" title="Holds a 32&#45;bit signed integer." alt="" coords="1433,1139,1585,1405"/>
+<area shape="poly" id="edge15_Node000003_Node000016" title=" " alt="" coords="1602,989,1593,1025,1558,1140,1553,1138,1587,1023,1597,988"/>
+<area shape="rect" id="Node000017" href="$classlibdap_1_1Int64.html" title="Holds a64&#45;bit signed integer." alt="" coords="1609,1139,1761,1405"/>
+<area shape="poly" id="edge16_Node000003_Node000017" title=" " alt="" coords="1687,1038,1687,1139,1682,1139,1682,1038"/>
+<area shape="rect" id="Node000018" href="$classlibdap_1_1Int8.html" title="Holds an 8&#45;bit signed integer value." alt="" coords="1785,1139,1937,1405"/>
+<area shape="poly" id="edge17_Node000003_Node000018" title=" " alt="" coords="1773,916,1829,1138,1824,1140,1768,917"/>
+<area shape="rect" id="Node000019" href="$classlibdap_1_1Str.html" title="Holds character string data." alt="" coords="1961,1132,2113,1412"/>
+<area shape="poly" id="edge18_Node000003_Node000019" title=" " alt="" coords="1776,738,1863,898,1951,1071,1979,1130,1974,1133,1946,1073,1858,900,1771,740"/>
+<area shape="rect" id="Node000021" href="$classlibdap_1_1UInt16.html" title="Holds an unsigned 16&#45;bit integer." alt="" coords="2137,1139,2289,1405"/>
+<area shape="poly" id="edge20_Node000003_Node000021" title=" " alt="" coords="1778,664,1859,745,1951,843,2043,954,2127,1071,2164,1138,2159,1141,2122,1073,2039,957,1947,847,1855,749,1775,668"/>
+<area shape="rect" id="Node000022" href="$classlibdap_1_1UInt32.html" title="Holds a 32&#45;bit unsigned integer." alt="" coords="2313,1139,2465,1405"/>
+<area shape="poly" id="edge21_Node000003_Node000022" title=" " alt="" coords="1777,711,1841,791,1919,875,2007,955,2054,990,2103,1022,2131,1034,2157,1040,2205,1041,2252,1044,2277,1053,2302,1070,2331,1101,2353,1138,2349,1141,2327,1104,2299,1074,2274,1057,2251,1049,2205,1046,2156,1045,2129,1039,2101,1026,2051,995,2003,959,1915,879,1837,794,1773,714"/>
+<area shape="rect" id="Node000023" href="$classlibdap_1_1UInt64.html" title="Holds a 64&#45;bit unsigned integer." alt="" coords="2489,1139,2641,1405"/>
+<area shape="poly" id="edge22_Node000003_Node000023" title=" " alt="" coords="1777,718,1840,798,1917,882,2005,959,2053,993,2103,1022,2156,1041,2205,1047,2251,1044,2295,1036,2338,1030,2383,1030,2429,1042,2478,1070,2509,1101,2531,1138,2527,1140,2505,1104,2475,1074,2427,1047,2382,1035,2339,1035,2295,1042,2251,1049,2205,1052,2155,1046,2101,1026,2050,997,2002,963,1913,886,1836,802,1773,721"/>
+<area shape="rect" id="Node000024" href="$classlibdap_1_1Vector.html" title="Holds a one&#45;dimensional collection of DAP2 data types." alt="" coords="2665,1139,2817,1405"/>
+<area shape="poly" id="edge23_Node000003_Node000024" title=" " alt="" coords="1777,720,1840,801,1917,885,1959,924,2005,961,2053,994,2103,1022,2126,1030,2154,1036,2221,1041,2381,1039,2464,1037,2540,1039,2605,1049,2632,1058,2654,1070,2685,1101,2708,1138,2704,1141,2681,1104,2651,1074,2630,1063,2604,1054,2540,1045,2464,1042,2381,1044,2221,1047,2153,1041,2125,1035,2101,1026,2050,998,2002,965,1956,928,1913,888,1836,805,1773,723"/>
+<area shape="rect" id="Node000006" href="$classlibdap_1_1D4Group.html" title=" " alt="" coords="5,1619,153,1905"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="347,1473,345,1474,321,1489,298,1496,253,1497,210,1499,188,1506,166,1522,147,1543,131,1567,107,1620,102,1618,126,1565,143,1540,163,1518,186,1502,209,1494,253,1492,297,1491,319,1484,342,1470,343,1469"/>
+<area shape="rect" id="Node000007" href="$classlibdap_1_1D4Sequence.html" title="Holds a sequence." alt="" coords="177,1599,349,1925"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="367,1486,325,1600,320,1598,362,1484"/>
+<area shape="rect" id="Node000008" href="$classlibdap_1_1Grid.html" title="Holds the Grid data type." alt="" coords="374,1619,510,1905"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="445,1485,445,1619,439,1619,439,1485"/>
+<area shape="rect" id="Node000009" href="$classlibdap_1_1Sequence.html" title="Holds a sequence." alt="" coords="535,1520,720,2004"/>
+<area shape="poly" id="edge8_Node000005_Node000009" title=" " alt="" coords="525,1484,538,1519,533,1521,520,1486"/>
+<area shape="rect" id="Node000010" href="$classlibdap_1_1Structure.html" title="Holds a structure (aggregate) type." alt="" coords="744,1629,889,1895"/>
+<area shape="poly" id="edge9_Node000005_Node000010" title=" " alt="" coords="541,1469,542,1470,567,1485,590,1492,637,1492,661,1491,684,1493,709,1501,733,1518,755,1542,773,1569,797,1628,793,1630,768,1572,751,1545,730,1522,706,1506,683,1498,660,1496,637,1497,590,1497,565,1490,539,1474,537,1473"/>
+<area shape="rect" id="Node000020" href="$classlibdap_1_1Url.html" title="Holds an Internet address (URL)." alt="" coords="1982,1679,2091,1845"/>
+<area shape="poly" id="edge19_Node000019_Node000020" title=" " alt="" coords="2039,1426,2039,1679,2034,1679,2034,1426"/>
+<area shape="rect" id="Node000025" href="$classlibdap_1_1Array.html" title="A multidimensional array of identical data types." alt="" coords="2673,1589,2808,1935"/>
+<area shape="poly" id="edge24_Node000024_Node000025" title=" " alt="" coords="2743,1419,2743,1589,2738,1589,2738,1419"/>
+<area shape="rect" id="Node000031" href="$classlibdap_1_1DataDDS.html" title="Holds a DAP2 DDS." alt="" coords="2841,1139,2989,1405"/>
+<area shape="poly" id="edge30_Node000030_Node000031" title=" " alt="" coords="2918,838,2918,1139,2913,1139,2913,838"/>
+<area shape="rect" id="Node000034" href="$classlibdap_1_1D4StreamMarshaller.html" title="Marshaller that knows how to marshal/serialize dap data objects to a C++ iostream using DAP4&#39;s receiv..." alt="" coords="3014,1139,3193,1405"/>
+<area shape="poly" id="edge33_Node000033_Node000034" title=" " alt="" coords="3231,728,3136,1140,3131,1138,3226,727"/>
+<area shape="rect" id="Node000035" href="$classlibdap_1_1XDRFileMarshaller.html" title="marshaller that knows how to marshall/serialize dap data objects to a file using XDR" alt="" coords="3217,1139,3387,1405"/>
+<area shape="poly" id="edge34_Node000033_Node000035" title=" " alt="" coords="3273,727,3297,1139,3292,1139,3268,728"/>
+<area shape="rect" id="Node000036" href="$classlibdap_1_1XDRStreamMarshaller.html" title="Marshaller that knows how serialize dap data objects to a C++ iostream using XDR." alt="" coords="3411,1139,3601,1405"/>
+<area shape="poly" id="edge35_Node000033_Node000036" title=" " alt="" coords="3316,726,3462,1138,3457,1140,3311,728"/>
+<area shape="rect" id="Node000038" href="$classlibdap_1_1D4StreamUnMarshaller.html" title="Read data from the stream made by D4StreamMarshaller." alt="" coords="3625,1139,3821,1405"/>
+<area shape="poly" id="edge37_Node000037_Node000038" title=" " alt="" coords="3806,758,3747,1140,3741,1139,3801,757"/>
+<area shape="rect" id="Node000039" href="$classlibdap_1_1XDRFileUnMarshaller.html" title="unmarshaller that knows how to unmarshall/deserialize dap objects using XDR from a file" alt="" coords="3845,1139,4031,1405"/>
+<area shape="poly" id="edge38_Node000037_Node000039" title=" " alt="" coords="3861,757,3920,1139,3915,1140,3856,758"/>
+<area shape="rect" id="Node000040" href="$classlibdap_1_1XDRStreamUnMarshaller.html" title="unmarshaller that knows how to unmarshall/deserialize dap objects using XDR from a file" alt="" coords="4055,1139,4263,1405"/>
+<area shape="poly" id="edge39_Node000037_Node000040" title=" " alt="" coords="3908,736,4099,1138,4094,1140,3903,738"/>
+</map>

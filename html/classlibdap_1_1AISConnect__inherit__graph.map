@@ -1,0 +1,5 @@
+<map id="libdap::AISConnect" name="libdap::AISConnect">
+<area shape="rect" id="Node000001" title=" " alt="" coords="13,319,141,484"/>
+<area shape="rect" id="Node000002" href="$classlibdap_1_1Connect.html" title="Holds information about the link from a DAP2 client to a dataset." alt="" coords="5,5,148,271"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="79,284,79,318,74,318,74,284"/>
+</map>

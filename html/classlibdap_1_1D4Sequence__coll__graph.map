@@ -1,0 +1,22 @@
+<map id="libdap::D4Sequence" name="libdap::D4Sequence">
+<area shape="rect" id="Node000001" title="Holds a sequence." alt="" coords="265,1707,437,2012"/>
+<area shape="rect" id="Node000002" href="$classlibdap_1_1Constructor.html" title=" " alt="" coords="264,1244,438,1644"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="354,1658,354,1707,348,1707,348,1658"/>
+<area shape="rect" id="Node000003" href="$classlibdap_1_1BaseType.html" title="The basic data type for the DODS DAP types." alt="" coords="344,153,508,1039"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="443,1053,427,1182,414,1244,409,1243,422,1181,437,1052"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="290,1101,412,1181"/>
+<area shape="poly" id="edge5_Node000005_Node000003" title=" " alt="" coords="368,1039,362,1085,356,1084,363,1038"/>
+<area shape="rect" id="Node000004" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects" alt="" coords="374,5,477,91"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="428,104,428,153,423,153,423,104"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="354,1182,354,1227,348,1227,348,1182"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="63,563,170,629"/>
+<area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="116,643,116,731,128,845,140,906,159,966,185,1024,219,1076,234,1091,251,1104,291,1123,288,1128,249,1109,230,1095,214,1079,180,1026,154,968,135,907,122,846,111,731,111,643"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="29,1109,204,1174"/>
+<area shape="poly" id="edge9_Node000008_Node000006" title=" " alt="" coords="119,629,119,1092,114,1092,114,629"/>
+<area shape="poly" id="edge10_Node000008_Node000006" title=" " alt="" coords="105,643,54,825,29,943,10,1063,8,1070,10,1076,22,1093,38,1106,35,1110,18,1096,5,1078,3,1070,5,1062,23,942,49,824,99,641"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="105,15,128,81"/>
+<area shape="poly" id="edge7_Node000006_Node000007" title=" " alt="" coords="119,81,119,547,114,547,114,81"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="118,1175,119,1259,128,1378,136,1444,149,1512,167,1579,190,1643,220,1701,257,1754,253,1757,215,1703,185,1645,162,1580,144,1513,131,1445,122,1378,114,1260,113,1175"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="462,1411,517,1477"/>
+<area shape="poly" id="edge11_Node000001_Node000009" title=" " alt="" coords="488,1477,475,1554,452,1645,435,1692,430,1690,447,1643,470,1553,483,1476"/>
+</map>

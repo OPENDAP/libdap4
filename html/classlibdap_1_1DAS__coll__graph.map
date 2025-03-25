@@ -1,0 +1,5 @@
+<map id="libdap::DAS" name="libdap::DAS">
+<area shape="rect" id="Node000001" title="Hold attribute data for a DAP2 dataset." alt="" coords="5,139,180,764"/>
+<area shape="rect" id="Node000002" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects" alt="" coords="41,5,144,91"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,104,95,138,90,138,90,104"/>
+</map>
