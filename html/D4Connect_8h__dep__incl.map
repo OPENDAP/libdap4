@@ -1,7 +1,0 @@
-<map id="D4Connect.h" name="D4Connect.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="68,5,168,31"/>
-<area shape="rect" id="Node000002" href="$D4Connect_8cc.html" title=" " alt="" coords="5,79,111,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,43,71,80,67,77,97,39"/>
-<area shape="rect" id="Node000003" href="$getdap4_8cc.html" title=" " alt="" coords="135,79,221,104"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="139,39,169,77,165,80,135,43"/>
-</map>
