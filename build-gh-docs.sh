@@ -2,6 +2,8 @@
 #
 # Build the reference guide for this code and publish it using github.io.
 
+set -e
+
 DOXYGEN_CONF=doxy.conf
 HTML_DOCS=html
 # Get the name of the current branch, it might not be master. jhrg 3/24/25
