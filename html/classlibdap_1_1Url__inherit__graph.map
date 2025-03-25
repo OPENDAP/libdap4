@@ -1,0 +1,9 @@
+<map id="libdap::Url" name="libdap::Url">
+<area shape="rect" id="Node000001" title="Holds an Internet address (URL)." alt="" coords="33,1400,142,1565"/>
+<area shape="rect" id="Node000002" href="$classlibdap_1_1Str.html" title="Holds character string data." alt="" coords="11,1072,163,1352"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,1365,90,1400,85,1400,85,1365"/>
+<area shape="rect" id="Node000003" href="$classlibdap_1_1BaseType.html" title="The basic data type for the DODS DAP types." alt="" coords="5,139,169,1024"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="90,1037,90,1072,85,1072,85,1037"/>
+<area shape="rect" id="Node000004" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects" alt="" coords="36,5,139,91"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="90,104,90,139,85,139,85,104"/>
+</map>

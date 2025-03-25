@@ -1,0 +1,7 @@
+<map id="libdap::Float32" name="libdap::Float32">
+<area shape="rect" id="Node000001" title="Holds a 32&#45;bit floating point value." alt="" coords="11,1072,163,1337"/>
+<area shape="rect" id="Node000002" href="$classlibdap_1_1BaseType.html" title="The basic data type for the DODS DAP types." alt="" coords="5,139,169,1024"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="90,1038,90,1072,85,1072,85,1038"/>
+<area shape="rect" id="Node000003" href="$classlibdap_1_1DapObj.html" title="libdap base object for common functionality of libdap objects" alt="" coords="36,5,139,91"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="90,104,90,139,85,139,85,104"/>
+</map>
