@@ -1,5 +1,0 @@
-<map id="libdap::StdinResponse" name="libdap::StdinResponse">
-<area shape="rect" id="Node000001" title="Encapsulate a response read from stdin." alt="" coords="19,739,167,924"/>
-<area shape="rect" id="Node000002" href="$classlibdap_1_1Response.html" title=" " alt="" coords="5,5,181,691"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="96,704,96,739,91,739,91,704"/>
-</map>
