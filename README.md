@@ -1,8 +1,14 @@
 
+><a href="https://travis-ci.org/OPENDAP/libdap4">
+  <img alt="TravisCI" src="https://travis-ci.org/OPENDAP/libdap4.svg?branch=master"/>
+</a> 
+
+README for the OPeNDAP libdap4 library
+======================================
+
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
-
-## Updated for version 3.21.1 
+## Updated for version 3.21.1 [![DOI](https://zenodo.org/badge/30208853.svg)](https://doi.org/10.5281/zenodo.1013914)
 
 * Initial support for UTF-8
 * Improved production rules.
@@ -10,8 +16,6 @@ Please find the libdap4 API documentation here: https://opendap.github.io/libdap
     (large >= 2Gb).
 * Merge PR from fork regarding configure.ac use of bash-specific syntax.
 * Merge xsputn fix for Marshaller code and likely buffer size issues.
-
-
 
 ## Updated for version 3.21.0 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10564122.svg)](https://doi.org/10.5281/zenodo.10564122)
 
