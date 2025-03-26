@@ -103,15 +103,10 @@ HTML_DOCS=html
 DOXYGEN_CONF=doxy.conf
 
 # This target only builds the documents, it does not move them to
-# github. Use the 'gh-docs' target below for that.
+# github. See README.gh-pages.md for that
 .PHONY: docs
-docs: ${DOXYGEN_CONF}
+docs: ${DOXYGEN_CONF} main_page.doxygen
 	doxygen ${DOXYGEN_CONF}
-
-# GitHub.io docs 
-.PHONY: gh-docs 
-gh-docs: main_page.doxygen
-	./build-gh-docs.sh
 
 # cccc computes metrics like Lines of code and McCabe. It's available
 # on the web...
