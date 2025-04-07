@@ -534,7 +534,7 @@ void D4ParserSax2::process_variable_helper(Type t, ParseState s, const xmlChar *
             // This may be a TODO item for the error handling improvement.
             if (!enum_def)
                 dmr_fatal_error(this, "Could not find the Enumeration definition '%s'.", enum_path.c_str());
-            else  
+            else
                 static_cast<D4Enum *>(btp)->set_enumeration(enum_def);
         }
 

@@ -162,22 +162,19 @@ D4Group *D4Group::find_child_grp(const string &grp_name) {
     return (g == grp_end()) ? 0 : *g;
 }
 
-     
-D4Group* D4Group::find_grp_internal(const string &grp_path) {
+D4Group *D4Group::find_grp_internal(const string &grp_path) {
 
     string::size_type pos = grp_path.find('/');
     if (pos == string::npos) {
         D4Group *d4_grp = this->find_child_grp(grp_path);
         return d4_grp;
-    }
-    else {
-        string top_grp_path = grp_path.substr(0,pos);
-        string rest_grp_path = grp_path.substr(pos+1);
-        D4Group * d4_grp = this->find_child_grp(top_grp_path);
-        if(d4_grp != nullptr) {
-           return d4_grp->find_grp_internal(rest_grp_path);
-        }
-        else
+    } else {
+        string top_grp_path = grp_path.substr(0, pos);
+        string rest_grp_path = grp_path.substr(pos + 1);
+        D4Group *d4_grp = this->find_child_grp(top_grp_path);
+        if (d4_grp != nullptr) {
+            return d4_grp->find_grp_internal(rest_grp_path);
+        } else
             return nullptr;
     }
 }
@@ -349,32 +346,31 @@ D4EnumDef *D4Group::find_enum_def(const string &path) {
         else
             lpath = lpath.substr(1);
     }
-    
+
     string::size_type pos = lpath.rfind('/');
     if (pos == string::npos) {
         // name looks like 'bar'
         return enum_defs()->find_enum_def(lpath);
     }
     // name looks like foo/bar/baz where foo and bar must be groups
-   
+
     // Now we need to recurisvely find the group of foo/bar since we only need to
     // find if the enum_defs under this /foo/bar contains the enum path.
-   
+
     // Note pos cannot be string::npos when code runs here.
     // Obtain the final enum_def name in the lpath.
-    string enum_def_name = lpath.substr(pos+1);
+    string enum_def_name = lpath.substr(pos + 1);
 
     // Obtain the full group path that contains the final enum_def name.
-    string enum_def_path = lpath.substr(0,pos);
+    string enum_def_path = lpath.substr(0, pos);
 
     D4Group *grp = find_grp_internal(enum_def_path);
     if (grp == nullptr)
         return nullptr;
-    else if (grp->enum_defs() == nullptr) 
+    else if (grp->enum_defs() == nullptr)
         return nullptr;
-    else 
+    else
         return grp->enum_defs()->find_enum_def(enum_def_name);
-
 }
 
 /**
