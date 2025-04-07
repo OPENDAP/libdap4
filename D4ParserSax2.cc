@@ -530,10 +530,12 @@ void D4ParserSax2::process_variable_helper(Type t, ParseState s, const xmlChar *
             else
                 enum_def = top_group()->find_enum_def(enum_path);
 
+            // We need to add the "else" for this if block since dmr_fatal_error doesn't throw an error.
+            // This may be a TODO item for the error handling improvement.
             if (!enum_def)
                 dmr_fatal_error(this, "Could not find the Enumeration definition '%s'.", enum_path.c_str());
-
-            static_cast<D4Enum *>(btp)->set_enumeration(enum_def);
+            else  
+                static_cast<D4Enum *>(btp)->set_enumeration(enum_def);
         }
 
         btp->set_is_dap4(true); // see comment above
