@@ -191,12 +191,7 @@ void DMR::build_using_dds(DDS &dds) {
  *
  * @return A pointer to the newly allocated DDS.
  */
-DDS *DMR::getDDS(bool show_shared_dims)
-{
-#if 0
-    return DMR::getDDS(*this);
-#endif
-
+DDS *DMR::getDDS(bool show_shared_dims) {
     DBG( cerr << __func__ << "() - BEGIN" << endl);
 
     BaseTypeFactory btf;
@@ -215,21 +210,11 @@ DDS *DMR::getDDS(bool show_shared_dims)
     dds->filename(filename());
 
     // Now copy the global attributes
-    // TODO Make this a unique_ptr<> and let the compiler delete it. jhrg 6/17/19
-    // change made jhrg 2/4/22
-#if 1
     unique_ptr<vector<BaseType *>> top_vars(root()->transform_to_dap2(&(dds->get_attr_table())/*, true*/, show_shared_dims));
     // unique_ptr<vector<BaseType *>> top_vars(root()->transform_to_dap2(&(dds->get_attr_table()) /*, true*/));
-    for (vector<BaseType *>::iterator i = top_vars->begin(), e = top_vars->end(); i != e; i++) {
+    for (auto i = top_vars->begin(), e = top_vars->end(); i != e; i++) {
         dds->add_var_nocopy(*i);
     }
-#else
-    vector<BaseType *> *top_vars = root()->transform_to_dap2(&(dds->get_attr_table())/*, true*/, show_shared_dims);
-    for (vector<BaseType *>::iterator i = top_vars->begin(), e = top_vars->end(); i != e; i++) {
-        dds->add_var_nocopy(*i);
-    }
-    delete top_vars;
-#endif
     DBG(cerr << __func__ << "() - END" << endl);
 
     dds->set_factory(0);

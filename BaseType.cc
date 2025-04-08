@@ -232,15 +232,14 @@ void BaseType::transform_to_dap4(D4Group * /*root*/, Constructor *container) {
  * @param  The AttrTable pointer parent_attr_table is used by Groups, which disappear
  * from the DAP2 representation. Their children are returned in the the BAseType vector
  * their attributes are added to parent_attr_table;
- * @param bool makes the magic to convert shared dimensions into some
+ * @param show_shared_dims makes the magic to convert shared dimensions into some
  * DAP2 thing - maybe Grids?? Not sure at this point @TODO - FIND THIS OUT
  * @return A pointer to a vector of BaseType pointers (right?). In most cases this vector
  * will contain a single pointer but DAP4 types 'disappear' such as Group will return all
  * of their member variables in the vector. DAP4 types with no representation in DAP2
  * (ex: UInt64) this will return a NULL pointer and so this must be tested!
  */
-std::vector<BaseType *> *BaseType::transform_to_dap2(AttrTable *, bool )
-{
+std::vector<BaseType *> *BaseType::transform_to_dap2(AttrTable *, bool /* show_shared_dims */ ) {
     BaseType *dest = this->ptr_duplicate();
     // convert the d4 attributes to a dap2 attribute table.
     // HK-403. jhrg 6/17/19

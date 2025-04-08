@@ -93,7 +93,7 @@ public:
     virtual BaseType *ptr_duplicate();
 
     virtual void transform_to_dap4(D4Group *root, Constructor *container);
-    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false);
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false) override;
 
     virtual bool is_linear();
 

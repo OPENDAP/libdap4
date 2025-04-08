@@ -265,9 +265,8 @@ bool Array::is_dap2_grid() {
  * returned vector may contain a DAP2 Array or a Grid. Or, if the Array' prototype is
  * a type that cannot be represented in DAP2 the return will be NULL.
  */
-std::vector<BaseType *> *Array::transform_to_dap2(AttrTable *, bool show_shared_dims)
-{
-    DBG(cerr << __func__ << "() - BEGIN Array '"<< name() << "'" << endl);;
+std::vector<BaseType *> *Array::transform_to_dap2(AttrTable *, bool show_shared_dims) {
+    DBG(cerr << __func__ << "() - BEGIN Array '" << name() << "'" << endl);
 
     BaseType *dest;
     if (!is_dap4()) { // Don't convert a DAP2 thing

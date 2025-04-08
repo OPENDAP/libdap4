@@ -164,8 +164,7 @@ void Structure::transform_to_dap4(D4Group *root, Constructor *container) {
  *
  * @return A pointer to the transformed variable
  */
-std::vector<BaseType *> *Structure::transform_to_dap2(AttrTable *, bool show_shared_dims)
-{
+std::vector<BaseType *> *Structure::transform_to_dap2(AttrTable *, bool show_shared_dims) {
 
     DBG(cerr << " " << __func__ << " BEGIN" << endl);
     Structure *dest = new Structure(name());
@@ -186,8 +185,7 @@ std::vector<BaseType *> *Structure::transform_to_dap2(AttrTable *, bool show_sha
     for (Structure::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
 
         vector<BaseType *> *new_vars = (*i)->transform_to_dap2(&dest->get_attr_table() /*attrs*/, show_shared_dims);
-        if (new_vars) {  // Might be un-mappable
-            // It's mappable to dap2, so it's game on with the conversion...
+        if (new_vars) {
 #if 0
             vector<BaseType*>::iterator vIter = new_vars->begin();
             vector<BaseType*>::iterator end = new_vars->end();

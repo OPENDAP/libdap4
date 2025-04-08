@@ -90,9 +90,9 @@ public:
     }
     void print_val(std::ostream &out, std::string space = "", bool print_decl_p = true) override;
 
-    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims) override;
-
     bool ops(BaseType *, int) override { throw InternalErr(__FILE__, __LINE__, "Unimplemented method"); }
+
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims) override;
 
     void dump(std::ostream &strm) const override;
 };
