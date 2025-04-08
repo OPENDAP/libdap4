@@ -1,0 +1,45 @@
+Parse successful
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/vol_1_ce_13.xml" dapVersion="4.0" dmrVersion="1.0" name="vol_1_ce_2">
+    <Int32 name="u"/>
+    <Int32 name="v"/>
+    <Group name="inst2">
+        <Int32 name="w"/>
+        <Int32 name="x"/>
+        <Group name="attr_only">
+            <Attribute name="_FillValue" type="Float32">
+                <Value>-6666.66</Value>
+            </Attribute>
+        </Group>
+        <Group name="inst3">
+            <Int32 name="y"/>
+            <Int32 name="z"/>
+        </Group>
+    </Group>
+    <Group name="attr_only_global">
+        <Attribute name="_FillValue" type="Float32">
+            <Value>-9999.99</Value>
+        </Attribute>
+    </Group>
+</Dataset>
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/vol_1_ce_13.xml" dapVersion="4.0" dmrVersion="1.0" name="vol_1_ce_2">
+    <Group name="inst2">
+        <Group name="inst3">
+            <Int32 name="y">
+                <Attribute name="DAP4_Checksum_CRC32" type="String">
+                    <Value>cff36b1c</Value>
+                </Attribute>
+            </Int32>
+            <Int32 name="z">
+                <Attribute name="DAP4_Checksum_CRC32" type="String">
+                    <Value>cff36b1c</Value>
+                </Attribute>
+            </Int32>
+        </Group>
+    </Group>
+</Dataset>
+
+The data:
+{ { { 123456789, 123456789 } } }

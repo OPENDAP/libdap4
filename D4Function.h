@@ -22,7 +22,6 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-
 #ifndef D_FUNCTION_H_
 #define D_FUNCTION_H_
 
@@ -39,8 +38,8 @@ class DMR;
 // to a function that takes...' but I used this to make the code fit more closely to
 // the pattern established by the DAP2 CE functions. jhrg 3/10/14
 
-typedef BaseType* (*D4Function)(D4RValueList *, DMR &);
+typedef BaseType *(*D4Function)(D4RValueList *, DMR &);
 
-}// namespace libdap
+} // namespace libdap
 
 #endif /* D_FUNCTION_H_ */

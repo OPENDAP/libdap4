@@ -35,6 +35,36 @@ m4_define([DMR_PARSE], [
     AT_CLEANUP
 ])
 
+# Test if the given  CE parses. This was added to test errant CEs to
+# ensure that the parser does not leak CE text into the error messages.
+# jhrg 4/15/20
+#
+# Usage DMR_PARSE_CE $1 <test_input> $2 <ce> $3 <baseline> $4 <pass/xfail>
+# The baseline is assumed to be $1.baseline
+m4_define([DMR_PARSE_CE], [
+
+    AT_SETUP([parse ce $1 $2])
+    AT_KEYWORDS([parse_ce])
+
+    input=$abs_srcdir/dmr-testsuite/$1
+    ce=$2
+    baseline=$abs_srcdir/dmr-testsuite/$3
+
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        AT_CHECK([$abs_builddir/dmr-test -x -p $input -c $ce], [ignore], [stdout], [stderr])
+        AT_CHECK([cat stdout stderr > $baseline.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/dmr-test -x -p $input -c $ce], [ignore], [stdout], [stderr])
+        AT_CHECK([cat stdout stderr > tmp])
+        AT_CHECK([diff -b -B $baseline tmp], [0])
+        AT_XFAIL_IF([test "z$3" = "zxfail"])
+        ])
+
+    AT_CLEANUP
+])
+
 # Usage DMR_TRANS $1 <test_input> $2 <pass/xfail>
 # This code tests the values printed when the received document is decoded.
 m4_define([DMR_TRANS], [
@@ -131,6 +161,54 @@ m4_define([DMR_TRANS_CE], [
     
     AT_CLEANUP
 ])
+
+dnl Given a filename, remove the <Value> element of a DAP4 data response as
+dnl printed by getdap4 so that we dont have issues with comparing data values
+dnl on big- and little-endian machines. The value of the checksum is a function
+dnl of the bytes, so different word orders produce different checksums. jhrg 4/25/18
+dnl
+dnl Ripped from the BES modules/common/handler_tests_macros.m4 file. jhrg 1/22/24
+
+m4_define([REMOVE_DAP4_CHECKSUM], [dnl
+    sed 's@<Value>[[0-9a-f]]\{8\}</Value>@removed checksum@g' < $1 > $1.sed
+    dnl '
+    mv $1.sed $1
+])
+
+
+# Usage DMR_TRANS_C_NO_CRC <test_input> <ce> <baseline> <pass/xfail>
+# This code tests the values printed when the received document is decoded.
+# It is different from DMR_TRANS_CE in that it does not include the CRC32
+# checksum so that the test will work for both little- and big-endian machines.
+# jhrg 1/22/24
+m4_define([DMR_TRANS_CE_NO_CRC], [
+    # Test transmitting data (i.e., writing the Data DMR to a file and then decoding it)
+    # after applying a constraint expression to the source DMR.
+    AT_SETUP([trans ce no CRC $1 $2 $3])
+    AT_KEYWORDS([trans_ce])
+
+    input=$abs_srcdir/dmr-testsuite/$1
+    baseline=$abs_srcdir/dmr-testsuite/universal/$3
+
+    AS_IF([test -n "$baselines" -a x$baselines = xyes],
+        [
+        # // old version - sbl 9.4.19
+        # AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2"], [], [stdout], []) old version
+
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2"], [ignore], [stdout], [stderr])
+        REMOVE_DAP4_CHECKSUM([stdout])
+        AT_CHECK([cat stdout stderr > $baseline.tmp])
+        ],
+        [
+        AT_CHECK([$abs_builddir/dmr-test -x -t $input -c "$2" || true], [], [stdout], [stderr])
+        REMOVE_DAP4_CHECKSUM([stdout])
+        AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
+        AT_XFAIL_IF([test "X$4" = "Xxfail"])
+        ])
+
+    AT_CLEANUP
+])
+
 
 # Usage DMR_TRANS_FUNC_CE <test_input> <func expr> <ce> <baseline> <pass/xfail>
 # This code tests the values printed when the received document is decoded.
@@ -274,7 +352,7 @@ DMR_TRANS([test_simple_4.xml], [pass])
 DMR_TRANS([test_simple_5.xml], [pass])
 DMR_TRANS([test_simple_6.xml], [pass])
 DMR_TRANS([test_simple_7.xml], [pass])
-DMR_TRANS([test_simple_8.xml], [xfail])
+DMR_TRANS([test_simple_8.xml], [pass])
 DMR_TRANS([test_simple_9.xml], [pass])
 DMR_TRANS([test_simple_9.1.xml], [pass])
 DMR_TRANS([test_simple_10.xml], [pass])
@@ -379,7 +457,7 @@ DMR_TRANS_CE([test_array_4.xml], [x[[]][[]] ], [/test_array_4.xml.6.trans_base],
 DMR_TRANS_CE([test_array_4.xml], [/row=[[0:1]];x[[]][[]] ], [test_array_4.xml.7.trans_base], [pass])
 
 DMR_TRANS_CE([test_array_4.xml], [c[[2:]][[2:]] ], [test_array_4.xml.8.trans_base], [pass])
-    
+
 DMR_TRANS_CE([test_simple_6.xml], [s], [test_simple_6.xml.1.trans_base], [pass])
 DMR_TRANS_CE([test_simple_6.xml], [s.i1], [test_simple_6.xml.2.trans_base], [pass])
 DMR_TRANS_CE([test_simple_6.xml], [s.s], [test_simple_6.xml.3.trans_base], [pass])
@@ -432,9 +510,12 @@ DMR_TRANS_CE([test_simple_7.xml], [s{i1;s}], [test_simple_7.xml.1.trans_base], [
 DMR_TRANS_CE([test_simple_7.xml], [s.i1], [test_simple_7.xml.2.trans_base], [pass])
 DMR_TRANS_CE([test_simple_7.xml], [s{i1}], [test_simple_7.xml.2.trans_base], [pass])
 
-DMR_TRANS_CE([test_simple_8.xml], [outer], [test_simple_8.xml.1.trans_base], [xfail])
-DMR_TRANS_CE([test_simple_8.xml], [outer.s.s], [test_simple_8.xml.2.trans_base], [xfail])
-DMR_TRANS_CE([test_simple_8.xml], [outer{s{s}}], [test_simple_8.xml.2.trans_base], [xfail])
+# Modified to use elided CRC - we have tested the CRC elsewhere and in the BES
+# we remove the CRC from both the output and the baselines to avoid making baselines
+# for both big- and little-endian machines. jhrg 1/22/24
+DMR_TRANS_CE_NO_CRC([test_simple_8.xml], [outer], [test_simple_8.xml.1.trans_base], [pass])
+DMR_TRANS_CE_NO_CRC([test_simple_8.xml], [outer.s.s], [test_simple_8.xml.2.trans_base], [pass])
+DMR_TRANS_CE_NO_CRC([test_simple_8.xml], [outer{s{s}}], [test_simple_8.xml.2.trans_base], [pass])
 
 DMR_TRANS_CE([test_array_7.xml], [s], [test_array_7.xml.1.trans_base], [pass])
 DMR_TRANS_CE([test_array_7.xml], [s{i1;s}], [test_array_7.xml.1.trans_base], [pass])
@@ -593,3 +674,33 @@ DMR_TRANS_SERIES_CE([names_with_spaces2.dmr], [/inst2/\"Point%20Break\".x], [nam
 
 DMR_TRANS_SERIES_CE([names_with_spaces3.dmr], [/inst2/\"New Group\"/x], [names_with_spaces3.dmr.1.trans_base], [xfail])
 DMR_TRANS_SERIES_CE([names_with_spaces3.dmr], [/inst2/New%20Group/x], [names_with_spaces3.dmr.1.trans_base], [xfail])
+
+# Test DAP CE parse errors - ensure they don't leak the supplied
+# CE text into the error message. jhrg 4/15/20
+DMR_PARSE_CE([test_simple_1.xml], [nasty], [test_simple_1.xml.parse_ce_1])
+# This string is 'd1rox<script>alert(1)</script>d55je=1' (%25 --> '%')
+# That is, the % is escaped in this text: %253c --> %3c --> '<'
+DMR_PARSE_CE([test_simple_1.xml], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1],
+    [test_simple_1.xml.parse_ce_2])
+
+DMR_PARSE_CE([test_simple_6.3.xml], [s.nasty], [test_simple_6.3.xml.parse_ce_1])
+DMR_PARSE_CE([test_simple_6.3.xml], [s.d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1],
+    [test_simple_6.3.xml.parse_ce_2])
+
+DMR_PARSE_CE([vol_1_ce_12.xml], [temp[[nasty]]], [vol_1_ce_12.xml.parse_ce_1])
+DMR_PARSE_CE([vol_1_ce_12.xml], [temp[[d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1]]],
+    [vol_1_ce_12.xml.parse_ce_2])
+
+# Test reversed array indices
+DMR_PARSE_CE([test_array_4.xml], [b[[2:1]][[2:3]] ], [test_array_4.xml.error.base], [pass])
+
+# Test projections that only name groups
+DMR_TRANS_CE([vol_1_ce_2.xml], [/inst2], [vol_1_ce_2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([vol_1_ce_2.xml], [inst2], [vol_1_ce_2.xml.1.trans_base], [pass])
+DMR_TRANS_CE([vol_1_ce_2.xml], [/inst2/Point], [vol_1_ce_2.xml.2.trans_base], [pass])
+
+DMR_TRANS_CE([vol_1_ce_13.xml], [/inst2], [vol_1_ce_13.xml.1.trans_base], [pass])
+DMR_TRANS_CE([vol_1_ce_13.xml], [/inst2/inst3], [vol_1_ce_13.xml.2.trans_base], [pass])
+
+DMR_TRANS_CE([vol_1_ce_13.xml], [/attr_only_global], [vol_1_ce_13.xml.3.trans_base], [pass])
+DMR_TRANS_CE([vol_1_ce_13.xml], [/inst2/attr_only], [vol_1_ce_13.xml.4.trans_base], [pass])

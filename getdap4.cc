@@ -36,83 +36,75 @@
 #include "config.h"
 
 #ifdef WIN32
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #endif
 
 #include <cstring>
-#include <string>
 #include <sstream>
+#include <string>
+#include <unistd.h> // getopt
 
-#include <cstdio> //SBL 12.3.19
-
-#include "GetOpt.h"
-
-#include "DMR.h"
-#include "XMLWriter.h"
 #include "D4BaseTypeFactory.h"
+#include "D4Connect.h"
 #include "D4Group.h"
 #include "D4Sequence.h"
-#include "D4Connect.h"
-#include "StdinResponse.h"
+#include "DMR.h"
 #include "HTTPConnect.h"
+#include "HTTPResponse.h"
 #include "RCReader.h"
+#include "StdinResponse.h"
+#include "XMLWriter.h"
 
 using namespace std;
-using namespace libdap ;
+using namespace libdap;
 
 const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
-#if 0
-extern int libdap::dods_keep_temps;     // defined in HTTPResponse.h
-extern int libdap::www_trace;
-#endif
-static void usage(const string &name)
-{
-	cerr << "Usage: " << name << endl;
-	cerr << " [dD vVikmzstM][-c <expr>][-m <num>] <url> [<url> ...] | <file> [<file> ...]" << endl;
-	cerr << endl;
-	cerr << "In the first form of the command, dereference the URL and" << endl;
-	cerr << "perform the requested operations. This includes routing" << endl;
-	cerr << "the returned information through the DAP processing" << endl;
-	cerr << "library (parsing the returned objects, et c.). If none" << endl;
-	cerr << "of a, d, or D are used with a URL, then the DAP library" << endl;
-	cerr << "routines are NOT used and the URLs contents are dumped" << endl;
-	cerr << "to standard output." << endl;
-	cerr << "Note: If the URL contains a query string the query string" << endl;
-	cerr << "will be preserved in the request. However, if the query " << endl;
-	cerr << "string contains DAP4 keys they may interfere with the" << endl;
-	cerr << "operation of " << name << ". A warning will be" << endl;
-	cerr << "written to stderr when "<< name << " identifies" << endl;
-	cerr << "the presence of a DAP4 query key in the submitted" << endl;
-	cerr << "URL's query string." << endl;
-	cerr << endl;
-	cerr << "In the second form of the command, assume the files are" << endl;
-	cerr << "DataDDS objects (stored in files or read from pipes)" << endl;
-	cerr << "and process them as if -D were given. In this case the" << endl;
-	cerr << "information *must* contain valid MIME header in order" << endl;
-	cerr << "to be processed." << endl;
-	cerr << endl;
-	cerr << "Options:" << endl;
-	cerr << "        d: For each URL, get the (DAP4) DMR object. Does not get data." << endl;
-	cerr << "        D: For each URL, get the DAP4 Data response." << endl;
-	cerr << endl;
-	cerr << "        v: Verbose output." << endl;
-	cerr << "        V: Version of this client; see 'i' for server version." << endl;
-	cerr << "        i: For each URL, get the server version." << endl;
-	cerr << "        k: Keep temporary files created by libdap." << endl;
-	cerr << "        m: Request the same URL <num> times." << endl;
-	cerr << "        z: Ask the server to compress data." << endl;
-	cerr << "        s: Print Sequences using numbered rows." << endl;
-	cerr << "        t: Trace www accesses." << endl;
-	cerr << "        M: Assume data read from a file has no MIME headers; use only with files" << endl;
-	cerr << endl;
-	cerr << "        c: <expr> is a constraint expression. Used with -d/D" << endl;
-	cerr << "           NB: You can use a `?' for the CE also." << endl;
+
+static void usage(const string &) {
+    const char *message = R"(
+    Usage: getdap4 [dD vVmzsM][-c <expr>][-m <num>] <url> [<url> ...]
+           getdap4 [dD vVmzsM][-c <expr>][-m <num>] <file> [<file> ...]
+
+    In the first form of the command, dereference the URL and perform
+    the requested operations. This includes routing the returned
+    information through the DAP processing library (parsing the
+    returned objects, et c.). If none of d, or D are used with a URL,
+    then the DAP library routines are NOT used and the URLs contents
+    are dumped to standard output.
+
+    Note: If the URL contains a query string the query string will be
+    preserved in the request. However, if the query string contains
+    DAP4 keys they may interfere with the operation of getdap4. A
+    warning will be written to stderr when getdap4 identifies the
+    presence of a DAP4 query key in the submitted URL's query string.
+
+    In the second form of the command, assume the files are DAP4 data
+    responses (stored in files or read from pipes)
+
+    Options: 
+            d: For each URL, get the (DAP4) DMR object. Does not get data. 
+            D: For each URL, get the DAP4 Data response. 
+
+            v: Verbose output. 
+            V: Version of this client 
+            i: For each URL, get the server version. 
+            m: Request the same URL <num> times. 
+            z: Ask the server to compress data. 
+            s: Print Sequences using numbered rows. 
+            M: Assume data read from a file has no MIME headers; use only 
+               with files 
+
+            c: <expr> is a constraint expression. Used with -d/D 
+               NB: You can use a `?' for the CE also. 
+            S: Used in conjunction with -d and will report the total size 
+               of the data referenced in the DMR.)";
+
+    cerr << message << endl;
 }
 
 // Used for raw http access/transfer
-bool read_data(FILE * fp)
-{
+bool read_data(FILE *fp) {
     if (!fp) {
         fprintf(stderr, "getdap4: Whoa!!! Null stream pointer.\n");
         return false;
@@ -122,33 +114,31 @@ bool read_data(FILE * fp)
     // transfers. fread() will handle both.
     char c = 0;
     while (fp && !feof(fp) && fread(&c, 1, 1, fp))
-        printf("%c", c);        // stick with stdio
+        printf("%c", c); // stick with stdio
 
     return true;
 }
 
-static void read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool mime_headers, bool get_dap4_data, bool get_dmr)
-{
+static void read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool mime_headers, bool get_dap4_data,
+                                    bool get_dmr) {
     if (mime_headers) {
-    	if (get_dap4_data)
-    		url->read_data(dmr, r);
-    	else if (get_dmr)
-    		url->read_dmr(dmr, r);
-    	else
-    		throw Error("Only supports Data or DMR responses");
-    }
-    else {
-    	if (get_dap4_data)
-    		url->read_data_no_mime(dmr, r);
-    	else if (get_dmr)
-    		url->read_dmr_no_mime(dmr, r);
-    	else
-    		throw Error("Only supports Data or DMR responses");
+        if (get_dap4_data)
+            url->read_data(dmr, r);
+        else if (get_dmr)
+            url->read_dmr(dmr, r);
+        else
+            throw Error("Only supports Data or DMR responses");
+    } else {
+        if (get_dap4_data)
+            url->read_data_no_mime(dmr, r);
+        else if (get_dmr)
+            url->read_dmr_no_mime(dmr, r);
+        else
+            throw Error("Only supports Data or DMR responses");
     }
 }
 
-static void print_group_data(D4Group *g, bool print_rows = false)
-{
+static void print_group_data(D4Group *g, bool print_rows = false) {
     for (Constructor::Vars_iter i = g->var_begin(), e = g->var_end(); i != e; i++) {
         if (print_rows && (*i)->type() == dods_sequence_c)
             dynamic_cast<D4Sequence &>(**i).print_val_by_rows(cout);
@@ -161,8 +151,7 @@ static void print_group_data(D4Group *g, bool print_rows = false)
     }
 }
 
-static void print_data(DMR &dmr, bool print_rows = false)
-{
+static void print_data(DMR &dmr, bool print_rows = false) {
     cout << "The data:" << endl;
 
     D4Group *g = dmr.root();
@@ -172,17 +161,42 @@ static void print_data(DMR &dmr, bool print_rows = false)
     cout << endl << flush;
 }
 
-int main(int argc, char *argv[])
-{
-    GetOpt getopt(argc, argv, "[dDvVikrm:Mzstc:]");
+/** Get the size of a response. This method looks at the variables in the DDS
+ *  a computes the number of bytes in the response.
+ *
+ *  @note This version of the method does a poor job with Sequences. A better
+ *  implementation would look at row-constraint-based limitations and use them
+ *  for size computations. If a row-constraint is missing, return an error.
+ *
+ *  @param constrained Should the size of the whole DDS be used or should the
+ *  current constraint be taken into account?
+ */
+unsigned long long get_size(D4Group *grp, bool constrained = false) {
+    unsigned long long w = 0;
+
+    for (auto var_itr = grp->var_begin(); var_itr != grp->var_end(); var_itr++) {
+        if (constrained) {
+            if ((*var_itr)->send_p())
+                w += (*var_itr)->width(constrained);
+        } else {
+            w += (*var_itr)->width(constrained);
+        }
+    }
+    for (auto grp_itr = grp->grp_begin(); grp_itr != grp->grp_end(); grp_itr++) {
+        w += get_size(*grp_itr, constrained);
+    }
+
+    return w;
+}
+
+unsigned long long get_size(DMR &dmr, bool constrained = false) { return get_size(dmr.root(), constrained); }
+
+int main(int argc, char *argv[]) {
     int option_char;
 
     bool get_dmr = false;
     bool get_dap4_data = false;
-    bool get_version = false;
-    bool cexpr = false;
     bool verbose = false;
-    bool multi = false;
     bool accept_deflate = false;
     bool print_rows = false;
     bool mime_headers = true;
@@ -190,13 +204,14 @@ int main(int argc, char *argv[])
     int times = 1;
     int dap_client_major = 4;
     int dap_client_minor = 0;
-    string expr = "";
+    string expr;
+    bool compute_size = false;
 
 #ifdef WIN32
     _setmode(_fileno(stdout), _O_BINARY);
 #endif
 
-    while ((option_char = getopt()) != -1)
+    while ((option_char = getopt(argc, argv, "dDvVrm:Mzsc:S")) != -1) {
         switch (option_char) {
         case 'd':
             get_dmr = true;
@@ -208,22 +223,16 @@ int main(int argc, char *argv[])
             verbose = true;
             break;
         case 'V':
-        	cerr << "getdap4 version: " << version << endl;
+            cerr << "getdap4 version: " << version << endl;
             exit(0);
-        case 'i':
-            get_version = true;
+        case 'S':
+            compute_size = true;
             break;
-#if 0
-        case 'k':
-            dods_keep_temps = 1;
-            break;              // keep_temp is in Connect.cc
-#endif
         case 'r':
-        	report_errors = true;
-        	break;
+            report_errors = true;
+            break;
         case 'm':
-            multi = true;
-            times = atoi(getopt.optarg);
+            times = atoi(optarg);
             break;
         case 'z':
             accept_deflate = true;
@@ -234,14 +243,8 @@ int main(int argc, char *argv[])
         case 'M':
             mime_headers = false;
             break;
-#if 0
-        case 't':
-            www_trace = 1;
-            break;
-#endif
         case 'c':
-            cexpr = true;
-            expr = getopt.optarg;
+            expr = optarg;
             break;
         case 'h':
         case '?':
@@ -249,17 +252,17 @@ int main(int argc, char *argv[])
             usage(argv[0]);
             exit(1);
         }
+    }
 
+    D4Connect *url = nullptr;
     try {
         // If after processing all the command line options there is nothing
         // left (no URL or file) assume that we should read from stdin.
-        for (int i = getopt.optind; i < argc; ++i) {
+        for (int i = optind; i < argc; ++i) {
             if (verbose)
                 cerr << "Fetching: " << argv[i] << endl;
 
             string name = argv[i];
-            D4Connect *url = 0;
-            // auto_ptr? jhrg 10/19/15
             url = new D4Connect(name);
 
             // This overrides the value set in the .dodsrc file.
@@ -284,20 +287,19 @@ int main(int argc, char *argv[])
                             throw Error("Could not open standard input.");
 
                         read_response_from_file(url, dmr, r, mime_headers, get_dap4_data, get_dmr);
-                    }
-                    else {
-                    	fstream f(argv[i], std::ios_base::in);
-                    	if (!f.is_open() || f.bad() || f.eof())
-                    		throw Error((string)"Could not open: " + argv[i]);
+                    } else {
+                        fstream f(argv[i], std::ios_base::in);
+                        if (!f.is_open() || f.bad() || f.eof())
+                            throw Error((string) "Could not open: " + argv[i]);
 
-                    	Response r(&f, 0);
+                        Response r(&f, 0);
 
                         read_response_from_file(url, dmr, r, mime_headers, get_dap4_data, get_dmr);
                     }
 
                     if (verbose)
-                        cerr << "DAP version: " << url->get_protocol().c_str() << " Server version: "
-    						<< url->get_version().c_str() << endl;
+                        cerr << "DAP version: " << url->get_protocol().c_str()
+                             << " Server version: " << url->get_version().c_str() << endl;
 
                     // Always write the DMR
                     XMLWriter xml;
@@ -305,16 +307,15 @@ int main(int argc, char *argv[])
                     cout << xml.get_doc() << endl;
 
                     if (get_dap4_data)
-                    	print_data(dmr, print_rows);
-                }
-                catch (Error & e) {
+                        print_data(dmr, print_rows);
+                } catch (Error &e) {
                     cerr << "Error: " << e.get_error_message() << endl;
-                    delete url; url = 0;
+                    delete url;
+                    url = nullptr;
                     if (report_errors)
                         return EXIT_FAILURE;
                 }
-            }
-            else if (get_dmr) {
+            } else if (get_dmr) {
                 for (int j = 0; j < times; ++j) {
                     D4BaseTypeFactory factory;
                     DMR dmr(&factory);
@@ -322,49 +323,50 @@ int main(int argc, char *argv[])
                         url->request_dmr(dmr, expr);
 
                         if (verbose) {
-                            cout << "DAP version: " << url->get_protocol() << ", Server version: " << url->get_version() << endl;
+                            cout << "DAP version: " << url->get_protocol() << ", Server version: " << url->get_version()
+                                 << endl;
                             cout << "DMR:" << endl;
                         }
 
                         XMLWriter xml;
                         dmr.print_dap4(xml);
                         cout << xml.get_doc() << endl;
-                    }
-                    catch (Error & e) {
+                        if (compute_size) {
+                            cout << "DMR References " << get_size(dmr) << " bytes of data," << endl;
+                        }
+                    } catch (Error &e) {
                         cerr << e.get_error_message() << endl;
                         if (report_errors)
-                        	return EXIT_FAILURE;
-                        continue;       // Goto the next URL or exit the loop.
+                            return EXIT_FAILURE;
+                        continue; // Goto the next URL or exit the loop.
                     }
                 }
-            }
-            else if (get_dap4_data) {
-                 for (int j = 0; j < times; ++j) {
-                     D4BaseTypeFactory factory;
-                     DMR dmr(&factory);
-                     try {
-                         url->request_dap4_data(dmr, expr);
+            } else if (get_dap4_data) {
+                for (int j = 0; j < times; ++j) {
+                    D4BaseTypeFactory factory;
+                    DMR dmr(&factory);
+                    try {
+                        url->request_dap4_data(dmr, expr);
 
-                         if (verbose) {
-                             cout << "DAP version: " << url->get_protocol() << ", Server version: " << url->get_version() << endl;
-                             cout << "DMR:" << endl;
-                         }
+                        if (verbose) {
+                            cout << "DAP version: " << url->get_protocol() << ", Server version: " << url->get_version()
+                                 << endl;
+                            cout << "DMR:" << endl;
+                        }
 
-                         XMLWriter xml;
-                         dmr.print_dap4(xml);
-                         cout << xml.get_doc() << endl;
+                        XMLWriter xml;
+                        dmr.print_dap4(xml);
+                        cout << xml.get_doc() << endl;
 
-                         print_data(dmr, print_rows);
+                        print_data(dmr, print_rows);
+                    } catch (Error &e) {
+                        cerr << e.get_error_message() << endl;
+                        if (report_errors)
+                            return EXIT_FAILURE;
+                        continue; // Goto the next URL or exit the loop.
                     }
-                     catch (Error & e) {
-                         cerr << e.get_error_message() << endl;
-                         if (report_errors)
-                             return EXIT_FAILURE;
-                         continue;       // Goto the next URL or exit the loop.
-                     }
-                 }
-            }
-            else {
+                }
+            } else {
                 HTTPConnect http(RCReader::instance());
 
                 // This overrides the value set in the .dodsrc file.
@@ -379,16 +381,14 @@ int main(int argc, char *argv[])
                     try {
                         HTTPResponse *r = http.fetch_url(url_string);
                         if (verbose) {
-                        	vector<string> *headers = r->get_headers();
-                        	copy(headers->begin(), headers->end(), ostream_iterator<string>(cout, "\n"));
+                            vector<string> &headers = r->get_headers();
+                            copy(headers.begin(), headers.end(), ostream_iterator<string>(cout, "\n"));
                         }
                         if (!read_data(r->get_stream())) {
                             continue;
                         }
                         delete r;
-                        r = 0;
-                    }
-                    catch (Error & e) {
+                    } catch (Error &e) {
                         cerr << e.get_error_message() << endl;
                         if (report_errors)
                             return EXIT_FAILURE;
@@ -397,39 +397,26 @@ int main(int argc, char *argv[])
                 }
             }
 
-#if 0
-            else if (get_version) {
-                fprintf(stderr, "DAP version: %s, Server version: %s\n",
-                        url->request_protocol().c_str(),
-                        url->get_version().c_str());
-            }
-#endif
-
-            delete url;  url = 0;
+            delete url;
+            url = nullptr;
         }
-    }
-    catch (Error &e) {
-
-    	if(e.get_error_code() == malformed_expr){
-        	cerr << e.get_error_message() << endl;
-        	usage(argv[0]);
-    	}
-    	else {
-        	cerr << e.get_error_message() << endl;
-
-    	}
+    } catch (Error &e) {
+        delete url;
+        if (e.get_error_code() == malformed_expr) {
+            cerr << e.get_error_message() << endl;
+            usage(argv[0]);
+        } else {
+            cerr << e.get_error_message() << endl;
+        }
 
         cerr << "Exiting." << endl;
-        //return 1;
         return EXIT_FAILURE;
-    }
-    catch (exception &e) {
+    } catch (exception &e) {
+        delete url;
         cerr << "C++ library exception: " << e.what() << endl;
         cerr << "Exiting." << endl;
-        //return 1;
         return EXIT_FAILURE;
     }
 
-    //return 0;
     return EXIT_SUCCESS;
 }

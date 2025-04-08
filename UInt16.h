@@ -36,7 +36,6 @@
 #ifndef _uint16_h
 #define _uint16_h 1
 
-
 #ifndef _dods_datatypes_h
 #include "dods-datatypes.h"
 #endif
@@ -49,56 +48,52 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief Holds an unsigned 16-bit integer. */
 
-class UInt16: public BaseType
-{
+class UInt16 : public BaseType {
 protected:
     dods_uint16 d_buf;
 
 public:
     UInt16(const string &n);
     UInt16(const string &n, const string &d);
-    virtual ~UInt16()
-    {}
+    virtual ~UInt16() {}
 
     UInt16(const UInt16 &copy_from);
 
     UInt16 &operator=(const UInt16 &rhs);
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
-    virtual unsigned int width(bool constrained = false) const;
+    unsigned int width(bool = false) const override { return sizeof(dods_uint16); }
+
+    int64_t width_ll(bool = false) const override { return sizeof(dods_uint16); }
 
     // DAP2
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds,  Marshaller &m, bool ce_eval = true);
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
+    bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) override;
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void compute_checksum(Crc32 &checksum) override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
+    unsigned int val2buf(void *val, bool reuse = false) override;
+    unsigned int buf2val(void **val) override;
 
     virtual dods_uint16 value() const;
     virtual bool set_value(dods_uint16 val);
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
-    virtual bool ops(BaseType *b, int op);
+    bool ops(BaseType *b, int op) override;
 
-    virtual void dump(ostream &strm) const ;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
 
 #endif // _uint16_h
-

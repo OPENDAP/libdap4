@@ -30,13 +30,13 @@
 
 #include <pthread.h>
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
-#include <expr.h>
 #include "debug.h"
+#include <expr.h>
 
 #include "ServerFunctionsList.h"
 
@@ -47,18 +47,19 @@ namespace libdap {
 
 static pthread_once_t ServerFunctionsList_instance_control = PTHREAD_ONCE_INIT;
 
-ServerFunctionsList *ServerFunctionsList::d_instance = 0 ;
+ServerFunctionsList *ServerFunctionsList::d_instance = 0;
 
 /**
  * private static that only gets called once in the life cycle of the process.
  */
 void ServerFunctionsList::initialize_instance() {
     if (d_instance == 0) {
-        DBG(cerr << "ServerFunctionsList::initialize_instance() - Creating singleton ServerFunctionList instance." << endl);
+        DBG(cerr << "ServerFunctionsList::initialize_instance() - Creating singleton ServerFunctionList instance."
+                 << endl);
         d_instance = new ServerFunctionsList;
-        #if HAVE_ATEXIT
-            atexit(delete_instance);
-        #endif
+#if HAVE_ATEXIT
+        atexit(delete_instance);
+#endif
     }
 }
 
@@ -77,15 +78,16 @@ void ServerFunctionsList::delete_instance() {
 
 ServerFunctionsList::~ServerFunctionsList() {
     SFLIter fit;
-    for(fit=d_func_list.begin(); fit!=d_func_list.end() ; fit++){
+    for (fit = d_func_list.begin(); fit != d_func_list.end(); fit++) {
         ServerFunction *func = fit->second;
-        DBG(cerr << "ServerFunctionsList::~ServerFunctionsList() - Deleting ServerFunction " << func->getName() << " from ServerFunctionsList." << endl);
+        DBG(cerr << "ServerFunctionsList::~ServerFunctionsList() - Deleting ServerFunction " << func->getName()
+                 << " from ServerFunctionsList." << endl);
         delete func;
     }
     d_func_list.clear();
 }
 
-ServerFunctionsList * ServerFunctionsList::TheList() {
+ServerFunctionsList *ServerFunctionsList::TheList() {
     pthread_once(&ServerFunctionsList_instance_control, initialize_instance);
     DBG(cerr << "ServerFunctionsList::TheList() - Returning singleton ServerFunctionList instance." << endl);
     return d_instance;
@@ -100,10 +102,9 @@ ServerFunctionsList * ServerFunctionsList::TheList() {
  * The pointer is copied, not the object referenced; this class does not
  * delete the pointer.
  */
-void ServerFunctionsList::add_function(ServerFunction *func )
-{
+void ServerFunctionsList::add_function(ServerFunction *func) {
     DBG(cerr << "ServerFunctionsList::add_function() - Adding ServerFunction " << func->getName() << endl);
-    d_func_list.insert(std::make_pair(func->getName(),func));
+    d_func_list.insert(std::make_pair(func->getName(), func));
 }
 
 /**
@@ -126,16 +127,15 @@ void ServerFunctionsList::add_function(ServerFunction *func )
  *  @param *f   A returned value parameter through which a point to the desired function is returned.
  *
  */
-bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) const
-{
+bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) const {
     if (d_func_list.empty())
         return false;
 
-    std::pair <SFLCIter, SFLCIter> ret;
+    std::pair<SFLCIter, SFLCIter> ret;
     ret = d_func_list.equal_range(name);
     for (SFLCIter it = ret.first; it != ret.second; ++it) {
-        if (name == it->first && (*f = it->second->get_bool_func())){
-            DBG(cerr << "ServerFunctionsList::find_function() - Found boolean function " << it->second->getName() << endl);
+        if (name == it->first && it->second->get_bool_func()) {
+            *f = it->second->get_bool_func();
             return true;
         }
     }
@@ -163,17 +163,16 @@ bool ServerFunctionsList::find_function(const std::string &name, bool_func *f) c
  *  @param *f   A returned value parameter through which a point to the desired function is returned.
  *
  */
-bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
-{
+bool ServerFunctionsList::find_function(const string &name, btp_func *f) const {
     if (d_func_list.empty())
         return false;
     DBG(cerr << "ServerFunctionsList::find_function() - Looking for ServerFunction '" << name << "'" << endl);
 
-    std::pair <SFLCIter, SFLCIter> ret;
+    std::pair<SFLCIter, SFLCIter> ret;
     ret = d_func_list.equal_range(name);
     for (SFLCIter it = ret.first; it != ret.second; ++it) {
-        if (name == it->first && (*f = it->second->get_btp_func())){
-            DBG(cerr << "ServerFunctionsList::find_function() - Found basetype function " << it->second->getName() << endl);
+        if (name == it->first && it->second->get_btp_func()) {
+            *f = it->second->get_btp_func();
             return true;
         }
     }
@@ -201,17 +200,16 @@ bool ServerFunctionsList::find_function(const string &name, btp_func *f) const
  *  @param *f   A returned value parameter through which a point to the desired function is returned.
  *
  */
-bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
-{
+bool ServerFunctionsList::find_function(const string &name, proj_func *f) const {
     if (d_func_list.empty())
         return false;
 
-    std::pair <SFLCIter, SFLCIter> ret;
+    std::pair<SFLCIter, SFLCIter> ret;
     ret = d_func_list.equal_range(name);
     for (SFLCIter it = ret.first; it != ret.second; ++it) {
-        if (name == it->first && (*f = it->second->get_proj_func())){
-            DBG(cerr << "ServerFunctionsList::find_function() - Found projection function " << it->second->getName() << endl);
-           return true;
+        if (name == it->first && it->second->get_proj_func()) {
+            *f = it->second->get_proj_func();
+            return true;
         }
     }
 
@@ -225,15 +223,15 @@ bool ServerFunctionsList::find_function(const string &name, proj_func *f) const
  * @param f Value-result parameter. NULL if the function is not found
  * @return True if the function was found, otherwise false.
  */
-bool ServerFunctionsList::find_function(const string &name, D4Function *f) const
-{
+bool ServerFunctionsList::find_function(const string &name, D4Function *f) const {
     if (d_func_list.empty())
         return false;
 
-    std::pair <SFLCIter, SFLCIter> ret;
+    std::pair<SFLCIter, SFLCIter> ret;
     ret = d_func_list.equal_range(name);
     for (SFLCIter it = ret.first; it != ret.second; ++it) {
-        if (name == it->first && (*f = it->second->get_d4_function())) {
+        if (name == it->first && it->second->get_d4_function()) {
+            *f = it->second->get_d4_function();
             return true;
         }
     }
@@ -242,16 +240,10 @@ bool ServerFunctionsList::find_function(const string &name, D4Function *f) const
 }
 
 /** @brief Returns an iterator pointing to the first key pair in the ServerFunctionList. */
-ServerFunctionsList::SFLIter ServerFunctionsList::begin()
-{
-    return d_func_list.begin();
-}
+ServerFunctionsList::SFLIter ServerFunctionsList::begin() { return d_func_list.begin(); }
 
 /** @brief Returns an iterator pointing to the last key pair in the ServerFunctionList. */
-ServerFunctionsList::SFLIter ServerFunctionsList::end()
-{
-    return d_func_list.end();
-}
+ServerFunctionsList::SFLIter ServerFunctionsList::end() { return d_func_list.end(); }
 
 /**
  *
@@ -259,14 +251,11 @@ ServerFunctionsList::SFLIter ServerFunctionsList::end()
  * @brief Returns the ServerFunction pointed to by the passed iterator.
  *
  */
-ServerFunction *ServerFunctionsList::getFunction(SFLIter it)
-{
-    return (*it).second;
-}
+ServerFunction *ServerFunctionsList::getFunction(SFLIter it) { return (*it).second; }
 
-void ServerFunctionsList::getFunctionNames(vector<string> *names){
-	SFLIter fit;
-    for(fit = d_func_list.begin(); fit != d_func_list.end(); fit++) {
+void ServerFunctionsList::getFunctionNames(vector<string> *names) {
+    SFLIter fit;
+    for (fit = d_func_list.begin(); fit != d_func_list.end(); fit++) {
         ServerFunction *func = fit->second;
         names->push_back(func->getName());
     }

@@ -29,7 +29,7 @@
 
 // The d4_function_parser.tab.cc and .hh files define and declare this class
 %define parser_class_name {D4FunctionParser}
-// %define api.parser.class {D4FunctionParser}
+// %define api.parser.class {D4FunctionParser}. Waiting on RHEL8 to upgrade bison. jhrg 7/19/24
 
 // D4FunctionParser is in this namespace
 %define api.namespace {libdap}
@@ -46,6 +46,7 @@
 // %define api.prefix { d4_function_ }
 
 %code requires {
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 
 #define YYERROR_VERBOSE 0
 
@@ -223,7 +224,9 @@ variable_or_constant : id
 {
     D4RValue *rvalue = evaluator.build_rvalue($1);
     if (!rvalue) {
-        throw Error(malformed_expr, "'" + $1 + "' is not a variable, number or string.");
+        // Do not echo value from the CE in an error message. This
+        // change to prevent xss attacks. jhrg 4/14/20
+        throw Error(malformed_expr, "A function argument was not a variable, number or string.");
     }
     
     $$ = rvalue;

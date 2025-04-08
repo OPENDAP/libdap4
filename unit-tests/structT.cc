@@ -1,19 +1,20 @@
-#include <cppunit/TestFixture.h>
+#include <cppunit/CompilerOutputter.h>
 #include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/CompilerOutputter.h>
 
-#include <iostream>
-#include <sstream>
-#include "TestStructure.h"
 #include "TestArray.h"
 #include "TestInt16.h"
 #include "TestStr.h"
+#include "TestStructure.h"
 #include "TestTypeFactory.h"
+#include "run_tests_cppunit.h"
+#include "test_config.h"
 #include "util.h"
-#include "GetOpt.h"
+#include <iostream>
+#include <sstream>
 
 using std::cerr;
 using std::endl;
@@ -21,48 +22,38 @@ using std::ostringstream;
 
 using namespace CppUnit;
 
-int test_variable_sleep_interval = 0; // Used in Test* classes for testing
-// timeouts.
+int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeouts.
 
-static bool debug = false;
-
-string ExpectedPrint1(
-    "Structure {\n\
+string ExpectedPrint1("Structure {\n\
     Int16 name_int16;\n\
     String name_str;\n\
     Int16 array_int[dim1 = 4][dim2 = 3][dim3 = 2];\n\
 } my_structure = { 32000, \"Silly test string: 1\", {{{32000, 32000},{32000, 32000},{32000, 32000}},{{32000, 32000},{32000, 32000},{32000, 32000}},{{32000, 32000},{32000, 32000},{32000, 32000}},{{32000, 32000},{32000, 32000},{32000, 32000}}} };\n");
 
-string ExpectedPrint2(
-    "Structure {\n\
+string ExpectedPrint2("Structure {\n\
     Int16 name_int16;\n\
     Int16 array_int[dim1 = 4][dim2 = 3][dim3 = 2];\n\
 } my_structure = { 32000, {{{32000, 32000},{32000, 32000},{32000, 32000}},{{32000, 32000},{32000, 32000},{32000, 32000}},{{32000, 32000},{32000, 32000},{32000, 32000}},{{32000, 32000},{32000, 32000},{32000, 32000}}} };\n");
 
-class structT: public CppUnit::TestFixture {
+class structT : public CppUnit::TestFixture {
 
-    CPPUNIT_TEST_SUITE (structT);
-    CPPUNIT_TEST (structT_test);CPPUNIT_TEST_SUITE_END( )
-    ;
+    CPPUNIT_TEST_SUITE(structT);
+    CPPUNIT_TEST(structT_test);
+    CPPUNIT_TEST_SUITE_END();
 
 private:
     /* TEST PRIVATE DATA */
     TestTypeFactory *factory;
 
 public:
-    void setUp()
-    {
-        factory = new TestTypeFactory;
-    }
+    void setUp() { factory = new TestTypeFactory; }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete factory;
-        factory = 0;
+        factory = nullptr;
     }
 
-    void structT_test()
-    {
+    void structT_test() {
         TestStructure s("my_structure");
 
         BaseType *bt = factory->NewInt16("name_int16");
@@ -107,9 +98,8 @@ public:
         CPPUNIT_ASSERT(viter == s.var_end() && n == varnames.end());
         if (viter != s.var_end() && n == varnames.end()) {
             CPPUNIT_FAIL("Too many variables");
-        }
-        else if (viter == s.var_end() && n != varnames.end()) {
-            CPPUNIT_FAIL("Too few varialbes");
+        } else if (viter == s.var_end() && n != varnames.end()) {
+            CPPUNIT_FAIL("Too few variables");
         }
 
         int num_elems = s.element_count();
@@ -143,53 +133,8 @@ public:
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (structT);
+CPPUNIT_TEST_SUITE_REGISTRATION(structT);
 
 /* NOTHING NEEDS TO BE CHANGED BELOW HERE */
 
-int main(int argc, char *argv[])
-{
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-
-        case 'h': {     // help - show test names
-            cerr << "Usage: structT has the following tests:" << endl;
-            const std::vector<Test*> &tests = structT::suite()->getTests();
-            unsigned int prefix_len = structT::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for ( ; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = structT::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
-}
-
+int main(int argc, char *argv[]) { return run_tests<structT>(argc, argv) ? 0 : 1; }

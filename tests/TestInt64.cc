@@ -28,83 +28,56 @@
 #ifndef WIN64
 #include <unistd.h>
 #else
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
 #endif
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "TestInt64.h"
 #include "debug.h"
 
 extern int test_variable_sleep_interval;
 
-void
-TestInt64::_duplicate(const TestInt64 &ts)
-{
-    d_series_values = ts.d_series_values;
-}
+void TestInt64::_duplicate(const TestInt64 &ts) { d_series_values = ts.d_series_values; }
 
-TestInt64::TestInt64(const string &n) : Int64(n), d_series_values(false)
-{
-    d_buf = 1;
-}
+TestInt64::TestInt64(const string &n) : Int64(n), d_series_values(false) { d_buf = 1; }
 
-TestInt64::TestInt64(const string &n, const string &)
-    : Int64(n), d_series_values(false)
-{
-    d_buf = 1;
-}
+TestInt64::TestInt64(const string &n, const string &) : Int64(n), d_series_values(false) { d_buf = 1; }
 
-TestInt64::TestInt64(const TestInt64 &rhs) : Int64(rhs), TestCommon(rhs)
-{
-    _duplicate(rhs);
-}
+TestInt64::TestInt64(const TestInt64 &rhs) : Int64(rhs), TestCommon(rhs) { _duplicate(rhs); }
 
-TestInt64 &
-TestInt64::operator=(const TestInt64 &rhs)
-{
+TestInt64 &TestInt64::operator=(const TestInt64 &rhs) {
     if (this == &rhs)
-	return *this;
+        return *this;
 
-    dynamic_cast<Int64 &>(*this) = rhs; // run Constructor=
+    Int64::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 
     return *this;
 }
 
-BaseType *
-TestInt64::ptr_duplicate()
-{
-    return new TestInt64(*this);
-}
+BaseType *TestInt64::ptr_duplicate() { return new TestInt64(*this); }
 
-void
-TestInt64::output_values(std::ostream &out)
-{
-    print_val(out, "", false);
-}
+void TestInt64::output_values(std::ostream &out) { print_val(out, "", false); }
 
-bool
-TestInt64::read()
-{
+bool TestInt64::read() {
     DBG(cerr << "Entering TestInt64::read for " << name() << endl);
     if (read_p())
-	return true;
+        return true;
 
     if (test_variable_sleep_interval > 0)
-	sleep(test_variable_sleep_interval);
+        sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
-    	// was d_buf = 64 * d_buf; but a change in the compiler broke eqiv code in Int32.cc
-    	// jhrg 3/12/14
-    	d_buf <<= 6;
+        // was d_buf = 64 * d_buf; but a change in the compiler broke eqiv code in Int32.cc
+        // jhrg 3/12/14
+        d_buf <<= 6;
         if (!d_buf)
             d_buf = 64;
-    }
-    else {
+    } else {
         d_buf = 0x00ffffffffffffff;
     }
 

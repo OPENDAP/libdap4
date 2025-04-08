@@ -43,8 +43,7 @@
 
 #include "Constructor.h"
 
-namespace libdap
-{
+namespace libdap {
 
 class DDS;
 class ConstraintEvaluator;
@@ -80,11 +79,9 @@ class D4Group;
     @brief Holds a structure (aggregate) type.
 */
 
-class Structure: public Constructor
-{
+class Structure : public Constructor {
 private:
 protected:
-
 public:
     Structure(const string &n);
     Structure(const string &n, const string &d);
@@ -102,7 +99,7 @@ public:
 
     virtual void set_leaf_sequence(int level = 1);
 
-    virtual void dump(ostream &strm) const ;
+    virtual void dump(ostream &strm) const;
 };
 
 } // namespace libdap

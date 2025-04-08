@@ -1,10 +1,94 @@
+News for version 3.21.1
+
+  - Initial support for UTF-8
+  - Improved production rules.
+  - Worked technical debt affecting large variables and large responses
+    (large >= 2Gb).
+
+News for version 3.21.0
+
+- Added new Direct I/O support so that modules written using libdap
+  can pass compressed data buffers read directly from disk to output
+  files without expensive decompression and recompression operations.
+- Merged contributed fixes from Bo Anderson  <mail at boanderson.me>
+  Fix handling of libtirpc pkg-config files with -L flags (#228)
+- Merged contributed fixes from Dan Horák  <da at @danny.cz>
+	add missing include (#227)
+	With GCC 13 the <cstdint> header isn't included thru other headers any
+	more, thus include it explictly. Otherwise uint8_t or uint32_t type
+	remain undefined in Vector.cc.
+	Fixes: https://github.com/OPENDAP/libdap4/issues/226
+	add missing big endian baselines (#196)
+- Fixed a bug where the copy ctor for D4Maps failed to correctly set the parent Array.
+- Merged contributed fix from Orion Poplawski  <orion at nwra.com>
+	Add missing cstdint include for uint32_t (#219)
+- Removed support for RHEL 7 (CentOS 7)
+- Now require C++-11 to build the code. However, configure will use
+  C++-14 if it finds that and the next release will require that.
+- Moved the functionality of is_dap4_projected() into libdap4 (#213). This 
+  had a number of consequences and there are new methods to support the feature.
+- Added support for 64-bit sized arrays. This was done by adding a set of 
+  'size methods' that have the suffix '_ll' (for long long). These should
+  be used in place of the old methods, which are still in the code.
+
+News for version 3.20.11
+
+- Fixed bug in computation of request_size_kb()
+- Fixed type issue in HTTPCache.cc (#192)
+
+News for version 3.20.10
+
+- Support for RHEL8
+- Fix for bugs in the ce parser around inverted indices. 
+- Fix for libdap4 github issue 147:  Grid::get_map_iter() was off by one
+- Improvements to DAP4 api.
+- Fixed various memory leaks.
+- Replaced instances of &vector[0] with vector.data()  (RHEL8)
+
+News for version 3.20.9
+
+ Started migrating from (deprecated) auto_ptr to C++11 unique_ptr
+
+ Migrated use of regex functions from outdfated GNU implementation 
+ to C++11 implementation (uses compile time swicth)
+
+News for version 3.20.8
+
+ Modified Error so that it is more in line with C++11.
+
+ Added (shallow) unit64_t request size computations and max_request_size state.
+
+ Changed the internal representation of max response size to uint64_t and confined the overflow
+ to just the (deprecated) functions.
+
+News for version 3.20.7
+
+ Added code coverage (using gcov) to the CI processes. 
+
+ Dropped support for CentOS-6 (whew!)
+
+ Improved Int64 support.
+
+ Corrected byte order issue with DAP4 data transmission.
+
+ Improved error reporting.
+
+News for version 3.20.6
+
+ Stopped CE parse errors from returning user supplied 
+ strings in error messages.
+
+ Switched to README.md from README
+
+ Swapped out unique_ptr for auto_ptr because of CentOS6 issues.
+
 News for version 3.20.5
 
-Fixed memory leaks in imported aws signing code. 
+ Fixed memory leaks in imported aws signing code. 
 
-Minor bug fixes. 
+ Minor bug fixes. 
 
-Lots of work on CI.
+ Lots of work on CI.
 
 News for version 3.20.4
 

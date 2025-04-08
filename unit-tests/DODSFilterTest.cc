@@ -23,27 +23,28 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>  // for stat
 #include <cstring>
 #include <sstream>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h> // for stat
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
-#include "DODSFilter.h"
 #include "DAS.h"
 #include "DDS.h"
+#include "DODSFilter.h"
 #include "GNURegex.h"
 #include "debug.h"
 
-#include "../tests/TestTypeFactory.h"
 #include "../tests/TestByte.h"
+#include "../tests/TestTypeFactory.h"
 
-#include <test_config.h>
+#include "run_tests_cppunit.h"
+#include "test_config.h"
 
 using namespace CppUnit;
 using namespace std;
@@ -53,7 +54,7 @@ int test_variable_sleep_interval = 0;
 
 namespace libdap {
 
-class DODSFilterTest: public TestFixture {
+class DODSFilterTest : public TestFixture {
 private:
     DODSFilter *df, *df_conditional, *df1, *df2, *df3, *df4, *df5, *df6;
 
@@ -68,64 +69,63 @@ public:
     DODSFilterTest() {
         now = time(0);
         ostringstream time_string;
-        time_string << (int) now;
+        time_string << (int)now;
         strncpy(now_array, time_string.str().c_str(), 255);
         now_array[255] = '\0';
     }
 
-    ~DODSFilterTest() {
-    }
+    ~DODSFilterTest() {}
 
     void setUp() {
         // Test pathname
-        string test_file = (string) TEST_SRC_DIR + "/server-testsuite/bears.data";
-        char *argv_1[] = { (char*) "test_case", (char *) test_file.c_str() };
+        string test_file = (string)TEST_SRC_DIR + "/server-testsuite/bears.data";
+        char *argv_1[] = {(char *)"test_case", (char *)test_file.c_str()};
         df = new DODSFilter(2, argv_1);
 
-        char *argv_1_1[] = { (char*) "test_case", (char *) test_file.c_str(), (char*) "-l", &now_array[0] };
+        char *argv_1_1[] = {(char *)"test_case", (char *)test_file.c_str(), (char *)"-l", now_array.data()};
         df_conditional = new DODSFilter(4, argv_1_1);
 
         // Test missing file
-        argv_1[1] = (char*) "no-such-file";
+        argv_1[1] = (char *)"no-such-file";
         df1 = new DODSFilter(2, argv_1);
 
         // Test files in CWD. Note that the time is the GM time : Tue, 01 May
         // 2001 01:08:14 -0700
-        argv_1[1] = (char*) "test_config.h";
+        argv_1[1] = (char *)"test_config.h";
         df2 = new DODSFilter(2, argv_1);
 
         // This file has an ancillary DAS in the server-testsuite dir.
         // df3 is also used to test escaping stuff in URLs. 5/4/2001 jhrg
         char *argv_2[8];
-        argv_2[0] = (char*) "test_case";
-        test_file = (string) TEST_SRC_DIR + "/server-testsuite/coads.data";
-        argv_2[1] = (char *) test_file.c_str();
-        argv_2[2] = (char*) "-l";
-        argv_2[3] = &now_array[0];
-        argv_2[4] = (char*) "-e";
-        argv_2[5] = (char*) "u,x,z[0]&grid(u,\"lat<10.0\")";
-        argv_2[6] = (char*) "-t";
-        argv_2[7] = (char*) "1";
+        argv_2[0] = (char *)"test_case";
+        test_file = (string)TEST_SRC_DIR + "/server-testsuite/coads.data";
+        argv_2[1] = (char *)test_file.c_str();
+        argv_2[2] = (char *)"-l";
+        argv_2[3] = now_array.data();
+        argv_2[4] = (char *)"-e";
+        argv_2[5] = (char *)"u,x,z[0]&grid(u,\"lat<10.0\")";
+        argv_2[6] = (char *)"-t";
+        argv_2[7] = (char *)"1";
         df3 = new DODSFilter(6, argv_2);
 
         // Go back to this data source to test w/o an ancillary DAS.
-        argv_2[0] = (char*) "test_case";
-        test_file = (string) TEST_SRC_DIR + "/server-testsuite/bears.data";
-        argv_2[1] = (char *) test_file.c_str();
-        argv_2[2] = (char*) "-l";
-        argv_2[3] = &now_array[0];
-        argv_2[4] = (char*) "-e";
-        argv_2[5] = (char*) "u,x,z[0]&grid(u,\"lat<10.0\")";
-        argv_2[6] = (char*) "-t";
-        argv_2[7] = (char*) "1";
+        argv_2[0] = (char *)"test_case";
+        test_file = (string)TEST_SRC_DIR + "/server-testsuite/bears.data";
+        argv_2[1] = (char *)test_file.c_str();
+        argv_2[2] = (char *)"-l";
+        argv_2[3] = now_array.data();
+        argv_2[4] = (char *)"-e";
+        argv_2[5] = (char *)"u,x,z[0]&grid(u,\"lat<10.0\")";
+        argv_2[6] = (char *)"-t";
+        argv_2[7] = (char *)"1";
         df4 = new DODSFilter(6, argv_2);
 
         // Test escaping stuff. 5/4/2001 jhrg
-        char *argv_3[] = { (char*) "test_case", (char*) "nowhere%5Bmydisk%5Dmyfile", (char*) "-e", (char*) "u%5B0%5D" };
+        char *argv_3[] = {(char *)"test_case", (char *)"nowhere%5Bmydisk%5Dmyfile", (char *)"-e", (char *)"u%5B0%5D"};
         df5 = new DODSFilter(4, argv_3);
 
-        char *argv_4[] = { (char*) "test_case", (char*) "nowhere%3a%5bmydisk%5dmyfile", (char*) "-e",
-                (char*) "Grid%20field%3au%5b0%5d,Grid%20field%3av" };
+        char *argv_4[] = {(char *)"test_case", (char *)"nowhere%3a%5bmydisk%5dmyfile", (char *)"-e",
+                          (char *)"Grid%20field%3au%5b0%5d,Grid%20field%3av"};
         df6 = new DODSFilter(4, argv_4);
 
         cont_a = new AttrTable;
@@ -153,24 +153,34 @@ public:
     }
 
     void tearDown() {
-        delete df; df = 0;
-        delete df_conditional; df_conditional = 0;
-        delete df1; df1 = 0;
-        delete df2; df2 = 0;
-        delete df3; df3 = 0;
-        delete df4; df4 = 0;
-        delete df5; df5 = 0;
-        delete df6; df6 = 0;
+        delete df;
+        df = 0;
+        delete df_conditional;
+        df_conditional = 0;
+        delete df1;
+        df1 = 0;
+        delete df2;
+        df2 = 0;
+        delete df3;
+        df3 = 0;
+        delete df4;
+        df4 = 0;
+        delete df5;
+        df5 = 0;
+        delete df6;
+        df6 = 0;
 
-        delete das; das = 0;
-        delete dds; dds = 0;
+        delete das;
+        das = 0;
+        delete dds;
+        dds = 0;
     }
 
     bool re_match(Regex &r, const string &s) {
         DBG(cerr << "s.length(): " << s.length() << endl);
         int pos = r.match(s.c_str(), s.length());
         DBG(cerr << "r.match(s): " << pos << endl);
-        return pos > 0 && static_cast<unsigned> (pos) == s.length();
+        return pos > 0 && static_cast<unsigned>(pos) == s.length();
     }
 
     bool re_match_binary(Regex &r, const string &s) {
@@ -185,14 +195,14 @@ public:
         CPPUNIT_ASSERT(df1->get_dataset_last_modified_time() == t);
 
         struct stat st;
-        string test_file = (string) TEST_SRC_DIR + "/server-testsuite/bears.data";
+        string test_file = (string)TEST_SRC_DIR + "/server-testsuite/bears.data";
         stat(test_file.c_str(), &st);
         CPPUNIT_ASSERT(df->get_dataset_last_modified_time() == st.st_mtime);
 
         stat("test_config.h", &st);
         CPPUNIT_ASSERT(df2->get_dataset_last_modified_time() == st.st_mtime);
 
-        test_file = (string) TEST_SRC_DIR + "/server-testsuite/coads.data";
+        test_file = (string)TEST_SRC_DIR + "/server-testsuite/coads.data";
         stat(test_file.c_str(), &st);
         CPPUNIT_ASSERT(df3->get_dataset_last_modified_time() == st.st_mtime);
     }
@@ -200,20 +210,18 @@ public:
     void get_das_last_modified_time_test() {
         // the dataset pointed to by df has no anc. DAS
         struct stat st;
-        string test_file = (string) TEST_SRC_DIR + "/server-testsuite/bears.data";
+        string test_file = (string)TEST_SRC_DIR + "/server-testsuite/bears.data";
         stat(test_file.c_str(), &st);
         CPPUNIT_ASSERT(df->get_das_last_modified_time() == st.st_mtime);
 
         // the dataset pointed by df3 has an anc. DAS
-        test_file = (string) TEST_SRC_DIR + "/server-testsuite/coads.data.das";
+        test_file = (string)TEST_SRC_DIR + "/server-testsuite/coads.data.das";
         stat(test_file.c_str(), &st);
         CPPUNIT_ASSERT(df3->get_das_last_modified_time() == st.st_mtime);
     }
 
     void send_das_test() {
-        Regex
-                r1(
-                        "HTTP/1.0 200 OK\r\n\
+        Regex r1("HTTP/1.0 200 OK\r\n\
 XDODS-Server: .*\
 XOPeNDAP-Server: .*\
 XDAP: .*\
@@ -245,9 +253,7 @@ Date: .*\r\n\
     }
 
     void send_dds_test() {
-        Regex
-                r1(
-                        "HTTP/1.0 200 OK\r\n\
+        Regex r1("HTTP/1.0 200 OK\r\n\
 XDODS-Server: .*\
 XOPeNDAP-Server: .*\
 XDAP: .*\
@@ -290,7 +296,8 @@ Date: .*\r\n\
     void escape_code_test() {
         // These should NOT be escaped.
 
-        DBG(cerr << df3->get_dataset_name() << endl); DBG(cerr << df3->get_ce() << endl);
+        DBG(cerr << df3->get_dataset_name() << endl);
+        DBG(cerr << df3->get_ce() << endl);
 
         CPPUNIT_ASSERT(df3->get_dataset_name() == (string)TEST_SRC_DIR + "/server-testsuite/coads.data");
         CPPUNIT_ASSERT(df3->get_ce() == "u,x,z[0]&grid(u,\"lat<10.0\")");
@@ -298,7 +305,8 @@ Date: .*\r\n\
         // The DODSFIlter instance is feed escaped values; they should be
         // unescaped by the ctor and the mutators. 5/4/2001 jhrg
 
-        DBG(cerr << df5->get_dataset_name() << endl); DBG(cerr << df5->get_ce() << endl);
+        DBG(cerr << df5->get_dataset_name() << endl);
+        DBG(cerr << df5->get_ce() << endl);
 
         CPPUNIT_ASSERT(df5->get_dataset_name() == "nowhere[mydisk]myfile");
         CPPUNIT_ASSERT(df5->get_ce() == "u[0]");
@@ -306,7 +314,8 @@ Date: .*\r\n\
         df5->set_ce("u%5B0%5D");
         CPPUNIT_ASSERT(df5->get_ce() == "u[0]");
 
-        DBG(cerr << df6->get_dataset_name() << endl); DBG(cerr << df6->get_ce() << endl);
+        DBG(cerr << df6->get_dataset_name() << endl);
+        DBG(cerr << df6->get_ce() << endl);
         df5->set_ce("Grid%20u%5B0%5D");
         CPPUNIT_ASSERT(df5->get_ce() == "Grid%20u[0]");
     }
@@ -317,66 +326,21 @@ Date: .*\r\n\
         CPPUNIT_ASSERT(df1->get_timeout() == 0);
     }
 
-CPPUNIT_TEST_SUITE( DODSFilterTest );
+    CPPUNIT_TEST_SUITE(DODSFilterTest);
 
-        CPPUNIT_TEST(get_dataset_last_modified_time_test);
-        CPPUNIT_TEST(get_das_last_modified_time_test);
+    CPPUNIT_TEST(get_dataset_last_modified_time_test);
+    CPPUNIT_TEST(get_das_last_modified_time_test);
 
-        CPPUNIT_TEST(send_das_test);
-        CPPUNIT_TEST(send_dds_test);
+    CPPUNIT_TEST(send_das_test);
+    CPPUNIT_TEST(send_dds_test);
 
-        CPPUNIT_TEST(is_conditional_test);
-        CPPUNIT_TEST(get_request_if_modified_since_test);
-        CPPUNIT_TEST(escape_code_test);
+    CPPUNIT_TEST(is_conditional_test);
+    CPPUNIT_TEST(get_request_if_modified_since_test);
+    CPPUNIT_TEST(escape_code_test);
 
     CPPUNIT_TEST_SUITE_END();
 };
 CPPUNIT_TEST_SUITE_REGISTRATION(DODSFilterTest);
-}
+} // namespace libdap
 
-int main(int argc, char*argv[])
-{
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-        case 'h': {     // help - show test names
-            cerr << "Usage: DODSFilterTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::DODSFilterTest::suite()->getTests();
-            unsigned int prefix_len = libdap::DODSFilterTest::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::DODSFilterTest::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    xmlMemoryDump();
-
-    return wasSuccessful ? 0 : 1;
-}
-
+int main(int argc, char *argv[]) { return run_tests<DODSFilterTest>(argc, argv) ? 0 : 1; }

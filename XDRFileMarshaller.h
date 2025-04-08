@@ -45,13 +45,14 @@ namespace libdap {
 /** @brief marshaller that knows how to marshall/serialize dap data objects
  * to a file using XDR
  */
-class XDRFileMarshaller: public Marshaller {
+class XDRFileMarshaller : public Marshaller {
 private:
-    XDR * _sink;
+    XDR *_sink;
 
     XDRFileMarshaller();
     XDRFileMarshaller(const XDRFileMarshaller &m);
-    XDRFileMarshaller & operator=(const XDRFileMarshaller &);
+    XDRFileMarshaller &operator=(const XDRFileMarshaller &);
+
 public:
     XDRFileMarshaller(FILE *out);
     virtual ~XDRFileMarshaller();
@@ -82,4 +83,3 @@ public:
 } // namespace libdap
 
 #endif // I_XDRFileMarshaller_h
-

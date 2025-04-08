@@ -1,14 +1,16 @@
-#include <cppunit/TestFixture.h>
+#include <cppunit/CompilerOutputter.h>
 #include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/CompilerOutputter.h>
 
+#include "AttrTable.h"
 #include <iostream>
 #include <vector>
-#include "AttrTable.h"
-#include "GetOpt.h"
+
+#include "run_tests_cppunit.h"
+#include "test_config.h"
 
 using std::cerr;
 using std::endl;
@@ -20,28 +22,21 @@ using namespace libdap;
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 // timeouts.
 
-static bool debug = false;
+class attrTableT : public CppUnit::TestFixture {
 
-class attrTableT: public CppUnit::TestFixture {
-
-CPPUNIT_TEST_SUITE (attrTableT);
-    CPPUNIT_TEST(attrTableT_test);CPPUNIT_TEST_SUITE_END( )
-    ;
+    CPPUNIT_TEST_SUITE(attrTableT);
+    CPPUNIT_TEST(attrTableT_test);
+    CPPUNIT_TEST_SUITE_END();
 
 private:
     /* TEST PRIVATE DATA */
 
 public:
-    void setUp()
-    {
-    }
+    void setUp() {}
 
-    void tearDown()
-    {
-    }
+    void tearDown() {}
 
-    void attrTableT_test()
-    {
+    void attrTableT_test() {
         AttrTable at;
 
         unsigned int at_size = at.get_size();
@@ -83,7 +78,7 @@ public:
         at_size = at.get_size();
         CPPUNIT_ASSERT(at_size == 4);
 
-        //at.print( stdout ) ;
+        // at.print( stdout ) ;
         iter = at.attr_end();
         at.find("attr3", &dummy_at, &iter);
         CPPUNIT_ASSERT(iter != at.attr_end());
@@ -131,8 +126,7 @@ public:
             CPPUNIT_ASSERT(vi == values->end() && sbi == sb.end());
             if (vi == values->end() && sbi != sb.end()) {
                 CPPUNIT_FAIL("not enough values");
-            }
-            else if (vi != values->end() && sbi == sb.end()) {
+            } else if (vi != values->end() && sbi == sb.end()) {
                 CPPUNIT_FAIL("too many values");
             }
         }
@@ -152,8 +146,7 @@ public:
         CPPUNIT_ASSERT(i == at.attr_end() && ai == attrs.end());
         if (i != at.attr_end() && ai == attrs.end()) {
             CPPUNIT_FAIL("too many attributes");
-        }
-        else if (i == at.attr_end() && ai != attrs.end()) {
+        } else if (i == at.attr_end() && ai != attrs.end()) {
             CPPUNIT_FAIL("not enough attributes");
         }
 
@@ -193,8 +186,7 @@ public:
             CPPUNIT_ASSERT(vi == values->end() && sbi == sb.end());
             if (vi == values->end() && sbi != sb.end()) {
                 CPPUNIT_FAIL("not enough values");
-            }
-            else if (vi != values->end() && sbi == sb.end()) {
+            } else if (vi != values->end() && sbi == sb.end()) {
                 CPPUNIT_FAIL("too many values");
             }
         }
@@ -217,8 +209,7 @@ public:
             CPPUNIT_ASSERT(vi == values->end() && sbi == sb.end());
             if (vi == values->end() && sbi != sb.end()) {
                 CPPUNIT_FAIL("not enough values");
-            }
-            else if (vi != values->end() && sbi == sb.end()) {
+            } else if (vi != values->end() && sbi == sb.end()) {
                 CPPUNIT_FAIL("too many values");
             }
         }
@@ -228,15 +219,13 @@ public:
         try {
             container = at.append_container("attr2");
             CPPUNIT_FAIL("added container named attr2 successfully - already exists");
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
         }
         CPPUNIT_ASSERT(!container);
 
         try {
             container = at.append_container("attr5");
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("failed to add new container attr5");
         }
         CPPUNIT_ASSERT(container);
@@ -275,7 +264,7 @@ public:
         CPPUNIT_ASSERT(iter != at.attr_end());
         CPPUNIT_ASSERT(container == dummy_at);
 
-        //at.print( stdout ) ;
+        // at.print( stdout ) ;
     }
 };
 
@@ -283,48 +272,4 @@ CPPUNIT_TEST_SUITE_REGISTRATION(attrTableT);
 
 /* NOTHING NEEDS TO BE CHANGED BELOW HERE */
 
-int main(int argc, char *argv[])
-{
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-
-        case 'h': {     // help - show test names
-            cerr << "Usage: attrTableT has the following tests:" << endl;
-            const std::vector<Test*> &tests = attrTableT::suite()->getTests();
-            unsigned int prefix_len = attrTableT::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = attrTableT::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
-}
+int main(int argc, char *argv[]) { return run_tests<attrTableT>(argc, argv) ? 0 : 1; }

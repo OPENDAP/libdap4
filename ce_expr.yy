@@ -83,10 +83,6 @@
 #include "ce_parser.h"
 #include "expr.h"
 #include "RValue.h"
-#if 0
-#include "geo/GSEClause.h"
-#include "geo/grid_utils.h"
-#endif
 using std::cerr;
 using std::endl;
 using namespace libdap ;
@@ -98,11 +94,17 @@ using namespace libdap ;
 
 int ce_exprlex(void);           /* the scanner; see expr.lex */
 
+// NB: never pass a variable name or other string from the CE to these functions.
+// Only string literals are allowed. This is to prevent information in the CE that
+// could be an attack from being transferred to the error response and then
+// rendered/run by a browser (an XSS attack). jhrg 4/14/20
+void ce_exprerror(const string &s);
+// Some automatic invocations of yyerror pass ce_parser_arg. It is ignored in this
+// function, however. jhrg 4/14/20
 void ce_exprerror(ce_parser_arg *arg, const string &s);
-void ce_exprerror(ce_parser_arg *arg, const string &s, const string &s2);
-void no_such_func(ce_parser_arg *arg, const string &name);
+void no_such_ident(const string &thing);
 
-void no_such_ident(const string &name, const string &word);
+void no_such_func();
 
 // dim_slice and slices are defined in expr.h
 dim_slice *make_array_slice(value &v1, value &v2, value &v3);
@@ -251,22 +253,14 @@ unsigned long arg_length_hint_value = 0;
 constraint_expr: /* empty constraint --> send all */
 {
     DBG(cerr << "Mark all variables" << endl);
-    DDS(arg)
-        ->mark_all(true);
+    DDS(arg)->mark_all(true);
     $$ = true;
 }
 /* projection only */
 | projection
   /* selection only --> project everything */
-| '&' { DDS(arg)
-          ->mark_all(true); } selection
-          {
-              $$ = $3;
-          }
-| projection '&' selection
-{
-    $$ = $1 && $3;
-}
+| '&' { DDS(arg)->mark_all(true); } selection { $$ = $3; }
+| projection '&' selection {  $$ = $1 && $3; }
 ;
 
 projection: proj_clause
@@ -281,12 +275,11 @@ proj_clause: name
     BaseType *var = DDS(arg)->var($1);
     if (var) {
         DBG(cerr << "Marking " << $1 << endl);
-        $$ = DDS(arg)
-            ->mark($1, true);
+        $$ = DDS(arg)->mark($1, true);
         DBG(cerr << "result: " << $$ << endl);
     }
     else {
-        no_such_ident($1, "identifier");
+        no_such_ident("identifier");
     }
 }
 | proj_function
@@ -306,13 +299,12 @@ proj_clause: name
            streamlines testing (and is likely what is intended). */
 
         array->set_send_p(true);
-        DDS(arg)
-            ->add_var_nocopy(array);
+        DDS(arg)->add_var_nocopy(array);
 
         return true;
     }
     else {
-        ce_exprerror(arg, "Could not create the anonymous vector using the # special form");
+        ce_exprerror("Could not create the anonymous vector using the # special form.");
         return false;
     }
 }
@@ -324,50 +316,43 @@ proj_clause: name
 /* return a rvalue */
 array_const_special_form: SCAN_HASH_BYTE '(' arg_length_hint ':' fast_byte_arg_list ')'
 {
-    $$ = build_constant_array<dods_byte, Byte>($5, DDS(arg)
-                                               );
+    $$ = build_constant_array<dods_byte, Byte>($5, DDS(arg));
 }
 ;
 
 array_const_special_form: SCAN_HASH_INT16 '(' arg_length_hint ':' fast_int16_arg_list ')'
 {
-    $$ = build_constant_array<dods_int16, Int16>($5, DDS(arg)
-                                                 );
+    $$ = build_constant_array<dods_int16, Int16>($5, DDS(arg));
 }
 ;
 
 array_const_special_form: SCAN_HASH_UINT16 '(' arg_length_hint ':' fast_uint16_arg_list ')'
 {
-    $$ = build_constant_array<dods_uint16, UInt16>($5, DDS(arg)
-                                                   );
+    $$ = build_constant_array<dods_uint16, UInt16>($5, DDS(arg));
 }
 ;
 
 array_const_special_form: SCAN_HASH_INT32 '(' arg_length_hint ':' fast_int32_arg_list ')'
 {
-    $$ = build_constant_array<dods_int32, Int32>($5, DDS(arg)
-                                                 );
+    $$ = build_constant_array<dods_int32, Int32>($5, DDS(arg));
 }
 ;
 
 array_const_special_form: SCAN_HASH_UINT32 '(' arg_length_hint ':' fast_uint32_arg_list ')'
 {
-    $$ = build_constant_array<dods_uint32, UInt32>($5, DDS(arg)
-                                                   );
+    $$ = build_constant_array<dods_uint32, UInt32>($5, DDS(arg));
 }
 ;
 
 array_const_special_form: SCAN_HASH_FLOAT32 '(' arg_length_hint ':' fast_float32_arg_list ')'
 {
-    $$ = build_constant_array<dods_float32, Float32>($5, DDS(arg)
-                                                     );
+    $$ = build_constant_array<dods_float32, Float32>($5, DDS(arg));
 }
 ;
 
 array_const_special_form: SCAN_HASH_FLOAT64 '(' arg_length_hint ':' fast_float64_arg_list ')'
 {
-    $$ = build_constant_array<dods_float64, Float64>($5, DDS(arg)
-                                                     );
+    $$ = build_constant_array<dods_float64, Float64>($5, DDS(arg));
 }
 ;
 
@@ -536,7 +521,7 @@ proj_function:  SCAN_WORD '(' arg_list ')'
         $$ = true;
     }
     else {
-        no_such_func(arg, $1);
+        no_such_func();
     }
 }
 ;
@@ -579,7 +564,7 @@ bool_function: SCAN_WORD '(' arg_list ')'
 {
     bool_func b_func = get_function((*EVALUATOR(arg)), $1);
     if (!b_func) {
-        no_such_func(arg, $1);
+        no_such_func();
     }
     else {
         EVALUATOR(arg)->append_clause(b_func, $3);
@@ -597,7 +582,7 @@ r_value: id_or_const
         $$ = new rvalue(func, $3);
     }
     else {
-        no_such_func(arg, $1);
+        no_such_func();
     }
 }
 | array_const_special_form
@@ -673,7 +658,7 @@ id_or_const: SCAN_WORD
 | SCAN_STR
 {
     if ($1 == 0 || $1->empty())
-        ce_exprerror(arg, "Malformed string", "");
+        ce_exprerror("Malformed string");
 
     BaseType *var = DDS(arg)->var(www2id(*($1)));
     if (var) {
@@ -692,6 +677,7 @@ id_or_const: SCAN_WORD
 #endif
         var = make_variable((*EVALUATOR(arg)), tmp);
         $$ = new rvalue(var);
+        delete (tmp.v.s);
     }
     // When the scanner (ce_expr.lex) returns the SCAN_STR token type
     // it makes a local copy of the string in a new std::string object
@@ -701,13 +687,13 @@ id_or_const: SCAN_WORD
 }
 ;
 
-/* this must return an rvalue. It should run bracket_projection()
+/* this must return a rvalue. It should run bracket_projection()
    and then return the BaseType of the Array wrapped in a RValue
    object. */
 array_projection_rvalue : name array_indices
 {
     if (!bracket_projection((*DDS(arg)), $1, $2))
-        no_such_ident($1, "array, grid or sequence");
+        no_such_ident("array, grid or sequence");
 
     DDS(arg)->mark($1, true);
     $$ = new rvalue(DDS(arg)->var($1));
@@ -723,7 +709,7 @@ array_projection : array_proj_clause
 array_proj_clause: name array_indices
 {
     if (!bracket_projection((*DDS(arg)), $1, $2))
-        no_such_ident($1, "array, grid or sequence");
+        no_such_ident("array, grid or sequence");
 
     strncpy($$, $1, ID_MAX-1);
     $$[ID_MAX-1] = '\0';
@@ -738,7 +724,7 @@ array_proj_clause: name array_indices
 {
     string name = string($1).append($2); // + string($2);
     if (!bracket_projection((*DDS(arg)), name.c_str(), $3))
-        no_such_ident(name.c_str(), "array, grid or sequence");
+        no_such_ident("array, grid or sequence");
 
     strncpy($$, name.c_str(), ID_MAX-1);
     $$[ID_MAX-1] = '\0';
@@ -753,7 +739,7 @@ name: SCAN_WORD
 | SCAN_STR
 {
     if ($1 == 0 || $1->empty())
-        ce_exprerror(arg, "Malformed string", "");
+        ce_exprerror("Malformed string");
 
     strncpy($$, www2id(*($1)).c_str(), ID_MAX-1);
     // See comment about regarding the scanner's behavior WRT SCAN_STR.
@@ -785,7 +771,7 @@ array_index:
 '[' SCAN_WORD ']'
 {
     if (!check_uint32($2))
-        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
 #if 0
     value i;
     i.type = dods_uint32_c;
@@ -808,9 +794,9 @@ array_index:
 |'[' SCAN_WORD ':' SCAN_WORD ']'
 {
     if (!check_uint32($2))
-        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
     if (!check_uint32($4))
-        throw Error(malformed_expr, "The word `" + string($4) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
 #if 0
     value i,j;
     i.type = j.type = dods_uint32_c;
@@ -827,9 +813,9 @@ array_index:
 {
     // TODO These tests are redundant - the value ctor performs them, too
     if (!(check_int32($3) || check_float64($3)))
-        throw Error(malformed_expr, "The word `" + string($3) + "' is not a valid range value.");
+        throw Error(malformed_expr, "Expected an array index.");
     if (!(check_int32($7) || check_float64($3)))
-        throw Error(malformed_expr, "The word `" + string($7) + "' is not a valid range value.");
+        throw Error(malformed_expr, "Expected an array index.");
 
 #if 0
     value i,j;
@@ -847,7 +833,7 @@ array_index:
 |'[' SCAN_WORD ':' SCAN_STAR ']'
 {
     if (!check_uint32($2))
-        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
 #if 0
     value i,j;
     i.type = dods_uint32_c;
@@ -864,11 +850,11 @@ array_index:
 | '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_WORD ']'
 {
     if (!check_uint32($2))
-        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
     if (!check_uint32($4))
-        throw Error(malformed_expr, "The word `" + string($4) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
     if (!check_uint32($6))
-        throw Error(malformed_expr, "The word `" + string($6) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
 #if 0
     value i, j, k;
     i.type = j.type = k.type = dods_uint32_c;
@@ -886,17 +872,9 @@ array_index:
 | '[' SCAN_WORD ':' SCAN_WORD ':' SCAN_STAR ']'
 {
     if (!check_uint32($2))
-        throw Error(malformed_expr, "The word `" + string($2) + "' is not a valid array index.");
+        throw Error(malformed_expr, "Expected an array index.");
     if (!check_uint32($4))
-        throw Error(malformed_expr, "The word `" + string($4) + "' is not a valid array index.");
-#if 0
-    value i, j, k;
-    i.type = j.type = dods_uint32_c;
-    k.type = dods_int32_c;
-    i.v.i = atoi($2);
-    j.v.i = atoi($4);
-    k.v.i = -1;
-#endif
+        throw Error(malformed_expr, "Expected an array index.");
 
     value i($2, false, dods_uint32_c);
     value j($4, false, dods_uint32_c);
@@ -920,34 +898,30 @@ rel_op: SCAN_EQUAL
 // All these error reporting function now throw instances of Error. The expr
 // parser no longer returns an error code to indicate and error. jhrg 2/16/2000
 
+// As moted above, never pass text from the CE like an identifier into these
+// functions since their text could be rendered in a browser. A string passed
+// into the CE could be used in a XSS attack since some errors are shown in HTML
+// pages and thus rendered by browsers. jhrg 4/14/20
+
 void
-ce_exprerror(ce_parser_arg *, const string &s)
+ce_exprerror(const string &s)
 {
-    string msg = "Constraint expression parse error: " +s;
-    throw Error(malformed_expr, msg);
+    throw Error(malformed_expr, string("Constraint expression parse error: ").append(s));
 }
 
-void ce_exprerror(ce_parser_arg *, const string &s, const string &s2)
+void ce_exprerror(ce_parser_arg *, const string &s)
 {
-    string msg = "Constraint expression parse error: " + s + ": " + s2;
-    throw Error(malformed_expr, msg);
+    throw Error(malformed_expr, string("Constraint expression parse error: ").append(s));
 }
 
-void no_such_ident(ce_parser_arg *, const string &name, const string &word)
+void no_such_ident(const string &thing)
 {
-    string msg = "Constraint expression parse error: No such " + word + " in dataset: " + name;
-    throw Error(no_such_variable, msg);
+    throw Error(no_such_variable, string("Constraint expression parse error: the expression referenced a ").append(thing).append(" not found in the dataset."));
 }
 
-void no_such_ident(const string &name, const string &word)
+void no_such_func()
 {
-    string msg = "Constraint expression parse error: No such " + word + " in dataset: " + name;
-    throw Error(no_such_variable, msg);
-}
-
-void no_such_func(ce_parser_arg *arg, const string &name)
-{
-    ce_exprerror(arg, "Not a registered function", name);
+    throw Error(malformed_expr, "One or more functions using the constraint expression was not defined.");
 }
 
 /* If we're calling this, assume var is not a Sequence. But assume that the
@@ -992,7 +966,7 @@ bool bracket_projection(DDS &table, const char *name, slices *s)
                9/1/98 jhrg */
             /* var->set_send_p(true); */
             //table.mark(name, true);
-            // We don't call mark() here for an array. Instead it is called from
+            // We don't call mark() here for an array, instead it is called from
             // within the parser. jhrg 10/10/08
             process_array_slices(var, s); // throws on error
         }
@@ -1035,7 +1009,7 @@ bool bracket_projection(DDS &table, const char *name, slices *s)
 dim_slice *
 make_array_slice(value &v1, value &v2, value &v3)
 {
-    auto_ptr<dim_slice> ds(new dim_slice);
+    unique_ptr<dim_slice> ds(new dim_slice);
     ds->push_back(v1);
     ds->push_back(v2);
     ds->push_back(v3);
@@ -1089,7 +1063,7 @@ make_array_slice(value &v1)
 slices *
 make_array_slices(dim_slice *ds)
 {
-    auto_ptr<slices> s(new slices);
+    unique_ptr<slices> s(new slices);
     s->push_back(ds);
     return s.release();
 }
@@ -1160,11 +1134,11 @@ void process_array_slices(BaseType *variable, slices *s)
     assert(variable);
 
     Array *a = dynamic_cast<Array *>(variable); // replace with dynamic cast
-    if (!a) throw Error(malformed_expr, string("The constraint expression evaluator expected an array; ") + variable->name() + " is not an array.");
+    if (!a) throw Error(malformed_expr, "The constraint expression evaluator expected an array.");
 
     if (a->dimensions(true) != (unsigned) s->size())
         throw Error(malformed_expr,
-                    string("Error: The number of dimensions in the constraint for ") + variable->name() + " must match the number in the array.");
+                    string("Error: The number of dimensions in the constraint must match the number in the array."));
 
     DBG(cerr << "Before applying projection to array:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
@@ -1174,7 +1148,7 @@ void process_array_slices(BaseType *variable, slices *s)
     for (; p != s->end() && r != a->dim_end(); p++, r++) {
         dim_slice *ds = *p;
 
-	dim_slice::iterator q = ds->begin();
+	    dim_slice::iterator q = ds->begin();
         assert(q != ds->end());
 
         int start = q->v.i;
@@ -1186,7 +1160,7 @@ void process_array_slices(BaseType *variable, slices *s)
         int stop = q->v.i;
 
         q++;
-        if (q != ds->end()) throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
+        if (q != ds->end()) throw Error(malformed_expr, string("Too many values in index list for one or more variables."));
 
         DBG(cerr << "process_array_indices: Setting constraint on " << a->name() << "[" << start << ":" << stop << "]" << endl);
 
@@ -1202,7 +1176,17 @@ void process_array_slices(BaseType *variable, slices *s)
 
         if (a->send_p()
             && (a->dimension_start(r, true) != start || (a->dimension_stop(r, true) != stop && stop != -1) || a->dimension_stride(r, true) != stride))
-            throw Error(malformed_expr, string("The Array was already projected differently in the constraint expression: ") + a->name() + ".");
+            throw Error(malformed_expr, string("One or more Array variables were projected multiple times in the constraint expression."));
+
+        // Add a fix for ticket 'With constraint indices are reversed, the server fails'
+        // (https://bugs.earthdata.nasa.gov/browse/HYRAX-540). Note that the values can be the
+        // same (e.g., [0:1:0]) and the stride may be larger than the difference between
+        // start and stop - one value will be sent. jhrg 2/2/22
+        // The '&& stop != -1' is a hack - we added '*' after the fact to DAP2 and use -1
+        // as the value of stop to signal that. So in that case start > stop will be true,
+        // but the constraint is valid and we should not throw an exception. jhrg 2/4/22
+        if (start > stop && stop != -1)
+            throw Error(malformed_expr, string("The start value of an array index is past the stop value."));
 
         a->add_constraint(r, start, stride, stop);
 
@@ -1212,7 +1196,7 @@ void process_array_slices(BaseType *variable, slices *s)
     DBG(cerr << "After applying projection to array:" << endl);
     DBG(a->print_decl(cerr, "", true, false, true));
 
-    if (p != s->end() && r == a->dim_end()) throw Error(malformed_expr, string("Too many indices in constraint for ") + a->name() + ".");
+    if (p != s->end() && r == a->dim_end()) throw Error(malformed_expr, string("Too many indices in constraint for one or more variables."));
 }
 
 #define set_indicial_value(lhs, rhs) do { \
@@ -1233,7 +1217,7 @@ void process_grid_indicial_slices(Grid *g, slices *s)
 
     if (a->dimensions(true) != (unsigned) s->size())
         throw Error(malformed_expr,
-                    string("Error: The number of dimensions in the constraint for ") + g->name() + " must match the number in the grid.");
+                    string("Error: The number of dimensions in the constraint must match the number in the grid."));
 
     // First do the constraints on the ARRAY in the grid.
     process_array_slices(g->array_var(), s);
@@ -1274,7 +1258,7 @@ void process_grid_indicial_slices(Grid *g, slices *s)
 
         q++;
         if (q != slice->end()) {
-            throw Error(malformed_expr, string("Too many values in index list for ") + a->name() + ".");
+            throw Error(malformed_expr, string("Too many values in index list for one or more variables."));
         }
 
         DBG(cerr << "process_grid_indices: Setting constraint on " << a->name() << "[" << start << ":" << stop << "]" << endl);
@@ -1291,7 +1275,7 @@ void process_grid_indicial_slices(Grid *g, slices *s)
         );
 
     if (p != s->end() && r == g->map_end()) {
-        throw Error(malformed_expr, string("Too many indices in constraint for ") + (*r)->name() + ".");
+        throw Error(malformed_expr, string("Too many indices in constraint for one or more variables."));
     }
 }
 
@@ -1358,6 +1342,9 @@ void process_sequence_slices(BaseType *variable, slices *s)
         stop = (*q).v.i;
     else
         throw Error(string("Expected an integer value for the bracket subset operator used with Sequence '") + seq->name() + "'.");
+
+    if (start > stop)
+        throw Error(malformed_expr, string("The start value of an index into a sequence is past the stop value."));
 
     seq->set_row_number_constraint(start, stop, stride);
 }

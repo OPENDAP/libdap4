@@ -39,14 +39,14 @@
 #include "Sequence.h"
 #include "TestCommon.h"
 
-using namespace libdap ;
+using namespace libdap;
 
 namespace libdap {
-	class D4Group;
-	class Constructor;
-}
+class D4Group;
+class Constructor;
+} // namespace libdap
 
-class TestSequence: public Sequence, public TestCommon {
+class TestSequence : public Sequence, public TestCommon {
 private:
     int d_len;
     int d_current;

@@ -26,14 +26,13 @@
 #ifndef _D4RValue_h
 #define _D4RValue_h
 
-#include <vector>
 #include <string>
+#include <vector>
 
-#include <dods-datatypes.h>
 #include <D4Function.h>
+#include <dods-datatypes.h>
 
-namespace libdap
-{
+namespace libdap {
 
 class BaseType;
 class D4RValue;
@@ -41,58 +40,53 @@ class D4RValue;
 // Factory class to build RValue objects. User by the parser/ce-evaluator
 D4RValue *D4RValueFactory(std::string cpps);
 
-class D4RValueList
-{
+class D4RValueList {
 private:
-	std::vector<D4RValue *> d_rvalues;
+    std::vector<D4RValue *> d_rvalues;
 
-	void m_duplicate(const D4RValueList &src);
+    void m_duplicate(const D4RValueList &src);
 
 public:
-	typedef std::vector<D4RValue *>::iterator iter;
+    typedef std::vector<D4RValue *>::iterator iter;
 
-	D4RValueList() { }
-	D4RValueList(const D4RValueList &src) { m_duplicate(src); }
-	D4RValueList(D4RValue *rv) { add_rvalue(rv); }
+    D4RValueList() {}
+    D4RValueList(const D4RValueList &src) { m_duplicate(src); }
+    D4RValueList(D4RValue *rv) { add_rvalue(rv); }
 
-	virtual ~D4RValueList();
+    virtual ~D4RValueList();
 
-	void add_rvalue(D4RValue *rv) {
-		d_rvalues.push_back(rv);
-	}
+    D4RValueList &operator=(const D4RValueList &rhs) {
+        if (this == &rhs)
+            return *this;
+        m_duplicate(rhs);
+        return *this;
+    }
 
-	D4RValue *get_rvalue(unsigned int i) {
-		return d_rvalues.at(i);
-	}
+    void add_rvalue(D4RValue *rv) { d_rvalues.push_back(rv); }
 
-	iter begin() { return d_rvalues.begin(); }
-	iter end() { return d_rvalues.end(); }
+    D4RValue *get_rvalue(unsigned int i) { return d_rvalues.at(i); }
 
-	unsigned int size() const { return d_rvalues.size(); }
+    iter begin() { return d_rvalues.begin(); }
+    iter end() { return d_rvalues.end(); }
 
+    unsigned int size() const { return d_rvalues.size(); }
 };
 
 /**
  * Holds the RValues for the D4 function parser and for the filter
  * expression evaluator.
  */
-class D4RValue
-{
+class D4RValue {
 public:
-    enum value_kind {
-        unknown,
-        basetype,
-        function,
-        constant
-    };
+    enum value_kind { unknown, basetype, function, constant };
 
 private:
-    BaseType *d_variable;	// This is a weak pointer; do not delete
+    BaseType *d_variable; // This is a weak pointer; do not delete
 
-    D4Function d_func;  	// (weak) pointer to a function returning BaseType *
-    D4RValueList *d_args;  	// pointer to arguments to the function; delete
+    D4Function d_func;    // (weak) pointer to a function returning BaseType *
+    D4RValueList *d_args; // pointer to arguments to the function; delete
 
-    BaseType *d_constant;	// pointer; delete.
+    BaseType *d_constant; // pointer; delete.
 
     value_kind d_value_kind;
 
@@ -102,10 +96,11 @@ private:
     friend class D4RValueList;
 
 public:
-    D4RValue() : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(unknown) { }
+    D4RValue() : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(unknown) {}
     D4RValue(const D4RValue &src) { m_duplicate(src); }
-    D4RValue(BaseType *btp)  : d_variable(btp), d_func(0), d_args(0), d_constant(0), d_value_kind(basetype) { }
-    D4RValue(D4Function f, D4RValueList *args)  : d_variable(0), d_func(f), d_args(args), d_constant(0), d_value_kind(function) { }
+    D4RValue(BaseType *btp) : d_variable(btp), d_func(0), d_args(0), d_constant(0), d_value_kind(basetype) {}
+    D4RValue(D4Function f, D4RValueList *args)
+        : d_variable(0), d_func(f), d_args(args), d_constant(0), d_value_kind(function) {}
 
     D4RValue(unsigned long long ui);
     D4RValue(long long i);
@@ -148,7 +143,6 @@ public:
     virtual BaseType *value(DMR &dmr);
     // And this optimizes value() for filters, where functions are not supported.
     virtual BaseType *value();
-
 };
 
 } // namespace libdap

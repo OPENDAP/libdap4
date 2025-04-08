@@ -1,17 +1,18 @@
-#include <cppunit/TestFixture.h>
+#include <cppunit/CompilerOutputter.h>
 #include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/CompilerOutputter.h>
 
-#include <iostream>
-#include "TestSequence.h"
 #include "TestInt16.h"
+#include "TestSequence.h"
 #include "TestStr.h"
 #include "TestTypeFactory.h"
+#include "run_tests_cppunit.h"
+#include "test_config.h"
 #include "util.h"
-#include "GetOpt.h"
+#include <iostream>
 
 using std::cerr;
 using std::endl;
@@ -22,31 +23,25 @@ using namespace CppUnit;
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 // timeouts.
 
-static bool debug = false;
+class sequenceT : public CppUnit::TestFixture {
 
-class sequenceT: public CppUnit::TestFixture {
-
-    CPPUNIT_TEST_SUITE (sequenceT);
-    CPPUNIT_TEST (sequenceT_test);CPPUNIT_TEST_SUITE_END( );
+    CPPUNIT_TEST_SUITE(sequenceT);
+    CPPUNIT_TEST(sequenceT_test);
+    CPPUNIT_TEST_SUITE_END();
 
 private:
     /* TEST PRIVATE DATA */
     TestTypeFactory *factory;
 
 public:
-    void setUp()
-    {
-        factory = new TestTypeFactory;
-    }
+    void setUp() { factory = new TestTypeFactory; }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete factory;
         factory = 0;
     }
 
-    void sequenceT_test()
-    {
+    void sequenceT_test() {
         TestSequence s("Supporters");
 
         BaseType *nm = factory->NewStr("Name");
@@ -55,7 +50,7 @@ public:
         BaseType *age = factory->NewInt16("Age");
         s.add_var(age);
 
-        TestSequence *friends = (TestSequence *) factory->NewSequence("Friends");
+        TestSequence *friends = (TestSequence *)factory->NewSequence("Friends");
         friends->add_var(nm);
         delete nm;
         nm = 0;
@@ -116,8 +111,7 @@ public:
         CPPUNIT_ASSERT(v == s.var_end() && e == elems.end());
         if (v != s.var_end() && e == elems.end()) {
             CPPUNIT_FAIL("Too many elements");
-        }
-        else if (v == s.var_end() && e != elems.end()) {
+        } else if (v == s.var_end() && e != elems.end()) {
             CPPUNIT_FAIL("Too few elements");
         }
 
@@ -126,50 +120,8 @@ public:
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (sequenceT);
+CPPUNIT_TEST_SUITE_REGISTRATION(sequenceT);
 
 /* NOTHING NEEDS TO BE CHANGED BELOW HERE */
 
-int main(int argc, char*argv[])
-{
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-        case 'h': {     // help - show test names
-            cerr << "Usage: sequenceT has the following tests:" << endl;
-            const std::vector<Test*> &tests = sequenceT::suite()->getTests();
-            unsigned int prefix_len = sequenceT::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = sequenceT::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-    return wasSuccessful ? 0 : 1;
-}
-
+int main(int argc, char *argv[]) { return run_tests<sequenceT>(argc, argv) ? 0 : 1; }

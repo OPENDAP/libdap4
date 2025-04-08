@@ -2,7 +2,7 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
 #include "Ancillary.h"
 #include "debug.h"
@@ -12,8 +12,8 @@
 #include <unistd.h>
 #endif
 #else
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
 // Win32 does not define this. 08/21/02 jhrg
 #define F_OK 0
@@ -65,21 +65,15 @@ namespace libdap {
     searching with the given components.  If no file was found, the
     null string is returned.
 */
-string
-Ancillary::find_ancillary_file( const string &pathname,
-				const string &ext,
-				const string &dir,
-				const string &file )
-{
+string Ancillary::find_ancillary_file(const string &pathname, const string &ext, const string &dir,
+                                      const string &file) {
     string::size_type slash = pathname.rfind('/') + 1;
     string directory = pathname.substr(0, slash);
     string filename = pathname.substr(slash);
     string basename = pathname.substr(slash, pathname.rfind('.') - slash);
 
-    DBG(cerr << "find ancillary file params: " << pathname << ", " << ext
-        << ", " << dir << ", " << file << endl);
-    DBG(cerr << "find ancillary file comp: " << directory << ", " << filename
-        << ", " << basename << endl);
+    DBG(cerr << "find ancillary file params: " << pathname << ", " << ext << ", " << dir << ", " << file << endl);
+    DBG(cerr << "find ancillary file comp: " << directory << ", " << filename << ", " << basename << endl);
 
     string dot_ext = "." + ext;
 
@@ -134,9 +128,7 @@ Ancillary::find_ancillary_file( const string &pathname,
     separate the base name from the extension.
     @return The pathname to the group's ancillary file if found, otherwise
     the empty string (""). */
-string
-Ancillary::find_group_ancillary_file( const string &name, const string &ext )
-{
+string Ancillary::find_group_ancillary_file(const string &name, const string &ext) {
     // Given /usr/local/data/stuff.01.nc
     // pathname = /usr/local/data, filename = stuff.01.nc and
     // rootname = stuff.01
@@ -150,8 +142,7 @@ Ancillary::find_group_ancillary_file( const string &name, const string &ext )
     string::iterator rootname_iter = rootname.begin();
     string::iterator rootname_end_iter = rootname.end();
     if (isdigit(*rootname_iter)) {
-        while (rootname_iter != rootname_end_iter
-               && isdigit(*++rootname_iter))
+        while (rootname_iter != rootname_end_iter && isdigit(*++rootname_iter))
             ;
 
         // We want: new_name = dirname + "/" + <base> + ext but without
@@ -169,8 +160,7 @@ Ancillary::find_group_ancillary_file( const string &name, const string &ext )
     string::reverse_iterator rootname_riter = rootname.rbegin();
     string::reverse_iterator rootname_end_riter = rootname.rend();
     if (isdigit(*rootname_riter)) {
-        while (rootname_riter != rootname_end_riter
-               && isdigit(*++rootname_riter))
+        while (rootname_riter != rootname_end_riter && isdigit(*++rootname_riter))
             ;
         string new_name = dirname;
         new_name.append("/");
@@ -192,49 +182,28 @@ Ancillary::find_group_ancillary_file( const string &name, const string &ext )
     return "";
 }
 
-void
-Ancillary::read_ancillary_das( DAS &das,
-			       const string &pathname,
-			       const string &dir,
-			       const string &file )
-{
-    string name = find_ancillary_file( pathname, "das", dir, file ) ;
+void Ancillary::read_ancillary_das(DAS &das, const string &pathname, const string &dir, const string &file) {
+    string name = find_ancillary_file(pathname, "das", dir, file);
 
     DBG(cerr << "In Ancillary::read_ancillary_dds: name:" << name << endl);
 
-    FILE *in = fopen( name.c_str(), "r" ) ;
-    if( in ) {
-        das.parse( in ) ;
-        (void)fclose( in ) ;
-#if 0
-        int res = fclose( in ) ;
-        if( res )
-            DBG(cerr << "Ancillary::read_ancillary_das - Failed to close file " << (void *)in << endl) ;
-#endif
+    FILE *in = fopen(name.c_str(), "r");
+    if (in) {
+        das.parse(in);
+        (void)fclose(in);
     }
 }
 
-void
-Ancillary::read_ancillary_dds( DDS &dds,
-			       const string &pathname,
-			       const string &dir,
-			       const string &file )
-{
-    string name = find_ancillary_file( pathname, "dds", dir, file ) ;
+void Ancillary::read_ancillary_dds(DDS &dds, const string &pathname, const string &dir, const string &file) {
+    string name = find_ancillary_file(pathname, "dds", dir, file);
 
     DBG(cerr << "In Ancillary::read_ancillary_dds: name:" << name << endl);
 
-    FILE *in = fopen( name.c_str(), "r" ) ;
-    if( in ) {
-        dds.parse( in ) ;
-        (void)fclose( in ) ;
-#if 0
-        int res = fclose( in ) ;
-        if( res )
-            DBG(cerr << "Ancillary::read_ancillary_das - Failed to close file " << (void *)in << endl) ;
-#endif
+    FILE *in = fopen(name.c_str(), "r");
+    if (in) {
+        dds.parse(in);
+        (void)fclose(in);
     }
 }
 
 } // namespace libdap
-

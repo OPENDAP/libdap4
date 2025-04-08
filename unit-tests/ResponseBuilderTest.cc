@@ -25,8 +25,8 @@
 #include "config.h"
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <sys/types.h>
 
@@ -38,29 +38,29 @@
 #include <string.h>
 #endif
 
-#include <unistd.h>  // for stat
 #include <sstream>
+#include <unistd.h> // for stat
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
-#include "ObjectType.h"
+#include "DAS.h"
+#include "DDS.h"
 #include "EncodingType.h"
+#include "ObjectType.h"
 #include "ResponseBuilder.h"
 #include "ServerFunction.h"
 #include "ServerFunctionsList.h"
-#include "DAS.h"
-#include "DDS.h"
 #include "Str.h"
-#include "GetOpt.h"
 
 #include "GNURegex.h"
-#include "util.h"
-#include "mime_util.h"
 #include "debug.h"
+#include "mime_util.h"
+#include "util.h"
 
-#include "../tests/TestTypeFactory.h"
 #include "../tests/TestByte.h"
+#include "../tests/TestTypeFactory.h"
 
+#include "run_tests_cppunit.h"
 #include "testFile.h"
 #include "test_config.h"
 
@@ -70,13 +70,7 @@ using namespace libdap;
 
 int test_variable_sleep_interval = 0;
 
-static bool debug = false;
-
-#undef DBG
-#define DBG(x) do { if (debug) (x); } while(false);
-
-static void rb_simple_function(int, BaseType *[], DDS &, BaseType **btpp)
-{
+static void rb_simple_function(int, BaseType *[], DDS &, BaseType **btpp) {
     Str *response = new Str("result");
 
     response->set_value("qwerty");
@@ -84,8 +78,7 @@ static void rb_simple_function(int, BaseType *[], DDS &, BaseType **btpp)
     return;
 }
 
-static void parse_datadds_response(istream &in, string &prolog, vector<char> &blob)
-{
+static void parse_datadds_response(istream &in, string &prolog, vector<char> &blob) {
     // Split the stuff in the input stream into two parts:
     // The text prolog and the binary blob
     const int line_length = 1024;
@@ -94,7 +87,8 @@ static void parse_datadds_response(istream &in, string &prolog, vector<char> &bl
     while (!in.eof()) {
         in.getline(line, line_length);
         DBG(cerr << "prolog line: " << line << endl);
-        if (strncmp(line, "Data:", 5) == 0) break;
+        if (strncmp(line, "Data:", 5) == 0)
+            break;
         prolog += string(line);
         prolog += "\n";
     }
@@ -109,12 +103,12 @@ static void parse_datadds_response(istream &in, string &prolog, vector<char> &bl
     in.seekg(pos, in.beg);
 
     blob.reserve(length);
-    in.read(&blob[0], length);
+    in.read(blob.data(), length);
 }
 
 namespace libdap {
 
-class ResponseBuilderTest: public TestFixture {
+class ResponseBuilderTest : public TestFixture {
 private:
     ResponseBuilder *df, *df3, *df5, *df6;
 
@@ -126,11 +120,10 @@ private:
     char now_array[256];
     libdap::ServerFunction *rbSSF;
 
-    void loadServerSideFunction()
-    {
+    void loadServerSideFunction() {
         rbSSF = new libdap::ServerFunction(
 
-        // The name of the function as it will appear in a constraint expression
+            // The name of the function as it will appear in a constraint expression
             "rbSimpleFunc",
 
             // The version of the function
@@ -155,32 +148,28 @@ private:
     }
 
 public:
-    ResponseBuilderTest() :
-        df(0), df3(0), df5(0), df6(0), cont_a(0), das(0), dds(0)
-    {
+    ResponseBuilderTest() : df(0), df3(0), df5(0), df6(0), cont_a(0), das(0), dds(0) {
         now = time(0);
         ostringstream time_string;
-        time_string << (int) now;
+        time_string << (int)now;
         strncpy(now_array, time_string.str().c_str(), 255);
         now_array[255] = '\0';
 
         loadServerSideFunction();
     }
 
-    ~ResponseBuilderTest()
-    {
+    ~ResponseBuilderTest() {
         // delete rbSSF; NB: ServerFunctionsList is a singleton that deletes its entries at exit.
     }
 
-    void setUp()
-    {
+    void setUp() {
         // Test pathname
         df = new ResponseBuilder();
 
         // This file has an ancillary DAS in the server-testsuite dir.
         // df3 is also used to test escaping stuff in URLs. 5/4/2001 jhrg
         df3 = new ResponseBuilder();
-        df3->set_dataset_name((string) TEST_SRC_DIR + "/server-testsuite/coads.data");
+        df3->set_dataset_name((string)TEST_SRC_DIR + "/server-testsuite/coads.data");
         df3->set_ce("u,x,z[0]&grid(u,\"lat<10.0\")");
         df3->set_timeout(1);
 
@@ -192,8 +181,8 @@ public:
         // Try a server side function call.
         // loadServerSideFunction(); NB: This is called by the test's ctor
         df6 = new ResponseBuilder();
-        df6->set_dataset_name((string) TEST_SRC_DIR + "/server-testsuite/bears.data");
-        //df6->set_ce("rbFuncTest()");
+        df6->set_dataset_name((string)TEST_SRC_DIR + "/server-testsuite/bears.data");
+        // df6->set_ce("rbFuncTest()");
         df6->set_timeout(1);
 
         cont_a = new AttrTable;
@@ -220,8 +209,7 @@ public:
         dds->set_dap_minor(2);
     }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete df;
         df = 0;
         delete df3;
@@ -237,26 +225,23 @@ public:
         dds = 0;
     }
 
-    bool re_match(Regex &r, const string &s)
-    {
+    bool re_match(Regex &r, const string &s) {
         DBG(cerr << "s.length(): " << s.length() << endl);
         int pos = r.match(s.c_str(), s.length());
         DBG(cerr << "r.match(s): " << pos << endl);
         return pos > 0 && static_cast<unsigned>(pos) == s.length();
     }
 
-    bool re_match_binary(Regex &r, const string &s)
-    {
+    bool re_match_binary(Regex &r, const string &s) {
         DBG(cerr << "s.length(): " << s.length() << endl);
         int pos = r.match(s.c_str(), s.length());
         DBG(cerr << "r.match(s): " << pos << endl);
         return pos > 0;
     }
 
-    void send_das_test()
-    {
+    void send_das_test() {
         try {
-            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/server-testsuite/send_das_baseline.txt");
+            string baseline = read_test_baseline((string)TEST_SRC_DIR + "/server-testsuite/send_das_baseline.txt");
             DBG(cerr << "---- start baseline ----" << endl << baseline << "---- end baseline ----" << endl);
             Regex r1(baseline.c_str());
 
@@ -266,16 +251,14 @@ public:
 
             CPPUNIT_ASSERT(re_match(r1, oss.str()));
             oss.str("");
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
     }
 
-    void send_dds_test()
-    {
+    void send_dds_test() {
         try {
-            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/server-testsuite/send_dds_baseline.txt");
+            string baseline = read_test_baseline((string)TEST_SRC_DIR + "/server-testsuite/send_dds_baseline.txt");
             DBG(cerr << "---- start baseline ----" << endl << baseline << "---- end baseline ----" << endl);
             Regex r1(baseline.c_str());
 
@@ -287,15 +270,14 @@ public:
 
             CPPUNIT_ASSERT(re_match(r1, oss.str()));
             oss.str("");
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
     }
 
-    void send_ddx_test()
-    {
-        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/ddx-testsuite/response_builder_send_ddx_test.xml");
+    void send_ddx_test() {
+        string baseline =
+            read_test_baseline((string)TEST_SRC_DIR + "/ddx-testsuite/response_builder_send_ddx_test.xml");
         Regex r1(baseline.c_str());
         ConstraintEvaluator ce;
 
@@ -305,21 +287,19 @@ public:
             DBG(cerr << "DDX: " << oss.str() << endl);
 
             CPPUNIT_ASSERT(re_match(r1, baseline));
-            //CPPUNIT_ASSERT(re_match(r1, oss.str()));
-            //oss.str("");
-        }
-        catch (Error &e) {
+            // CPPUNIT_ASSERT(re_match(r1, oss.str()));
+            // oss.str("");
+        } catch (Error &e) {
             CPPUNIT_FAIL("Error: " + e.get_error_message());
         }
     }
 
-    void escape_code_test()
-    {
+    void escape_code_test() {
         // These should NOT be escaped.
         DBG(cerr << df3->get_dataset_name() << endl);
         DBG(cerr << df3->get_ce() << endl);
 
-        CPPUNIT_ASSERT(df3->get_dataset_name() == (string) TEST_SRC_DIR + "/server-testsuite/coads.data");
+        CPPUNIT_ASSERT(df3->get_dataset_name() == (string)TEST_SRC_DIR + "/server-testsuite/coads.data");
         CPPUNIT_ASSERT(df3->get_ce() == "u,x,z[0]&grid(u,\"lat<10.0\")");
 
         // The ResponseBuilder instance is feed escaped values; they should be
@@ -339,20 +319,18 @@ public:
     }
 
     // This tests reading the timeout value from argv[].
-    void timeout_test()
-    {
+    void timeout_test() {
         CPPUNIT_ASSERT(df3->get_timeout() == 1);
         CPPUNIT_ASSERT(df5->get_timeout() == 0);
     }
 
-    void invoke_server_side_function_test()
-    {
+    void invoke_server_side_function_test() {
         DBG(cerr << endl);
         DBG(cerr << "invoke_server_side_function_test():" << endl);
 
         try {
-            string baseline = read_test_baseline(
-                (string) TEST_SRC_DIR + "/server-testsuite/simple_function_baseline.txt");
+            string baseline =
+                read_test_baseline((string)TEST_SRC_DIR + "/server-testsuite/simple_function_baseline.txt");
             Regex r1(baseline.c_str());
 
             DBG(cerr << "---- start baseline ----" << endl << baseline << "---- end baseline ----" << endl);
@@ -400,65 +378,23 @@ public:
                 DBG(cerr << "blob[" << i << "]: " << blob_baseline[i] << endl);
             }
 #endif
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL("Caught libdap::Error!! Message:" + e.get_error_message());
         }
     }
 
-    CPPUNIT_TEST_SUITE (ResponseBuilderTest);
+    CPPUNIT_TEST_SUITE(ResponseBuilderTest);
 
-    CPPUNIT_TEST (send_das_test);
-    CPPUNIT_TEST (send_dds_test);
-    CPPUNIT_TEST (send_ddx_test);
+    CPPUNIT_TEST(send_das_test);
+    CPPUNIT_TEST(send_dds_test);
+    CPPUNIT_TEST(send_ddx_test);
 
-    CPPUNIT_TEST (escape_code_test);
-    CPPUNIT_TEST (invoke_server_side_function_test);
+    CPPUNIT_TEST(escape_code_test);
+    CPPUNIT_TEST(invoke_server_side_function_test);
 
     CPPUNIT_TEST_SUITE_END();
 };
-CPPUNIT_TEST_SUITE_REGISTRATION (ResponseBuilderTest);
-}
+CPPUNIT_TEST_SUITE_REGISTRATION(ResponseBuilderTest);
+} // namespace libdap
 
-int main(int argc, char*argv[])
-{
-    GetOpt getopt(argc, argv, "dh");
-    char option_char;
-    while ((option_char = getopt()) != EOF)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-        case 'h': {     // help - show test names
-            cerr << "Usage: ResponseBuilderTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::ResponseBuilderTest::suite()->getTests();
-            unsigned int prefix_len = libdap::ResponseBuilderTest::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::ResponseBuilderTest::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
-}
+int main(int argc, char *argv[]) { return run_tests<ResponseBuilderTest>(argc, argv) ? 0 : 1; }

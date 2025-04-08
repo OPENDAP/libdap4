@@ -4,35 +4,29 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU -I$(top_srcdir)/d4_ce \
--I$(top_srcdir)/d4_function $(XML2_CFLAGS) $(CURL_CFLAGS) $(TIRPC_CFLAGS)
-AM_CXXFLAGS =  
+    -I$(top_srcdir)/d4_function -I$(top_srcdir)/http_dap $(XML2_CFLAGS) \
+     $(CURL_CFLAGS) $(TIRPC_CFLAGS)
+AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align -Wno-inconsistent-missing-override
 
-if COMPILER_IS_GCC
-AM_CXXFLAGS += -Wall -W -Wcast-align
-endif
-
-CXXFLAGS_DEBUG = -g3 -O0  -Wall -W -Wcast-align
-
-# If valgrind is present, add valgrind targets.
-# @VALGRIND_CHECK_RULES@
+CXXFLAGS_DEBUG = -g3 -O0
 
 if USE_ASAN
-ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
 endif
 
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXX11_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2 $(CXX11_FLAG)
+AM_CXXFLAGS += -g -O2 -DNDEBUG
 endif
 
-check_PROGRAMS = das-test dds-test expr-test 
+AM_LDFLAGS =
+include $(top_srcdir)/coverage.mk
 
-if DAP4_DEFINED
-check_PROGRAMS += dmr-test
-endif
+TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
+check_PROGRAMS = das-test dds-test expr-test dmr-test
 
-# This will use automake's test envokation code. It's better to use
+# This will use automake's test invocation code. It's better to use
 # our own so we can pass in flags for autotest, esp --jobs=N to get
 # the autotest tests to run in parallel. See check-local: below.
 
@@ -52,6 +46,12 @@ libtest_types_a_CXXFLAGS = $(AM_CXXFLAGS) -fPIC
 testheadersdir = $(pkgincludedir)/test
 testheaders_HEADERS = $(TEST_HDR)
 
+# linking this way enables the test programs to work with OSX's leaks
+# tool. I cannot get leaks to work with the autotest-generated scripts
+# without changing how they work. But at least the individual C++
+# programs can be use with leaks. jhrg 2/18/22
+AM_LDFLAGS += -static
+
 das_test_SOURCES = das-test.cc
 das_test_LDADD =  libtest-types.a ../libdapserver.la ../libdap.la 
 
@@ -61,10 +61,8 @@ dds_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la
 expr_test_SOURCES = expr-test.cc ResponseBuilder.cc ResponseBuilder.h
 expr_test_LDADD = libtest-types.a ../libdapserver.la ../libdapclient.la ../libdap.la
 
-if DAP4_DEFINED
 dmr_test_SOURCES = dmr-test.cc D4ResponseBuilder.cc D4ResponseBuilder.h
 dmr_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la
-endif
 
 TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestArray.cc TestStructure.cc TestSequence.cc		 \
@@ -89,7 +87,7 @@ EXTRA_DIST = DASTest.at $(DASTESTSUITE) DDSTest.at $(DDSTESTSUITE) \
 	getdapTest.at $(GETDAPTESTSUITE) getdap-testsuite atlocal.in \
 	$(srcdir)/package.m4 $(DIRS_EXTRA)
 
-CLEANFILES = dmr-testsuite.tar.gz
+CLEANFILES = *.gcda *.gcno *.gcov dmr-testsuite.tar.gz
 
 DISTCLEANFILES = *.log
 

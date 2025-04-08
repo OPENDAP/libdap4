@@ -34,27 +34,24 @@ class DDS;
 /**
  * The scale() function scales data.
  */
-void function_scale(int argc, BaseType *argv[], DDS &dds, BaseType **btpp) ;
+void function_scale(int argc, BaseType *argv[], DDS &dds, BaseType **btpp);
 
 /**
  * The LinearScaleFunction class encapsulates the linear_scale function 'function_linear_scale'
  * along with additional meta-data regarding its use and applicability.
  */
-class TestFunction: public libdap::ServerFunction {
+class TestFunction : public libdap::ServerFunction {
 public:
-	TestFunction()
-    {
-		setName("scale");
-		setDescriptionString("The scale() function is for testing.");
-		setUsageString("scale(var, num): scale var by num. var can be a scalar or an array");
-		setRole("http://services.opendap.org/dap4/server-side-function/scale");
-		setDocUrl("http://docs.opendap.org/index.php/Server_Side_Processing_Functions");
-		setFunction(libdap::function_scale);
-		setVersion("1.0");
+    TestFunction() {
+        setName("scale");
+        setDescriptionString("The scale() function is for testing.");
+        setUsageString("scale(var, num): scale var by num. var can be a scalar or an array");
+        setRole("http://services.opendap.org/dap4/server-side-function/scale");
+        setDocUrl("http://docs.opendap.org/index.php/Server_Side_Processing_Functions");
+        setFunction(libdap::function_scale);
+        setVersion("1.0");
     }
-    virtual ~TestFunction()
-    {
-    }
+    virtual ~TestFunction() {}
 };
 
-} // libdap namespace
+} // namespace libdap

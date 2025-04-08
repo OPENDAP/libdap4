@@ -30,12 +30,12 @@
 #include <cassert>
 #include <cstring>
 
-#include <iostream>
-#include <sstream>
 #include <iomanip>
+#include <iostream>
 #include <limits>
+#include <sstream>
 
-//#define DODS_DEBUG 1
+// #define DODS_DEBUG 1
 
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
@@ -136,15 +136,14 @@ inline uint8_t* WriteVarint64ToArrayInline(uint64_t value, uint8_t* target) {
 #endif
 
 #if USE_XDR_FOR_IEEE754_ENCODING
-void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int width, Type type)
-{
+void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int width, Type type) {
     dods_uint64 size = num * width;
 
     char *buf = new char[size];
     XDR xdr;
-    xdrmem_create(&xdr, &buf[0], size, XDR_ENCODE);
+    xdrmem_create(&xdr, buf.data(), size, XDR_ENCODE);
     try {
-        if(!xdr_array(&xdr, &val, (unsigned int *)&num, size, width, XDRUtils::xdr_coder(type)))
+        if (!xdr_array(&xdr, &val, (unsigned int *)&num, size, width, XDRUtils::xdr_coder(type)))
             throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 array");
 
         if (xdr_getpos(&xdr) != size)
@@ -154,16 +153,15 @@ void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int widt
         static bool twiddle_bytes = !is_host_big_endian();
         if (twiddle_bytes) {
             if (width == 4) {
-                dods_float32 *lbuf = reinterpret_cast<dods_float32*>(&buf[0]);
+                dods_float32 *lbuf = reinterpret_cast<dods_float32 *>(buf.data());
                 while (num--) {
-                    dods_int32 *i = reinterpret_cast<dods_int32*>(lbuf++);
+                    dods_int32 *i = reinterpret_cast<dods_int32 *>(lbuf++);
                     *i = bswap_32(*i);
                 }
-            }
-            else { // width == 8
-                dods_float64 *lbuf = reinterpret_cast<dods_float64*>(&buf[0]);
+            } else { // width == 8
+                dods_float64 *lbuf = reinterpret_cast<dods_float64 *>(buf.data());
                 while (num--) {
-                    dods_int64 *i = reinterpret_cast<dods_int64*>(lbuf++);
+                    dods_int64 *i = reinterpret_cast<dods_int64 *>(lbuf++);
                     *i = bswap_64(*i);
                 }
             }
@@ -177,14 +175,13 @@ void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int widt
         // The child thread will delete buf when it's done
         xdr_destroy(&xdr);
 #else
-        d_out.write(&buf[0], size);
+        d_out.write(buf.data(), size);
         xdr_destroy(&xdr);
-        delete [] buf;
+        delete[] buf;
 #endif
-    }
-    catch (...) {
+    } catch (...) {
         xdr_destroy(&xdr);
-        delete [] buf;
+        delete[] buf;
 
         throw;
     }
@@ -198,10 +195,8 @@ void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int widt
  * @param out Write to this stream object.
  * @param write_data If true, write data values. True by default
  */
-D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data) :
-        d_out(out), d_write_data(write_data), tm(0)
-{
-	assert(sizeof(std::streamsize) >= sizeof(int64_t));
+D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data) : d_out(out), d_write_data(write_data), tm(0) {
+    assert(sizeof(std::streamsize) >= sizeof(int64_t));
 
 #if USE_XDR_FOR_IEEE754_ENCODING
     // XDR is used if the call std::numeric_limits<double>::is_iec559()
@@ -219,8 +214,7 @@ D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data) :
     out.exceptions(ostream::failbit | ostream::badbit);
 }
 
-D4StreamMarshaller::~D4StreamMarshaller()
-{
+D4StreamMarshaller::~D4StreamMarshaller() {
 #if USE_XDR_FOR_IEEE754_ENCODING
     xdr_destroy(&d_scalar_sink);
 #endif
@@ -230,10 +224,7 @@ D4StreamMarshaller::~D4StreamMarshaller()
 
 /** Initialize the checksum buffer. This resets the checksum calculation.
  */
-void D4StreamMarshaller::reset_checksum()
-{
-    d_checksum.Reset();
-}
+void D4StreamMarshaller::reset_checksum() { d_checksum.Reset(); }
 
 /**
  * Get the current checksum. It is not possible to continue computing the
@@ -245,8 +236,7 @@ void D4StreamMarshaller::reset_checksum()
  *
  * @return The checksum in a string object that always has eight characters.
  */
-string D4StreamMarshaller::get_checksum()
-{
+string D4StreamMarshaller::get_checksum() {
     ostringstream oss;
     oss.setf(ios::hex, ios::basefield);
     oss << setfill('0') << setw(8) << d_checksum.GetCrc32();
@@ -260,91 +250,83 @@ string D4StreamMarshaller::get_checksum()
  * to the I/O stream associated with this marshaller. Use this to send the
  * checksum, not get_checksum().
  */
-void D4StreamMarshaller::put_checksum()
-{
+void D4StreamMarshaller::put_checksum() {
     Crc32::checksum chk = d_checksum.GetCrc32();
 #ifdef USE_POSIX_THREADS
     Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-    d_out.write(reinterpret_cast<char*>(&chk), sizeof(Crc32::checksum));
+    d_out.write(reinterpret_cast<char *>(&chk), sizeof(Crc32::checksum));
 }
 
 /**
  * Update the current CRC 32 checksum value. Calling this with len equal to
  * zero has no effect on the checksum value.
  */
-void D4StreamMarshaller::checksum_update(const void *data, unsigned long len)
-{
-    d_checksum.AddData(reinterpret_cast<const uint8_t*>(data), len);
+void D4StreamMarshaller::checksum_update(const void *data, unsigned long len) {
+    d_checksum.AddData(reinterpret_cast<const uint8_t *>(data), len);
 }
 
-void D4StreamMarshaller::put_byte(dods_byte val)
-{
+void D4StreamMarshaller::put_byte(dods_byte val) {
     checksum_update(&val, sizeof(dods_byte));
 
     if (d_write_data) {
-        DBG( std::cerr << "put_byte: " << val << std::endl );
+        DBG(std::cerr << "put_byte: " << val << std::endl);
 #ifdef USE_POSIX_THREADS
         // make sure that a child thread is not writing to d_out.
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-        d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_byte));
+        d_out.write(reinterpret_cast<char *>(&val), sizeof(dods_byte));
     }
 }
 
-void D4StreamMarshaller::put_int8(dods_int8 val)
-{
+void D4StreamMarshaller::put_int8(dods_int8 val) {
     checksum_update(&val, sizeof(dods_int8));
 
     if (d_write_data) {
-        DBG( std::cerr << "put_int8: " << val << std::endl );
+        DBG(std::cerr << "put_int8: " << val << std::endl);
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-        d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int8));
+        d_out.write(reinterpret_cast<char *>(&val), sizeof(dods_int8));
     }
 }
 
-void D4StreamMarshaller::put_int16(dods_int16 val)
-{
+void D4StreamMarshaller::put_int16(dods_int16 val) {
     checksum_update(&val, sizeof(dods_int16));
 
     if (d_write_data) {
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-        d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int16));
+        d_out.write(reinterpret_cast<char *>(&val), sizeof(dods_int16));
     }
 }
 
-void D4StreamMarshaller::put_int32(dods_int32 val)
-{
+void D4StreamMarshaller::put_int32(dods_int32 val) {
     checksum_update(&val, sizeof(dods_int32));
 
     if (d_write_data) {
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-        d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_int32));
+        d_out.write(reinterpret_cast<char *>(&val), sizeof(dods_int32));
     }
 }
 
-void D4StreamMarshaller::put_int64(dods_int64 val)
-{
+void D4StreamMarshaller::put_int64(dods_int64 val) {
     checksum_update(&val, sizeof(dods_int64));
 
     if (d_write_data) {
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-        d_out.write(reinterpret_cast<const char*>(&val), sizeof(dods_int64));
+        d_out.write(reinterpret_cast<const char *>(&val), sizeof(dods_int64));
     }
 }
 
-void D4StreamMarshaller::put_float32(dods_float32 val)
-{
+void D4StreamMarshaller::put_float32(dods_float32 val) {
 #if !USE_XDR_FOR_IEEE754_ENCODING
-	assert(std::numeric_limits<float>::is_iec559);
+    assert(std::numeric_limits<float>::is_iec559);
 
     checksum_update(&val, sizeof(dods_float32));
 
@@ -352,7 +334,7 @@ void D4StreamMarshaller::put_float32(dods_float32 val)
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-    	d_out.write(reinterpret_cast<const char*>(&val), sizeof(dods_float32));
+        d_out.write(reinterpret_cast<const char *>(&val), sizeof(dods_float32));
     }
 
 #else
@@ -362,13 +344,12 @@ void D4StreamMarshaller::put_float32(dods_float32 val)
     // start of the method.
 
     if (d_write_data) {
-        if (std::numeric_limits<float>::is_iec559 ) {
+        if (std::numeric_limits<float>::is_iec559) {
 #ifdef USE_POSIX_THREADS
             Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-            d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_float32));
-        }
-        else {
+            d_out.write(reinterpret_cast<char *>(&val), sizeof(dods_float32));
+        } else {
             if (!xdr_setpos(&d_scalar_sink, 0))
                 throw InternalErr(__FILE__, __LINE__, "Error serializing a Float32 variable");
 
@@ -381,7 +362,7 @@ void D4StreamMarshaller::put_float32(dods_float32 val)
             // If this is a little-endian host, twiddle the bytes
             static bool twiddle_bytes = !is_host_big_endian();
             if (twiddle_bytes) {
-                dods_int32 *i = reinterpret_cast<dods_int32*>(&d_ieee754_buf);
+                dods_int32 *i = reinterpret_cast<dods_int32 *>(&d_ieee754_buf);
                 *i = bswap_32(*i);
             }
 #ifdef USE_POSIX_THREADS
@@ -393,10 +374,9 @@ void D4StreamMarshaller::put_float32(dods_float32 val)
 #endif
 }
 
-void D4StreamMarshaller::put_float64(dods_float64 val)
-{
+void D4StreamMarshaller::put_float64(dods_float64 val) {
 #if !USE_XDR_FOR_IEEE754_ENCODING
-	assert(std::numeric_limits<double>::is_iec559);
+    assert(std::numeric_limits<double>::is_iec559);
 
     checksum_update(&val, sizeof(dods_float64));
 
@@ -404,7 +384,7 @@ void D4StreamMarshaller::put_float64(dods_float64 val)
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-    	d_out.write(reinterpret_cast<const char*>(&val), sizeof(dods_float64));
+        d_out.write(reinterpret_cast<const char *>(&val), sizeof(dods_float64));
     }
 
 #else
@@ -414,67 +394,64 @@ void D4StreamMarshaller::put_float64(dods_float64 val)
 #ifdef USE_POSIX_THREADS
             Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-            d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_float64));}
-    }
-        else {
-            if (!xdr_setpos(&d_scalar_sink, 0))
-                throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 variable");
+            d_out.write(reinterpret_cast<char *>(&val), sizeof(dods_float64));
+        }
+    } else {
+        if (!xdr_setpos(&d_scalar_sink, 0))
+            throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 variable");
 
-            if (!xdr_double(&d_scalar_sink, &val))
-                throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 variable");
+        if (!xdr_double(&d_scalar_sink, &val))
+            throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 variable");
 
-            if (xdr_getpos(&d_scalar_sink) != sizeof(dods_float64))
-                throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 variable");
+        if (xdr_getpos(&d_scalar_sink) != sizeof(dods_float64))
+            throw InternalErr(__FILE__, __LINE__, "Error serializing a Float64 variable");
 
-            // If this is a little-endian host, twiddle the bytes
-            static bool twiddle_bytes = !is_host_big_endian();
-            if (twiddle_bytes) {
-                dods_int64 *i = reinterpret_cast<dods_int64*>(&d_ieee754_buf);
-                *i = bswap_64(*i);
-            }
+        // If this is a little-endian host, twiddle the bytes
+        static bool twiddle_bytes = !is_host_big_endian();
+        if (twiddle_bytes) {
+            dods_int64 *i = reinterpret_cast<dods_int64 *>(&d_ieee754_buf);
+            *i = bswap_64(*i);
+        }
 
 #ifdef USE_POSIX_THREADS
-            Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-            d_out.write(d_ieee754_buf, sizeof(dods_float64));
-        }
+        d_out.write(d_ieee754_buf, sizeof(dods_float64));
     }
+}
 #endif
 }
 
-void D4StreamMarshaller::put_uint16(dods_uint16 val)
-{
+void D4StreamMarshaller::put_uint16(dods_uint16 val) {
     checksum_update(&val, sizeof(dods_uint16));
 
     if (d_write_data) {
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-        d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_uint16));
+        d_out.write(reinterpret_cast<char *>(&val), sizeof(dods_uint16));
     }
 }
 
-void D4StreamMarshaller::put_uint32(dods_uint32 val)
-{
+void D4StreamMarshaller::put_uint32(dods_uint32 val) {
     checksum_update(&val, sizeof(dods_uint32));
 
     if (d_write_data) {
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-        d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_uint32));
+        d_out.write(reinterpret_cast<char *>(&val), sizeof(dods_uint32));
     }
 }
 
-void D4StreamMarshaller::put_uint64(dods_uint64 val)
-{
+void D4StreamMarshaller::put_uint64(dods_uint64 val) {
     checksum_update(&val, sizeof(dods_uint64));
 
     if (d_write_data) {
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-        d_out.write(reinterpret_cast<char*>(&val), sizeof(dods_uint64));
+        d_out.write(reinterpret_cast<char *>(&val), sizeof(dods_uint64));
     }
 }
 
@@ -486,35 +463,29 @@ void D4StreamMarshaller::put_uint64(dods_uint64 val)
  *
  * @param count How many elements follow.
  */
-void D4StreamMarshaller::put_count(int64_t count)
-{
+void D4StreamMarshaller::put_count(int64_t count) {
 #ifdef USE_POSIX_THREADS
-        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-	d_out.write(reinterpret_cast<const char*>(&count), sizeof(int64_t));
+    d_out.write(reinterpret_cast<const char *>(&count), sizeof(int64_t));
 }
 
-void D4StreamMarshaller::put_str(const string &val)
-{
+void D4StreamMarshaller::put_str(const string &val) {
     checksum_update(val.c_str(), val.length());
 
     if (d_write_data) {
-    	int64_t len = val.length();
+        int64_t len = val.length();
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
-    	d_out.write(reinterpret_cast<const char*>(&len), sizeof(int64_t));
+        d_out.write(reinterpret_cast<const char *>(&len), sizeof(int64_t));
         d_out.write(val.data(), val.length());
     }
 }
 
-void D4StreamMarshaller::put_url(const string &val)
-{
-    put_str(val);
-}
+void D4StreamMarshaller::put_url(const string &val) { put_str(val); }
 
-void D4StreamMarshaller::put_opaque_dap4(const char *val, int64_t len)
-{
+void D4StreamMarshaller::put_opaque_dap4(const char *val, int64_t len) {
     assert(val);
     assert(len >= 0);
 
@@ -524,7 +495,7 @@ void D4StreamMarshaller::put_opaque_dap4(const char *val, int64_t len)
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 
-        d_out.write(reinterpret_cast<const char*>(&len), sizeof(int64_t));
+        d_out.write(reinterpret_cast<const char *>(&len), sizeof(int64_t));
 
         char *byte_buf = new char[len];
         memcpy(byte_buf, val, len);
@@ -532,7 +503,7 @@ void D4StreamMarshaller::put_opaque_dap4(const char *val, int64_t len)
         tm->increment_child_thread_count();
         tm->start_thread(MarshallerThread::write_thread, d_out, byte_buf, len);
 #else
-        d_out.write(reinterpret_cast<const char*>(&len), sizeof(int64_t));
+        d_out.write(reinterpret_cast<const char *>(&len), sizeof(int64_t));
         d_out.write(val, len);
 #endif
     }
@@ -543,8 +514,7 @@ void D4StreamMarshaller::put_opaque_dap4(const char *val, int64_t len)
  * @param val Pointer to the data
  * @param num Number of bytes to write
  */
-void D4StreamMarshaller::put_vector(char *val, int64_t num_bytes)
-{
+void D4StreamMarshaller::put_vector(char *val, int64_t num_bytes) {
     assert(val);
     assert(num_bytes >= 0);
 
@@ -565,36 +535,35 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_bytes)
     }
 }
 
-void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size)
-{
-	assert(val);
-	assert(num_elem >= 0);
-	assert(elem_size > 0);
+void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size) {
+    assert(val);
+    assert(num_elem >= 0);
+    assert(elem_size > 0);
 
-	int64_t bytes;
+    int64_t bytes;
 
-	switch (elem_size) {
-	case 1:
-		assert(!"Don't call this method for bytes, use put_vector(val, bytes) instead");
-		bytes = num_elem;
-		break;
-	case 2:
-		// Don't bother testing the sign bit
-		assert(!(num_elem & 0x4000000000000000)); // 0x 40 00 --> 0100 0000
-		bytes = num_elem << 1;
-		break;
-	case 4:
-		assert(!(num_elem & 0x6000000000000000)); // 0x 60 00 --> 0110 0000
-		bytes = num_elem << 2;
-		break;
-	case 8:
-		assert(!(num_elem & 0x7000000000000000)); // 0111 0000
-		bytes = num_elem << 3;
-		break;
-	default:
-		bytes = num_elem * elem_size;
-		break;
-	}
+    switch (elem_size) {
+    case 1:
+        assert(!"Don't call this method for bytes, use put_vector(val, bytes) instead");
+        bytes = num_elem;
+        break;
+    case 2:
+        // Don't bother testing the sign bit
+        assert(!(num_elem & 0x4000000000000000)); // 0x 40 00 --> 0100 0000
+        bytes = num_elem << 1;
+        break;
+    case 4:
+        assert(!(num_elem & 0x6000000000000000)); // 0x 60 00 --> 0110 0000
+        bytes = num_elem << 2;
+        break;
+    case 8:
+        assert(!(num_elem & 0x7000000000000000)); // 0111 0000
+        bytes = num_elem << 3;
+        break;
+    default:
+        bytes = num_elem * elem_size;
+        break;
+    }
 
     checksum_update(val, bytes);
 
@@ -622,20 +591,19 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size)
  * @param width Size of a single element
  * @param type DAP variable type; used to handle float32 and float64 types correctly
  */
-void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem)
-{
+void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem) {
 #if !USE_XDR_FOR_IEEE754_ENCODING
 
-	assert(std::numeric_limits<float>::is_iec559);
-	assert(val);
-	assert(num_elem >= 0);
-	// sizeof() a 32-bit float is 4, so we're going to send 4 * num_elem bytes, so
-	// make sure that doesn't overflow a 63-bit integer (the max positive value in
-	// a signed int64; use 1110 0000 0.. (0xe000 ...) to mask for non-zero bits
-	// to test that num can be multiplied by 4. A
-	assert(!(num_elem & 0xe000000000000000));
+    assert(std::numeric_limits<float>::is_iec559);
+    assert(val);
+    assert(num_elem >= 0);
+    // sizeof() a 32-bit float is 4, so we're going to send 4 * num_elem bytes, so
+    // make sure that doesn't overflow a 63-bit integer (the max positive value in
+    // a signed int64; use 1110 0000 0.. (0xe000 ...) to mask for non-zero bits
+    // to test that num can be multiplied by 4. A
+    assert(!(num_elem & 0xe000000000000000));
 
-	num_elem = num_elem << 2;	// num_elem is now the number of bytes
+    num_elem = num_elem << 2; // num_elem is now the number of bytes
 
     checksum_update(val, num_elem);
 
@@ -649,20 +617,20 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem)
         tm->increment_child_thread_count();
         tm->start_thread(MarshallerThread::write_thread, d_out, buf, num_elem);
 #else
-    	d_out.write(val, num_elem);
+        d_out.write(val, num_elem);
 #endif
     }
 
 #else
-	assert(val);
-	assert(num_elem >= 0);
-	// sizeof() a 32-bit float is 4, so we're going to send 4 * num_elem bytes, so
-	// make sure that doesn't overflow a 63-bit integer (the max positive value in
-	// a signed int64; use 1110 0000 0.. (0xe000 ...) to mask for non-zero bits
-	// to test that num can be multiplied by 4. A
-	assert(!(num_elem & 0xe000000000000000));
+    assert(val);
+    assert(num_elem >= 0);
+    // sizeof() a 32-bit float is 4, so we're going to send 4 * num_elem bytes, so
+    // make sure that doesn't overflow a 63-bit integer (the max positive value in
+    // a signed int64; use 1110 0000 0.. (0xe000 ...) to mask for non-zero bits
+    // to test that num can be multiplied by 4. A
+    assert(!(num_elem & 0xe000000000000000));
 
-	int64_t bytes = num_elem << 2;	// num_elem is now the number of bytes
+    int64_t bytes = num_elem << 2; // num_elem is now the number of bytes
 
     checksum_update(val, bytes);
 
@@ -670,18 +638,17 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem)
         if (!std::numeric_limits<float>::is_iec559) {
             // If not using IEEE 754, use XDR to get it that way.
             m_serialize_reals(val, num_elem, 4, type);
-        }
-        else {
+        } else {
 #ifdef USE_POSIX_THREADS
-        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+            Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 
-        char *buf = new char[bytes];
-        memcpy(buf, val, bytes);
+            char *buf = new char[bytes];
+            memcpy(buf, val, bytes);
 
-        tm->increment_child_thread_count();
-        tm->start_thread(MarshallerThread::write_thread, d_out, buf, bytes);
+            tm->increment_child_thread_count();
+            tm->start_thread(MarshallerThread::write_thread, d_out, buf, bytes);
 #else
-        d_out.write(val, bytes);
+            d_out.write(val, bytes);
 #endif
         }
     }
@@ -696,17 +663,16 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem)
  * @param width Size of a single element
  * @param type DAP variable type; used to handle float32 and float64 types correctly
  */
-void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem)
-{
+void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem) {
 #if !USE_XDR_FOR_IEEE754_ENCODING
 
-	assert(std::numeric_limits<double>::is_iec559);
-	assert(val);
-	assert(num_elem >= 0);
-	// See comment above
-	assert(!(num_elem & 0xf000000000000000));
+    assert(std::numeric_limits<double>::is_iec559);
+    assert(val);
+    assert(num_elem >= 0);
+    // See comment above
+    assert(!(num_elem & 0xf000000000000000));
 
-	num_elem = num_elem << 3;	// num_elem is now the number of bytes
+    num_elem = num_elem << 3; // num_elem is now the number of bytes
 
     checksum_update(val, num_elem);
 
@@ -724,15 +690,15 @@ void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem)
 #endif
     }
 #else
-	assert(val);
-	assert(num_elem >= 0);
-	// sizeof() a 32-bit float is 4, so we're going to send 4 * num_elem bytes, so
-	// make sure that doesn't overflow a 63-bit integer (the max positive value in
-	// a signed int64; use 1110 0000 0.. (0xe000 ...) to mask for non-zero bits
-	// to test that num can be multiplied by 4. A
-	assert(!(num_elem & 0xe000000000000000));
+    assert(val);
+    assert(num_elem >= 0);
+    // sizeof() a 32-bit float is 4, so we're going to send 4 * num_elem bytes, so
+    // make sure that doesn't overflow a 63-bit integer (the max positive value in
+    // a signed int64; use 1110 0000 0.. (0xe000 ...) to mask for non-zero bits
+    // to test that num can be multiplied by 4. A
+    assert(!(num_elem & 0xe000000000000000));
 
-	int64_t bytes = num_elem << 3;	// num_elem is now the number of bytes
+    int64_t bytes = num_elem << 3; // num_elem is now the number of bytes
 
     checksum_update(val, bytes);
 
@@ -740,32 +706,29 @@ void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem)
         if (!std::numeric_limits<double>::is_iec559) {
             // If not using IEEE 754, use XDR to get it that way.
             m_serialize_reals(val, num_elem, 8, type);
-        }
-        else {
+        } else {
 #ifdef USE_POSIX_THREADS
-        Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
+            Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 
-        char *buf = new char[bytes];
-        memcpy(buf, val, bytes);
+            char *buf = new char[bytes];
+            memcpy(buf, val, bytes);
 
-        tm->increment_child_thread_count();
-        tm->start_thread(MarshallerThread::write_thread, d_out, buf, bytes);
+            tm->increment_child_thread_count();
+            tm->start_thread(MarshallerThread::write_thread, d_out, buf, bytes);
 #else
-        d_out.write(val, bytes);
+            d_out.write(val, bytes);
 #endif
         }
     }
 #endif
-
 }
 
-void D4StreamMarshaller::put_vector_part(char *val, unsigned int num, int width, Type type)
-{
+void D4StreamMarshaller::put_vector_part(char *val, unsigned int num, int width, Type type) {
     assert(val);
     assert(num >= 0);
     assert(width > 0);
 
-    switch(type) {
+    switch (type) {
     case dods_byte_c:
     case dods_char_c:
     case dods_int8_c:
@@ -817,10 +780,8 @@ void D4StreamMarshaller::put_vector_part(char *val, unsigned int num, int width,
     }
 }
 
-void D4StreamMarshaller::dump(ostream &strm) const
-{
-    strm << DapIndent::LMarg << "D4StreamMarshaller::dump - (" << (void *) this << ")" << endl;
+void D4StreamMarshaller::dump(ostream &strm) const {
+    strm << DapIndent::LMarg << "D4StreamMarshaller::dump - (" << (void *)this << ")" << endl;
 }
 
 } // namespace libdap
-

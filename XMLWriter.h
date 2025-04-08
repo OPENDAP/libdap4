@@ -46,10 +46,10 @@ private:
 
     std::string d_doc;
 
-    void m_cleanup() ;
+    void m_cleanup();
 
 public:
-    XMLWriter(const std::string &pad = "    ");
+    XMLWriter(const std::string &pad = "    ", const std::string &ENCODING = "ISO-8859-1");
     virtual ~XMLWriter();
 
     xmlTextWriterPtr get_writer() const { return d_writer; }

@@ -62,18 +62,11 @@
 #include "DapObj.h"
 #endif
 
-#if 0
-#ifndef KEYWORDS_H_
-#include "Keywords2.h"
-#endif
-#endif
-
 #ifndef XMLWRITER_H_
 #include "XMLWriter.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 bool has_dap2_attributes(BaseType *btp);
 bool has_dap2_attributes(AttrTable &a);
@@ -180,35 +173,31 @@ bool has_dap2_attributes(AttrTable &a);
     @see BaseType
     @see DAS */
 
-class DDS : public DapObj
-{
+class DDS : public DapObj {
 private:
     BaseTypeFactory *d_factory;
 
-    string d_name;                // The dataset d_name
-    string d_filename;		    // File d_name (or other OS identifier) for
-    string d_container_name;	// d_name of container structure
-    Structure *d_container; 	// current container for container d_name
-				                // dataset or part of dataset.
+    string d_name;           // The dataset d_name
+    string d_filename;       // File d_name (or other OS identifier) for
+    string d_container_name; // d_name of container structure
+    Structure *d_container;  // current container for container d_name
+                             // dataset or part of dataset.
 
-    int d_dap_major;       	    // The protocol major version number
-    int d_dap_minor;       	    // ... and minor version number
-    string d_dap_version; 	    // String version of the protocol
+    int d_dap_major;      // The protocol major version number
+    int d_dap_minor;      // ... and minor version number
+    string d_dap_version; // String version of the protocol
     string d_request_xml_base;
     string d_namespace;
 
-    AttrTable d_attr;           // Global attributes.
+    AttrTable d_attr; // Global attributes.
 
-    vector<BaseType *> vars;    // Variables at the top level
+    vector<BaseType *> vars; // Variables at the top level
 
-    int d_timeout;              // alarm time in seconds. If greater than
-                                // zero, raise the alarm signal if more than
-                                // d_timeout seconds are spent reading data.
-#if 0
-    Keywords d_keywords;	    // Holds keywords parsed from the CE
-#endif
+    int d_timeout; // alarm time in seconds. If greater than
+                   // zero, raise the alarm signal if more than
+                   // d_timeout seconds are spent reading data.
 
-    long d_max_response_size;   // In bytes...
+    uint64_t d_max_response_size_kb; // In kilobytes...
 
     friend class DDSTest;
 
@@ -218,9 +207,9 @@ protected:
     BaseType *exact_match(const string &name, BaseType::btp_stack *s = 0);
 
 public:
-    typedef std::vector<BaseType *>::const_iterator Vars_citer ;
-    typedef std::vector<BaseType *>::iterator Vars_iter ;
-    typedef std::vector<BaseType *>::reverse_iterator Vars_riter ;
+    typedef std::vector<BaseType *>::const_iterator Vars_citer;
+    typedef std::vector<BaseType *>::iterator Vars_iter;
+    typedef std::vector<BaseType *>::reverse_iterator Vars_riter;
 
     DDS(BaseTypeFactory *factory, const string &name = "");
     DDS(BaseTypeFactory *factory, const string &name, const string &version);
@@ -228,7 +217,7 @@ public:
 
     virtual ~DDS();
 
-    DDS & operator=(const DDS &rhs);
+    DDS &operator=(const DDS &rhs);
 
     virtual void transfer_attributes(DAS *das);
 
@@ -239,10 +228,7 @@ public:
         type classes. Specialize BaseTypeFactory so that a DDS will be
         populated with your client or server's specialized types.
         @return An instance of BaseTypeFactory. */
-    BaseTypeFactory *get_factory() const
-    {
-        return d_factory;
-    }
+    BaseTypeFactory *get_factory() const { return d_factory; }
 
     /** Set the factory class used to instantiate variables during the
         parse of a DDS.
@@ -250,8 +236,7 @@ public:
         factory when done with this DDS.
         @return The old factory.
         @see BaseTypeFactory */
-    BaseTypeFactory *set_factory(BaseTypeFactory *factory)
-    {
+    BaseTypeFactory *set_factory(BaseTypeFactory *factory) {
         BaseTypeFactory *t = d_factory;
         d_factory = factory;
         return t;
@@ -278,10 +263,6 @@ public:
     /// @deprecated
     void set_dap_version(double d);
 
-#if 0
-    Keywords &get_keywords() {return d_keywords;}
-#endif
-
     /// Get the URL that will return this DDS/DDX/DataThing
     string get_request_xml_base() const { return d_request_xml_base; }
 
@@ -294,20 +275,43 @@ public:
     /// Set the namespace for this DDS/DDX object/response
     void set_namespace(const string &ns) { d_namespace = ns; }
 
-    /// Get the maximum response size, in Bytes. Zero indicates no limit.
-    long get_response_limit() { return d_max_response_size; }
+    /// Get the maximum response size, in bytes. Zero indicates no limit.
+    long get_response_limit() { return (long)(d_max_response_size_kb * 1024); }
 
-    /** Set the maximum response size. Zero is the default value. The size
-        is given in kilobytes (but stored internally as the number of bytes).
-        @param size The maximum size of the response in kilobytes. */
-    void set_response_limit(long size) { d_max_response_size = size * 1024; }
+    /**
+     * @brief The maximum allowed response size, in kilobytes. Zero indicates no limit (default).
+     * @return The maximum allowed response size, in kilobytes. Zero indicates no limit (default).
+     */
+    uint64_t get_response_limit_kb() const { return d_max_response_size_kb; }
 
-    /// Get the estimated response size.
+    /**
+     * Set the maximum response size. Zero is the default value. The size
+     * is given in kilobytes (but stored internally as the number of bytes).
+     * @param size The maximum size of the response in kilobytes.
+     */
+    void set_response_limit(long size) { d_max_response_size_kb = size; }
+
+    /**
+     * @brief Set the maximum response size, in kilobytes.
+     * The size is given in kilobytes..
+     * @param size The maximum size of the response in kilobytes.
+     */
+    void set_response_limit_kb(uint64_t size) { d_max_response_size_kb = size; }
+
+    /**
+     * @return Returns true if the total data bytes requested exceeds the set limit, false otherwise.
+     */
+    bool too_big() { return d_max_response_size_kb != 0 && get_request_size_kb(true) > d_max_response_size_kb; }
+
+    /// Get the estimated response size in bytes.
     int get_request_size(bool constrained);
 
-    string container_name() ;
-    void container_name( const string &cn ) ;
-    Structure *container() ;
+    /// Get the estimated response size in kilobytes.
+    uint64_t get_request_size_kb(bool constrained);
+
+    string container_name();
+    void container_name(const string &cn);
+    Structure *container();
 
     void add_var(BaseType *bt);
     void add_var_nocopy(BaseType *bt);
@@ -319,26 +323,30 @@ public:
     BaseType *var(const string &n, BaseType::btp_stack *s = 0);
     int num_var();
 
+    /**
+     * Get a const reference to the vector of BaseType pointers.
+     * @note Use this in range-based for loops to iterate over the variables.
+     * @return A const reference to the vector of BaseType pointers.
+     */
+    const vector<BaseType *> &variables() const { return vars; }
+
     /// Return an iterator to the first variable
-    Vars_iter var_begin();
-#if 0
-    /// Return a const iterator.
-    Vars_citer var_cbegin() const { return vars.cbegin(); }
-#endif
+    /// @see vars()
+    /// @deprecated
+    Vars_iter var_begin() { return vars.begin(); }
     /// Return a reverse iterator
-    Vars_riter var_rbegin();
+    Vars_riter var_rbegin() { return vars.rbegin(); }
+
     /// Return an iterator
-    Vars_iter var_end();
-#if 0
-    /// Return a const iterator
-    Vars_citer var_cend() const { return vars.cend(); }
-#endif
+    Vars_iter var_end() { return vars.end(); }
     /// Return a reverse iterator
-    Vars_riter var_rend();
+    Vars_riter var_rend() { return vars.rend(); }
+
     /// Get an iterator
-    Vars_iter get_vars_iter(int i);
+    Vars_iter get_vars_iter(int i) { return vars.begin() + i; }
     /// Get a variable
-    BaseType *get_var_index(int i);
+    BaseType *get_var_index(int i) { return *(vars.begin() + i); }
+
     /// Insert a variable before the referenced element
     void insert_var(Vars_iter i, BaseType *ptr);
     void insert_var_nocopy(Vars_iter i, BaseType *ptr);
@@ -389,7 +397,9 @@ public:
 
     void tag_nested_sequences();
 
-    virtual void dump(ostream &strm) const ;
+    bool is_dap4_projected(std::vector<string> &inventory);
+
+    virtual void dump(ostream &strm) const;
 };
 
 } // namespace libdap

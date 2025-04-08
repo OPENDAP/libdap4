@@ -159,8 +159,7 @@ typedef vector<BaseTypeRow *> SequenceValues;
 
  @brief Holds a sequence. */
 
-class Sequence: public Constructor
-{
+class Sequence : public Constructor {
 private:
     // This holds the values read off the wire. Values are stored in
     // instances of BaseTypeRow objects which hold instances of BaseType.
@@ -201,25 +200,24 @@ private:
 
 protected:
     void m_duplicate(const Sequence &s);
-    typedef stack<SequenceValues*> sequence_values_stack_t;
+    typedef stack<SequenceValues *> sequence_values_stack_t;
 
     virtual bool serialize_parent_part_one(DDS &dds, ConstraintEvaluator &eval, Marshaller &m);
     virtual void serialize_parent_part_two(DDS &dds, ConstraintEvaluator &eval, Marshaller &m);
     virtual bool serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m, bool ce_eval);
 
     virtual void intern_data_private(ConstraintEvaluator &eval, DDS &dds,
-            sequence_values_stack_t &sequence_values_stack);
+                                     sequence_values_stack_t &sequence_values_stack);
     virtual void intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval,
-            sequence_values_stack_t &sequence_values_stack);
+                                      sequence_values_stack_t &sequence_values_stack);
 
     virtual void intern_data_parent_part_one(DDS &dds, ConstraintEvaluator &eval,
-            sequence_values_stack_t &sequence_values_stack);
+                                             sequence_values_stack_t &sequence_values_stack);
 
     virtual void intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
-            sequence_values_stack_t &sequence_values_stack);
+                                             sequence_values_stack_t &sequence_values_stack);
 
 public:
-
     Sequence(const string &n);
     Sequence(const string &n, const string &d);
 
@@ -268,16 +266,10 @@ public:
     virtual void set_row_number_constraint(int start, int stop, int stride = 1);
 
     /// Get the unsent data property
-    bool get_unsent_data() const
-    {
-        return d_unsent_data;
-    }
+    bool get_unsent_data() const { return d_unsent_data; }
 
     /// Set the unsent data property
-    void set_unsent_data(bool usd)
-    {
-        d_unsent_data = usd;
-    }
+    void set_unsent_data(bool usd) { d_unsent_data = usd; }
 
     virtual void set_value(SequenceValues &values);
     virtual SequenceValues value();
@@ -289,13 +281,13 @@ public:
 
     virtual BaseTypeRow *row_value(size_t row);
     virtual void print_one_row(ostream &out, int row, string space, bool print_row_num = false);
-    virtual void print_val_by_rows(ostream &out, string space = "", bool print_decl_p = true, bool print_row_numbers =
-            true);
+    virtual void print_val_by_rows(ostream &out, string space = "", bool print_decl_p = true,
+                                   bool print_row_numbers = true);
     virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
 
     virtual void print_one_row(FILE *out, int row, string space, bool print_row_num = false);
     virtual void print_val_by_rows(FILE *out, string space = "", bool print_decl_p = true,
-            bool print_row_numbers = true);
+                                   bool print_row_numbers = true);
     virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
 
     virtual void set_leaf_p(bool state);

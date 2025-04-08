@@ -31,22 +31,21 @@
 
 // The Grid Selection Expression Clause class.
 
-
 #include "config.h"
 
 #include <iostream>
 #include <sstream>
 
 #include <Array.h>
-#include <Grid.h>
-#include <dods-datatypes.h>
 #include <Error.h>
+#include <Grid.h>
 #include <InternalErr.h>
 #include <debug.h>
+#include <dods-datatypes.h>
 
 #include "GSEClause.h"
-#include "parser.h"
 #include "gse.tab.hh"
+#include "parser.h"
 
 using namespace std;
 using namespace libdap;
@@ -55,10 +54,7 @@ namespace functions {
 
 // For the comparisons here, we should use an epsilon to catch issues
 // with floating point values. jhrg 01/12/06
-template<class T>
-static bool
-compare(T elem, relop op, double value)
-{
+template <class T> static bool compare(T elem, relop op, double value) {
     switch (op) {
     case dods_greater_op:
         return elem > value;
@@ -80,10 +76,7 @@ compare(T elem, relop op, double value)
 }
 
 // These values are used in error messages, hence the strings.
-template<class T>
-void
-GSEClause::set_map_min_max_value(T min, T max)
-{
+template <class T> void GSEClause::set_map_min_max_value(T min, T max) {
     DBG(cerr << "Inside set map min max value " << min << ", " << max << endl);
     std::ostringstream oss1;
     oss1 << min;
@@ -95,10 +88,7 @@ GSEClause::set_map_min_max_value(T min, T max)
 }
 
 // Read the map array, scan, set start and stop.
-template<class T>
-void
-GSEClause::set_start_stop()
-{
+template <class T> void GSEClause::set_start_stop() {
     T *vals = new T[d_map->length()];
     d_map->value(vals);
 
@@ -143,13 +133,11 @@ GSEClause::set_start_stop()
 
         d_stop = i;
     }
-    
+
     delete[] vals;
 }
 
-void
-GSEClause::compute_indices()
-{
+void GSEClause::compute_indices() {
     switch (d_map->var()->type()) {
     case dods_byte_c:
         set_start_stop<dods_byte>();
@@ -173,26 +161,19 @@ GSEClause::compute_indices()
         set_start_stop<dods_float64>();
         break;
     default:
-        throw Error(malformed_expr,
-                    "Grid selection using non-numeric map vectors is not supported");
+        throw Error(malformed_expr, "Grid selection using non-numeric map vectors is not supported");
     }
-
 }
 
 // Public methods
 
 /** @brief Create an instance using discrete parameters. */
-GSEClause::GSEClause(Grid *grid, const string &map, const double value,
-                     const relop op)
-        : d_map(0),
-        d_value1(value), d_value2(0), d_op1(op), d_op2(dods_nop_op),
-        d_map_min_value(""), d_map_max_value("")
-{
+GSEClause::GSEClause(Grid *grid, const string &map, const double value, const relop op)
+    : d_map(0), d_value1(value), d_value2(0), d_op1(op), d_op2(dods_nop_op), d_map_min_value(""), d_map_max_value("") {
     d_map = dynamic_cast<Array *>(grid->var(map));
     if (!d_map)
-        throw Error(string("The map variable '") + map
-                    + string("' does not exist in the grid '")
-                    + grid->name() + string("'."));
+        throw Error(string("The map variable '") + map + string("' does not exist in the grid '") + grid->name() +
+                    string("'."));
 
     DBG(cerr << d_map->toString());
 
@@ -205,17 +186,13 @@ GSEClause::GSEClause(Grid *grid, const string &map, const double value,
 }
 
 /** @brief Create an instance using discrete parameters. */
-GSEClause::GSEClause(Grid *grid, const string &map, const double value1,
-                     const relop op1, const double value2, const relop op2)
-        : d_map(0),
-        d_value1(value1), d_value2(value2), d_op1(op1), d_op2(op2),
-        d_map_min_value(""), d_map_max_value("")
-{
+GSEClause::GSEClause(Grid *grid, const string &map, const double value1, const relop op1, const double value2,
+                     const relop op2)
+    : d_map(0), d_value1(value1), d_value2(value2), d_op1(op1), d_op2(op2), d_map_min_value(""), d_map_max_value("") {
     d_map = dynamic_cast<Array *>(grid->var(map));
     if (!d_map)
-        throw Error(string("The map variable '") + map
-                    + string("' does not exist in the grid '")
-                    + grid->name() + string("'."));
+        throw Error(string("The map variable '") + map + string("' does not exist in the grid '") + grid->name() +
+                    string("'."));
 
     DBG(cerr << d_map->toString());
 
@@ -227,16 +204,11 @@ GSEClause::GSEClause(Grid *grid, const string &map, const double value1,
     compute_indices();
 }
 
-GSEClause::~GSEClause()
-{
-    delete d_map;
-}
+GSEClause::~GSEClause() { delete d_map; }
 
 /** Class invariant.
     @return True if the object is valid, otherwise False. */
-bool
-GSEClause::OK() const
-{
+bool GSEClause::OK() const {
     if (!d_map)
         return false;
 
@@ -247,84 +219,49 @@ GSEClause::OK() const
 
 /** @brief Get a pointer to the map variable constrained by this clause.
     @return The Array object. */
-Array *
-GSEClause::get_map() const
-{
-    return d_map;
-}
+Array *GSEClause::get_map() const { return d_map; }
 
 /** @brief Set the pointer to the map vector contrained by this clause.
 
     Note that this method also sets the name of the map vector.
     @return void */
-void
-GSEClause::set_map(Array *map)
-{
-    d_map = map;
-}
+void GSEClause::set_map(Array *map) { d_map = map; }
 
 /** @brief Get the name of the map variable constrained by this clause.
     @return The Array object's name. */
-string
-GSEClause::get_map_name() const
-{
-    return d_map->name();
-}
+string GSEClause::get_map_name() const { return d_map->name(); }
 
 /** @brief Get the starting index of the clause's map variable as
     constrained by this clause.
     @return The start index. */
-int
-GSEClause::get_start() const
-{
-    return d_start;
-}
+int GSEClause::get_start() const { return d_start; }
 
 /** @brief Set the starting index.
     @return void */
-void
-GSEClause::set_start(int start)
-{
-    d_start = start;
-}
+void GSEClause::set_start(int start) { d_start = start; }
 
 /** @brief Get the stopping index of the clause's map variable as
     constrained by this clause.
     @return The stop index. */
-int
-GSEClause::get_stop() const
-{
+int GSEClause::get_stop() const {
     DBG(cerr << "Returning stop index value of: " << d_stop << endl);
     return d_stop;
 }
 
 /** @brief Set the stopping index.
     @return void */
-void
-GSEClause::set_stop(int stop)
-{
-    d_stop = stop;
-}
+void GSEClause::set_stop(int stop) { d_stop = stop; }
 
 /** @brief Get the minimum map vector value.
 
     Useful in messages back to users.
     @return The minimum map vetor value. */
-string
-GSEClause::get_map_min_value() const
-{
-    return d_map_min_value;
-}
+string GSEClause::get_map_min_value() const { return d_map_min_value; }
 
 /** @brief Get the maximum map vector value.
 
     Useful in messages back to users.
     @return The maximum map vetor value. */
-string
-GSEClause::get_map_max_value() const
-{
-    return d_map_max_value;
-}
+string GSEClause::get_map_max_value() const { return d_map_max_value; }
 
 } // namespace functions
-

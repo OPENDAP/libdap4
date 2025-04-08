@@ -34,8 +34,9 @@
 
 #include <dods-datatypes.h>
 
-namespace libdap
-{
+#include "expr.h"
+
+namespace libdap {
 
 /** Holds the rvalues for the parser, Clause objects and evaluator.
 
@@ -43,16 +44,15 @@ namespace libdap
     @see DDS.h
     @see expr.y */
 
-class rvalue
-{
+class rvalue {
 private:
     BaseType *d_value;
-    btp_func d_func;  // pointer to a function returning BaseType *
-    std::vector<rvalue *> *d_args;  // arguments to the function
+    btp_func d_func;               // pointer to a function returning BaseType *
+    std::vector<rvalue *> *d_args; // arguments to the function
 
 public:
-    typedef std::vector<rvalue *>::iterator Args_iter ;
-    typedef std::vector<rvalue *>::const_iterator Args_citer ;
+    typedef std::vector<rvalue *>::iterator Args_iter;
+    typedef std::vector<rvalue *>::const_iterator Args_citer;
 
     rvalue(BaseType *bt);
     rvalue(btp_func f, std::vector<rvalue *> *a);
@@ -67,8 +67,8 @@ public:
 // This type def must come after the class definition above. It is used in
 // the Clause and DDS classes.
 typedef std::vector<rvalue *> rvalue_list;
-typedef std::vector<rvalue *>::const_iterator rvalue_list_citer ;
-typedef std::vector<rvalue *>::iterator rvalue_list_iter ;
+typedef std::vector<rvalue *>::const_iterator rvalue_list_citer;
+typedef std::vector<rvalue *>::iterator rvalue_list_iter;
 
 typedef std::vector<dods_byte> *byte_arg_list;
 typedef std::vector<dods_int16> *int16_arg_list;
@@ -80,8 +80,7 @@ typedef std::vector<dods_float64> *float64_arg_list;
 
 rvalue_list *make_rvalue_list(rvalue *rv);
 rvalue_list *append_rvalue_list(rvalue_list *rvals, rvalue *rv);
-
-BaseType **build_btp_args(rvalue_list *args, DDS &dds);
+BaseType **build_btp_args(const rvalue_list *args, DDS &dds);
 
 } // namespace libdap
 #endif // _rvalue_h

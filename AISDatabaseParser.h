@@ -42,8 +42,7 @@
 #include "AISResources.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** Parse the XML database/configuration file which lists a collection of AIS
     resources.
@@ -66,49 +65,38 @@ namespace libdap
     messages.
 
     @see AISResource */
-class AISDatabaseParser
-{
+class AISDatabaseParser {
 private:
     /** States used by AISParserState. These are the states of the SAX parser
-	state-machine. */
-    enum ParseState {
-        PARSER_START,
-        PARSER_FINISH,
-        AIS,
-        ENTRY,
-        PRIMARY,
-        ANCILLARY,
-        PARSER_UNKNOWN,
-        PARSER_ERROR
-    };
+    state-machine. */
+    enum ParseState { PARSER_START, PARSER_FINISH, AIS, ENTRY, PRIMARY, ANCILLARY, PARSER_UNKNOWN, PARSER_ERROR };
 
     /** This holds the state information for the SAX parser that is
-	used to intern the XML AIS database. The parser is designed to
-	ignore unknown tags and attributes, so long as the input is
-	well-formed. Note that a pointer to an AISResources object is
-	part of the SAX parser state. As the XML input document is
-	parsed, information is added to that object. Also note that an
-	AISParserState object holds a pointer to the xmlParserCtxt
-	which, in turn, holds a pointer to AISParserState (via its \c
-	userData field). This circular referencing is done because
-	libxml2's SAX parser invokes the callbacks using just the
-	AISParserState instance but we need the whole xmlParserCtxt
-	for some of the callbacks.
+    used to intern the XML AIS database. The parser is designed to
+    ignore unknown tags and attributes, so long as the input is
+    well-formed. Note that a pointer to an AISResources object is
+    part of the SAX parser state. As the XML input document is
+    parsed, information is added to that object. Also note that an
+    AISParserState object holds a pointer to the xmlParserCtxt
+    which, in turn, holds a pointer to AISParserState (via its \c
+    userData field). This circular referencing is done because
+    libxml2's SAX parser invokes the callbacks using just the
+    AISParserState instance but we need the whole xmlParserCtxt
+    for some of the callbacks.
 
-	@see aisWarning. */
-    struct AISParserState
-    {
-        ParseState state; // current state
+    @see aisWarning. */
+    struct AISParserState {
+        ParseState state;      // current state
         ParseState prev_state; // previous state
-        int unknown_depth; // handle recursive unknown tags
+        int unknown_depth;     // handle recursive unknown tags
 
         string error_msg; // Error message(s), if any.
 
         xmlParserCtxtPtr ctxt; // used for error msg line numbers
-        AISResources *ais;  // dump info here
+        AISResources *ais;     // dump info here
 
-        string primary;  // current entry's primary URL/Regexp
-        bool regexp;  // True if primary is a regexp
+        string primary; // current entry's primary URL/Regexp
+        bool regexp;    // True if primary is a regexp
 
         ResourceVector rv; // add ancillary entries to rv
     };
@@ -118,11 +106,9 @@ public:
 
     static void aisStartDocument(AISParserState *state);
     static void aisEndDocument(AISParserState *state);
-    static void aisStartElement(AISParserState *state, const char *name,
-                                const char **attrs);
+    static void aisStartElement(AISParserState *state, const char *name, const char **attrs);
     static void aisEndElement(AISParserState *state, const char *name);
-    static xmlEntityPtr aisGetEntity(AISParserState *state,
-                                     const xmlChar *name);
+    static xmlEntityPtr aisGetEntity(AISParserState *state, const xmlChar *name);
     static void aisWarning(AISParserState *state, const char *msg, ...);
     static void aisError(AISParserState *state, const char *msg, ...);
     static void aisFatalError(AISParserState *state, const char *msg, ...);

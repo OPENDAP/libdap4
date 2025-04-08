@@ -1,0 +1,7 @@
+The complete DDS:
+Dataset {
+    Sequence {
+        Int32 i;
+        Int32 j;
+    } s;
+} testa;

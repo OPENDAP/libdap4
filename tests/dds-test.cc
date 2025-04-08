@@ -38,13 +38,13 @@
 
 #include <GetOpt.h>
 
-#include "parser.h"
-#include "dds.tab.hh"
 #include "BaseType.h"
-#include "Int32.h"
 #include "DDS.h"
-#include "util.h"
 #include "Error.h"
+#include "Int32.h"
+#include "dds.tab.hh"
+#include "parser.h"
+#include "util.h"
 
 using namespace libdap;
 
@@ -54,22 +54,24 @@ void test_class();
 
 int ddslex();
 
-extern YYSTYPE ddslval;
+extern DDSSTYPE ddslval;
 extern int ddsdebug;
 static bool print_ddx = false;
 
 const char *prompt = "dds-test: ";
 
-void usage(string name)
-{
-    cerr << "Usage: " << name << "[s] [pd] [c]" << endl << "s: Test the scanner." << endl << "p: Test the parser; reads from stdin and prints the"
-        << endl << "   internal structure to stdout." << endl << "d: Turn on parser debugging. (only for the hard core.)" << endl
-        << "c: Test the C++ code for manipulating DDS objects." << endl << "   Reads from stdin, parses and writes the modified DDS" << endl
-        << "   to stdout." << endl;
+void usage(string name) {
+    cerr << "Usage: " << name << "[s] [pd] [c]" << endl
+         << "s: Test the scanner." << endl
+         << "p: Test the parser; reads from stdin and prints the" << endl
+         << "   internal structure to stdout." << endl
+         << "d: Turn on parser debugging. (only for the hard core.)" << endl
+         << "c: Test the C++ code for manipulating DDS objects." << endl
+         << "   Reads from stdin, parses and writes the modified DDS" << endl
+         << "   to stdout." << endl;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     GetOpt getopt(argc, argv, "spP:dcx"); // remove fF:
     int option_char;
     int scanner_test = 0, parser_test = 0, class_test = 0;
@@ -103,24 +105,25 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-    if (!scanner_test && !parser_test && !class_test/* && !dap4_parser_test*/) {
+    if (!scanner_test && !parser_test && !class_test /* && !dap4_parser_test*/) {
         usage(argv[0]);
         return 1;
     }
 
     try {
-        if (scanner_test) test_scanner();
+        if (scanner_test)
+            test_scanner();
 
-        if (parser_test) test_parser(name);
-        if (class_test) test_class();
-    }
-    catch (Error &e) {
+        if (parser_test)
+            test_parser(name);
+        if (class_test)
+            test_class();
+    } catch (Error &e) {
         cerr << e.get_error_message() << endl;
     }
 }
 
-void test_scanner(void)
-{
+void test_scanner(void) {
     int tok;
 
     cout << prompt << flush; // first prompt
@@ -204,8 +207,7 @@ void test_scanner(void)
     }
 }
 
-void test_parser(const string &name)
-{
+void test_parser(const string &name) {
     // Remove the dynamic allocation (and delete at the end)
     // Possible because DDS does not manage the storage and the
     // lifetime of 'table' is limited to this function.
@@ -243,8 +245,7 @@ void test_parser(const string &name)
 #endif
 }
 
-void test_class(void)
-{
+void test_class(void) {
 #if 0
     BaseTypeFactory *factory = new BaseTypeFactory;
 #endif
@@ -311,4 +312,3 @@ void test_class(void)
     factory2 = 0;
 #endif
 }
-

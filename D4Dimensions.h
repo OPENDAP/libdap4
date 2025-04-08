@@ -40,27 +40,29 @@ class XMLWriter;
 
 class D4Dimension {
     string d_name;
-    unsigned long d_size;
+    unsigned long long d_size;
 
-    D4Dimensions *d_parent;	// This is used to get the Dimensions and then the Group object
+    D4Dimensions *d_parent; // This is used to get the Dimensions and then the Group object
 
     bool d_constrained;
-    unsigned long long d_c_start, d_c_stride, d_c_stop;
+    int64_t d_c_start, d_c_stride, d_c_stop;
 
     bool d_used_by_projected_var;
 
 public:
-    D4Dimension() : d_name(""), d_size(0),  d_parent(0), d_constrained(false), d_c_start(0), d_c_stride(0),
-            d_c_stop(0), d_used_by_projected_var(false) {}
-    D4Dimension(const string &name, unsigned long size, D4Dimensions *d = 0) : d_name(name), d_size(size), d_parent(d),
-            d_constrained(false), d_c_start(0), d_c_stride(0), d_c_stop(0), d_used_by_projected_var(false) {}
+    D4Dimension()
+        : d_name(""), d_size(0), d_parent(0), d_constrained(false), d_c_start(0), d_c_stride(0), d_c_stop(0),
+          d_used_by_projected_var(false) {}
+    D4Dimension(const string &name, unsigned long long size, D4Dimensions *d = 0)
+        : d_name(name), d_size(size), d_parent(d), d_constrained(false), d_c_start(0), d_c_stride(0), d_c_stop(0),
+          d_used_by_projected_var(false) {}
 
-    string name() const {return d_name;}
+    string name() const { return d_name; }
     void set_name(const string &name) { d_name = name; }
     string fully_qualified_name() const;
 
-    unsigned long size() const { return d_size; }
-    void set_size(unsigned long size) { d_size = size; }
+    unsigned long long size() const { return d_size; }
+    void set_size(unsigned long long size) { d_size = size; }
     // Because we build these in the XML parser and it's all text...
     void set_size(const string &size);
 
@@ -68,9 +70,9 @@ public:
     void set_parent(D4Dimensions *d) { d_parent = d; }
 
     bool constrained() const { return d_constrained; }
-    unsigned long long c_start() const { return d_c_start; }
-    unsigned long long c_stride() const { return d_c_stride; }
-    unsigned long long c_stop() const { return d_c_stop; }
+    int64_t c_start() const { return d_c_start; }
+    int64_t c_stride() const { return d_c_stride; }
+    int64_t c_stop() const { return d_c_stop; }
 
     bool used_by_projected_var() const { return d_used_by_projected_var; }
     void set_used_by_projected_var(bool state) { d_used_by_projected_var = state; }
@@ -83,7 +85,7 @@ public:
      * @param stride The stride for the slice
      * @param stop The stopping index (never greater than size -1)
      */
-    void set_constraint(unsigned long long start, unsigned long long stride, unsigned long long stop) {
+    void set_constraint(int64_t start, int64_t stride, int64_t stop) {
         d_c_start = start;
         d_c_stride = stride;
         d_c_stop = stop;
@@ -99,9 +101,9 @@ public:
  * used to store the definition of a dimension in an instance of Group.
  */
 class D4Dimensions {
-    vector<D4Dimension*> d_dims;
+    vector<D4Dimension *> d_dims;
 
-    D4Group *d_parent;		// the group that holds this set of D4Dimensions; weak pointer, don't delete
+    D4Group *d_parent; // the group that holds this set of D4Dimensions; weak pointer, don't delete
 
 protected:
     // Note Code in Array depends on the order of these 'new' dimensions
@@ -110,8 +112,8 @@ protected:
     void m_duplicate(const D4Dimensions &rhs) {
         D4DimensionsCIter i = rhs.d_dims.begin();
         while (i != rhs.d_dims.end()) {
-            d_dims.push_back(new D4Dimension(**i++));    // deep copy
-            d_dims.back()->set_parent(this);			// Set the Dimension's parent
+            d_dims.push_back(new D4Dimension(**i++)); // deep copy
+            d_dims.back()->set_parent(this);          // Set the Dimension's parent
         }
 
         d_parent = rhs.d_parent;
@@ -119,8 +121,8 @@ protected:
 
 public:
     /// Iterator used for D4Dimensions
-    typedef vector<D4Dimension*>::iterator D4DimensionsIter;
-    typedef vector<D4Dimension*>::const_iterator D4DimensionsCIter;
+    typedef vector<D4Dimension *>::iterator D4DimensionsIter;
+    typedef vector<D4Dimension *>::const_iterator D4DimensionsCIter;
 
     D4Dimensions() : d_parent(0) {}
     D4Dimensions(D4Group *g) : d_parent(g) {}
@@ -133,7 +135,8 @@ public:
     }
 
     D4Dimensions &operator=(const D4Dimensions &rhs) {
-        if (this == &rhs) return *this;
+        if (this == &rhs)
+            return *this;
         m_duplicate(rhs);
         return *this;
     }
@@ -141,7 +144,7 @@ public:
     /// Does this D4Dimensions object actually have dimensions?
     bool empty() const { return d_dims.empty(); }
 
-    D4Group *parent() const { return d_parent;}
+    D4Group *parent() const { return d_parent; }
     void set_parent(D4Group *g) { d_parent = g; }
 
     /** Append a new dimension.
@@ -157,7 +160,10 @@ public:
     /** Append a new dimension.
      * @param dim Pointer to the D4Dimension object to add; copies the pointer
      */
-    void add_dim_nocopy(D4Dimension *dim) { dim->set_parent(this); d_dims.push_back(dim); }
+    void add_dim_nocopy(D4Dimension *dim) {
+        dim->set_parent(this);
+        d_dims.push_back(dim);
+    }
 
     /// Get an iterator to the start of the dimensions
     D4DimensionsIter dim_begin() { return d_dims.begin(); }
@@ -174,16 +180,14 @@ public:
      * @param dim Inserted before i; deep copy
      * @param i iterator
      */
-    void insert_dim(D4Dimension *dim, D4DimensionsIter i) {
-    	insert_dim_nocopy(new D4Dimension(*dim), i);
-    }
+    void insert_dim(D4Dimension *dim, D4DimensionsIter i) { insert_dim_nocopy(new D4Dimension(*dim), i); }
 
     /** Insert a dimension.
      * @param dim Inserted before i; pointer copy
      * @param i iterator
      */
     void insert_dim_nocopy(D4Dimension *dim, D4DimensionsIter i) {
-    	dim->set_parent(this);
+        dim->set_parent(this);
         d_dims.insert(i, dim);
     }
 

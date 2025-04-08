@@ -38,8 +38,8 @@
 #include <winsock2.h>
 #include <xdr.h>
 #else
-#include <rpc/types.h>
 #include <netinet/in.h>
+#include <rpc/types.h>
 #include <rpc/xdr.h>
 #endif
 #endif
@@ -47,12 +47,12 @@
 #include <crc.h>
 
 // #include "Type.h"
-#include "dods-datatypes.h"
-#include "UnMarshaller.h"
 #include "InternalErr.h"
+#include "UnMarshaller.h"
+#include "dods-datatypes.h"
 
-#include "util.h"
 #include "debug.h"
+#include "util.h"
 
 using std::istream;
 
@@ -62,7 +62,7 @@ class Vector;
 
 /** @brief Read data from the stream made by D4StreamMarshaller.
  */
-class D4StreamUnMarshaller: public UnMarshaller {
+class D4StreamUnMarshaller : public UnMarshaller {
 public:
     const static unsigned int c_checksum_length = 4;
 
@@ -78,7 +78,7 @@ private:
 
     D4StreamUnMarshaller();
     D4StreamUnMarshaller(const D4StreamUnMarshaller &);
-    D4StreamUnMarshaller & operator=(const D4StreamUnMarshaller &);
+    D4StreamUnMarshaller &operator=(const D4StreamUnMarshaller &);
 #if USE_XDR_FOR_IEEE754_ENCODING
     void m_deserialize_reals(char *val, int64_t num, int width, Type type);
 #endif
@@ -101,8 +101,9 @@ public:
      * if this host is not big-endian and twiddle_bytes is true, then the remote
      * host must be big-endian
      */
-    bool is_source_big_endian() const { return (is_host_big_endian() && !d_twiddle_bytes)
-                                               || (!is_host_big_endian() && d_twiddle_bytes); }
+    bool is_source_big_endian() const {
+        return (is_host_big_endian() && !d_twiddle_bytes) || (!is_host_big_endian() && d_twiddle_bytes);
+    }
 
     Crc32::checksum get_checksum();
     string get_checksum_str();
@@ -128,15 +129,13 @@ public:
     virtual void get_url(string &val);
 
     virtual void get_opaque(char *, unsigned int) {
-    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4, use get_opaque_dap4() instead.");
+        throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4, use get_opaque_dap4() instead.");
     }
 
     virtual void get_opaque_dap4(char **val, int64_t &len);
-    virtual void get_opaque_dap4( vector<uint8_t> &val );
+    virtual void get_opaque_dap4(vector<uint8_t> &val);
 
-    virtual void get_int(int &) {
-        throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
-    }
+    virtual void get_int(int &) { throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4"); }
 
     // Note that DAP4 assumes clients know the size of arrays when they
     // read the data; it's the 'varying' get methods that read & return the
@@ -146,7 +145,7 @@ public:
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
 
-    virtual void get_vector(char **, unsigned int &, int, Vector & ) {
+    virtual void get_vector(char **, unsigned int &, int, Vector &) {
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
 
@@ -161,4 +160,3 @@ public:
 } // namespace libdap
 
 #endif // I_D4StreamUnMarshaller_h
-

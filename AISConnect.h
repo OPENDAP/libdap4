@@ -38,28 +38,23 @@
 #include "AISExceptions.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** Provide seamless client-side AIS services. */
-class AISConnect: public Connect
-{
+class AISConnect : public Connect {
 private:
     AISMerge *d_ais_merge;
 
 protected:
     /** @name Suppress the C++ defaults for these. */
     //@{
-    AISConnect(): d_ais_merge(0)
-    {}
-    AISConnect(const AISConnect &ac) :Connect(ac),  d_ais_merge(0)
-    {}
+    AISConnect() : d_ais_merge(0) {}
+    AISConnect(const AISConnect &ac) : Connect(ac), d_ais_merge(0) {}
     //@}
 
 public:
     AISConnect(const string &name) throw(AISDatabaseReadFailed);
-    AISConnect(const string &name, const string &ais_db)
-    throw(AISDatabaseReadFailed);
+    AISConnect(const string &name, const string &ais_db) throw(AISDatabaseReadFailed);
 
     virtual ~AISConnect();
 

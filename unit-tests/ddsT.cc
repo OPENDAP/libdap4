@@ -1,58 +1,56 @@
-#include <cppunit/TestFixture.h>
+#include <cppunit/CompilerOutputter.h>
 #include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/CompilerOutputter.h>
 
-#include <iostream>
+#include <fcntl.h>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string.h>
-#include <sys/stat.h> 
-#include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 // #define DODS_DEBUG
 
 #include "DDS.h"
-//#include "Pix.h"
+// #include "Pix.h"
+#include "Array.h"
 #include "Byte.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
 #include "Float32.h"
 #include "Float64.h"
-#include "Str.h"
-#include "Url.h"
-#include "Array.h"
-#include "Structure.h"
-#include "Sequence.h"
 #include "Grid.h"
+#include "Int16.h"
+#include "Int32.h"
+#include "Sequence.h"
+#include "Str.h"
+#include "Structure.h"
+#include "UInt16.h"
+#include "UInt32.h"
+#include "Url.h"
 
 #include "TestArray.h"
 #include "TestInt16.h"
 #include "TestStr.h"
 #include "TestTypeFactory.h"
-//#include "ce_functions.h"
-#include "util.h"
+// #include "ce_functions.h"
 #include "debug.h"
+#include "util.h"
 
 #include "testFile.h"
-#include "GetOpt.h"
-#include <test_config.h>
+
+#include "run_tests_cppunit.h"
+#include "test_config.h"
 
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
-static bool debug = false;
-
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 // timeouts.
-string cprint =
-    "\
+string cprint = "\
 Dataset {\n\
     Int16 var1;\n\
     String var6;\n\
@@ -78,8 +76,7 @@ Dataset {\n\
 } Test%20Data%20Set;\n\
 ";
 
-string containerprint =
-    "\
+string containerprint = "\
 Dataset {\n\
     Structure {\n\
         Int16 c1var1;\n\
@@ -99,7 +96,7 @@ Dataset {\n\
 } TestDDS;\n\
 ";
 
-class ddsT: public CppUnit::TestFixture {
+class ddsT : public CppUnit::TestFixture {
 
     CPPUNIT_TEST_SUITE(ddsT);
     CPPUNIT_TEST(ddsT_test);
@@ -112,22 +109,17 @@ class ddsT: public CppUnit::TestFixture {
 private:
     /* TEST PRIVATE DATA */
     TestTypeFactory *factory;
-    char a[1024];    
+    char a[1024];
 
 public:
-    void setUp()
-    {
-        factory = new TestTypeFactory;
-    }
+    void setUp() { factory = new TestTypeFactory; }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete factory;
         factory = 0;
     }
 
-    void ddsT_test()
-    {
+    void ddsT_test() {
         DDS dds(factory, "TestDDS");
 
         string dsn = dds.get_dataset_name();
@@ -145,10 +137,9 @@ public:
         CPPUNIT_ASSERT(fn == "dds_test.data");
 
         try {
-            dds.add_var((BaseType *) NULL);
+            dds.add_var((BaseType *)NULL);
             CPPUNIT_FAIL("succeeded in adding a null var");
-        }
-        catch (InternalErr &e) {
+        } catch (InternalErr &e) {
         }
 
         try {
@@ -178,9 +169,9 @@ public:
             dds.add_var(bt);
             delete bt;
             bt = factory->NewStructure("var8");
-            Structure *s = (Structure *) bt;
+            Structure *s = (Structure *)bt;
             BaseType *bts1 = factory->NewStructure("var9");
-            Structure *s1 = (Structure *) bts1;
+            Structure *s1 = (Structure *)bts1;
             BaseType *bts2 = factory->NewInt16("var10");
             s1->add_var(bts2);
             delete bts2;
@@ -191,8 +182,7 @@ public:
             dds.add_var(bt);
             delete bt;
             bt = 0;
-        }
-        catch (InternalErr &e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("failed to add a var");
         }
 
@@ -203,7 +193,7 @@ public:
         CPPUNIT_ASSERT(dds3.num_var() == 8);
         dds3 = dds3;
         CPPUNIT_ASSERT(dds3.num_var() == 8);
-        
+
         int nv = dds.num_var();
         CPPUNIT_ASSERT(nv == 8);
 
@@ -227,33 +217,32 @@ public:
         CPPUNIT_ASSERT(dvsc == dds.var_end() && vsc == vs.end());
         if (dvsc != dds.var_end() && vsc == vs.end()) {
             CPPUNIT_FAIL("Too many vars");
-        }
-        else if (dvsc == dds.var_end() && vsc != vs.end()) {
+        } else if (dvsc == dds.var_end() && vsc != vs.end()) {
             CPPUNIT_FAIL("Too few vars");
         }
-        
+
         for (vsc = vs.begin(); vsc != vs.end(); vsc++) {
             if (*vsc == "var2") {
-                vs_iter &vsi = (vs_iter &) vsc;
+                vs_iter &vsi = (vs_iter &)vsc;
                 vs.erase(vsi);
                 break;
             }
         }
 
         int count = 0;
-        for (DDS::Vars_riter rv = dds.var_rbegin(); rv != dds.var_rend(); rv++) 
+        for (DDS::Vars_riter rv = dds.var_rbegin(); rv != dds.var_rend(); rv++)
             count++;
         CPPUNIT_ASSERT(count == 8);
         DDS::Vars_iter vi = dds.get_vars_iter(4);
         CPPUNIT_ASSERT((*vi)->name() == "var5");
         BaseType *v5 = dds.get_var_index(4);
         CPPUNIT_ASSERT(v5->name() == "var5");
-        
+
         dvsc = dds.var_begin();
         vsc = vs.begin();
         for (; dvsc != dds.var_end() && vsc != vs.end(); dvsc++, vsc++) {
             if ((*dvsc)->name() == "var2") {
-                DDS::Vars_iter &dvsi = (DDS::Vars_iter &) dvsc;
+                DDS::Vars_iter &dvsi = (DDS::Vars_iter &)dvsc;
                 dds.del_var(dvsi);
             }
             CPPUNIT_ASSERT((*dvsc)->name() == *vsc);
@@ -263,13 +252,13 @@ public:
         CPPUNIT_ASSERT(nv == 7);
         if (nv != 7) {
             for (dvsc = dds.var_begin(); dvsc != dds.var_end(); dvsc++) {
-                DBG2( cerr << "    " << (*dvsc)->name() << endl ) ;
+                DBG2(cerr << "    " << (*dvsc)->name() << endl);
             }
         }
 
         for (vsc = vs.begin(); vsc != vs.end(); vsc++) {
             if (*vsc == "var3") {
-                vs_iter &vsi = (vs_iter &) vsc;
+                vs_iter &vsi = (vs_iter &)vsc;
                 vs.erase(vsi);
                 break;
             }
@@ -278,7 +267,7 @@ public:
         vsc = vs.begin();
         for (; dvsc != dds.var_end() && vsc != vs.end(); dvsc++, vsc++) {
             if ((*dvsc)->name() == "var3") {
-                DDS::Vars_iter &dvsi = (DDS::Vars_iter &) dvsc;
+                DDS::Vars_iter &dvsi = (DDS::Vars_iter &)dvsc;
                 dds.del_var(dvsi);
             }
             CPPUNIT_ASSERT((*dvsc)->name() == *vsc);
@@ -288,7 +277,7 @@ public:
         CPPUNIT_ASSERT(nv == 6);
         if (nv != 6) {
             for (dvsc = dds.var_begin(); dvsc != dds.var_end(); dvsc++) {
-                DBG2( cerr << "    " << (*dvsc)->name() << endl ) ;
+                DBG2(cerr << "    " << (*dvsc)->name() << endl);
             }
         }
 
@@ -297,8 +286,8 @@ public:
                 vs_citer vsc2 = vsc;
                 vsc2++;
                 vsc2++;
-                vs_iter &vsi = (vs_iter &) vsc;
-                vs_iter &vsi2 = (vs_iter &) vsc2;
+                vs_iter &vsi = (vs_iter &)vsc;
+                vs_iter &vsi2 = (vs_iter &)vsc2;
                 vs.erase(vsi, vsi2);
                 break;
             }
@@ -310,8 +299,8 @@ public:
                 DDS::Vars_iter dvsc2 = dvsc;
                 dvsc2++;
                 dvsc2++;
-                DDS::Vars_iter &dvsi = (DDS::Vars_iter &) dvsc;
-                DDS::Vars_iter &dvsi2 = (DDS::Vars_iter &) dvsc2;
+                DDS::Vars_iter &dvsi = (DDS::Vars_iter &)dvsc;
+                DDS::Vars_iter &dvsi2 = (DDS::Vars_iter &)dvsc2;
                 dds.del_var(dvsi, dvsi2);
             }
             CPPUNIT_ASSERT((*dvsc)->name() == *vsc);
@@ -321,7 +310,7 @@ public:
         CPPUNIT_ASSERT(nv == 4);
         if (nv != 4) {
             for (dvsc = dds.var_begin(); dvsc != dds.var_end(); dvsc++) {
-                DBG2( cerr << "    " << (*dvsc)->name() << endl ) ;
+                DBG2(cerr << "    " << (*dvsc)->name() << endl);
             }
         }
 
@@ -393,24 +382,24 @@ public:
             dds.print(fp);
             fclose(fp);
             ifstream ifs("ddsT_print.output");
-            while(!ifs.eof())
+            while (!ifs.eof())
                 ifs >> a;
             ifs.close();
             CPPUNIT_ASSERT(!strcmp(a, "Test%20Data%20Set;"));
         }
-        
+
         {
             FILE *fp;
             fp = fopen("ddsT_print_constrained.output", "w");
             dds.print_constrained(fp);
             fclose(fp);
             ifstream ifs("ddsT_print_constrained.output");
-            while(!ifs.eof())
+            while (!ifs.eof())
                 ifs >> a;
             ifs.close();
             CPPUNIT_ASSERT(!strcmp(a, "Test%20Data%20Set;"));
         }
-        
+
         {
             ostringstream sof;
             dds.print_xml(sof, true, "ss");
@@ -423,12 +412,12 @@ public:
             dds.print_xml(fp, true, " ");
             fclose(fp);
             ifstream ifs("ddsT_print_xml.output");
-            while(!ifs.eof())
+            while (!ifs.eof())
                 ifs >> a;
             ifs.close();
             CPPUNIT_ASSERT(!strcmp(a, "</Dataset>"));
         }
-        
+
         {
             ostringstream sof;
             dds.print_constrained(sof);
@@ -453,8 +442,7 @@ public:
         }
     }
 
-    void ddsT_containers()
-    {
+    void ddsT_containers() {
         DDS dds(factory, "TestDDS");
 
         // set the container to c1 and make sure the container is created
@@ -503,8 +491,7 @@ public:
             tbt = 0;
             dds.add_var(bt);
             delete bt;
-        }
-        catch (InternalErr &e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("failed to add a var");
         }
         CPPUNIT_ASSERT(dds.num_var() == 2);
@@ -543,8 +530,7 @@ public:
             bt = factory->NewUInt32("var3");
             dds.add_var(bt);
             delete bt;
-        }
-        catch (InternalErr &e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("failed to add a var");
         }
         CPPUNIT_ASSERT(dds.num_var() == 5);
@@ -604,8 +590,7 @@ public:
             dds.add_var(s);
             delete s;
             s = 0;
-        }
-        catch (InternalErr &e) {
+        } catch (InternalErr &e) {
             CPPUNIT_FAIL("failed to add a var");
         }
         CPPUNIT_ASSERT(dds.num_var() == 4);
@@ -654,12 +639,11 @@ public:
         // print the dds and make sure it looks good.
         ostringstream sstrm;
         dds.print(sstrm);
-        //cout << sstrm.str() << endl;
+        // cout << sstrm.str() << endl;
         CPPUNIT_ASSERT(sstrm.str() == containerprint);
     }
 
-    void major_minor_test()
-    {
+    void major_minor_test() {
         DDS dds(factory, "TestDDS");
         dds.set_dap_major(3);
         dds.set_dap_minor(4);
@@ -682,10 +666,9 @@ public:
         CPPUNIT_ASSERT(dds.get_dap_version() == "2.0");
     }
 
-    void parse_test()
-    {
+    void parse_test() {
         DDS dds(factory, "TestDDS");
-        string file = (string)TEST_SRC_DIR + "/dds-testsuite/test.1";        
+        string file = (string)TEST_SRC_DIR + "/dds-testsuite/test.1";
         CPPUNIT_ASSERT_THROW(dds.parse("not_a_file"), Error);
         dds.parse(file);
         CPPUNIT_ASSERT(dds.get_dataset_name() == "data1");
@@ -697,11 +680,10 @@ public:
 #endif
     }
 
-    void parse_2_test()
-    {
+    void parse_2_test() {
         DDS dds(factory, "TestDDS");
         string file = (string)TEST_SRC_DIR + "/dds-testsuite/test.1";
-        ostringstream strm;        
+        ostringstream strm;
         int fp = open(file.c_str(), O_RDONLY);
         CPPUNIT_ASSERT_THROW(dds.parse(-1), InternalErr);
         CPPUNIT_ASSERT_THROW(dds.parse((FILE *)0), InternalErr);
@@ -713,51 +695,8 @@ public:
     }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (ddsT);
+CPPUNIT_TEST_SUITE_REGISTRATION(ddsT);
 
 /* NOTHING NEEDS TO BE CHANGED BELOW HERE */
 
-int main(int argc, char*argv[])
-{
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-        case 'h': {     // help - show test names
-            cerr << "Usage: ddsT has the following tests:" << endl;
-            const std::vector<Test*> &tests = ddsT::suite()->getTests();
-            unsigned int prefix_len = ddsT::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = ddsT::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
-}
-
+int main(int argc, char *argv[]) { return run_tests<ddsT>(argc, argv) ? 0 : 1; }

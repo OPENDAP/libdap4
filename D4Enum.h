@@ -31,15 +31,7 @@
 #include "BaseType.h"
 #include "dods-datatypes.h"
 
-#if 0
-#include "InternalErr.h"
-#include "dods-datatypes.h"
-#include "dods-limits.h"
-#include "util.h"
-#endif
-
-namespace libdap
-{
+namespace libdap {
 
 class D4EnumDef;
 class ConstraintEvaluator;
@@ -58,9 +50,8 @@ class UnMarshaller;
  *
  * @todo Note the hack to remove the union...
  */
-class D4Enum: public BaseType
-{
-	friend class D4EnumTest;
+class D4Enum : public BaseType {
+    friend class D4EnumTest;
 
 protected:
     // Use an unsigned 64-bit int. the value() and set_value()
@@ -69,35 +60,35 @@ protected:
 
 private:
     Type d_element_type;
-    D4EnumDef *d_enum_def;	// This is a weak pointer; don't delete
+    D4EnumDef *d_enum_def; // This is a weak pointer; don't delete
     bool d_is_signed;
 
     void m_duplicate(const D4Enum &src);
     void m_check_value(int64_t v) const;
 
     unsigned int m_type_width() const {
-        switch(d_element_type) {
-            case dods_byte_c:
-            case dods_int8_c:
-            case dods_uint8_c:
-                return 1;
-            case dods_int16_c:
-            case dods_uint16_c:
-                return 2;
-            case dods_int32_c:
-            case dods_uint32_c:
-                return 4;
-            case dods_int64_c:
-            case dods_uint64_c:
-                return 8;
-            case dods_null_c:
-            default:
-            	assert(!"illegal type for D4Enum");
-            	return 0;
+        switch (d_element_type) {
+        case dods_byte_c:
+        case dods_int8_c:
+        case dods_uint8_c:
+            return 1;
+        case dods_int16_c:
+        case dods_uint16_c:
+            return 2;
+        case dods_int32_c:
+        case dods_uint32_c:
+            return 4;
+        case dods_int64_c:
+        case dods_uint64_c:
+            return 8;
+        case dods_null_c:
+        default:
+            assert(!"illegal type for D4Enum");
+            return 0;
         }
     }
 
-    D4Enum();	// No empty constructor
+    D4Enum(); // No empty constructor
 
 public:
     D4Enum(const string &name, const string &enum_type);
@@ -111,17 +102,17 @@ public:
     D4Enum &operator=(const D4Enum &rhs) {
         if (this == &rhs)
             return *this;
-        static_cast<BaseType &>(*this) = rhs;
+        BaseType::operator=(rhs);
         m_duplicate(rhs);
         return *this;
     }
 
-    virtual ~D4Enum() { }
+    virtual ~D4Enum() {}
 
     virtual D4EnumDef *enumeration() const { return d_enum_def; }
     virtual void set_enumeration(D4EnumDef *enum_def);
 
-    virtual BaseType *ptr_duplicate() { return new D4Enum(*this); }
+    BaseType *ptr_duplicate() override { return new D4Enum(*this); }
 
     Type element_type() { return d_element_type; }
     void set_element_type(Type type) { d_element_type = type; }
@@ -129,17 +120,15 @@ public:
     bool is_signed() const { return d_is_signed; }
     void set_is_signed(Type t);
 
-	/**
-	 * @brief Get the value of an Enum
-	 * Get the value of this instance. The caller is responsible
-	 * for using a type T than can hold the value.
-	 *
-	 * @param v Value-result parameter; return the value of the Enum
-	 * in this variable.
-	 */
-	template<typename T> void value(T *v) const {
-		*v = static_cast<T>(d_buf);
-	}
+    /**
+     * @brief Get the value of an Enum
+     * Get the value of this instance. The caller is responsible
+     * for using a type T than can hold the value.
+     *
+     * @param v Value-result parameter; return the value of the Enum
+     * in this variable.
+     */
+    template <typename T> void value(T *v) const { *v = static_cast<T>(d_buf); }
 
     /**
      * @brief Set the value of the Enum
@@ -151,10 +140,10 @@ public:
      * @param check_value If true test the value 'v' against the type of the
      * Enum. Defaults to true.
      */
-    template <typename T> void set_value(T v, bool check_value = true)
-    {
-    	if (check_value) m_check_value(v);
-    	d_buf = static_cast<int64_t>(v);
+    template <typename T> void set_value(T v, bool check_value = true) {
+        if (check_value)
+            m_check_value(v);
+        d_buf = static_cast<int64_t>(v);
     }
 
     /**
@@ -172,29 +161,31 @@ public:
      *
      * @return The number of bytes used by a value.
      */
-    virtual unsigned int width(bool /* constrained */ = false) const { return /*sizeof(int64_t);*/ m_type_width();}
+    unsigned int width(bool /* constrained */ = false) const override { return (int)m_type_width(); }
+
+    int64_t width_ll(bool /* constrained */ = false) const override { return (int64_t)m_type_width(); }
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void compute_checksum(Crc32 &checksum) override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
-    virtual void print_xml_writer(XMLWriter &xml, bool constrained);
+    void print_xml_writer(XMLWriter &xml, bool constrained) override;
 
-    virtual bool ops(BaseType *b, int op);
+    bool ops(BaseType *b, int op) override;
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 
-    unsigned int val2buf(void *, bool);
-    unsigned int buf2val(void **);
+    unsigned int val2buf(void *, bool) override;
+    unsigned int buf2val(void **) override;
 
     virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims);
 
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
 };
 
 } // namespace libdap
 
 #endif // _D4Enum_h
-
