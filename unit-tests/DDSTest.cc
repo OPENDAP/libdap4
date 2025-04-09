@@ -672,18 +672,19 @@ public:
 
             parser.intern(ifs, &dmr);
 
-            unique_ptr<DDS> dds(dmr.getDDS());
-            unique_ptr<DAS> das(dds->get_das());
+            auto dds = dmr.getDDS();
+            unique_ptr<DAS> das2(dds->get_das());
 
             string baseline =
                 read_test_baseline(string(TEST_SRC_DIR) + "/dmr-testsuite/coads_climatology.nc.full.dmr.das");
             ostringstream oss;
-            das->print(oss);
+            das2->print(oss);
 
             DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
             DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
+            DBG(cerr << prolog << "########## TEST PASSED #############################" << endl);
         } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
