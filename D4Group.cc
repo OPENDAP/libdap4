@@ -159,9 +159,10 @@ string D4Group::FQN() const {
 
 D4Group *D4Group::find_child_grp(const string &grp_name) {
     auto g = find_if(grp_begin(), grp_end(), [grp_name](const D4Group *g) { return g->name() == grp_name; });
-    return (g == grp_end()) ? 0 : *g;
+    return (g == grp_end()) ? nullptr : *g;
 }
 
+// This is a private method. The grp_path is not supposed to start with the '/'.
 D4Group *D4Group::find_grp_internal(const string &grp_path) {
 
     string::size_type pos = grp_path.find('/');
