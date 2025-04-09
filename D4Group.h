@@ -60,6 +60,7 @@ private:
     vector<D4Group *> d_groups;
 
     BaseType *m_find_map_source_helper(const string &name);
+    D4Group *find_grp_internal(const string &grp_path);
 
 protected:
     void m_duplicate(const D4Group &g);
