@@ -181,7 +181,7 @@ public:
     unsigned int val2buf(void *, bool) override;
     unsigned int buf2val(void **) override;
 
-    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims) override;
 };
 
 } // namespace libdap
