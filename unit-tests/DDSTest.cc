@@ -672,6 +672,7 @@ public:
 
             parser.intern(ifs, &dmr);
 
+            // This fixes a sigsegv on method exit - @TODO do we understand this? Maybe?
             auto dds = dmr.getDDS();
             unique_ptr<DAS> das2(dds->get_das());
 
