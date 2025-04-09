@@ -24,8 +24,6 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
-
 #include <cassert>
 
 #include <iostream>
@@ -34,24 +32,22 @@
 #include <map>
 #include <string>
 
-#include <stdint.h>
-
-#include "crc.h"
-
-#include "BaseType.h"
 #include "Array.h"
 #include "Grid.h"
+#include "BaseType.h"
 
-#include "XMLWriter.h"
 #include "D4Attributes.h"
 #include "D4Dimensions.h"
-#include "D4Group.h"
 #include "D4Enum.h"
+#include "D4Group.h"
+#include "XMLWriter.h"
 
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
 #include "debug.h"
+#include "escaping.h"
+#include "util.h"
 
 /**
  * Define this symbol iff we decide to include information about the
@@ -62,47 +58,37 @@
 
 namespace libdap {
 
-void D4Group::m_duplicate(const D4Group &g)
-{
-	DBG(cerr << "In D4Group::m_duplicate for " << g.name() << endl);
+void D4Group::m_duplicate(const D4Group &g) {
+    DBG(cerr << "In D4Group::m_duplicate for " << g.name() << endl);
 
-	// dims; deep copy, this is the parent
-	if (g.d_dims) {
-		d_dims = new D4Dimensions(*(g.d_dims));
-		d_dims->set_parent(this);
+    // dims; deep copy, this is the parent
+    if (g.d_dims) {
+        d_dims = new D4Dimensions(*(g.d_dims));
+        d_dims->set_parent(this);
 
-	    // Update all of the D4Dimension weak pointers in the Array objects.
-	    // This is a hack - we know that Constructor::m_duplicate() has been
-	    // called at this point and any Array instances have dimension pointers
-	    // that reference the 'old' dimensions (g.d_dims) and not the 'new'
-	    // dimensions made above. Scan every array and re-wire the weak pointers.
-	    // jhrg 8/15/14
-	    Vars_citer vi = d_vars.begin();
-	    while (vi != d_vars.end()) {
-	        if ((*vi)->type() == dods_array_c)
-	            static_cast<Array*>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
-	        ++vi;
-	    }
-	}
+        // Update all of the D4Dimension weak pointers in the Array objects.
+        // This is a hack - we know that Constructor::m_duplicate() has been
+        // called at this point and any Array instances have dimension pointers
+        // that reference the 'old' dimensions (g.d_dims) and not the 'new'
+        // dimensions made above. Scan every array and re-wire the weak pointers.
+        // jhrg 8/15/14
+        Vars_citer vi = d_vars.begin();
+        while (vi != d_vars.end()) {
+            if ((*vi)->type() == dods_array_c)
+                static_cast<Array *>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
+            ++vi;
+        }
+    }
 
-#if 0
-	// Moved this block up inside the if because g.d_dims might be false. jhrg 9/14/15
-	Vars_citer vi = d_vars.begin();
-	while (vi != d_vars.end()) {
-		if ((*vi)->type() == dods_array_c)
-			static_cast<Array*>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
-		++vi;
-	}
-#endif
-
-	// enums; deep copy
-	if (g.d_enum_defs) d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
+    // enums; deep copy
+    if (g.d_enum_defs)
+        d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
 
     // groups
     groupsCIter i = g.d_groups.begin();
-    while(i != g.d_groups.end()) {
+    while (i != g.d_groups.end()) {
         // Only D4Groups are in the d_groups container.
-        D4Group *g = static_cast<D4Group*>((*i++)->ptr_duplicate());
+        D4Group *g = static_cast<D4Group *>((*i++)->ptr_duplicate());
         add_group_nocopy(g);
     }
 
@@ -119,9 +105,7 @@ void D4Group::m_duplicate(const D4Group &g)
 
     @param n A string containing the name of the variable.
 */
-D4Group::D4Group(const string &name)
-    : Constructor(name, dods_group_c, /*is_dap4*/true), d_dims(0), d_enum_defs(0)
-{}
+D4Group::D4Group(const string &name) : Constructor(name, dods_group_c, /*is_dap4*/ true), d_dims(0), d_enum_defs(0) {}
 
 /** The D4Group server-side constructor requires the name of the variable
     to be created and the dataset name from which this variable is being
@@ -134,23 +118,20 @@ D4Group::D4Group(const string &name)
     @param d A string containing the name of the dataset.
 */
 D4Group::D4Group(const string &name, const string &dataset)
-    : Constructor(name, dataset, dods_group_c, /*is_dap4*/true), d_dims(0), d_enum_defs(0)
-{}
+    : Constructor(name, dataset, dods_group_c, /*is_dap4*/ true), d_dims(0), d_enum_defs(0) {}
 
 /** The D4Group copy constructor. */
-D4Group::D4Group(const D4Group &rhs) : Constructor(rhs), d_dims(0), d_enum_defs(0)
-{
-	DBG(cerr << "In D4Group::copy_ctor for " << rhs.name() << endl);
+D4Group::D4Group(const D4Group &rhs) : Constructor(rhs), d_dims(0), d_enum_defs(0) {
+    DBG(cerr << "In D4Group::copy_ctor for " << rhs.name() << endl);
     m_duplicate(rhs);
 }
 
-D4Group::~D4Group()
-{
+D4Group::~D4Group() {
     delete d_dims;
     delete d_enum_defs;
 
     groupsIter i = d_groups.begin();
-    while(i != d_groups.end())
+    while (i != d_groups.end())
         delete *i++;
 }
 
@@ -159,22 +140,13 @@ D4Group *
 
 // I think this was a mistake. jhrg 11/17/16
 #endif
-BaseType *
-D4Group::ptr_duplicate()
-{
-    return new D4Group(*this);
-}
+BaseType *D4Group::ptr_duplicate() { return new D4Group(*this); }
 
-D4Group &
-D4Group::operator=(const D4Group &rhs)
-{
+D4Group &D4Group::operator=(const D4Group &rhs) {
     if (this == &rhs)
         return *this;
-
-    dynamic_cast<Constructor &>(*this) = rhs; // run Constructor=
-
+    Constructor::operator=(rhs);
     m_duplicate(rhs);
-
     return *this;
 }
 
@@ -184,32 +156,18 @@ D4Group::operator=(const D4Group &rhs)
  *
  * @return The FQN in a string
  */
-string
-D4Group::FQN() const
-{
-	// The root group is named "/" (always)
-	return (name() == "/") ? "/" : static_cast<D4Group*>(get_parent())->FQN() + name() + "/";
+string D4Group::FQN() const {
+    // The root group is named "/" (always)
+    return (name() == "/") ? "/" : static_cast<D4Group *>(get_parent())->FQN() + name() + "/";
 }
 
-// Note that in order for this to work the second argument must not be a reference.
-// jhrg 8/20/13
-static bool
-name_eq(D4Group *g, const string name)
-{
-	return g->name() == name;
-}
-
-D4Group *
-D4Group::find_child_grp(const string &grp_name)
-{
-	groupsIter g = find_if(grp_begin(), grp_end(), bind2nd(ptr_fun(name_eq), grp_name));
-	return (g == grp_end()) ? 0: *g;
+D4Group *D4Group::find_child_grp(const string &grp_name) {
+    auto g = find_if(grp_begin(), grp_end(), [grp_name](const D4Group *g) { return g->name() == grp_name; });
+    return (g == grp_end()) ? 0 : *g;
 }
 
 // TODO Add constraint param? jhrg 11/17/13
-BaseType *
-D4Group::find_first_var_that_uses_dimension(D4Dimension *dim)
-{
+BaseType *D4Group::find_first_var_that_uses_dimension(D4Dimension *dim) {
     // for each group, starting with the root group
     //    for each variable in the group that is marked to send and is an array
     //        return the btp if it uses the D4Dimension
@@ -222,7 +180,7 @@ D4Group::find_first_var_that_uses_dimension(D4Dimension *dim)
     // root group
     for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i) {
         if ((*i)->send_p() && (*i)->type() == dods_array_c) {
-            Array *a = static_cast<Array*>(*i);
+            Array *a = static_cast<Array *>(*i);
             for (Array::Dim_iter di = a->dim_begin(), de = a->dim_end(); di != de; ++di) {
                 if (a->dimension_D4dim(di) == dim)
                     return a;
@@ -232,15 +190,14 @@ D4Group::find_first_var_that_uses_dimension(D4Dimension *dim)
 
     for (groupsIter i = grp_begin(), e = grp_end(); i != e; ++i) {
         BaseType *btp = (*i)->find_first_var_that_uses_dimension(dim);
-        if (btp) return btp;
+        if (btp)
+            return btp;
     }
 
     return 0;
 }
 
-BaseType *
-D4Group::find_first_var_that_uses_enumeration(D4EnumDef *enum_def)
-{
+BaseType *D4Group::find_first_var_that_uses_enumeration(D4EnumDef *enum_def) {
     // for each group, starting with the root group
     //    for each variable in the group that is marked to send and is an array
     //        return the btp if it uses the D4EnumDef
@@ -253,7 +210,7 @@ D4Group::find_first_var_that_uses_enumeration(D4EnumDef *enum_def)
     // root group
     for (Vars_iter i = var_begin(), e = var_end(); i != e; ++i) {
         if ((*i)->send_p() && (*i)->type() == dods_enum_c) {
-            D4Enum *e = static_cast<D4Enum*>(*i);
+            D4Enum *e = static_cast<D4Enum *>(*i);
             if (e->enumeration() == enum_def)
                 return e;
         }
@@ -261,7 +218,8 @@ D4Group::find_first_var_that_uses_enumeration(D4EnumDef *enum_def)
 
     for (groupsIter i = grp_begin(), e = grp_end(); i != e; ++i) {
         BaseType *btp = (*i)->find_first_var_that_uses_enumeration(enum_def);
-        if (btp) return btp;
+        if (btp)
+            return btp;
     }
 
     return 0;
@@ -276,75 +234,97 @@ D4Group::find_first_var_that_uses_enumeration(D4EnumDef *enum_def)
  * @param path The path to the dimension
  * @return A pointer to the D4Dimension object.
  */
-D4Dimension *
-D4Group::find_dim(const string &path)
-{
-	string lpath = path;		// get a mutable copy
+D4Dimension *D4Group::find_dim(const string &path) {
+    string lpath = path; // get a mutable copy
 
-	// special-case for the root group
-	if (lpath[0] == '/') {
-		if (name() != "/")
-			throw InternalErr(__FILE__, __LINE__, "Lookup of a FQN starting in non-root group.");
-		else
-			lpath = lpath.substr(1);
-	}
+    // special-case for the root group
+    if (lpath[0] == '/') {
+        if (name() != "/")
+            throw InternalErr(__FILE__, __LINE__, "Lookup of a FQN starting in non-root group.");
+        else
+            lpath = lpath.substr(1);
+    }
 
-	string::size_type pos = lpath.find('/');
-	if (pos == string::npos) {
-		// name looks like 'bar'
-		return dims()->find_dim(lpath);
-	}
+    string::size_type pos = lpath.find('/');
+    if (pos == string::npos) {
+        // name looks like 'bar'
+        return dims()->find_dim(lpath);
+    }
 
-	// name looks like foo/bar/baz where foo and bar must be groups
-	string grp_name = lpath.substr(0, pos);
-	lpath = lpath.substr(pos + 1);
+    // name looks like foo/bar/baz where foo and bar must be groups
+    string grp_name = lpath.substr(0, pos);
+    lpath = lpath.substr(pos + 1);
 
-	D4Group *grp = find_child_grp(grp_name);
-	return (grp == 0) ? 0: grp->find_dim(lpath);
+    D4Group *grp = find_child_grp(grp_name);
+    return (grp == 0) ? 0 : grp->find_dim(lpath);
 }
 
-Array *
-D4Group::find_map_source(const string &path)
-{
-	BaseType *map_source = m_find_map_source_helper(path);
+/**
+ * @brief Given a path to an Array that is also a Map, get that Array.
+ * @param path The path to the Map. May be a FQN or a path relative to this group.
+ * @return A pointer to the Array or nullptr if the Map cannot be found.
+ */
+Array *D4Group::find_map_source(const string &path) {
+    BaseType *map_source = m_find_map_source_helper(path);
 
-	// TODO more complete semantic checking jhrg 10/16/13
-	if (map_source && map_source->type() == dods_array_c) return static_cast<Array*>(map_source);
+    // TODO more complete semantic checking jhrg 10/16/13
+    if (map_source && map_source->type() == dods_array_c)
+        return static_cast<Array *>(map_source);
 
-	return 0;
+    return 0;
 }
 
-BaseType *
-D4Group::m_find_map_source_helper(const string &path)
-{
-	string lpath = path;		// get a mutable copy
+/**
+ * @brief Get the Map Array named by the path
+ * @param path The path to the Map. May be a FQN or a path relative to this group.
+ * @return A pinter to the variable named by the path
+ */
+BaseType *D4Group::m_find_map_source_helper(const string &path) {
+    string lpath = path; // get a mutable copy
 
-	// special-case for the root group
-	if (lpath[0] == '/') {
-		if (name() != "/")
-			throw InternalErr(__FILE__, __LINE__, "Lookup of a FQN starting in non-root group.");
-		else
-			lpath = lpath.substr(1);
-	}
+    // special-case for the root group
+    if (lpath[0] == '/') {
+        if (name() != "/")
+            throw InternalErr(__FILE__, __LINE__, "Lookup of a FQN starting in non-root group.");
+        else
+            lpath = lpath.substr(1);
+    }
+    string::size_type pos = lpath.find('/');
+    if (pos == string::npos) {
+        // name looks like 'bar'
+        return var(lpath);
+    }
 
-	string::size_type pos = lpath.find('/');
-	if (pos == string::npos) {
-		// name looks like 'bar'
-		return var(lpath);
-	}
+    // name looks like foo/bar/baz where foo and bar must be groups
+    string grp_name = lpath.substr(0, pos);
 
-	// name looks like foo/bar/baz where foo an bar must be groups
-	string grp_name = lpath.substr(0, pos);
-	lpath = lpath.substr(pos + 1);
+    D4Group *grp = find_child_grp(grp_name);
+    lpath = lpath.substr(pos + 1);
 
-	D4Group *grp = find_child_grp(grp_name);
-	return (grp == 0) ? 0: grp->var(lpath);
+    // We need to resolve the case that
+    // many group layers are involved such as /foo/bar/bar2/bar3/.../baz
+    // The following code handles this.
+    // KY 2023-05-21
+    //
+    pos = lpath.find('/');
+
+    if (pos == string::npos)
+        return (grp == nullptr) ? nullptr : grp->var(lpath);
+
+    // Recursively check the child groups until we hit the leaf.
+    while (pos != string::npos) {
+
+        grp_name = lpath.substr(0, pos);
+        grp = grp->find_child_grp(grp_name);
+        lpath = lpath.substr(pos + 1);
+        pos = lpath.find('/');
+    }
+
+    return (grp == nullptr) ? nullptr : grp->var(lpath);
 }
 
-D4EnumDef *
-D4Group::find_enum_def(const string &path)
-{
-    string lpath = path;        // get a mutable copy
+D4EnumDef *D4Group::find_enum_def(const string &path) {
+    string lpath = path; // get a mutable copy
 
     // special-case for the root group
     if (lpath[0] == '/') {
@@ -365,20 +345,18 @@ D4Group::find_enum_def(const string &path)
     lpath = lpath.substr(pos + 1);
 
     D4Group *grp = find_child_grp(grp_name);
-    return (grp == 0) ? 0: grp->enum_defs()->find_enum_def(lpath);
+    return (grp == 0) ? 0 : grp->enum_defs()->find_enum_def(lpath);
 }
 
 /**
- * Find a variable using it's FUlly Qualified Name (FQN). The leading '/' is optional.
+ * Find a variable using its Fully Qualified Name (FQN). The leading '/' is optional.
  *
  * @param path The FQN to the variable
- * @return A BaseType* to the variable of null if it was not found
+ * @return A BaseType* to the variable or null if it was not found
  * @see BaseType::FQN()
  */
-BaseType *
-D4Group::find_var(const string &path)
-{
-    string lpath = path;        // get a mutable copy
+BaseType *D4Group::find_var(const string &path) {
+    string lpath = path; // get a mutable copy
 
     // special-case for the root group
     if (lpath[0] == '/') {
@@ -390,8 +368,15 @@ D4Group::find_var(const string &path)
 
     string::size_type pos = lpath.find('/');
     if (pos == string::npos) {
-        // name looks like 'bar' or bar.baz; lookup in the Constructor that's part of the Group
-    	return var(lpath);
+        // New behavior to accommodate cases where the path ends in a group - the
+        // CE is being used to request all the variables in a Group. So, first check
+        // if this is the name of a Group and if so, return that. Otherwise, look in
+        // the Group's Constructor for a matching variable. jhrg 8/3/22
+        D4Group *grp = find_child_grp(lpath);
+        if (grp != nullptr)
+            return grp;
+        else
+            return var(lpath);
     }
 
     // name looks like foo/bar/baz where foo and bar must be groups
@@ -399,44 +384,60 @@ D4Group::find_var(const string &path)
     lpath = lpath.substr(pos + 1);
 
     D4Group *grp = find_child_grp(grp_name);
-    return (grp == 0) ? 0 : grp->find_var(lpath);
+    if (grp == nullptr)
+        return nullptr;
+    else if (lpath.empty())
+        return grp;
+    else
+        return grp->find_var(lpath);
 }
 
-/** Compute the size of all of the variables in this group and it's children,
+/**
+ * Compute the size of all of the variables in this group and its children,
  * in kilobytes
  *
  * @param constrained Should the current constraint be taken into account?
  * @return The size in kilobytes
+ * @deprecated Use request_size_kb() instead.
  */
-long
-D4Group::request_size(bool constrained)
-{
-    long long size = 0;
-    // variables
-    Constructor::Vars_iter v = var_begin();
-    while (v != var_end()) {
-        if (constrained) {
-            if ((*v)->send_p())
-                size += (*v)->width(constrained);
-        }
-        else {
-            size += (*v)->width(constrained);
-        }
+long D4Group::request_size(bool constrained) { return (long)request_size_kb(constrained); }
 
-        ++v;
+/**
+ * @brief Get the estimated size of a response in kilobytes.
+ *
+ * This method looks at the variables in the DMR and computes
+ * the number of kilobytes in the response.
+ *
+ * @note This version of the method does a poor job with Sequences. A better
+ * implementation would look at row-constraint-based limitations and use them
+ * for size computations. If a row-constraint is missing, return an error.
+ *
+ * @param constrained Should the size of the whole DMR be used or should the
+ * current constraint be taken into account?
+ * @return The size in kilobytes
+ */
+uint64_t D4Group::request_size_kb(bool constrained) {
+    uint64_t size = 0;
+    // variables
+    for (auto &btp : d_vars) {
+        if (constrained) {
+            if (btp->send_p())
+                size += btp->width_ll(constrained);
+        } else {
+            size += btp->width_ll(constrained);
+        }
     }
 
-    // groups
-    groupsIter g = d_groups.begin();
-    while (g != d_groups.end())
-        size += (*g++)->request_size(constrained);
+    size = size / 1024; // Make into kilobytes
 
-    return size / 1024;
+    // All the child groups
+    for (auto grp : d_groups)
+        size += grp->request_size_kb(constrained);
+
+    return size;
 }
 
-void
-D4Group::set_read_p(bool state)
-{
+void D4Group::set_read_p(bool state) {
     groupsIter g = d_groups.begin();
     while (g != d_groups.end())
         (*g++)->set_read_p(state);
@@ -444,9 +445,7 @@ D4Group::set_read_p(bool state)
     Constructor::set_read_p(state);
 }
 
-void
-D4Group::set_send_p(bool state)
-{
+void D4Group::set_send_p(bool state) {
     groupsIter g = d_groups.begin();
     while (g != d_groups.end())
         (*g++)->set_send_p(state);
@@ -454,9 +453,7 @@ D4Group::set_send_p(bool state)
     Constructor::set_send_p(state);
 }
 
-void
-D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/)
-{
+void D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/) {
     groupsIter g = d_groups.begin();
     while (g != d_groups.end())
         (*g++)->intern_data(/*checksum, dmr, eval*/);
@@ -468,13 +465,13 @@ D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/)
     // to sort out which variables are the 'real' top-level variables and instead
     // simply computes the CRC for whatever appears as a variable in the root
     // group.
-	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-		// Only send the stuff in the current subset.
-		if ((*i)->send_p()) {
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        // Only send the stuff in the current subset.
+        if ((*i)->send_p()) {
 #if 0
 		    checksum.Reset();
 #endif
-			(*i)->intern_data(/*checksum, dmr, eval*/);
+            (*i)->intern_data(/*checksum, dmr, eval*/);
 #if 0
 			D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
 
@@ -491,8 +488,8 @@ D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/)
 	        (*i)->attributes()->add_attribute_nocopy(a);
 			DBG(cerr << "CRC32: " << oss.str() << " for " << (*i)->name() << endl);
 #endif
-		}
-	}
+        }
+    }
 }
 
 /**
@@ -506,9 +503,7 @@ D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/)
  * @param filter Unused
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
-void
-D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter)
-{
+void D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter) {
 #if 0
     // This will call Constructor read which will, for everything but a Sequence,
     // read all of the data in one shot. However, the serialize() methods for the
@@ -532,50 +527,47 @@ D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,
     // to sort out which variables are the 'real' top-level variables and instead
     // simply computes the CRC for whatever appears as a variable in the root
     // group.
-	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-		// Only send the stuff in the current subset.
-		if ((*i)->send_p()) {
-			m.reset_checksum();
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        // Only send the stuff in the current subset.
+        if ((*i)->send_p()) {
+            m.reset_checksum();
 
-	        DBG(cerr << "Serializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
-			(*i)->serialize(m, dmr, filter);
+            DBG(cerr << "Serializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
+            (*i)->serialize(m, dmr, filter);
 
-			DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
-			m.put_checksum();
-		}
-	}
+            DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
+            m.put_checksum();
+        }
+    }
 }
 
-void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
-{
-	groupsIter g = d_groups.begin();
-	while (g != d_groups.end()) {
+void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end()) {
         DBG(cerr << "Deserializing group " << (*g)->name() << endl);
-		(*g++)->deserialize(um, dmr);
-	}
-	// Specialize how the top-level variables in any Group are received; read
-	// their checksum and store the value in a magic attribute of the variable
-	for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+        (*g++)->deserialize(um, dmr);
+    }
+    // Specialize how the top-level variables in any Group are received; read
+    // their checksum and store the value in a magic attribute of the variable
+    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         DBG(cerr << "Deserializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
-		(*i)->deserialize(um, dmr);
+        (*i)->deserialize(um, dmr);
 
-		D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
-		string crc = um.get_checksum_str();
-		a->add_value(crc);
+        D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
+        string crc = um.get_checksum_str();
+        a->add_value(crc);
 #if INCLUDE_SOURCE_BYTE_ORDER
-		if (um.is_source_big_endian())
-		    a->add_value("source:big-endian");
-		else
-		    a->add_value("source:little-endian");
+        if (um.is_source_big_endian())
+            a->add_value("source:big-endian");
+        else
+            a->add_value("source:little-endian");
 #endif
-		DBG(cerr << "Read CRC32: " << crc << " for " << (*i)->name() << endl);
-		(*i)->attributes()->add_attribute_nocopy(a);
-	}
+        DBG(cerr << "Read CRC32: " << crc << " for " << (*i)->name() << endl);
+        (*i)->attributes()->add_attribute_nocopy(a);
+    }
 }
 
-void
-D4Group::print_dap4(XMLWriter &xml, bool constrained)
-{
+void D4Group::print_dap4(XMLWriter &xml, bool constrained) {
     if (!name().empty() && name() != "/") {
         // For named groups, if constrained is true only print if this group
         // has variables that are marked for transmission. For the root group
@@ -583,10 +575,10 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
         if (constrained && !send_p())
             return;
 
-        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*) type_name().c_str()) < 0)
+        if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)type_name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write " + type_name() + " element");
 
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*) name().c_str()) < 0)
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name().c_str()) < 0)
             throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
     }
 
@@ -616,6 +608,76 @@ D4Group::print_dap4(XMLWriter &xml, bool constrained)
             throw InternalErr(__FILE__, __LINE__, "Could not end " + type_name() + " element");
     }
 }
+
+void D4Group::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained) {
+    ostringstream oss;
+    print_decl(oss, space, print_semi, constraint_info, constrained);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+}
+
+void D4Group::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained) {
+    if (constrained && !send_p())
+        return;
+
+    out << space << type_name() << " {\n";
+    for (auto var : d_vars) {
+        var->print_decl(out, space + "    ", true, constraint_info, constrained);
+    }
+
+    for (auto grp : d_groups) {
+        grp->print_decl(out, space + "    ", true, constraint_info, constrained);
+    }
+
+    out << space << "} " << id2www(name());
+
+    if (constraint_info) { // Used by test drivers only.
+        if (send_p())
+            out << ": Send True";
+        else
+            out << ": Send False";
+    }
+
+    if (print_semi)
+        out << ";\n";
+}
+
+void D4Group::print_val(FILE *out, string space, bool print_decl_p) {
+    ostringstream oss;
+    print_val(oss, space, print_decl_p);
+    fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
+}
+
+void D4Group::print_val(ostream &out, string space, bool print_decl_p) {
+    if (print_decl_p) {
+        print_decl(out, space, false);
+        out << " = ";
+    }
+
+    out << "{ ";
+    bool padding_needed = false; // Add padding - which is complex with the two parts. jhrg 8/5/22
+    for (Vars_citer i = d_vars.begin(), e = d_vars.end(); i != e; i++, (void)(i != e && out << ", ")) {
+        (*i)->print_val(out, "", false);
+        padding_needed = true;
+    }
+
+    if (padding_needed)
+        out << " ";
+
+    padding_needed = false;
+    for (auto grp : d_groups) {
+        grp->print_val(out, "", false);
+        padding_needed = true;
+    }
+
+    if (padding_needed)
+        out << " }";
+    else
+        out << "}";
+
+    if (print_decl_p)
+        out << ";\n";
+}
+
 #if 0
 /** @brief DAP4 to DAP2 transform
  *
@@ -651,7 +713,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
  * be prepended to the name of the variable. Group names are separated using
  * a '/' character.
  *
- * The Group attributes are transfered to the parent_attr_table.
+ * The Group attributes are transferred to the parent_attr_table.
  *
  * @todo Fix the comment.
  *
@@ -662,9 +724,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
  * vector will contain DAP2 versions of all of the member variables of the D4Group instance.
  * (ex: UInt64) the will return a NULL pointer and so this must be tested!
  */
-vector<BaseType *> *
-D4Group::transform_to_dap2(AttrTable *parent_attr_table)
-{
+vector<BaseType *> *D4Group::transform_to_dap2(AttrTable *parent_attr_table) {
     DBG( cerr << __func__ << "() - BEGIN ("<< name() << ")" << endl);
     bool replicate_shared_dims = true;
 
@@ -687,9 +747,9 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
                 // deleted after calling this method.
                 AttrTable *at = new AttrTable(*(*i)->attributes);
                 parent_attr_table->append_container(at, at->get_name());
-            }
-            else {
-                parent_attr_table->append_attr((*i)->name, AttrType_to_String((*i)->type), (*i)->attr);
+            } else {
+                parent_attr_table->append_attr((*i)->name, AttrType_to_String((*i)->type), (*i)->attr,
+                                               (*i)->is_utf8_str);
             }
         }
         delete group_attrs;
@@ -701,15 +761,15 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
     vector<BaseType *> dropped_vars;
     for (D4Group::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
 
-        DBG( cerr << __func__ << "() - Processing member variable '" << (*i)->name() <<
-            "' root: " << (is_root?"true":"false") << endl);
+        DBG(cerr << __func__ << "() - Processing member variable '" << (*i)->name()
+                 << "' root: " << (is_root ? "true" : "false") << endl);
 
         map<string,Array*> potential_shared_dims;  // Holds Grid maps, see below. jhrg 10/3/19
 
         vector<BaseType *> *new_vars = (*i)->transform_to_dap2(group_attrs);
-        if (new_vars) {  // Might be un-mappable
+        if (new_vars) { // Might be un-mappable
             // It's not so game on..
-            for (vector<BaseType*>::iterator vi = new_vars->begin(), ve = new_vars->end(); vi != ve; vi++) {
+            for (vector<BaseType *>::iterator vi = new_vars->begin(), ve = new_vars->end(); vi != ve; vi++) {
                 string new_name = (is_root ? "" : FQN()) + (*vi)->name();
                 (*vi)->set_name(new_name);
                 (*vi)->set_parent(NULL);
@@ -736,17 +796,16 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
             }
 
             delete new_vars;
-        }
-        else {
-            DBG( cerr << __func__ << "() - Dropping member variable " << (*i)->name() <<
-                " root: " << (is_root?"true":"false") << endl);
+        } else {
+            DBG(cerr << __func__ << "() - Dropping member variable " << (*i)->name()
+                     << " root: " << (is_root ? "true" : "false") << endl);
             // Got back a NULL, so we are dropping this var.
             dropped_vars.push_back(*i);
         }
     }
 
     // Process dropped DAP4 vars
-    DBG( cerr << __func__ << "() - Processing " << dropped_vars.size() << " Dropped Variable(s)" << endl);
+    DBG(cerr << __func__ << "() - Processing " << dropped_vars.size() << " Dropped Variable(s)" << endl);
 
     AttrTable *dv_attr_table = make_dropped_vars_attr_table(&dropped_vars);
     if (dv_attr_table) {
@@ -772,5 +831,35 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
     return results;
 }
 
+/**
+ * When send_p() is true a description of the instance is added to the inventory and true is returned.
+ * @param inventory is a value-result parameter
+ * @return True when send_p() is true, false otherwise
+ */
+bool D4Group::is_dap4_projected(std::vector<std::string> &inventory) {
+    bool has_projected_dap4 = false;
+    if (send_p()) {
+        // Groups are a dap4 thing, so if the Group is projected...
+        has_projected_dap4 = true;
+        inventory.emplace_back(type_name() + " " + FQN());
+
+        // Even tho this Group is a projected dap4 variable we still need to
+        // generate an inventory of it's dap4 attributes and projected dap4 child variables
+        // and groups.
+
+        // Inventory the Group's dap4 attributes
+        has_projected_dap4 |= attributes()->has_dap4_types(FQN(), inventory);
+
+        // Process the child variables.
+        for (const auto var : variables()) {
+            has_projected_dap4 |= var->is_dap4_projected(inventory);
+        }
+        // Process the child Groups.
+        for (const auto grp : groups()) {
+            has_projected_dap4 |= grp->is_dap4_projected(inventory);
+        }
+    }
+    return has_projected_dap4;
+}
 
 } /* namespace libdap */

@@ -29,21 +29,21 @@
 #include <string>
 #include <vector>
 
-#include "DapObj.h"
 #include "D4AttributeType.h"
+#include "DapObj.h"
 #include "XMLWriter.h"
 
 using namespace std;
 
-namespace libdap
-{
+namespace libdap {
 
 class AttrTable;
 class D4Attributes;
 
 class D4Attribute : public DapObj {
     string d_name;
-    D4AttributeType d_type;    // Attributes are limited to the simple types
+    D4AttributeType d_type; // Attributes are limited to the simple types
+    bool is_utf8_str = false;
 
     // If d_type is attr_container_c is true, use d_attributes to read
     // the contained attributes, otherwise use d_values to read the vector
@@ -62,8 +62,7 @@ public:
     typedef vector<string>::const_iterator D4AttributeCIter;
 
     D4Attribute() : d_name(""), d_type(attr_null_c), d_attributes(0) {}
-    D4Attribute(const string &name, D4AttributeType type)
-        : d_name(name), d_type(type), d_attributes(0) {}
+    D4Attribute(const string &name, D4AttributeType type) : d_name(name), d_type(type), d_attributes(0) {}
 
     D4Attribute(const D4Attribute &src);
     ~D4Attribute();
@@ -74,6 +73,9 @@ public:
 
     D4AttributeType type() const { return d_type; }
     void set_type(D4AttributeType type) { d_type = type; }
+
+    bool get_utf8_str_flag() const { return is_utf8_str; }
+    void set_utf8_str_flag(bool utf8_str_flag) { is_utf8_str = utf8_str_flag; }
 
     void add_value(const string &value) { d_values.push_back(value); }
     void add_value_vector(const vector<string> &values) { d_values = values; }
@@ -86,6 +88,8 @@ public:
 
     D4Attributes *attributes();
 
+    bool is_dap4_type(const std::string &path, std::vector<std::string> &inventory);
+
     void print_dap4(XMLWriter &xml) const;
 
     virtual void dump(ostream &strm) const;
@@ -93,37 +97,35 @@ public:
 
 class D4Attributes : public DapObj {
 public:
-    typedef vector<D4Attribute*>::iterator D4AttributesIter;
-    typedef vector<D4Attribute*>::const_iterator D4AttributesCIter;
+    typedef vector<D4Attribute *>::iterator D4AttributesIter;
+    typedef vector<D4Attribute *>::const_iterator D4AttributesCIter;
 
 private:
-    vector<D4Attribute*> d_attrs;
+    vector<D4Attribute *> d_attrs;
 
     void m_duplicate(const D4Attributes &src) {
         D4AttributesCIter i = src.d_attrs.begin();
         while (i != src.d_attrs.end()) {
-            d_attrs.push_back(new D4Attribute(**i++));    // deep copy
+            d_attrs.push_back(new D4Attribute(**i++)); // deep copy
         }
     }
 
     D4Attribute *find_depth_first(const string &name, D4AttributesIter i);
 
 public:
-
     D4Attributes() {}
-    D4Attributes(const D4Attributes &rhs) {
-        m_duplicate(rhs);
-    }
+    D4Attributes(const D4Attributes &rhs) { m_duplicate(rhs); }
 
     virtual ~D4Attributes() {
         D4AttributesIter i = d_attrs.begin();
-        while(i != d_attrs.end()) {
+        while (i != d_attrs.end()) {
             delete *i++;
         }
     }
 
     D4Attributes &operator=(const D4Attributes &rhs) {
-        if (this == &rhs) return *this;
+        if (this == &rhs)
+            return *this;
         m_duplicate(rhs);
         return *this;
     }
@@ -131,21 +133,11 @@ public:
     void transform_to_dap4(AttrTable &at);
     void transform_attrs_to_dap2(AttrTable *d2_attr_table);
 
-#if 0
-    // Can these be replaced with transform_to_dap2() above? jhrg 6/17/19
-    AttrTable *get_AttrTable(const std::string name);
-    static void load_AttrTable(AttrTable *d2_attr_table, D4Attributes *d4_attrs);
-#endif
-
     bool empty() const { return d_attrs.empty(); }
 
-    void add_attribute(D4Attribute *attr) {
-        d_attrs.push_back(new D4Attribute(*attr));
-    }
+    void add_attribute(D4Attribute *attr) { d_attrs.push_back(new D4Attribute(*attr)); }
 
-    void add_attribute_nocopy(D4Attribute *attr) {
-        d_attrs.push_back(attr);
-    }
+    void add_attribute_nocopy(D4Attribute *attr) { d_attrs.push_back(attr); }
 
     /// Get an iterator to the start of the enumerations
     D4AttributesIter attribute_begin() { return d_attrs.begin(); }
@@ -155,11 +147,17 @@ public:
 
     D4Attribute *find(const string &name);
     D4Attribute *get(const string &fqn);
+    void erase(const string &fqn);
+    void erase_named_attribute(const string &name);
 
-    // D4Attribute *find_container(const string &name);
-    // D4Attribute *get_container(const string &fqn);
+    /**
+     * Get a const reference to the vector of D$attribute pointers.
+     * @note Use this in range-based for loops to iterate over the variables.
+     * @return A const reference to the vector of D4Attribute pointers.
+     */
+    const vector<D4Attribute *> &attributes() const { return d_attrs; }
 
-    // Might add erase()
+    bool has_dap4_types(const std::string &path, std::vector<std::string> &inventory) const;
 
     void print_dap4(XMLWriter &xml) const;
 

@@ -48,8 +48,7 @@
 #include "ConstraintEvaluator.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** This class is used to hold eight bits of information.  No sign
     information is implied in its value.
@@ -57,8 +56,7 @@ namespace libdap
     @brief Holds a single byte.
     @see BaseType
     */
-class Byte: public BaseType
-{
+class Byte : public BaseType {
 protected:
     dods_byte d_buf;
 
@@ -66,43 +64,43 @@ public:
     Byte(const string &n);
     Byte(const string &n, const string &d);
 
-    virtual ~Byte()
-    {}
+    virtual ~Byte() {}
 
     Byte(const Byte &copy_from);
 
     Byte &operator=(const Byte &rhs);
 
-    virtual unsigned int width(bool constrained = false) const;
+    unsigned int width(bool = false) const override { return sizeof(dods_byte); }
 
-    virtual BaseType *ptr_duplicate();
+    int64_t width_ll(bool = false) const override { return sizeof(dods_byte); }
+
+    BaseType *ptr_duplicate() override;
 
     // DAP2
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval);
-    virtual bool deserialize(UnMarshaller &um, DDS *, bool);
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval) override;
+    bool deserialize(UnMarshaller &um, DDS *, bool) override;
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void compute_checksum(Crc32 &checksum) override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
+    unsigned int val2buf(void *val, bool reuse = false) override;
+    unsigned int buf2val(void **val) override;
 
     virtual bool set_value(const dods_byte value);
     virtual dods_byte value() const;
 
-    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
-    virtual bool ops(BaseType *b, int op);
-    virtual bool d4_ops(BaseType *b, int op);
-    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
+    bool ops(BaseType *b, int op) override;
+    bool d4_ops(BaseType *b, int op) override;
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 
-    virtual void dump(ostream &strm) const ;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
 
 #endif // _byte_h
-

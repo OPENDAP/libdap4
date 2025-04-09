@@ -1,0 +1,30 @@
+Parse successful
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/vol_1_ce_2.xml" dapVersion="4.0" dmrVersion="1.0" name="vol_1_ce_2">
+    <Int32 name="u"/>
+    <Int32 name="v"/>
+    <Group name="inst2">
+        <Int32 name="u"/>
+        <Int32 name="v"/>
+        <Structure name="Point">
+            <Int32 name="x"/>
+            <Int32 name="y"/>
+        </Structure>
+    </Group>
+</Dataset>
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/vol_1_ce_2.xml" dapVersion="4.0" dmrVersion="1.0" name="vol_1_ce_2">
+    <Group name="inst2">
+        <Structure name="Point">
+            <Int32 name="x"/>
+            <Int32 name="y"/>
+            <Attribute name="DAP4_Checksum_CRC32" type="String">
+                <Value>a5f4caa5</Value>
+            </Attribute>
+        </Structure>
+    </Group>
+</Dataset>
+
+The data:
+{ { { 123456789, 123456789 } } }

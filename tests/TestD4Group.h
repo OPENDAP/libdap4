@@ -29,9 +29,9 @@
 #include "D4Group.h"
 #include "TestCommon.h"
 
-using namespace libdap ;
+using namespace libdap;
 
-class TestD4Group: public D4Group, public TestCommon {
+class TestD4Group : public D4Group, public TestCommon {
     bool d_series_values;
     void m_duplicate(const TestD4Group &ts);
 

@@ -24,17 +24,17 @@
 
 #include "config.h"
 
-//#define DODS_DEBUG
+// #define DODS_DEBUG
 
-#include "ServerFunctionsList.h"
-#include "ConstraintEvaluator.h"
 #include "Clause.h"
+#include "ConstraintEvaluator.h"
 #include "DataDDS.h"
+#include "ServerFunctionsList.h"
 
 #include "ce_parser.h"
 #include "debug.h"
-#include "parser.h"
 #include "expr.h"
+#include "parser.h"
 
 struct yy_buffer_state;
 
@@ -42,13 +42,12 @@ int ce_exprparse(libdap::ce_parser_arg *arg);
 
 // Glue routines declared in expr.lex
 void ce_expr_switch_to_buffer(void *new_buffer);
-void ce_expr_delete_buffer(void * buffer);
+void ce_expr_delete_buffer(void *buffer);
 void *ce_expr_string(const char *yy_str);
 
 namespace libdap {
 
-ConstraintEvaluator::ConstraintEvaluator()
-{
+ConstraintEvaluator::ConstraintEvaluator() {
     // Functions are now held in BES modules. jhrg 1/30/13
 
     // modules load functions to this list; this class searches the list
@@ -59,8 +58,7 @@ ConstraintEvaluator::ConstraintEvaluator()
     d_functions_list = ServerFunctionsList::TheList();
 }
 
-ConstraintEvaluator::~ConstraintEvaluator()
-{
+ConstraintEvaluator::~ConstraintEvaluator() {
     // delete all the constants created by the parser for CE evaluation
     for (Constants_iter j = constants.begin(); j != constants.end(); j++) {
         BaseType *btp = *j;
@@ -76,22 +74,15 @@ ConstraintEvaluator::~ConstraintEvaluator()
 }
 
 /** Returns the first clause in a parsed constraint expression. */
-ConstraintEvaluator::Clause_iter ConstraintEvaluator::clause_begin()
-{
-    return expr.begin();
-}
+ConstraintEvaluator::Clause_iter ConstraintEvaluator::clause_begin() { return expr.begin(); }
 
 /** Returns a reference to the end of the list of clauses in a parsed
  constraint expression. It does not reference the last clause */
-ConstraintEvaluator::Clause_iter ConstraintEvaluator::clause_end()
-{
-    return expr.end();
-}
+ConstraintEvaluator::Clause_iter ConstraintEvaluator::clause_end() { return expr.end(); }
 
 /** Returns the value of the indicated clause of a constraint
  expression. */
-bool ConstraintEvaluator::clause_value(Clause_iter &iter, DDS &dds/*, const string &***/)
-{
+bool ConstraintEvaluator::clause_value(Clause_iter &iter, DDS &dds /*, const string &***/) {
     if (expr.empty())
         throw InternalErr(__FILE__, __LINE__, "There are no CE clauses for *this* DDS object.");
 
@@ -110,8 +101,7 @@ bool ConstraintEvaluator::clause_value(Clause_iter &iter, DDS &dds/*, const stri
  @param arg2 A pointer to a list of the arguments on the right
  side of the operator.
  */
-void ConstraintEvaluator::append_clause(int op, rvalue *arg1, rvalue_list *arg2)
-{
+void ConstraintEvaluator::append_clause(int op, rvalue *arg1, rvalue_list *arg2) {
     Clause *clause = new Clause(op, arg1, arg2);
 
     expr.push_back(clause);
@@ -126,8 +116,7 @@ void ConstraintEvaluator::append_clause(int op, rvalue *arg1, rvalue_list *arg2)
  supported functions.
  @param args A list of arguments to that function.
  */
-void ConstraintEvaluator::append_clause(bool_func func, rvalue_list *args)
-{
+void ConstraintEvaluator::append_clause(bool_func func, rvalue_list *args) {
     Clause *clause = new Clause(func, args);
 
     expr.push_back(clause);
@@ -142,8 +131,7 @@ void ConstraintEvaluator::append_clause(bool_func func, rvalue_list *args)
  supported functions.
  @param args A list of arguments to that function.
  */
-void ConstraintEvaluator::append_clause(btp_func func, rvalue_list *args)
-{
+void ConstraintEvaluator::append_clause(btp_func func, rvalue_list *args) {
     Clause *clause = new Clause(func, args);
 
     expr.push_back(clause);
@@ -156,26 +144,20 @@ void ConstraintEvaluator::append_clause(btp_func func, rvalue_list *args)
  is simply a convenient way to make sure the constants are disposed of
  properly.
  */
-void ConstraintEvaluator::append_constant(BaseType *btp)
-{
-    constants.push_back(btp);
-}
+void ConstraintEvaluator::append_constant(BaseType *btp) { constants.push_back(btp); }
 
 /** @brief Find a Boolean function with a given name in the function list. */
-bool ConstraintEvaluator::find_function(const string &name, bool_func *f) const
-{
+bool ConstraintEvaluator::find_function(const string &name, bool_func *f) const {
     return d_functions_list->find_function(name, f);
 }
 
 /** @brief Find a BaseType function with a given name in the function list. */
-bool ConstraintEvaluator::find_function(const string &name, btp_func *f) const
-{
+bool ConstraintEvaluator::find_function(const string &name, btp_func *f) const {
     return d_functions_list->find_function(name, f);
 }
 
 /** @brief Find a projection function with a given name in the function list. */
-bool ConstraintEvaluator::find_function(const string &name, proj_func *f) const
-{
+bool ConstraintEvaluator::find_function(const string &name, proj_func *f) const {
     return d_functions_list->find_function(name, f);
 }
 //@}
@@ -188,8 +170,7 @@ bool ConstraintEvaluator::find_function(const string &name, proj_func *f) const
  false otherwise
  @deprecated
  */
-bool ConstraintEvaluator::functional_expression()
-{
+bool ConstraintEvaluator::functional_expression() {
     if (expr.empty())
         return false;
 
@@ -200,9 +181,7 @@ bool ConstraintEvaluator::functional_expression()
 /** @brief Evaluate a function-valued constraint expression.
  * @deprecated
  * */
-BaseType *
-ConstraintEvaluator::eval_function(DDS &dds, const string &)
-{
+BaseType *ConstraintEvaluator::eval_function(DDS &dds, const string &) {
     if (expr.size() != 1)
         throw InternalErr(__FILE__, __LINE__, "The length of the list of CE clauses is not 1.");
 
@@ -223,8 +202,7 @@ ConstraintEvaluator::eval_function(DDS &dds, const string &)
 
  @return True if the current constraint contains function clauses,
  otherwise returns False */
-bool ConstraintEvaluator::function_clauses()
-{
+bool ConstraintEvaluator::function_clauses() {
     if (expr.empty())
         return false;
 
@@ -252,9 +230,7 @@ bool ConstraintEvaluator::function_clauses()
  return BaseType pointers.
 
  @note Added for libdap 3.11 */
-DDS *
-ConstraintEvaluator::eval_function_clauses(DDS &dds)
-{
+DDS *ConstraintEvaluator::eval_function_clauses(DDS &dds) {
     if (expr.empty())
         throw InternalErr(__FILE__, __LINE__, "The constraint expression is empty.");
 
@@ -266,8 +242,7 @@ ConstraintEvaluator::eval_function_clauses(DDS &dds)
             // This is correct: The function must allocate the memory for the result
             // variable. 11/30/12 jhrg
             fdds->add_var_nocopy(result);
-        }
-        else {
+        } else {
             delete fdds;
             throw Error(internal_error, "A function was called but failed to return a value.");
         }
@@ -281,22 +256,19 @@ ConstraintEvaluator::eval_function_clauses(DDS &dds)
 
  @see ConstraintEvaluator::eval_function_clauses(DataDDS &dds)
  @note Added for libdap 3.11 */
-DataDDS *
-ConstraintEvaluator::eval_function_clauses(DataDDS &dds)
-{
+DataDDS *ConstraintEvaluator::eval_function_clauses(DataDDS &dds) {
     if (expr.empty())
         throw InternalErr(__FILE__, __LINE__, "The constraint expression is empty.");
 
     DataDDS *fdds = new DataDDS(dds.get_factory(), "function_result_" + dds.get_dataset_name(), dds.get_version(),
-            dds.get_protocol());
+                                dds.get_protocol());
 
     for (unsigned int i = 0; i < expr.size(); ++i) {
         Clause *cp = expr[i];
         BaseType *result;
         if (cp->value(dds, &result)) {
             fdds->add_var_nocopy(result);
-        }
-        else {
+        } else {
             delete fdds;
             throw Error(internal_error, "A function was called but failed to return a value.");
         }
@@ -306,8 +278,7 @@ ConstraintEvaluator::eval_function_clauses(DataDDS &dds)
 }
 
 /** @brief Does the current constraint expression return a boolean value? */
-bool ConstraintEvaluator::boolean_expression()
-{
+bool ConstraintEvaluator::boolean_expression() {
     if (expr.empty())
         return false;
 
@@ -326,8 +297,7 @@ bool ConstraintEvaluator::boolean_expression()
  @param dds Use these variables when evaluating the expressions.
  @param dataset This string is passed to the read() methods.
  @return True if the expression is true, false otherwise. */
-bool ConstraintEvaluator::eval_selection(DDS &dds, const string &)
-{
+bool ConstraintEvaluator::eval_selection(DDS &dds, const string &) {
     if (expr.empty()) {
         DBG(cerr << "No selection recorded" << endl);
         return true;
@@ -360,8 +330,7 @@ bool ConstraintEvaluator::eval_selection(DDS &dds, const string &)
  @param dds The DDS that provides the environment within which the
  constraint is evaluated.
  @exception Throws Error if the constraint does not parse. */
-void ConstraintEvaluator::parse_constraint(const string &constraint, DDS &dds)
-{
+void ConstraintEvaluator::parse_constraint(const string &constraint, DDS &dds) {
     void *buffer = ce_expr_string(constraint.c_str());
 
     ce_expr_switch_to_buffer(buffer);
@@ -370,13 +339,12 @@ void ConstraintEvaluator::parse_constraint(const string &constraint, DDS &dds)
 
     // For all errors, exprparse will throw Error.
     try {
-    	ce_exprparse(&arg);
-    	ce_expr_delete_buffer(buffer);
-    }
-    catch (...) {
-    	// Make sure to remove the buffer when there's an error
-    	ce_expr_delete_buffer(buffer);
-    	throw;
+        ce_exprparse(&arg);
+        ce_expr_delete_buffer(buffer);
+    } catch (...) {
+        // Make sure to remove the buffer when there's an error
+        ce_expr_delete_buffer(buffer);
+        throw;
     }
 }
 

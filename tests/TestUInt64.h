@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -26,29 +26,30 @@
 #ifndef _testuint64_h
 #define _testuint64_h 1
 
+#include <string>
 
-#include "UInt64.h"
 #include "TestCommon.h"
+#include "UInt64.h"
 
-using namespace libdap ;
+// using namespace libdap ;
 
-class TestUInt64: public UInt64, public TestCommon {
+class TestUInt64 : public libdap::UInt64, public TestCommon {
     bool d_series_values;
     void _duplicate(const TestUInt64 &ts);
 
 public:
-    TestUInt64(const string &n);
-    TestUInt64(const string &n, const string &d);
+    TestUInt64(const std::string &n);
+    TestUInt64(const std::string &n, const std::string &d);
     TestUInt64(const TestUInt64 &rhs);
 
     virtual ~TestUInt64() {}
 
     TestUInt64 &operator=(const TestUInt64 &rhs);
 
-    virtual BaseType *ptr_duplicate();
-    
+    virtual libdap::BaseType *ptr_duplicate();
+
     virtual bool read();
-    
+
     virtual void output_values(std::ostream &out);
 
     void set_series_values(bool sv) { d_series_values = sv; }
@@ -56,4 +57,3 @@ public:
 };
 
 #endif // _testuint64_h
-

@@ -6,9 +6,11 @@ AUTOMAKE_OPTIONS = foreign
 # shot.
 .NOTPARALLEL:
 
+SUBDIRS = . unit-tests
+
 # Arrange to build with the backward compatibility mode enabled.
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
-AM_CXXFLAGS =  
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce $(XML2_CFLAGS) $(TIRPC_CFLAGS)
+AM_CXXFLAGS = -Wall -W -Wcast-align -Wno-inconsistent-missing-override
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
@@ -26,24 +28,21 @@ endif
 # AM_LFLAGS = -d
 
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
-TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 if USE_ASAN
-ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+# old. jhrg 3/12/24 ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
 endif
 
-# See note in d4_function about CXX11_FLAG. jhrg 4/5/19
+# See note in d4_function about CXX_STD_FLAG. jhrg 4/5/19
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+AM_CXXFLAGS += $(CXX_STD_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2 
+AM_CXXFLAGS += -g -O2 $(CXX_STD_FLAG)
 endif
 
 AM_LDFLAGS =
-if ENABLE_COVERAGE
-AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
-AM_LDFLAGS += -lgcov --coverage -pg
-endif
+include $(top_srcdir)/coverage.mk
 
 noinst_LTLIBRARIES = libd4_ce_parser.la
 pkginclude_HEADERS = D4ConstraintEvaluator.h
@@ -61,6 +60,8 @@ libd4_ce_parser_la_CXXFLAGS = $(AM_CPPFLAGS) $(AM_CXXFLAGS)
 
 EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll
 
+CLEANFILES = *.gcda *.gcno *.gcov
+
 DISTCLEANFILES = 
 
 clean-local:
@@ -70,8 +71,8 @@ clean-local:
 %.tab.cc %.tab.hh: %.yy
 	$(YACC) $(YFLAGS) $<
 
-#d4_ce_parser.tab.cc d4_ce_parser.tab.hh stack.hh location.hh position.hh: d4_ce_parser.yy
-#	$(YACC) $(YFLAGS) $<
+d4_ce_parser.tab.cc d4_ce_parser.tab.hh stack.hh location.hh position.hh: d4_ce_parser.yy
+	$(YACC) $(YFLAGS) $<
 
 # For now there are two min versions of flex's FlexLexer.h; one that
 # defines the LexerInput() method returning int and one returning size_t.

@@ -31,11 +31,10 @@
 
 // Implementation for the InternalErr class.
 
-
 #include "config.h"
 
-#include <string>
 #include <sstream>
+#include <string>
 
 #include "InternalErr.h"
 #include "util.h"
@@ -45,13 +44,9 @@ using std::ostringstream;
 
 namespace libdap {
 
-InternalErr::InternalErr() : Error()
-{
-    _error_code = internal_error;
-}
+InternalErr::InternalErr() : Error() { _error_code = internal_error; }
 
-InternalErr::InternalErr(const string &msg) : Error()
-{
+InternalErr::InternalErr(const string &msg) : Error() {
     _error_code = internal_error;
     _error_message = "";
     _error_message += "An internal error was encountered:\n";
@@ -59,11 +54,9 @@ InternalErr::InternalErr(const string &msg) : Error()
     _error_message += "Please report this to support@opendap.org\n";
 }
 
-
-//InternalErr::InternalErr(string msg, string file, int line)
-//    : Error(unknown_error, msg)
-InternalErr::InternalErr(const string &file, const int &line, const string &msg) : Error()
-{
+// InternalErr::InternalErr(string msg, string file, int line)
+//     : Error(unknown_error, msg)
+InternalErr::InternalErr(const string &file, const int &line, const string &msg) : Error(msg, file, line) {
     _error_code = internal_error;
     _error_message = "";
     _error_message += "An internal error was encountered in " + file + " at line ";
@@ -75,20 +68,26 @@ InternalErr::InternalErr(const string &file, const int &line, const string &msg)
     _error_message += "Please report this to support@opendap.org\n";
 }
 
-InternalErr::InternalErr(const InternalErr &copy_from)
-        : Error(copy_from)
-{}
+InternalErr::InternalErr(const InternalErr &copy_from) noexcept : Error(copy_from) {}
 
-InternalErr::~InternalErr() throw()
-{}
+InternalErr::~InternalErr() noexcept {}
+
+InternalErr &InternalErr::operator=(const InternalErr &rhs) {
+    if (this == &rhs)
+        return *this;
+
+    _error_code = rhs._error_code;
+    _error_message = rhs._error_message;
+
+    d_file = rhs.d_file;
+    d_line = rhs.d_line;
+
+    return *this;
+}
 
 /**
     @brief Is the InternalErr object valid?
     @return TRUE if the object is valid, FALSE otherwise. */
-bool
-InternalErr::OK()
-{
-    return Error::OK();
-}
+bool InternalErr::OK() { return Error::OK(); }
 
 } // namespace libdap

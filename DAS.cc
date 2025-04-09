@@ -49,34 +49,33 @@
 #include <iostream>
 #include <string>
 
-#include "DAS.h"
 #include "AttrTable.h"
+#include "DAS.h"
+#include "DapIndent.h"
 #include "Error.h"
 #include "InternalErr.h"
-#include "parser.h"
-#include "escaping.h"
 #include "debug.h"
-#include "DapIndent.h"
+#include "escaping.h"
+#include "parser.h"
 
 using std::cerr;
 using std::endl;
 
 // Glue routines declared in das.lex
 extern void das_switch_to_buffer(void *new_buffer);
-extern void das_delete_buffer(void * buffer);
+extern void das_delete_buffer(void *buffer);
 extern void *das_buffer(FILE *fp);
 
-//extern void dasrestart(FILE *yyin);
-//extern int dasparse(void *arg); // defined in das.tab.c
+// extern void dasrestart(FILE *yyin);
+// extern int dasparse(void *arg); // defined in das.tab.c
 extern int dasparse(libdap::parser_arg *arg); // defined in das.tab.c
 
 namespace libdap {
 
-void DAS::duplicate(const DAS &src)
-{
+void DAS::duplicate(const DAS &src) {
     // If the container field is set, perform a deep copy
     if (src.d_container)
-        d_container  = new AttrTable(*src.d_container);
+        d_container = new AttrTable(*src.d_container);
     else
         d_container = 0;
 
@@ -84,13 +83,10 @@ void DAS::duplicate(const DAS &src)
     d_attrs = src.d_attrs;
 }
 
-DAS &DAS::operator=(const DAS &rhs)
-{
+DAS &DAS::operator=(const DAS &rhs) {
     if (this == &rhs)
         return *this;
-
     duplicate(rhs);
-
     return *this;
 }
 
@@ -99,8 +95,7 @@ DAS &DAS::operator=(const DAS &rhs)
  *
  * @param cn container name
  */
-void DAS::container_name(const string &cn)
-{
+void DAS::container_name(const string &cn) {
     // We want to find a top level attribute table with the given name. So
     // set d_container to null first so that we aren't searching some
     // previous container
@@ -122,8 +117,7 @@ void DAS::container_name(const string &cn)
  * attribute tables for the current container. If not set then return the
  * number of current attribute tables in the outermost attribute table.
  */
-unsigned int DAS::get_size() const
-{
+unsigned int DAS::get_size() const {
     if (d_container) {
         return d_container->get_size();
     }
@@ -132,20 +126,17 @@ unsigned int DAS::get_size() const
 
 /** @brief erase all attributes in this DAS
  */
-void DAS::erase()
-{
+void DAS::erase() {
     if (d_container) {
         d_container->erase();
-    }
-    else {
+    } else {
         d_attrs.erase();
     }
 }
 
 /** @brief Returns a reference to the attribute table for the first variable.
  */
-AttrTable::Attr_iter DAS::var_begin()
-{
+AttrTable::Attr_iter DAS::var_begin() {
     if (d_container) {
         return d_container->attr_begin();
     }
@@ -155,8 +146,7 @@ AttrTable::Attr_iter DAS::var_begin()
 /** Returns a reference to the end of the attribute table. Does not
  *  point to an attribute table.
  */
-AttrTable::Attr_iter DAS::var_end()
-{
+AttrTable::Attr_iter DAS::var_end() {
     if (d_container) {
         return d_container->attr_end();
     }
@@ -165,8 +155,7 @@ AttrTable::Attr_iter DAS::var_end()
 
 /** @brief Returns the name of the referenced variable attribute table.
  */
-string DAS::get_name(AttrTable::Attr_iter &i)
-{
+string DAS::get_name(AttrTable::Attr_iter &i) {
     if (d_container) {
         return d_container->get_name(i);
     }
@@ -175,9 +164,7 @@ string DAS::get_name(AttrTable::Attr_iter &i)
 
 /** @brief Returns the referenced variable attribute table.
  */
-AttrTable *
-DAS::get_table(AttrTable::Attr_iter &i)
-{
+AttrTable *DAS::get_table(AttrTable::Attr_iter &i) {
     if (d_container) {
         return d_container->get_attr_table(i);
     }
@@ -186,9 +173,7 @@ DAS::get_table(AttrTable::Attr_iter &i)
 
 /** @brief Returns the variable attribute table with the given name.
  */
-AttrTable *
-DAS::get_table(const string &name)
-{
+AttrTable *DAS::get_table(const string &name) {
     if (d_container) {
         return d_container->get_attr_table(name);
     }
@@ -205,14 +190,12 @@ DAS::get_table(const string &name)
 /** @brief Adds a variable attribute table to the DAS or the current
  * dataset container attribute table.
  */
-AttrTable *
-DAS::add_table( const string &name, AttrTable *at )
-{
+AttrTable *DAS::add_table(const string &name, AttrTable *at) {
     if (d_container) {
         at->set_is_global_attribute(false);
         return d_container->append_container(at, name);
     }
-    return d_attrs.append_container( at, name ) ;
+    return d_attrs.append_container(at, name);
 }
 
 //@}
@@ -223,14 +206,11 @@ DAS::add_table( const string &name, AttrTable *at )
 */
 //@{
 
-
 /** @brief Reads a DAS from the named file.
 
     Read attributes from a file. Throws Error if unable to open
     the file, otherwise parses the file. */
-void
-DAS::parse(string fname)
-{
+void DAS::parse(string fname) {
     FILE *in = fopen(fname.c_str(), "r");
 
     if (!in) {
@@ -241,7 +221,7 @@ DAS::parse(string fname)
 
     int res = fclose(in);
     if (res) {
-        DBG(cerr << "DAS::parse - Failed to close file " << (void *)in << endl ;) ;
+        DBG(cerr << "DAS::parse - Failed to close file " << (void *)in << endl;);
     }
 }
 
@@ -255,9 +235,7 @@ DAS::parse(string fname)
     duplicate descriptor will be closed). Thus further information can
     be read from the descriptor fd.
 */
-void
-DAS::parse(int fd)
-{
+void DAS::parse(int fd) {
 #ifdef WIN32
     int new_fd = _dup(fd);
 #else
@@ -276,11 +254,9 @@ DAS::parse(int fd)
 
     int res = fclose(in);
     if (res) {
-        DBG(cerr << "DAS::parse(fd) - Failed to close " << (void *)in << endl ;) ;
+        DBG(cerr << "DAS::parse(fd) - Failed to close " << (void *)in << endl;);
     }
 }
-
-
 
 /** @brief Reads a DAS from an open file descriptor.
 
@@ -288,9 +264,7 @@ DAS::parse(int fd)
     dasrestart() fails, return false, otherwise return the status
     of dasparse().
 */
-void
-DAS::parse(FILE *in)
-{
+void DAS::parse(FILE *in) {
     if (!in) {
         throw InternalErr(__FILE__, __LINE__, "Null input stream.");
     }
@@ -300,14 +274,14 @@ DAS::parse(FILE *in)
 
     parser_arg arg(this);
 
-    //bool status = dasparse((void *) & arg) == 0;
+    // bool status = dasparse((void *) & arg) == 0;
     bool status = dasparse(&arg) == 0;
 
     das_delete_buffer(buffer);
 
     //  STATUS is the result of the parser function; if a recoverable error
     //  was found it will be true but arg.status() will be false.
-    if (!status || !arg.status()) {// Check parse result
+    if (!status || !arg.status()) { // Check parse result
         if (arg.error())
             throw *arg.error();
     }
@@ -327,14 +301,12 @@ DAS::parse(FILE *in)
     @param dereference If true, follow aliases. Default is false.
 */
 
-void
-DAS::print(FILE *out, bool dereference)
-{
-    fprintf(out, "Attributes {\n") ;
+void DAS::print(FILE *out, bool dereference) {
+    fprintf(out, "Attributes {\n");
 
     d_attrs.print(out, "    ", dereference);
 
-    fprintf(out, "}\n") ;
+    fprintf(out, "}\n");
 }
 
 /** Creates an ASCII representation of a DAS on the given output
@@ -349,14 +321,12 @@ DAS::print(FILE *out, bool dereference)
     @param dereference If true, follow aliases. Default is false.
 */
 
-void
-DAS::print(ostream &out, bool dereference)
-{
-    out << "Attributes {\n" ;
+void DAS::print(ostream &out, bool dereference) {
+    out << "Attributes {\n";
 
     d_attrs.print(out, "    ", dereference);
 
-    out << "}\n" ;
+    out << "}\n";
 }
 
 /** @brief dumps information about this object
@@ -366,14 +336,12 @@ DAS::print(ostream &out, bool dereference)
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void DAS::dump(ostream &strm) const
-{
-    strm << DapIndent::LMarg << "DAS::dump - (" << (void *) this << ")" << endl;
+void DAS::dump(ostream &strm) const {
+    strm << DapIndent::LMarg << "DAS::dump - (" << (void *)this << ")" << endl;
     DapIndent::Indent();
     if (d_container) {
         strm << DapIndent::LMarg << "current container: " << d_container_name << endl;
-    }
-    else {
+    } else {
         strm << DapIndent::LMarg << "current container: NONE" << endl;
     }
     d_attrs.dump(strm);
@@ -381,4 +349,3 @@ void DAS::dump(ostream &strm) const
 }
 
 } // namespace libdap
-

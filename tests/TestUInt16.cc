@@ -33,14 +33,13 @@
 //
 // 3/22/99 jhrg
 
-
 #include "config.h"
 
 #ifndef WIN32
 #include <unistd.h>
 #else
-#include <io.h>
 #include <fcntl.h>
+#include <io.h>
 #include <process.h>
 #endif
 
@@ -48,74 +47,45 @@
 
 extern int test_variable_sleep_interval;
 
-void
-TestUInt16::_duplicate(const TestUInt16 &ts)
-{
-    d_series_values = ts.d_series_values;
-}
+void TestUInt16::_duplicate(const TestUInt16 &ts) { d_series_values = ts.d_series_values; }
 
+TestUInt16::TestUInt16(const string &n) : UInt16(n), d_series_values(false) { d_buf = 1; }
 
-TestUInt16::TestUInt16(const string &n) : UInt16(n), d_series_values(false)
-{
-    d_buf = 1;
-}
+TestUInt16::TestUInt16(const string &n, const string &d) : UInt16(n, d), d_series_values(false) { d_buf = 1; }
 
-TestUInt16::TestUInt16(const string &n, const string &d)
-    : UInt16(n, d), d_series_values(false)
-{
-    d_buf = 1;
-}
+TestUInt16::TestUInt16(const TestUInt16 &rhs) : UInt16(rhs), TestCommon(rhs) { _duplicate(rhs); }
 
-TestUInt16::TestUInt16(const TestUInt16 &rhs) : UInt16(rhs), TestCommon(rhs)
-{
-    _duplicate(rhs);
-}
-
-TestUInt16 &
-TestUInt16::operator=(const TestUInt16 &rhs)
-{
+TestUInt16 &TestUInt16::operator=(const TestUInt16 &rhs) {
     if (this == &rhs)
-	return *this;
+        return *this;
 
-    dynamic_cast<UInt16 &>(*this) = rhs; // run Constructor=
+    UInt16::operator=(rhs); // run Constructor=
 
     _duplicate(rhs);
 
     return *this;
 }
 
+BaseType *TestUInt16::ptr_duplicate() { return new TestUInt16(*this); }
 
-BaseType *
-TestUInt16::ptr_duplicate()
-{
-    return new TestUInt16(*this);
-}
+void TestUInt16::output_values(std::ostream &out) { print_val(out, "", false); }
 
-void
-TestUInt16::output_values(std::ostream &out)
-{
-    print_val(out, "", false);
-}
-
-bool
-TestUInt16::read()
-{
+bool TestUInt16::read() {
     if (read_p())
-	return true;
+        return true;
 
     if (test_variable_sleep_interval > 0)
-	sleep(test_variable_sleep_interval);
+        sleep(test_variable_sleep_interval);
 
     if (get_series_values()) {
         // Change for OSX 10.9 based on change needed for TestInt32.
         // jhrg 3/26/14
         d_buf <<= 4;
-		if (!d_buf)
-			d_buf = 16;
+        if (!d_buf)
+            d_buf = 16;
 
         // d_buf = (short)(16 * d_buf);
-    }
-    else {
+    } else {
         d_buf = 64000;
     }
 

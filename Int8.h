@@ -34,20 +34,22 @@
 #include "BaseType.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief Holds an 8-bit signed integer value. */
 
-class Int8: public BaseType
-{
-	// This is used in BaseType *Vector::var(unsigned int i)
-	virtual unsigned int val2buf(void *val, bool)  {
-    	set_value(*reinterpret_cast<dods_int8*>(val));
-    	return sizeof(dods_int8);
+class Int8 : public BaseType {
+    // This is used in BaseType *Vector::var(unsigned int i)
+    unsigned int val2buf(void *val, bool) override {
+        set_value(*reinterpret_cast<dods_int8 *>(val));
+        return sizeof(dods_int8);
     }
-    virtual unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "buf2val: Not implemented for Int8"); }
-    virtual void print_val(FILE *, string , bool) { throw InternalErr(__FILE__, __LINE__, "print_val: Not implemented for Int8"); }
+    unsigned int buf2val(void **) override {
+        throw InternalErr(__FILE__, __LINE__, "buf2val: Not implemented for Int8");
+    }
+    void print_val(FILE *, string, bool) override {
+        throw InternalErr(__FILE__, __LINE__, "print_val: Not implemented for Int8");
+    }
 
 protected:
     dods_int8 d_buf;
@@ -55,35 +57,37 @@ protected:
 public:
     Int8(const string &n);
     Int8(const string &n, const string &d);
-    virtual ~Int8()
-    {}
+    virtual ~Int8() {}
 
     Int8(const Int8 &copy_from);
 
     Int8 &operator=(const Int8 &rhs);
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
-    virtual unsigned int width(bool constrained = false) const;
+    unsigned int width(bool = false) const override { return sizeof(dods_int8); }
+
+    int64_t width_ll(bool = false) const override { return sizeof(dods_int8); }
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void compute_checksum(Crc32 &checksum) override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
     virtual dods_int8 value() const;
     virtual bool set_value(dods_int8 val);
 
-    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
-    virtual bool ops(BaseType *b, int op);
-    virtual bool d4_ops(BaseType *b, int op);
-    virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table);
+    bool ops(BaseType *b, int op) override;
+    bool d4_ops(BaseType *b, int op) override;
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
 
-    virtual void dump(ostream &strm) const ;
+    bool is_dap4_projected(std::vector<std::string> &inventory) override;
+
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
 
 #endif // _int16_h
-

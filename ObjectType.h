@@ -26,8 +26,7 @@
 #ifndef _object_type_h
 #define _object_type_h
 
-namespace libdap
-{
+namespace libdap {
 
 /** When a version 2.x or greater DAP data server sends an object, it may use
     the Content-Description header of the response to indicate the type of
@@ -60,14 +59,14 @@ enum ObjectType {
     dods_das,
     dods_dds,
     dods_data,
-    dods_ddx,	   	// This is the old XML DDS/DAS used prior to dap4
-    dods_data_ddx,	// This is used for caching data responses
+    dods_ddx,      // This is the old XML DDS/DAS used prior to dap4
+    dods_data_ddx, // This is used for caching data responses
     dods_error,
     web_error,
 
-    dap4_dmr,		// DAP4 metadata
-    dap4_data,		// The DMR with a data blob
-    dap4_error		// The error response for DAP4
+    dap4_dmr,  // DAP4 metadata
+    dap4_data, // The DMR with a data blob
+    dap4_error // The error response for DAP4
 };
 
 } // namespace libdap

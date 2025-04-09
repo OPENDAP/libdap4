@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir) $(XML2_CFLAGS)
-AM_CXXFLAGS =  
+AM_CXXFLAGS = -Wall -W -Wcast-align -Wno-inconsistent-missing-override
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align
@@ -23,25 +23,22 @@ endif
 # AM_LFLAGS = -d
 
 CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
-TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 if USE_ASAN
-ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+# old ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
 endif
 
-# Removed  $(CXX11_FLAG) since c++0x, gcc 4.4.x and bison -gneerated code
+# Removed  $(CXX_STD_FLAG) since c++0x, gcc 4.4.x and bison -gneerated code
 # do not work together. jhrg 4//5/19
 if BUILD_DEVELOPER
-AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
+AM_CXXFLAGS += $(CXX_STD_FLAG) $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2
+AM_CXXFLAGS += -g -O2 $(CXX_STD_FLAG)
 endif
 
 AM_LDFLAGS =
-if ENABLE_COVERAGE
-AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
-AM_LDFLAGS += -lgcov --coverage -pg
-endif
+include $(top_srcdir)/coverage.mk
 
 noinst_LTLIBRARIES = libd4_function_parser.la
 pkginclude_HEADERS = D4FunctionEvaluator.h
@@ -59,6 +56,8 @@ libd4_function_parser_la_SOURCES = D4FunctionEvaluator.cc	\
 libd4_ce_parser_la_CXXFLAGS = $(AM_CPPFLAGS) $(AM_CXXFLAGS)
 
 EXTRA_DIST = d4_function_parser.yy d4_function_scanner.ll
+
+CLEANFILES = *.gcda *.gcno *.gcov
 
 DISTCLEANFILES = 
 

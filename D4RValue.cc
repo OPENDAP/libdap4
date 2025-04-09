@@ -27,19 +27,19 @@
 
 #include <iostream>
 
-#include "BaseType.h"
 #include "Array.h"
+#include "BaseType.h"
 #include "Byte.h"
-#include "Int8.h"
-#include "UInt16.h"
-#include "Int16.h"
-#include "UInt32.h"
-#include "Int32.h"
-#include "UInt64.h"
-#include "Int64.h"
 #include "Float32.h"
 #include "Float64.h"
+#include "Int16.h"
+#include "Int32.h"
+#include "Int64.h"
+#include "Int8.h"
 #include "Str.h"
+#include "UInt16.h"
+#include "UInt32.h"
+#include "UInt64.h"
 
 #include "D4RValue.h"
 #include "InternalErr.h"
@@ -53,27 +53,22 @@ using namespace std;
 
 namespace libdap {
 
-void
-D4RValueList::m_duplicate(const D4RValueList &src)
-{
+void D4RValueList::m_duplicate(const D4RValueList &src) {
     for (std::vector<D4RValue *>::const_iterator i = src.d_rvalues.begin(), e = src.d_rvalues.end(); i != e; ++i) {
         D4RValue *rv = *i;
         d_rvalues.push_back(new D4RValue(*rv));
     }
 }
 
-D4RValueList::~D4RValueList()
-{
+D4RValueList::~D4RValueList() {
     for (std::vector<D4RValue *>::iterator i = d_rvalues.begin(), e = d_rvalues.end(); i != e; ++i)
         delete *i;
 }
 
-void
-D4RValue::m_duplicate(const D4RValue &src)
-{
+void D4RValue::m_duplicate(const D4RValue &src) {
     d_value_kind = src.d_value_kind;
 
-    d_variable = src.d_variable;    // weak pointers
+    d_variable = src.d_variable; // weak pointers
 
     d_func = src.d_func;
     d_args = (src.d_args != 0) ? new D4RValueList(*src.d_args) : 0; // deep copy these
@@ -81,15 +76,12 @@ D4RValue::m_duplicate(const D4RValue &src)
     d_constant = (src.d_constant != 0) ? src.d_constant->ptr_duplicate() : 0;
 }
 
-template<typename T, class DAP_TYPE>
-static BaseType *
-build_constant_array(vector<T> &values, DAP_TYPE &dt)
-{
+template <typename T, class DAP_TYPE> static BaseType *build_constant_array(vector<T> &values, DAP_TYPE &dt) {
     Array *array = new Array("", &dt);
     array->append_dim(values.size());
 
     // TODO Make set_value_nocopy() methods so that values' pointers can be copied
-    // instead of allocating memory twice. jhrg 7/5/13
+    //  instead of allocating memory twice. jhrg 7/5/13
 
     array->set_value(values, values.size());
 
@@ -101,108 +93,95 @@ build_constant_array(vector<T> &values, DAP_TYPE &dt)
     return array;
 }
 
-D4RValue::D4RValue(unsigned long long ull) : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant)
-{
-	UInt64 *ui = new UInt64("constant");
-	ui->set_value(ull);
-	d_constant = ui;
+D4RValue::D4RValue(unsigned long long ull)
+    : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    UInt64 *ui = new UInt64("constant");
+    ui->set_value(ull);
+    d_constant = ui;
 }
 
-D4RValue::D4RValue(long long ll) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	Int64 *i = new Int64("constant");
-	i->set_value(ll);
-	d_constant = i;
+D4RValue::D4RValue(long long ll) : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    Int64 *i = new Int64("constant");
+    i->set_value(ll);
+    d_constant = i;
 }
 
-D4RValue::D4RValue(double r) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	Float64 *f = new Float64("constant");
-	f->set_value(r);
-	d_constant = f;
+D4RValue::D4RValue(double r) : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    Float64 *f = new Float64("constant");
+    f->set_value(r);
+    d_constant = f;
 }
 
-D4RValue::D4RValue(std::string cpps) : d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	Str *s = new Str("constant");
-	s->set_value(remove_quotes(cpps));
-	d_constant = s;
+D4RValue::D4RValue(std::string cpps) : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    Str *s = new Str("constant");
+    s->set_value(remove_quotes(cpps));
+    d_constant = s;
 }
 
 D4RValue::D4RValue(std::vector<dods_byte> &byte_args)
-	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	Byte b("");
-	d_constant = build_constant_array(byte_args, b);
+    : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    Byte b("");
+    d_constant = build_constant_array(byte_args, b);
 }
 
 D4RValue::D4RValue(std::vector<dods_int8> &byte_int8)
-	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	Int8 b("");
-	d_constant = build_constant_array(byte_int8, b);
+    : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    Int8 b("");
+    d_constant = build_constant_array(byte_int8, b);
 }
 
 D4RValue::D4RValue(std::vector<dods_uint16> &byte_uint16)
-	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	UInt16 b("");
-	d_constant = build_constant_array(byte_uint16, b);
+    : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    UInt16 b("");
+    d_constant = build_constant_array(byte_uint16, b);
 }
 
 D4RValue::D4RValue(std::vector<dods_int16> &byte_int16)
-	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	Int16 b("");
-	d_constant = build_constant_array(byte_int16, b);
+    : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    Int16 b("");
+    d_constant = build_constant_array(byte_int16, b);
 }
 
 D4RValue::D4RValue(std::vector<dods_uint32> &byte_uint32)
-	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	UInt32 b("");
-	d_constant = build_constant_array(byte_uint32, b);
+    : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    UInt32 b("");
+    d_constant = build_constant_array(byte_uint32, b);
 }
 
 D4RValue::D4RValue(std::vector<dods_int32> &byte_int32)
-	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	Int32 b("");
-	d_constant = build_constant_array(byte_int32, b);
+    : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    Int32 b("");
+    d_constant = build_constant_array(byte_int32, b);
 }
 
 D4RValue::D4RValue(std::vector<dods_uint64> &byte_uint64)
-	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	UInt64 b("");
-	d_constant = build_constant_array(byte_uint64, b);
+    : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    UInt64 b("");
+    d_constant = build_constant_array(byte_uint64, b);
 }
 
 D4RValue::D4RValue(std::vector<dods_int64> &byte_int64)
-	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	Int64 b("");
-	d_constant = build_constant_array(byte_int64, b);
+    : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    Int64 b("");
+    d_constant = build_constant_array(byte_int64, b);
 }
 
 D4RValue::D4RValue(std::vector<dods_float32> &byte_float32)
-	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	Float32 b("");
-	d_constant = build_constant_array(byte_float32, b);
+    : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    Float32 b("");
+    d_constant = build_constant_array(byte_float32, b);
 }
 
 D4RValue::D4RValue(std::vector<dods_float64> &byte_float64)
-	: d_variable(0), d_func(0), d_args(0),  d_constant(0), d_value_kind(constant)
-{
-	Float64 b("");
-	d_constant = build_constant_array(byte_float64, b);
+    : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(constant) {
+    Float64 b("");
+    d_constant = build_constant_array(byte_float64, b);
 }
 
 D4RValue::~D4RValue() {
-	// d_variable and d_func are weak pointers; don't delete.
-	delete d_args;
-	delete d_constant;
+    // d_variable and d_func are weak pointers; don't delete.
+    delete d_args;
+    delete d_constant;
 }
 
 /**
@@ -215,8 +194,7 @@ D4RValue::~D4RValue() {
  * @param cpps The string argument read by the parser.
  * @return A D4RValue pointer.
  */
-D4RValue *D4RValueFactory(std::string cpps)
-{
+D4RValue *D4RValueFactory(std::string cpps) {
     char *ptr;
 
     // First check if the string is a uint64, ..., then convert it.
@@ -224,18 +202,15 @@ D4RValue *D4RValueFactory(std::string cpps)
     // need to test for errors when building the actual values.
     if (check_uint64(cpps.c_str())) {
         return new D4RValue(strtoull(cpps.c_str(), &ptr, 0));
-    }
-    else if (check_int64(cpps.c_str())) {
+    } else if (check_int64(cpps.c_str())) {
         return new D4RValue(strtoll(cpps.c_str(), &ptr, 0));
-    }
-    else if (check_float64(cpps.c_str())) {
+    } else if (check_float64(cpps.c_str())) {
 #ifdef WIN32
         return new D4RValue(w32strtod(cpps.c_str(), &ptr));
 #else
         return new D4RValue(strtod(cpps.c_str(), &ptr));
 #endif
-    }
-    else {
+    } else {
         return new D4RValue(cpps);
     }
 }
@@ -266,24 +241,22 @@ D4RValue *D4RValueFactory(std::string cpps)
  * @param dmr The DMR to pass to a function.
  * @return A BaseType* that holds the value.
  */
-BaseType *
-D4RValue::value(DMR &dmr)
-{
-	switch (d_value_kind) {
-	case basetype:
-		d_variable->read();
-		d_variable->set_read_p(true);
-		return d_variable;
+BaseType *D4RValue::value(DMR &dmr) {
+    switch (d_value_kind) {
+    case basetype:
+        d_variable->read();
+        d_variable->set_read_p(true);
+        return d_variable;
 
-	case function:
-		return (*d_func)(d_args, dmr);
+    case function:
+        return (*d_func)(d_args, dmr);
 
-	case constant:
-		return d_constant;
+    case constant:
+        return d_constant;
 
-	default:
-		throw InternalErr(__FILE__, __LINE__, "Unknown rvalue type.");
-	}
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown rvalue type.");
+    }
 }
 
 /**
@@ -296,9 +269,7 @@ D4RValue::value(DMR &dmr)
  * @see D4RValue::value(DMR&)
  * @return The value wrapped in a BaseType*
  */
-BaseType *
-D4RValue::value()
-{
+BaseType *D4RValue::value() {
     switch (d_value_kind) {
     case basetype:
         d_variable->read();
@@ -306,7 +277,8 @@ D4RValue::value()
         return d_variable;
 
     case function:
-        throw Error(malformed_expr, "An expression that included a function call was used in a place where that won't work.");
+        throw Error(malformed_expr,
+                    "An expression that included a function call was used in a place where that won't work.");
 
     case constant:
         return d_constant;
@@ -317,4 +289,3 @@ D4RValue::value()
 }
 
 } // namespace libdap
-

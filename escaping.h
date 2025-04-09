@@ -38,8 +38,7 @@
 
 using std::string;
 
-namespace libdap
-{
+namespace libdap {
 
 string hexstring(unsigned char val);
 string unhexstring(string s);
@@ -54,13 +53,14 @@ string unoctstring(string s);
 // The characters allowable in an id in a URI (see RFC 2396):
 // [-A-Za-z0-9_.!~*'()].
 
-string id2www(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/.\\*");
+string id2www(string s,
+              const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/.\\*");
 
 // This is what DAP2 allows in a ce: [-+a-zA-Z0-9_/%.\\#]
-string id2www_ce(string s, const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/.\\");
+string id2www_ce(string s,
+                 const string &allowable = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-+_/.\\");
 
-string www2id(const string &in, const string &escape = "%",
-              const string &except = "");
+string www2id(const string &in, const string &escape = "%", const string &except = "");
 
 // Include these for compatibility with the old names. 7/19/2001 jhrg
 #define id2dods id2www
@@ -74,6 +74,7 @@ string xml2id(string in);
 string esc2underscore(string s);
 string char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]");
 string escattr(string s);
+string escattr_xml(string s);
 string unescattr(string s);
 
 string munge_error_message(string msg);
@@ -84,4 +85,3 @@ string escape_double_quotes(string source);
 } // namespace libdap
 
 #endif // _escaping_h
-

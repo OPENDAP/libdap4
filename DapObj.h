@@ -38,8 +38,7 @@
 
 #include <iostream>
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief libdap base object for common functionality of libdap objects
  *
@@ -47,11 +46,9 @@ namespace libdap
  * methods for dumping the contents of the object.
  */
 
-class DapObj
-{
+class DapObj {
 public:
-    virtual  ~DapObj()
-    {}
+    virtual ~DapObj() = default;
 
     /** @brief dump the contents of this object to the specified ostream
      *
@@ -61,8 +58,8 @@ public:
      *
      * @param strm C++ i/o stream to dump the object to
      */
-    virtual void dump(std::ostream &strm) const = 0 ;
-} ;
+    virtual void dump(std::ostream &strm) const = 0;
+};
 
 } // namespace libdap
 
@@ -75,12 +72,9 @@ public:
  * @param strm C++ i/o stream to dump the object to
  * @param obj The DapObj to dump
  */
-inline std::ostream &
-operator<<(std::ostream &strm, const libdap::DapObj &obj)
-{
-    obj.dump(strm) ;
-    return strm ;
+inline std::ostream &operator<<(std::ostream &strm, const libdap::DapObj &obj) {
+    obj.dump(strm);
+    return strm;
 }
 
 #endif // A_DapObj_h
-

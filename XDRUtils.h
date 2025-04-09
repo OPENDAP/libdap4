@@ -33,9 +33,9 @@
 #ifndef S_XDRUtils_h
 #define S_XDRUtils_h 1
 
-#include <cstdio>
-#include "xdr-datatypes.h"
 #include "BaseType.h"
+#include "xdr-datatypes.h"
+#include <cstdio>
 
 #define xdr_proc_t int *
 
@@ -52,20 +52,19 @@ void delete_xdrstdio(XDR *xdr);
 
 extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
 
-namespace libdap
-{
+namespace libdap {
 
-class XDRUtils
-{
-private:			XDRUtils() {}
+class XDRUtils {
+private:
+    XDRUtils() {}
+
 public:
     // xdr_coder is used as an argument to xdr procedures that encode groups
     // of things (e.g., xdr_array()). Each leaf class's constructor must set
     // this.
-    static xdrproc_t		xdr_coder( const Type &t ) ;
-} ;
+    static xdrproc_t xdr_coder(const Type &t);
+};
 
 } // namespace libdap
 
 #endif // S_XDRUtils_h
-

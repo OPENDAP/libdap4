@@ -33,8 +33,7 @@
 
 class Crc32;
 
-namespace libdap
-{
+namespace libdap {
 class BaseType;
 class D4FilterClauseList;
 
@@ -51,7 +50,6 @@ typedef vector<BaseType *> BaseTypeRow;
 
 /** This type holds all of the values of a Sequence. */
 typedef vector<BaseTypeRow *> SequenceValues;
-
 
 /** This is the interface for the class D4Sequence. A sequence contains
     a single set of variables, all at the same lexical level just like
@@ -130,8 +128,7 @@ typedef vector<BaseTypeRow *> SequenceValues;
 
     @brief Holds a sequence. */
 
-class D4Sequence: public Constructor
-{
+class D4Sequence : public Constructor {
 private:
     // This may be zero (nullptr) but the accessor (clauses()) allocates an
     // instance if that is the case.
@@ -139,7 +136,7 @@ private:
 
     // Use this to control if ptr_duplicate(), ..., copy the filter clauses.
     // Because the values of a child sequence are held in copies of the Seq
-    // object they clauses will bound to the 'master' instance will be copied
+    // object they clauses will be bound to the 'master' instance will be copied
     // but the copies will never be used. This field can be used to control
     // that. ...purely an optimization.
     bool d_copy_clauses;
@@ -151,7 +148,7 @@ protected:
     // Allow these values to be accessed by subclasses
     D4SeqValues d_values;
 
-    int64_t d_length;	// How many elements are in the sequence; -1 if not currently known
+    int64_t d_length; // How many elements are in the sequence; -1 if not currently known
 
 #if INDEX_SUBSETTING
     int d_starting_row_number;
@@ -168,7 +165,6 @@ protected:
     friend class D4SequenceTest;
 
 public:
-
     D4Sequence(const string &n);
     D4Sequence(const string &n, const string &d);
 
@@ -178,9 +174,9 @@ public:
 
     D4Sequence &operator=(const D4Sequence &rhs);
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
-    virtual void clear_local_data();
+    void clear_local_data() override;
 
     /**
      * @brief The number of elements in a Sequence object.
@@ -190,30 +186,31 @@ public:
      * @return 0 if the number of elements is unknown, else
      * return the number of elements.
      */
-    virtual int length() const { return (int)d_length; }
+    int length() const override { return (int)d_length; }
 
     /**
      * Set the length of the sequence.
      * @param count
      */
-    virtual void set_length(int count) { d_length = (int64_t)count; }
+    void set_length(int64_t count) override { d_length = count; }
+    // FIXME length() and set_length()
 
     virtual bool read_next_instance(bool filter);
 
-    virtual void intern_data(ConstraintEvaluator &, DDS &) {
-    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
+    void intern_data(ConstraintEvaluator &, DDS &) override {
+        throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
-    virtual bool serialize(ConstraintEvaluator &, DDS &, Marshaller &, bool ) {
-    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
+    bool serialize(ConstraintEvaluator &, DDS &, Marshaller &, bool) override {
+        throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
-    virtual bool deserialize(UnMarshaller &, DDS *, bool ) {
-    	throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
+    bool deserialize(UnMarshaller &, DDS *, bool) override {
+        throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
 
     // DAP4
-    virtual void intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void intern_data() override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
     D4FilterClauseList &clauses();
 
@@ -268,7 +265,10 @@ public:
      * keep the serializer from trying to read each of them.
      * @param values
      */
-    virtual void set_value(D4SeqValues &values) { d_values = values; d_length = d_values.size(); }
+    virtual void set_value(D4SeqValues &values) {
+        d_values = values;
+        d_length = d_values.size();
+    }
 
     /**
      * @brief Get the values for this D4Sequence
@@ -294,15 +294,12 @@ public:
     virtual BaseType *var_value(size_t row, const string &name);
     virtual BaseType *var_value(size_t row, size_t i);
 
-    virtual void print_one_row(ostream &out, int row, string space,
-                               bool print_row_num = false);
-    virtual void print_val_by_rows(ostream &out, string space = "",
-                                   bool print_decl_p = true,
+    virtual void print_one_row(ostream &out, int row, string space, bool print_row_num = false);
+    virtual void print_val_by_rows(ostream &out, string space = "", bool print_decl_p = true,
                                    bool print_row_numbers = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
-    virtual void dump(ostream &strm) const ;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap

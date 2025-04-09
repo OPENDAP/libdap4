@@ -24,8 +24,8 @@
 
 #include "config.h"
 
-#include "D4Group.h"
 #include "D4EnumDefs.h"
+#include "D4Group.h"
 
 #include <sstream>
 
@@ -39,32 +39,31 @@ namespace libdap {
  * enumerations can specify different types like Byte, Int32, ..., and this
  * method is used to test that the values match those types.
  */
-bool
-D4EnumDef::is_valid_enum_value(long long value)
-{
+bool D4EnumDef::is_valid_enum_value(long long value) {
     switch (type()) {
-        case dods_int8_c:
-            return (value >= DODS_SCHAR_MIN && value <= DODS_SCHAR_MAX);
-        case dods_byte_c:
-        case dods_uint8_c:
-            return (value >= 0 && static_cast<unsigned long long>(value) <= DODS_UCHAR_MAX);
-        case dods_int16_c:
-            return (value >= DODS_SHRT_MIN && value <= DODS_SHRT_MAX);
-        case dods_uint16_c:
-            return (value >= 0 && static_cast<unsigned long long>(value) <= DODS_USHRT_MAX);
-        case dods_int32_c:
-            return (value >= DODS_INT_MIN && value <= DODS_INT_MAX);
-        case dods_uint32_c:
-            return (value >= 0 && static_cast<unsigned long long>(value) <= DODS_UINT_MAX);
-        case dods_int64_c:
-            return true; // This is always true: (value >= DODS_LLONG_MIN && value <= DODS_LLONG_MAX);
-        case dods_uint64_c:
-            return (value >= 0 /*Always true: && static_cast<unsigned long long>(value) <= DODS_ULLONG_MAX*/);
-        default:
-            return false;
+    case dods_int8_c:
+        return (value >= DODS_SCHAR_MIN && value <= DODS_SCHAR_MAX);
+    case dods_byte_c:
+    case dods_uint8_c:
+        return (value >= 0 && static_cast<unsigned long long>(value) <= DODS_UCHAR_MAX);
+    case dods_int16_c:
+        return (value >= DODS_SHRT_MIN && value <= DODS_SHRT_MAX);
+    case dods_uint16_c:
+        return (value >= 0 && static_cast<unsigned long long>(value) <= DODS_USHRT_MAX);
+    case dods_int32_c:
+        return (value >= DODS_INT_MIN && value <= DODS_INT_MAX);
+    case dods_uint32_c:
+        return (value >= 0 && static_cast<unsigned long long>(value) <= DODS_UINT_MAX);
+    case dods_int64_c:
+        return true; // This is always true: (value >= DODS_LLONG_MIN && value <= DODS_LLONG_MAX);
+    case dods_uint64_c:
+        return (value >= 0 /*Always true: && static_cast<unsigned long long>(value) <= DODS_ULLONG_MAX*/);
+    default:
+        return false;
     }
 }
 
+#if 0
 // Note that in order for this to work the second argument must not be a reference.
 // jhrg 8/20/13
 static bool
@@ -72,48 +71,47 @@ enum_def_name_eq(D4EnumDef *d, const string name)
 {
     return d->name() == name;
 }
+#endif
 
-D4EnumDef *
-D4EnumDefs::find_enum_def(const string &name)
-{
-    D4EnumDefIter d = find_if(d_enums.begin(), d_enums.end(), bind2nd(ptr_fun(enum_def_name_eq), name));
-    return (d != d_enums.end()) ? *d: 0;
+D4EnumDef *D4EnumDefs::find_enum_def(const string &name) {
+    auto d = find_if(d_enums.begin(), d_enums.end(), [name](const D4EnumDef *def) { return name == def->name(); });
+
+    return (d != d_enums.end()) ? *d : nullptr;
 }
 
-void D4EnumDef::print_value(XMLWriter &xml, const D4EnumDef::tuple &tuple) const
-{
-    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"EnumConst") < 0)
+void D4EnumDef::print_value(XMLWriter &xml, const D4EnumDef::tuple &tuple) const {
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"EnumConst") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write EnumConst element");
 
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)tuple.label.c_str()) < 0)
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)tuple.label.c_str()) <
+        0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
     ostringstream oss;
     oss << tuple.value;
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "value", (const xmlChar*)oss.str().c_str()) < 0)
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"value", (const xmlChar *)oss.str().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for value");
 
     if (xmlTextWriterEndElement(xml.get_writer()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not end EnumConst element");
 }
 
-void D4EnumDef::print_dap4(XMLWriter &xml) const
-{
+void D4EnumDef::print_dap4(XMLWriter &xml) const {
     vector<D4EnumDef::tuple>::const_iterator i = d_tuples.begin();
-    while(i != d_tuples.end()) {
+    while (i != d_tuples.end()) {
         print_value(xml, *i++);
     }
 }
 
-void D4EnumDefs::m_print_enum(XMLWriter &xml, D4EnumDef *e) const
-{
-    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar*)"Enumeration") < 0)
+void D4EnumDefs::m_print_enum(XMLWriter &xml, D4EnumDef *e) const {
+    if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Enumeration") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write Enumeration element");
 
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "name", (const xmlChar*)e->name().c_str()) < 0)
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)e->name().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar*) "basetype", (const xmlChar*)D4type_name(e->type()).c_str()) < 0)
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"basetype",
+                                    (const xmlChar *)D4type_name(e->type()).c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");
 
     // print each of e.values
@@ -123,8 +121,7 @@ void D4EnumDefs::m_print_enum(XMLWriter &xml, D4EnumDef *e) const
         throw InternalErr(__FILE__, __LINE__, "Could not end Enumeration element");
 }
 
-void D4EnumDefs::print_dap4(XMLWriter &xml, bool constrained) const
-{
+void D4EnumDefs::print_dap4(XMLWriter &xml, bool constrained) const {
     D4EnumDefCIter i = d_enums.begin();
     while (i != d_enums.end()) {
         if (!constrained || parent()->find_first_var_that_uses_enumeration(*i))

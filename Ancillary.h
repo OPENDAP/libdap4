@@ -40,32 +40,19 @@
 #include "DAS.h"
 #include "DDS.h"
 
-namespace libdap
-{
+namespace libdap {
 
-class Ancillary
-{
+class Ancillary {
 public:
-    static string	find_ancillary_file( const string &pathname,
-					     const string &ext,
-					     const string &dir,
-					     const string &file ) ;
+    static string find_ancillary_file(const string &pathname, const string &ext, const string &dir, const string &file);
 
-    static string	find_group_ancillary_file( const string &pathname,
-						   const string &ext ) ;
+    static string find_group_ancillary_file(const string &pathname, const string &ext);
 
-    static void		read_ancillary_das( DAS &das,
-					    const string &pathname,
-					    const string &dir = "",
-					    const string &file = "" ) ;
+    static void read_ancillary_das(DAS &das, const string &pathname, const string &dir = "", const string &file = "");
 
-    static void		read_ancillary_dds( DDS &dds,
-					    const string &pathname,
-					    const string &dir = "",
-					    const string &file = "" ) ;
-} ;
+    static void read_ancillary_dds(DDS &dds, const string &pathname, const string &dir = "", const string &file = "");
+};
 
 } // namespace libdap
 
 #endif // S_Ancillary_h
-

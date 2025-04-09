@@ -36,16 +36,13 @@
 #ifndef _internalerr_h
 #define _internalerr_h 1
 
-
 #include <string>
 
 #ifndef _error_h
 #include "Error.h"
 #endif
 
-namespace libdap
-{
-
+namespace libdap {
 
 /** The InternalErr class is used to signal that somewhere inside libdap a
     software fault was found. This class wraps the message text in some
@@ -61,8 +58,7 @@ namespace libdap
     @brief A class for software fault reporting.
     @author jhrg */
 
-class InternalErr: public Error
-{
+class InternalErr : public Error {
 
 public:
     /** These constructors always set the error code to <tt>internal_error</tt>.
@@ -74,16 +70,18 @@ public:
     @name Constructors */
     //@{
     ///
-    InternalErr(const string &msg);
+    explicit InternalErr(const string &msg);
     ///
     InternalErr(const string &file, const int &line, const string &msg);
     ///
     InternalErr();
     ///
-    InternalErr(const InternalErr &copy_from);
+    InternalErr(const InternalErr &copy_from) noexcept;
     //@}
 
-    virtual ~InternalErr() throw();
+    ~InternalErr() noexcept override;
+
+    InternalErr &operator=(const InternalErr &rhs);
 
     bool OK();
 };

@@ -25,49 +25,56 @@
 #include "config.h"
 
 #include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <sstream>
 
+#include "Array.h"
 #include "Byte.h"
-#include "Int16.h"
-#include "UInt16.h"
-#include "Int32.h"
-#include "UInt32.h"
 #include "Float32.h"
 #include "Float64.h"
-#include "Str.h"
-#include "Url.h"
-#include "Array.h"
-#include "Structure.h"
-#include "Sequence.h"
 #include "Grid.h"
+#include "Int16.h"
+#include "Int32.h"
+#include "Sequence.h"
+#include "Str.h"
+#include "Structure.h"
+#include "UInt16.h"
+#include "UInt32.h"
+#include "Url.h"
 
+#include "D4BaseTypeFactory.h"
+#include "D4ParserSax2.h"
 #include "DDS.h"
 #include "DMR.h"
-#include "D4ParserSax2.h"
-#include "D4BaseTypeFactory.h"
 
 #include "GNURegex.h"
-#include "GetOpt.h"
-#include "util.h"
-#include "debug.h"
 
+#include "debug.h"
+#include "util.h"
+
+#include "run_tests_cppunit.h"
 #include "testFile.h"
 #include "test_config.h"
 
-static bool debug = false;
+#define prolog string("DDSTest::").append(__func__).append("() - ")
 
 #undef DBG
-#define DBG(x) do { if (debug) {x;} } while(false)
+#define DBG(x)                                                                                                         \
+    do {                                                                                                               \
+        if (debug) {                                                                                                   \
+            x;                                                                                                         \
+        }                                                                                                              \
+    } while (false)
 
 using namespace CppUnit;
 using namespace std;
 
+
 namespace libdap {
 
-class DDSTest: public TestFixture {
+class DDSTest : public TestFixture {
 private:
     DDS *dds1, *dds2;
     BaseTypeFactory factory;
@@ -75,24 +82,18 @@ private:
     DDS *dds_dap4;
 
 public:
-    DDSTest() :
-        dds1(0), dds2(0), dds_dap4(0)
-    {
-    }
-    ~DDSTest()
-    {
-    }
+    DDSTest() : dds1(0), dds2(0), dds_dap4(0) {}
+    ~DDSTest() {}
 
-    void setUp()
-    {
+    void setUp() {
+        DBG(cerr << "\n");
         dds1 = new DDS(&factory, "test1");
         dds2 = new DDS(&factory, "test2");
 
         dds_dap4 = new DDS(&factory, "test2", "4.0");
     }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete dds1;
         dds1 = 0;
         delete dds2;
@@ -102,8 +103,7 @@ public:
         dds_dap4 = 0;
     }
 
-    bool re_match(Regex &r, const string &s)
-    {
+    bool re_match(Regex &r, const string &s) {
         int match = r.match(s.c_str(), s.length());
         DBG(cerr << "Match: " << match << " should be: " << s.length() << endl);
         return match == static_cast<int>(s.length());
@@ -114,7 +114,11 @@ public:
     // to work with transfer_attributes() - if a handler builds a malformed
     // DAS, it will need to specialize the BaseType::transfer_attributes()
     // method.
-    CPPUNIT_TEST_SUITE (DDSTest);
+    CPPUNIT_TEST_SUITE(DDSTest);
+
+    CPPUNIT_TEST(iterator_use_test_1);
+    CPPUNIT_TEST(iterator_use_test_2);
+
     CPPUNIT_TEST(transfer_attributes_test_1);
     CPPUNIT_TEST(transfer_attributes_test_2);
 
@@ -154,12 +158,82 @@ public:
 
     CPPUNIT_TEST_SUITE_END();
 
-    void transfer_attributes_test_1()
-    {
+    void iterator_use_test_1() {
+        DBG(cerr << prolog << "BEGIN" << endl);
+
+        dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+        DAS das;
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+        dds1->transfer_attributes(&das);
+
+        // in this loop count the variables and accumulate their names. This tests using the
+        // old and new way of iterating over the BaseType pointers. jhrg 2/4/22
+        int old_count = 0;
+        string old_names = "";
+        for (DDS::Vars_iter i = dds1->var_begin(), e = dds1->var_end(); i != e; ++i) {
+            ++old_count;
+            old_names.append((*i)->name());
+        }
+
+        DBG(cerr << "old_count: " << old_count << endl);
+        DBG(cerr << "old_names: " << old_names << endl);
+
+        int new_count = 0;
+        string new_names = "";
+        for (auto &btp : dds1->variables()) {
+            ++new_count;
+            new_names.append(btp->name());
+        }
+
+        DBG(cerr << "new_count: " << new_count << endl);
+        DBG(cerr << "new_names: " << new_names << endl);
+
+        CPPUNIT_ASSERT_MESSAGE("The number of variable should be the same", old_count == new_count);
+        CPPUNIT_ASSERT_MESSAGE("The names of the variables should be the same", old_names == new_names);
+        DBG(cerr << prolog << "END" << endl);
+    }
+
+    void iterator_use_test_2() {
+        DBG(cerr << prolog << "BEGIN" << endl);
+
+        dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+        DAS das;
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+        dds1->transfer_attributes(&das);
+
+        // in this loop count the variables and accumulate their names. This tests using the
+        // old and new way of iterating over the BaseType pointers. jhrg 2/4/22
+        int old_count = 0;
+        string old_names = "";
+        for (DDS::Vars_riter i = dds1->var_rbegin(), e = dds1->var_rend(); i != e; ++i) {
+            ++old_count;
+            old_names.append((*i)->name());
+        }
+
+        DBG(cerr << "old_count: " << old_count << endl);
+        DBG(cerr << "old_names: " << old_names << endl);
+
+        int new_count = 0;
+        string new_names = "";
+        for (auto i = dds1->variables().rbegin(), e = dds1->variables().rend(); i != e; ++i) {
+            ++new_count;
+            new_names.append((*i)->name());
+        }
+
+        DBG(cerr << "new_count: " << new_count << endl);
+        DBG(cerr << "new_names: " << new_names << endl);
+
+        CPPUNIT_ASSERT_MESSAGE("The number of variable should be the same", old_count == new_count);
+        CPPUNIT_ASSERT_MESSAGE("The names of the variables should be the same", old_names == new_names);
+        DBG(cerr << prolog << "END" << endl);
+    }
+
+    void transfer_attributes_test_1() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
-            dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+            dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
             DAS das;
-            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
             dds1->transfer_attributes(&das);
 
             DBG(dds1->print_xml(cerr, false, ""));
@@ -168,19 +242,19 @@ public:
             AttrTable::Attr_iter i = at.attr_begin();
             CPPUNIT_ASSERT(i != at.attr_end() && at.get_name(i) == "NC_GLOBAL");
             CPPUNIT_ASSERT(i != at.attr_end() && at.get_name(++i) == "DODS_EXTRA");
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cout << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error thrown!");
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void transfer_attributes_test_2()
-    {
-        try {
-            dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
+    void transfer_attributes_test_2() {
+         DBG(cerr << prolog << "BEGIN" << endl);
+       try {
+            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
             DAS das;
-            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.hacked.HDF.das");
+            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.hacked.HDF.das");
             dds2->transfer_attributes(&das);
 
             DBG(dds2->print_xml(cerr, false, ""));
@@ -189,61 +263,61 @@ public:
             AttrTable::Attr_iter i = at.attr_begin();
             CPPUNIT_ASSERT(i != at.attr_end() && at.get_name(i) == "HDF_GLOBAL");
             CPPUNIT_ASSERT(i != at.attr_end() && at.get_name(++i) == "CoreMetadata");
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cout << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error thrown!");
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void symbol_name_test()
-    {
+    void symbol_name_test() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             // read a DDS.
-            dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.18");
+            dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.18");
             CPPUNIT_ASSERT(dds1->var("oddTemp"));
 
-            dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b");
+            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b");
             CPPUNIT_ASSERT(dds2->var("b#c"));
             CPPUNIT_ASSERT(dds2->var("b%23c"));
             CPPUNIT_ASSERT(dds2->var("huh.Image#data"));
             CPPUNIT_ASSERT(dds2->var("c d"));
             CPPUNIT_ASSERT(dds2->var("c%20d"));
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught unexpected Error object");
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void print_xml_test()
-    {
+    void print_xml_test() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
-            dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b");
+            dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b");
             ostringstream oss;
             dds2->print_xml_writer(oss, false, "http://localhost/dods/test.xyz");
             DBG(cerr << "Printed DDX: " << oss.str() << endl);
 
 #if DAP2_DDX
-            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.dap2.xml");
+            string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19b.dap2.xml");
 #else
-            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.xml");
+            string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19b.xml");
 #endif
             DBG(cerr << "The baseline: " << baseline << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught unexpected Error object");
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void print_xml_test2()
-    {
-        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19c");
+    void print_xml_test2() {
+        DBG(cerr << prolog << "BEGIN" << endl);
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19c");
         DAS das;
-        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19c.das");
 
         dds2->transfer_attributes(&das);
 
@@ -253,19 +327,20 @@ public:
         DBG(cerr << oss.str() << endl);
 
 #if DAP2_DDX
-        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.dap2.xml");
+        string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19c.dap2.xml");
 #else
-        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19c.xml");
+        string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19c.xml");
 #endif
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void print_xml_test3()
-    {
-        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19d");
+    void print_xml_test3() {
+        DBG(cerr << prolog << "BEGIN" << endl);
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d");
         DAS das;
-        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d.das");
 
         dds2->transfer_attributes(&das);
 
@@ -275,22 +350,23 @@ public:
         DBG(cerr << oss.str() << endl);
 
 #if DAP2_DDX
-        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.dap2.xml");
+        string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19d.dap2.xml");
 #else
-        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d.xml");
+        string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19d.xml");
 #endif
 
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // This tests the HDF4 <var>_dim_n attribute. support for that was
     // moved to the handler itself.
-    void print_xml_test3_1()
-    {
-        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19d");
+    void print_xml_test3_1() {
+        DBG(cerr << prolog << "BEGIN" << endl);
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d");
         DAS das;
-        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19d1.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d1.das");
 
         dds2->transfer_attributes(&das);
 
@@ -299,16 +375,17 @@ public:
 
         DBG(cerr << oss.str() << endl);
 
-        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19d1.xml");
+        string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19d1.xml");
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void print_xml_test4()
-    {
-        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19e");
+    void print_xml_test4() {
+        DBG(cerr << prolog << "BEGIN" << endl);
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19e");
         DAS das;
-        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19e.das");
 
         dds2->transfer_attributes(&das);
 
@@ -320,33 +397,33 @@ public:
         DBG(cerr << oss.str() << endl);
 
 #if DAP2_DDX
-        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.dap2.xml");
+        string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19e.dap2.xml");
 #else
-        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19e.xml");
+        string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19e.xml");
 #endif
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void print_xml_test5()
-    {
-        string dds_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f");
+    void print_xml_test5() {
+        DBG(cerr << prolog << "BEGIN" << endl);
+        string dds_file((string)TEST_SRC_DIR + "/dds-testsuite/test.19f");
         dds2->parse(dds_file);
         DAS das;
-        string das_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.das");
+        string das_file((string)TEST_SRC_DIR + "/dds-testsuite/test.19f.das");
         das.parse(das_file);
 
 #if DAP2_DDX
-        string baseline_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.dap2.xml");
+        string baseline_file((string)TEST_SRC_DIR + "/dds-testsuite/test.19f.dap2.xml");
 #else
-        string baseline_file((string) TEST_SRC_DIR + "/dds-testsuite/test.19f.xml");
+        string baseline_file((string)TEST_SRC_DIR + "/dds-testsuite/test.19f.xml");
 #endif
         string baseline = read_test_baseline(baseline_file);
 
         try {
             dds2->transfer_attributes(&das);
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error exception");
         }
@@ -363,20 +440,20 @@ public:
         DBG(cerr << oss.str() << endl);
 
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Tests flat DAS into a DDS; no longer supported by libdap; specialize
     // handlers if they make these malformed DAS objects
-    void print_xml_test5_1()
-    {
-        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19f");
+    void print_xml_test5_1() {
+        DBG(cerr << prolog << "BEGIN" << endl);
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19f");
         DAS das;
-        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19f1.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19f1.das");
 
         try {
             dds2->transfer_attributes(&das);
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error exception");
         }
@@ -388,16 +465,17 @@ public:
 
         DBG(cerr << oss.str() << endl);
 
-        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19f1.xml");
+        string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19f1.xml");
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void print_xml_test6()
-    {
-        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b");
+    void print_xml_test6() {
+        DBG(cerr << prolog << "BEGIN" << endl);
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b");
         DAS das;
-        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19b.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b.das");
 
         dds2->transfer_attributes(&das);
 
@@ -407,27 +485,27 @@ public:
         DBG(cerr << oss.str() << endl);
 
 #if DAP2_DDX
-        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b6.dap2.xml");
+        string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19b6.dap2.xml");
 #else
-        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19b6.xml");
+        string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19b6.xml");
 #endif
 
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Tests flat DAS into a DDS; no longer supported by libdap; specialize
     // handlers if they make these malformed DAS objects
-    void print_xml_test6_1()
-    {
-        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19g");
+    void print_xml_test6_1() {
+        DBG(cerr << prolog << "BEGIN" << endl);
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19g");
         DAS das;
-        das.parse((string) TEST_SRC_DIR + "/dds-testsuite/test.19g.das");
+        das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19g.das");
 
         try {
             dds2->transfer_attributes(&das);
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error exception");
         }
@@ -439,17 +517,18 @@ public:
 
         DBG(cerr << oss.str() << endl);
 
-        string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/test.19g.xml");
+        string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19g.xml");
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void print_dmr_test()
-    {
+    void print_dmr_test() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
-            dds_dap4->parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+            dds_dap4->parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
             DAS das;
-            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
             dds_dap4->transfer_attributes(&das);
 #if 0
             string file = (string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dmr.xml";
@@ -460,62 +539,66 @@ public:
             ostringstream oss;
             dds_dap4->print_dmr(oss, false);
 
-            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dmr.xml");
+            string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dmr.xml");
 
             DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
             DBG(cerr << "DMR: -->" << oss.str() << "<--" << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void get_response_size_test()
-    {
-        dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
+    void get_response_size_test() {
+        DBG(cerr << prolog << "BEGIN" << endl);
+        dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
         CPPUNIT_ASSERT(dds1->get_request_size(false) == 230400);
         DBG(cerr << "3B42.980909.5.HDF response size: " << dds1->get_request_size(false) << endl);
 
-        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
         CPPUNIT_ASSERT(dds2->get_request_size(false) == 3119424);
         DBG(cerr << "coads_climatology.nc response size: " << dds2->get_request_size(false) << endl);
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void get_response_size_test_c()
-    {
+    void get_response_size_test_c() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         ConstraintEvaluator eval;
 
-        dds1->parse((string) TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
+        dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
         eval.parse_constraint("percipitate", *dds1);
         DBG(cerr << "3B42.980909.5.HDF response size: " << dds1->get_request_size(true) << endl);
         CPPUNIT_ASSERT(dds1->get_request_size(true) == 115200);
         CPPUNIT_ASSERT(dds1->get_request_size(false) == 230400);
 
-        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
         eval.parse_constraint("SST", *dds2);
         DBG(cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl);
         CPPUNIT_ASSERT(dds2->get_request_size(true) == 779856);
         CPPUNIT_ASSERT(dds2->get_request_size(false) == 3119424);
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void get_response_size_test_c2()
-    {
+    void get_response_size_test_c2() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         ConstraintEvaluator eval;
-        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
         eval.parse_constraint("SST[0:5][0:44][0:89]", *dds2);
-        //cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl;
+        // cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl;
         CPPUNIT_ASSERT(dds2->get_request_size(true) == 98328);
+        DBG(cerr << prolog << "END" << endl);
     }
 
-    void get_response_size_test_c3()
-    {
+    void get_response_size_test_c3() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         ConstraintEvaluator eval;
-        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
         eval.parse_constraint("SST[0][0:44][0:89]", *dds2);
         DBG(cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl);
         CPPUNIT_ASSERT(dds2->get_request_size(true) == 17288);
+        DBG(cerr << prolog << "END" << endl);
     }
 
 #if 0
@@ -534,29 +617,31 @@ public:
     }
 #endif
 
-    void get_response_size_test_seq_c()
-    {
-        ConstraintEvaluator eval;
-        dds2->parse((string) TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
+    void get_response_size_test_seq_c() {
+         DBG(cerr << prolog << "BEGIN" << endl);
+       ConstraintEvaluator eval;
+        dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
         eval.parse_constraint("NSCAT%20Rev%2020.NSCAT%20L2.Low_Wind_Speed_Flag", *dds2);
         DBG(cerr << "S2000415.HDF response size: " << dds2->get_request_size(true) << endl);
         DBG(dds2->print_constrained(cerr));
         CPPUNIT_ASSERT(dds2->get_request_size(true) == 4);
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Build a DDS with attributes, then check that get_das() returns the correct thing
     void get_das_test_1() {
-        try {
+         DBG(cerr << prolog << "BEGIN" << endl);
+       try {
             BaseTypeFactory btf;
             DDS dds(&btf);
-            dds.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+            dds.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
             DAS das;
-            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
             dds.transfer_attributes(&das);
 
-            auto_ptr<DAS> new_das(dds.get_das());
+            unique_ptr<DAS> new_das(dds.get_das());
 
-            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
+            string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das");
             ostringstream oss;
             new_das->print(oss);
 
@@ -564,10 +649,10 @@ public:
             DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Build a DMR, then check that get_das() returns the correct thing. Note that the
@@ -577,6 +662,7 @@ public:
     // first. Thus the attribute containers for maps/shared dims are either first or last
     // for DAP2 or DAP4, resp.
     void get_das_test_2() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             D4BaseTypeFactory d4_factory;
             DMR dmr(&d4_factory);
@@ -586,10 +672,11 @@ public:
 
             parser.intern(ifs, &dmr);
 
-            auto_ptr<DDS> dds(dmr.getDDS());
-            auto_ptr<DAS> das(dds->get_das());
+            unique_ptr<DDS> dds(dmr.getDDS());
+            unique_ptr<DAS> das(dds->get_das());
 
-            string baseline = read_test_baseline(string(TEST_SRC_DIR) + "/dmr-testsuite/coads_climatology.nc.full.dmr.das");
+            string baseline =
+                read_test_baseline(string(TEST_SRC_DIR) + "/dmr-testsuite/coads_climatology.nc.full.dmr.das");
             ostringstream oss;
             das->print(oss);
 
@@ -597,25 +684,26 @@ public:
             DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Test the case whee there are no attribtues for variables
     void get_das_test_3() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             BaseTypeFactory btf;
             DDS dds(&btf);
-            dds.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+            dds.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
             DAS das;
-            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_var");
+            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_var");
             dds.transfer_attributes(&das);
 
-            auto_ptr<DAS> new_das(dds.get_das());
+            unique_ptr<DAS> new_das(dds.get_das());
 
-            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_var");
+            string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_var");
             ostringstream oss;
             new_das->print(oss);
 
@@ -623,25 +711,26 @@ public:
             DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Test the case where there are no global attributes
     void get_das_test_4() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             BaseTypeFactory btf;
             DDS dds(&btf);
-            dds.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
+            dds.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
             DAS das;
-            das.parse((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_global");
+            das.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_global");
             dds.transfer_attributes(&das);
 
-            auto_ptr<DAS> new_das(dds.get_das());
+            unique_ptr<DAS> new_das(dds.get_das());
 
-            string baseline = read_test_baseline((string) TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_global");
+            string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.das.no_global");
             ostringstream oss;
             new_das->print(oss);
 
@@ -649,28 +738,30 @@ public:
             DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Test the case where there are orphaned global attributes (one w/o an enclosing container).
-    void get_das_test_5()
-    {
+    void get_das_test_5() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             D4BaseTypeFactory d4_factory;
             DMR dmr(&d4_factory);
             D4ParserSax2 parser;
 
-            ifstream ifs((string(TEST_SRC_DIR) + "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105.h5.dmrpp.dmr").c_str());
+            ifstream ifs(
+                (string(TEST_SRC_DIR) + "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105.h5.dmrpp.dmr").c_str());
 
             parser.intern(ifs, &dmr);
 
-            auto_ptr<DDS> dds(dmr.getDDS());
-            auto_ptr<DAS> das(dds->get_das());
+            unique_ptr<DDS> dds(dmr.getDDS());
+            unique_ptr<DAS> das(dds->get_das());
 
-            string baseline = read_test_baseline(string(TEST_SRC_DIR) +  "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105.h5.dmrpp.dmr.baseline");
+            string baseline = read_test_baseline(
+                string(TEST_SRC_DIR) + "/dmr-to-dap2-testsuite/1A.GPM.GMI.COUNT2014v3.20160105.h5.dmrpp.dmr.baseline");
             ostringstream oss;
             das->print(oss);
 
@@ -678,14 +769,15 @@ public:
             DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Test the code that tests for a unique top-level attribute container name for orphaned TL attributes.
     void get_das_test_6() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             D4BaseTypeFactory d4_factory;
             DMR dmr(&d4_factory);
@@ -695,10 +787,11 @@ public:
 
             parser.intern(ifs, &dmr);
 
-            auto_ptr<DDS> dds(dmr.getDDS());
-            auto_ptr<DAS> das(dds->get_das());
+            unique_ptr<DDS> dds(dmr.getDDS());
+            unique_ptr<DAS> das(dds->get_das());
 
-            string baseline = read_test_baseline(string(TEST_SRC_DIR) +  "/dmr-to-dap2-testsuite/hacked.dmrpp.dmr.baseline");
+            string baseline =
+                read_test_baseline(string(TEST_SRC_DIR) + "/dmr-to-dap2-testsuite/hacked.dmrpp.dmr.baseline");
             ostringstream oss;
             das->print(oss);
 
@@ -706,62 +799,15 @@ public:
             DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
-
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DDSTest);
 
 } // namespace libdap
 
-int main(int argc, char *argv[])
-{
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-
-        case 'h': {     // help - show test names
-            cerr << "Usage: DDSTest has the following tests:" << endl;
-            const std::vector<Test*> &tests = libdap::DDSTest::suite()->getTests();
-            unsigned int prefix_len = libdap::DDSTest::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            return 1;
-            break;
-        }
-
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = libdap::DDSTest::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
-}
-
+int main(int argc, char *argv[]) { return run_tests<libdap::DDSTest>(argc, argv) ? 0 : 1; }

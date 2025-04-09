@@ -1,0 +1,22 @@
+Parse successful
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/vol_1_ce_12.xml" dapVersion="4.0" dmrVersion="1.0" name="vol_1_ce_12">
+    <Dimension name="x" size="100"/>
+    <Dimension name="y" size="50"/>
+    <Float32 name="lat">
+        <Dim name="/x"/>
+        <Dim name="/y"/>
+    </Float32>
+    <Float32 name="lon">
+        <Dim name="/x"/>
+        <Dim name="/y"/>
+    </Float32>
+    <Float32 name="temp">
+        <Dim name="/x"/>
+        <Dim name="/y"/>
+        <Map name="/lon"/>
+        <Map name="/lat"/>
+    </Float32>
+</Dataset>
+
+CE Parse error: Expected a 64-bit integer, but found other characters.

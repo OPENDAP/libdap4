@@ -37,7 +37,7 @@
 #ifndef _mime_util_h
 #define _mime_util_h
 
-#include "media_types.h"	// Remove when the deprecated stuff comes out of the library. 11/12/13 jhrg
+#include "media_types.h" // Remove when the deprecated stuff comes out of the library. 11/12/13 jhrg
 
 #ifndef _object_type_h
 #include "ObjectType.h"
@@ -49,8 +49,7 @@
 
 #include <string>
 
-namespace libdap
-{
+namespace libdap {
 
 /** The CGI utilities include a variety of functions useful to
     programmers developing OPeNDAP CGI filter programs. However, before jumping
@@ -80,16 +79,16 @@ void parse_mime_header(const std::string &header, std::string &name, std::string
 std::string name_path(const std::string &path);
 std::string get_next_mime_header(std::istream &in);
 
-void read_multipart_headers(std::istream &in, const std::string &content_type,
-	const ObjectType object_type, const std::string &cid = "");
+void read_multipart_headers(std::istream &in, const std::string &content_type, const ObjectType object_type,
+                            const std::string &cid = "");
 
 // For testing only
 void remove_mime_header(std::istream &in);
 
 // All of these are deprecated
 std::string read_multipart_boundary(FILE *in, const std::string &boundary = "");
-void read_multipart_headers(FILE *in, const std::string &content_type,
-	const ObjectType object_type, const std::string &cid = "");
+void read_multipart_headers(FILE *in, const std::string &content_type, const ObjectType object_type,
+                            const std::string &cid = "");
 bool do_version(const std::string &script_ver, const std::string &dataset_ver);
 void ErrMsgT(const std::string &Msgt);
 ObjectType get_type(const std::string &value);
@@ -113,67 +112,48 @@ bool found_override(std::string name, std::string &doc);
     @see DODSFilter
 */
 //@{
-void set_mime_text(FILE *out, ObjectType type = unknown_type,
-                   const std::string &version = "", EncodingType enc = x_plain,
-                   const time_t last_modified = 0);
-void set_mime_text(std::ostream &out, ObjectType type = unknown_type,
-                   const std::string &version = "", EncodingType enc = x_plain,
-                   const time_t last_modified = 0);
-void set_mime_text(std::ostream &out, ObjectType type = unknown_type,
-                   EncodingType enc = x_plain,
-                   const time_t last_modified = 0,
-                   const std::string &protocol = "");
+void set_mime_text(FILE *out, ObjectType type = unknown_type, const std::string &version = "",
+                   EncodingType enc = x_plain, const time_t last_modified = 0);
+void set_mime_text(std::ostream &out, ObjectType type = unknown_type, const std::string &version = "",
+                   EncodingType enc = x_plain, const time_t last_modified = 0);
+void set_mime_text(std::ostream &out, ObjectType type = unknown_type, EncodingType enc = x_plain,
+                   const time_t last_modified = 0, const std::string &protocol = "");
 
-void set_mime_html(FILE *out, ObjectType type = unknown_type,
-                   const std::string &version = "", EncodingType enc = x_plain,
-                   const time_t last_modified = 0);
-void set_mime_html(std::ostream &out, ObjectType type = unknown_type,
-                   const std::string &version = "", EncodingType enc = x_plain,
-                   const time_t last_modified = 0);
-void set_mime_html(std::ostream &out, ObjectType type = unknown_type,
-                   EncodingType enc = x_plain,
-                   const time_t last_modified = 0,
-                   const std::string &protocol = "");
+void set_mime_html(FILE *out, ObjectType type = unknown_type, const std::string &version = "",
+                   EncodingType enc = x_plain, const time_t last_modified = 0);
+void set_mime_html(std::ostream &out, ObjectType type = unknown_type, const std::string &version = "",
+                   EncodingType enc = x_plain, const time_t last_modified = 0);
+void set_mime_html(std::ostream &out, ObjectType type = unknown_type, EncodingType enc = x_plain,
+                   const time_t last_modified = 0, const std::string &protocol = "");
 
-void set_mime_binary(FILE *out, ObjectType type = unknown_type,
-                     const std::string &version = "", EncodingType enc = x_plain,
-                     const time_t last_modified = 0);
-void set_mime_binary(std::ostream &out, ObjectType type = unknown_type,
-                     const std::string &version = "", EncodingType enc = x_plain,
-                     const time_t last_modified = 0);
-void set_mime_binary(std::ostream &out, ObjectType type = unknown_type,
-                     EncodingType enc = x_plain,
-                     const time_t last_modified = 0,
-                     const std::string &protocol = "");
+void set_mime_binary(FILE *out, ObjectType type = unknown_type, const std::string &version = "",
+                     EncodingType enc = x_plain, const time_t last_modified = 0);
+void set_mime_binary(std::ostream &out, ObjectType type = unknown_type, const std::string &version = "",
+                     EncodingType enc = x_plain, const time_t last_modified = 0);
+void set_mime_binary(std::ostream &out, ObjectType type = unknown_type, EncodingType enc = x_plain,
+                     const time_t last_modified = 0, const std::string &protocol = "");
 
-void set_mime_multipart(std::ostream &out, const std::string &boundary,
-	const std::string &start, ObjectType type = unknown_type,
-        const std::string &version = "", EncodingType enc = x_plain,
-        const time_t last_modified = 0);
+void set_mime_multipart(std::ostream &out, const std::string &boundary, const std::string &start,
+                        ObjectType type = unknown_type, const std::string &version = "", EncodingType enc = x_plain,
+                        const time_t last_modified = 0);
 
-void set_mime_multipart(std::ostream &out, const std::string &boundary,
-	const std::string &start, ObjectType type = unknown_type, EncodingType enc = x_plain,
-	const time_t last_modified = 0, const std::string &protocol = "",
-	const std::string &url = "");
+void set_mime_multipart(std::ostream &out, const std::string &boundary, const std::string &start,
+                        ObjectType type = unknown_type, EncodingType enc = x_plain, const time_t last_modified = 0,
+                        const std::string &protocol = "", const std::string &url = "");
 
-void set_mime_ddx_boundary(std::ostream &out, const std::string &boundary,
-	const std::string &start, ObjectType type = unknown_type,
-        EncodingType enc = x_plain);
+void set_mime_ddx_boundary(std::ostream &out, const std::string &boundary, const std::string &start,
+                           ObjectType type = unknown_type, EncodingType enc = x_plain);
 
-void set_mime_data_boundary(std::ostream &out, const std::string &boundary,
-	const std::string &cid, ObjectType type = unknown_type,
-        EncodingType enc = x_plain);
+void set_mime_data_boundary(std::ostream &out, const std::string &boundary, const std::string &cid,
+                            ObjectType type = unknown_type, EncodingType enc = x_plain);
 
-void set_mime_error(FILE *out, int code = 404,
-                    const std::string &reason = "Dataset not found",
+void set_mime_error(FILE *out, int code = 404, const std::string &reason = "Dataset not found",
                     const std::string &version = "");
-void set_mime_error(std::ostream &out, int code = 404,
-                    const std::string &reason = "Dataset not found",
+void set_mime_error(std::ostream &out, int code = 404, const std::string &reason = "Dataset not found",
                     const std::string &version = "");
 
 void set_mime_not_modified(FILE *out);
 void set_mime_not_modified(std::ostream &out);
-
 
 //@}
 

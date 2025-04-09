@@ -28,8 +28,7 @@
 
 #include <iostream>
 
-namespace libdap
-{
+namespace libdap {
 
 /** An abstract class which provides a hook method used by SignalHandler.
 
@@ -39,8 +38,7 @@ namespace libdap
     @see SignalHandler
     @see AlarmHandler
     @author James Gallagher <jgallagher@opendap.org> */
-class EventHandler
-{
+class EventHandler {
 public:
     /** Hook method for SignalHandler. If a concrete instance of this class
     is registered with SignalHandler, this method will be called when \c
@@ -49,8 +47,7 @@ public:
 
     /** We don't need a destructor, but including one might stave off an
     error later on... */
-    virtual ~EventHandler()
-    {}
+    virtual ~EventHandler() {}
 };
 
 #if 0

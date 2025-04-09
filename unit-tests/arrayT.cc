@@ -1,19 +1,25 @@
-#include <cppunit/TestFixture.h>
-#include <cppunit/TestAssert.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/CompilerOutputter.h>
 
 #include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
+#if 0
+
+#include <cppunit/CompilerOutputter.h>
+#include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
+// #include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
+
+#endif
+
 #include "TestArray.h"
 #include "TestInt16.h"
 #include "TestTypeFactory.h"
 
-#include "util.h"
-#include "debug.h"
-
-#include "GetOpt.h"
+#include "run_tests_cppunit.h"
 
 using std::cerr;
 using std::endl;
@@ -23,32 +29,27 @@ using namespace CppUnit;
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing
 // timeouts.
 
-static bool debug = false;
+class arrayT : public CppUnit::TestFixture {
 
-class arrayT: public CppUnit::TestFixture {
+    CPPUNIT_TEST_SUITE(arrayT);
 
-CPPUNIT_TEST_SUITE (arrayT);
-    CPPUNIT_TEST(arrayT_test);CPPUNIT_TEST_SUITE_END( )
-    ;
+    CPPUNIT_TEST(arrayT_test);
+
+    CPPUNIT_TEST_SUITE_END();
 
 private:
     /* TEST PRIVATE DATA */
-    TestTypeFactory *factory;
+    TestTypeFactory *factory{nullptr};
 
 public:
-    void setUp()
-    {
-        factory = new TestTypeFactory;
-    }
+    void setUp() override { factory = new TestTypeFactory; }
 
-    void tearDown()
-    {
+    void tearDown() override {
         delete factory;
-        factory = 0;
+        factory = nullptr;
     }
 
-    void arrayT_test()
-    {
+    void arrayT_test() {
         BaseType *bt = factory->NewInt16();
 
         TestArray ar("My Array", bt);
@@ -57,12 +58,13 @@ public:
         CPPUNIT_ASSERT(l == -1);
 
         try {
-            int w = ar.width(true);
-            DBG(cerr << "w = " << w << endl);DBG(cerr << "(int)bt->width() " << (int)bt->width() << endl);DBG(cerr << "L " << l << endl);
-            CPPUNIT_ASSERT(w == (l * (int ) bt->width()));
-        }
-        catch (InternalErr &e) {
-            CPPUNIT_FAIL("Unable to retrieve width");
+            unsigned int w = ar.width(true);
+            DBG(cerr << "w = " << (int)w << endl);
+            DBG(cerr << "bt->width() " << bt->width() << endl);
+            DBG(cerr << "L " << l << endl);
+            CPPUNIT_ASSERT(w == (l * bt->width()));
+        } catch (const InternalErr &e) {
+            CPPUNIT_FAIL(string("Unable to retrieve width: ") + e.get_error_message());
         }
 
         ar.append_dim(4, "dim1");
@@ -71,11 +73,10 @@ public:
         CPPUNIT_ASSERT(l == 4);
 
         try {
-            int w = ar.width();
-            CPPUNIT_ASSERT(w == (l * (int ) bt->width()));
-        }
-        catch (InternalErr &e) {
-            CPPUNIT_FAIL("Unable to retrieve width");
+            unsigned int w = ar.width();
+            CPPUNIT_ASSERT(w == (l * bt->width()));
+        } catch (const InternalErr &e) {
+            CPPUNIT_FAIL(string("Unable to retrieve width: ") + e.get_error_message());
         }
 
         ar.append_dim(3, "dim2");
@@ -84,11 +85,10 @@ public:
         CPPUNIT_ASSERT(l == 12);
 
         try {
-            int w = ar.width();
-            CPPUNIT_ASSERT(w == (l * (int ) bt->width()));
-        }
-        catch (InternalErr &e) {
-            CPPUNIT_FAIL("Unable to retrieve width");
+            unsigned int w = ar.width();
+            CPPUNIT_ASSERT(w == (l * bt->width()));
+        } catch (const InternalErr &e) {
+            CPPUNIT_FAIL(string("Unable to retrieve width: ") + e.get_error_message());
         }
 
         ar.append_dim(2, "dim3");
@@ -98,29 +98,30 @@ public:
 
         try {
             int w = ar.width();
-            CPPUNIT_ASSERT(w == (l * (int ) bt->width()));
-        }
-        catch (InternalErr &e) {
-            CPPUNIT_FAIL("Unable to retrieve width");
+            CPPUNIT_ASSERT(w == (l * (int)bt->width()));
+        } catch (InternalErr &e) {
+            CPPUNIT_FAIL(string("Unable to retrieve width: ") + e.get_error_message());
         }
 
         vector<string> dims;
-        typedef vector<string>::const_iterator citer;
-        dims.push_back("dim1");
-        dims.push_back("dim2");
-        dims.push_back("dim3");
+        // using citer = vector<string>::const_iterator;
+        dims.emplace_back("dim1");
+        dims.emplace_back("dim2");
+        dims.emplace_back("dim3");
 
         vector<int> dimsize;
-        typedef vector<int>::const_iterator dsiter;
+        // using dsiter = vector<int>::const_iterator;
         dimsize.push_back(4);
         dimsize.push_back(3);
         dimsize.push_back(2);
 
+#if 0
         citer i = dims.begin();
         dsiter d = dimsize.begin();
-        Array::Dim_iter diter = ar.dim_begin();
-        i = dims.begin();
-        d = dimsize.begin();
+#endif
+        auto diter = ar.dim_begin();
+        auto i = dims.begin();
+        auto d = dimsize.begin();
         for (; diter != ar.dim_end() && i != dims.end(); diter++, i++, d++) {
             CPPUNIT_ASSERT(ar.dimension_name(diter) == (*i));
             if (ar.dimension_name(diter) == (*i)) {
@@ -132,8 +133,7 @@ public:
         }
         if (diter != ar.dim_end() && i == dims.end()) {
             CPPUNIT_FAIL("too many dimensions");
-        }
-        else if (diter == ar.dim_end() && i != dims.end()) {
+        } else if (diter == ar.dim_end() && i != dims.end()) {
             CPPUNIT_FAIL("not enough dimensions");
         }
 
@@ -171,48 +171,4 @@ public:
 
 CPPUNIT_TEST_SUITE_REGISTRATION(arrayT);
 
-int main(int argc, char *argv[])
-{
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-
-        case 'h': {     // help - show test names
-            cerr << "Usage: arrayT has the following tests:" << endl;
-            const std::vector<Test*> &tests = arrayT::suite()->getTests();
-            unsigned int prefix_len = arrayT::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = arrayT::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
-}
+int main(int argc, char *argv[]) { return run_tests<arrayT>(argc, argv) ? 0 : 1; }

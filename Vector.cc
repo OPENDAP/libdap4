@@ -35,36 +35,33 @@
 
 #include "config.h"
 
-#include <cstring>
 #include <cassert>
+#include <cstdint>
+#include <cstring>
 
-//#define DODS_DEBUG 1
-
-#include <sstream>
-#include <vector>
 #include <algorithm>
+#include <sstream>
 #include <typeinfo>
-
-#include <stdint.h>
+#include <vector>
 
 #include "crc.h"
 
-#include "Vector.h"
 #include "Marshaller.h"
 #include "UnMarshaller.h"
+#include "Vector.h"
 
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
 
 #include "D4Enum.h"
 
-#include "Type.h"
-#include "dods-datatypes.h"
-#include "escaping.h"
-#include "util.h"
-#include "debug.h"
-#include "InternalErr.h"
 #include "DapIndent.h"
+#include "InternalErr.h"
+#include "Type.h"
+#include "debug.h"
+#include "dods-datatypes.h"
+#include "dods-limits.h"
+#include "escaping.h"
 
 #undef CLEAR_LOCAL_DATA
 
@@ -73,28 +70,29 @@ using std::endl;
 
 namespace libdap {
 
-void Vector::m_duplicate(const Vector & v)
-{
+void Vector::m_duplicate(const Vector &v) {
     d_length = v.d_length;
+    d_length_ll = v.d_length_ll;
 
     // _var holds the type of the elements. That is, it holds a BaseType
     // which acts as a template for the type of each element.
     if (v.d_proto) {
+        // Vector manages this ptr, delete before assigning a new object. jhrg 2/19/22
+        if (d_proto)
+            delete d_proto;
         d_proto = v.d_proto->ptr_duplicate(); // use ptr_duplicate()
-        d_proto->set_parent(this); // ptr_duplicate does not set d_parent.
-    }
-    else {
-        d_proto = 0;
+        d_proto->set_parent(this);            // ptr_duplicate does not set d_parent.
+    } else {
+        d_proto = nullptr;
     }
 
     // d_compound_buf and d_buf (further down) hold the values of the Vector. The field
-    // d_compound_buf is used when the Vector holds non-numeric data (including strings
+    // d_compound_buf is used when the Vector holds non-numeric data (including strings,
     // although it used to be that was not the case jhrg 2/10/05) while d_buf
     // holds numeric values.
     if (v.d_compound_buf.empty()) {
         d_compound_buf = v.d_compound_buf;
-    }
-    else {
+    } else {
         // Failure to set the size will make the [] operator barf on the LHS
         // of the assignment inside the loop.
         d_compound_buf.resize(d_length);
@@ -111,57 +109,57 @@ void Vector::m_duplicate(const Vector & v)
     d_str = v.d_str;
 
     // copy numeric values if there are any.
-    d_buf = 0; // init to null
-    if (v.d_buf) // only copy if data present
+    d_buf = 0;            // init to null
+    if (v.d_buf)          // only copy if data present
         val2buf(v.d_buf); // store v's value in this's _BUF.
 
     d_capacity = v.d_capacity;
+    d_capacity_ll = v.d_capacity_ll;
 }
 
 /**
  * @return whether the type of this Vector is a cardinal type
  * (i.e., stored in d_buf)
  */
-bool Vector::m_is_cardinal_type() const
-{
+bool Vector::m_is_cardinal_type() const {
     // Not cardinal if no d_proto at all!
     if (!d_proto) {
         return false;
     }
 
     switch (d_proto->type()) {
-        case dods_byte_c:
-        case dods_char_c:
-        case dods_int16_c:
-        case dods_uint16_c:
-        case dods_int32_c:
-        case dods_uint32_c:
-        case dods_float32_c:
-        case dods_float64_c:
-        	// New cardinal types for DAP4
-        case dods_int8_c:
-        case dods_uint8_c:
-        case dods_int64_c:
-        case dods_uint64_c:
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_float32_c:
+    case dods_float64_c:
+        // New cardinal types for DAP4
+    case dods_int8_c:
+    case dods_uint8_c:
+    case dods_int64_c:
+    case dods_uint64_c:
 
-        case dods_enum_c:
-            return true;
+    case dods_enum_c:
+        return true;
 
-            // These must be handled differently.
-        case dods_str_c:
-        case dods_url_c:
-        case dods_opaque_c:
+        // These must be handled differently.
+    case dods_str_c:
+    case dods_url_c:
+    case dods_opaque_c:
 
-        case dods_array_c:
+    case dods_array_c:
 
-        case dods_structure_c:
-        case dods_sequence_c:
-        case dods_grid_c:
-            return false;
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+        return false;
 
-        default:
-            assert("Vector::var: Unrecognized type");
-            return false;
+    default:
+        assert("Vector::var: Unrecognized type");
+        return false;
     }
 }
 
@@ -172,13 +170,12 @@ bool Vector::m_is_cardinal_type() const
  * If _buf already exists, this DELETES IT and creates a new one.
  * So don't use this if you want to keep the original _buf data around.
  * This also sets the valueCapacity().
- * @param numEltsOfType the number of elements of the cardinal type in var()
+ * @param num_elements the number of elements of the cardinal type in var()
  that we want storage for.
  * @return the size of the buffer created.
  * @exception if the Vector's type is not cardinal type.
  */
-unsigned int Vector::m_create_cardinal_data_buffer_for_type(unsigned int numEltsOfType)
-{
+int64_t Vector::m_create_cardinal_data_buffer_for_type(int64_t num_elements) {
     // Make sure we HAVE a _var, or we cannot continue.
     if (!d_proto) {
         throw InternalErr(__FILE__, __LINE__, "create_cardinal_data_buffer_for_type: Logic error: _var is null!");
@@ -186,47 +183,56 @@ unsigned int Vector::m_create_cardinal_data_buffer_for_type(unsigned int numElts
 
     // Make sure we only do this for the correct data types.
     if (!m_is_cardinal_type()) {
-        throw InternalErr(__FILE__, __LINE__, "create_cardinal_data_buffer_for_type: incorrectly used on Vector whose type was not a cardinal (simple data types).");
+        throw InternalErr(__FILE__, __LINE__,
+                          "create_cardinal_data_buffer_for_type: incorrectly used on Vector whose type was not a "
+                          "cardinal (simple data types).");
     }
+
+    // Handle this special case where this is an array that holds no values
+    if (num_elements == 0)
+        return 0;
 
     m_delete_cardinal_data_buffer();
 
-    // Handle this special case where this is an array that holds no values
-    if (numEltsOfType == 0)
-        return 0;
-
     // Actually new up the array with enough bytes to hold numEltsOfType of the actual type.
+#if 0
     unsigned int bytesPerElt = d_proto->width();
     unsigned int bytesNeeded = bytesPerElt * numEltsOfType;
+#endif
+    int64_t bytesNeeded = d_proto->width_ll() * num_elements;
     d_buf = new char[bytesNeeded];
 
-    d_capacity = numEltsOfType;
+#if 0
+    d_capacity = (unsigned long long)num_elements;
+#endif
+    set_value_capacity((uint64_t)num_elements);
     return bytesNeeded;
 }
 
 /** Delete d_buf and zero it and d_capacity out */
-void Vector::m_delete_cardinal_data_buffer()
-{
-	delete[] d_buf;
-	d_buf = 0;
-	d_capacity = 0;
+void Vector::m_delete_cardinal_data_buffer() {
+    delete[] d_buf;
+    d_buf = nullptr;
+    d_capacity = 0;
+    d_capacity_ll = 0;
 }
 
 /** Helper to reduce cut and paste in the virtual's.
  *
  */
-template<class CardType>
-void Vector::m_set_cardinal_values_internal(const CardType* fromArray, int numElts)
-{
+template <class CardType> void Vector::m_set_cardinal_values_internal(const CardType *fromArray, int64_t numElts) {
     if (numElts < 0) {
-        throw InternalErr(__FILE__, __LINE__, "Logic error: Vector::set_cardinal_values_internal() called with negative numElts!");
+        throw InternalErr(__FILE__, __LINE__,
+                          "Logic error: Vector::set_cardinal_values_internal() called with negative numElts!");
     }
     if (!fromArray) {
-        throw InternalErr(__FILE__, __LINE__, "Logic error: Vector::set_cardinal_values_internal() called with null fromArray!");
+        throw InternalErr(__FILE__, __LINE__,
+                          "Logic error: Vector::set_cardinal_values_internal() called with null fromArray!");
     }
-    set_length(numElts);
+    set_length_ll(numElts);
     m_create_cardinal_data_buffer_for_type(numElts);
-    memcpy(d_buf, fromArray, numElts * sizeof(CardType));
+    if (d_buf)
+        memcpy(d_buf, fromArray, numElts * sizeof(CardType));
     set_read_p(true);
 }
 
@@ -245,9 +251,8 @@ void Vector::m_set_cardinal_values_internal(const CardType* fromArray, int numEl
 
  @see Type
  @brief The Vector constructor.  */
-Vector::Vector(const string & n, BaseType * v, const Type & t, bool is_dap4 /* default:false */) :
-    BaseType(n, t, is_dap4), d_length(-1), d_proto(0), d_buf(0), d_compound_buf(0), d_capacity(0)
-{
+Vector::Vector(const string &n, BaseType *v, const Type &t, bool is_dap4 /* default:false */)
+    : BaseType(n, t, is_dap4) {
     if (v)
         add_var(v);
 
@@ -274,9 +279,8 @@ Vector::Vector(const string & n, BaseType * v, const Type & t, bool is_dap4 /* d
 
  @see Type
  @brief The Vector constructor.  */
-Vector::Vector(const string & n, const string &d, BaseType * v, const Type & t, bool is_dap4 /* default:false */) :
-    BaseType(n, d, t, is_dap4), d_length(-1), d_proto(0), d_buf(0), d_compound_buf(0), d_capacity(0)
-{
+Vector::Vector(const string &n, const string &d, BaseType *v, const Type &t, bool is_dap4 /* default:false */)
+    : BaseType(n, d, t, is_dap4) {
     if (v)
         add_var(v);
 
@@ -286,42 +290,37 @@ Vector::Vector(const string & n, const string &d, BaseType * v, const Type & t, 
 }
 
 /** The Vector copy constructor. */
-Vector::Vector(const Vector & rhs) :
-    BaseType(rhs)
+Vector::Vector(const Vector &rhs)
+    : BaseType(rhs)
+
 {
-    DBG2(cerr << "Entering Vector const ctor for object: " << this <<
-            endl); DBG2(cerr << "RHS: " << &rhs << endl);
+    DBG2(cerr << "Entering Vector const ctor for object: " << this << endl);
+    DBG2(cerr << "RHS: " << &rhs << endl);
 
     m_duplicate(rhs);
 }
 
-Vector::~Vector()
-{
-    DBG2(cerr << "Entering ~Vector (" << this << ")" << endl);
-
+Vector::~Vector() {
     delete d_proto;
-    d_proto = 0;
+    d_proto = nullptr;
 
     // Clears all buffers
-    clear_local_data();
-
-    DBG2(cerr << "Exiting ~Vector" << endl);
+    try {
+        Vector::clear_local_data();
+    } catch (const std::exception &) {
+        // It's hard to know what to do - Log it when we can, but that can fail, too.
+    }
 }
 
-Vector & Vector::operator=(const Vector & rhs)
-{
+Vector &Vector::operator=(const Vector &rhs) {
     if (this == &rhs)
         return *this;
-
-    dynamic_cast<BaseType &> (*this) = rhs;
-
+    BaseType::operator=(rhs);
     m_duplicate(rhs);
-
     return *this;
 }
 
-void Vector::set_name(const std::string& name)
-{
+void Vector::set_name(const std::string &name) {
     BaseType::set_name(name);
     // We need to set the prototype name as well since
     // this is what gets output in the dds!  Otherwise, there's a mismatch.
@@ -330,14 +329,13 @@ void Vector::set_name(const std::string& name)
     }
 }
 
-int Vector::element_count(bool leaves)
-{
+int Vector::element_count(bool leaves) {
     if (!leaves)
         return 1;
     else
-    	return d_proto->element_count(leaves);
-        // var() only works for simple types!
-        // jhrg 8/19/13 return var(0)->element_count(leaves);
+        return d_proto->element_count(leaves);
+    // var() only works for simple types!
+    // jhrg 8/19/13 return var(0)->element_count(leaves);
 }
 
 // These mfuncs set the _send_p and _read_p fields of BaseType. They differ
@@ -351,8 +349,7 @@ int Vector::element_count(bool leaves)
  when the Vector contains compound types.
 
  @brief Indicates that the data is ready to send. */
-void Vector::set_send_p(bool state)
-{
+void Vector::set_send_p(bool state) {
     if (d_proto) {
         d_proto->set_send_p(state);
 
@@ -368,8 +365,9 @@ void Vector::set_send_p(bool state)
         case dods_sequence_c:
         case dods_grid_c:
             if (d_compound_buf.size() > 0) {
-                for (unsigned long long i = 0; i < (unsigned) d_length; ++i) {
-                    if (d_compound_buf[i]) d_compound_buf[i]->set_send_p(state);
+                for (unsigned long long i = 0; i < (unsigned)d_length; ++i) {
+                    if (d_compound_buf[i])
+                        d_compound_buf[i]->set_send_p(state);
                 }
             }
             break;
@@ -388,8 +386,7 @@ void Vector::set_send_p(bool state)
  when the Vector contains compound types.
 
  @brief Indicates that the data is ready to send.  */
-void Vector::set_read_p(bool state)
-{
+void Vector::set_read_p(bool state) {
     if (d_proto) {
         d_proto->set_read_p(state);
 
@@ -400,7 +397,8 @@ void Vector::set_read_p(bool state)
         case dods_grid_c:
             if (d_compound_buf.size() > 0) {
                 for (unsigned long long i = 0; i < (unsigned)d_length; ++i) {
-                    if (d_compound_buf[i]) d_compound_buf[i]->set_read_p(state);
+                    if (d_compound_buf[i])
+                        d_compound_buf[i]->set_read_p(state);
                 }
             }
             break;
@@ -411,6 +409,44 @@ void Vector::set_read_p(bool state)
     }
 
     BaseType::set_read_p(state);
+}
+
+/**
+ * @brief Sets the length of the vector.
+ * This function does not allocate any new space.
+ *
+ * This updated version can accept sizes that are too big for a DAP2
+ * Array, but if that happens, a flag is set.
+ * @param l The number of elements
+ * @deprecated Use set_length_ll() instead
+ */
+void Vector::set_length(int64_t l) { Vector::set_length_ll(l); }
+
+/**
+ * @brief Set the number of elements in this Vector/Array
+ * This version of the function deprecates set_length() which is limited to
+ * 32-bit sizes. The field uses -1 as a sentinel value indicating that
+ * the Vector/Array holds no values.
+ * @param l The number of elements in the Vector/Array
+ */
+void Vector::set_length_ll(int64_t l) {
+    d_length_ll = l;
+    if (l <= DODS_INT_MAX)
+        d_length = (int)l;
+    else {
+        d_length = -1;
+        d_too_big_for_dap2 = true;
+    }
+}
+
+void Vector::set_value_capacity(uint64_t l) {
+    d_capacity_ll = l;
+    if (l <= DODS_UINT_MAX)
+        d_capacity = (unsigned int)l;
+    else {
+        d_capacity = 0;
+        d_too_big_for_dap2 = true;
+    }
 }
 
 /** Returns a copy of the template array element. If the Vector contains
@@ -430,12 +466,11 @@ void Vector::set_read_p(bool state)
 
  @return A pointer to the BaseType if found, otherwise null.
  @see Vector::var */
-BaseType *Vector::var(const string &n, bool exact, btp_stack *s)
-{
+BaseType *Vector::var(const string &n, bool exact, btp_stack *s) {
     string name = www2id(n);
     DBG2(cerr << "Vector::var: Looking for " << name << endl);
 
-    if (name == "" || d_proto->name() == name) {
+    if (name.empty() || d_proto->name() == name) {
         if (s)
             s->push(this);
         return d_proto;
@@ -464,14 +499,13 @@ BaseType *Vector::var(const string &n, bool exact, btp_stack *s)
  @param n Find the variable whose name is <i>name</i>.
  @param s Record the path to <i>name</i>.
  @return A pointer to the named variable. */
-BaseType *Vector::var(const string & n, btp_stack & s)
-{
+BaseType *Vector::var(const string &n, btp_stack &s) {
     string name = www2id(n);
 
     if (d_proto->is_constructor_type())
         return d_proto->var(name, s);
     else {
-        s.push((BaseType *) this);
+        s.push((BaseType *)this);
         return d_proto;
     }
 }
@@ -487,9 +521,9 @@ BaseType *Vector::var(const string & n, btp_stack & s)
  maintained and should not be deleted or referenced. Extract the value
  right after the method returns.
  @see BaseType::var */
+#if 0
 BaseType *Vector::var(unsigned int i)
 {
-
     switch (d_proto->type()) {
         case dods_byte_c:
         case dods_char_c:
@@ -507,7 +541,7 @@ BaseType *Vector::var(unsigned int i)
         case dods_float32_c:
         case dods_float64_c:
             // Transfer the ith value to the BaseType *d_proto
-            d_proto->val2buf(d_buf + (i * d_proto->width()));
+            d_proto->val2buf(d_buf + (i * (uint64_t)d_proto->width_ll()));
             return d_proto;
 
         case dods_str_c:
@@ -526,35 +560,46 @@ BaseType *Vector::var(unsigned int i)
             throw Error ("Vector::var: Unrecognized type");
     }
 }
+#endif
 
-/** Returns the number of bytes needed to hold the entire
- array.  This is equal to \c length() (the number of elements in
- in the array) times the width of each
- element.
+BaseType *Vector::var(unsigned int i) { return var_ll(i); }
 
- @brief Returns the width of the data, in bytes. */
-unsigned int Vector::width(bool constrained) const
-{
-    // Jose Garcia
-	assert(d_proto);
+BaseType *Vector::var_ll(uint64_t i) {
+    switch (d_proto->type()) {
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int8_c:
+    case dods_uint8_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c:
 
-    return length() * d_proto->width(constrained);
-}
+    case dods_enum_c:
 
-/** Returns the number of elements in the vector. Note that some
- child classes of Vector use the length of -1 as a flag value.
+    case dods_float32_c:
+    case dods_float64_c:
+        // Transfer the ith value to the BaseType *d_proto
+        d_proto->val2buf(d_buf + (i * (uint64_t)d_proto->width_ll()));
+        return d_proto;
 
- @see Vector::append_dim */
-int Vector::length() const
-{
-    return d_length;
-}
+    case dods_str_c:
+    case dods_url_c:
+        d_proto->val2buf(&d_str[i]);
+        return d_proto;
 
-/** Sets the length of the vector.  This function does not allocate
- any new space. */
-void Vector::set_length(int l)
-{
-    d_length = l;
+    case dods_opaque_c:
+    case dods_array_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+        return d_compound_buf[i];
+
+    default:
+        throw Error("Vector::var: Unrecognized type");
+    }
 }
 
 /** Resizes a Vector.  If the input length is greater than the
@@ -565,8 +610,7 @@ void Vector::set_length(int l)
 
  @note This method is applicable to the compound types only.
  */
-void Vector::vec_resize(int l)
-{
+void Vector::vec_resize(int l) {
     // I added this check, which alters the behavior of the method. jhrg 8/14/13
     if (m_is_cardinal_type())
         throw InternalErr(__FILE__, __LINE__, "Vector::vec_resize() is applicable to compound types only");
@@ -575,9 +619,26 @@ void Vector::vec_resize(int l)
     // be used when resize() is used. Using capacity() creates problems as noted in the
     // comment in set_vec_nocopy(). jhrg 5/19/17
     d_compound_buf.resize(l, 0); // Fill with NULLs
+#if 0
     d_capacity = d_compound_buf.size(); // size in terms of number of elements.
+#endif
+    set_value_capacity(d_compound_buf.size());
 }
 
+void Vector::vec_resize_ll(int64_t l) {
+    // I added this check, which alters the behavior of the method. jhrg 8/14/13
+    if (m_is_cardinal_type())
+        throw InternalErr(__FILE__, __LINE__, "Vector::vec_resize() is applicable to compound types only");
+
+    // Use resize() since other parts of the code use operator[]. Note that size() should
+    // be used when resize() is used. Using capacity() creates problems as noted in the
+    // comment in set_vec_nocopy(). jhrg 5/19/17
+    d_compound_buf.resize(l, nullptr); // Fill with NULLs
+#if 0
+    d_capacity = d_compound_buf.size(); // size in terms of number of elements.
+#endif
+    set_value_capacity(d_compound_buf.size());
+}
 /** @brief read data into a variable for later use
 
  Most uses of a variable are to either serialize its data to a stream of
@@ -594,9 +655,14 @@ void Vector::vec_resize(int l)
 
  @param eval A reference to a constraint evaluator
  @param dds The complete DDS to which this variable belongs */
-void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
-{
+void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds) {
     DBG(cerr << "Vector::intern_data: " << name() << endl);
+    if (is_dap4())
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (")
+                        .append(name())
+                        .append(")."),
+                    __FILE__, __LINE__);
+
     if (!read_p())
         read(); // read() throws Error and InternalErr
 
@@ -604,52 +670,52 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
     int num = length();
 
     switch (d_proto->type()) {
-        case dods_byte_c:
-        case dods_int16_c:
-        case dods_uint16_c:
-        case dods_int32_c:
-        case dods_uint32_c:
-        case dods_float32_c:
-        case dods_float64_c:
-            // For these cases, read() puts the data into d_buf,
-        	// which is what we need.
-            break;
+    case dods_byte_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_float32_c:
+    case dods_float64_c:
+        // For these cases, read() puts the data into d_buf,
+        // which is what we need.
+        break;
 
-        case dods_str_c:
-        case dods_url_c:
-            // For these cases, read() will put the data into d_str[],
-        	// which is also what we need.
-            break;
+    case dods_str_c:
+    case dods_url_c:
+        // For these cases, read() will put the data into d_str[],
+        // which is also what we need.
+        break;
 
-        case dods_array_c:
-            // This is an error since there can never be an Array of Array.
-            throw InternalErr(__FILE__, __LINE__, "Array of Array not supported.");
+    case dods_array_c:
+        // This is an error since there can never be an Array of Array.
+        throw InternalErr(__FILE__, __LINE__, "Array of Array not supported.");
 
-        case dods_structure_c:
-        case dods_sequence_c:
-        case dods_grid_c:
-            DBG(cerr << "Vector::intern_data: found ctor" << endl);
-            // For these cases, we need to call read() for each of the 'num'
-            // elements in the 'd_compound_buf[]' array of BaseType object pointers.
-            //
-            // I changed the test here from '... = 0' to '... < num' to accommodate
-            // the case where the array is zero-length.
-            if (d_compound_buf.capacity() < (unsigned)num)
-                throw InternalErr(__FILE__, __LINE__, "The capacity of this Vector is less than the number of elements.");
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+        DBG(cerr << "Vector::intern_data: found ctor" << endl);
+        // For these cases, we need to call read() for each of the 'num'
+        // elements in the 'd_compound_buf[]' array of BaseType object pointers.
+        //
+        // I changed the test here from '... = 0' to '... < num' to accommodate
+        // the case where the array is zero-length.
+        if (d_compound_buf.capacity() < (unsigned)num)
+            throw InternalErr(__FILE__, __LINE__, "The capacity of this Vector is less than the number of elements.");
 
-            for (int i = 0; i < num; ++i)
-                d_compound_buf[i]->intern_data(eval, dds);
+        for (int i = 0; i < num; ++i)
+            d_compound_buf[i]->intern_data(eval, dds);
 
-            break;
+        break;
 
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
     }
 }
 
 /** @brief Serialize a Vector.
 
- This uses the Marshaler class to encode each element of a cardinal
+ This uses the Marshaller class to encode each element of a cardinal
  array. For Arrays of Str and Url types, send the element count over
  as a prefix to the data so that deserialize will know how many elements
  to read.
@@ -657,9 +723,18 @@ void Vector::intern_data(ConstraintEvaluator &eval, DDS &dds)
  NB: Arrays of cardinal types must already be in BUF (in the local machine's
  representation) <i>before</i> this call is made.
  */
+bool Vector::serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval) {
+    // Add protection against calling this with DAP4 types. Technically not needed,
+    // but the 'Unknown Datatype' message is not very useful. jhrg 7/28/22
+    if (is_dap4())
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (")
+                        .append(name())
+                        .append(")."),
+                    __FILE__, __LINE__);
 
-bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, bool ce_eval)
-{
+    if (d_too_big_for_dap2)
+        throw Error("Trying to send a variable that is too large for DAP2.", __FILE__, __LINE__);
+
     // Added to streamline zero-length arrays. Not needed for correct function,
     // but explicitly handling this case here makes the code easier to follow.
     // In libdap::Vector::val2buf() there is a test that will catch the zero-length
@@ -679,53 +754,54 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
     bool status = false;
 
     switch (d_proto->type()) {
-        case dods_byte_c:
-            m.put_vector(d_buf, num, *this);
-            status = true;
-            break;
+    case dods_byte_c:
+        m.put_vector(d_buf, num, *this);
+        status = true;
+        break;
 
-        case dods_int16_c:
-        case dods_uint16_c:
-        case dods_int32_c:
-        case dods_uint32_c:
-        case dods_float32_c:
-        case dods_float64_c:
-            m.put_vector(d_buf, num, d_proto->width(), *this);
-            status = true;
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_float32_c:
+    case dods_float64_c:
+        assert((int)d_proto->width_ll() == d_proto->width_ll());
+        m.put_vector(d_buf, num, (int)d_proto->width_ll(), *this);
+        status = true;
 
-            break;
+        break;
 
-        case dods_str_c:
-        case dods_url_c:
-            if (d_str.capacity() == 0)
-                throw InternalErr(__FILE__, __LINE__, "The capacity of the string vector is 0");
+    case dods_str_c:
+    case dods_url_c:
+        if (d_str.capacity() == 0)
+            throw InternalErr(__FILE__, __LINE__, "The capacity of the string vector is 0");
 
-            m.put_int(num);
+        m.put_int(num);
 
-            for (int i = 0; i < num; ++i)
-                m.put_str(d_str[i]);
+        for (int i = 0; i < num; ++i)
+            m.put_str(d_str[i]);
 
-            status = true;
-            break;
+        status = true;
+        break;
 
-        case dods_array_c:
-        case dods_structure_c:
-        case dods_sequence_c:
-        case dods_grid_c:
-            //Jose Garcia
-            // Not setting the capacity of d_compound_buf is an internal error.
-            if (d_compound_buf.capacity() == 0)
-                throw InternalErr(__FILE__, __LINE__, "The capacity of *this* vector is 0.");
+    case dods_array_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+        // Jose Garcia
+        //  Not setting the capacity of d_compound_buf is an internal error.
+        if (d_compound_buf.capacity() == 0)
+            throw InternalErr(__FILE__, __LINE__, "The capacity of *this* vector is 0.");
 
-            m.put_int(num);
-            status = true;
-            for (int i = 0; i < num && status; ++i)
-                status = status && d_compound_buf[i]->serialize(eval, dds, m, false);
+        m.put_int(num);
+        status = true;
+        for (int i = 0; i < num && status; ++i)
+            status = status && d_compound_buf[i]->serialize(eval, dds, m, false);
 
-            break;
+        break;
 
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
     }
 
 #ifdef CLEAR_LOCAL_DATA
@@ -752,208 +828,209 @@ bool Vector::serialize(ConstraintEvaluator & eval, DDS & dds, Marshaller &m, boo
 //
 // Returns: True is successful, false otherwise.
 
-bool Vector::deserialize(UnMarshaller &um, DDS * dds, bool reuse)
-{
+bool Vector::deserialize(UnMarshaller &um, DDS *dds, bool reuse) {
     unsigned int num;
     unsigned i = 0;
 
+    if (is_dap4())
+        throw Error(string("A method usable only with DAP2 variables was called on a DAP4 variable (")
+                        .append(name())
+                        .append(")."),
+                    __FILE__, __LINE__);
+
     switch (d_proto->type()) {
-        case dods_byte_c:
-        case dods_int16_c:
-        case dods_uint16_c:
-        case dods_int32_c:
-        case dods_uint32_c:
-        case dods_float32_c:
-        case dods_float64_c:
-            um.get_int((int &) num);
+    case dods_byte_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_float32_c:
+    case dods_float64_c:
+        um.get_int((int &)num);
 
-            DBG(cerr << "Vector::deserialize: num = " << num << endl);
-            DBG(cerr << "Vector::deserialize: length = " << length() << endl);
+        DBG(cerr << "Vector::deserialize: num = " << num << endl);
+        DBG(cerr << "Vector::deserialize: length = " << length() << endl);
 
-            if (length() == -1)
-                set_length(num);
+        if (length() == -1)
+            set_length(num);
 
-            if (num != (unsigned int) length())
-                throw InternalErr(__FILE__, __LINE__, "The server sent declarations and data with mismatched sizes for the variable '" + name() + "'.");
+        if (num != (unsigned int)length())
+            throw InternalErr(__FILE__, __LINE__,
+                              "The server sent declarations and data with mismatched sizes for the variable '" +
+                                  name() + "'.");
 
-            if (!d_buf || !reuse) {
-                // Make d_buf be large enough for length() elements of _var->type()
-            	// m_create...() deletes the old buffer.
-                m_create_cardinal_data_buffer_for_type(length());
-                DBG(cerr << "Vector::deserialize: allocating "
-                        << width() << " bytes for an array of "
-                        << length() << " " << d_proto->type_name() << endl);
-            }
+        if (!d_buf || !reuse) {
+            // Make d_buf be large enough for length_ll() elements of _var->type()
+            // m_create...() deletes the old buffer.
+            m_create_cardinal_data_buffer_for_type(length_ll());
+        }
 
-            // Added to accommodate zero-length arrays.
-            // Note that the rest of the cases will just send the size without data
-            // but that these calls trigger error testing in the UnMarshaller code.
-            // jhrg 1/28/16
-            if (num == 0)
-                return true;
+        // Added to accommodate zero-length arrays.
+        // Note that the rest of the cases will just send the size without data
+        // but that these calls trigger error testing in the UnMarshaller code.
+        // jhrg 1/28/16
+        if (num == 0)
+            return true;
 
-            if (d_proto->type() == dods_byte_c)
-                um.get_vector((char **) &d_buf, num, *this);
-            else
-                um.get_vector((char **) &d_buf, num, d_proto->width(), *this);
+        if (d_proto->type() == dods_byte_c)
+            um.get_vector((char **)&d_buf, num, *this);
+        else {
+            assert((int)d_proto->width_ll() == d_proto->width_ll());
+            um.get_vector((char **)&d_buf, num, d_proto->width_ll(), *this);
+        }
+        break;
 
-            DBG(cerr << "Vector::deserialize: read " << num << " elements\n");
+    case dods_str_c:
+    case dods_url_c:
+        um.get_int((int &)num);
 
-            break;
+        if (length() == -1)
+            set_length(num);
 
-        case dods_str_c:
-        case dods_url_c:
-            um.get_int((int &) num);
+        if (num != (unsigned int)length())
+            throw InternalErr(__FILE__, __LINE__, "The client sent declarations and data with mismatched sizes.");
 
-            if (length() == -1)
-                set_length(num);
-
-            if (num != (unsigned int) length())
-                throw InternalErr(__FILE__, __LINE__, "The client sent declarations and data with mismatched sizes.");
-
-            d_str.resize((num > 0) ? num : 0); // Fill with NULLs
+        d_str.resize((num > 0) ? num : 0); // Fill with NULLs
+#if 0
             d_capacity = num; // capacity is number of strings we can fit.
+#endif
+        set_value_capacity((uint64_t)num);
 
-            for (i = 0; i < num; ++i) {
-                string str;
-                um.get_str(str);
-                d_str[i] = str;
+        for (i = 0; i < num; ++i) {
+            string str;
+            um.get_str(str);
+            d_str[i] = str;
+        }
 
-            }
+        break;
 
-            break;
+    case dods_array_c:
+        // Added jhrg 5/18/17
+        // This replaces a comment that was simply 'TO DO'
+        throw InternalErr(__FILE__, __LINE__, "Array of array!");
 
-        case dods_array_c:
-            // Added jhrg 5/18/17
-            // This replaces a comment that was simply 'TO DO'
-            throw InternalErr(__FILE__, __LINE__, "Array of array!");
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+        um.get_int((int &)num);
 
-        case dods_structure_c:
-        case dods_sequence_c:
-        case dods_grid_c:
-            um.get_int((int &) num);
+        if (length() == -1)
+            set_length(num);
 
-            if (length() == -1)
-                set_length(num);
+        if (num != (unsigned int)length())
+            throw InternalErr(__FILE__, __LINE__, "The client sent declarations and data with mismatched sizes.");
 
-            if (num != (unsigned int) length())
-                throw InternalErr(__FILE__, __LINE__, "The client sent declarations and data with mismatched sizes.");
+        vec_resize(num);
 
-            vec_resize(num);
+        for (i = 0; i < num; ++i) {
+            d_compound_buf[i] = d_proto->ptr_duplicate();
+            d_compound_buf[i]->deserialize(um, dds);
+        }
 
-            for (i = 0; i < num; ++i) {
-                d_compound_buf[i] = d_proto->ptr_duplicate();
-                d_compound_buf[i]->deserialize(um, dds);
-            }
+        break;
 
-            break;
-
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Unknown type!");
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown type!");
     }
 
     return false;
 }
 
-void Vector::compute_checksum(Crc32 &checksum)
-{
+void Vector::compute_checksum(Crc32 &checksum) {
     switch (d_proto->type()) {
-        case dods_byte_c:
-        case dods_char_c:
-        case dods_int8_c:
-        case dods_uint8_c:
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int8_c:
+    case dods_uint8_c:
 
-        case dods_int16_c:
-        case dods_uint16_c:
+    case dods_int16_c:
+    case dods_uint16_c:
 
-        case dods_int32_c:
-        case dods_uint32_c:
-        case dods_float32_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_float32_c:
 
-        case dods_int64_c:
-        case dods_uint64_c:
-        case dods_float64_c:
+    case dods_int64_c:
+    case dods_uint64_c:
+    case dods_float64_c:
 
-        case dods_enum_c:
-        	checksum.AddData(reinterpret_cast<uint8_t*>(d_buf), length() * d_proto->width());
-        	break;
+    case dods_enum_c:
+        checksum.AddData(reinterpret_cast<uint8_t *>(d_buf), length_ll() * d_proto->width_ll());
+        break;
 
-        case dods_str_c:
-        case dods_url_c:
-        	for (int64_t i = 0, e = length(); i < e; ++i)
-        		checksum.AddData(reinterpret_cast<const uint8_t*>(d_str[i].data()), d_str[i].length());
-            break;
+    case dods_str_c:
+    case dods_url_c:
+        for (int64_t i = 0, e = length(); i < e; ++i)
+            checksum.AddData(reinterpret_cast<const uint8_t *>(d_str[i].data()), d_str[i].size());
+        break;
 
-        case dods_opaque_c:
-        case dods_structure_c:
-        case dods_sequence_c:
-        	d_proto->compute_checksum(checksum);
-        	break;
+    case dods_opaque_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+        d_proto->compute_checksum(checksum);
+        break;
 
-        case dods_array_c:	// No array of array
-        case dods_grid_c:	// No grids in DAP4
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Unknown or unsupported datatype (" + d_proto->type_name() + ").");
+    case dods_array_c: // No array of array
+    case dods_grid_c:  // No grids in DAP4
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown or unsupported datatype (" + d_proto->type_name() + ").");
     }
 }
 
-void Vector::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/)
-{
+void Vector::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval*/) {
     if (!read_p())
         read(); // read() throws Error and InternalErr
 
     switch (d_proto->type()) {
-        case dods_byte_c:
-        case dods_char_c:
-        case dods_int8_c:
-        case dods_uint8_c:
-        case dods_int16_c:
-        case dods_uint16_c:
-        case dods_int32_c:
-        case dods_uint32_c:
-        case dods_int64_c:
-        case dods_uint64_c:
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int8_c:
+    case dods_uint8_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c:
 
-        case dods_enum_c:
+    case dods_enum_c:
 
-        case dods_float32_c:
-        case dods_float64_c:
+    case dods_float32_c:
+    case dods_float64_c:
 
-        case dods_str_c:
-        case dods_url_c:
+    case dods_str_c:
+    case dods_url_c:
 #if 0
         	compute_checksum(checksum);
 #endif
-            break;
+        break;
 
-        case dods_opaque_c:
-        case dods_structure_c:
-        case dods_sequence_c:
-            // Modified the assert here from '... != 0' to '... >= length())
-            // to accommodate the case of a zero-length array. jhrg 1/28/16
-            assert(d_compound_buf.capacity() >= (unsigned)length());
+    case dods_opaque_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+        // Modified the assertion here from '... != 0' to '... >= length())
+        // to accommodate the case of a zero-length array. jhrg 1/28/16
+        assert(d_compound_buf.capacity() >= (unsigned)length());
 
-            for (int i = 0, e = length(); i < e; ++i)
-                d_compound_buf[i]->intern_data(/*checksum, dmr, eval*/);
-            break;
+        for (int i = 0, e = length(); i < e; ++i)
+            d_compound_buf[i]->intern_data(/*checksum, dmr, eval*/);
+        break;
 
-        case dods_array_c:      // No Array of Array in DAP4 either...
-        case dods_grid_c:
-        default:
-        	throw InternalErr(__FILE__, __LINE__, "Unknown or unsupported datatype (" + d_proto->type_name() + ").");
+    case dods_array_c: // No Array of Array in DAP4 either...
+    case dods_grid_c:
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown or unsupported datatype (" + d_proto->type_name() + ").");
     }
 }
 
-void
-Vector::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter /*= false*/)
-{
+void Vector::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter /*= false*/) {
     if (!read_p())
         read(); // read() throws Error and InternalErr
 #if 0
     if (filter && !eval.eval_selection(dmr, dataset()))
         return true;
 #endif
-    int64_t num = length();	// The constrained length in elements
+    int64_t num = length_ll(); // The constrained length in elements
 
     DBG(cerr << __func__ << ", num: " << num << endl);
 
@@ -962,66 +1039,66 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter /*= false*/)
         return;
 
     switch (d_proto->type()) {
-        case dods_byte_c:
-        case dods_char_c:
-        case dods_int8_c:
-        case dods_uint8_c:
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int8_c:
+    case dods_uint8_c:
+        m.put_vector(d_buf, num);
+        break;
+
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c:
+        m.put_vector(d_buf, num, (int)d_proto->width_ll());
+        break;
+
+    case dods_enum_c:
+        if (d_proto->width_ll() == 1)
             m.put_vector(d_buf, num);
-            break;
+        else
+            m.put_vector(d_buf, num, (int)d_proto->width_ll());
+        break;
 
-        case dods_int16_c:
-        case dods_uint16_c:
-        case dods_int32_c:
-        case dods_uint32_c:
-        case dods_int64_c:
-        case dods_uint64_c:
-        	m.put_vector(d_buf, num, d_proto->width());
-        	break;
+    case dods_float32_c:
+        m.put_vector_float32(d_buf, num);
+        break;
 
-        case dods_enum_c:
-        	if (d_proto->width() == 1)
-        		m.put_vector(d_buf, num);
-        	else
-        		m.put_vector(d_buf, num, d_proto->width());
-        	break;
+    case dods_float64_c:
+        m.put_vector_float64(d_buf, num);
+        break;
 
-        case dods_float32_c:
-            m.put_vector_float32(d_buf, num);
-            break;
+    case dods_str_c:
+    case dods_url_c:
+        assert((int64_t)d_str.capacity() >= num);
 
-        case dods_float64_c:
-            m.put_vector_float64(d_buf, num);
-            break;
+        for (int64_t i = 0; i < num; ++i)
+            m.put_str(d_str[i]);
 
-        case dods_str_c:
-        case dods_url_c:
-            assert((int64_t)d_str.capacity() >= num);
+        break;
 
-            for (int64_t i = 0; i < num; ++i)
-                m.put_str(d_str[i]);
+    case dods_array_c:
+        throw InternalErr(__FILE__, __LINE__, "Array of Array not allowed.");
 
-            break;
+    case dods_opaque_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+        assert(d_compound_buf.capacity() >= 0);
 
-        case dods_array_c:
-        	throw InternalErr(__FILE__, __LINE__, "Array of Array not allowed.");
+        for (int64_t i = 0; i < num; ++i) {
+            DBG(cerr << __func__ << "d_compound_buf[" << i << "] " << d_compound_buf[i] << endl);
+            d_compound_buf[i]->serialize(m, dmr, filter);
+        }
 
-        case dods_opaque_c:
-        case dods_structure_c:
-        case dods_sequence_c:
-            assert(d_compound_buf.capacity() >= 0);
+        break;
 
-            for (int64_t i = 0; i < num; ++i) {
-                DBG(cerr << __func__ << "d_compound_buf[" << i << "] " << d_compound_buf[i] << endl);
-                d_compound_buf[i]->serialize(m, dmr, filter);
-            }
+    case dods_grid_c:
+        throw InternalErr(__FILE__, __LINE__, "Grid is not part of DAP4.");
 
-            break;
-
-        case dods_grid_c:
-        	throw InternalErr(__FILE__, __LINE__, "Grid is not part of DAP4.");
-
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown datatype.");
     }
 
 #ifdef CLEAR_LOCAL_DATA
@@ -1029,9 +1106,7 @@ Vector::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter /*= false*/)
 #endif
 }
 
-void
-Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
-{
+void Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
     if (m_is_cardinal_type()) {
         if (d_buf)
             m_delete_cardinal_data_buffer();
@@ -1046,71 +1121,75 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
         return;
 
     switch (d_proto->type()) {
-        case dods_byte_c:
-        case dods_char_c:
-        case dods_int8_c:
-        case dods_uint8_c:
-        	um.get_vector((char *)d_buf, length());
-        	break;
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int8_c:
+    case dods_uint8_c:
+        um.get_vector((char *)d_buf, length_ll());
+        break;
 
-        case dods_int16_c:
-        case dods_uint16_c:
-        case dods_int32_c:
-        case dods_uint32_c:
-        case dods_int64_c:
-        case dods_uint64_c:
-        	um.get_vector((char *)d_buf, length(), d_proto->width());
-        	break;
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c:
+        um.get_vector((char *)d_buf, length_ll(), d_proto->width_ll());
+        break;
 
-        case dods_enum_c:
-        	if (d_proto->width() == 1)
-        		um.get_vector((char *)d_buf, length());
-        	else
-        		um.get_vector((char *)d_buf, length(), d_proto->width());
-        	break;
+    case dods_enum_c:
+        if (d_proto->width_ll() == 1)
+            um.get_vector((char *)d_buf, length_ll());
+        else
+            um.get_vector((char *)d_buf, length_ll(), d_proto->width_ll());
+        break;
 
-        case dods_float32_c:
-            um.get_vector_float32((char *)d_buf, length());
-            break;
+    case dods_float32_c:
+        um.get_vector_float32((char *)d_buf, length_ll());
+        break;
 
-        case dods_float64_c:
-        	um.get_vector_float64((char *)d_buf, length());
-            break;
+    case dods_float64_c:
+        um.get_vector_float64((char *)d_buf, length_ll());
+        break;
 
-        case dods_str_c:
-        case dods_url_c: {
-        	int64_t len = length();
-            d_str.resize((len > 0) ? len : 0); // Fill with NULLs
+    case dods_str_c:
+    case dods_url_c: {
+        int64_t len = length_ll();
+        d_str.resize((len > 0) ? len : 0); // Fill with NULLs
+        if (len < 0)
+            throw InternalErr(__FILE__, __LINE__, "The number of string length is less than 0 ");
+#if 0
             d_capacity = len; // capacity is number of strings we can fit.
-
-            for (int64_t i = 0; i < len; ++i) {
-                um.get_str(d_str[i]);
-            }
-
-            break;
+#endif
+        set_value_capacity(len);
+        for (int64_t i = 0; i < len; ++i) {
+            um.get_str(d_str[i]);
         }
 
-        case dods_array_c:
-        	throw InternalErr(__FILE__, __LINE__, "Array of Array not allowed.");
+        break;
+    }
 
-        case dods_opaque_c:
-        case dods_structure_c:
-        case dods_sequence_c: {
-            vec_resize(length());
+    case dods_array_c:
+        throw InternalErr(__FILE__, __LINE__, "Array of Array not allowed.");
 
-            for (int64_t i = 0, end = length(); i < end; ++i) {
-                d_compound_buf[i] = d_proto->ptr_duplicate();
-                d_compound_buf[i]->deserialize(um, dmr);
-            }
+    case dods_opaque_c:
+    case dods_structure_c:
+    case dods_sequence_c: {
+        vec_resize(length());
 
-            break;
+        for (int64_t i = 0, end = length(); i < end; ++i) {
+            d_compound_buf[i] = d_proto->ptr_duplicate();
+            d_compound_buf[i]->deserialize(um, dmr);
         }
 
-        case dods_grid_c:
-        	throw InternalErr(__FILE__, __LINE__, "Grid is not part of DAP4.");
+        break;
+    }
 
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Unknown type.");
+    case dods_grid_c:
+        throw InternalErr(__FILE__, __LINE__, "Grid is not part of DAP4.");
+
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Unknown type.");
     }
 }
 
@@ -1141,6 +1220,7 @@ Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr)
  incoming data, and it is <i>not</i> reallocated.  If FALSE, new
  storage is allocated.  If the internal buffer has not been
  allocated at all, this argument has no effect. */
+#if 0
 unsigned int Vector::val2buf(void *val, bool reuse)
 {
     // Jose Garcia
@@ -1181,21 +1261,33 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 #endif
             // First time or no reuse (free'd above)
             if (!d_buf || !reuse)
-                m_create_cardinal_data_buffer_for_type(length());
+                m_create_cardinal_data_buffer_for_type(length_ll());
 
-            // width(true) returns the size in bytes given the constraint
-            memcpy(d_buf, val, width(true));
+            // width_ll(true) returns the size in bytes given the constraint
+            if (d_buf)
+                memcpy(d_buf, val, (uint64_t)width_ll(true));
             break;
 
         case dods_str_c:
         case dods_url_c:
+        {
             // Assume val points to an array of C++ string objects. Copy
             // them into the vector<string> field of this object.
             // Note: d_length is the number of elements in the Vector
+#if 0
             d_str.resize(d_length);
             d_capacity = d_length;
             for (int i = 0; i < d_length; ++i)
                 d_str[i] = *(static_cast<string *> (val) + i);
+#endif
+            int64_t str_len = length_ll();
+            if (str_len <0) 
+                throw InternalErr(__FILE__,__LINE__,"The number of string length is less than 0 ");
+            d_str.resize(str_len);
+            set_value_capacity(str_len);
+            for (int64_t i = 0; i < str_len; ++i)
+                d_str[i] = *(static_cast<string *> (val) + i);
+          }
 
             break;
 
@@ -1204,14 +1296,99 @@ unsigned int Vector::val2buf(void *val, bool reuse)
 
     }
 
-    return width(true);
+    return (unsigned int)width_ll(true);
+}
+#endif
+
+unsigned int Vector::val2buf(void *val, bool reuse) {
+
+    auto ret_value = (unsigned int)val2buf_ll(val, reuse);
+    return ret_value;
 }
 
-/** Copies data from the Vector buffer.  This function assumes that
- <i>val</i> points to an array large enough to hold N instances of
- the `C' representation of the \e numeric element type or C++ string
- objects. Never call this method for constructor types Structure,
- Sequence or Grid.
+int64_t Vector::val2buf_ll(void *val, bool reuse) {
+    // Jose Garcia
+
+    // Added for zero-length arrays - support in the handlers. jhrg 1/29/16
+    if (!val && length() == 0)
+        return 0;
+
+    // I *think* this method has been mainly designed to be use by read which
+    // is implemented in the surrogate library. Passing NULL as a pointer to
+    // this method will be an error of the creator of the surrogate library.
+    // Even though I recognize the fact that some methods inside libdap++ can
+    // call val2buf, I think by now no coding bugs such as misusing val2buf
+    // will be in libdap++, so it will be an internal error from the
+    // surrogate library.
+    if (!val)
+        throw InternalErr(__FILE__, __LINE__, "The incoming pointer does not contain any data.");
+
+    switch (d_proto->type()) {
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int8_c:
+    case dods_uint8_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c:
+
+    case dods_enum_c:
+
+    case dods_float32_c:
+    case dods_float64_c:
+#if 0
+        	if (d_buf && !reuse)
+                m_delete_cardinal_data_buffer();
+#endif
+        // First time or no reuse (free'd above)
+        if (!d_buf || !reuse)
+            m_create_cardinal_data_buffer_for_type(length_ll());
+
+        // width_ll(true) returns the size in bytes given the constraint
+        if (d_buf)
+            memcpy(d_buf, val, (uint64_t)width_ll(true));
+        break;
+
+    case dods_str_c:
+    case dods_url_c: {
+        // Assume val points to an array of C++ string objects. Copy
+        // them into the vector<string> field of this object.
+        // Note: d_length is the number of elements in the Vector
+#if 0
+            d_str.resize(d_length);
+            d_capacity = d_length;
+            for (int i = 0; i < d_length; ++i)
+                d_str[i] = *(static_cast<string *> (val) + i);
+#endif
+        int64_t str_len = length_ll();
+        if (str_len < 0)
+            throw InternalErr(__FILE__, __LINE__, "The number of string length is less than 0 ");
+        d_str.resize(str_len);
+        set_value_capacity(str_len);
+        for (int64_t i = 0; i < str_len; ++i)
+            d_str[i] = *(static_cast<string *>(val) + i);
+    }
+
+    break;
+
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Vector::val2buf: bad type");
+    }
+
+    return width_ll(true);
+}
+
+/**
+ @brief Copies data from the Vector buffer.
+
+ Copy data from a numeric or string arry to a buffer. This method will
+ allocate memory if the handle @p val references NULL, otherwise it
+ assumes the handle references enough storage for the data to be copied.
+
+ Never call this method for constructor types Structure, Sequence or Grid.
 
  When reading data out of a variable that has been constrained, this method
  assumes the N values/bytes of constrained data start at the beginning
@@ -1220,14 +1397,19 @@ unsigned int Vector::val2buf(void *val, bool reuse)
  get the data. Unless your constraint starts with the [0]th element, the
  result will not be the correct values.
 
- In the case of a Vector of Str objects, this method will return an array
- of C++ std::string objects.
+ In the case of a Vector of Str objects, this method will return a
+ pointer to an array of C++ std::string objects.
 
  @note It's best to define the pointer to reference the data as
- 'char *data' and then call this method using '..->buf2val((void**)&data)'.
- Then free the storage once you're done using 'delete[] data'. It's not
- correct C++ to use 'delete[]' on a void pointer and the allocated memory
- \e is an array of char, so 'delete[]' is needed.
+ 'char *data' or some other non-void type and then call this method
+ using '..->buf2val((void**)&data)'. You must free the storage once
+ you're done using 'delete[] data'.
+
+ @note It's also important to initialize the handle to NULL. That is
+ your code should declare the handle like this: 'char *data = 0' if
+ it expects buf2val() to allocate memory. With most compilers, the
+ pointer may be null the first time the code is run, but often not on
+ subsequent calls.
 
  @return The number of bytes used to store the array.
  @param val A pointer to a pointer to the memory into which the
@@ -1237,62 +1419,118 @@ unsigned int Vector::val2buf(void *val, bool reuse)
  deallocating the memory indicated by this pointer.
  @exception InternalErr Thrown if \e val is null.
  @see Vector::set_vec */
-unsigned int Vector::buf2val(void **val)
-{
+unsigned int Vector::buf2val(void **val) {
     // Jose Garcia
     // The same comment in Vector::val2buf applies here!
     if (!val)
         throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
 
-    unsigned int wid = static_cast<unsigned int> (width(true /* constrained */));
+    int64_t wid = width_ll(true /* constrained */);
 
     // This is the width computed using length(). The
     // length() property is changed when a projection
-    // constraint is applied. Thus this is the number of
+    // constraint is applied. Thus, this is the number of
     // bytes in the buffer given the current constraint.
 
     switch (d_proto->type()) {
-        case dods_byte_c:
-        case dods_char_c:
-        case dods_int8_c:
-        case dods_uint8_c:
-        case dods_int16_c:
-        case dods_uint16_c:
-        case dods_int32_c:
-        case dods_uint32_c:
-        case dods_int64_c:
-        case dods_uint64_c:
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int8_c:
+    case dods_uint8_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c:
 
-        case dods_enum_c:
+    case dods_enum_c:
 
-        case dods_float32_c:
-        case dods_float64_c:
-            if (!d_buf)
-                throw InternalErr(__FILE__, __LINE__, "Vector::buf2val: Logic error: called when cardinal type data buffer was empty!");
-            if (!*val)
-                *val = new char[wid];
+    case dods_float32_c:
+    case dods_float64_c:
+        if (!d_buf)
+            throw InternalErr(__FILE__, __LINE__,
+                              "Vector::buf2val: Logic error: called when cardinal type data buffer was empty!");
+        if (!*val)
+            *val = new char[wid];
 
-            memcpy(*val, d_buf, wid);
-            return wid;
+        memcpy(*val, d_buf, (uint64_t)wid);
+        return (unsigned int)wid;
 
-        case dods_str_c:
-        case dods_url_c: {
-        	if (d_str.empty())
-        		throw InternalErr(__FILE__, __LINE__, "Vector::buf2val: Logic error: called when string data buffer was empty!");
-            if (!*val)
-                *val = new string[d_length];
+    case dods_str_c:
+    case dods_url_c: {
+        if (d_str.empty())
+            throw InternalErr(__FILE__, __LINE__,
+                              "Vector::buf2val: Logic error: called when string data buffer was empty!");
+        if (!*val)
+            *val = new string[d_length];
 
-            for (int i = 0; i < d_length; ++i)
-                *(static_cast<string *> (*val) + i) = d_str[i];
+        for (int i = 0; i < d_length; ++i)
+            *(static_cast<string *>(*val) + i) = d_str[i];
 
-            return width();
-        }
-
-        default:
-            throw InternalErr(__FILE__, __LINE__, "Vector::buf2val: bad type");
+        return (unsigned int)width_ll();
     }
 
-    //return wid;
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Vector::buf2val: bad type");
+    }
+}
+
+int64_t Vector::buf2val_ll(void **val) {
+    // Jose Garcia
+    // The same comment in Vector::val2buf applies here!
+    if (!val)
+        throw InternalErr(__FILE__, __LINE__, "NULL pointer.");
+
+    int64_t wid = width_ll(true /* constrained */);
+
+    // This is the width computed using length(). The
+    // length() property is changed when a projection
+    // constraint is applied. Thus, this is the number of
+    // bytes in the buffer given the current constraint.
+
+    switch (d_proto->type()) {
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int8_c:
+    case dods_uint8_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c:
+
+    case dods_enum_c:
+
+    case dods_float32_c:
+    case dods_float64_c:
+        if (!d_buf)
+            throw InternalErr(__FILE__, __LINE__,
+                              "Vector::buf2val: Logic error: called when cardinal type data buffer was empty!");
+        if (!*val)
+            *val = new char[wid];
+
+        memcpy(*val, d_buf, wid);
+        return wid;
+
+    case dods_str_c:
+    case dods_url_c: {
+        if (d_str.empty())
+            throw InternalErr(__FILE__, __LINE__,
+                              "Vector::buf2val: Logic error: called when string data buffer was empty!");
+        if (!*val)
+            *val = new string[d_length_ll];
+
+        for (int64_t i = 0; i < d_length_ll; ++i)
+            *(static_cast<string *>(*val) + i) = d_str[i];
+
+        return width_ll();
+    }
+
+    default:
+        throw InternalErr(__FILE__, __LINE__, "Vector::buf2val: bad type");
+    }
 }
 
 /** Sets an element of the vector to a given value.  If the type of
@@ -1315,10 +1553,9 @@ unsigned int Vector::buf2val(void **val)
  @param val A pointer to the value to be inserted into the
  array.
  @see Vector::buf2val */
-void Vector::set_vec(unsigned int i, BaseType * val)
-{
-	Vector::set_vec_nocopy(i, val->ptr_duplicate());
-}
+void Vector::set_vec(unsigned int i, BaseType *val) { Vector::set_vec_nocopy(i, val->ptr_duplicate()); }
+
+void Vector::set_vec_ll(uint64_t i, BaseType *val) { Vector::set_vec_nocopy_ll(i, val->ptr_duplicate()); }
 
 /**
  * @brief Sets element <i>i</i> to value <i>val</i>.
@@ -1331,18 +1568,18 @@ void Vector::set_vec(unsigned int i, BaseType * val)
  * when the variable is deleted or when clear_local_data() is called.
  * @see Vector::set_vec()
  * */
-void Vector::set_vec_nocopy(unsigned int i, BaseType * val)
-{
+void Vector::set_vec_nocopy(unsigned int i, BaseType *val) {
     // Jose Garcia
     // This is a public method which allows users to set the elements
     // of *this* vector. Passing an invalid index, a NULL pointer or
     // mismatching the vector type are internal errors.
-    if (i >= static_cast<unsigned int> (d_length))
+    if (i >= static_cast<unsigned int>(d_length))
         throw InternalErr(__FILE__, __LINE__, "Invalid data: index too large.");
     if (!val)
         throw InternalErr(__FILE__, __LINE__, "Invalid data: null pointer to BaseType object.");
     if (val->type() != d_proto->type())
-        throw InternalErr(__FILE__, __LINE__, "invalid data: type of incoming object does not match *this* vector type.");
+        throw InternalErr(__FILE__, __LINE__,
+                          "invalid data: type of incoming object does not match *this* vector type.");
 
     // This code originally used capacity() instead of size(), but that was an error.
     // Use capacity() when using reserve() and size() when using resize(). Mixing
@@ -1359,17 +1596,44 @@ void Vector::set_vec_nocopy(unsigned int i, BaseType * val)
     d_compound_buf[i] = val;
 }
 
+void Vector::set_vec_nocopy_ll(uint64_t i, BaseType *val) {
+    // Jose Garcia
+    // This is a public method which allows users to set the elements
+    // of *this* vector. Passing an invalid index, a NULL pointer or
+    // mismatching the vector type are internal errors.
+    if (i >= static_cast<uint64_t>(length_ll()))
+        throw InternalErr(__FILE__, __LINE__, "Invalid data: index too large.");
+    if (!val)
+        throw InternalErr(__FILE__, __LINE__, "Invalid data: null pointer to BaseType object.");
+    if (val->type() != d_proto->type())
+        throw InternalErr(__FILE__, __LINE__,
+                          "invalid data: type of incoming object does not match *this* vector type.");
+
+    // This code originally used capacity() instead of size(), but that was an error.
+    // Use capacity() when using reserve() and size() when using resize(). Mixing
+    // capacity() with resize() leaves holes in the data, where (pointer) values are
+    // filled with nulls during successive calls to resize(). The resize() heuristic
+    // remembers previous calls on a given vector<> and allocates larger than requested
+    // blocks of memory on successive calls, which has the strange affect of erasing
+    // values already in the vector in the parts just added.
+    // jhrg 5/18/17
+    if (i >= d_compound_buf.size()) {
+        vec_resize_ll(d_compound_buf.size() + 100);
+    }
+
+    d_compound_buf[i] = val;
+}
+
 /**
  * Remove any read or set data in the private data of this Vector,
  * setting read_p() to false.
  * Essentially clears the _buf, d_str, and d_compound_buf of any data.
- * Useful for tightening up memory when the data is no longer needed,
+ * Useful for tightening up memory when the data are no longer needed,
  * but the object cannot yet be destroyed.
  *
  * On exit: get_value_capacity() == 0 && !read_p()
  */
-void Vector::clear_local_data()
-{
+void Vector::clear_local_data() {
     if (d_buf) {
         delete[] d_buf;
         d_buf = 0;
@@ -1385,6 +1649,7 @@ void Vector::clear_local_data()
     d_str.resize(0);
 
     d_capacity = 0;
+    d_capacity_ll = 0;
     set_read_p(false);
 }
 
@@ -1395,11 +1660,9 @@ void Vector::clear_local_data()
  * the size of the _buf array in bytes / sizeof(T) for the cardinal
  * types T, or the capacity of the d_str vector if T is string or url type.
  */
-unsigned int Vector::get_value_capacity() const
-{
-    return d_capacity;
-}
+unsigned int Vector::get_value_capacity() const { return d_capacity; }
 
+uint64_t Vector::get_value_capacity_ll() const { return d_capacity_ll; }
 /**
  * Allocate enough memory for the Vector to contain
  * numElements data elements of the Vector's type.
@@ -1409,55 +1672,59 @@ unsigned int Vector::get_value_capacity() const
  *                     to preallocate storage for.
  * @exception if the memory cannot be allocated
  */
-void Vector::reserve_value_capacity(unsigned int numElements)
-{
+void Vector::reserve_value_capacity(unsigned int numElements) {
     if (!d_proto) {
         throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Logic error: _var is null!");
     }
     switch (d_proto->type()) {
-        case dods_byte_c:
-        case dods_char_c:
-        case dods_int8_c:
-        case dods_uint8_c:
-        case dods_int16_c:
-        case dods_uint16_c:
-        case dods_int32_c:
-        case dods_uint32_c:
-        case dods_int64_c:
-        case dods_uint64_c:
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int8_c:
+    case dods_uint8_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c:
 
-        case dods_enum_c:
+    case dods_enum_c:
 
-        case dods_float32_c:
-        case dods_float64_c:
-            // Make _buf be the right size and set _capacity
-            m_create_cardinal_data_buffer_for_type(numElements);
-            break;
+    case dods_float32_c:
+    case dods_float64_c:
+        // Make _buf be the right size and set _capacity
+        m_create_cardinal_data_buffer_for_type(numElements);
+        break;
 
-        case dods_str_c:
-        case dods_url_c:
-            // Make sure the d_str has enough room for all the strings.
-            // Technically not needed, but it will speed things up for large arrays.
-            d_str.reserve(numElements);
+    case dods_str_c:
+    case dods_url_c:
+        // Make sure the d_str has enough room for all the strings.
+        // Technically not needed, but it will speed things up for large arrays.
+        d_str.reserve(numElements);
+#if 0
             d_capacity = numElements;
-            break;
+#endif
+        set_value_capacity(numElements);
+        break;
 
-        case dods_array_c:
-            throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Arrays not supported!");
+    case dods_array_c:
+        throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Arrays not supported!");
 
-        case dods_opaque_c:
-        case dods_structure_c:
-        case dods_sequence_c:
-        case dods_grid_c:
-            // not clear anyone will go this path, but best to be complete.
-            d_compound_buf.reserve(numElements);
+    case dods_opaque_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+        // not clear anyone will go this path, but best to be complete.
+        d_compound_buf.reserve(numElements);
+#if 0
             d_capacity = numElements;
-            break;
+#endif
+        set_value_capacity(numElements);
+        break;
 
-        default:
-            throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Unknown type!");
+    default:
+        throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Unknown type!");
     } // switch
-
 }
 
 /**
@@ -1465,12 +1732,90 @@ void Vector::reserve_value_capacity(unsigned int numElements)
  * of the Vector.
  * Same as reserveValueCapacity(length())
  */
-void Vector::reserve_value_capacity()
-{
+void Vector::reserve_value_capacity() {
     // Use the current length of the vector as the reserve amount.
     reserve_value_capacity(length());
 }
+/**
+ * Allocate enough memory for the Vector to contain
+ * numElements data elements of the Vector's type.
+ * Must be used before set_value_slice_from_row_major_vector
+ * to ensure memory exists.
+ * @param numElements  the number of elements of the Vector's type
+ *                     to preallocate storage for.
+ * @exception if the memory cannot be allocated
+ */
+void Vector::reserve_value_capacity_ll(uint64_t numElements) {
+    if (!d_proto) {
+        throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Logic error: _var is null!");
+    }
+    switch (d_proto->type()) {
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int8_c:
+    case dods_uint8_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c:
 
+    case dods_enum_c:
+
+    case dods_float32_c:
+    case dods_float64_c:
+        // Make _buf be the right size and set _capacity
+        m_create_cardinal_data_buffer_for_type(numElements);
+        break;
+
+    case dods_str_c:
+    case dods_url_c:
+        // Make sure the d_str has enough room for all the strings.
+        // Technically not needed, but it will speed things up for large arrays.
+        d_str.reserve(numElements);
+#if 0
+            d_capacity = numElements;
+#endif
+        set_value_capacity(numElements);
+        break;
+
+    case dods_array_c:
+        throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Arrays not supported!");
+
+    case dods_opaque_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+        // not clear anyone will go this path, but best to be complete.
+        d_compound_buf.reserve(numElements);
+#if 0
+            d_capacity = numElements;
+#endif
+        set_value_capacity(numElements);
+        break;
+
+    default:
+        throw InternalErr(__FILE__, __LINE__, "reserve_value_capacity: Unknown type!");
+    } // switch
+}
+
+/**
+ * Make sure there's storage allocated for the current length()
+ * of the Vector.
+ * Same as reserveValueCapacity(length())
+ */
+void Vector::reserve_value_capacity_ll() {
+    // Use the current length of the vector as the reserve amount.
+    reserve_value_capacity_ll(length_ll());
+}
+
+/**
+ *  A light-weight method to allocate the storage size in bytes
+ *  of the Vector. This method is necessary for operations like
+ *  direct IO in the BES.
+ */
+void Vector::reserve_value_capacity_ll_byte(uint64_t numBytes) { d_buf = new char[numBytes]; }
 /**
  * Copy rowMajorData.length() elements currently in a rowMajorData buffer
  * into this value buffer starting at element index startElement and
@@ -1499,102 +1844,105 @@ void Vector::reserve_value_capacity()
  * @return the number of elements added, such that:
  *         startElement + the return value is the next "free" element.
  */
-unsigned int
-Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsigned int startElement)
-{
-	static const string funcName = "set_value_slice_from_row_major_vector:";
+uint64_t Vector::set_value_slice_from_row_major_vector(const Vector &rowMajorDataC, uint64_t startElement) {
+    static const string funcName = "set_value_slice_from_row_major_vector:";
 
-	// semantically const from the caller's viewpoint, but some calls are not syntactic const.
-	Vector& rowMajorData = const_cast<Vector&>(rowMajorDataC);
+    // semantically const from the caller's viewpoint, but some calls are not syntactic const.
+    Vector &rowMajorData = const_cast<Vector &>(rowMajorDataC);
 
-	bool typesMatch = rowMajorData.var() && d_proto && (rowMajorData.var()->type() == d_proto->type());
-	if (!typesMatch) {
-		throw InternalErr(__FILE__, __LINE__, funcName + "Logic error: types do not match so cannot be copied!");
-	}
+    bool typesMatch = rowMajorData.var() && d_proto && (rowMajorData.var()->type() == d_proto->type());
+    if (!typesMatch) {
+        throw InternalErr(__FILE__, __LINE__, funcName + "Logic error: types do not match so cannot be copied!");
+    }
 
-	// Make sure the data exists
-	if (!rowMajorData.read_p()) {
-		throw InternalErr(__FILE__, __LINE__,
-				funcName + "Logic error: the Vector to copy data from has !read_p() and should have been read in!");
-	}
+    // Make sure the data exists
+    if (!rowMajorData.read_p()) {
+        throw InternalErr(__FILE__, __LINE__,
+                          funcName +
+                              "Logic error: the Vector to copy data from has !read_p() and should have been read in!");
+    }
 
-	// Check this otherwise the static_cast<unsigned int> below will do the wrong thing.
-	if (rowMajorData.length() < 0) {
-		throw InternalErr(__FILE__, __LINE__,
-				funcName
-						+ "Logic error: the Vector to copy data from has length() < 0 and was probably not initialized!");
-	}
+    // Check this otherwise the static_cast<unsigned int> below will do the wrong thing.
+    if (rowMajorData.length_ll() < 0) {
+        throw InternalErr(
+            __FILE__, __LINE__,
+            funcName +
+                "Logic error: the Vector to copy data from has length_ll() < 0 and was probably not initialized!");
+    }
 
-	// The read-in capacity had better be at least the length (the amount we will copy) or we'll memcpy into bad memory
-	// I imagine we could copy just the capacity rather than throw, but I really think this implies a problem to be addressed.
-	if (rowMajorData.get_value_capacity() < static_cast<unsigned int>(rowMajorData.length())) {
-		throw InternalErr(__FILE__, __LINE__,
-				funcName
-						+ "Logic error: the Vector to copy from has a data capacity less than its length, can't copy!");
-	}
+    // The read-in capacity had better be at least the length (the amount we will copy) or we'll memcpy into bad memory
+    // I imagine we could copy just the capacity rather than throw, but I really think this implies a problem to be
+    // addressed.
+    if (rowMajorData.get_value_capacity_ll() < static_cast<uint64_t>(rowMajorData.length_ll())) {
+        throw InternalErr(
+            __FILE__, __LINE__,
+            funcName + "Logic error: the Vector to copy from has a data capacity less than its length, can't copy!");
+    }
 
-	// Make sure there's enough room in this Vector to store all the elements requested.  Again,
-	// better to throw than just copy what we can since it implies a logic error that needs to be solved.
-	if (d_capacity < (startElement + rowMajorData.length())) {
-		throw InternalErr(__FILE__, __LINE__,
-				funcName + "Logic error: the capacity of this Vector cannot hold all the data in the from Vector!");
-	}
+    // Make sure there's enough room in this Vector to store all the elements requested.  Again,
+    // better to throw than just copy what we can since it implies a logic error that needs to be solved.
+    if (d_capacity_ll < (startElement + rowMajorData.length_ll())) {
+        throw InternalErr(__FILE__, __LINE__,
+                          funcName +
+                              "Logic error: the capacity of this Vector cannot hold all the data in the from Vector!");
+    }
 
-	// OK, at this point we're pretty sure we can copy the data, but we have to do it differently depending on type.
-	switch (d_proto->type()) {
-		case dods_int8_c:
-		case dods_uint8_c:
-		case dods_byte_c:
-        case dods_char_c:
-		case dods_int16_c:
-		case dods_uint16_c:
-		case dods_int32_c:
-		case dods_uint32_c:
-		case dods_int64_c:
-		case dods_uint64_c:
+    // OK, at this point we're pretty sure we can copy the data, but we have to do it differently depending on type.
+    switch (d_proto->type()) {
+    case dods_int8_c:
+    case dods_uint8_c:
+    case dods_byte_c:
+    case dods_char_c:
+    case dods_int16_c:
+    case dods_uint16_c:
+    case dods_int32_c:
+    case dods_uint32_c:
+    case dods_int64_c:
+    case dods_uint64_c:
 
-		case dods_enum_c:
+    case dods_enum_c:
 
-		case dods_float32_c:
-		case dods_float64_c: {
-			if (!d_buf) {
-				throw InternalErr(__FILE__, __LINE__, funcName + "Logic error: this->_buf was unexpectedly null!");
-			}
-			if (!rowMajorData.d_buf) {
-				throw InternalErr(__FILE__, __LINE__, funcName + "Logic error: rowMajorData._buf was unexpectedly null!");
-			}
-			// memcpy the data into this, taking care to do ptr arithmetic on bytes and not sizeof(element)
-			int varWidth = d_proto->width();
-			char* pFromBuf = rowMajorData.d_buf;
-			int numBytesToCopy = rowMajorData.width(true);
-			char* pIntoBuf = d_buf + (startElement * varWidth);
-			memcpy(pIntoBuf, pFromBuf, numBytesToCopy);
-			break;
-		}
+    case dods_float32_c:
+    case dods_float64_c: {
+        if (!d_buf) {
+            throw InternalErr(__FILE__, __LINE__, funcName + "Logic error: this->_buf was unexpectedly null!");
+        }
+        if (!rowMajorData.d_buf) {
+            throw InternalErr(__FILE__, __LINE__, funcName + "Logic error: rowMajorData._buf was unexpectedly null!");
+        }
+        // memcpy the data into this, taking care to do ptr arithmetic on bytes and not sizeof(element)
+        int64_t varWidth = d_proto->width_ll();
+        char *pFromBuf = rowMajorData.d_buf;
+        int64_t numBytesToCopy = rowMajorData.width_ll(true);
+        char *pIntoBuf = d_buf + (startElement * varWidth);
+        memcpy(pIntoBuf, pFromBuf, numBytesToCopy);
+        break;
+    }
 
-		case dods_str_c:
-		case dods_url_c:
-			// Strings need to be copied directly
-			for (unsigned int i = 0; i < static_cast<unsigned int>(rowMajorData.length()); ++i) {
-				d_str[startElement + i] = rowMajorData.d_str[i];
-			}
-			break;
+    case dods_str_c:
+    case dods_url_c:
+        // Strings need to be copied directly
+        for (uint64_t i = 0; i < static_cast<uint64_t>(rowMajorData.length_ll()); ++i) {
+            d_str[startElement + i] = rowMajorData.d_str[i];
+        }
+        break;
 
-		case dods_array_c:
-        case dods_opaque_c:
-		case dods_structure_c:
-		case dods_sequence_c:
-		case dods_grid_c:
-			// Not sure that this function will be used for these type of nested objects, so I will throw here.
-			throw InternalErr(__FILE__, __LINE__,
-					funcName + "Unimplemented method for Vectors of type: array, opaque, structure, sequence or grid.");
+    case dods_array_c:
+    case dods_opaque_c:
+    case dods_structure_c:
+    case dods_sequence_c:
+    case dods_grid_c:
+        // Not sure that this function will be used for these type of nested objects, so I will throw here.
+        throw InternalErr(__FILE__, __LINE__,
+                          funcName +
+                              "Unimplemented method for Vectors of type: array, opaque, structure, sequence or grid.");
 
-		default:
-			throw InternalErr(__FILE__, __LINE__, funcName + ": Unknown type!");
-	} // switch (_var->type())
+    default:
+        throw InternalErr(__FILE__, __LINE__, funcName + ": Unknown type!");
+    } // switch (_var->type())
 
-	// This is how many elements we copied.
-	return (unsigned int) rowMajorData.length();
+    // This is how many elements we copied.
+    return (uint64_t)rowMajorData.length_ll();
 }
 
 /**
@@ -1605,34 +1953,32 @@ Vector::set_value_slice_from_row_major_vector(const Vector& rowMajorDataC, unsig
  * @param dt
  * @return True if the types match, false otherwise
  */
-template <typename T>
-static bool types_match(Type t, T *cpp_var)
-{
+template <typename T> static bool types_match(Type t, T *cpp_var) {
     switch (t) {
     case dods_byte_c:
     case dods_char_c:
     case dods_uint8_c:
-        return typeid(cpp_var) == typeid(dods_byte*);
+        return typeid(cpp_var) == typeid(dods_byte *);
 
     case dods_int8_c:
-        return typeid(cpp_var) == typeid(dods_int8*);
+        return typeid(cpp_var) == typeid(dods_int8 *);
     case dods_int16_c:
-        return typeid(cpp_var) == typeid(dods_int16*);
+        return typeid(cpp_var) == typeid(dods_int16 *);
     case dods_uint16_c:
-        return typeid(cpp_var) == typeid(dods_uint16*);
+        return typeid(cpp_var) == typeid(dods_uint16 *);
     case dods_int32_c:
-        return typeid(cpp_var) == typeid(dods_int32*);
+        return typeid(cpp_var) == typeid(dods_int32 *);
     case dods_uint32_c:
-        return typeid(cpp_var) == typeid(dods_uint32*);
+        return typeid(cpp_var) == typeid(dods_uint32 *);
     case dods_int64_c:
-        return typeid(cpp_var) == typeid(dods_int64*);
+        return typeid(cpp_var) == typeid(dods_int64 *);
     case dods_uint64_c:
-        return typeid(cpp_var) == typeid(dods_uint64*);
+        return typeid(cpp_var) == typeid(dods_uint64 *);
 
     case dods_float32_c:
-        return typeid(cpp_var) == typeid(dods_float32*);
+        return typeid(cpp_var) == typeid(dods_float32 *);
     case dods_float64_c:
-        return typeid(cpp_var) == typeid(dods_float64*);
+        return typeid(cpp_var) == typeid(dods_float64 *);
 
     case dods_null_c:
     case dods_enum_c:
@@ -1651,126 +1997,118 @@ static bool types_match(Type t, T *cpp_var)
 //@{
 /** @brief set the value of a byte array */
 
-template <typename T>
-bool Vector::set_value_worker(T *v, int sz)
-{
-    if (!v || !types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
+template <typename T> bool Vector::set_value_worker(T *v, int sz) {
+    if (!v || !types_match(
+                  d_proto->type() == dods_enum_c ? static_cast<D4Enum *>(d_proto)->element_type() : d_proto->type(), v))
+        return false;
+    m_set_cardinal_values_internal(v, (int64_t)sz);
+    return true;
+}
+
+template <typename T> bool Vector::set_value_ll_worker(T *v, int64_t sz) {
+    if (!v || !types_match(
+                  d_proto->type() == dods_enum_c ? static_cast<D4Enum *>(d_proto)->element_type() : d_proto->type(), v))
         return false;
 
     m_set_cardinal_values_internal(v, sz);
     return true;
 }
 
-bool Vector::set_value(dods_byte *val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(dods_int8 *val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(dods_int16 *val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(dods_uint16 *val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(dods_int32 *val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(dods_uint32 *val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(dods_int64 *val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(dods_uint64 *val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(dods_float32 *val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(dods_float64 *val, int sz)
-{
-    return set_value_worker(val, sz);
-}
+bool Vector::set_value(dods_byte *val, int sz) { return set_value_worker(val, sz); }
 
-/** @brief set the value of a string or url array */
-bool Vector::set_value(string *val, int sz)
-{
+bool Vector::set_value(dods_int8 *val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(dods_int16 *val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(dods_uint16 *val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(dods_int32 *val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(dods_uint32 *val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(dods_int64 *val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(dods_uint64 *val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(dods_float32 *val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(dods_float64 *val, int sz) { return set_value_worker(val, sz); }
+
+bool Vector::set_value_ll(dods_byte *val, int64_t sz) { return set_value_ll_worker(val, sz); }
+
+bool Vector::set_value_ll(dods_int8 *val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(dods_int16 *val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(dods_uint16 *val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(dods_int32 *val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(dods_uint32 *val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(dods_int64 *val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(dods_uint64 *val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(dods_float32 *val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(dods_float64 *val, int64_t sz) { return set_value_ll_worker(val, sz); }
+
+/**
+ * @brief set the value of a string or url array
+ * @param val An array of string objects
+ * @param sz The number of elements in the string array
+ * @return false if the type of the array is neither Str nor Url
+ * or val is null, otherwise returns true.
+ */
+bool Vector::set_value(string *val, int sz) {
     if ((var()->type() == dods_str_c || var()->type() == dods_url_c) && val) {
         d_str.resize(sz);
+#if 0
         d_capacity = sz;
-        for (register int t = 0; t < sz; t++) {
+#endif
+        set_value_capacity(sz);
+        for (int t = 0; t < sz; t++) {
             d_str[t] = val[t];
         }
         set_length(sz);
         set_read_p(true);
         return true;
-    }
-    else {
+    } else {
         return false;
     }
 }
 
-template<typename T>
-bool Vector::set_value_worker(vector<T> &v, int sz)
-{
-    return set_value(&v[0], sz);
+bool Vector::set_value_ll(string *val, int64_t sz) {
+    if ((var()->type() == dods_str_c || var()->type() == dods_url_c) && val) {
+        d_str.resize(sz);
+#if 0
+        d_capacity_ll = sz;
+#endif
+        set_value_capacity(sz);
+        for (int64_t t = 0; t < sz; t++) {
+            d_str[t] = val[t];
+        }
+        set_length_ll(sz);
+        set_read_p(true);
+        return true;
+    } else {
+        return false;
+    }
 }
 
-bool Vector::set_value(vector<dods_byte> &val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(vector<dods_int8> &val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(vector<dods_int16> &val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(vector<dods_uint16> &val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(vector<dods_int32> &val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(vector<dods_uint32> &val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(vector<dods_int64> &val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(vector<dods_uint64> &val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(vector<dods_float32> &val, int sz)
-{
-    return set_value_worker(val, sz);
-}
-bool Vector::set_value(vector<dods_float64> &val, int sz)
-{
-    return set_value_worker(val, sz);
-}
+template <typename T> bool Vector::set_value_worker(vector<T> &v, int sz) { return set_value(v.data(), sz); }
 
+template <typename T> bool Vector::set_value_ll_worker(vector<T> &v, int64_t sz) { return set_value_ll(v.data(), sz); }
+
+bool Vector::set_value(vector<dods_byte> &val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(vector<dods_int8> &val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(vector<dods_int16> &val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(vector<dods_uint16> &val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(vector<dods_int32> &val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(vector<dods_uint32> &val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(vector<dods_int64> &val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(vector<dods_uint64> &val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(vector<dods_float32> &val, int sz) { return set_value_worker(val, sz); }
+bool Vector::set_value(vector<dods_float64> &val, int sz) { return set_value_worker(val, sz); }
+
+bool Vector::set_value_ll(vector<dods_byte> &val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(vector<dods_int8> &val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(vector<dods_int16> &val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(vector<dods_uint16> &val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(vector<dods_int32> &val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(vector<dods_uint32> &val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(vector<dods_int64> &val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(vector<dods_uint64> &val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(vector<dods_float32> &val, int64_t sz) { return set_value_ll_worker(val, sz); }
+bool Vector::set_value_ll(vector<dods_float64> &val, int64_t sz) { return set_value_ll_worker(val, sz); }
 
 /** @brief set the value of a string or url array */
-bool Vector::set_value(vector<string> &val, int sz)
-{
+bool Vector::set_value(vector<string> &val, int sz) {
     if (var()->type() == dods_str_c || var()->type() == dods_url_c) {
         d_str.resize(sz);
         d_capacity = sz;
@@ -1780,11 +2118,26 @@ bool Vector::set_value(vector<string> &val, int sz)
         set_length(sz);
         set_read_p(true);
         return true;
-    }
-    else {
+    } else {
         return false;
     }
 }
+
+bool Vector::set_value_ll(vector<string> &val, int64_t sz) {
+    if (var()->type() == dods_str_c || var()->type() == dods_url_c) {
+        d_str.resize(sz);
+        d_capacity_ll = sz;
+        for (int64_t t = 0; t < sz; t++) {
+            d_str[t] = val[t];
+        }
+        set_length_ll(sz);
+        set_read_p(true);
+        return true;
+    } else {
+        return false;
+    }
+}
+
 //@}
 
 //@{
@@ -1805,10 +2158,7 @@ bool Vector::set_value(vector<string> &val, int sz)
  * location in the Vector's internal storage from which to read the returned value.
  * @param b A pointer to the memory to hold the data; must be at least
  * length() * sizeof(dods_byte) in size.*/
-template <typename T>
-void Vector::value_worker(vector<unsigned int> *indices, T *b) const
-{
-   // unsigned long currentIndex;
+template <typename T> void Vector::value_worker(vector<unsigned int> *indices, T *b) const {
 #if 0
     // Iterator version. Not tested, jhrg 8/14/13
     for (vector<unsigned int>::iterator i = indices->begin(), e = indices->end(); i != e; ++i) {
@@ -1826,23 +2176,63 @@ void Vector::value_worker(vector<unsigned int> *indices, T *b) const
         unsigned long currentIndex = (*indices)[i];
         if (currentIndex > (unsigned int)length()) {
             stringstream s;
-            s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
+            s << "Vector::value() - Subset index[" << i << "] = " << currentIndex << " references a value that is "
+              << "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name()
+              << "'. ";
+            throw Error(s.str());
+        }
+        b[i] = reinterpret_cast<T *>(d_buf)[currentIndex]; // I like this version - and it works!
+    }
+}
+
+template <typename T> void Vector::value_ll_worker(vector<uint64_t> *indices, T *b) const {
+#if 0
+    // Iterator version. Not tested, jhrg 8/14/13
+    for (vector<unsigned int>::iterator i = indices->begin(), e = indices->end(); i != e; ++i) {
+        unsigned long currentIndex = *i;
+        if(currentIndex > (unsigned int)length()){
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i - subsetIndex->begin() <<  "] = " << currentIndex << " references a value that is " <<
                     "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
             throw Error(s.str());
         }
-        b[i] = reinterpret_cast<T*>(d_buf )[currentIndex]; // I like this version - and it works!
+        b[i - indices->begin()] = reinterpret_cast<T*>(d_buf )[currentIndex];
+    }
+#endif
+    for (uint64_t i = 0, e = indices->size(); i < e; ++i) {
+        uint64_t currentIndex = (*indices)[i];
+        if (currentIndex > (uint64_t)length_ll()) {
+            stringstream s;
+            s << "Vector::value() - Subset index[" << i << "] = " << currentIndex << " references a value that is "
+              << "outside the bounds of the internal storage [ length_ll()= " << length_ll() << " ] name: '" << name()
+              << "'. ";
+            throw Error(s.str());
+        }
+        b[i] = reinterpret_cast<T *>(d_buf)[currentIndex]; // I like this version - and it works!
     }
 }
-void Vector::value(vector<unsigned int> *indices, dods_byte *b) const    { value_worker(indices, b); }
-void Vector::value(vector<unsigned int> *indices, dods_int8 *b) const    { value_worker(indices, b); }
-void Vector::value(vector<unsigned int> *indices, dods_int16 *b) const   { value_worker(indices, b); }
-void Vector::value(vector<unsigned int> *indices, dods_uint16 *b) const  { value_worker(indices, b); }
-void Vector::value(vector<unsigned int> *indices, dods_int32 *b) const   { value_worker(indices, b); }
-void Vector::value(vector<unsigned int> *indices, dods_uint32 *b) const  { value_worker(indices, b); }
-void Vector::value(vector<unsigned int> *indices, dods_int64 *b) const   { value_worker(indices, b); }
-void Vector::value(vector<unsigned int> *indices, dods_uint64 *b) const  { value_worker(indices, b); }
+
+void Vector::value(vector<unsigned int> *indices, dods_byte *b) const { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_int8 *b) const { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_int16 *b) const { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_uint16 *b) const { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_int32 *b) const { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_uint32 *b) const { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_int64 *b) const { value_worker(indices, b); }
+void Vector::value(vector<unsigned int> *indices, dods_uint64 *b) const { value_worker(indices, b); }
 void Vector::value(vector<unsigned int> *indices, dods_float32 *b) const { value_worker(indices, b); }
 void Vector::value(vector<unsigned int> *indices, dods_float64 *b) const { value_worker(indices, b); }
+
+void Vector::value_ll(vector<uint64_t> *indices, dods_byte *b) const { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_int8 *b) const { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_int16 *b) const { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_uint16 *b) const { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_int32 *b) const { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_uint32 *b) const { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_int64 *b) const { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_uint64 *b) const { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_float32 *b) const { value_ll_worker(indices, b); }
+void Vector::value_ll(vector<uint64_t> *indices, dods_float64 *b) const { value_ll_worker(indices, b); }
 
 #if 0
 template void Vector::value(vector<unsigned int> *indices, dods_byte *b) const;
@@ -1857,18 +2247,19 @@ template void Vector::value(vector<unsigned int> *indices, dods_float32 *b) cons
 template void Vector::value(vector<unsigned int> *indices, dods_float64 *b) const;
 #endif
 
-/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to return. **/
-void Vector::value(vector<unsigned int> *subsetIndex, vector<string> &b) const
-{
+/** @brief Get a copy of the data held by this variable using the passed subsetIndex vector to identify which values to
+ * return. **/
+void Vector::value(vector<unsigned int> *subsetIndex, vector<string> &b) const {
     unsigned long currentIndex;
 
-    if (d_proto->type() == dods_str_c || d_proto->type() == dods_url_c){
-        for(unsigned long i=0; i<subsetIndex->size() ;++i){
-            currentIndex = (*subsetIndex)[i] ;
-            if(currentIndex > (unsigned int)length()){
+    if (d_proto->type() == dods_str_c || d_proto->type() == dods_url_c) {
+        for (unsigned long i = 0; i < subsetIndex->size(); ++i) {
+            currentIndex = (*subsetIndex)[i];
+            if (currentIndex > (unsigned int)length()) {
                 stringstream s;
-                s << "Vector::value() - Subset index[" << i <<  "] = " << currentIndex << " references a value that is " <<
-                        "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name() << "'. ";
+                s << "Vector::value() - Subset index[" << i << "] = " << currentIndex << " references a value that is "
+                  << "outside the bounds of the internal storage [ length()= " << length() << " ] name: '" << name()
+                  << "'. ";
                 throw Error(s.str());
             }
             b[i] = d_str[currentIndex];
@@ -1876,22 +2267,39 @@ void Vector::value(vector<unsigned int> *subsetIndex, vector<string> &b) const
     }
 }
 
-template <typename T>
-void Vector::value_worker(T *v) const
-{
+void Vector::value_ll(vector<uint64_t> *subsetIndex, vector<string> &b) const {
+    uint64_t currentIndex;
+
+    if (d_proto->type() == dods_str_c || d_proto->type() == dods_url_c) {
+        for (uint64_t i = 0; i < subsetIndex->size(); ++i) {
+            currentIndex = (*subsetIndex)[i];
+            if (currentIndex > (uint64_t)length_ll()) {
+                stringstream s;
+                s << "Vector::value() - Subset index[" << i << "] = " << currentIndex << " references a value that is "
+                  << "outside the bounds of the internal storage [ length_ll()= " << length_ll() << " ] name: '"
+                  << name() << "'. ";
+                throw Error(s.str());
+            }
+            b[i] = d_str[currentIndex];
+        }
+    }
+}
+
+template <typename T> void Vector::value_worker(T *v) const {
     // Only copy if v is not null and the proto's  type matches.
     // For Enums, use the element type since type == dods_enum_c.
-    if (v && types_match(d_proto->type() == dods_enum_c ? static_cast<D4Enum*>(d_proto)->element_type() : d_proto->type(), v))
-        memcpy(v, d_buf, length() * sizeof(T));
+    if (v && types_match(
+                 d_proto->type() == dods_enum_c ? static_cast<D4Enum *>(d_proto)->element_type() : d_proto->type(), v))
+        memcpy(v, d_buf, length_ll() * sizeof(T));
 }
-void Vector::value(dods_byte *b) const    { value_worker(b); }
-void Vector::value(dods_int8 *b) const    { value_worker(b); }
-void Vector::value(dods_int16 *b) const   { value_worker(b); }
-void Vector::value(dods_uint16 *b) const  { value_worker(b); }
-void Vector::value(dods_int32 *b) const   { value_worker(b); }
-void Vector::value(dods_uint32 *b) const  { value_worker(b); }
-void Vector::value(dods_int64 *b) const   { value_worker(b); }
-void Vector::value(dods_uint64 *b) const  { value_worker(b); }
+void Vector::value(dods_byte *b) const { value_worker(b); }
+void Vector::value(dods_int8 *b) const { value_worker(b); }
+void Vector::value(dods_int16 *b) const { value_worker(b); }
+void Vector::value(dods_uint16 *b) const { value_worker(b); }
+void Vector::value(dods_int32 *b) const { value_worker(b); }
+void Vector::value(dods_uint32 *b) const { value_worker(b); }
+void Vector::value(dods_int64 *b) const { value_worker(b); }
+void Vector::value(dods_uint64 *b) const { value_worker(b); }
 void Vector::value(dods_float32 *b) const { value_worker(b); }
 void Vector::value(dods_float64 *b) const { value_worker(b); }
 
@@ -1908,21 +2316,18 @@ template void Vector::value(dods_float32 *v) const;
 template void Vector::value(dods_float64 *v) const;
 #endif
 
-
 /** @brief Get a copy of the data held by this variable. */
-void Vector::value(vector<string> &b) const
-{
+void Vector::value(vector<string> &b) const {
     if (d_proto->type() == dods_str_c || d_proto->type() == dods_url_c)
         b = d_str;
 }
 
 /** Allocate memory and copy data into the new buffer. Return the new
  buffer's pointer. The caller must delete the storage. */
-void *Vector::value()
-{
-    void *buffer = new char[width(true)];
+void *Vector::value() {
+    void *buffer = new char[width_ll(true)];
 
-    memcpy(buffer, d_buf, width(true));
+    memcpy(buffer, d_buf, width_ll(true));
 
     return buffer;
 }
@@ -1943,15 +2348,16 @@ void *Vector::value()
  @param v The template variable for the array
  @param p The Part parameter defaults to nil and is ignored by this method.
  */
-void Vector::add_var(BaseType * v, Part /*p*/)
-{
-#if 0
-	// Why doesn't this work?  tried all 3 variants. jhrg 8/14/13
-	Vector::add_var_nocopy(v->ptr_duplicate(), p);
-	add_var_nocopy(v->ptr_duplicate(), p);
-	add_var_nocopy(v->ptr_duplicate());
+void Vector::add_var(BaseType *v, Part /*p*/) {
+#if 1
+    if (v)
+        Vector::add_var_nocopy(v->ptr_duplicate());
+    else {
+        delete d_proto;
+        d_proto = nullptr;
+    }
 #else
-	// Delete the current template variable
+    // Delete the current template variable
     if (d_proto) {
         delete d_proto;
         d_proto = 0;
@@ -1960,8 +2366,7 @@ void Vector::add_var(BaseType * v, Part /*p*/)
     // if 'v' is null, just set _var to null and exit.
     if (!v) {
         d_proto = 0;
-    }
-    else {
+    } else {
         // Jose Garcia
         // By getting a copy of this object to be assigned to _var
         // we let the owner of 'v' to deallocate it as necessary.
@@ -1977,25 +2382,19 @@ void Vector::add_var(BaseType * v, Part /*p*/)
 
         d_proto->set_parent(this); // Vector --> child
 
-        DBG(cerr << "Vector::add_var: Added variable " << v << " ("
-                << v->name() << " " << v->type_name() << ")" << endl);
+        DBG(cerr << "Vector::add_var: Added variable " << v << " (" << v->name() << " " << v->type_name() << ")"
+                 << endl);
     }
 #endif
 }
 
-void Vector::add_var_nocopy(BaseType * v, Part)
-{
-	// Delete the current template variable
-    if (d_proto) {
-        delete d_proto;
-        d_proto = 0;
-    }
+void Vector::add_var_nocopy(BaseType *v, Part) {
+    // Delete the current template variable, if it exists
+    delete d_proto;
+    d_proto = nullptr;
 
     // if 'v' is null, just set _var to null and exit.
-    if (!v) {
-        d_proto = 0;
-    }
-    else {
+    if (v) {
         d_proto = v;
 
         // If 'v' has a name, use it as the name of the array. If it *is*
@@ -2008,14 +2407,38 @@ void Vector::add_var_nocopy(BaseType * v, Part)
 
         d_proto->set_parent(this); // Vector is the parent; proto is the child
 
-        DBG(cerr << "Vector::add_var_no_copy: Added variable " << v << " ("
-                << v->name() << " " << v->type_name() << ")" << endl);
+        DBG(cerr << "Vector::add_var_no_copy: Added variable " << v << " (" << v->name() << " " << v->type_name() << ")"
+                 << endl);
     }
 }
 
-bool Vector::check_semantics(string & msg, bool)
-{
-    return BaseType::check_semantics(msg);
+bool Vector::check_semantics(string &msg, bool) { return BaseType::check_semantics(msg); }
+
+/**
+ * When send_p() is true and the attributes and/or the prototype variable is/has dap4 data type(s) then
+ *   a description of the instance is added to the inventory and true is returned.
+ * @param inventory is a value-result parameter
+ * @return True when send_p() is true and prototype variable is/contains dap4 typed variables and/or attributes, false
+ * otherwise
+ */
+bool Vector::is_dap4_projected(std::vector<std::string> &inventory) {
+    bool has_projected_dap4 = false;
+    if (send_p()) {
+        if (d_proto->is_constructor_type()) {
+            has_projected_dap4 =
+                d_proto->is_dap4_projected(inventory) || attributes()->has_dap4_types(FQN(), inventory);
+        } else {
+            has_projected_dap4 = prototype()->is_dap4();
+            if (has_projected_dap4) {
+                inventory.emplace_back(prototype()->type_name() + " " + FQN());
+            }
+            has_projected_dap4 |= attributes()->has_dap4_types(FQN(), inventory);
+        }
+        if (has_projected_dap4) {
+            inventory.emplace_back(type_name() + " " + FQN());
+        }
+    }
+    return has_projected_dap4;
 }
 
 /** @brief dumps information about this object
@@ -2026,9 +2449,8 @@ bool Vector::check_semantics(string & msg, bool)
  * @param strm C++ i/o stream to dump the information to
  * @return void
  */
-void Vector::dump(ostream &strm) const
-{
-    strm << DapIndent::LMarg << "Vector::dump - (" << (void *) this << ")" << endl;
+void Vector::dump(ostream &strm) const {
+    strm << DapIndent::LMarg << "Vector::dump - (" << (void *)this << ")" << endl;
     DapIndent::Indent();
     BaseType::dump(strm);
     strm << DapIndent::LMarg << "# elements in vector: " << d_length << endl;
@@ -2037,8 +2459,7 @@ void Vector::dump(ostream &strm) const
         DapIndent::Indent();
         d_proto->dump(strm);
         DapIndent::UnIndent();
-    }
-    else {
+    } else {
         strm << DapIndent::LMarg << "base type: not set" << endl;
     }
     strm << DapIndent::LMarg << "vector contents:" << endl;
@@ -2058,20 +2479,19 @@ void Vector::dump(ostream &strm) const
     DapIndent::UnIndent();
     if (d_buf) {
         switch (d_proto != 0 ? d_proto->type() : 0) {
-            case dods_byte_c:
-            case dods_char_c:
-                strm << DapIndent::LMarg << "_buf: ";
-                strm.write(d_buf, d_length);
-                strm << endl;
-                break;
+        case dods_byte_c:
+        case dods_char_c:
+            strm << DapIndent::LMarg << "_buf: ";
+            strm.write(d_buf, d_length);
+            strm << endl;
+            break;
 
-            case 0:
-            default:
-                strm << DapIndent::LMarg << "_buf: " << (void *) d_buf << endl;
-                break;
+        case 0:
+        default:
+            strm << DapIndent::LMarg << "_buf: " << (void *)d_buf << endl;
+            break;
         }
-    }
-    else {
+    } else {
         strm << DapIndent::LMarg << "_buf: EMPTY" << endl;
     }
 
@@ -2079,4 +2499,3 @@ void Vector::dump(ostream &strm) const
 }
 
 } // namespace libdap
-

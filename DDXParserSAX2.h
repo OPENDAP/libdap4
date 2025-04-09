@@ -26,9 +26,10 @@
 #ifndef ddx_parser_h
 #define ddx_parser_h
 
-#include <string>
 #include <map>
 #include <stack>
+#include <string.h>
+#include <string>
 
 #include <libxml/parserInternals.h>
 
@@ -48,8 +49,7 @@
 #include "BaseTypeFactory.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** Parse the XML text which encodes the network/persistent representation of
     the DDX object. In the current implementation, the DDX is held by an
@@ -76,8 +76,7 @@ namespace libdap
     operator.
 
     @see DDS */
-class DDXParser
-{
+class DDXParser {
 private:
     /** States used by DDXParserState. These are the states of the SAX parser
     state-machine. */
@@ -111,12 +110,14 @@ private:
         parser_error
     };
 
+    xmlSAXHandler ddx_sax_parser;
+
     BaseTypeFactory *d_factory;
 
     // These stacks hold the state of the parse as it progresses.
-    stack<ParseState> s; // Current parse state
-    stack<BaseType*> bt_stack; // current variable(s)
-    stack<AttrTable*> at_stack; // current attribute table
+    stack<ParseState> s;         // Current parse state
+    stack<BaseType *> bt_stack;  // current variable(s)
+    stack<AttrTable *> at_stack; // current attribute table
 
     // Accumulate stuff inside an 'OtherXML' DAP attribute here
     string other_xml;
@@ -127,21 +128,21 @@ private:
     unsigned int unknown_depth;
 
     // These are used for processing errors.
-    string error_msg;  // Error message(s), if any.
+    string error_msg;      // Error message(s), if any.
     xmlParserCtxtPtr ctxt; // used for error message line numbers
 
     // The results of the parse operation are stored in these fields.
-    DDS *dds;   // dump DDX here
-    string *blob_href;  // put href to blob here
+    DDS *dds;          // dump DDX here
+    string *blob_href; // put href to blob here
 
     // These hold temporary values read during the parse.
     string dods_attr_name; // DAP2 attributes, not XML attributes
     string dods_attr_type; // ... not XML ...
-    string char_data;  // char data in value elements; null after use
-    string root_ns;     // What is the namespace of the root node (Dataset)
+    string char_data;      // char data in value elements; null after use
+    string root_ns;        // What is the namespace of the root node (Dataset)
 
     class XMLAttribute {
-        public:
+    public:
         string prefix;
         string nsURI;
         string value;
@@ -153,18 +154,16 @@ private:
         }
 
         XMLAttribute() : prefix(""), nsURI(""), value("") {}
-        XMLAttribute(const string &p, const string &ns, const string &v)
-            : prefix(p), nsURI(ns), value(v) {}
+        XMLAttribute(const string &p, const string &ns, const string &v) : prefix(p), nsURI(ns), value(v) {}
         // 'attributes' as passed from libxml2 is a five element array but this
         // ctor gets the back four elements.
-        XMLAttribute(const xmlChar **attributes/*[4]*/) {
-            prefix = attributes[0] != 0 ? (const char *)attributes[0]: "";
-            nsURI = attributes[1] != 0 ? (const char *)attributes[1]: "";
+        XMLAttribute(const xmlChar **attributes /*[4]*/) {
+            prefix = attributes[0] != 0 ? (const char *)attributes[0] : "";
+            nsURI = attributes[1] != 0 ? (const char *)attributes[1] : "";
             value = string((const char *)attributes[2], (const char *)attributes[3]);
         }
-        XMLAttribute(const XMLAttribute &rhs) {
-            clone(rhs);
-        }
+        XMLAttribute(const XMLAttribute &rhs) { clone(rhs); }
+        ~XMLAttribute() {}
         XMLAttribute &operator=(const XMLAttribute &rhs) {
             if (this == &rhs)
                 return *this;
@@ -176,13 +175,9 @@ private:
     typedef map<string, XMLAttribute> XMLAttrMap;
     XMLAttrMap attribute_table; // dump XML attributes here
 
-    XMLAttrMap::iterator attr_table_begin() {
-        return attribute_table.begin();
-    }
+    XMLAttrMap::iterator attr_table_begin() { return attribute_table.begin(); }
 
-    XMLAttrMap::iterator attr_table_end() {
-        return attribute_table.end();
-    }
+    XMLAttrMap::iterator attr_table_end() { return attribute_table.end(); }
 
     map<string, string> namespace_table;
 
@@ -195,7 +190,10 @@ private:
     BaseType *factory(Type t, const string &name);
 
     // Common cleanup code for intern() and intern_stream()
-    void cleanup_parse(xmlParserCtxtPtr &context);
+#if 0
+    //void cleanup_parse(xmlParserCtxtPtr &context);
+#endif
+    void cleanup_parse();
 
     /** @name Parser Actions
 
@@ -206,19 +204,17 @@ private:
     void transfer_xml_attrs(const xmlChar **attrs, int nb_attributes);
     void transfer_xml_ns(const xmlChar **namespaces, int nb_namespaces);
     bool check_required_attribute(const string &attr);
-    bool check_attribute(const string & attr);
+    bool check_attribute(const string &attr);
 
     void process_attribute_element(const xmlChar **attrs, int nb_attrs);
     void process_attribute_alias(const xmlChar **attrs, int nb_attrs);
 
-    void process_variable(Type t, ParseState s, const xmlChar **attrs,
-            int nb_attributes);
+    void process_variable(Type t, ParseState s, const xmlChar **attrs, int nb_attributes);
 
     void process_dimension(const xmlChar **attrs, int nb_attrs);
     void process_blob(const xmlChar **attrs, int nb_attrs);
 
-    bool is_attribute_or_alias(const char *name, const xmlChar **attrs,
-            int nb_attributes);
+    bool is_attribute_or_alias(const char *name, const xmlChar **attrs, int nb_attributes);
     bool is_variable(const char *name, const xmlChar **attrs, int nb_attributes);
 
     void finish_variable(const char *tag, Type t, const char *expected);
@@ -231,13 +227,23 @@ private:
 
 public:
     DDXParser(BaseTypeFactory *factory)
-        : d_factory(factory),
-        other_xml(""), other_xml_depth(0), unknown_depth(0),
-        error_msg(""), ctxt(0), dds(0), blob_href(0),
-        dods_attr_name(""), dods_attr_type(""),
-        char_data(""), root_ns("")
-    {}
+        : d_factory(factory), other_xml(""), other_xml_depth(0), unknown_depth(0), error_msg(""), ctxt(0), dds(0),
+          blob_href(0), dods_attr_name(""), dods_attr_type(""), char_data(""), root_ns("") {
+        memset(&ddx_sax_parser, 0, sizeof(xmlSAXHandler));
 
+        ddx_sax_parser.getEntity = &DDXParser::ddx_get_entity;
+        ddx_sax_parser.startDocument = &DDXParser::ddx_start_document;
+        ddx_sax_parser.endDocument = &DDXParser::ddx_end_document;
+        ddx_sax_parser.characters = &DDXParser::ddx_get_characters;
+        ddx_sax_parser.ignorableWhitespace = &DDXParser::ddx_ignoreable_whitespace;
+        ddx_sax_parser.cdataBlock = &DDXParser::ddx_get_cdata;
+        ddx_sax_parser.warning = &DDXParser::ddx_fatal_error;
+        ddx_sax_parser.error = &DDXParser::ddx_fatal_error;
+        ddx_sax_parser.fatalError = &DDXParser::ddx_fatal_error;
+        ddx_sax_parser.initialized = XML_SAX2_MAGIC;
+        ddx_sax_parser.startElementNs = &DDXParser::ddx_sax2_start_element;
+        ddx_sax_parser.endElementNs = &DDXParser::ddx_sax2_end_element;
+    }
     void intern(const string &document, DDS *dest_dds, string &cid);
     void intern_stream(FILE *in, DDS *dds, string &cid, const string &boundary = "");
     void intern_stream(istream &in, DDS *dds, string &cid, const string &boundary = "");
@@ -245,16 +251,13 @@ public:
     static void ddx_start_document(void *parser);
     static void ddx_end_document(void *parser);
 
-    static void ddx_sax2_start_element(void *parser,
-            const xmlChar *localname, const xmlChar *prefix, const xmlChar *URI,
-            int nb_namespaces, const xmlChar **namespaces, int nb_attributes,
-            int nb_defaulted, const xmlChar **attributes);
-    static void ddx_sax2_end_element(void *parser, const xmlChar *localname,
-            const xmlChar *prefix, const xmlChar *URI);
+    static void ddx_sax2_start_element(void *parser, const xmlChar *localname, const xmlChar *prefix,
+                                       const xmlChar *URI, int nb_namespaces, const xmlChar **namespaces,
+                                       int nb_attributes, int nb_defaulted, const xmlChar **attributes);
+    static void ddx_sax2_end_element(void *parser, const xmlChar *localname, const xmlChar *prefix, const xmlChar *URI);
 
     static void ddx_get_characters(void *parser, const xmlChar *ch, int len);
-    static void ddx_ignoreable_whitespace(void *parser,
-            const xmlChar * ch, int len);
+    static void ddx_ignoreable_whitespace(void *parser, const xmlChar *ch, int len);
     static void ddx_get_cdata(void *parser, const xmlChar *value, int len);
 
     static xmlEntityPtr ddx_get_entity(void *parser, const xmlChar *name);

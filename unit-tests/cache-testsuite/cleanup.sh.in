@@ -13,8 +13,6 @@ rm -rf dods_cache
 cp -r @srcdir@/dods_cache_init dods_cache
 # make sure we can write to the directory and sub directories
 chmod -R +w dods_cache
-# remove the .svn directory from dods_cache
-rm -rf `find dods_cache -name .svn`
 
 # remove generated cache directories
 rm -rf gc_cache

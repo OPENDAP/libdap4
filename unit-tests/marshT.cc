@@ -1,40 +1,42 @@
-#include <cppunit/TestFixture.h>
+#include <cppunit/CompilerOutputter.h>
 #include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/CompilerOutputter.h>
 
 #include "config.h"
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
-#include <iostream>
-#include <fstream>
 #include <cstring>
+#include <fstream>
+#include <iostream>
 
+#include "ConstraintEvaluator.h"
+#include "DataDDS.h"
+#include "TestArray.h"
 #include "TestByte.h"
-#include "TestInt16.h"
-#include "TestInt32.h"
-#include "TestUInt16.h"
-#include "TestUInt32.h"
 #include "TestFloat32.h"
 #include "TestFloat64.h"
-#include "TestStr.h"
-#include "TestUrl.h"
-#include "TestArray.h"
-#include "TestStructure.h"
+#include "TestInt16.h"
+#include "TestInt32.h"
 #include "TestSequence.h"
-#include "DataDDS.h"
-#include "ConstraintEvaluator.h"
+#include "TestStr.h"
+#include "TestStructure.h"
 #include "TestTypeFactory.h"
+#include "TestUInt16.h"
+#include "TestUInt32.h"
+#include "TestUrl.h"
 #include "XDRFileMarshaller.h"
-#include "XDRStreamMarshaller.h"
 #include "XDRFileUnMarshaller.h"
+#include "XDRStreamMarshaller.h"
 
-#include "GetOpt.h"
 #include "debug.h"
+
+#include "run_tests_cppunit.h"
+#include "test_config.h"
 
 using std::cerr;
 using std::cout;
@@ -44,11 +46,6 @@ using namespace CppUnit;
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeouts.
 
-static bool debug = false;
-
-#undef DBG
-#define DBG(x) do { if (debug) {x;} } while(false)
-
 /**
  * This test has been rewritten so that it no longer depends on the values
  * of Array remaining in place (in the Array object) once serialize() is run.
@@ -56,34 +53,30 @@ static bool debug = false;
  * when serializing datasets with large numbers of (large) variables.
  * jhrg 8/4/15
  */
-class marshT: public CppUnit::TestFixture {
+class marshT : public CppUnit::TestFixture {
 private:
-    TestByte *b;
-    TestInt16 *i16;
-    TestInt32 *i32;
-    TestUInt16 *ui16;
-    TestUInt32 *ui32;
-    TestFloat32 *f32;
-    TestFloat64 *f64;
-    TestStr *str;
-    TestUrl *url;
-    TestByte *ab;
+    TestByte *b = nullptr;
+    TestInt16 *i16 = nullptr;
+    TestInt32 *i32 = nullptr;
+    TestUInt16 *ui16 = nullptr;
+    TestUInt32 *ui32 = nullptr;
+    TestFloat32 *f32 = nullptr;
+    TestFloat64 *f64 = nullptr;
+    TestStr *str = nullptr;
+    TestUrl *url = nullptr;
+    TestByte *ab = nullptr;
 
-    TestArray *arr;
+    TestArray *arr = nullptr;
 
-    TestStructure *s;
+    TestStructure *s = nullptr;
 
-    TestSequence *seq, *seq2;
+    TestSequence *seq = nullptr, *seq2 = nullptr;
 
 public:
-    marshT() :
-        b(0), i16(0), i32(0), ui16(0), ui32(0), f32(0), f64(0), str(0), url(0), ab(0), arr(0), s(0), seq(0), seq2(0)
-    {
+    marshT() = default;
+    ~marshT() = default;
 
-    }
-
-    void setUp()
-    {
+    void setUp() {
         b = new TestByte("b");
         i16 = new TestInt16("i16");
         i32 = new TestInt32("i32");
@@ -134,8 +127,7 @@ public:
         s->read();
     }
 
-    void tearDown()
-    {
+    void tearDown() {
         delete b;
         b = 0;
         delete i16;
@@ -162,26 +154,26 @@ public:
         arr = 0;
         delete s;
         s = 0;
+        delete seq;
+        delete seq2;
     }
 
-    void data_dds_dump_test()
-    {
+    void data_dds_dump_test() {
         TestTypeFactory ttf;
         DataDDS dds(&ttf, "CaptainKirk");
-        ostringstream sof;        
+        ostringstream sof;
         dds.dump(sof);
-        CPPUNIT_ASSERT(sof.str().find("d_name: CaptainKirk") != string::npos);        
+        CPPUNIT_ASSERT(sof.str().find("d_name: CaptainKirk") != string::npos);
     }
 
-    void marshT_test_write(Marshaller &fm)
-    {
+    void marshT_test_write(Marshaller &fm) {
         ConstraintEvaluator eval;
         TestTypeFactory ttf;
         DataDDS dds(&ttf, "dds");
-            
+
         DBG(cerr << "serializing using XDRFileMarshaller" << endl);
-        
-        BaseType *bt = static_cast<BaseType*>(b);
+
+        BaseType *bt = static_cast<BaseType *>(b);
         FILE *f = fopen("test.file", "w");
         CPPUNIT_ASSERT_THROW(bt->BaseType::serialize(eval, dds, fm, false), InternalErr);
         fclose(f);
@@ -197,14 +189,13 @@ public:
         s->serialize(eval, dds, fm, false);
         arr->serialize(eval, dds, fm, false);
         seq->serialize(eval, dds, fm, false);
-        
+
         DBG(cerr << "done serializing using XDRFileMarshaller" << endl);
     }
 
     // This test depends on the file written by the .._write_file() test,
     // so it must be run after that test.
-    void marshT_test_read(UnMarshaller &um)
-    {
+    void marshT_test_read(UnMarshaller &um) {
         TestTypeFactory ttf;
         DataDDS dds(&ttf, "dds");
 
@@ -276,9 +267,8 @@ public:
 
             Str *fsstr_p = dynamic_cast<Str *>(fs.var("fsstr"));
             CPPUNIT_ASSERT(fsstr_p);
-            DBG(
-                cerr << "fstr.value(): " << fsstr_p->value() << ", str.value(): "
-                    << dynamic_cast<Str *>(s->var("str"))->value());
+            DBG(cerr << "fstr.value(): " << fsstr_p->value()
+                     << ", str.value(): " << dynamic_cast<Str *>(s->var("str"))->value());
             CPPUNIT_ASSERT(fsstr_p->value() == dynamic_cast<Str *>(s->var("str"))->value());
 
             BaseType *bt = fs.var("fsab");
@@ -290,7 +280,7 @@ public:
             fsarr_p->value(fdb);
             arr->value(db);
             CPPUNIT_ASSERT(fsarr_p->length() == arr->length());
-            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db, fsarr_p->length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *)fdb, (void *)db, fsarr_p->length() * sizeof(dods_byte)));
 
             DBG(cerr << " file array" << endl);
             TestByte fab("ab");
@@ -300,7 +290,7 @@ public:
             farr.deserialize(um, &dds, false);
             farr.value(fdb);
             CPPUNIT_ASSERT(farr.length() == arr->length());
-            CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db, farr.length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *)fdb, (void *)db, farr.length() * sizeof(dods_byte)));
 
             TestSequence fseq("fseq");
             fseq.add_var(f64);
@@ -326,7 +316,7 @@ public:
                 CPPUNIT_ASSERT(arr_p);
                 arr_p->value(fdb);
                 CPPUNIT_ASSERT(arr_p->length() == arr->length());
-                CPPUNIT_ASSERT(!memcmp((void *) fdb, (void *) db, arr_p->length() * sizeof(dods_byte)));
+                CPPUNIT_ASSERT(!memcmp((void *)fdb, (void *)db, arr_p->length() * sizeof(dods_byte)));
                 Sequence *seq_p = dynamic_cast<Sequence *>((*row)[2]);
                 CPPUNIT_ASSERT(seq_p);
                 unsigned int num_rows_sub = seq_p->number_of_rows();
@@ -345,15 +335,13 @@ public:
             }
 
             DBG(cerr << "done deserializing XDRFileMarshaller built file" << endl);
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             string err = "failed:" + e.get_error_message();
             CPPUNIT_FAIL(err.c_str());
         }
     }
 
-    void marshT_test_write_file()
-    {
+    void marshT_test_write_file() {
         FILE *f = fopen("test.file", "w");
         XDRFileMarshaller fm(f);
 
@@ -362,8 +350,7 @@ public:
         fclose(f);
     }
 
-    void marshT_test_read_file()
-    {
+    void marshT_test_read_file() {
         FILE *ff = fopen("test.file", "r");
         XDRFileUnMarshaller um(ff);
 
@@ -373,8 +360,7 @@ public:
         unlink("test.file");
     }
 
-    void marshT_test_write_stream()
-    {
+    void marshT_test_write_stream() {
         ofstream strm("test.strm", ios::out | ios::trunc);
         XDRStreamMarshaller sm(strm);
 
@@ -384,8 +370,7 @@ public:
     }
 
     // Not that compelling a test really... (It is the same as .._read_file())
-    void marshT_test_read_stream()
-    {
+    void marshT_test_read_stream() {
         FILE *sf = fopen("test.strm", "r");
         XDRFileUnMarshaller um(sf);
 
@@ -395,61 +380,17 @@ public:
         unlink("test.strm");
     }
 
-    CPPUNIT_TEST_SUITE (marshT);
+    CPPUNIT_TEST_SUITE(marshT);
 
-    CPPUNIT_TEST (data_dds_dump_test);
-    CPPUNIT_TEST (marshT_test_write_file);
-    CPPUNIT_TEST (marshT_test_read_file);
-    CPPUNIT_TEST (marshT_test_write_stream);
-    CPPUNIT_TEST (marshT_test_read_stream);
+    CPPUNIT_TEST(data_dds_dump_test);
+    CPPUNIT_TEST(marshT_test_write_file);
+    CPPUNIT_TEST(marshT_test_read_file);
+    CPPUNIT_TEST(marshT_test_write_stream);
+    CPPUNIT_TEST(marshT_test_read_stream);
 
-    CPPUNIT_TEST_SUITE_END( );
-
+    CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (marshT);
+CPPUNIT_TEST_SUITE_REGISTRATION(marshT);
 
-int main(int argc, char *argv[])
-{
-    GetOpt getopt(argc, argv, "dh");
-    int option_char;
-
-    while ((option_char = getopt()) != -1)
-        switch (option_char) {
-        case 'd':
-            debug = 1;  // debug is a static global
-            break;
-        case 'h': {     // help - show test names
-            cerr << "Usage: marshT has the following tests:" << endl;
-            const std::vector<Test*> &tests = marshT::suite()->getTests();
-            unsigned int prefix_len = marshT::suite()->getName().append("::").length();
-            for (std::vector<Test*>::const_iterator i = tests.begin(), e = tests.end(); i != e; ++i) {
-                cerr << (*i)->getName().replace(0, prefix_len, "") << endl;
-            }
-            break;
-        }
-        default:
-            break;
-        }
-
-    CppUnit::TextTestRunner runner;
-    runner.addTest(CppUnit::TestFactoryRegistry::getRegistry().makeTest());
-
-    bool wasSuccessful = true;
-    string test = "";
-    int i = getopt.optind;
-    if (i == argc) {
-        // run them all
-        wasSuccessful = runner.run("");
-    }
-    else {
-        for (; i < argc; ++i) {
-            if (debug) cerr << "Running " << argv[i] << endl;
-            test = marshT::suite()->getName().append("::").append(argv[i]);
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-    }
-
-    return wasSuccessful ? 0 : 1;
-}
-
+int main(int argc, char *argv[]) { return run_tests<marshT>(argc, argv) ? 0 : 1; }

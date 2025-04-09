@@ -34,7 +34,6 @@
 #ifndef _attrtable_h
 #define _attrtable_h 1
 
-
 #include <string>
 #include <vector>
 
@@ -42,7 +41,6 @@
 #include "Error.h"
 #endif
 
-using std::vector;
 using std::string;
 using std::vector;
 
@@ -54,8 +52,7 @@ using std::vector;
 #include "XMLWriter.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** <b>AttrType</b> identifies the data types which may appear in an
     attribute table object.
@@ -90,7 +87,18 @@ enum AttrType {
     Attr_float64,
     Attr_string,
     Attr_url,
-    Attr_other_xml
+    Attr_other_xml,
+
+    // Added for DAP4
+    Attr_int8,
+    Attr_uint8,
+
+    Attr_int64,
+    Attr_uint64,
+
+    Attr_enum,
+    Attr_opaque
+
 };
 
 string AttrType_to_String(const AttrType at);
@@ -134,13 +142,12 @@ AttrType String_to_AttrType(const string &s);
     attributes, and <tt>actual_range</tt> and <tt>conversion_data</tt>
     are container attributes containing other attribute tables.
 
-	@note This class is used only for DAP2.
+    @note This class is used only for DAP2.
 
     @brief Contains the attributes for a dataset.
     @see DAS
     @see AttrType */
-class AttrTable : public DapObj
-{
+class AttrTable : public DapObj {
     // entry needs to be made public to make up for issues with this class'
     // design. It should probably be moved to it's own class. 05/22/03 jhrg
 public:
@@ -148,8 +155,7 @@ public:
     struct's members directly, use AttrTable methods.
 
     This struct is public because its type is used in public typedefs. */
-    struct entry
-    {
+    struct entry {
         string name;
         AttrType type;
 
@@ -158,39 +164,37 @@ public:
 
         bool is_global; // use this to mark non-container attributes. see below.
 
+        bool is_utf8_str = false;
+
         // If type == Attr_container, use attributes to read the contained
         // table, otherwise use attr to read the vector of values.
         AttrTable *attributes;
         std::vector<string> *attr; // a vector of values. jhrg 12/5/94
 
-        entry(): name(""), type(Attr_unknown), is_alias(false),
-                aliased_to(""), is_global(true), attributes(0), attr(0) {}
+        entry()
+            : name(""), type(Attr_unknown), is_alias(false), aliased_to(""), is_global(true), attributes(0), attr(0) {}
 
-        entry(const entry &rhs): name(rhs.name), type(rhs.type), is_alias(rhs.is_alias),
-                aliased_to(rhs.aliased_to), is_global(rhs.is_global),attributes(0), attr(0)
-        {
+        entry(const entry &rhs)
+            : name(rhs.name), type(rhs.type), is_alias(rhs.is_alias), aliased_to(rhs.aliased_to),
+              is_global(rhs.is_global), attributes(0), attr(0) {
             clone(rhs);
         }
 
-        void delete_entry()
-        {
+        void delete_entry() {
             if (is_alias) // alias copies the pointers.
                 return;
             if (type == Attr_container) {
-                delete attributes; attributes = 0;
-            }
-            else {
-                delete attr; attr = 0;
+                delete attributes;
+                attributes = 0;
+            } else {
+                delete attr;
+                attr = 0;
             }
         }
 
-        virtual ~entry()
-        {
-            delete_entry();
-        }
+        virtual ~entry() { delete_entry(); }
 
-        void clone(const entry &rhs)
-        {
+        void clone(const entry &rhs) {
 #if 0
             name = rhs.name;
             type = rhs.type;
@@ -218,18 +222,40 @@ public:
             }
         }
 
-        entry &operator=(const entry &rhs)
-        {
+        entry &operator=(const entry &rhs) {
             if (this != &rhs) {
                 delete_entry();
                 clone(rhs);
             }
             return *this;
         }
+
+        /**
+         * Returns true if this Attribute is a dap4 type.
+         * @param path
+         * @param inventory
+         * @return True of the attribute is a dap4 type, false otherwise
+         */
+        bool is_dap4_type(const std::string &path, std::vector<std::string> &inventory) const {
+            bool ima_d4_attr = false;
+            switch (type) {
+            case Attr_int8:
+            case Attr_int64:
+            case Attr_uint64:
+                ima_d4_attr = true;
+                break;
+            case Attr_container:
+                ima_d4_attr = attributes->has_dap4_types(path, inventory);
+                break;
+            default:
+                break;
+            }
+            return ima_d4_attr;
+        }
     };
 
-    typedef std::vector<entry *>::const_iterator Attr_citer ;
-    typedef std::vector<entry *>::iterator Attr_iter ;
+    typedef std::vector<entry *>::const_iterator Attr_citer;
+    typedef std::vector<entry *>::iterator Attr_iter;
 
 private:
     string d_name;
@@ -251,16 +277,14 @@ private:
 protected:
     void clone(const AttrTable &at);
 
-    void simple_print(FILE *out, string pad, Attr_iter i,
-                      bool dereference);
-    void simple_print(ostream &out, string pad, Attr_iter i,
-                      bool dereference);
+    void simple_print(FILE *out, string pad, Attr_iter i, bool dereference);
+    void simple_print(ostream &out, string pad, Attr_iter i, bool dereference);
 
 public:
     AttrTable();
     AttrTable(const AttrTable &rhs);
     virtual ~AttrTable();
-    AttrTable & operator=(const AttrTable &rhs);
+    AttrTable &operator=(const AttrTable &rhs);
 
     virtual void erase();
 
@@ -271,30 +295,25 @@ public:
     /** Return a pointer to the AttrTable which holds this table (aka, its
         parent. If this AttrTable has no parent, this returns null.
         @return A pointer to the parent AttrTable. */
-    virtual AttrTable *get_parent() const
-    {
-        return d_parent;
-    }
+    virtual AttrTable *get_parent() const { return d_parent; }
 
     virtual bool is_global_attribute() const { return d_is_global_attribute; }
     virtual void set_is_global_attribute(bool ga) { d_is_global_attribute = ga; }
 
-    virtual unsigned int append_attr(const string &name, const string &type,
-				     const string &value);
-    virtual unsigned int append_attr(const string &name, const string &type,
-				     vector<string> *values);
+    virtual unsigned int append_attr(const string &name, const string &type, const string &value);
+    virtual unsigned int append_attr(const string &name, const string &type, vector<string> *values);
+    virtual unsigned int append_attr(const string &name, const string &type, const string &value, bool is_utf8_str);
+    virtual unsigned int append_attr(const string &name, const string &type, vector<string> *values, bool is_utf8_str);
 
     virtual AttrTable *append_container(const string &name);
     virtual AttrTable *append_container(AttrTable *at, const string &name);
 
     virtual void find(const string &target, AttrTable **at, Attr_iter *iter);
     virtual AttrTable *find_container(const string &target);
-    virtual AttrTable *recurrsive_find(const string &target,
-				       Attr_iter *location);
+    virtual AttrTable *recurrsive_find(const string &target, Attr_iter *location);
 
     Attr_iter simple_find(const string &target);
     AttrTable *simple_find_container(const string &target);
-
 
     virtual AttrTable *get_attr_table(const string &name);
     virtual string get_type(const string &name);
@@ -320,30 +339,25 @@ public:
     virtual void set_is_global_attribute(Attr_iter iter, bool ga);
 
     virtual void add_container_alias(const string &name, AttrTable *src);
-    virtual void add_value_alias(AttrTable *at, const string &name,
-                         const string &source);
-    virtual bool attr_alias(const string &alias,
-			    AttrTable *at,
-			    const string &name);
+    virtual void add_value_alias(AttrTable *at, const string &name, const string &source);
+    virtual bool attr_alias(const string &alias, AttrTable *at, const string &name);
     virtual bool attr_alias(const string &alias, const string &name);
 
-    virtual void print(FILE *out, string pad = "    ",
-		       bool dereference = false);
-    virtual void print(ostream &out, string pad = "    ",
-		       bool dereference = false);
+    bool has_dap4_types(const std::string &path, std::vector<std::string> &inventory) const;
+    bool is_dap4_type(const std::string &path, std::vector<std::string> &inventory) const;
 
-    virtual void print_xml(FILE *out, string pad = "    ",
-			   bool constrained = false);
-    virtual void print_xml(ostream &out, string pad = "    ",
-			   bool constrained = false);
+    virtual void print(FILE *out, string pad = "    ", bool dereference = false);
+    virtual void print(ostream &out, string pad = "    ", bool dereference = false);
+
+    virtual void print_xml(FILE *out, string pad = "    ", bool constrained = false);
+    virtual void print_xml(ostream &out, string pad = "    ", bool constrained = false);
 
     void print_xml_writer(XMLWriter &xml);
 
     void print_dap4(XMLWriter &xml);
 
-    virtual void dump(ostream &strm) const ;
+    virtual void dump(ostream &strm) const;
 };
-
 
 string remove_space_encoding(const string &s);
 string add_space_encoding(const string &s);

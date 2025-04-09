@@ -36,32 +36,30 @@
 #ifndef I_DapIndent_h
 #define I_DapIndent_h 1
 
-#include <string>
 #include <iostream>
+#include <string>
 
-using std::string ;
-using std::ostream ;
+using std::ostream;
+using std::string;
 
-namespace libdap
-{
+namespace libdap {
 
 /** @brief class with static methods to help with indentation of debug
  * information.
  */
-class DapIndent
-{
+class DapIndent {
 private:
-    static string  _indent ;
+    static string _indent;
+
 public:
-    static void   Indent() ;
-    static void   UnIndent() ;
-    static void   Reset() ;
-    static const string & GetIndent() ;
-    static void   SetIndent(const string &indent) ;
-    static ostream &  LMarg(ostream &strm) ;
-} ;
+    static void Indent();
+    static void UnIndent();
+    static void Reset();
+    static const string &GetIndent();
+    static void SetIndent(const string &indent);
+    static ostream &LMarg(ostream &strm);
+};
 
 } // namespace libdap
 
 #endif // I_DapIndent_h
-

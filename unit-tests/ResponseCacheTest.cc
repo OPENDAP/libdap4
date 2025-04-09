@@ -26,23 +26,27 @@
 
 #include <dirent.h>
 
+#if 0
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
+
+#endif
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "ConstraintEvaluator.h"
-#include "ResponseBuilder.h"
 #include "DDS.h"
 #include "DDXParserSAX2.h"
+#include "ResponseBuilder.h"
 #include "ResponseCache.h"
 
-#include "GetOpt.h"
 #include "GNURegex.h"
-#include "util.h"
 #include "debug.h"
+#include "util.h"
 
 #include "../tests/TestTypeFactory.h"
 
+#include "run_tests_cppunit.h"
 #include "testFile.h"
 #include "test_config.h"
 
@@ -52,18 +56,17 @@ using namespace libdap;
 
 int test_variable_sleep_interval = 0;
 
-static bool debug = false;
+#if 0
 
-#undef DBG
-#define DBG(x) do { if (debug) (x); } while(false);
+#endif
 
 namespace libdap {
 
-class ResponseCacheTest: public TestFixture {
+class ResponseCacheTest : public TestFixture {
 private:
     TestTypeFactory ttf;
     DDS *test_05_dds;
-    //DDS test_06_dds;
+    // DDS test_06_dds;
     DDXParser dp;
     ConstraintEvaluator eval;
     ResponseBuilder rb;
@@ -72,19 +75,16 @@ private:
     ResponseCache *cache;
 
 public:
-    ResponseCacheTest() :
-        test_05_dds(0), /*test_06_dds(&ttf), */dp(&ttf), d_response_cache(string(TEST_SRC_DIR) + "/response_cache")
-    {
+    ResponseCacheTest()
+        : test_05_dds(0), /*test_06_dds(&ttf), */ dp(&ttf), d_response_cache(string(TEST_SRC_DIR) + "/response_cache") {
     }
 
-    ~ResponseCacheTest()
-    {
-    }
+    ~ResponseCacheTest() {}
 
-    void clean_cache(const string &directory, const string &prefix)
-    {
+    void clean_cache(const string &directory, const string &prefix) {
         DIR *dip = opendir(directory.c_str());
-        if (!dip) throw InternalErr(__FILE__, __LINE__, "Unable to open cache directory " + directory);
+        if (!dip)
+            throw InternalErr(__FILE__, __LINE__, "Unable to open cache directory " + directory);
 
         struct dirent *dit;
         // go through the cache directory and collect all of the files that
@@ -99,32 +99,28 @@ public:
         closedir(dip);
     }
 
-    void setUp()
-    {
+    void setUp() {
         string cid;
         test_05_dds = new DDS(&ttf);
-        dp.intern((string) TEST_SRC_DIR + "/ddx-testsuite/test.05.ddx", test_05_dds, cid);
+        dp.intern((string)TEST_SRC_DIR + "/ddx-testsuite/test.05.ddx", test_05_dds, cid);
         // cid == http://dods.coas.oregonstate.edu:8080/dods/dts/test.01.blob
         DBG(cerr << "DDS Name: " << test_05_dds->get_dataset_name() << endl);
         DBG(cerr << "Intern CID: " << cid << endl);
     }
 
-    void tearDown()
-    {
+    void tearDown() {
         clean_cache(d_response_cache, "rc");
         delete test_05_dds;
     }
 
-    bool re_match(Regex &r, const string &s)
-    {
+    bool re_match(Regex &r, const string &s) {
         DBG(cerr << "s.length(): " << s.length() << endl);
         int pos = r.match(s.c_str(), s.length());
         DBG(cerr << "r.match(s): " << pos << endl);
         return pos > 0 && static_cast<unsigned>(pos) == s.length();
     }
 
-    bool re_match_binary(Regex &r, const string &s)
-    {
+    bool re_match_binary(Regex &r, const string &s) {
         DBG(cerr << "s.length(): " << s.length() << endl);
         int pos = r.match(s.c_str(), s.length());
         DBG(cerr << "r.match(s): " << pos << endl);
@@ -133,8 +129,7 @@ public:
 
     // The directory 'never' does not exist; the cache won't be initialized,
     // so is_available() should be false
-    void ctor_test_1()
-    {
+    void ctor_test_1() {
 
         cache = new ResponseCache(string(TEST_SRC_DIR) + "/never", "rc", 1000);
         CPPUNIT_ASSERT(!cache->is_available());
@@ -142,9 +137,8 @@ public:
 
     // The directory 'response_cache' should exist so is_available() should be
     // true.
-    void ctor_test_2()
-    {
-        //cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
+    void ctor_test_2() {
+        // cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
         cache = new ResponseCache(d_response_cache, "rc", 1000);
         CPPUNIT_ASSERT(cache->is_available());
     }
@@ -152,9 +146,8 @@ public:
     // Because setup() and teardown() clean out the cache directory, there should
     // never be a cached item; calling read_cached_dataset() should return a
     // valid DDS with data and store a copy in the cache.
-    void cache_a_response()
-    {
-        //cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
+    void cache_a_response() {
+        // cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
         cache = new ResponseCache(d_response_cache, "rc", 1000);
         string token;
         try {
@@ -167,17 +160,15 @@ public:
             CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#");
             // TODO Stat the cache file to check it's size
             delete cache_dds;
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
     }
 
     // The first call reads values into the DDS, stores a copy in the cache and
     // returns the DDS. The second call reads the value from the cache.
-    void cache_and_read_a_response()
-    {
-        //cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
+    void cache_and_read_a_response() {
+        // cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
         cache = new ResponseCache(d_response_cache, "rc", 1000);
         string token;
         try {
@@ -190,12 +181,12 @@ public:
             delete cache_dds;
             cache_dds = 0;
 
-            // DDS *get_cached_dap2_data_ddx(const string &cache_file_name, BaseTypeFactory *factory, const string &dataset)
-            // Force read from the cache file
+            // DDS *get_cached_dap2_data_ddx(const string &cache_file_name, BaseTypeFactory *factory, const string
+            // &dataset) Force read from the cache file
             cache_dds = cache->get_cached_dap2_data_ddx(token, &ttf, "test.05");
             // The code cannot unlock the file because get_cached_dap2_data_ddx()
             // does not lock the cached item.
-            //cache->unlock_and_close(token);
+            // cache->unlock_and_close(token);
 
             CPPUNIT_ASSERT(cache_dds);
             CPPUNIT_ASSERT(token == d_response_cache + "/rc#SimpleTypes#");
@@ -216,22 +207,20 @@ public:
             // is a any single digit. The *Test classes implement a counter and return strings where
             // <number> is 1, 2, ..., and running several of the tests here in a row will get a range of
             // values for <number>.
-            Regex regex(
-                "2551234567894026531840320006400099.99999.999\"Silly test string: [0-9]\"\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
+            Regex regex("2551234567894026531840320006400099.99999.999\"Silly test string: "
+                        "[0-9]\"\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
             CPPUNIT_ASSERT(re_match(regex, oss.str()));
             delete cache_dds;
             cache_dds = 0;
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
     }
 
     // The first call reads values into the DDS, stores a copy in the cache and
     // returns the DDS. The second call reads the value from the cache.
-    void cache_and_read_a_response2()
-    {
-        //cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
+    void cache_and_read_a_response2() {
+        // cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
         cache = new ResponseCache(d_response_cache, "rc", 1000);
         string token;
         try {
@@ -265,21 +254,19 @@ public:
                 ++i;
             }
 
-            Regex regex(
-                "2551234567894026531840320006400099.99999.999\"Silly test string: [0-9]\"\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
+            Regex regex("2551234567894026531840320006400099.99999.999\"Silly test string: "
+                        "[0-9]\"\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
             CPPUNIT_ASSERT(re_match(regex, oss.str()));
             delete cache_dds;
             cache_dds = 0;
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
     }
 
     // Test caching a response where a CE is applied to the DDS. The CE here is 'b,u'
-    void cache_and_read_a_response3()
-    {
-        //cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
+    void cache_and_read_a_response3() {
+        // cache = new ResponseCache(TEST_SRC_DIR + "response_cache", "rc", 1000);
         cache = new ResponseCache(d_response_cache, "rc", 1000);
         string token;
         try {
@@ -328,29 +315,28 @@ public:
             CPPUNIT_ASSERT(oss.str() == "255\"http://dcz.gso.uri.edu/avhrr-archive/archive.html\"");
             delete cache_dds;
             cache_dds = 0;
-        }
-        catch (Error &e) {
+        } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
-
     }
-    CPPUNIT_TEST_SUITE (ResponseCacheTest);
+    CPPUNIT_TEST_SUITE(ResponseCacheTest);
 
-    CPPUNIT_TEST (ctor_test_1);
-    CPPUNIT_TEST (ctor_test_2);
-    CPPUNIT_TEST (cache_a_response);
-    CPPUNIT_TEST (cache_and_read_a_response);
-    CPPUNIT_TEST (cache_and_read_a_response2);
-    CPPUNIT_TEST (cache_and_read_a_response3);
+    CPPUNIT_TEST(ctor_test_1);
+    CPPUNIT_TEST(ctor_test_2);
+    CPPUNIT_TEST(cache_a_response);
+    CPPUNIT_TEST(cache_and_read_a_response);
+    CPPUNIT_TEST(cache_and_read_a_response2);
+    CPPUNIT_TEST(cache_and_read_a_response3);
 
     CPPUNIT_TEST_SUITE_END();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (ResponseCacheTest);
-}
+CPPUNIT_TEST_SUITE_REGISTRATION(ResponseCacheTest);
+} // namespace libdap
 
-int main(int argc, char*argv[])
-{
+int main(int argc, char *argv[]) {
+    return run_tests<libdap::ResponseCacheTest>(argc, argv) ? 0 : 1;
+#if 0
     GetOpt getopt(argc, argv, "dh");
     char option_char;
     while ((option_char = getopt()) != EOF)
@@ -390,4 +376,5 @@ int main(int argc, char*argv[])
     }
 
     return wasSuccessful ? 0 : 1;
+#endif
 }

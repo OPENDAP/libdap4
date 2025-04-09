@@ -1,51 +1,116 @@
+
+><a href="https://travis-ci.org/OPENDAP/libdap4">
+  <img alt="TravisCI" src="https://travis-ci.org/OPENDAP/libdap4.svg?branch=master"/>
+</a> 
+
+README for the OPeNDAP libdap4 library
+======================================
+
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3641778.svg)](https://doi.org/10.5281/zenodo.3641778)
+## Updated for version 3.21.1 [![DOI](https://zenodo.org/badge/30208853.svg)](https://doi.org/10.5281/zenodo.1013914)
 
-Updated for version 3.20.5
+* Initial support for UTF-8
+* Improved production rules.
+* Worked technical debt affecting large variables and large responses
+    (large >= 2Gb).
+* Merge PR from fork regarding configure.ac use of bash-specific syntax.
+* Merge xsputn fix for Marshaller code and likely buffer size issues.
 
-Memory leaks. Minor bug fixes. Lots of work on CI.
+## Updated for version 3.21.0 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10564122.svg)](https://doi.org/10.5281/zenodo.10564122)
 
-Updated for version 3.20.4
+* Added new Direct I/O support so that modules written using libdap
+  can pass compressed data buffers read directly from disk to output
+  files without expensive decompression and recompression operations.
+* Merged contributed fixes from Bo Anderson  <mail at boanderson.me>
+  Fix handling of libtirpc pkg-config files with -L flags (#228)
+* Merged contributed fixes from Dan Horák  <da at @danny.cz>
+	add missing include (#227)
+	With GCC 13 the <cstdint> header isn't included thru other headers any
+	more, thus include it explictly. Otherwise uint8_t or uint32_t type
+	remain undefined in Vector.cc.
+	Fixes: https://github.com/OPENDAP/libdap4/issues/226
+	add missing big endian baselines (#196)
+* Fixed a bug where the copy ctor for D4Maps failed to correctly set the parent Array.
+* Merged contributed fix from Orion Poplawski  <orion at nwra.com>
+	Add missing cstdint include for uint32_t (#219)
+* Removed support for RHEL 7 (CentOS 7)
+* Now require C++-11 to build the code. However, configure will use
+  C++-14 if it finds that and the next release will require that.
+* Moved the functionality of is_dap4_projected() into libdap4 (#213). This 
+  had a number of consequences and there are new methods to support the feature.
+* Added support for 64-bit sized arrays. This was done by adding a set of 
+  'size methods' that have the suffix '_ll' (for long long). These should
+  be used in place of the old methods, which are still in the code.
 
-Memory leak fixes and C++11 features
+## Updated for version 3.20.11 
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3267984.svg)](https://doi.org/10.5281/zenodo.3267984)
+* Fixed bug in computation of request_size_kb()
+* Fixed type issue in HTTPCache.cc (#192)
 
-Updated for version 3.20.3
+## Updated for version 3.20.10 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6789103.svg)](https://doi.org/10.5281/zenodo.6789103)
 
-Fixes and Debian packaging via Travis CI
+* Support for RHEL8
+* Fix for bugs in the ce parser around inverted indices. 
+* Fix for libdap4 github issue 147:  Grid::get_map_iter() was off by one
+* Improvements to DAP4 api.
+* Fixed various memory leaks.
+* Replaced instances of &vector[0] with vector.data()  (RHEL8)
 
-Updated for version 3.20.2
 
-Added libdap::Array::rename_dim()
-DOI For this version: https://doi.org/10.5281/zenodo.2002799
+### Updated for version 3.20.9 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5807905.svg)](https://doi.org/10.5281/zenodo.5807905)
+* Started migrating from (deprecated) auto_ptr to C++11 unique_ptr
+* Migrated use of regex functions from outdfated GNU implementation 
+  to C++11 implementation (uses compile time swicth)
 
-Updated for version 3.20.1
+### Updated for version 3.20.8 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4399722.svg)](https://doi.org/10.5281/zenodo.4399722)
+* Modified Error so that it is more in line with C++11.
+* Added (shallow) unit64_t request size computations and max_request_size state.
+* Changed the internal representation of max response size to uint64_t and confined the overflow
+  to just the (deprecated) functions.
 
-Added Continuous Delivery for CentOS 6 and 7
+### Updated for version 3.20.7 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4399722.svg)](https://doi.org/10.5281/zenodo.4399722)
+* Added code coverage (using gcov) to the CI processes. 
+* Dropped support for CentOS-6 (whew!)
+* Improved Int64 support.
+* Corrected byte order issue with DAP4 data transmission.
+* Improved error reporting.
 
-Updated for version 3.20.0
+### Updated for version 3.20.6  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3759849.svg)](https://doi.org/10.5281/zenodo.3759849)
+* Stopped CE parse errors from returning user supplied strings in error messages.
+* README is now called README.md
 
-We now have a Debian package for libdap.
+### Updated for version 3.20.5  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3641778.svg)](https://doi.org/10.5281/zenodo.3641778)
+* Memory leaks. Minor bug fixes. Lots of work on CI.
 
-Bug fixes; See the ChangeLog and NEWS files.
+### Updated for version 3.20.4 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3267984.svg)](https://doi.org/10.5281/zenodo.3267984)
+* Updated for version 3.20.4
+* Memory leak fixes and C++11 features
 
-Updated for version 3.19.1
+### Updated for version 3.20.3 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2566512.svg)](https://doi.org/10.5281/zenodo.2566512)
+* Fixes and Debian packaging via Travis CI
 
-Bug fixes; See the ChangeLog and NEWS files.
+### Updated for version 3.20.2 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2002799.svg)](https://doi.org/10.5281/zenodo.2002799)
+* Added libdap::Array::rename_dim()
 
-Updated for version 3.18.3
+### Updated for version 3.20.1
+* Added Continuous Delivery for CentOS 6 and 7
 
-Bug fixes; See the ChangeLog and NEWS files.
+### Updated for version 3.20.0
+* We now have a Debian package for libdap.
+* Bug fixes; See the ChangeLog and NEWS files.
 
-Updated for version 3.18.2
+### Updated for version 3.19.1
+* Bug fixes; See the ChangeLog and NEWS files.
 
-Added support for DAP4 filter operations.
+### Updated for version 3.18.3
+* Bug fixes; See the ChangeLog and NEWS files.
 
-For other information, see NEWS and ChangeLog
+### Updated for version 3.18.2
+* Added support for DAP4 filter operations.
+* For other information, see NEWS and ChangeLog
 
-Updated for 3.16.0
+### Updated for 3.16.0
 
 libdap now supports parallel I/O for certain data write operations,
 mostly those involving larger amounts of data - Marshaller::put_vector
@@ -545,3 +610,4 @@ Temple Place, Suite 330, Boston, MA 02111-1307 USA. Older versions of
 the DAP were copyrighted by the University of Rhode Island and
 Massachusetts Institute of Technology; see the file COPYRIGHT_URI. The
 file deflate.c is also covered by COPYRIGHT_W3C.
+

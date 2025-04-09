@@ -36,26 +36,13 @@
 #ifndef _url_h
 #define _url_h 1
 
-
 #include <string>
-
-#if 0
-#ifndef _dods_limits_h
-#include "dods-limits.h"
-#endif
-
-#ifndef _basetype_h
-#include "BaseType.h"
-#endif
-#endif
-
 
 // #ifndef _str_h
 #include "Str.h"
-//#endif
+// #endif
 
-namespace libdap
-{
+namespace libdap {
 
 class BaseType;
 
@@ -65,24 +52,14 @@ const unsigned int max_url_len = 255;
 
     @see BaseType
     @see Str */
-class Url: public Str
-{
-
-#if 0
-private:
-string _buf;
-
-// This enables methods of Str to access _buf in this class.
-friend class Str;
-#endif
+class Url : public Str {
 
 public:
     Url(const std::string &n);
     Url(const std::string &n, const std::string &d);
     Url(const std::string &n, Type t);
     Url(const std::string &n, const std::string &d, Type t);
-    virtual ~Url()
-    {}
+    virtual ~Url() {}
 
     virtual BaseType *ptr_duplicate();
 };
@@ -90,4 +67,3 @@ public:
 } // namespace libdap
 
 #endif // _url_h
-

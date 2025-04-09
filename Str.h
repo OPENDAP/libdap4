@@ -38,11 +38,10 @@
 
 #include <string>
 
-#include "dods-limits.h"
 #include "BaseType.h"
+#include "dods-limits.h"
 
-namespace libdap
-{
+namespace libdap {
 
 // max_str_len should be large since we always send strings with length bytes
 // as a prefix (so xdr_string will always know how much memory to malloc) but
@@ -59,8 +58,7 @@ const unsigned int max_str_len = DODS_USHRT_MAX - 1;
     @see Url
     */
 
-class Str: public BaseType
-{
+class Str : public BaseType {
 protected:
     string d_buf;
 
@@ -68,48 +66,49 @@ public:
     Str(const string &n);
     Str(const string &n, const string &d);
 
-    virtual ~Str()
-    {}
+    virtual ~Str() {}
 
     Str(const Str &copy_from);
 
     Str &operator=(const Str &rhs);
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
-    virtual unsigned int width(bool constrained = false) const;
+    unsigned int width(bool = false) const override { return sizeof(string); }
+
+    int64_t width_ll(bool = false) const override { return sizeof(string); }
 
     // Return the length of the stored string or zero if no string has been
     // stored in the instance's internal buffer.
-    virtual int length() const;
+    int length() const override;
+    int64_t length_ll() const override;
 
     // DAP2
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
+    bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) override;
 
     // DAP4
-    virtual void compute_checksum(Crc32 &checksum);
-    virtual void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false);
-    virtual void deserialize(D4StreamUnMarshaller &um, DMR &dmr);
+    void compute_checksum(Crc32 &checksum) override;
+    void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
+    void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    virtual unsigned int val2buf(void *val, bool reuse = false);
-    virtual unsigned int buf2val(void **val);
+    unsigned int val2buf(void *val, bool reuse = false) override;
+    unsigned int buf2val(void **val) override;
 
     virtual bool set_value(const string &value);
     virtual string value() const;
 
-    virtual void print_val(FILE *out, string space = "",
-                           bool print_decl_p = true);
-    virtual void print_val(ostream &out, string space = "",
-                           bool print_decl_p = true);
+    virtual string esc_string_variable_value(const string &s);
 
-    virtual bool ops(BaseType *b, int op);
-    virtual bool d4_ops(BaseType *b, int op);
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
-    virtual void dump(ostream &strm) const ;
+    bool ops(BaseType *b, int op) override;
+    bool d4_ops(BaseType *b, int op) override;
+
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
 
 #endif // _str_h
-

@@ -3,11 +3,7 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/geo -I$(srcdir) $(XML2_CFLAGS) $(TIRPC_CFLAGS)
-AM_CXXFLAGS =  
-
-if COMPILER_IS_GCC
-AM_CXXFLAGS += -Wall -W -Wcast-align
-endif
+AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align
 
 # autoconf/automake includes support for yacc and lex so that the input
 # files for those compilers can be listed in a _SOURCES variable and the
@@ -20,23 +16,23 @@ endif
 # AM_YFLAGS= -d
 # AM_LFLAGS = -d
 
-CXXFLAGS_DEBUG = -g3 -O0 -Wall -W -Wcast-align
+CXXFLAGS_DEBUG = -g3 -O0
 TEST_COV_FLAGS = -ftest-coverage -fprofile-arcs
 
 if USE_ASAN
-ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer
+ASAN_FLAGS = -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
 endif
 
 if BUILD_DEVELOPER
 AM_CXXFLAGS += $(CXXFLAGS_DEBUG) $(ASAN_FLAGS)
 else
-AM_CXXFLAGS += -g -O2
+AM_CXXFLAGS += -g -O2 -DNDEBUG
 endif
 
 AM_LDFLAGS =
 if ENABLE_COVERAGE
-AM_CXXFLAGS += -fprofile-arcs -ftest-coverage -pg
-AM_LDFLAGS += -lgcov --coverage -pg
+AM_CXXFLAGS += -fprofile-dir=$(top_srcdir)/gcov-data -fprofile-arcs -ftest-coverage
+AM_LDFLAGS += --coverage
 endif
 
 noinst_LTLIBRARIES = libgeodap.la

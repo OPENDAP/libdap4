@@ -50,8 +50,7 @@
 #include "Response.h"
 #endif
 
-namespace libdap
-{
+namespace libdap {
 
 /** Manage a single AIS database. Open an AIS database and handle merging DAP
     objects with the ancillary resources it references. This class uses
@@ -61,26 +60,23 @@ namespace libdap
     object (currently only the DAS object is supported. 02/25/03 jhrg).
 
     @brief Merge AIS resources. */
-class AISMerge
-{
+class AISMerge {
 private:
     AISResources d_ais_db;
-    HTTPConnect d_http;  // used to access remote resources
+    HTTPConnect d_http; // used to access remote resources
 
     friend class AISMergeTest;
+
 public:
     /** Initialize an instance so that it reads from \c database.
     @param database Name of a database of AIS resources.
     @exception AISDatabaseReadFailed Thrown if the named database cannot
     be opened. */
-    AISMerge(const string &database) throw(AISDatabaseReadFailed) :
-            d_ais_db(database), d_http(RCReader::instance())
-    { }
+    AISMerge(const string &database) throw(AISDatabaseReadFailed) : d_ais_db(database), d_http(RCReader::instance()) {}
 
     /** Destroy an instance. This is explicitly declared virtual to support
     subclassing. */
-    virtual ~AISMerge()
-    {}
+    virtual ~AISMerge() {}
 
     // Change this when HTTPConnect/HTTPCache are changed.
     virtual Response *get_ais_resource(const string &res);
