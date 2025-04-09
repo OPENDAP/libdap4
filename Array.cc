@@ -319,8 +319,7 @@ std::vector<BaseType *> *Array::transform_to_dap2(AttrTable *) {
                             "DAS For Grid Map '" << d2_map_array->name() << "':" << endl;
                             at.print(cerr); );
 #endif
-                    }
-                    else {
+                    } else {
                         DBG(cerr << __func__ << "() - " << "DAS For Grid Map '" << d2_map_array->name() << "':" << endl;
                             at.print(cerr););
                         throw Error(internal_error, "Unable to interpret returned DAP2 content.");

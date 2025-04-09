@@ -26,15 +26,15 @@
 
 #include <cassert>
 
-#include <iostream>
-#include <sstream>
 #include <iomanip>
+#include <iostream>
 #include <map>
+#include <sstream>
 #include <string>
 
 #include "Array.h"
-#include "Grid.h"
 #include "BaseType.h"
+#include "Grid.h"
 
 #include "D4Attributes.h"
 #include "D4Dimensions.h"
@@ -725,7 +725,7 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
  * (ex: UInt64) the will return a NULL pointer and so this must be tested!
  */
 vector<BaseType *> *D4Group::transform_to_dap2(AttrTable *parent_attr_table) {
-    DBG( cerr << __func__ << "() - BEGIN ("<< name() << ")" << endl);
+    DBG(cerr << __func__ << "() - BEGIN (" << name() << ")" << endl);
     bool replicate_shared_dims = true;
 
     vector<BaseType *> *results = new vector<BaseType *>(); // LEAK
@@ -764,7 +764,7 @@ vector<BaseType *> *D4Group::transform_to_dap2(AttrTable *parent_attr_table) {
         DBG(cerr << __func__ << "() - Processing member variable '" << (*i)->name()
                  << "' root: " << (is_root ? "true" : "false") << endl);
 
-        map<string,Array*> potential_shared_dims;  // Holds Grid maps, see below. jhrg 10/3/19
+        map<string, Array *> potential_shared_dims; // Holds Grid maps, see below. jhrg 10/3/19
 
         vector<BaseType *> *new_vars = (*i)->transform_to_dap2(group_attrs);
         if (new_vars) { // Might be un-mappable
@@ -780,12 +780,12 @@ vector<BaseType *> *D4Group::transform_to_dap2(AttrTable *parent_attr_table) {
                     Grid *g = static_cast<Grid *>(*vi);
                     for (auto m = g->map_begin(); m != g->map_end(); ++m) {
                         if (!potential_shared_dims[(*m)->name()])
-                            potential_shared_dims[(*m)->name()] = dynamic_cast<Array*>(*m);
+                            potential_shared_dims[(*m)->name()] = dynamic_cast<Array *>(*m);
                     }
                 }
 
-                DBG( cerr << __func__ << "() - Added member variable '" << (*i)->name() << "' " <<
-                    "to results vector. root: "<< (is_root?"true":"false") << endl);
+                DBG(cerr << __func__ << "() - Added member variable '" << (*i)->name() << "' "
+                         << "to results vector. root: " << (is_root ? "true" : "false") << endl);
             }
 
             // replicate all of the 'potential_shared_dims' at the top level of the DDS.

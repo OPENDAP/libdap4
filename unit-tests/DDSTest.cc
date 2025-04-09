@@ -71,7 +71,6 @@
 using namespace CppUnit;
 using namespace std;
 
-
 namespace libdap {
 
 class DDSTest : public TestFixture {
@@ -250,8 +249,8 @@ public:
     }
 
     void transfer_attributes_test_2() {
-         DBG(cerr << prolog << "BEGIN" << endl);
-       try {
+        DBG(cerr << prolog << "BEGIN" << endl);
+        try {
             dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
             DAS das;
             das.parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.hacked.HDF.das");
@@ -618,8 +617,8 @@ public:
 #endif
 
     void get_response_size_test_seq_c() {
-         DBG(cerr << prolog << "BEGIN" << endl);
-       ConstraintEvaluator eval;
+        DBG(cerr << prolog << "BEGIN" << endl);
+        ConstraintEvaluator eval;
         dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
         eval.parse_constraint("NSCAT%20Rev%2020.NSCAT%20L2.Low_Wind_Speed_Flag", *dds2);
         DBG(cerr << "S2000415.HDF response size: " << dds2->get_request_size(true) << endl);
@@ -630,8 +629,8 @@ public:
 
     // Build a DDS with attributes, then check that get_das() returns the correct thing
     void get_das_test_1() {
-         DBG(cerr << prolog << "BEGIN" << endl);
-       try {
+        DBG(cerr << prolog << "BEGIN" << endl);
+        try {
             BaseTypeFactory btf;
             DDS dds(&btf);
             dds.parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
