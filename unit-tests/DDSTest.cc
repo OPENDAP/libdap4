@@ -659,7 +659,7 @@ public:
     // order of the attr tables is not exactly the same because the DMR treats Grids
     // differently. In the DMR, DAP2 Grid maps become shared dimensions and those are
     // output last. In a DAP2 DDS, they (maps) are added as 'extra' variables are written
-    // first. Thus the attribute containers for maps/shared dims are either first or last
+    // first. Thus, the attribute containers for maps/shared dims are either first or last
     // for DAP2 or DAP4, resp.
     void get_das_test_2() {
         DBG(cerr << prolog << "BEGIN" << endl);
