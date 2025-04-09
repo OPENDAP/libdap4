@@ -239,7 +239,7 @@ void BaseType::transform_to_dap4(D4Group * /*root*/, Constructor *container) {
  * of their member variables in the vector. DAP4 types with no representation in DAP2
  * (ex: UInt64) this will return a NULL pointer and so this must be tested!
  */
-std::vector<BaseType *> *BaseType::transform_to_dap2(AttrTable *, bool /* show_shared_dims */ ) {
+std::vector<BaseType *> *BaseType::transform_to_dap2(AttrTable *, bool /* show_shared_dims */) {
     BaseType *dest = this->ptr_duplicate();
     // convert the d4 attributes to a dap2 attribute table.
     // HK-403. jhrg 6/17/19

@@ -155,7 +155,6 @@ public:
     void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
     std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false) override;
-
 };
 
 } /* namespace libdap */

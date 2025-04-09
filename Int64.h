@@ -87,7 +87,7 @@ public:
 
     bool ops(BaseType *b, int op) override;
     bool d4_ops(BaseType *b, int op) override;
-    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims=false) override;
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false) override;
 
     bool is_dap4_projected(std::vector<string> &inventory) override;
 
