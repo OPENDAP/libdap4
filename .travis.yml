@@ -70,9 +70,10 @@ env:
   # GIT_UID travis-ci-opendap
   - secure: "TA2+8pHWZjh5DWI+Nl3CNJrIVNI1Gf40tHJTI1WC9lUiJg6Cyh4WUzaysLEEHHylQsx1YzU/19DQRFPp5vXwMRpb1QTsiHgsXlQ4w5nJgOECK2Z3Dmx2VSZeuvrgTMHeNe4wGBH1y1NwNvZSR4Z9qlJ0MoUx6J91o4U2GZQzQ68="
   # GIT_PSWD travis-ci-opendap
-  # - secure: "PiBdnKQqUcMVKr0wXHMpJkw5Tai5oQTzhP3yiuN9iAS2SORb0u7T7dof8ublIFnr8tGn8kY4hqSRRUyoFpsSfbJVZnzq/fSr+aoL0ofgan/jLcNvp1F3szVHaj559/5B24mnr44dbqjJFlTR6dHG+RwUM13MNrwknXHgEV4HIL4="
+  - secure: "zdeHTDpW5kE1rD1mGbwpSNNsCXzdSgmuf4sNL2ZscGG/gTIis9UQKK1FLpuPqrUUV0UeBwySjSckCohA9xtMD1irzzQOc9g4GYr5T/1PNr5O3OSuX9KSVTPpjoN6emtRfKwA6QWfZwwx+ucPFcuvkZ/nf9+UleQqZOdqT7fVtSc="
+
   # GIT_TOKEN travis-ci-opendap
-  - secure: "hQej6d7kHbSWqfUdT20z4ADzV9+NSqCpOWuTqYcp3K6gQstWvGzcP5kzmgcaafGEw4rCLtESINxybRzLusK6SlG/KMRaaqOEewhZm1/12JVQXZRZVq2n+RnbiNPqIwx6NV4wWuABQfnCZ/rRv2Sn12grXnvT071/mxRUpqiXIYQ="
+  # - secure: "hQej6d7kHbSWqfUdT20z4ADzV9+NSqCpOWuTqYcp3K6gQstWvGzcP5kzmgcaafGEw4rCLtESINxybRzLusK6SlG/KMRaaqOEewhZm1/12JVQXZRZVq2n+RnbiNPqIwx6NV4wWuABQfnCZ/rRv2Sn12grXnvT071/mxRUpqiXIYQ="
 
 before_install:
   - pip install --user awscli
