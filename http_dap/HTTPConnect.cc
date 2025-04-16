@@ -156,7 +156,7 @@ static ObjectType determine_object_type(const string &header_value) {
     have been read off the wire and written into the d_headers field, scan
     them and set special fields for certain headers special to the DAP. */
 
-class ParseHeader : public unary_function<const string &, void> {
+class ParseHeader : public function<void(const string &)> {
     ObjectType type = unknown_type; // What type of object is in the stream?
     string server = "dods/0.0";     // Server's version string.
     string protocol = "2.0";        // Server's protocol version.
@@ -368,20 +368,6 @@ void HTTPConnect::www_lib_init() {
 /** Functor to add a single string to a curl_slist. This is used to transfer
     a list of headers from a vector<string> object to a curl_slist. */
 
-class BuildHeaders : public unary_function<const string &, void> {
-    struct curl_slist *d_cl = nullptr;
-
-public:
-    BuildHeaders() = default;
-
-    void operator()(const string &header) {
-        DBG(cerr << "Adding '" << header.c_str() << "' to the header list." << endl);
-        d_cl = curl_slist_append(d_cl, header.c_str());
-    }
-
-    struct curl_slist *get_headers() { return d_cl; }
-};
-
 /** Use libcurl to dereference a URL. Read the information referenced by \c
     url into the file pointed to by \c stream.
 
@@ -421,11 +407,16 @@ long HTTPConnect::read_url(const string &url, FILE *stream, vector<string> &resp
 
     DBG(copy(d_request_headers.begin(), d_request_headers.end(), ostream_iterator<string>(cerr, "\n")));
 
-    BuildHeaders req_hdrs;
-    req_hdrs = for_each(d_request_headers.begin(), d_request_headers.end(), req_hdrs);
-    req_hdrs = for_each(headers.begin(), headers.end(), req_hdrs);
+    struct curl_slist *req_hdrs = nullptr;
+    auto header_append = [&req_hdrs](const string &header) {
+        DBG(cerr << "Adding '" << header.c_str() << "' to the header list." << endl);
+        req_hdrs = curl_slist_append(req_hdrs, header.c_str());
+    };
 
-    curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, req_hdrs.get_headers());
+    for_each(d_request_headers.begin(), d_request_headers.end(), header_append);
+    for_each(headers.begin(), headers.end(), header_append);
+
+    curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, req_hdrs);
 
     // Turn off the proxy for this URL?
     if (url_uses_no_proxy_for(url)) {
@@ -454,7 +445,7 @@ long HTTPConnect::read_url(const string &url, FILE *stream, vector<string> &resp
     CURLcode res = curl_easy_perform(d_curl);
 
     // Free the header list and null the value in d_curl.
-    curl_slist_free_all(req_hdrs.get_headers());
+    curl_slist_free_all(req_hdrs);
     curl_easy_setopt(d_curl, CURLOPT_HTTPHEADER, 0);
 
     // Reset the proxy?
@@ -547,13 +538,9 @@ HTTPConnect::HTTPConnect(RCReader *rcr, bool use_cpp)
 HTTPConnect::~HTTPConnect() { curl_easy_cleanup(d_curl); }
 
 /** Look for a certain header */
-class HeaderMatch : public unary_function<const string &, bool> {
-    const string &d_header;
-
-public:
-    HeaderMatch(const string &header) : d_header(header) {}
-    bool operator()(const string &arg) { return arg.find(d_header) == 0; }
-};
+function<bool(const string &)> HTTPConnect::header_match(const string &d_header) {
+    return [=](const string &arg) { return arg.find(d_header) == 0; };
+}
 
 /** Dereference a URL. This method dereferences a URL and stores the result
     (i.e., it formulates an HTTP request and processes the HTTP server's
@@ -585,17 +572,15 @@ HTTPResponse *HTTPConnect::fetch_url(const string &url) {
     cout << ss.str();
 #endif
 
-    ParseHeader parser;
-
     // An apparent quirk of libcurl is that it does not pass the Content-type
     // header to the callback used to save them, but check and add it from the
     // saved state variable only if it's not there (without this a test failed
     // in HTTPCacheTest). jhrg 11/12/13
     if (!d_content_type.empty() && find_if(stream->get_headers().begin(), stream->get_headers().end(),
-                                           HeaderMatch("Content-Type:")) == stream->get_headers().end())
+                                           header_match("Content-Type:")) == stream->get_headers().end())
         stream->get_headers().emplace_back("Content-Type: " + d_content_type);
 
-    parser = for_each(stream->get_headers().begin(), stream->get_headers().end(), ParseHeader());
+    ParseHeader parser = for_each(stream->get_headers().begin(), stream->get_headers().end(), ParseHeader());
 
     // handle redirection case (2007-04-27, gaffigan@sfos.uaf.edu)
     if (!parser.get_location().empty() &&
@@ -930,7 +915,7 @@ void HTTPConnect::set_xdap_protocol(int major, int minor) {
 
     // Look for, and remove if one exists, an XDAP-Accept header
     vector<string>::iterator i;
-    i = find_if(d_request_headers.begin(), d_request_headers.end(), HeaderMatch("XDAP-Accept:"));
+    i = find_if(d_request_headers.begin(), d_request_headers.end(), header_match("XDAP-Accept:"));
     if (i != d_request_headers.end())
         d_request_headers.erase(i);
 

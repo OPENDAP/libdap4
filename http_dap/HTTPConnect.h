@@ -26,6 +26,7 @@
 #ifndef _httpconnect_h
 #define _httpconnect_h
 
+#include <functional>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -95,6 +96,8 @@ private:
     void set_verbose_runtime(bool verbose) { d_verbose_runtime = verbose; }
 
     bool is_cached_response() const { return d_cached_response; }
+
+    static std::function<bool(const std::string &)> header_match(const std::string &d_header);
 
     friend class HTTPConnectTest;
 
