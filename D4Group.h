@@ -106,6 +106,9 @@ public:
         return d_enum_defs;
     }
 
+    /// Check if this group contains enumerations.
+    bool has_enum_defs() const { return (d_enum_defs != nullptr); }
+
     BaseType *find_first_var_that_uses_dimension(D4Dimension *dim);
     BaseType *find_first_var_that_uses_enumeration(D4EnumDef *enum_def);
 
