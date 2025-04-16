@@ -232,8 +232,9 @@ SERVER_HDR = DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h
 
 .PHONY: clion-source-discovery
 clion-source-discovery:
-	$(MAKE) $(MFLAGS)
-	$(MAKE) $(MFLAGS) check
+	-$(MAKE) $(MFLAGS)
+	-$(MAKE) $(MFLAGS) check
+	true
 
 ############################################################################
 # Special rules for the grammars. I tried to use the automake grammar support
