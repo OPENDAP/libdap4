@@ -221,6 +221,7 @@ void *MarshallerThread::write_thread(void *arg) {
     // force an error
     // return (void*)-1;
 
+    cout << "\n\nargs->d_num: " << args->d_num << endl;
     if (args->d_out_file != -1) {
         auto bytes_written = write(args->d_out_file, args->d_buf, args->d_num);
         if (bytes_written != args->d_num)
