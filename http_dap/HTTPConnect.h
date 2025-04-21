@@ -55,8 +55,8 @@ private:
     RCReader *d_rcr = nullptr;
     HTTPCache *d_http_cache = nullptr;
 
-    char d_error_buffer[CURL_ERROR_SIZE]; // A human-readable message.
-    std::string d_content_type;           // apparently read by libcurl; this is valid only after curl_easy_perform()
+    char d_error_buffer[CURL_ERROR_SIZE]{}; // A human-readable message.
+    std::string d_content_type;             // apparently read by libcurl; this is valid only after curl_easy_perform()
 
     bool d_accept_deflate = false; // Use deflate encoding for HTTP requests
 
@@ -91,7 +91,7 @@ private:
 
     bool url_uses_proxy_for(const std::string &url);
 
-    bool url_uses_no_proxy_for(const std::string &url) noexcept;
+    bool url_uses_no_proxy_for(const std::string &url) const noexcept;
 
     void set_verbose_runtime(bool verbose) { d_verbose_runtime = verbose; }
 

@@ -489,7 +489,7 @@ bool HTTPConnect::url_uses_proxy_for(const string &url) {
 /** If the NO_PROXY option is used in the dodsrc file, does this URL match
     the no proxy URL regex? */
 
-bool HTTPConnect::url_uses_no_proxy_for(const string &url) noexcept {
+bool HTTPConnect::url_uses_no_proxy_for(const string &url) const noexcept {
     return d_rcr->is_no_proxy_for_used() && url.find(d_rcr->get_no_proxy_for_host()) != string::npos;
 }
 
@@ -539,7 +539,7 @@ HTTPConnect::~HTTPConnect() { curl_easy_cleanup(d_curl); }
 
 /** Look for a certain header */
 function<bool(const string &)> HTTPConnect::header_match(const string &d_header) {
-    return [=](const string &arg) { return arg.find(d_header) == 0; };
+    return [d_header](const string &arg) { return arg.find(d_header) == 0; };
 }
 
 /** Dereference a URL. This method dereferences a URL and stores the result
