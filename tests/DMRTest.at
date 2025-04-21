@@ -171,7 +171,6 @@ dnl Ripped from the BES modules/common/handler_tests_macros.m4 file. jhrg 1/22/2
 
 m4_define([REMOVE_DAP4_CHECKSUM], [dnl
     sed 's@<Value>[[0-9a-f]]\{8\}</Value>@removed checksum@g' < $1 > $1.sed
-    dnl '
     mv $1.sed $1
 ])
 
@@ -381,7 +380,7 @@ DMR_INTERN([test_simple_8.xml], [pass])
 DMR_INTERN([test_simple_9.xml], [pass])
 DMR_INTERN([test_simple_9.1.xml], [pass])
 DMR_INTERN([test_simple_10.xml], [pass])
-DMR_TRANS([test_enum_grp.xml], [pass])
+DMR_INTERN([test_enum_grp.xml], [pass])
 
 DMR_INTERN([test_array_1.xml], [pass])
 DMR_INTERN([test_array_2.xml], [pass])
