@@ -71,16 +71,17 @@ std::streambuf::int_type chunked_outbuf::data_chunk() {
     // much anyway... Here's the general idea all the same:
     //
     // unsigned int chunk_header = (unsigned int)num | CHUNK_type;
-    uint64_t header = num;
+    uint16_t chunk_type = CHUNK_DATA;
+    uint64_t chunk_size = num;
 
-    // Add encoding of host's byte order. jhrg 11/24/13
-    if (!d_big_endian)
-        header |= CHUNK_LITTLE_ENDIAN;
+    // Add encoding of host's byte order. kln 04/23/25
+    uint64_t header = (static_cast<uint64_t>(chunk_type) << 48) |
+            (d_big_endian ? 0 : (1ULL << 47)) |
+            (chunk_size & 0x0000FFFFFFFFFFFFULL);
 
     // network byte order for the header
-    header = htonl(header);
-
-    d_os.write((const char *)&header, sizeof(int32_t));
+    uint64_t network_header = htonll(header);
+    d_os.write(reinterpret_cast<const char *>(&network_header), sizeof(uint64_t));
 
     // Should bad() throw an error?
     // Are these functions fast or would the bits be faster?
@@ -109,22 +110,22 @@ std::streambuf::int_type chunked_outbuf::end_chunk() {
     int64_t num = pptr() - pbase(); // num needs to be signed for the call to pbump
 
     // write out the chunk headers: CHUNKTYPE and CHUNKSIZE
-    // as a 32-bit unsigned int. Here I assume that num is never
+    // as a 64-bit unsigned int. Here I assume that num is never
     // more than 2^24 because that was tested in the constructor
-
-    uint64_t header = (uint64_t)num | CHUNK_END;
-
-    // Add encoding of host's byte order. jhrg 11/24/13
-    if (!d_big_endian)
-        header |= CHUNK_LITTLE_ENDIAN;
+    // Add encoding of host's byte order. kln 04/23/25
+    uint16_t chunk_type = CHUNK_END;
+    uint64_t chunk_size = num;
+    uint64_t header = (static_cast<uint64_t>(chunk_type) << 48) |
+            (d_big_endian ? 0 : (1ULL << 47)) |
+            (chunk_size & 0x0000FFFFFFFFFFFFULL);
 
     // network byte order for the header
-    header = htonl(header);
+    uint64_t network_header = htonll(header);
 
     // Write out the CHUNK_END header with the byte count.
     // This should be called infrequently, so it's probably not worth
     // optimizing away chunk_header
-    d_os.write((const char *)&header, sizeof(uint32_t));
+    d_os.write(reinterpret_cast<const char *>(&network_header), sizeof(uint64_t));
 
     // Should bad() throw an error?
     // Are these functions fast or would the bits be faster?
@@ -152,24 +153,25 @@ std::streambuf::int_type chunked_outbuf::err_chunk(const std::string &m) {
     int64_t num = pptr() - pbase(); // num needs to be signed for the call to pbump
 
     // write out the chunk headers: CHUNKTYPE and CHUNKSIZE
-    // as a 32-bit unsigned int. Here I assume that num is never
+    // as a 64-bit unsigned int. Here I assume that num is never
     // more than 2^24 because that was tested in the constructor
-    if (msg.length() > 0x00FFFFFF)
+    if (msg.length() > 0x0000FFFFFFFFFFFFULL) // Adjusted limit for 64-bit
         msg = "Error message too long";
 
-    uint64_t header = (uint64_t)msg.length() | CHUNK_ERR;
-
-    // Add encoding of host's byte order. jhrg 11/24/13
-    if (!d_big_endian)
-        header |= CHUNK_LITTLE_ENDIAN;
+    // Add encoding of host's byte order. kln 04/23/25
+    uint16_t chunk_type = CHUNK_ERR;
+    uint64_t chunk_size = msg.length();
+    uint64_t header = (static_cast<uint64_t>(chunk_type) << 48) |
+            (d_big_endian ? 0 : (1ULL << 47)) |
+            (chunk_size & 0x0000FFFFFFFFFFFFULL);
 
     // network byte order for the header
-    header = htonl(header);
+    uint64_t network_header = htonll(header);
 
     // Write out the CHUNK_END header with the byte count.
     // This should be called infrequently, so it's probably not worth
     // optimizing away chunk_header
-    d_os.write((const char *)&header, sizeof(uint32_t));
+    d_os.write(reinterpret_cast<const char *>(&network_header), sizeof(uint64_t));
 
     // Should bad() throw an error?
     // Are these functions fast or would the bits be faster?
@@ -252,7 +254,7 @@ std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
     // Will num bytes fit in the buffer? The location of epptr() is one back from
     // the actual end of the buffer, so the next char written will trigger a write
     // of the buffer as a new data chunk.
-    if (bytes_in_buffer + num < d_buf_size) {
+    if (bytes_in_buffer + num < static_cast<int64_t>(d_buf_size)) {
         DBG2(cerr << ":xsputn: buffering num: " << num << endl);
         memcpy(pptr(), s, num);
         pbump(num);
@@ -261,16 +263,16 @@ std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
 
     // If here, write a chunk header and a chunk's worth of data by combining the
     // data in the buffer and some data from 's'.
-    uint64_t header = d_buf_size;
-
-    // Add encoding of host's byte order. jhrg 11/24/13
-    if (!d_big_endian)
-        header |= CHUNK_LITTLE_ENDIAN;
+    // Add encoding of host's byte order. kln 04/23/25
+    int64_t chunk_size = d_buf_size;
+    uint16_t chunk_type = CHUNK_DATA;
+    uint64_t header = (static_cast<uint64_t>(chunk_type) << 48) |
+            (d_big_endian ? 0 : (1ULL << 47)) |     // Set the endianness flag
+            (chunk_size & 0x0000FFFFFFFFFFFFULL);
 
     // network byte order for the header
-    header = htonl(header);
-
-    d_os.write((const char *)&header, sizeof(int64_t)); // Data chunk's CHUNK_TYPE is 0x00000000
+    uint64_t network_header = htonll(header);
+    d_os.write(reinterpret_cast<const char *>(&network_header), sizeof(uint64_t));
 
     // Reset the pptr() and epptr() now in case of an error exit. See the 'if'
     // at the end of this for the only code from here down that will modify the
@@ -281,21 +283,26 @@ std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
     if (d_os.eof() || d_os.bad())
         return traits_type::not_eof(0);
 
-    int bytes_to_fill_out_buffer = d_buf_size - bytes_in_buffer;
+    int64_t bytes_to_fill_out_buffer = d_buf_size - bytes_in_buffer;
     d_os.write(s, bytes_to_fill_out_buffer);
     if (d_os.eof() || d_os.bad())
         return traits_type::not_eof(0);
     s += bytes_to_fill_out_buffer;
-    uint64_t bytes_still_to_send = num - bytes_to_fill_out_buffer;
+    int64_t bytes_still_to_send = num - bytes_to_fill_out_buffer;
 
     // Now send all the remaining data in s until the amount remaining doesn't
     // fill a complete chunk and buffer those data.
-    while (bytes_still_to_send >= d_buf_size) {
+    while (bytes_still_to_send >= static_cast<int64_t>(d_buf_size)) {
+        uint64_t current_chunk_size = d_buf_size;
+        uint64_t current_header = (static_cast<uint64_t>(CHUNK_DATA) << 48) |
+                (d_big_endian ? 0 : (1ULL << 47)) |
+                (current_chunk_size & 0x0000FFFFFFFFFFFFULL);
+        uint64_t current_network_header = htonll(current_header);
+
         // This is header for  a chunk of d_buf_size bytes; the size was set above
-        d_os.write((const char *)&header, sizeof(int64_t));
+        d_os.write(reinterpret_cast<const char *>(&current_network_header), sizeof(uint64_t));
         d_os.write(s, d_buf_size);
-        if (d_os.eof() || d_os.bad())
-            return traits_type::not_eof(0);
+        if (d_os.eof() || d_os.bad()) return traits_type::not_eof(0);
         s += d_buf_size;
         bytes_still_to_send -= d_buf_size;
     }
