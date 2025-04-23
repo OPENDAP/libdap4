@@ -60,6 +60,7 @@ private:
     vector<D4Group *> d_groups;
 
     BaseType *m_find_map_source_helper(const string &name);
+    D4Group *find_grp_internal(const string &grp_path);
 
 protected:
     void m_duplicate(const D4Group &g);
@@ -104,6 +105,9 @@ public:
         }
         return d_enum_defs;
     }
+
+    /// Check if this group contains enumerations.
+    bool has_enum_defs() const { return (d_enum_defs != nullptr); }
 
     BaseType *find_first_var_that_uses_dimension(D4Dimension *dim);
     BaseType *find_first_var_that_uses_enumeration(D4EnumDef *enum_def);

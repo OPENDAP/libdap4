@@ -159,9 +159,26 @@ string D4Group::FQN() const {
 
 D4Group *D4Group::find_child_grp(const string &grp_name) {
     auto g = find_if(grp_begin(), grp_end(), [grp_name](const D4Group *g) { return g->name() == grp_name; });
-    return (g == grp_end()) ? 0 : *g;
+    return (g == grp_end()) ? nullptr : *g;
 }
 
+// This is a private method. The grp_path is not supposed to start with the '/'.
+D4Group *D4Group::find_grp_internal(const string &grp_path) {
+
+    string::size_type pos = grp_path.find('/');
+    if (pos == string::npos) {
+        D4Group *d4_grp = this->find_child_grp(grp_path);
+        return d4_grp;
+    } else {
+        string top_grp_path = grp_path.substr(0, pos);
+        string rest_grp_path = grp_path.substr(pos + 1);
+        D4Group *d4_grp = this->find_child_grp(top_grp_path);
+        if (d4_grp != nullptr) {
+            return d4_grp->find_grp_internal(rest_grp_path);
+        } else
+            return nullptr;
+    }
+}
 // TODO Add constraint param? jhrg 11/17/13
 BaseType *D4Group::find_first_var_that_uses_dimension(D4Dimension *dim) {
     // for each group, starting with the root group
@@ -320,6 +337,7 @@ BaseType *D4Group::m_find_map_source_helper(const string &path) {
 }
 
 D4EnumDef *D4Group::find_enum_def(const string &path) {
+
     string lpath = path; // get a mutable copy
 
     // special-case for the root group
@@ -330,18 +348,30 @@ D4EnumDef *D4Group::find_enum_def(const string &path) {
             lpath = lpath.substr(1);
     }
 
-    string::size_type pos = lpath.find('/');
+    string::size_type pos = lpath.rfind('/');
     if (pos == string::npos) {
         // name looks like 'bar'
         return enum_defs()->find_enum_def(lpath);
     }
-
     // name looks like foo/bar/baz where foo and bar must be groups
-    string grp_name = lpath.substr(0, pos);
-    lpath = lpath.substr(pos + 1);
 
-    D4Group *grp = find_child_grp(grp_name);
-    return (grp == 0) ? 0 : grp->enum_defs()->find_enum_def(lpath);
+    // Now we need to recurisvely find the group of foo/bar since we only need to
+    // find if the enum_defs under this /foo/bar contains the enum path.
+
+    // Note pos cannot be string::npos when code runs here.
+    // Obtain the final enum_def name in the lpath.
+    string enum_def_name = lpath.substr(pos + 1);
+
+    // Obtain the full group path that contains the final enum_def name.
+    string enum_def_path = lpath.substr(0, pos);
+
+    D4Group *grp = find_grp_internal(enum_def_path);
+    if (grp == nullptr)
+        return nullptr;
+    else if (grp->enum_defs() == nullptr)
+        return nullptr;
+    else
+        return grp->enum_defs()->find_enum_def(enum_def_name);
 }
 
 /**
