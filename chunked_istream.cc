@@ -92,7 +92,7 @@ std::streambuf::int_type chunked_inbuf::underflow() {
     // gptr() == egptr() so read more data from the underlying input source.
 
     // To read data from the chunked stream, first read the header
-    uint32_t header;
+    uint64_t header;
     d_is.read((char *)&header, 4);
 
     // When the endian nature of the server is encoded in the chunk header, the header is
@@ -112,7 +112,7 @@ std::streambuf::int_type chunked_inbuf::underflow() {
         d_set_twiddle = true;
     }
 
-    uint32_t chunk_size = header & CHUNK_SIZE_MASK;
+    uint64_t chunk_size = header & CHUNK_SIZE_MASK;
 
     DBG(cerr << "underflow: chunk size from header: " << chunk_size << endl);
     DBG(cerr << "underflow: chunk type from header: " << hex << (header & CHUNK_TYPE_MASK) << endl);
@@ -192,7 +192,7 @@ std::streamsize chunked_inbuf::xsgetn(char *s, std::streamsize num) {
     }
 
     // else they asked for more
-    uint32_t bytes_left_to_read = num;
+    uint64_t bytes_left_to_read = num;
 
     // are there any bytes in the buffer? if so grab them first
     if (gptr() < egptr()) {
@@ -215,7 +215,7 @@ std::streamsize chunked_inbuf::xsgetn(char *s, std::streamsize num) {
     bool done = false;
     while (!done) {
         // Get a chunk header
-        uint32_t header;
+        uint64_t header;
         d_is.read((char *)&header, 4);
 
         header = ntohl(header);
@@ -233,7 +233,7 @@ std::streamsize chunked_inbuf::xsgetn(char *s, std::streamsize num) {
             d_set_twiddle = true;
         }
 
-        uint32_t chunk_size = header & CHUNK_SIZE_MASK;
+        uint64_t chunk_size = header & CHUNK_SIZE_MASK;
         DBG(cerr << "xsgetn: chunk size from header: " << chunk_size << endl);
         DBG(cerr << "xsgetn: chunk type from header: " << hex << (header & CHUNK_TYPE_MASK) << endl);
         DBG(cerr << "xsgetn: chunk byte order from header: " << hex << (header & CHUNK_BIG_ENDIAN) << endl);
@@ -262,7 +262,7 @@ std::streamsize chunked_inbuf::xsgetn(char *s, std::streamsize num) {
                 return traits_type::eof();
 
             // Now slurp up the remain part of the chunk and store it in the buffer
-            uint32_t bytes_leftover = chunk_size - bytes_left_to_read;
+            uint64_t bytes_leftover = chunk_size - bytes_left_to_read;
             // expand the internal buffer if needed
             if (bytes_leftover > d_buf_size) {
                 d_buf_size = chunk_size;
@@ -337,7 +337,7 @@ std::streamsize chunked_inbuf::xsgetn(char *s, std::streamsize num) {
  */
 std::streambuf::int_type chunked_inbuf::read_next_chunk() {
     // To read data from the chunked stream, first read the header
-    uint32_t header;
+    uint64_t header;
     d_is.read((char *)&header, 4);
 
     header = ntohl(header);
@@ -355,7 +355,7 @@ std::streambuf::int_type chunked_inbuf::read_next_chunk() {
         d_set_twiddle = true;
     }
 
-    uint32_t chunk_size = header & CHUNK_SIZE_MASK;
+    uint64_t chunk_size = header & CHUNK_SIZE_MASK;
 
     DBG(cerr << "read_next_chunk: chunk size from header: " << chunk_size << endl);
     DBG(cerr << "read_next_chunk: chunk type from header: " << hex << (header & CHUNK_TYPE_MASK) << endl);
