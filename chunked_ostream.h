@@ -88,13 +88,13 @@ protected:
 
     int_type err_chunk(const std::string &msg);
 
-    virtual std::streamsize xsputn(const char *s, std::streamsize num);
+    std::streamsize xsputn(const char *s, std::streamsize num) override;
     // Manipulate the buffer pointers using pbump() after filling the buffer
     // and then call data_chunk(). Leave remainder in buffer. Or copy logic
     // for data_chunk() into loop in this code.
 
-    virtual int_type overflow(int c);
-    virtual int_type sync();
+    int_type overflow(int c) override;
+    int_type sync() override;
 };
 
 /**

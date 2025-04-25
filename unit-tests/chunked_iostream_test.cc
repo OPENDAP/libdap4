@@ -49,7 +49,7 @@
 #define prolog string("chunked_iostream_test::").append(__func__).append("() - ")
 #define TIMING_TEST 0
 
-const string path = (string)TEST_SRC_DIR + "/chunked-io";
+const string path = static_cast<string>(TEST_SRC_DIR) + "/chunked-io";
 
 using namespace std;
 using namespace CppUnit;
@@ -78,7 +78,7 @@ private:
     string big_file, big_file_2, big_file_3;
     // This should be smaller than a single buffer
     string small_file;
-    // A modest sized text file - makes looking at the results easier
+    // A modest-sized text file makes looking at the results easier
     string text_file;
 
 public:
@@ -98,6 +98,17 @@ public:
 
     void tearDown() override {}
 
+    /**
+     * Transfer characters from an input file, one character at a time. Save the result
+     * in a file with the same base name as the input file that has a '.chunked' suffix.
+     *
+     * @note The remaining functions are a slight modification of this function OR are
+     * matching reader functions used in subsequent tests to evaluate the chars/bytes
+     * that were written.
+     *
+     * @param file Read characters from this file
+     * @param buf_size Make a chunked_ostream with this buffer size
+     */
     static void single_char_write(const string &file, int buf_size) {
         fstream infile(file.c_str(), ios::in | ios::binary);
         DBG(cerr << "infile: " << file << endl);
@@ -177,13 +188,13 @@ public:
         chunked_outfile.flush();
     }
 
-    // This will not work with the small text file. This code assume that
+    // This will not work with the small text file. This code assumes that
     // the file to be written has at least 24 bytes for the first chunk,
     // which is deliberately sent using flush before the buffer is full and
-    // then has at least 48 more bytes (but ideally 49, because this code
+    // then has at least 48 more bytes (but ideally 49). This function
     // tries to send an End chunk with one or more bytes as opposed to
     // sending the last data chunk with fewer than buf_size and then sending a
-    // zero length END chunk).
+    // zero-length END chunk.
     static void write_24char_data_with_error_option(const string &file, int buf_size, bool error = false) {
         fstream infile(file.c_str(), ios::in | ios::binary);
         if (!infile.good())
@@ -234,6 +245,14 @@ public:
         }
     }
 
+    /**
+     * Read one character at a time from the input file and write it to an output file.
+     * The output file name is the base name of the input file with the suffix '.plain'.
+     *
+     * @param file Read data from this file. The actual file name is formed by appending the
+     * suffix '.chunked' to this parameter.
+     * @param buf_size Use this size buffer with the chunked_istream.
+     */
     static void single_char_read(const string &file, int buf_size) {
         string in = file + ".chunked";
         fstream infile(in.c_str(), ios::in | ios::binary);
