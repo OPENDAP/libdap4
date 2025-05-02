@@ -73,16 +73,6 @@ private:
         }
     };
 
-    // This is defined in HTTPConnect.cc but has to be defined here as well.
-    // Don't know why... jhrg
-    class HeaderMatch : public unary_function<const string &, bool> {
-        const string &d_header;
-
-    public:
-        explicit HeaderMatch(const string &header) : d_header(header) {}
-        bool operator()(const string &arg) { return arg.find(d_header) == 0; }
-    };
-
 public:
     HTTPConnectTest() = default;
     ~HTTPConnectTest() override = default;
@@ -138,6 +128,7 @@ public:
     CPPUNIT_TEST(cache_test_cpp);
 
     CPPUNIT_TEST(set_accept_deflate_test);
+    CPPUNIT_TEST(header_match_test);
     CPPUNIT_TEST(set_xdap_protocol_test);
     CPPUNIT_TEST(read_url_password_test);
     CPPUNIT_TEST(read_url_password_test2);
@@ -513,12 +504,17 @@ public:
                              "Accept-Encoding: deflate, gzip, compress") == 0);
     }
 
+    void header_match_test() {
+        CPPUNIT_ASSERT(HTTPConnect::header_match("TEST")("TESTING"));
+        CPPUNIT_ASSERT(!HTTPConnect::header_match("DUMMY")("TESTING"));
+    }
+
     void set_xdap_protocol_test() {
         // Initially there should be no header and the protocol should be 2.0
         CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 2 && http->d_dap_client_protocol_minor == 0);
 
-        CPPUNIT_ASSERT(
-            count_if(http->d_request_headers.begin(), http->d_request_headers.end(), HeaderMatch("XDAP-Accept:")) == 0);
+        CPPUNIT_ASSERT(count_if(http->d_request_headers.begin(), http->d_request_headers.end(),
+                                HTTPConnect::header_match("XDAP-Accept:")) == 0);
 
         http->set_xdap_protocol(8, 9);
         CPPUNIT_ASSERT(http->d_dap_client_protocol_major == 8 && http->d_dap_client_protocol_minor == 9);
