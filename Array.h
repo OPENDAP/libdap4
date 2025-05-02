@@ -234,7 +234,7 @@ public:
 
     bool is_dap2_grid();
     void transform_to_dap4(D4Group *root, Constructor *container) override;
-    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false) override;
 
     void add_var(BaseType *v, Part p = nil) override;
     void add_var_nocopy(BaseType *v, Part p = nil) override;
