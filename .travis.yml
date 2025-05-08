@@ -4,13 +4,16 @@
 # Initial Travis-CI control file. 6.5.15 jhrg
 # Updated many times... finally using docker (containers). 7.14.15 jhrg
 #
-# Modified to push the result of a successful build up to an AWS S3
+# Modified to push the result of a successful build to an AWS S3
 # bucket. jhrg 2.24.18
 
-# virt: lxd             # use an lxd container
-# arch: amd64           # optional, this is default, routes to a full VM
-# os: linux             # optional, this is default
+# virt: lxd             # use a lxd container
+# arch: amd64           # optional, this is the default, routes to a full VM
+# os: linux             # optional, this is the default
 dist: focal             # xenial (Ubuntu 16) is the default; focal is Ubuntu 20
+
+vm:
+  size: x-large
 
 language: cpp
 
@@ -143,9 +146,8 @@ jobs:
     - autoreconf --force --install --verbose
     - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-coverage
     - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
-    # Run these commands in bw-output?
     - make check -j7
-    - ./travis/sonar-scanner-coverage.sh
+    - gcovr --config gcovr.config --sonarqube coverage.xml
     - sonar-scanner -Dsonar.token=$SONAR_LOGIN    # Dsonar.login --> Dsonar.token. Fix a warning. jhrg 1/18/24
     # Test the result of the scan and fail a PR/build if the quality gate fails
     - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"

@@ -5,8 +5,8 @@
 .PHONY: coverage
 
 if ENABLE_COVERAGE
-AM_CXXFLAGS += --coverage -pg
-AM_LDFLAGS += --coverage -pg
+AM_CXXFLAGS += --coverage -g -O0
+AM_LDFLAGS += --coverage -g -O0
 
 # gcov options for gcc/++
 # -i (write .gcov files), -f (function summaries), -r (relative paths
@@ -23,7 +23,7 @@ AM_LDFLAGS += --coverage -pg
 # 	done; \
 # fi
 
-coverage: 
-	-gcovr -r . $(GCOVR_FLAGS) > gcovr_report.txt
+# coverage: 
+#	-gcovr -r . $(GCOVR_FLAGS) > gcovr_report.txt
 
 endif

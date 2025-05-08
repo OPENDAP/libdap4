@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# The directory gcov-reports must be configured in sonar-project.properties. jhrg 11/24/20
+export reports_dir="gcov-reports"
+
+make coverage
+
+mkdir -p "${reports_dir}"
+find -name "*.gcda" | xargs gcov -b -c -r -o . # Run gcov (not gcovr) on all the *.gcda files
+cp $(ls -1 *.gcov) "${reports_dir}"
+
+echo "#----------------------------------------------------------------------"
+ls -lRa "${reports_dir}"
+echo "#----------------------------------------------------------------------"
+
