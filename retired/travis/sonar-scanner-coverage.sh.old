@@ -6,7 +6,7 @@ export reports_dir="gcov-reports"
 make coverage
 
 mkdir -p "${reports_dir}"
-find -name "*.gcda" | xargs gcov -b -c -r -m # Run gcov (not gcovr) on all the *.gcda files
+find -name "*.gcda" | xargs gcov -b -c -r -o . # Run gcov (not gcovr) on all the *.gcda files
 cp $(ls -1 *.gcov) "${reports_dir}"
 
 echo "#----------------------------------------------------------------------"
