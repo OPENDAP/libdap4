@@ -216,6 +216,6 @@ string Error::get_error_message() const {
 }
 
 /** Set the error message. */
-void Error::set_error_message(string msg) { _error_message = std::move(msg); }
+void Error::set_error_message(const string &msg) { _error_message = msg; }
 
 } // namespace libdap

@@ -19,7 +19,7 @@
 //
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
@@ -27,7 +27,7 @@
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
 // Authors:
-//      jhrg,jimg       James Gallagher <jgallagher@gso.uri.edu>
+//      jhrg,jimg James Gallagher <jgallagher@gso.uri.edu>
 
 // Interface for the Error class
 //
@@ -40,7 +40,7 @@
 #include <iostream>
 #include <string>
 
-#include <cstdio> // For FILE *
+// #include <cstdio> // For FILE *
 #include <utility>
 
 using std::cout;
@@ -81,10 +81,10 @@ typedef int ErrorCode; // using standard errno+netCDF error codes from server
     This class is used on both clients and servers. The \e print() and \e
     parse() methods are used to send the object back and forth.
 
-    @note A past version of this class supported the notion of an error
-    correcting program (Tcl, Java, ...) that could be sent from the server to
+    @note A past version of this class supported the notion of an error-correcting
+    program (Tcl, Java, ...) that could be sent from the server to
     the client to help users correct the error and resubmit the request. This
-    never worked well in practice and that feature of the class is deprecated.
+    never worked well in practice, and that feature of the class is deprecated.
 
     @brief A class for error processing.
     @author jhrg */
@@ -101,8 +101,8 @@ public:
     Error() : exception(), _error_code(undefined_error) {}
 
     /** Create an instance with a specific code and message string. This ctor
-     * provides a way to to use any code and string you'd like. The code can be
-     * one of the standard codes or it may be specific to your server. Thus a
+     * provides a way to use any code and string you'd like. The code can be
+     * one of the standard codes, or it may be specific to your server. Thus, a
      * client which can tell it's dealing with a specific type of server can use
      * the code accordingly. In general, clients simply show the error message
      * to users or write it to a log file.
@@ -141,7 +141,7 @@ public:
     ErrorCode get_error_code() const;
     std::string get_error_message() const;
     void set_error_code(ErrorCode ec = undefined_error);
-    void set_error_message(std::string msg = "");
+    void set_error_message(const std::string &msg = "");
 
     std::string get_file() const { return d_file; }
     void set_file(std::string f) { d_file = std::move(f); }
