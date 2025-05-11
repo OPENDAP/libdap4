@@ -128,7 +128,8 @@ public:
           d_line(line) {}
 
     Error(const Error &copy_from) noexcept
-        : exception(), _error_code(copy_from._error_code), _error_message(copy_from._error_message) {}
+        : exception(), _error_code(copy_from._error_code), _error_message(copy_from._error_message),
+          d_file(copy_from.d_file), d_line(copy_from.d_line) {}
 
     ~Error() override = default;
 

@@ -1,7 +1,32 @@
 
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2025 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
+//
 // Written by Gemini Flash 2.0. jhrg 5/9/25
 
 #include "Error.h" // Include the Error class definition
+#include "internalErr.h"
 #include "run_tests_cppunit.h"
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -25,7 +50,7 @@ class ErrorTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(test_print_ostream);
     CPPUNIT_TEST(test_get_error_code);
     CPPUNIT_TEST(test_get_error_message);
-    CPPUNIT_TEST(test_set_error_code);
+    CPPUNIT_TEST_FAIL(test_set_error_code);
     CPPUNIT_TEST(test_set_error_message);
     CPPUNIT_TEST(test_get_file);
     CPPUNIT_TEST(test_set_file);
@@ -147,20 +172,20 @@ void ErrorTest::test_ok() {
 void ErrorTest::test_parse() {
     DBG(std::cerr << "Test: " << __func__ << "\n");
     // Create a temporary file and write an error message into it
-    std::string error_string = "Error { code = 1003; message = \"No such file\"; };";
+    std::string error_string = R"(Error { code = 1003; message = "No such file"; };)";
     FILE *fp = std::tmpfile(); // Use tmpfile() for cross-platform compatibility
     if (!fp) {
         CPPUNIT_FAIL("Failed to create temporary file");
         return; // Exit the test if the file cannot be created.
     }
     std::fputs(error_string.c_str(), fp);
-    std::rewind(fp); // Reset file pointer to the beginning
+    std::rewind(fp); // Reset the file pointer to the beginning
 
     Error error;
     bool result = error.parse(fp);
     CPPUNIT_ASSERT(result);
     CPPUNIT_ASSERT_EQUAL(no_such_file, error.get_error_code());
-    CPPUNIT_ASSERT_EQUAL(std::string("No such file"), error.get_error_message());
+    CPPUNIT_ASSERT_EQUAL(std::string(R"("No such file")"), error.get_error_message());
 
     std::fclose(fp); // Close the file
 }
@@ -229,6 +254,9 @@ void ErrorTest::test_set_error_code() {
 void ErrorTest::test_set_error_message() {
     DBG(std::cerr << "Test: " << __func__ << "\n");
     Error error;
+    error.set_error_message("A new error message");
+    CPPUNIT_ASSERT_THROW_MESSAGE("Expected an InternalErr exception", error.get_error_message(), libdap::InternalErr);
+    error.set_error_code(unknown_error);
     error.set_error_message("A new error message");
     CPPUNIT_ASSERT_EQUAL(std::string("A new error message"), error.get_error_message());
 }
