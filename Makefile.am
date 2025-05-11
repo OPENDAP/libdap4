@@ -95,7 +95,8 @@ dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
 CLEANFILES = *.log *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) \
-	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1
+	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1 \
+	GNU/*.gcda GNU/*.gcno
 
 DISTCLEAN = libdap.spec
 
