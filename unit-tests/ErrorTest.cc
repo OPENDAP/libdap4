@@ -26,7 +26,7 @@
 // Written by Gemini Flash 2.0. jhrg 5/9/25
 
 #include "Error.h" // Include the Error class definition
-#include "internalErr.h"
+#include "InternalErr.h"
 #include "run_tests_cppunit.h"
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
