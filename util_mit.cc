@@ -28,13 +28,13 @@
 
 #include "config.h"
 
+#include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <ctype.h>
 
 #ifndef TM_IN_SYS_TIME
-#include <time.h>
+#include <ctime>
 #else
 #include <sys/time.h>
 #endif
@@ -74,25 +74,6 @@ static const char *wkdays[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}
 #ifndef TOLOWER
 #define TOLOWER(c) tolower((int)(c))
 #define TOUPPER(c) toupper((int)(c))
-#endif
-
-#if 0
-static int
-strncasecomp(const char *a, const char *b, int n)
-{
-    const char *p = a;
-    const char *q = b;
-
-    for (p = a, q = b;; p++, q++) {
-        int diff;
-        if (p == a + n) return 0; /*   Match up to n characters */
-        if (!(*p && *q)) return *p - *q;
-        diff = TOLOWER(*p) - TOLOWER(*q);
-        if (diff) return diff;
-    }
-    /*NOTREACHED*/
-    return -1; // silence gcc
-}
 #endif
 
 static int make_month(char *s, char **ends) {
@@ -142,20 +123,18 @@ static time_t offset_from_utc() {
     an error is detected.
     */
 time_t parse_time(const char *str, bool expand) {
-    char *s;
-    struct tm tm {};
-    time_t t;
-
     if (!str)
         return 0;
 
+    struct tm tm {};
+    char *s;
     if ((s = (char *)strchr(str, ','))) { /* Thursday, 10-Jun-93 01:29:59 GMT */
-        s++;                              /* or: Thu, 10 Jan 1993 01:29:59 GMT */
+        s++;                              /* or: Sun, 10 Jan 1993 01:29:59 GMT */
         while (*s && *s == ' ')
             s++;
         if (strchr(s, '-')) { /* First format */
             DBG(cerr << "Format...... Weekday, 00-Mon-00 00:00:00 GMT" << endl);
-            if ((int)strnlen(s, MAX_TIME_STR_LEN) < 18) {
+            if (strnlen(s, MAX_TIME_STR_LEN) < 18) {
                 DBG(cerr << "ERROR....... Not a valid time format \"" << s << "\"" << endl);
                 return 0;
             }
@@ -189,7 +168,7 @@ time_t parse_time(const char *str, bool expand) {
             s = (char *)str;
             while (*s && *s == ' ')
                 s++;
-            if ((int)strnlen(s, MAX_TIME_STR_LEN) < 21) {
+            if (strnlen(s, MAX_TIME_STR_LEN) < 21) {
                 DBG(cerr << "ERROR....... Not a valid time format \"" << s << "\"" << endl);
                 return 0;
             }
@@ -206,10 +185,10 @@ time_t parse_time(const char *str, bool expand) {
             ++s;
             tm.tm_sec = strtol(s, &s, 10);
         } else { /* delta seconds */
-            t = expand ? time(NULL) + atol(str) : atol(str);
+            time_t t = expand ? time(nullptr) + atol(str) : atol(str);
             return t;
         }
-    } else { /* Try the other format:  Wed Jun  9 01:29:59 1993 GMT */
+    } else { /* Try the other format: Wed Jun 9 01:29:59 1993 GMT */
         DBG(cerr << "Format...... Wkd Mon 00 00:00:00 0000 GMT" << endl);
         s = (char *)str;
         while (*s && *s == ' ')
@@ -314,7 +293,7 @@ string date_time_str(time_t *calendar, bool local) {
 #endif // defined(_REENTRANT) || defined(SOLARIS)
     }
 #endif
-    return string(buf);
+    return {buf};
 }
 
 } // namespace libdap

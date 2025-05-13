@@ -90,7 +90,9 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	RCReaderTest SequenceTest SignalHandlerTest  MarshallerTest \
 	ServerFunctionsListUnitTest Int8Test Int16Test UInt16Test \
 	Int32Test UInt32Test Int64Test UInt64Test Float32Test Float64Test \
-	D4BaseTypeFactoryTest BaseTypeFactoryTest util_mitTest
+	D4BaseTypeFactoryTest BaseTypeFactoryTest util_mitTest ErrorTest
+
+# ErrorAssignmentTest
 
 # Moved to http+dap/unit-tests HTTPConnectTest HTTPCacheTest
 
@@ -139,6 +141,9 @@ RegexTest_SOURCES = RegexTest.cc
 
 util_mitTest_SOURCES = util_mitTest.cc
 util_mitTest_LDADD = ../libdap.la ../libdapclient.la $(AM_LDADD)
+
+ErrorTest_SOURCES = ErrorTest.cc
+ErrorTest_LDADD = ../libdap.la $(AM_LDADD)
 
 ArrayTest_SOURCES = ArrayTest.cc
 
