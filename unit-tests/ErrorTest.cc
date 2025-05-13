@@ -1,4 +1,3 @@
-
 // -*- mode: c++; c-basic-offset:4 -*-
 
 // This file is part of libdap, A C++ implementation of the OPeNDAP Data
@@ -44,8 +43,10 @@ class ErrorTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(test_constructor_message);
     CPPUNIT_TEST(test_copy_constructor);
     CPPUNIT_TEST(test_assignment_operator);
+    CPPUNIT_TEST(test_assignment_self);
     CPPUNIT_TEST(test_ok);
     CPPUNIT_TEST(test_parse);
+    CPPUNIT_TEST(test_parse_null_file); // Added test for null file pointer
     CPPUNIT_TEST(test_print_file);
     CPPUNIT_TEST(test_print_ostream);
     CPPUNIT_TEST(test_get_error_code);
@@ -68,8 +69,10 @@ public:
     void test_constructor_message();
     void test_copy_constructor();
     void test_assignment_operator();
+    void test_assignment_self();
     void test_ok();
     void test_parse();
+    void test_parse_null_file(); // Added test declaration
     void test_print_file();
     void test_print_ostream();
     void test_get_error_code();
@@ -157,6 +160,22 @@ void ErrorTest::test_assignment_operator() {
     CPPUNIT_ASSERT(error1.OK());
 }
 
+void ErrorTest::test_assignment_self() {
+    DBG(std::cerr << "Test: " << __func__ << "\n");
+    ErrorCode code = no_such_variable;
+    std::string message = "No such variable exists";
+    std::string file = "self_assign_file.cpp";
+    int line = 2345;
+    Error error(code, message, file, line);
+
+    error = error; // Self-assignment
+    CPPUNIT_ASSERT_EQUAL(code, error.get_error_code());
+    CPPUNIT_ASSERT_EQUAL(message, error.get_error_message());
+    CPPUNIT_ASSERT_EQUAL(file, error.get_file());
+    CPPUNIT_ASSERT_EQUAL(line, error.get_line());
+    CPPUNIT_ASSERT(error.OK());
+}
+
 void ErrorTest::test_ok() {
     DBG(std::cerr << "Test: " << __func__ << "\n");
     Error error1;
@@ -188,6 +207,12 @@ void ErrorTest::test_parse() {
     CPPUNIT_ASSERT_EQUAL(std::string(R"("No such file")"), error.get_error_message());
 
     std::fclose(fp); // Close the file
+}
+
+void ErrorTest::test_parse_null_file() {
+    DBG(std::cerr << "Test: " << __func__ << "\n");
+    Error error;
+    CPPUNIT_ASSERT_THROW(error.parse(nullptr), InternalErr);
 }
 
 void ErrorTest::test_print_file() {
