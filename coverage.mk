@@ -8,22 +8,11 @@ if ENABLE_COVERAGE
 AM_CXXFLAGS += --coverage -g -O0
 AM_LDFLAGS += --coverage -g -O0
 
-# gcov options for gcc/++
-# -i (write .gcov files), -f (function summaries), -r (relative paths
-# only - i.e., elide system functions), -m (demangle names)
-#
-# for the llvm compiler, gcov is called without any options
+# This target is for a local build that writes HTML pages.
+# The travis build scan job writes am XML file that sonarqube
+# can read. jhrg 5/18/25
 
-# GCOV_FLAGS is set by configure based on the kind of compiler
-
-# Removed: $(GCOV_FLAGS) .libs/*.o
-# @if test -n "$(coverage_subdirs)"; then \
-# 	for d in $(coverage_subdirs); do \
-# 		(cd $$d && $(MAKE) $(MFLAGS) coverage); \
-# 	done; \
-# fi
-
-# coverage: 
-#	-gcovr -r . $(GCOVR_FLAGS) > gcovr_report.txt
+coverage:
+	gcovr --config gcovr.config --html --html-details --output gcovr-output/
 
 endif
