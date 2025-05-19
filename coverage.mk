@@ -11,6 +11,6 @@ AM_LDFLAGS += --coverage -g -O0
 # can read. jhrg 5/18/25
 # .PHONY: coverage
 coverage:
-	gcovr --config gcovr.config --html --html-details --output gcovr-output/
+	gcovr --config gcovr.config --html --html-details --output gcovr-output/ --sort uncovered-percent
 
 endif
