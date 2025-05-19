@@ -56,7 +56,7 @@ addons:
 env:
   global:
   # NB: This value of $prefix must be shared between the hyrax-deps, libdap and bes builds.
-  # Three env vars below simulate running 'source spath.sh' in the 'hyrax' repo main directory.
+  # The three env vars below simulate running 'source spath.sh' in the 'hyrax' repo main directory.
   # $HOME is /home/travis
   - prefix=$HOME/install
   - PATH=$prefix/bin:$PATH
