@@ -101,8 +101,8 @@ CLEANFILES = *.log *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) \
 DISTCLEAN = libdap.spec
 
 clean-local:
-    -rm -rf gcov-data
-    -rm -rf gcovr-output
+	-rm -rf gcov-data
+	-rm -rf gcovr-output
 
 HTML_DOCS=html
 DOXYGEN_CONF=doxy.conf
