@@ -166,7 +166,7 @@ std::streambuf::int_type chunked_outbuf::err_chunk(const std::string &m) {
     // network byte order for the header
     header = htonl(header);
 
-    // Write out the CHUNK_END header with the byte count.
+    // Write out the CHUNK_ERR header with the byte count.
     // This should be called infrequently, so it's probably not worth
     // optimizing away chunk_header
     d_os.write((const char *)&header, sizeof(uint32_t));

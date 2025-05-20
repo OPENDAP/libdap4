@@ -155,7 +155,7 @@ public:
      * @brief Send an error message down the stream.
      * When called, this method dumps all the data currently in the buffer and
      * sends the error message text instead, using a chunk type of CHUNK_ERR. The
-     * write buffer is maintained, however, so the stream ibject can still be used.
+     * write buffer is maintained, so the stream object can still be used.
      * @param msg The error message text
      * @return The number of bytes 'dumped' from the write buffer.
      */

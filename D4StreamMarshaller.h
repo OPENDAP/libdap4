@@ -65,7 +65,7 @@ class MarshallerThread;
  * computing the checksum only.
  *
  * @note This class uses the Marshaller interface; it could be rewritten
- * to use far fewer methods since all of the put_*() methods take different
+ * to use far fewer methods since all the put_*() methods take different
  * types.
  */
 class D4StreamMarshaller : public Marshaller {
@@ -83,18 +83,17 @@ private:
 
     MarshallerThread *tm;
 
-    // These are private so they won't ever get used.
-    D4StreamMarshaller();
-    D4StreamMarshaller(const D4StreamMarshaller &);
-    D4StreamMarshaller &operator=(const D4StreamMarshaller &);
-
 #if USE_XDR_FOR_IEEE754_ENCODING
     void m_serialize_reals(char *val, int64_t num, int width, Type type);
 #endif
 
 public:
-    D4StreamMarshaller(std::ostream &out, bool write_data = true);
-    virtual ~D4StreamMarshaller();
+    explicit D4StreamMarshaller(std::ostream &out, bool write_data = true);
+    D4StreamMarshaller() = delete;
+    D4StreamMarshaller(const D4StreamMarshaller &) = delete;
+    D4StreamMarshaller &operator=(const D4StreamMarshaller &) = delete;
+
+    ~D4StreamMarshaller() override;
 
     virtual void reset_checksum();
     virtual string get_checksum();
@@ -126,7 +125,7 @@ public:
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4; use put_opaque_dap4() instead.");
     }
 
-    virtual void put_opaque_dap4(const char *val, int64_t len);
+    virtual void put_opaque_dap4(const char *val, int64_t num_bytes);
 
     // Never use put_int() to send length information in DAP4.
     virtual void put_int(int) { throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_length_prefix."); }

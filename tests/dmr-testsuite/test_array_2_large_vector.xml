@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- First in a series of very simple tests. jhrg 7/10/12 -->
+
+<Dataset name="test_array_2" dapVersion="4.0" dmrVersion="1.0" xml:base="file:dap4/test_array_2_large.xml"
+  xmlns="http://xml.opendap.org/ns/DAP/4.0#"
+  xmlns:dap="http://xml.opendap.org/ns/DAP/4.0#">
+
+  <dap:Int8 name="large_vector_2_30">
+    <Dim size="1073741824"/>
+    <!-- 1'073'741'824 == 2^30 == 0x3f'ff'ff'ff -->
+  </dap:Int8>
+
+  <dap:Int8 name="large_vector_2_31_1">
+    <Dim size="2147483647"/>
+    <!-- 2'147'483'647 == (2^31)-1 == 0x4f'ff'ff'fe -->
+  </dap:Int8>
+
+  <dap:Int8 name="large_vector_2_31">
+    <Dim size="2147483648"/>
+    <!-- 2'147'483'648 == (2^31) == 0x4f'ff'ff'ff -->
+  </dap:Int8>
+
+  <dap:Int8 name="large_vector_2_32">
+    <Dim size="4294967296"/>
+    <!-- 4'294'967'296 == (2^32) == 0xff'ff'ff'ff -->
+  </dap:Int8>
+
+  <dap:Int8 name="large_vector_2_33">
+    <Dim size="8589934592"/>
+    <!-- 8'589'934'592 == (2^33) == 0x00'00'00'01'ff'ff'ff'ff -->
+  </dap:Int8>
+
+</Dataset>
