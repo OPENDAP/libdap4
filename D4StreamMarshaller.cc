@@ -35,8 +35,6 @@
 #include <limits>
 #include <sstream>
 
-// #define DODS_DEBUG 1
-
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
 #endif
@@ -53,6 +51,7 @@
 
 #include "DapIndent.h"
 #include "debug.h"
+#include "util.h"
 
 using namespace std;
 
@@ -410,34 +409,6 @@ void D4StreamMarshaller::put_str(const string &val) {
 
 void D4StreamMarshaller::put_url(const string &val) { put_str(val); }
 
-/**
- * @brief Ensure that no more than (2^31)-1 bytes are ever written by ostream::write()
- * @param out The ostream& where the bytes are to be written
- * @param val The bytes to write
- * @param num_bytes The total number of bytes to write
- */
-void segmented_write(ostream &out, const char *val, int64_t num_bytes) {
-    // The maximum number of bytes that can be safely written in a single call
-    // to ostream::write() is typically limited by std::streamsize, which is
-    // often a signed 32-bit integer (2^31) - 1.
-    constexpr int64_t MAX_SEGMENT_SIZE = (static_cast<int64_t>(1) << 31) - 1;
-
-    int64_t bytes_remaining = num_bytes;
-    const char *current_ptr = val; // Use a mutable pointer to advance through the buffer
-
-    while (bytes_remaining > 0) {
-        // Determine the size of the current chunk to write
-        const auto current_chunk_size = static_cast<std::streamsize>(std::min(bytes_remaining, MAX_SEGMENT_SIZE));
-
-        // Call ostream::write() with the current segment
-        out.write(current_ptr, current_chunk_size);
-
-        current_ptr += current_chunk_size;
-
-        bytes_remaining -= current_chunk_size;
-    }
-}
-
 void D4StreamMarshaller::put_opaque_dap4(const char *val, int64_t num_bytes) {
     assert(val);
     assert(num_bytes >= 0);
@@ -500,32 +471,32 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size) 
     assert(num_elem >= 0);
     assert(elem_size > 0);
 
-    int64_t bytes;
+    int64_t num_bytes;
 
     switch (elem_size) {
     case 1:
         assert(!"Don't call this method for bytes, use put_vector(val, bytes) instead");
-        bytes = num_elem;
+        num_bytes = num_elem;
         break;
     case 2:
         // Don't bother testing the sign bit
         assert(!(num_elem & 0x4000000000000000)); // 0x 40 00 --> 0100 0000
-        bytes = num_elem << 1;
+        num_bytes = num_elem << 1;
         break;
     case 4:
         assert(!(num_elem & 0x6000000000000000)); // 0x 60 00 --> 0110 0000
-        bytes = num_elem << 2;
+        num_bytes = num_elem << 2;
         break;
     case 8:
         assert(!(num_elem & 0x7000000000000000)); // 0111 0000
-        bytes = num_elem << 3;
+        num_bytes = num_elem << 3;
         break;
     default:
-        bytes = num_elem * elem_size;
+        num_bytes = num_elem * elem_size;
         break;
     }
 
-    checksum_update(val, bytes);
+    checksum_update(val, num_bytes);
 
     if (d_write_data) {
 #ifdef USE_POSIX_THREADS
@@ -540,8 +511,7 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size) 
 #if 0
         d_out.write(val, bytes);
 #endif
-        segmented_write(d_out, val, bytes);
-
+        segmented_write(d_out, val, num_bytes);
 #endif
     }
 }
@@ -567,9 +537,9 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem) {
     // to test that num can be multiplied by 4. A
     assert(!(num_elem & 0xe000000000000000));
 
-    num_elem = num_elem << 2; // num_elem is now the number of bytes
+    auto num_bytes = num_elem << 2; // num_elem is now the number of bytes
 
-    checksum_update(val, num_elem);
+    checksum_update(val, num_bytes);
 
     if (d_write_data) {
 #ifdef USE_POSIX_THREADS
@@ -584,7 +554,7 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem) {
 #if 0
         d_out.write(val, num_elem);
 #endif
-        segmented_write(d_out, val, num_elem);
+        segmented_write(d_out, val, num_bytes);
 #endif
     }
 
@@ -639,9 +609,9 @@ void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem) {
     // See comment above
     assert(!(num_elem & 0xf000000000000000));
 
-    num_elem = num_elem << 3; // num_elem is now the number of bytes
+    auto num_bytes = num_elem << 3; // num_elem is now the number of bytes
 
-    checksum_update(val, num_elem);
+    checksum_update(val, num_bytes);
 
     if (d_write_data) {
 #ifdef USE_POSIX_THREADS
@@ -656,7 +626,7 @@ void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem) {
 #if 0
         d_out.write(val, num_elem);
 #endif
-        segmented_write(d_out, val, num_elem);
+        segmented_write(d_out, val, num_bytes);
 #endif
     }
 #else
