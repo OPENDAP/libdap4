@@ -49,7 +49,7 @@ namespace libdap {
 std::streambuf::int_type chunked_outbuf::data_chunk() {
     DBG(cerr << "In chunked_outbuf::data_chunk" << endl);
 
-    const std::streambuf::int_type num = pptr() - pbase(); // num needs to be signed for the call to pbump
+    const auto num = static_cast<int_type>(pptr() - pbase()); // num needs to be signed for the call to pbump
 
     // Since this is called by sync() (e.g., flush()), return 0 and do nothing
     // when there's no data to send.
@@ -103,7 +103,7 @@ std::streambuf::int_type chunked_outbuf::data_chunk() {
 std::streambuf::int_type chunked_outbuf::end_chunk() {
     DBG(cerr << "In chunked_outbuf::end_chunk" << endl);
 
-    const std::streambuf::int_type num = pptr() - pbase(); // num needs to be signed for the call to pbump
+    const auto num = static_cast<int_type>(pptr() - pbase());
 
     // write out the chunk headers: CHUNKTYPE and CHUNKSIZE
     // as a 32-bit unsigned int. Here I assume that num is never
@@ -146,9 +146,7 @@ std::streambuf::int_type chunked_outbuf::err_chunk(const std::string &m) {
     DBG(cerr << "In chunked_outbuf::err_chunk" << endl);
     std::string msg = m;
 
-    // Figure out how many chars are in the buffer - these will be
-    // ignored.
-    const std::streambuf::int_type num = pptr() - pbase(); // num needs to be signed for the call to pbump
+    const auto num = static_cast<int_type>(pptr() - pbase());
 
     // Write out the chunk headers: CHUNKTYPE and CHUNKSIZE
     // as a 32-bit unsigned int. We assume that num is never
@@ -245,8 +243,7 @@ std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
     // more chunks until there's less than a complete chunk left in 's'. Put
     // the bytes remaining in 's' in the buffer. Return the number of bytes sent
     // or 0 if an error is encountered.
-
-    const std::streambuf::int_type bytes_in_buffer = pptr() - pbase(); // num needs to be signed for the call to pbump
+    const auto bytes_in_buffer = static_cast<int_type>(pptr() - pbase());
 
     // Will num bytes fit in the buffer? The location of epptr() is one back from
     // the actual end of the buffer, so the next char written will trigger a write
