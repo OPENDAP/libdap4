@@ -79,7 +79,9 @@ std::streambuf::int_type chunked_outbuf::data_chunk() {
     d_os.write(reinterpret_cast<const char *>(&header), sizeof(int32_t));
 
     d_os.write(d_buffer, num);
-    if (d_os.eof() || d_os.bad())
+    if (d_os.bad())
+        throw InternalErr(__FILE__, __LINE__, "chunked_outbuf::data_chunk");
+    if (d_os.eof())
         return traits_type::eof();
 
     pbump(-num);
@@ -121,7 +123,9 @@ std::streambuf::int_type chunked_outbuf::end_chunk() {
     d_os.write(reinterpret_cast<const char *>(&header), sizeof(uint32_t));
 
     d_os.write(d_buffer, num);
-    if (d_os.eof() || d_os.bad())
+    if (d_os.bad())
+        throw InternalErr(__FILE__, __LINE__, "chunked_outbuf::end_chunk");
+    if (d_os.eof())
         return traits_type::eof();
 
     pbump(-num);
@@ -165,7 +169,9 @@ std::streambuf::int_type chunked_outbuf::err_chunk(const std::string &m) {
 
     // Should bad() throw an error?
     d_os.write(msg.data(), msg.length());
-    if (d_os.eof() || d_os.bad())
+    if (d_os.bad())
+        throw InternalErr(__FILE__, __LINE__, "chunked_outbuf::err_chunk");
+    if (d_os.eof())
         return traits_type::eof();
 
     // Reset the buffer pointer, effectively ignoring what's in there now
@@ -199,8 +205,7 @@ std::streambuf::int_type chunked_outbuf::overflow(int c) {
     }
     // flush the buffer
     if (data_chunk() == traits_type::eof()) {
-        // Error
-        return traits_type::eof();
+        return traits_type::eof(); // Return EOF on error
     }
 
     return traits_type::not_eof(c);
@@ -269,13 +274,18 @@ std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
     setp(d_buffer, d_buffer + (d_buf_size - 1));
 
     d_os.write(d_buffer, bytes_in_buffer);
-    if (d_os.eof() || d_os.bad())
+    if (d_os.bad())
+        throw InternalErr(__FILE__, __LINE__, "chunked_outbuf::xsputn");
+    if (d_os.eof() /*|| d_os.bad()*/)
         return traits_type::not_eof(0);
 
     int bytes_to_fill_out_buffer = d_buf_size - bytes_in_buffer;
     d_os.write(s, bytes_to_fill_out_buffer);
-    if (d_os.eof() || d_os.bad())
+    if (d_os.bad())
+        throw InternalErr(__FILE__, __LINE__, "chunked_outbuf::xsputn");
+    if (d_os.eof() /*|| d_os.bad()*/)
         return traits_type::not_eof(0);
+
     s += bytes_to_fill_out_buffer;
     int bytes_still_to_send = num - bytes_to_fill_out_buffer;
 
@@ -285,8 +295,11 @@ std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
         // This is the header for a chunk of d_buf_size bytes; the size was set above
         d_os.write(reinterpret_cast<const char *>(&header), sizeof(int32_t));
         d_os.write(s, d_buf_size);
-        if (d_os.eof() || d_os.bad())
+        if (d_os.bad())
+            throw InternalErr(__FILE__, __LINE__, "chunked_outbuf::xsputn");
+        if (d_os.eof() /*|| d_os.bad()*/)
             return traits_type::not_eof(0);
+
         s += d_buf_size;
         bytes_still_to_send -= d_buf_size;
     }
