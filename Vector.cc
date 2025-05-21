@@ -217,22 +217,32 @@ void Vector::m_delete_cardinal_data_buffer() {
     d_capacity_ll = 0;
 }
 
-/** Helper to reduce cut and paste in the virtual's.
+const auto ERR_NEGATIVE_ELEMENTS = "Logic error: Vector::set_cardinal_values_internal() called with negative size!";
+const auto ERR_NULL_ARRAY = "Logic error: Vector::set_cardinal_values_internal() called with null source!";
+
+/*
  *
  */
-template <class CardType> void Vector::m_set_cardinal_values_internal(const CardType *fromArray, int64_t numElts) {
-    if (numElts < 0) {
-        throw InternalErr(__FILE__, __LINE__,
-                          "Logic error: Vector::set_cardinal_values_internal() called with negative numElts!");
+/**
+ * @brief Helper to reduce cut and paste in the virtual's.
+ * @tparam CardType
+ * @param src Source data array
+ * @param elements Number of elements in the source array
+ */
+template <class CardType> void Vector::m_set_cardinal_values_internal(const CardType *src, int64_t elements) {
+    if (elements < 0) {
+        throw InternalErr(__FILE__, __LINE__, ERR_NEGATIVE_ELEMENTS);
+        // "Logic error: Vector::set_cardinal_values_internal() called with negative size!");
     }
-    if (!fromArray) {
-        throw InternalErr(__FILE__, __LINE__,
-                          "Logic error: Vector::set_cardinal_values_internal() called with null fromArray!");
+    if (!src) {
+        throw InternalErr(__FILE__, __LINE__, ERR_NULL_ARRAY);
+        //"Logic error: Vector::set_cardinal_values_internal() called with null source!");
     }
-    set_length_ll(numElts);
-    m_create_cardinal_data_buffer_for_type(numElts);
+
+    set_length_ll(elements);
+    m_create_cardinal_data_buffer_for_type(elements);
     if (d_buf)
-        memcpy(d_buf, fromArray, numElts * sizeof(CardType));
+        memcpy(d_buf, src, elements * sizeof(CardType));
     set_read_p(true);
 }
 
