@@ -94,7 +94,7 @@ private:
  */
 class MarshallerThread {
 private:
-    pthread_t d_thread = nullptr;
+    pthread_t d_thread;
     pthread_attr_t d_thread_attr;
 
     pthread_mutex_t d_out_mutex;
