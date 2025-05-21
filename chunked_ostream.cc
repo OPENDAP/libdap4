@@ -29,14 +29,12 @@
 
 #include <arpa/inet.h>
 
-#include <stdint.h>
+// #include <cstdint>
 
 #include <streambuf>
 #include <string>
 
 #include <cstring>
-
-// #define DODS_DEBUG
 
 #include "chunked_ostream.h"
 #include "chunked_stream.h"
@@ -60,14 +58,14 @@ std::streambuf::int_type chunked_outbuf::data_chunk() {
     if (num == 0)
         return 0;
 
-    // here, write out the chunk headers: CHUNKTYPE and CHUNKSIZE
+    // Here, write out the chunk headers: CHUNKTYPE and CHUNKSIZE
     // as a 32-bit unsigned int. Here I assume that num is never
     // more than 2^24 because that was tested in the constructor
 
     // Trick: This method always writes CHUNK_DATA type chunks so
     // the chunk type is always 0x00, and given that num never has
-    // anything bigger than 24-bits, the high order byte is always
-    // 0x00. Of course bit-wise OR with 0x00 isn't going to do
+    // anything bigger than 24-bits, the high-order byte is always
+    // 0x00. Of course, bit-wise OR with 0x00 isn't going to do
     // much anyway... Here's the general idea all the same:
     //
     // unsigned int chunk_header = (unsigned int)num | CHUNK_type;
@@ -83,7 +81,7 @@ std::streambuf::int_type chunked_outbuf::data_chunk() {
     d_os.write((const char *)&header, sizeof(int32_t));
 
     // Should bad() throw an error?
-    // Are these functions fast or would the bits be faster?
+    // Are these functions fast, or would the bits be faster?
     d_os.write(d_buffer, num);
     if (d_os.eof() || d_os.bad())
         return traits_type::eof();
@@ -151,10 +149,10 @@ std::streambuf::int_type chunked_outbuf::err_chunk(const std::string &m) {
     // ignored.
     int32_t num = pptr() - pbase(); // num needs to be signed for the call to pbump
 
-    // write out the chunk headers: CHUNKTYPE and CHUNKSIZE
-    // as a 32-bit unsigned int. Here I assume that num is never
+    // Write out the chunk headers: CHUNKTYPE and CHUNKSIZE
+    // as a 32-bit unsigned int. We assume that num is never
     // more than 2^24 because that was tested in the constructor
-    if (msg.length() > 0x00FFFFFF)
+    if (msg.length() > 0x00'FF'FF'FF)
         msg = "Error message too long";
 
     uint32_t header = (uint32_t)msg.length() | CHUNK_ERR;
@@ -172,7 +170,6 @@ std::streambuf::int_type chunked_outbuf::err_chunk(const std::string &m) {
     d_os.write((const char *)&header, sizeof(uint32_t));
 
     // Should bad() throw an error?
-    // Are these functions fast or would the bits be faster?
     d_os.write(msg.data(), msg.length());
     if (d_os.eof() || d_os.bad())
         return traits_type::eof();
@@ -239,12 +236,12 @@ std::streambuf::int_type chunked_outbuf::overflow(int c) {
 std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
     DBG(cerr << "In chunked_outbuf::xsputn: num: " << num << endl);
 
-    // if the current block of data will fit in the buffer, put it there.
+    // If the current block of data fits in the buffer, put it there.
     // else, there is at least a complete chunk between what's in the buffer
     // and what's in 's'; send a chunk header, the stuff in the buffer and
     // bytes from 's' to make a complete chunk. Then iterate over 's' sending
     // more chunks until there's less than a complete chunk left in 's'. Put
-    // the bytes remaining 's' in the buffer. Return the number of bytes sent
+    // the bytes remaining in 's' in the buffer. Return the number of bytes sent
     // or 0 if an error is encountered.
 
     int32_t bytes_in_buffer = pptr() - pbase(); // num needs to be signed for the call to pbump

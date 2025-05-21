@@ -22,7 +22,7 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 //
-// Portions of this code were taken verbatim from  Josuttis,
+// Portions of this code were taken verbatim from Josuttis,
 // "The C++ Standard Library," p.672
 
 #ifndef _chunkedostream_h
@@ -54,13 +54,13 @@ class chunked_outbuf : public std::streambuf {
     friend class chunked_ostream;
 
 protected:
-    std::ostream &d_os;      // Write stuff here
-    unsigned int d_buf_size; // Size of the data buffer
-    char *d_buffer;          // Data buffer
-    bool d_big_endian;
+    std::ostream &d_os;          // Write stuff here
+    unsigned int d_buf_size = 0; // Size of the data buffer
+    char *d_buffer = nullptr;    // Data buffer
+    bool d_big_endian = false;
 
 public:
-    chunked_outbuf(std::ostream &os, unsigned int buf_size) : d_os(os), d_buf_size(buf_size), d_buffer(0) {
+    chunked_outbuf(std::ostream &os, unsigned int buf_size) : d_os(os), d_buf_size(buf_size) {
         if (d_buf_size & CHUNK_TYPE_MASK)
             throw std::out_of_range(
                 "A chunked_outbuf (or chunked_ostream) was built using a buffer larger than 0x00ffffff");
@@ -73,7 +73,7 @@ public:
         setp(d_buffer, d_buffer + (buf_size - 1));
     }
 
-    virtual ~chunked_outbuf() {
+    ~chunked_outbuf() override {
         // call end_chunk() and not sync()
         end_chunk();
 
@@ -88,13 +88,13 @@ protected:
 
     int_type err_chunk(const std::string &msg);
 
-    virtual std::streamsize xsputn(const char *s, std::streamsize num);
+    std::streamsize xsputn(const char *s, std::streamsize num) override;
     // Manipulate the buffer pointers using pbump() after filling the buffer
     // and then call data_chunk(). Leave remainder in buffer. Or copy logic
     // for data_chunk() into loop in this code.
 
-    virtual int_type overflow(int c);
-    virtual int_type sync();
+    int_type overflow(int c) override;
+    int_type sync() override;
 };
 
 /**
