@@ -18,11 +18,11 @@
 //
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 //
-// Portions of this code were taken verbatim from  Josuttis,
+// Portions of this code were taken verbatim from Josuttis,
 // "The C++ Standard Library," p.672
 
 #include "config.h"
@@ -93,10 +93,11 @@ std::streambuf::int_type chunked_outbuf::data_chunk() {
  *
  * This is like calling flush_chunk(), but it sends a chunk header with a type of
  * CHUNK_END (instead of CHUNK_DATA). Whatever is in the buffer is written out, but
- * the stream is can be used to send more chunks.
+ * the stream can be used to send more chunks.
+ *
  * @note This is called by the chunked_outbuf destructor, so closing a stream using
- * chunked_outbuf always sends a CHUNK_END type chunk, even if it will have zero
- * bytes
+ * chunked_outbuf always sends a CHUNK_END type chunk, even if it has zero bytes.
+ *
  * @return EOF on error, otherwise the number of bytes sent in the chunk.
  */
 std::streambuf::int_type chunked_outbuf::end_chunk() {
@@ -134,9 +135,11 @@ std::streambuf::int_type chunked_outbuf::end_chunk() {
 
 /**
  * @brief Send an error chunk
+ *
  * While building up the next chunk, send an error chunk, ignoring the data currently
  * write buffer. The buffer is left in a consistent state.
- * @param msg The error message to include in the error chunk
+ *
+ * @param m The error message to include in the error chunk
  * @return The number of characters ignored.
  */
 std::streambuf::int_type chunked_outbuf::err_chunk(const std::string &m) {
