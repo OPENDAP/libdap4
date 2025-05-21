@@ -34,7 +34,6 @@
 #define A_Marshaller_h 1
 
 #include <string>
-#include <vector>
 
 #include "DapObj.h"
 #include "InternalErr.h"
@@ -95,7 +94,7 @@ public:
      */
     virtual void put_vector_end() { throw InternalErr(__FILE__, __LINE__, "Not Implemented yet"); } // = 0;
 
-    virtual void dump(std::ostream &strm) const = 0;
+    void dump(std::ostream &strm) const override = 0;
 };
 
 } // namespace libdap

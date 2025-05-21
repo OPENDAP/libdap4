@@ -29,8 +29,6 @@
 
 #include <arpa/inet.h>
 
-// #include <cstdint>
-
 #include <streambuf>
 #include <string>
 
@@ -51,7 +49,7 @@ namespace libdap {
 std::streambuf::int_type chunked_outbuf::data_chunk() {
     DBG(cerr << "In chunked_outbuf::data_chunk" << endl);
 
-    int32_t num = pptr() - pbase(); // num needs to be signed for the call to pbump
+    const std::streambuf::int_type num = pptr() - pbase(); // num needs to be signed for the call to pbump
 
     // Since this is called by sync() (e.g., flush()), return 0 and do nothing
     // when there's no data to send.
@@ -78,10 +76,8 @@ std::streambuf::int_type chunked_outbuf::data_chunk() {
     // network byte order for the header
     header = htonl(header);
 
-    d_os.write((const char *)&header, sizeof(int32_t));
+    d_os.write(reinterpret_cast<const char *>(&header), sizeof(int32_t));
 
-    // Should bad() throw an error?
-    // Are these functions fast, or would the bits be faster?
     d_os.write(d_buffer, num);
     if (d_os.eof() || d_os.bad())
         return traits_type::eof();
@@ -104,13 +100,13 @@ std::streambuf::int_type chunked_outbuf::data_chunk() {
 std::streambuf::int_type chunked_outbuf::end_chunk() {
     DBG(cerr << "In chunked_outbuf::end_chunk" << endl);
 
-    int32_t num = pptr() - pbase(); // num needs to be signed for the call to pbump
+    const std::streambuf::int_type num = pptr() - pbase(); // num needs to be signed for the call to pbump
 
     // write out the chunk headers: CHUNKTYPE and CHUNKSIZE
     // as a 32-bit unsigned int. Here I assume that num is never
     // more than 2^24 because that was tested in the constructor
 
-    uint32_t header = (uint32_t)num | CHUNK_END;
+    uint32_t header = num | CHUNK_END;
 
     // Add encoding of host's byte order. jhrg 11/24/13
     if (!d_big_endian)
@@ -122,10 +118,8 @@ std::streambuf::int_type chunked_outbuf::end_chunk() {
     // Write out the CHUNK_END header with the byte count.
     // This should be called infrequently, so it's probably not worth
     // optimizing away chunk_header
-    d_os.write((const char *)&header, sizeof(uint32_t));
+    d_os.write(reinterpret_cast<const char *>(&header), sizeof(uint32_t));
 
-    // Should bad() throw an error?
-    // Are these functions fast or would the bits be faster?
     d_os.write(d_buffer, num);
     if (d_os.eof() || d_os.bad())
         return traits_type::eof();
@@ -147,7 +141,7 @@ std::streambuf::int_type chunked_outbuf::err_chunk(const std::string &m) {
 
     // Figure out how many chars are in the buffer - these will be
     // ignored.
-    int32_t num = pptr() - pbase(); // num needs to be signed for the call to pbump
+    const std::streambuf::int_type num = pptr() - pbase(); // num needs to be signed for the call to pbump
 
     // Write out the chunk headers: CHUNKTYPE and CHUNKSIZE
     // as a 32-bit unsigned int. We assume that num is never
@@ -155,7 +149,7 @@ std::streambuf::int_type chunked_outbuf::err_chunk(const std::string &m) {
     if (msg.length() > 0x00'FF'FF'FF)
         msg = "Error message too long";
 
-    uint32_t header = (uint32_t)msg.length() | CHUNK_ERR;
+    uint32_t header = msg.length() | CHUNK_ERR;
 
     // Add encoding of host's byte order. jhrg 11/24/13
     if (!d_big_endian)
@@ -167,7 +161,7 @@ std::streambuf::int_type chunked_outbuf::err_chunk(const std::string &m) {
     // Write out the CHUNK_ERR header with the byte count.
     // This should be called infrequently, so it's probably not worth
     // optimizing away chunk_header
-    d_os.write((const char *)&header, sizeof(uint32_t));
+    d_os.write(reinterpret_cast<const char *>(&header), sizeof(uint32_t));
 
     // Should bad() throw an error?
     d_os.write(msg.data(), msg.length());
@@ -244,7 +238,7 @@ std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
     // the bytes remaining in 's' in the buffer. Return the number of bytes sent
     // or 0 if an error is encountered.
 
-    int32_t bytes_in_buffer = pptr() - pbase(); // num needs to be signed for the call to pbump
+    const std::streambuf::int_type bytes_in_buffer = pptr() - pbase(); // num needs to be signed for the call to pbump
 
     // Will num bytes fit in the buffer? The location of epptr() is one back from
     // the actual end of the buffer, so the next char written will trigger a write
@@ -267,7 +261,7 @@ std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
     // network byte order for the header
     header = htonl(header);
 
-    d_os.write((const char *)&header, sizeof(int32_t)); // Data chunk's CHUNK_TYPE is 0x00000000
+    d_os.write(reinterpret_cast<const char *>(&header), sizeof(int32_t)); // Data chunk's CHUNK_TYPE is 0x00000000
 
     // Reset the pptr() and epptr() now in case of an error exit. See the 'if'
     // at the end of this for the only code from here down that will modify the
@@ -283,13 +277,13 @@ std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
     if (d_os.eof() || d_os.bad())
         return traits_type::not_eof(0);
     s += bytes_to_fill_out_buffer;
-    uint32_t bytes_still_to_send = num - bytes_to_fill_out_buffer;
+    int bytes_still_to_send = num - bytes_to_fill_out_buffer;
 
     // Now send all the remaining data in s until the amount remaining doesn't
     // fill a complete chunk and buffer those data.
     while (bytes_still_to_send >= d_buf_size) {
-        // This is header for  a chunk of d_buf_size bytes; the size was set above
-        d_os.write((const char *)&header, sizeof(int32_t));
+        // This is the header for a chunk of d_buf_size bytes; the size was set above
+        d_os.write(reinterpret_cast<const char *>(&header), sizeof(int32_t));
         d_os.write(s, d_buf_size);
         if (d_os.eof() || d_os.bad())
             return traits_type::not_eof(0);
@@ -299,8 +293,7 @@ std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
 
     if (bytes_still_to_send > 0) {
         // if the code is here, one or more chunks have been sent, the
-        // buffer is empty and there are < d_buf_size bytes to send. Buffer
-        // them.
+        // buffer is empty, and there are < d_buf_size bytes to send. Buffer them.
         memcpy(d_buffer, s, bytes_still_to_send);
         pbump(bytes_still_to_send);
     }
@@ -319,8 +312,7 @@ std::streambuf::int_type chunked_outbuf::sync() {
     DBG(cerr << "In chunked_outbuf::sync" << endl);
 
     if (data_chunk() == traits_type::eof()) {
-        // Error
-        return traits_type::not_eof(-1);
+        return traits_type::not_eof(-1); // returning -1 signals an error
     }
     return traits_type::not_eof(0);
 }

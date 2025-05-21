@@ -26,7 +26,6 @@
 
 #include "config.h"
 
-#include <byteswap.h>
 #include <cassert>
 #include <cstring>
 
@@ -398,12 +397,12 @@ void D4StreamMarshaller::put_str(const string &val) {
     checksum_update(val.c_str(), val.length());
 
     if (d_write_data) {
-        int64_t len = val.length();
+        const auto len = static_cast<int64_t>(val.length());
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 #endif
         d_out.write(reinterpret_cast<const char *>(&len), sizeof(int64_t));
-        d_out.write(val.data(), val.length());
+        d_out.write(val.data(), static_cast<std::streamsize>(val.length()));
     }
 }
 
@@ -428,9 +427,6 @@ void D4StreamMarshaller::put_opaque_dap4(const char *val, int64_t num_bytes) {
         tm->start_thread(MarshallerThread::write_thread, d_out, byte_buf, len);
 #else
         d_out.write(reinterpret_cast<const char *>(&num_bytes), sizeof(int64_t));
-#if 0
-        d_out.write(val, num_bytes);
-#endif
         segmented_write(d_out, val, num_bytes);
 #endif
     }
@@ -458,9 +454,6 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_bytes) {
         tm->increment_child_thread_count();
         tm->start_thread(MarshallerThread::write_thread, d_out, buf, num_bytes);
 #else
-#if 0
-          d_out.write(val, num_bytes);
-#endif
         segmented_write(d_out, val, num_bytes);
 #endif
     }
@@ -476,7 +469,6 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size) 
     switch (elem_size) {
     case 1:
         assert(!"Don't call this method for bytes, use put_vector(val, bytes) instead");
-        num_bytes = num_elem;
         break;
     case 2:
         // Don't bother testing the sign bit
@@ -508,9 +500,6 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size) 
         tm->increment_child_thread_count();
         tm->start_thread(MarshallerThread::write_thread, d_out, buf, bytes);
 #else
-#if 0
-        d_out.write(val, bytes);
-#endif
         segmented_write(d_out, val, num_bytes);
 #endif
     }
@@ -521,9 +510,7 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size) 
  * @note This method and its companion for float64 exists in case we need to
  * support machine that do not use IEEE754 for their floating point representation.
  * @param val Pointer to the data
- * @param num Number of elements
- * @param width Size of a single element
- * @param type DAP variable type; used to handle float32 and float64 types correctly
+ * @param num_elem Number of elements
  */
 void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem) {
 #if !USE_XDR_FOR_IEEE754_ENCODING
@@ -551,9 +538,6 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem) {
         tm->increment_child_thread_count();
         tm->start_thread(MarshallerThread::write_thread, d_out, buf, num_elem);
 #else
-#if 0
-        d_out.write(val, num_elem);
-#endif
         segmented_write(d_out, val, num_bytes);
 #endif
     }
@@ -594,11 +578,8 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem) {
 
 /**
  * @brief Write a fixed size vector of float64s
- *
  * @param val Pointer to the data
- * @param num Number of elements
- * @param width Size of a single element
- * @param type DAP variable type; used to handle float32 and float64 types correctly
+ * @param num_elem Number of elements
  */
 void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem) {
 #if !USE_XDR_FOR_IEEE754_ENCODING
@@ -623,9 +604,6 @@ void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem) {
         tm->increment_child_thread_count();
         tm->start_thread(MarshallerThread::write_thread, d_out, buf, num_elem);
 #else
-#if 0
-        d_out.write(val, num_elem);
-#endif
         segmented_write(d_out, val, num_bytes);
 #endif
     }
@@ -663,9 +641,16 @@ void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem) {
 #endif
 }
 
+/**
+ * @brief Write one part of a vector's contents.
+ *
+ * @param val Pointer to the part's values
+ * @param num The number of values in this part
+ * @param width The number of bytes per value
+ * @param type The DAP2 data type for each value
+ */
 void D4StreamMarshaller::put_vector_part(char *val, unsigned int num, int width, Type type) {
     assert(val);
-    assert(num >= 0);
     assert(width > 0);
 
     switch (type) {
@@ -697,7 +682,7 @@ void D4StreamMarshaller::put_vector_part(char *val, unsigned int num, int width,
         break;
 
     case dods_float64_c:
-        put_vector_float32(val, num);
+        put_vector_float64(val, num);
         break;
 
     case dods_str_c:

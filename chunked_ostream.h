@@ -54,9 +54,9 @@ class chunked_outbuf : public std::streambuf {
     friend class chunked_ostream;
 
 protected:
-    std::ostream &d_os;          // Write stuff here
-    unsigned int d_buf_size = 0; // Size of the data buffer
-    char *d_buffer = nullptr;    // Data buffer
+    std::ostream &d_os;       // Write stuff here
+    int d_buf_size = 0;       // Size of the data buffer
+    char *d_buffer = nullptr; // Data buffer
     bool d_big_endian = false;
 
 public:
