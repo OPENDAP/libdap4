@@ -417,13 +417,13 @@ void D4StreamMarshaller::put_opaque_dap4(const char *val, int64_t num_bytes) {
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 
-        d_out.write(reinterpret_cast<const char *>(&len), sizeof(int64_t));
+        d_out.write(reinterpret_cast<const char *>(&num_bytes), sizeof(int64_t));
 
-        char *byte_buf = new char[len];
-        memcpy(byte_buf, val, len);
+        char *byte_buf = new char[num_bytes];
+        memcpy(byte_buf, val, num_bytes);
 
         tm->increment_child_thread_count();
-        tm->start_thread(MarshallerThread::write_thread, d_out, byte_buf, len);
+        tm->start_thread(MarshallerThread::write_thread, d_out, byte_buf, num_bytes);
 #else
         d_out.write(reinterpret_cast<const char *>(&num_bytes), sizeof(int64_t));
         segmented_write(d_out, val, num_bytes);
@@ -463,7 +463,7 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size) 
     assert(num_elem >= 0);
     assert(elem_size > 0);
 
-    int64_t num_bytes;
+    int64_t num_bytes = num_elem;
 
     switch (elem_size) {
     case 1:
@@ -492,11 +492,11 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size) 
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 
-        char *buf = new char[bytes];
-        memcpy(buf, val, bytes);
+        char *buf = new char[num_bytes];
+        memcpy(buf, val, num_bytes);
 
         tm->increment_child_thread_count();
-        tm->start_thread(MarshallerThread::write_thread, d_out, buf, bytes);
+        tm->start_thread(MarshallerThread::write_thread, d_out, buf, num_bytes);
 #else
         segmented_write(d_out, val, num_bytes);
 #endif
@@ -530,11 +530,11 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem) {
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 
-        char *buf = new char[num_elem];
-        memcpy(buf, val, num_elem);
+        char *buf = new char[num_bytes];
+        memcpy(buf, val, num_bytes);
 
         tm->increment_child_thread_count();
-        tm->start_thread(MarshallerThread::write_thread, d_out, buf, num_elem);
+        tm->start_thread(MarshallerThread::write_thread, d_out, buf, num_bytes);
 #else
         segmented_write(d_out, val, num_bytes);
 #endif
@@ -596,11 +596,11 @@ void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem) {
 #ifdef USE_POSIX_THREADS
         Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
 
-        char *buf = new char[num_elem];
-        memcpy(buf, val, num_elem);
+        char *buf = new char[num_bytes];
+        memcpy(buf, val, num_bytes);
 
         tm->increment_child_thread_count();
-        tm->start_thread(MarshallerThread::write_thread, d_out, buf, num_elem);
+        tm->start_thread(MarshallerThread::write_thread, d_out, buf, num_bytes);
 #else
         segmented_write(d_out, val, num_bytes);
 #endif
