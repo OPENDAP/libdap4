@@ -30,7 +30,6 @@
 #include <cstring>
 
 #include <iomanip>
-#include <iostream>
 #include <limits>
 #include <sstream>
 
@@ -468,7 +467,6 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size) 
 
     switch (elem_size) {
     case 1:
-        assert(!"Don't call this method for bytes, use put_vector(val, bytes) instead");
         break;
     case 2:
         // Don't bother testing the sign bit
