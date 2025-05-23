@@ -201,6 +201,7 @@ unit-tests/UInt64Test
 unit-tests/GridTest
 unit-tests/IsDap4ProjectedTest
 unit-tests/util_mitTest
+unit-tests/MarshallerFutureTest
 
 
 unit-tests/chunked-io/
