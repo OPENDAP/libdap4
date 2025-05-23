@@ -91,7 +91,7 @@ bool dir_exists(const string &dir);
 /** @name Integer to string conversion functions
    Fast, safe conversions from long to a character representation which gets
    appended to a string. This method will take a long value 'val' and it will
-   recursively divide it by 'base' in order to "extract" one by one the
+   recursively divide it by 'base' to "extract" one by one the
    digits which compose it; these digits will be <i>appended</i> to the
    string <tt>str_val</tt> which will become the textual representation of
    'val'. Please notice that the digits ``extracted'' from `val' will vary
@@ -114,8 +114,8 @@ bool dir_exists(const string &dir);
    operator+ does) without having to create a new string object s2 and then
    use string::operator+ between s1 and s2.
 
-   @return void. This method returns nothing however be aware that it will
-   throw and exception of type <tt>std::invalid_argument</tt> if the parameter
+   @return void. This method returns nothing, however, be aware that it will
+   throw a <tt>std::invalid_argument</tt> exception if the parameter
    base is not in the valid range. */
 //@{
 void append_long_to_string(long val, int base, string &str_val);
@@ -147,6 +147,9 @@ bool size_ok(unsigned int sz, unsigned int nelem);
 bool pathname_ok(const string &path, bool strict = true);
 string dap_version();
 string open_temp_fstream(ofstream &f, const string &name_template, const string &suffix = "");
+
+void segmented_write(ostream &out, const char *val, int64_t num_bytes);
+void segmented_read(std::istream &in, char *buffer, int64_t num_bytes_to_read);
 
 } // namespace libdap
 

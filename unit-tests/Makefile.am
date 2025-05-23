@@ -90,7 +90,8 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	RCReaderTest SequenceTest SignalHandlerTest  MarshallerTest \
 	ServerFunctionsListUnitTest Int8Test Int16Test UInt16Test \
 	Int32Test UInt32Test Int64Test UInt64Test Float32Test Float64Test \
-	D4BaseTypeFactoryTest BaseTypeFactoryTest util_mitTest ErrorTest
+	D4BaseTypeFactoryTest BaseTypeFactoryTest util_mitTest ErrorTest \
+	MarshallerFutureTest
 
 # ErrorAssignmentTest
 
@@ -268,3 +269,5 @@ BigArrayTest_SOURCES = BigArrayTest.cc $(TEST_SRC)
 D4SequenceTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
 IsDap4ProjectedTest_SOURCES = IsDap4ProjectedTest.cc
+
+MarshallerFutureTest_SOURCES = MarshallerFutureTest.cc

@@ -65,7 +65,7 @@ D4ResponseBuilder::~D4ResponseBuilder() {
     // If an alarm was registered, delete it. The register code in SignalHandler
     // always deletes the old alarm handler object, so only the one returned by
     // remove_handler needs to be deleted at this point.
-    delete dynamic_cast<AlarmHandler *>(SignalHandler::instance()->remove_handler(SIGALRM));
+    delete dynamic_cast<AlarmHandler *>(libdap::SignalHandler::remove_handler(SIGALRM));
 }
 
 /** Set the dataset name, which is a string used to access the dataset
@@ -87,8 +87,11 @@ void D4ResponseBuilder::set_dataset_name(const string ds) { d_dataset = www2id(d
 */
 void D4ResponseBuilder::establish_timeout(ostream &stream) const {
     if (d_timeout > 0) {
-        SignalHandler *sh = SignalHandler::instance();
-        EventHandler *old_eh = sh->register_handler(SIGALRM, new AlarmHandler(stream));
+#if 0
+          SignalHandler *sh = SignalHandler::instance();
+#endif
+
+        EventHandler *old_eh = libdap::SignalHandler::register_handler(SIGALRM, new AlarmHandler(stream));
         delete old_eh;
         alarm(d_timeout);
     }
@@ -103,7 +106,7 @@ void D4ResponseBuilder::remove_timeout() const { alarm(0); }
  *
  * @param out Write to this stream object
  * @param dmr This is the DMR to write
- * @param eval Use this ConstraintEvaluator
+
  * @param with_mime_headers If true, include the MIME headers in the response
  */
 void D4ResponseBuilder::send_dmr(ostream &out, DMR &dmr, bool with_mime_headers, bool constrained) {

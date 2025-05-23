@@ -118,7 +118,7 @@ private:
     bool m_is_cardinal_type() const;
     int64_t m_create_cardinal_data_buffer_for_type(int64_t num_elements);
     void m_delete_cardinal_data_buffer();
-    template <class CardType> void m_set_cardinal_values_internal(const CardType *fromArray, int64_t num_elements);
+    template <class CardType> void m_set_cardinal_values_internal(const CardType *src, int64_t num_elements);
 
     // This function copies the private members of Vector.
     void m_duplicate(const Vector &v);

@@ -37,13 +37,13 @@
 #include <fstream>
 
 #include <cassert>
+#include <cctype>
 #include <climits>
 #include <cstdlib>
 #include <cstring>
 
-#include <ctype.h>
 #ifndef TM_IN_SYS_TIME
-#include <time.h>
+#include <ctime>
 #else
 #include <sys/time.h>
 #endif
@@ -449,15 +449,15 @@ double extract_double_value(BaseType *arg) {
  @param name The URL to process
  @return Returns a new string object that contains the pruned URL. */
 string prune_spaces(const string &name) {
-    // If the URL does not even have white space return.
-    if (name.find_first_of(' ') == name.npos)
+    // If the URL does not even have white space, return.
+    if (name.find_first_of(' ') == std::string::npos)
         return name;
     else {
         // Strip leading spaces from http://...
         unsigned int i = name.find_first_not_of(' ');
         string tmp_name = name.substr(i);
 
-        // Strip leading spaces from constraint part (following `?').
+        // Strip leading spaces from the constraint part (following `?').
         unsigned int j = tmp_name.find('?') + 1;
         i = tmp_name.find_first_not_of(' ', j);
         tmp_name.erase(j, i - j);
@@ -475,7 +475,7 @@ bool unique_names(vector<BaseType *> l, const string &var_name, const string &ty
 
     int nelem = 0;
     typedef std::vector<BaseType *>::const_iterator citer;
-    for (citer i = l.begin(); i != l.end(); i++) {
+    for (citer i = l.begin(); i != l.end(); ++i) {
         assert(*i);
         names[nelem++] = (*i)->name();
         DBG(cerr << "NAMES[" << nelem - 1 << "]=" << names[nelem - 1] << endl);
@@ -1232,5 +1232,71 @@ string open_temp_fstream(ofstream &f, const string &name_template, const string 
 
     return string(name.data());
 }
+
+/** @name Segmented read and write functions. */
+//@{
+
+// The maximum number of bytes that can be safely written in a single call
+// to ostream::write() is typically limited by std::streamsize, which is
+// often a signed 32-bit integer (2^31) - 1.
+constexpr int64_t MAX_SEGMENT_SIZE = (static_cast<int64_t>(1) << 31) - 1;
+
+/**
+ * @brief Ensure that no more than (2^31)-1 bytes are ever written by ostream::write()
+ * @param out The ostream& where the bytes are to be written
+ * @param val The bytes to write
+ * @param num_bytes The total number of bytes to write
+ */
+void segmented_write(ostream &out, const char *val, int64_t num_bytes) {
+    int64_t bytes_remaining = num_bytes;
+    const char *current_ptr = val; // Use a mutable pointer to advance through the buffer
+
+    while (bytes_remaining > 0) {
+        // Determine the size of the current chunk to write
+        const auto current_chunk_size = static_cast<std::streamsize>(std::min(bytes_remaining, MAX_SEGMENT_SIZE));
+
+        // Call ostream::write() with the current segment
+        out.write(current_ptr, current_chunk_size);
+        if (out.fail()) {
+            throw InternalErr(__FILE__, __LINE__, "Error writing to a stream");
+        }
+
+        current_ptr += current_chunk_size;
+
+        bytes_remaining -= current_chunk_size;
+    }
+}
+
+/**
+ * @brief Reads a large number of bytes from an istream in segments, matching segmented_write.
+ * @param in The istream& from where the bytes are to be read.
+ * @param buffer The char* buffer where the bytes will be read into.
+ * @param num_bytes_to_read The total number of bytes to read.
+ */
+void segmented_read(std::istream &in, char *buffer, int64_t num_bytes_to_read) {
+    int64_t bytes_remaining = num_bytes_to_read;
+    char *current_ptr = buffer;
+
+    while (bytes_remaining > 0) {
+        // Determine the size of the current chunk to read
+        const auto current_chunk_size = static_cast<std::streamsize>(std::min(bytes_remaining, MAX_SEGMENT_SIZE));
+
+        in.read(current_ptr, current_chunk_size);
+
+        // Check if the read operation failed or didn't read the expected number of bytes
+        if (in.fail() && !in.eof()) { // Failbit set, and not just end of file
+            throw InternalErr(__FILE__, __LINE__, "Error reading from a stream");
+        }
+
+        // Check if we reached EOF prematurely (i.e., Fewer bytes were read than expected)
+        if (in.gcount() < current_chunk_size) {
+            throw InternalErr(__FILE__, __LINE__, "Unexpected end of stream: Less bytes read than expected.");
+        }
+
+        current_ptr += current_chunk_size;
+        bytes_remaining -= current_chunk_size;
+    }
+}
+//@}
 
 } // namespace libdap
