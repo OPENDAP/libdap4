@@ -236,7 +236,7 @@ std::streambuf::int_type chunked_outbuf::overflow(int c) {
 std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
     DBG(cerr << "In chunked_outbuf::xsputn: num: " << num << endl);
 
-    // If the current block of data fits in the buffer, put it there.
+    // If the current block of data fits in the buffer, put it there,
     // else, there is at least a complete chunk between what's in the buffer
     // and what's in 's'; send a chunk header, the stuff in the buffer and
     // bytes from 's' to make a complete chunk. Then iterate over 's' sending
@@ -276,14 +276,15 @@ std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
     d_os.write(d_buffer, bytes_in_buffer);
     if (d_os.bad())
         throw InternalErr(__FILE__, __LINE__, "chunked_outbuf::xsputn");
-    if (d_os.eof() /*|| d_os.bad()*/)
+    if (d_os.eof())
         return traits_type::not_eof(0);
 
+    // Send data right from 's' to avoid a needless copy operation. jhrg 5/22/5
     int bytes_to_fill_out_buffer = d_buf_size - bytes_in_buffer;
     d_os.write(s, bytes_to_fill_out_buffer);
     if (d_os.bad())
         throw InternalErr(__FILE__, __LINE__, "chunked_outbuf::xsputn");
-    if (d_os.eof() /*|| d_os.bad()*/)
+    if (d_os.eof())
         return traits_type::not_eof(0);
 
     s += bytes_to_fill_out_buffer;
@@ -305,7 +306,7 @@ std::streamsize chunked_outbuf::xsputn(const char *s, std::streamsize num) {
     }
 
     if (bytes_still_to_send > 0) {
-        // if the code is here, one or more chunks have been sent, the
+        // If the code is here, one or more chunks have been sent, the
         // buffer is empty, and there are < d_buf_size bytes to send. Buffer them.
         memcpy(d_buffer, s, bytes_still_to_send);
         pbump(bytes_still_to_send);
