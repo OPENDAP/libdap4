@@ -43,12 +43,18 @@
 #include "InternalErr.h"
 #include "MarshallerThread.h"
 #include "debug.h"
+#include "util.h"
 
 using namespace libdap;
 using namespace std;
 
 // Set TIMING to 1 to enable timing output
 #define TIMING 0
+
+// The segmented write function enables writing 2^32 bytes or more,
+// up to the limits of the machine. This switch only affects POSIX
+// THREADS builds of libdap. jhrg 5/22/25
+#define USE_SEGMENTED_WRITE 1
 
 #if TIMING
 bool MarshallerThread::print_time = false;
@@ -226,7 +232,11 @@ void *MarshallerThread::write_thread(void *arg) {
         if (bytes_written != args->d_num)
             return (void *)-1;
     } else {
+#if USE_SEGMENTED_WRITE
+        segmented_write(args->d_out, args->d_buf, args->d_num);
+#else
         args->d_out.write(args->d_buf, args->d_num);
+#endif
         if (args->d_out.fail()) {
             ostringstream oss;
             oss << "Could not write data: " << __FILE__ << ":" << __LINE__;
@@ -273,7 +283,11 @@ void *MarshallerThread::write_thread_part(void *arg) {
         if (bytes_written != args->d_num)
             return (void *)-1;
     } else {
+#if USE_SEGMENTED_WRITE
+        segmented_write(args->d_out, args->d_buf + 4, args->d_num);
+#else
         args->d_out.write(args->d_buf + 4, args->d_num);
+#endif
         if (args->d_out.fail()) {
             ostringstream oss;
             oss << "Could not write data: " << __FILE__ << ":" << __LINE__;
