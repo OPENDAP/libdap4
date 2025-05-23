@@ -329,9 +329,14 @@ template <typename T, class C> void TestArray::m_cardinal_type_read_helper() {
         // read a value into the Array's prototype element
         var()->read();
         T value = static_cast<C *>(var())->value();
-        vector<T> tmp(length_ll(), value);
 
-        set_value_ll(static_cast<T *>(tmp.data()), length_ll());
+        // I tried a number of tricks to improve the time it takes to initialize this
+        // when the size is large (e.g., 4GB), but nothing improved on the performance
+        // of this. In fact, most were about 10% slower. This was measured on a 32 GB
+        // Intel Mac running OSX 15.5. jhrg 5/22/25
+        vector<T> vec(length_ll(), value);
+
+        set_value_ll(static_cast<T *>(vec.data()), length_ll());
     }
 }
 

@@ -220,9 +220,6 @@ void Vector::m_delete_cardinal_data_buffer() {
 const auto ERR_NEGATIVE_ELEMENTS = "Logic error: Vector::set_cardinal_values_internal() called with negative size!";
 const auto ERR_NULL_ARRAY = "Logic error: Vector::set_cardinal_values_internal() called with null source!";
 
-/*
- *
- */
 /**
  * @brief Helper to reduce cut and paste in the virtual's.
  * @tparam CardType
@@ -232,11 +229,9 @@ const auto ERR_NULL_ARRAY = "Logic error: Vector::set_cardinal_values_internal()
 template <class CardType> void Vector::m_set_cardinal_values_internal(const CardType *src, int64_t elements) {
     if (elements < 0) {
         throw InternalErr(__FILE__, __LINE__, ERR_NEGATIVE_ELEMENTS);
-        // "Logic error: Vector::set_cardinal_values_internal() called with negative size!");
     }
     if (!src) {
         throw InternalErr(__FILE__, __LINE__, ERR_NULL_ARRAY);
-        //"Logic error: Vector::set_cardinal_values_internal() called with null source!");
     }
 
     set_length_ll(elements);
@@ -1217,10 +1212,10 @@ void Vector::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
  For a Vector of Str (OPeNDAP Strings), this assumes \e val points to an
  array of C++ strings.
 
- This method should not be used for Structure, Sequence or Grid.
+ This method should not be used for Structure, Sequence, or Grid.
 
  @brief Reads data into the Vector buffer.
- @exception InternalErr Thrown if called for Structure, Sequence or
+ @exception InternalErr Thrown if called for Structure, Sequence, or
  Grid.
  @return The number of bytes used by the array.
  @param val A pointer to the input data.
@@ -1323,7 +1318,7 @@ int64_t Vector::val2buf_ll(void *val, bool reuse) {
     if (!val && length() == 0)
         return 0;
 
-    // I *think* this method has been mainly designed to be use by read which
+    // I *think* this method has been mainly designed to be used by read which
     // is implemented in the surrogate library. Passing NULL as a pointer to
     // this method will be an error of the creator of the surrogate library.
     // Even though I recognize the fact that some methods inside libdap++ can
@@ -1398,7 +1393,7 @@ int64_t Vector::val2buf_ll(void *val, bool reuse) {
  allocate memory if the handle @p val references NULL, otherwise it
  assumes the handle references enough storage for the data to be copied.
 
- Never call this method for constructor types Structure, Sequence or Grid.
+ Never call this method for constructor types Structure, Sequence, or Grid.
 
  When reading data out of a variable that has been constrained, this method
  assumes the N values/bytes of constrained data start at the beginning
