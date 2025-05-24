@@ -1,3 +1,28 @@
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2025 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
+
+#include "config.h"
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <fstream>
@@ -26,7 +51,7 @@ class MarshallerThreadSharedPtrTest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE_END();
 
 public:
-    void test_write_to_stream() {
+    static void test_write_to_stream() {
         std::ostringstream oss;
 
         std::string test_data = "Shared pointer test";
@@ -42,7 +67,7 @@ public:
         CPPUNIT_ASSERT_EQUAL(test_data, oss.str());
     }
 
-    void test_write_to_stream_shared_ptr() {
+    static void test_write_to_stream_shared_ptr() {
         std::ostringstream oss;
 
         std::string test_data = "Shared pointer test";
@@ -62,7 +87,7 @@ public:
         CPPUNIT_ASSERT_EQUAL(test_data, oss.str());
     }
 
-    void test_write_part_to_stream() {
+    static void test_write_part_to_stream() {
         std::ostringstream oss;
 
         std::string test_data = "1234DATA";
@@ -77,7 +102,7 @@ public:
         CPPUNIT_ASSERT_EQUAL(std::string("DATA"), oss.str());
     }
 
-    void test_write_part_to_stream_shared_ptr() {
+    static void test_write_part_to_stream_shared_ptr() {
         std::ostringstream oss;
 
         std::string test_data = "1234DATA";
@@ -95,7 +120,7 @@ public:
         CPPUNIT_ASSERT_EQUAL(std::string("DATA"), oss.str());
     }
 
-    void test_write_to_file_descriptor() {
+    static void test_write_to_file_descriptor() {
         std::string test_data = "Shared FD test";
 
         const char *filename = "/tmp/marshaller_test_shared_ptr.txt";
@@ -118,7 +143,7 @@ public:
         CPPUNIT_ASSERT_EQUAL(test_data, content.str());
     }
 
-    void test_write_to_file_descriptor_shared_ptr() {
+    static void test_write_to_file_descriptor_shared_ptr() {
         std::string test_data = "Shared FD test";
         std::size_t len = test_data.size();
         std::shared_ptr<char> buf(new char[len], std::default_delete<char[]>());

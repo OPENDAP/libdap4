@@ -1,3 +1,26 @@
+// -*- mode: c++; c-basic-offset:4 -*-
+
+// This file is part of libdap, A C++ implementation of the OPeNDAP Data
+// Access Protocol.
+
+// Copyright (c) 2025 OPeNDAP, Inc.
+// Author: James Gallagher <jgallagher@opendap.org>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+//
+// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 #ifndef MARSHALLERTHREAD_H_
 #define MARSHALLERTHREAD_H_
@@ -10,6 +33,23 @@
 
 namespace libdap {
 
+/**
+ * @brief Run output calls using a future
+ *
+ * This version of MarshallerThread uses futures to implement what would have
+ * been called 'double-buffered I/O' although this is only for writing. When
+ * libdap's D4 and XDRStreamMarshaller classes are used to send data, this class
+ * can be used to perform the data write() in a child thread that is managed
+ * using the future objects introduced in C++11.
+ *
+ * Given the nature of DAP2 and DAP4 data responses, it is not possible to interleave
+ * data for variables, so only one transmission is possible at any time. This
+ * means that only one 'output future' can be running and the future::get() can
+ * serve as a synchronization tool.
+ *
+ * This class is a replacement for the older MarshallerThread class that was
+ * implemented using threads. It is implemented as a header-only class.
+ */
 class MarshallerThread {
     std::future<std::streampos> d_ostream_future;
     std::future<ssize_t> d_fp_future;
