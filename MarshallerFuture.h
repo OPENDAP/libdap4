@@ -74,9 +74,17 @@ public:
         }
     }
 
+    /// @return The future associated with the ostream threads
     auto get_ostream_future() { return d_ostream_future.get(); }
+    /// @return The future associated with the file descriptor threads
     auto get_fp_future() { return d_fp_future.get(); }
 
+    /**
+     * @brief start a thread to send byte_buf out using the stream out
+     * @param out The ostream
+     * @param byte_buf The bytes (a const char *)
+     * @param num_bytes The number of byes
+     */
     void start_thread(std::ostream &out, const char *byte_buf, std::streamsize num_bytes) {
         if (d_ostream_future.valid()) {
             d_ostream_future.get();
@@ -94,6 +102,12 @@ public:
         });
     }
 
+    /**
+     * @brief start a thread to send byte_buf out using the stream out
+     * @param out The ostream
+     * @param byte_buf The bytes (a std::shared_ptr<const char>)
+     * @param num_bytes The number of byes
+     */
     void start_thread(std::ostream &out, std::shared_ptr<const char> byte_buf, std::streamsize num_bytes) {
         if (d_ostream_future.valid()) {
             d_ostream_future.get();
