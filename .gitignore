@@ -9,6 +9,8 @@
 .settings
 .DS_Store
 */.DS_Store
+gcovr-output/
+gcov-data/
 
 autom4te.cache
 Default
