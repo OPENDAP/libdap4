@@ -22,8 +22,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#ifndef MARSHALLERTHREAD_H_
-#define MARSHALLERTHREAD_H_
+#ifndef MARSHALLERFUTURE_H_
+#define MARSHALLERFUTURE_H_
 
 #include <cstring>
 #include <future>
