@@ -1284,7 +1284,7 @@ void segmented_read(std::istream &in, char *buffer, int64_t num_bytes_to_read) {
         in.read(current_ptr, current_chunk_size);
 
         // Check if the read operation failed or didn't read the expected number of bytes
-        if (in.fail() && !in.eof()) { // Failbit set, and not just end of file
+        if (in.fail()) { // Failbit set, and not just end of file
             throw InternalErr(__FILE__, __LINE__, "Error reading from a stream");
         }
 

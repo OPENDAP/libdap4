@@ -20,7 +20,7 @@
 //
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
@@ -185,7 +185,7 @@ void D4StreamMarshaller::put_checksum() {
  * zero has no effect on the checksum value.
  */
 void D4StreamMarshaller::checksum_update(const void *data, unsigned long len) {
-    d_checksum.AddData(reinterpret_cast<const uint8_t *>(data), len);
+    d_checksum.AddData(static_cast<const uint8_t *>(data), len);
 }
 
 void D4StreamMarshaller::put_byte(dods_byte val) {
@@ -383,7 +383,7 @@ void D4StreamMarshaller::put_uint64(dods_uint64 val) {
  * methods put_opaque_dap4(), ..., that need counts sent as prefixes to
  * their data handle it themselves.
  *
- * @param count How many elements follow.
+ * @param count The number of elements that will follow in the stream.
  */
 void D4StreamMarshaller::put_count(int64_t count) {
 #ifdef USE_POSIX_THREADS
@@ -506,7 +506,7 @@ void D4StreamMarshaller::put_vector(char *val, int64_t num_elem, int elem_size) 
 /**
  * @brief Write a fixed size vector
  * @note This method and its companion for float64 exists in case we need to
- * support machine that do not use IEEE754 for their floating point representation.
+ * support machines that do not use IEEE754 for their floating point representation.
  * @param val Pointer to the data
  * @param num_elem Number of elements
  */
@@ -518,7 +518,7 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem) {
     assert(num_elem >= 0);
     // sizeof() a 32-bit float is 4, so we're going to send 4 * num_elem bytes, so
     // make sure that doesn't overflow a 63-bit integer (the max positive value in
-    // a signed int64; use 1110 0000 0.. (0xe000 ...) to mask for non-zero bits
+    // a signed int64; use 1110 0000 0... (0xe000 ...) to mask for non-zero bits
     // to test that num can be multiplied by 4. A
     assert(!(num_elem & 0xe000000000000000));
 
@@ -545,7 +545,7 @@ void D4StreamMarshaller::put_vector_float32(char *val, int64_t num_elem) {
     assert(num_elem >= 0);
     // sizeof() a 32-bit float is 4, so we're going to send 4 * num_elem bytes, so
     // make sure that doesn't overflow a 63-bit integer (the max positive value in
-    // a signed int64; use 1110 0000 0.. (0xe000 ...) to mask for non-zero bits
+    // a signed int64; use 1110 0000 0... (0xe000 ...) to mask for non-zero bits
     // to test that num can be multiplied by 4. A
     assert(!(num_elem & 0xe000000000000000));
 
@@ -610,7 +610,7 @@ void D4StreamMarshaller::put_vector_float64(char *val, int64_t num_elem) {
     assert(num_elem >= 0);
     // sizeof() a 32-bit float is 4, so we're going to send 4 * num_elem bytes, so
     // make sure that doesn't overflow a 63-bit integer (the max positive value in
-    // a signed int64; use 1110 0000 0.. (0xe000 ...) to mask for non-zero bits
+    // a signed int64; use 1110 0000 0... (0xe000 ...) to mask for non-zero bits
     // to test that num can be multiplied by 4. A
     assert(!(num_elem & 0xe000000000000000));
 
