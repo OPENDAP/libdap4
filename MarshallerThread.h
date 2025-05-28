@@ -52,13 +52,12 @@ namespace libdap {
 class Locker {
 public:
     Locker() = delete;
+    Locker(const Locker &rhs) = delete;
     Locker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count);
     virtual ~Locker();
 
 private:
     pthread_mutex_t &m_mutex;
-
-    Locker(const Locker &rhs);
 };
 
 /**

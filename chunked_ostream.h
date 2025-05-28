@@ -30,7 +30,6 @@
 
 #include "chunked_stream.h"
 
-#include <ostream>
 #include <stdexcept> // std::out_of_range
 #include <streambuf>
 
@@ -60,7 +59,7 @@ protected:
     bool d_big_endian = false;
 
 public:
-    chunked_outbuf(std::ostream &os, unsigned int buf_size) : d_os(os), d_buf_size(buf_size) {
+    chunked_outbuf(std::ostream &os, int buf_size) : d_os(os), d_buf_size(buf_size) {
         if (d_buf_size & CHUNK_TYPE_MASK)
             throw std::out_of_range(
                 "A chunked_outbuf (or chunked_ostream) was built using a buffer larger than 0x00ffffff");
@@ -73,7 +72,7 @@ public:
         setp(d_buffer, d_buffer + (buf_size - 1));
     }
 
-    ~chunked_outbuf() override {
+    ~chunked_outbuf() noexcept override {
         // call end_chunk() and not sync()
         end_chunk();
 
@@ -129,7 +128,7 @@ public:
      * @note The buffer size must not be more than 2^24 bytes (0x00ffffff)
      * @param buf_size The size of the buffer in bytes.
      */
-    chunked_ostream(std::ostream &os, unsigned int buf_size) : std::ostream(&d_cbuf), d_cbuf(os, buf_size) {}
+    chunked_ostream(std::ostream &os, int buf_size) : std::ostream(&d_cbuf), d_cbuf(os, buf_size) {}
 
     /**
      * @brief Send an end chunk.

@@ -124,9 +124,9 @@ std::streambuf::int_type chunked_outbuf::end_chunk() {
     d_os.write(reinterpret_cast<const char *>(&header), sizeof(uint32_t));
 
     d_os.write(d_buffer, num);
-    if (d_os.bad())
-        throw InternalErr(__FILE__, __LINE__, "chunked_outbuf::end_chunk");
-    if (d_os.eof())
+    // It seems wrong to return 'eof' when 'bad()' is true, but that's the correct
+    // behavior for std::streambuf. jhrg 5/28/25
+    if (d_os.eof() || d_os.bad())
         return traits_type::eof();
 
     pbump(-num);
