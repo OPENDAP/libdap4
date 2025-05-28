@@ -35,15 +35,10 @@
 
 #include "Marshaller.h"
 #include "XDRUtils.h"
-#if 0
-#include "Array.h"
-#include "Vector.h"
-#endif
 
 namespace libdap {
 
-/** @brief marshaller that knows how to marshall/serialize dap data objects
- * to a file using XDR
+/** @brief marshaller that knows how to marshall/serialize dap data objects to a file using XDR
  */
 class XDRFileMarshaller : public Marshaller {
 private:

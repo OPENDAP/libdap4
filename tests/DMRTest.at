@@ -222,7 +222,9 @@ m4_define([DMR_TRANS_FUNC_CE], [
     fe="$2"
     ce="$3"
     baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$4
-    
+
+    AS_IF([test -z "$at_verbose"], [echo "Command: dmr-test -x -t $input -f $fe -c $ce"])
+
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
         # // old version - sbl 9.4.19

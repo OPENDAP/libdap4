@@ -315,7 +315,7 @@ template <typename T, class C> void TestArray::m_cardinal_type_read_helper() {
         } else if (dimensions() == 2) {
             vector<T> tmp(length_ll());
             m_constrained_matrix<T, C>(tmp);
-            set_value_ll((T *)tmp.data(), length_ll());
+            set_value_ll(static_cast<T *>(tmp.data()), length_ll());
         } else {
             vector<T> tmp(length_ll());
             for (int64_t i = 0, end = length(); i < end; ++i) {
@@ -323,26 +323,20 @@ template <typename T, class C> void TestArray::m_cardinal_type_read_helper() {
                 tmp[i] = static_cast<C *>(var())->value();
                 var()->set_read_p(false); // pick up the next value
             }
-            set_value_ll((T *)tmp.data(), length_ll());
+            set_value_ll(static_cast<T *>(tmp.data()), length_ll());
         }
     } else {
         // read a value into the Array's prototype element
         var()->read();
         T value = static_cast<C *>(var())->value();
-        vector<T> tmp(length_ll());
-        for (int64_t i = 0, end = length_ll(); i < end; ++i) {
-            tmp[i] = value;
-        }
 
-#if 0
-        set_value(tmp, length_ll());
-#endif
-        // The following code inside #if 0 block always goes to set_value.
-        // May check why in the future. KY 2023-01-12
-#if 0
-        set_value_ll(tmp, length_ll());
-#endif
-        set_value_ll((T *)tmp.data(), length_ll());
+        // I tried a number of tricks to improve the time it takes to initialize this
+        // when the size is large (e.g., 4GB), but nothing improved on the performance
+        // of this. In fact, most were about 10% slower. This was measured on a 32 GB
+        // Intel Mac running OSX 15.5. jhrg 5/22/25
+        vector<T> vec(length_ll(), value);
+
+        set_value_ll(static_cast<T *>(vec.data()), length_ll());
     }
 }
 

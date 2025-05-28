@@ -52,13 +52,12 @@ namespace libdap {
 class Locker {
 public:
     Locker() = delete;
+    Locker(const Locker &rhs) = delete;
     Locker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count);
     virtual ~Locker();
 
 private:
     pthread_mutex_t &m_mutex;
-
-    Locker(const Locker &rhs);
 };
 
 /**
@@ -85,16 +84,16 @@ private:
 };
 
 /**
- * Implement a multi-threaded data transmission sub-system for libdap.
- * This class makes it fairly painless to send data using a child thread
- * so that the main thread can be used to read the next chunk of data
+ * Implement a multithreaded data transmission subsystem for libdap.
+ * This class makes it fairly painless to send data using a child thread.
+ * The main thread can be used to read the next chunk of data
  * while whatever has been read to this point is sent over the wire.
  *
  * This code is used by XDRStreamMarshaller and (soon) D4StreamMarshaller.
  */
 class MarshallerThread {
 private:
-    pthread_t d_thread = 0;
+    pthread_t d_thread;
     pthread_attr_t d_thread_attr;
 
     pthread_mutex_t d_out_mutex;
@@ -149,7 +148,7 @@ public:
     void start_thread(void *(*thread)(void *arg), std::ostream &out, char *byte_buf, std::streamsize bytes_written);
     void start_thread(void *(*thread)(void *arg), int fd, char *byte_buf, std::streamsize bytes_written);
 
-    // These are static so they will have c-linkage - required because they
+    // These are static, so they will have c-linkage - required because they
     // are passed to pthread_create()
     static void *write_thread(void *arg);
     static void *write_thread_part(void *arg);

@@ -137,17 +137,17 @@ namespace libdap {
 xdrproc_t XDRUtils::xdr_coder(const Type &t) {
     switch (t) {
     case dods_int16_c:
-        return (xdrproc_t)XDR_INT16;
+        return reinterpret_cast<xdrproc_t>(XDR_INT16);
     case dods_uint16_c:
-        return (xdrproc_t)XDR_UINT16;
+        return reinterpret_cast<xdrproc_t>(XDR_UINT16);
     case dods_int32_c:
-        return (xdrproc_t)XDR_INT32;
+        return reinterpret_cast<xdrproc_t>(XDR_INT32);
     case dods_uint32_c:
-        return (xdrproc_t)XDR_UINT32;
+        return reinterpret_cast<xdrproc_t>(XDR_UINT32);
     case dods_float32_c:
-        return (xdrproc_t)XDR_FLOAT32;
+        return reinterpret_cast<xdrproc_t>(XDR_FLOAT32);
     case dods_float64_c:
-        return (xdrproc_t)XDR_FLOAT64;
+        return reinterpret_cast<xdrproc_t>(XDR_FLOAT64);
     case dods_byte_c:
     case dods_str_c:
     case dods_url_c:
