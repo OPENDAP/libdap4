@@ -31,6 +31,8 @@
 #include <stdexcept>
 #include <unistd.h>
 
+#include "InternalErr.h"
+
 namespace libdap {
 
 /**
@@ -69,14 +71,15 @@ public:
             try {
                 d_fp_future.get();
             } catch (...) {
-                // Suppress exceptions in destructor
             }
         }
     }
 
-    /// @return The future associated with the ostream threads
+    /// @return The future result associated with the ostream threads
+    /// @note Assumes the future is valid
     auto get_ostream_future() { return d_ostream_future.get(); }
-    /// @return The future associated with the file descriptor threads
+    /// @return The future result associated with the file descriptor threads
+    /// @note Assumes the future is valid
     auto get_fp_future() { return d_fp_future.get(); }
 
     /**
@@ -91,12 +94,12 @@ public:
         }
 
         auto buffer_copy = std::make_unique<char[]>(num_bytes);
-        std::memcpy(buffer_copy.get(), byte_buf, num_bytes);
+        memcpy(buffer_copy.get(), byte_buf, num_bytes);
 
         d_ostream_future = std::async(std::launch::async, [buffer = std::move(buffer_copy), &out, num_bytes]() {
             out.write(buffer.get(), num_bytes);
             if (out.fail()) {
-                throw std::runtime_error("Failed to write stream.");
+                throw InternalErr(__FILE__, __LINE__, "Failed to write stream.");
             }
             return out.tellp();
         });
@@ -116,7 +119,7 @@ public:
         d_ostream_future = std::async(std::launch::async, [buffer = std::move(byte_buf), &out, num_bytes]() {
             out.write(buffer.get(), num_bytes);
             if (out.fail()) {
-                throw std::runtime_error("Failed to write stream.");
+                throw InternalErr(__FILE__, __LINE__, "Failed to write stream.");
             }
             return out.tellp();
         });
@@ -128,15 +131,15 @@ public:
         }
 
         auto buffer_copy = std::make_unique<char[]>(num_bytes);
-        std::memcpy(buffer_copy.get(), byte_buf, num_bytes);
+        memcpy(buffer_copy.get(), byte_buf, num_bytes);
 
         d_ostream_future = std::async(std::launch::async, [buffer = std::move(buffer_copy), &out, num_bytes]() {
             if (num_bytes <= 4) {
-                throw std::runtime_error("Data too short for partial write.");
+                throw InternalErr(__FILE__, __LINE__, "Data too short for partial write.");
             }
             out.write(buffer.get() + 4, num_bytes - 4);
             if (out.fail()) {
-                throw std::runtime_error("Failed to write partial stream.");
+                throw InternalErr(__FILE__, __LINE__, "Failed to write partial stream.");
             }
             return out.tellp();
         });
@@ -149,11 +152,11 @@ public:
 
         d_ostream_future = std::async(std::launch::async, [buffer = std::move(byte_buf), &out, num_bytes]() {
             if (num_bytes <= 4) {
-                throw std::runtime_error("Data too short for partial write.");
+                throw InternalErr(__FILE__, __LINE__, "Data too short for partial write.");
             }
             out.write(buffer.get() + 4, num_bytes - 4);
             if (out.fail()) {
-                throw std::runtime_error("Failed to write partial stream.");
+                throw InternalErr(__FILE__, __LINE__, "Failed to write partial stream.");
             }
             return out.tellp();
         });
@@ -165,12 +168,12 @@ public:
         }
 
         auto buffer_copy = std::make_unique<char[]>(num_bytes);
-        std::memcpy(buffer_copy.get(), byte_buf, num_bytes);
+        memcpy(buffer_copy.get(), byte_buf, num_bytes);
 
         d_fp_future = std::async(std::launch::async, [buffer = std::move(buffer_copy), fd, num_bytes]() {
-            auto written = write(fd, buffer.get(), num_bytes);
+            const auto written = write(fd, buffer.get(), num_bytes);
             if (written != num_bytes) {
-                throw std::runtime_error("Failed to write all data to fd.");
+                throw InternalErr(__FILE__, __LINE__, "Failed to write all data to fd.");
             }
             return written;
         });
@@ -182,9 +185,9 @@ public:
         }
 
         d_fp_future = std::async(std::launch::async, [buffer = std::move(byte_buf), fd, num_bytes]() {
-            auto written = write(fd, buffer.get(), num_bytes);
+            const auto written = write(fd, buffer.get(), num_bytes);
             if (written != num_bytes) {
-                throw std::runtime_error("Failed to write all data to fd.");
+                throw InternalErr(__FILE__, __LINE__, "Failed to write all data to fd.");
             }
             return written;
         });
