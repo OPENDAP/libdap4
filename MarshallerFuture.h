@@ -28,7 +28,6 @@
 #include <cstring>
 #include <future>
 #include <memory>
-#include <stdexcept>
 #include <unistd.h>
 
 #include "InternalErr.h"
