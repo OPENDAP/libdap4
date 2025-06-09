@@ -18,19 +18,19 @@ SET(DAPLIB_CURRENT 30)
 SET(DAPLIB_REVISION 0)
 SET(DAPLIB_AGE 3)
 
-SET(LIBDAP_VERSION "${DAPLIB_CURRENT}:${DAPLIB_REVISION}:${DAPLIB_AGE}")
+SET(LIBDAP_SO_VERSION "${DAPLIB_CURRENT}:${DAPLIB_REVISION}:${DAPLIB_AGE}")
 
 SET(CLIENTLIB_CURRENT 8)
 SET(CLIENTLIB_REVISION 0)
 SET(CLIENTLIB_AGE 2)
 
-SET(CLIENTLIB_VERSION "${CLIENTLIB_CURRENT}:${CLIENTLIB_REVISION}:${CLIENTLIB_AGE}")
+SET(CLIENTLIB_SO_VERSION "${CLIENTLIB_CURRENT}:${CLIENTLIB_REVISION}:${CLIENTLIB_AGE}")
 
 SET(SERVERLIB_CURRENT 14)
 SET(SERVERLIB_REVISION 0)
 SET(SERVERLIB_AGE 7)
 
-SET(SERVERLIB_VERSION "${SERVERLIB_CURRENT}:${SERVERLIB_REVISION}:${SERVERLIB_AGE}")
+SET(SERVERLIB_SO_VERSION "${SERVERLIB_CURRENT}:${SERVERLIB_REVISION}:${SERVERLIB_AGE}")
 
 # Drop the 'gl' library for now. jhrg 6/8/25
 
@@ -58,11 +58,6 @@ find_package(Threads REQUIRED)
 
 # Define sources
 set(GNU_SRC GNU/GetOpt.cc GNU/GNURegex.cc)
-
-#set(BISON_SRC das.tab.cc das.tab.hh dds.tab.cc dds.tab.hh
-#        ce_expr.tab.cc ce_expr.tab.hh Error.tab.cc Error.tab.hh)
-#
-#set(FLEX_SRC lex.das.cc lex.dds.cc lex.ce_expr.cc lex.Error.cc)
 
 set(DAP_SRC
         AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc
@@ -122,18 +117,7 @@ add_library(libparsers STATIC
         ${BISON_DASParser_OUTPUT_SOURCE}
         ${BISON_DASParser_OUTPUT_HEADER}
         ${FLEX_DASScanner_OUTPUTS}
-
-        # other parser/scanner files
 )
-
-#target_include_directories(libparsers PUBLIC
-#        ${CMAKE_CURRENT_BINARY_DIR}
-#)
-
-# Example of Flex/Bison rules (simplified)
-#BISON_TARGET(DASParser das.yy ${CMAKE_CURRENT_BINARY_DIR}/das.tab.cc)
-#FLEX_TARGET(DASScanner das.lex ${CMAKE_CURRENT_BINARY_DIR}/lex.das.cc)
-#ADD_FLEX_BISON_DEPENDENCY(DASScanner DASParser)
 
 # Define libraries
 # add_library(libparsers STATIC ${FLEX_SRC} ${BISON_SRC})
@@ -141,26 +125,24 @@ target_include_directories(libparsers PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_include_directories(libparsers PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(libparsers PRIVATE ${LIBXML2_LIBRARIES})
 
-#target_sources(libparsers PRIVATE ${BISON_DASParser_OUTPUTS} ${FLEX_DASScanner_OUTPUTS})
-
 add_library(libdap SHARED ${DAP_SRC} ${GNU_SRC} ${DAP4_ONLY_SRC})
 target_include_directories(libdap PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_include_directories(libdap PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(libdap PRIVATE libparsers ${LIBXML2_LIBRARIES} Threads::Threads)
 
-set_target_properties(libdap PROPERTIES VERSION ${LIBDAP_VERSION})
+set_target_properties(libdap PROPERTIES VERSION ${LIBDAP_VERSION} SOVERSION ${LIBDAP_SO_VERSION})
 
 add_library(libdapclient SHARED ${CLIENT_SRC})
 target_include_directories(libdapclient PRIVATE ${CURL_INCLUDE_DIRS})
 target_include_directories(libdapclient PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(libdapclient PRIVATE libdap ${CURL_LIBRARIES} Threads::Threads)
 
-set_target_properties(libdapclient PROPERTIES VERSION ${CLIENTLIB_VERSION})
+set_target_properties(libdapclient PROPERTIES SOVERSION ${CLIENTLIB_SO_VERSION})
 
 add_library(libdapserver SHARED ${SERVER_SRC})
 target_link_libraries(libdapserver PRIVATE libdap)
 target_include_directories(libdapserver PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-set_target_properties(libdapserver PROPERTIES VERSION ${SERVERLIB_VERSION})
+set_target_properties(libdapserver PROPERTIES SOVERSION ${SERVERLIB_SO_VERSION})
 
 # Custom compilation flags and definitions
 
