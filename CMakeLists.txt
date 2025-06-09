@@ -59,10 +59,10 @@ find_package(Threads REQUIRED)
 # Define sources
 set(GNU_SRC GNU/GetOpt.cc GNU/GNURegex.cc)
 
-set(BISON_SRC das.tab.cc das.tab.hh dds.tab.cc dds.tab.hh
-        ce_expr.tab.cc ce_expr.tab.hh Error.tab.cc Error.tab.hh)
-
-set(FLEX_SRC lex.das.cc lex.dds.cc lex.ce_expr.cc lex.Error.cc)
+#set(BISON_SRC das.tab.cc das.tab.hh dds.tab.cc dds.tab.hh
+#        ce_expr.tab.cc ce_expr.tab.hh Error.tab.cc Error.tab.hh)
+#
+#set(FLEX_SRC lex.das.cc lex.dds.cc lex.ce_expr.cc lex.Error.cc)
 
 set(DAP_SRC
         AttrTable.cc DAS.cc DDS.cc DataDDS.cc DDXParserSAX2.cc
@@ -97,25 +97,43 @@ find_package(FLEX REQUIRED)
 BISON_TARGET(DDSParser dds.yy ${CMAKE_CURRENT_BINARY_DIR}/dds.tab.cc
         DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/dds.tab.hh)
 
-FLEX_TARGET(DDSScanner dds.lex ${CMAKE_CURRENT_BINARY_DIR}/lex.dds.cc)
+message(STATUS "CMAKE_CURRENT_BINARY_DIR = ${CMAKE_CURRENT_BINARY_DIR}")
+# Using an explicit path for the output doesn't work. This does pput the output
+# in the binary directory, however. The error is that the macro calls flex with
+# no space between -o and the destination path. jhrg 6/9/25
+FLEX_TARGET(DDSScanner dds.lex lex.dds.cc)
+set_source_files_properties(${FLEX_DDSScanner_OUTPUTS} PROPERTIES GENERATED TRUE)
+message(STATUS "FLEX_DDSScanner_OUTPUTS = ${FLEX_DDSScanner_OUTPUTS}")
 
 ADD_FLEX_BISON_DEPENDENCY(DDSScanner DDSParser)
+
+BISON_TARGET(DASParser das.yy ${CMAKE_CURRENT_BINARY_DIR}/das.tab.cc
+        DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/das.tab.hh)
+
+FLEX_TARGET(DASScanner das.lex lex.das.cc)
+message(STATUS "FLEX_DASScanner_OUTPUTS = ${FLEX_DASScanner_OUTPUTS}")
+
+ADD_FLEX_BISON_DEPENDENCY(DASScanner DASParser)
 
 add_library(libparsers STATIC
         ${BISON_DDSParser_OUTPUT_SOURCE}
         ${BISON_DDSParser_OUTPUT_HEADER}
         ${FLEX_DDSScanner_OUTPUTS}
+        ${BISON_DASParser_OUTPUT_SOURCE}
+        ${BISON_DASParser_OUTPUT_HEADER}
+        ${FLEX_DASScanner_OUTPUTS}
+
         # other parser/scanner files
 )
 
-target_include_directories(libparsers PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
+#target_include_directories(libparsers PUBLIC
+#        ${CMAKE_CURRENT_BINARY_DIR}
+#)
 
 # Example of Flex/Bison rules (simplified)
-BISON_TARGET(DASParser das.yy ${CMAKE_CURRENT_BINARY_DIR}/das.tab.cc)
-FLEX_TARGET(DASScanner das.lex ${CMAKE_CURRENT_BINARY_DIR}/lex.das.cc)
-ADD_FLEX_BISON_DEPENDENCY(DASScanner DASParser)
+#BISON_TARGET(DASParser das.yy ${CMAKE_CURRENT_BINARY_DIR}/das.tab.cc)
+#FLEX_TARGET(DASScanner das.lex ${CMAKE_CURRENT_BINARY_DIR}/lex.das.cc)
+#ADD_FLEX_BISON_DEPENDENCY(DASScanner DASParser)
 
 # Define libraries
 # add_library(libparsers STATIC ${FLEX_SRC} ${BISON_SRC})
@@ -123,7 +141,7 @@ target_include_directories(libparsers PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_include_directories(libparsers PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(libparsers PRIVATE ${LIBXML2_LIBRARIES})
 
-target_sources(libparsers PRIVATE ${BISON_DASParser_OUTPUTS} ${FLEX_DASScanner_OUTPUTS})
+#target_sources(libparsers PRIVATE ${BISON_DASParser_OUTPUTS} ${FLEX_DASScanner_OUTPUTS})
 
 add_library(libdap SHARED ${DAP_SRC} ${GNU_SRC} ${DAP4_ONLY_SRC})
 target_include_directories(libdap PRIVATE ${LIBXML2_INCLUDE_DIR})
