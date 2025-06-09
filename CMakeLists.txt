@@ -130,19 +130,19 @@ target_include_directories(libdap PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_include_directories(libdap PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(libdap PRIVATE libparsers ${LIBXML2_LIBRARIES} Threads::Threads)
 
-set_target_properties(libdap PROPERTIES VERSION ${LIBDAP_VERSION} SOVERSION ${LIBDAP_SO_VERSION})
+set_target_properties(libdap PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${LIBDAP_SO_VERSION})
 
 add_library(libdapclient SHARED ${CLIENT_SRC})
 target_include_directories(libdapclient PRIVATE ${CURL_INCLUDE_DIRS})
 target_include_directories(libdapclient PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(libdapclient PRIVATE libdap ${CURL_LIBRARIES} Threads::Threads)
 
-set_target_properties(libdapclient PROPERTIES SOVERSION ${CLIENTLIB_SO_VERSION})
+set_target_properties(libdapclient PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${CLIENTLIB_SO_VERSION})
 
 add_library(libdapserver SHARED ${SERVER_SRC})
 target_link_libraries(libdapserver PRIVATE libdap)
 target_include_directories(libdapserver PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-set_target_properties(libdapserver PROPERTIES SOVERSION ${SERVERLIB_SO_VERSION})
+set_target_properties(libdapserver PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${SERVERLIB_SO_VERSION})
 
 # Custom compilation flags and definitions
 
