@@ -76,8 +76,6 @@ doxy.conf
 doxygen_warnings.txt
 main_page.doxygen
 
-CMakeLists.txt
-
 ## libdap specific files
 gl/*.h
 
