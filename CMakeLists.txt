@@ -197,6 +197,8 @@ check_symbol_exists(pthread_create pthread.h HAVE_PTHREADS)
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
 option(BUILD_DEVELOPER "Build in developer mode" OFF)
 
+set(LIBDAP_ROOT "${CMAKE_INSTALL_PREFIX}")
+
 configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
         "${CMAKE_CURRENT_BINARY_DIR}/config.h"

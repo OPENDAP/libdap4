@@ -32,6 +32,7 @@
 /* Client name and version combined */
 #define DVR "@PROJECT_NAME@/LIBDAP_VERSION@"
 
-#define LIBDAP_ROOT "/Users/jimg/src/opendap/hyrax_git/build"
+/* Install prefix for libdap */
+#define LIBDAP_ROOT "@LIBDAP_ROOT@"
 
 #endif //S_WORKS_CONFIG_DAP_H_IN_H
