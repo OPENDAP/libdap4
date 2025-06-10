@@ -91,24 +91,35 @@ find_package(FLEX REQUIRED)
 
 BISON_TARGET(DDSParser dds.yy ${CMAKE_CURRENT_BINARY_DIR}/dds.tab.cc
         DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/dds.tab.hh)
-
-message(STATUS "CMAKE_CURRENT_BINARY_DIR = ${CMAKE_CURRENT_BINARY_DIR}")
-# Using an explicit path for the output doesn't work. This does pput the output
-# in the binary directory, however. The error is that the macro calls flex with
-# no space between -o and the destination path. jhrg 6/9/25
+# Using an explicit path for the output doesn't work. This, however, does put the output
+# in the binary directory. The error is that the macro calls flex with no space between
+# the -o option and the destination path. jhrg 6/9/25
 FLEX_TARGET(DDSScanner dds.lex lex.dds.cc)
 set_source_files_properties(${FLEX_DDSScanner_OUTPUTS} PROPERTIES GENERATED TRUE)
-message(STATUS "FLEX_DDSScanner_OUTPUTS = ${FLEX_DDSScanner_OUTPUTS}")
-
+# Example cmake debugging. jhrg 6/9/25
+# message(STATUS "FLEX_DDSScanner_OUTPUTS = ${FLEX_DDSScanner_OUTPUTS}")
 ADD_FLEX_BISON_DEPENDENCY(DDSScanner DDSParser)
 
 BISON_TARGET(DASParser das.yy ${CMAKE_CURRENT_BINARY_DIR}/das.tab.cc
         DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/das.tab.hh)
 
 FLEX_TARGET(DASScanner das.lex lex.das.cc)
-message(STATUS "FLEX_DASScanner_OUTPUTS = ${FLEX_DASScanner_OUTPUTS}")
 
 ADD_FLEX_BISON_DEPENDENCY(DASScanner DASParser)
+
+BISON_TARGET(CEParser ce_expr.yy ${CMAKE_CURRENT_BINARY_DIR}/ce_expr.tab.cc
+        DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/ce_expr.tab.hh)
+
+FLEX_TARGET(CEScanner ce_expr.lex lex.ce_expr.cc)
+
+ADD_FLEX_BISON_DEPENDENCY(CEScanner CEParser)
+
+BISON_TARGET(ErrorParser Error.yy ${CMAKE_CURRENT_BINARY_DIR}/Error.tab.cc
+        DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/Error.tab.hh)
+
+FLEX_TARGET(ErrorScanner Error.lex lex.Error.cc)
+
+ADD_FLEX_BISON_DEPENDENCY(ErrorScanner ErrorParser)
 
 add_library(libparsers STATIC
         ${BISON_DDSParser_OUTPUT_SOURCE}
@@ -117,6 +128,13 @@ add_library(libparsers STATIC
         ${BISON_DASParser_OUTPUT_SOURCE}
         ${BISON_DASParser_OUTPUT_HEADER}
         ${FLEX_DASScanner_OUTPUTS}
+        ${BISON_CEParser_OUTPUT_SOURCE}
+        ${BISON_CEParser_OUTPUT_HEADER}
+        ${FLEX_CEScanner_OUTPUTS}
+        ${BISON_ErrorParser_OUTPUT_SOURCE}
+        ${BISON_ErrorParser_OUTPUT_HEADER}
+        ${FLEX_ErrorScanner_OUTPUTS}
+
 )
 
 # Define libraries
@@ -162,7 +180,14 @@ include(CheckLibraryExists)
 include(CheckSymbolExists)
 include(CheckCXXSourceCompiles)
 
-# Example checks
+# System headers
+check_include_files("unistd.h" HAVE_UNISTD_H)
+# Are these needed? jhrg 8/9/25
+check_include_files("stdlib.h" HAVE_STDLIB_H)
+check_include_files("sys/types.h;sys/stat.h" HAVE_SYS_TYPES_H_AND_SYS_STAT_H)
+check_include_files("stdint.h" HAVE_STDINT_H)
+
+# Library headers
 check_include_files("libxml/parser.h" HAVE_LIBXML2)
 check_include_files("curl/curl.h" HAVE_CURL)
 check_include_files("tirpc/rpc/rpc.h" HAVE_TIRPC)
