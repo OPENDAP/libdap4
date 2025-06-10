@@ -152,7 +152,7 @@ set_target_properties(dap PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${LI
 add_library(dapclient SHARED ${CLIENT_SRC})
 target_include_directories(dapclient PRIVATE ${CURL_INCLUDE_DIRS})
 target_include_directories(dapclient PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(dapclient PRIVATE dap ${CURL_LIBRARIES} Threads::Threads)
+target_link_libraries(dapclient PRIVATE dap http_dap ${CURL_LIBRARIES} Threads::Threads)
 
 set_target_properties(dapclient PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${CLIENTLIB_SO_VERSION})
 
@@ -181,10 +181,14 @@ include(CheckCXXSourceCompiles)
 
 # System headers
 check_include_files("unistd.h" HAVE_UNISTD_H)
+# Check if <sys/time.h> defines struct tm
+# (This is a proxy for TM_IN_SYS_TIME)
+check_include_files("sys/time.h" HAVE_TM_IN_SYS_TIME)
+
 # Are these needed? jhrg 8/9/25
-check_include_files("stdlib.h" HAVE_STDLIB_H)
-check_include_files("sys/types.h;sys/stat.h" HAVE_SYS_TYPES_H_AND_SYS_STAT_H)
-check_include_files("stdint.h" HAVE_STDINT_H)
+#check_include_files("stdlib.h" HAVE_STDLIB_H)
+#check_include_files("sys/types.h;sys/stat.h" HAVE_SYS_TYPES_H_AND_SYS_STAT_H)
+#check_include_files("stdint.h" HAVE_STDINT_H)
 
 # Library headers
 check_include_files("libxml/parser.h" HAVE_LIBXML2)
@@ -192,6 +196,9 @@ check_include_files("curl/curl.h" HAVE_CURL)
 check_include_files("tirpc/rpc/rpc.h" HAVE_TIRPC)
 
 check_symbol_exists(pthread_create pthread.h HAVE_PTHREADS)
+check_symbol_exists(timegm "time.h" HAVE_TIMEGM)
+check_symbol_exists(mktime "time.h" HAVE_MKTIME)
+check_symbol_exists(strftime "time.h" HAVE_STRFTIME)
 
 # Optional ASAN and Developer mode flags (based on CMake options)
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
@@ -203,6 +210,19 @@ configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
         "${CMAKE_CURRENT_BINARY_DIR}/config.h"
 )
+
+### I am not sure we need this anymore - copied from the autotools build.
+### This is very old, we never build on Solaris anymore. jhrg 6/10/25
+# Check if we're on Solaris (typically passed in by the toolchain)
+# These are best handled via:
+if(CMAKE_SYSTEM_NAME MATCHES "SunOS")
+    add_definitions(-DSOLARIS)
+endif()
+
+# If you want to define _REENTRANT manually:
+add_definitions(-D_REENTRANT)
+
+### End old Solaris stuff
 
 if(BUILD_DEVELOPER)
     target_compile_options(dap PRIVATE -g3 -O0 -Wall -Wcast-align)
