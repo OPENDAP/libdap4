@@ -121,7 +121,7 @@ FLEX_TARGET(ErrorScanner Error.lex lex.Error.cc)
 
 ADD_FLEX_BISON_DEPENDENCY(ErrorScanner ErrorParser)
 
-add_library(libparsers STATIC
+add_library(parsers STATIC
         ${BISON_DDSParser_OUTPUT_SOURCE}
         ${BISON_DDSParser_OUTPUT_HEADER}
         ${FLEX_DDSScanner_OUTPUTS}
@@ -137,39 +137,39 @@ add_library(libparsers STATIC
 )
 
 # Define libraries
-# add_library(libparsers STATIC ${FLEX_SRC} ${BISON_SRC})
-target_include_directories(libparsers PRIVATE ${LIBXML2_INCLUDE_DIR})
-target_include_directories(libparsers PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(libparsers PRIVATE ${LIBXML2_LIBRARIES})
+# add_library(parsers STATIC ${FLEX_SRC} ${BISON_SRC})
+target_include_directories(parsers PRIVATE ${LIBXML2_INCLUDE_DIR})
+target_include_directories(parsers PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(parsers PRIVATE ${LIBXML2_LIBRARIES})
 
-add_library(libdap SHARED ${DAP_SRC} ${GNU_SRC} ${DAP4_ONLY_SRC})
-target_include_directories(libdap PRIVATE ${LIBXML2_INCLUDE_DIR})
-target_include_directories(libdap PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(libdap PRIVATE libparsers ${LIBXML2_LIBRARIES} Threads::Threads)
+add_library(dap SHARED ${DAP_SRC} ${GNU_SRC} ${DAP4_ONLY_SRC})
+target_include_directories(dap PRIVATE ${LIBXML2_INCLUDE_DIR})
+target_include_directories(dap PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(dap PRIVATE parsers ${LIBXML2_LIBRARIES} Threads::Threads)
 
-set_target_properties(libdap PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${LIBDAP_SO_VERSION})
+set_target_properties(dap PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${LIBDAP_SO_VERSION})
 
-add_library(libdapclient SHARED ${CLIENT_SRC})
-target_include_directories(libdapclient PRIVATE ${CURL_INCLUDE_DIRS})
-target_include_directories(libdapclient PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(libdapclient PRIVATE libdap ${CURL_LIBRARIES} Threads::Threads)
+add_library(dapclient SHARED ${CLIENT_SRC})
+target_include_directories(dapclient PRIVATE ${CURL_INCLUDE_DIRS})
+target_include_directories(dapclient PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(dapclient PRIVATE dap ${CURL_LIBRARIES} Threads::Threads)
 
-set_target_properties(libdapclient PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${CLIENTLIB_SO_VERSION})
+set_target_properties(dapclient PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${CLIENTLIB_SO_VERSION})
 
-add_library(libdapserver SHARED ${SERVER_SRC})
-target_link_libraries(libdapserver PRIVATE libdap)
-target_include_directories(libdapserver PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-set_target_properties(libdapserver PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${SERVERLIB_SO_VERSION})
+add_library(dapserver SHARED ${SERVER_SRC})
+target_link_libraries(dapserver PRIVATE dap)
+target_include_directories(dapserver PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+set_target_properties(dapserver PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${SERVERLIB_SO_VERSION})
 
 # Custom compilation flags and definitions
 
 # Define executables
 add_executable(getdap getdap.cc)
-target_link_libraries(getdap PRIVATE libdapclient libdap)
+target_link_libraries(getdap PRIVATE dapclient dap)
 target_include_directories(getdap PRIVATE ${CURL_INCLUDE_DIRS})
 
 add_executable(getdap4 getdap4.cc)
-target_link_libraries(getdap4 PRIVATE libdapclient libdap)
+target_link_libraries(getdap4 PRIVATE dapclient dap)
 target_include_directories(getdap4 PRIVATE ${CURL_INCLUDE_DIRS})
 
 ### make the config.h header
@@ -205,18 +205,18 @@ configure_file(
 )
 
 if(BUILD_DEVELOPER)
-    target_compile_options(libdap PRIVATE -g3 -O0 -Wall -Wcast-align)
+    target_compile_options(dap PRIVATE -g3 -O0 -Wall -Wcast-align)
 else()
-    target_compile_options(libdap PRIVATE -O2 -DNDEBUG -Wall -Wcast-align)
+    target_compile_options(dap PRIVATE -O2 -DNDEBUG -Wall -Wcast-align)
 endif()
 
 if(USE_ASAN)
-    target_compile_options(libdap PRIVATE -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer)
-    target_link_options(libdap PRIVATE -fsanitize=address -fsanitize=undefined)
+    target_compile_options(dap PRIVATE -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer)
+    target_link_options(dap PRIVATE -fsanitize=address -fsanitize=undefined)
 endif()
 
 # Install rules (adjust paths as needed)
-install(TARGETS libdap libdapclient libdapserver getdap getdap4
+install(TARGETS dap dapclient dapserver getdap getdap4
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin)
@@ -245,4 +245,4 @@ set(CLIENT_HDR RCReader.h Connect.h Resource.h D4Connect.h Response.h
 set(SERVER_HDR DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h)
 
 install(FILES ${DAP_HDR} ${DAP4_ONLY_HDR} ${CLIENT_HDR} ${SERVER_HDR}
-        DESTINATION include/libdap)
+        DESTINATION include/dap)
