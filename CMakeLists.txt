@@ -134,7 +134,6 @@ add_library(libparsers STATIC
         ${BISON_ErrorParser_OUTPUT_SOURCE}
         ${BISON_ErrorParser_OUTPUT_HEADER}
         ${FLEX_ErrorScanner_OUTPUTS}
-
 )
 
 # Define libraries

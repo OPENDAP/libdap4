@@ -23,4 +23,15 @@
 #define PACKAGE_NAME "@PROJECT_NAME@"
 #define PACKAGE_VERSION "@PROJECT_VERSION@"
 
+#define DAP_PROTOCOL_VERSION "4.0"
+
+/* What sort of HTTP client is this? */
+#define CNAME "@PROJECT_NAME@"
+/* Client version number */
+#define CVER "@LIBDAP_VERSION@"
+/* Client name and version combined */
+#define DVR "@PROJECT_NAME@/LIBDAP_VERSION@"
+
+#define LIBDAP_ROOT "/Users/jimg/src/opendap/hyrax_git/build"
+
 #endif //S_WORKS_CONFIG_DAP_H_IN_H
