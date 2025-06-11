@@ -5,6 +5,37 @@ set(LIBDAP_VERSION "3.21.1")
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# include(CheckIncludeFiles)
+include(CheckLibraryExists)
+# include(CheckSymbolExists)
+include(CheckCXXSourceCompiles)
+
+include(ConfigureChecks.cmake)
+
+# Optional ASAN and Developer mode flags (based on CMake options)
+option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
+option(BUILD_DEVELOPER "Build in developer mode" OFF)
+
+set(LIBDAP_ROOT "${CMAKE_INSTALL_PREFIX}")
+
+configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+)
+
+### I am not sure we need this anymore - copied from the autotools build.
+### This is very old, we never build on Solaris anymore. jhrg 6/10/25
+# Check if we're on Solaris (typically passed in by the toolchain)
+# These are best handled via:
+if(CMAKE_SYSTEM_NAME MATCHES "SunOS")
+    add_definitions(-DSOLARIS)
+endif()
+
+# If you want to define _REENTRANT manually:
+add_definitions(-D_REENTRANT)
+
+### End old Solaris stuff
+
 ### Set the SO/dylib versions
 
 # How to set these SO variables:
@@ -182,62 +213,6 @@ target_include_directories(getdap PRIVATE ${CURL_INCLUDE_DIRS})
 add_executable(getdap4 getdap4.cc)
 target_link_libraries(getdap4 PRIVATE dapclient dap)
 target_include_directories(getdap4 PRIVATE ${CURL_INCLUDE_DIRS})
-
-### make the config.h header
-
-include(CheckIncludeFiles)
-include(CheckLibraryExists)
-include(CheckSymbolExists)
-include(CheckCXXSourceCompiles)
-
-# System headers
-check_include_files("unistd.h" HAVE_UNISTD_H)
-# Check if <sys/time.h> defines struct tm
-# (This is a proxy for TM_IN_SYS_TIME)
-check_include_files("sys/time.h" HAVE_TM_IN_SYS_TIME)
-check_include_files("pthread.h" HAVE_PTHREAD_H)
-check_include_files("uuid/uuid.h" HAVE_UUID_UUID_H)
-check_include_files("uuid.h" HAVE_UUID_H)
-check_include_files("sys/stat.h" HAVE_SYS_STAT_H)
-check_include_files("sys/types.h;sys/stat.h" HAVE_SYS_TYPES_H_AND_SYS_STAT_H)
-check_include_files("string.h" HAVE_STRING_H)
-check_include_files("stdlib.h" HAVE_STDLIB_H)
-
-# Library headers
-check_include_files("libxml/parser.h" HAVE_LIBXML2)
-check_include_files("curl/curl.h" HAVE_CURL)
-check_include_files("tirpc/rpc/rpc.h" HAVE_TIRPC)
-
-# Functions
-check_symbol_exists(pthread_create pthread.h HAVE_PTHREADS)
-check_symbol_exists(strftime "time.h" HAVE_STRFTIME)
-check_symbol_exists(timegm "time.h" HAVE_TIMEGM)
-check_symbol_exists(mktime "time.h" HAVE_MKTIME)
-check_symbol_exists(atexit "stdlib.h" HAVE_ATEXIT)
-
-# Optional ASAN and Developer mode flags (based on CMake options)
-option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
-option(BUILD_DEVELOPER "Build in developer mode" OFF)
-
-set(LIBDAP_ROOT "${CMAKE_INSTALL_PREFIX}")
-
-configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/config.h"
-)
-
-### I am not sure we need this anymore - copied from the autotools build.
-### This is very old, we never build on Solaris anymore. jhrg 6/10/25
-# Check if we're on Solaris (typically passed in by the toolchain)
-# These are best handled via:
-if(CMAKE_SYSTEM_NAME MATCHES "SunOS")
-    add_definitions(-DSOLARIS)
-endif()
-
-# If you want to define _REENTRANT manually:
-add_definitions(-D_REENTRANT)
-
-### End old Solaris stuff
 
 if(BUILD_DEVELOPER)
     target_compile_options(dap PRIVATE -g3 -O0 -Wall -Wcast-align)
