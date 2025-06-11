@@ -32,6 +32,10 @@
 #cmakedefine ENABLE_ASAN
 #cmakedefine BUILD_DEVELOPER
 
+#ifdef HAVE_PTHREAD_H
+#define USE_POSIX_THREADS 1
+#endif
+
 /* Platform-specific */
 #cmakedefine SOLARIS
 #cmakedefine _REENTRANT

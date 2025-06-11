@@ -5,9 +5,7 @@ set(LIBDAP_VERSION "3.21.1")
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# include(CheckIncludeFiles)
 include(CheckLibraryExists)
-# include(CheckSymbolExists)
 include(CheckCXXSourceCompiles)
 
 include(ConfigureChecks.cmake)
@@ -214,16 +212,28 @@ add_executable(getdap4 getdap4.cc)
 target_link_libraries(getdap4 PRIVATE dapclient dap)
 target_include_directories(getdap4 PRIVATE ${CURL_INCLUDE_DIRS})
 
+set(COMMON_WARNINGS -Wall -Wcast-align)
+
 if(BUILD_DEVELOPER)
-    target_compile_options(dap PRIVATE -g3 -O0 -Wall -Wcast-align)
+    set(DEV_FLAGS -g3 -O0 ${COMMON_WARNINGS})
 else()
-    target_compile_options(dap PRIVATE -O2 -DNDEBUG -Wall -Wcast-align)
+    set(DEV_FLAGS -O2 -DNDEBUG ${COMMON_WARNINGS})
 endif()
 
 if(USE_ASAN)
-    target_compile_options(dap PRIVATE -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer)
-    target_link_options(dap PRIVATE -fsanitize=address -fsanitize=undefined)
+    list(APPEND DEV_FLAGS -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer)
+    set(ASAN_LINK_FLAGS -fsanitize=address -fsanitize=undefined)
 endif()
+
+## NB target_compile_options and ...link... are additive, but this ensures
+## commonality across all targets, including ones added in teh future.
+
+foreach(target dap dapclient dapserver getdap getdap4)
+    target_compile_options(${target} PRIVATE ${DEV_FLAGS})
+    if(USE_ASAN)
+        target_link_options(${target} PRIVATE ${ASAN_LINK_FLAGS})
+    endif()
+endforeach()
 
 # Install rules (adjust paths as needed)
 install(TARGETS dap dapclient dapserver getdap getdap4
