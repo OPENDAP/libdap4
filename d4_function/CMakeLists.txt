@@ -60,6 +60,7 @@ target_include_directories(d4_function_parser
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_BINARY_DIR}
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/d4_ce
 )

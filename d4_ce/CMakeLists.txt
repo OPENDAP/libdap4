@@ -61,6 +61,7 @@ target_include_directories(d4_ce_parser
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
         ${CMAKE_SOURCE_DIR}
+        ${CMAKE_BINARY_DIR}
 )
 
 # Apply compiler flags

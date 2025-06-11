@@ -41,6 +41,7 @@ add_library(http_dap STATIC ${HTTP_DAP_SOURCES})
 # Include directories (matching AM_CPPFLAGS)
 target_include_directories(http_dap
         PUBLIC
+        ${CMAKE_BINARY_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/GNU

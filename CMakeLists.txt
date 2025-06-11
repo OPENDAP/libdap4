@@ -185,7 +185,6 @@ check_include_files("unistd.h" HAVE_UNISTD_H)
 # (This is a proxy for TM_IN_SYS_TIME)
 check_include_files("sys/time.h" HAVE_TM_IN_SYS_TIME)
 check_include_files("pthread.h" HAVE_PTHREAD_H)
-#if HAVE_ATEXIT
 check_include_files("uuid/uuid.h" HAVE_UUID_UUID_H)
 check_include_files("uuid.h" HAVE_UUID_H)
 check_include_files("sys/stat.h" HAVE_SYS_STAT_H)
