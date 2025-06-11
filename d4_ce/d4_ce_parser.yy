@@ -26,12 +26,12 @@
 // A minor edit
 
 %skeleton "lalr1.cc" /* -*- C++ -*- */
-%require "2.5"
+%require "3.3"
 %defines
 
 // The d4ce_parser.tab.cc and .hh files define and declare this class
-%define parser_class_name {D4CEParser}
-//%define api.parser.class {D4CEParser} Waiting on RHEL8 to upgrade to bison 3.3. jhrg 7/19/24
+//%define parser_class_name {D4CEParser} Waiting on RHEL8 to upgrade to bison 3.3. jhrg 7/19/24
+%define api.parser.class {D4CEParser}
 // D4CEParser is in this namespace
 %define api.namespace {libdap}
 

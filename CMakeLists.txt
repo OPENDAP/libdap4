@@ -41,14 +41,12 @@ add_subdirectory(http_dap)
 
 # Include directories (assuming top-level dirs)
 include_directories(
-        # ${CMAKE_CURRENT_SOURCE_DIR}/gl
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/GNU
         ${CMAKE_CURRENT_SOURCE_DIR}/http_dap
 
         # Make the built header(s) findable
         ${CMAKE_CURRENT_BINARY_DIR}
-        ${CMAKE_BINARY_DIR}
 )
 
 # Find required external packages
@@ -94,7 +92,8 @@ BISON_TARGET(DDSParser dds.yy ${CMAKE_CURRENT_BINARY_DIR}/dds.tab.cc
 # Using an explicit path for the output doesn't work. This, however, does put the output
 # in the binary directory. The error is that the macro calls flex with no space between
 # the -o option and the destination path. jhrg 6/9/25
-FLEX_TARGET(DDSScanner dds.lex lex.dds.cc)
+FLEX_TARGET(DDSScanner dds.lex ${CMAKE_CURRENT_BINARY_DIR}/lex.dds.cc)
+
 set_source_files_properties(${FLEX_DDSScanner_OUTPUTS} PROPERTIES GENERATED TRUE)
 # Example cmake debugging. jhrg 6/9/25
 # message(STATUS "FLEX_DDSScanner_OUTPUTS = ${FLEX_DDSScanner_OUTPUTS}")
@@ -103,25 +102,25 @@ ADD_FLEX_BISON_DEPENDENCY(DDSScanner DDSParser)
 BISON_TARGET(DASParser das.yy ${CMAKE_CURRENT_BINARY_DIR}/das.tab.cc
         DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/das.tab.hh)
 
-FLEX_TARGET(DASScanner das.lex lex.das.cc)
+FLEX_TARGET(DASScanner das.lex ${CMAKE_CURRENT_BINARY_DIR}/lex.das.cc)
 
 ADD_FLEX_BISON_DEPENDENCY(DASScanner DASParser)
 
 BISON_TARGET(CEParser ce_expr.yy ${CMAKE_CURRENT_BINARY_DIR}/ce_expr.tab.cc
         DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/ce_expr.tab.hh)
 
-FLEX_TARGET(CEScanner ce_expr.lex lex.ce_expr.cc)
+FLEX_TARGET(CEScanner ce_expr.lex ${CMAKE_CURRENT_BINARY_DIR}/lex.ce_expr.cc)
 
 ADD_FLEX_BISON_DEPENDENCY(CEScanner CEParser)
 
 BISON_TARGET(ErrorParser Error.yy ${CMAKE_CURRENT_BINARY_DIR}/Error.tab.cc
         DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/Error.tab.hh)
 
-FLEX_TARGET(ErrorScanner Error.lex lex.Error.cc)
+FLEX_TARGET(ErrorScanner Error.lex ${CMAKE_CURRENT_BINARY_DIR}/lex.Error.cc)
 
 ADD_FLEX_BISON_DEPENDENCY(ErrorScanner ErrorParser)
 
-add_library(parsers STATIC
+set(GENERATED_PARSER_SRC
         ${BISON_DDSParser_OUTPUT_SOURCE}
         ${BISON_DDSParser_OUTPUT_HEADER}
         ${FLEX_DDSScanner_OUTPUTS}
@@ -134,6 +133,18 @@ add_library(parsers STATIC
         ${BISON_ErrorParser_OUTPUT_SOURCE}
         ${BISON_ErrorParser_OUTPUT_HEADER}
         ${FLEX_ErrorScanner_OUTPUTS}
+)
+
+add_library(parsers STATIC ${GENERATED_PARSER_SRC})
+
+# Ensure grammar files build before other sources
+set_source_files_properties(${GENERATED_PARSER_SRC}
+        PROPERTIES GENERATED TRUE)
+
+# Custom cleanup
+set_directory_properties(PROPERTIES
+        ADDITIONAL_MAKE_CLEAN_FILES
+        "${GENERATED_PARSER_SRC};stack.hh;location.hh;position.hh"
 )
 
 # Define libraries

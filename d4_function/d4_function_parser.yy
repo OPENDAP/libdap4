@@ -24,12 +24,12 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 %skeleton "lalr1.cc" /* -*- C++ -*- */
-%require "2.5"
+%require "3.3"
 %defines
 
 // The d4_function_parser.tab.cc and .hh files define and declare this class
-%define parser_class_name {D4FunctionParser}
-// %define api.parser.class {D4FunctionParser}. Waiting on RHEL8 to upgrade bison. jhrg 7/19/24
+// %define parser_class_name {D4FunctionParser} Waiting on RHEL8 to upgrade bison. jhrg 7/19/24
+%define api.parser.class {D4FunctionParser}
 
 // D4FunctionParser is in this namespace
 %define api.namespace {libdap}
