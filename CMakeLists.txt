@@ -5,6 +5,9 @@ set(LIBDAP_VERSION "3.21.1")
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+find_package(CppUnit REQUIRED)
+
 include(CheckLibraryExists)
 include(CheckCXXSourceCompiles)
 
@@ -266,3 +269,7 @@ set(SERVER_HDR DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h)
 
 install(FILES ${DAP_HDR} ${DAP4_ONLY_HDR} ${CLIENT_HDR} ${SERVER_HDR}
         DESTINATION include/dap)
+
+enable_testing()
+add_subdirectory(tests)
+add_subdirectory(unit-tests)
