@@ -9,106 +9,121 @@ target_include_directories(test_support
 		${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# List all your test sources (each one contains main())
-## Not tested
-#AISDatabaseParserTest.cc
-#AISMergeTest.cc
-#AISResourcesTest.cc
-
-set(TEST_SOURCES
-		ancT.cc
-		arrayT.cc
-		ArrayTest.cc
-		attrTableT.cc
-		AttrTableTest.cc
-		BaseTypeFactoryTest.cc
-		BigArrayTest.cc
-		ByteTest.cc
-		chunked_iostream_test.cc
-		D4AsyncDocTest.cc
-		D4AttributesTest.cc
-		D4BaseTypeFactoryTest.cc
-		D4DimensionsTest.cc
-		D4EnumDefsTest.cc
-		D4EnumTest.cc
-		D4FilterClauseTest.cc
-		D4GroupTest.cc
-		D4MarshallerTest.cc
-		D4ParserSax2Test.cc
-		D4SequenceTest.cc
-		D4UnMarshallerTest.cc
-		dasT.cc
-		DASTest.cc
-		ddsT.cc
-		DDSTest.cc
-		DDXParserTest.cc
-		DmrRoundTripTest.cc
-		DMRTest.cc
-		DmrToDap2Test.cc
-		DODSFilterTest.cc
-		ErrorTest.cc
-		fdiostreamTest.cc
-		Float32Test.cc
-		Float64Test.cc
-		generalUtilTest.cc
-		GridTest.cc
-		Int16Test.cc
-		Int32Test.cc
-		Int64Test.cc
-		Int8Test.cc
-		IsDap4ProjectedTest.cc
-		MarshallerFutureTest.cc
-		MarshallerTest.cc
-		marshT.cc
-		MIMEUtilTest.cc
-		parserUtilTest.cc
-		RCReaderTest.cc
-		RegexTest.cc
-		ResponseBuilderTest.cc
-		ResponseCacheTest.cc
-		sequenceT.cc
-		SequenceTest.cc
-		ServerFunctionsListUnitTest.cc
-		SignalHandlerTest.cc
-		structT.cc
-		testFile.cc
-		ThreadTest.cc
-		UInt16Test.cc
-		UInt32Test.cc
-		UInt64Test.cc
-		util_mitTest.cc
+# Some of these link only with libdap, some link with test_support, too.
+set(TESTS_DAP_ONLY
+		RegexTest.cc ErrorTest.cc ArrayTest.cc GridTest.cc AttrTableTest.cc
+		ByteTest.cc MIMEUtilTest.cc DASTest.cc DDSTest.cc
+		Int8Test.cc Int16Test.cc UInt16Test.cc Int32Test.cc
+		UInt32Test.cc Int64Test.cc UInt64Test.cc Float32Test.cc
+		Float64Test.cc D4BaseTypeFactoryTest.cc BaseTypeFactoryTest.cc
+		DDXParserTest.cc generalUtilTest.cc parserUtilTest.cc SignalHandlerTest.cc
+		ServerFunctionsListUnitTest.cc D4MarshallerTest.cc D4UnMarshallerTest.cc
+		D4DimensionsTest.cc  D4EnumDefsTest.cc D4GroupTest.cc D4ParserSax2Test.cc
+		D4AttributesTest.cc D4EnumTest.cc chunked_iostream_test.cc D4AsyncDocTest.cc
+		DMRTest.cc DmrRoundTripTest.cc DmrToDap2Test.cc D4FilterClauseTest.cc
+		IsDap4ProjectedTest.cc MarshallerFutureTest.cc
 )
 
-# Loop through each file and build as its own executable
-foreach(test_file ${TEST_SOURCES})
-	# Get the base name (e.g., TestAttrTable from TestAttrTable.cc)
-	get_filename_component(test_name ${test_file} NAME_WE)
+# BigArrayTest.cc seems to break things. jhrg 6/12/25
 
-	# Define the executable
-	add_executable(${test_name} ${test_file})
+set(TESTS_DAPCLIENT
+		util_mitTest.cc RCReaderTest.cc
+)
 
-	# Link to libdap and CppUnit
-	target_link_libraries(${test_name}
-			PRIVATE
-			dap
-			test_types
-			CppUnit::CppUnit
-			test_support
-	)
+set(TESTS_DAPSERVER
+		ancT.cc
+)
 
-	# Include the top-level for headers and config_dap.h
-	target_include_directories(${test_name}
+# MarshallerTest links with both dapclient and the test-types lib. For this
+# one special case, add the dapclient library 'by hand.' See below. jhrg 6/12/25
+set(TESTS_WITH_TEST_TYPES
+		SequenceTest.cc arrayT.cc marshT.cc attrTableT.cc
+		structT.cc sequenceT.cc ddsT.cc dasT.cc
+		D4SequenceTest.cc
+)
+
+# This cmake function sets up the base condition, linking with libdap.
+# Other code adds more libraries using additional calls to target_link_libraries()
+# which is 'additive.
+function(build_test target source_files)
+	add_executable(${target} ${source_files})
+
+	target_include_directories(${target}
 			PRIVATE
 			${CMAKE_CURRENT_BINARY_DIR}
 			${CMAKE_SOURCE_DIR}
 			${CMAKE_BINARY_DIR}
 	)
 
-	# Register with CTest
-	add_test(NAME ${test_name} COMMAND ${test_name})
+	target_link_libraries(${target}
+			PRIVATE
+			dap
+			test_support
+			CppUnit::CppUnit
+	)
+
+	add_test(NAME ${target} COMMAND ${target})
 	# This enables using `ctest -L unit` to run just these tests.
 	set_tests_properties(${test_name} PROPERTIES LABELS "unit")
+endfunction()
+
+foreach(src ${TESTS_DAP_ONLY})
+	get_filename_component(tgt ${src} NAME_WE)
+	build_test(${tgt} ${src})
 endforeach()
+
+foreach(src ${TESTS_DAPCLIENT})
+	get_filename_component(tgt ${src} NAME_WE)
+	build_test(${tgt} ${src})
+	target_link_libraries(${tgt} PRIVATE dapclient)
+endforeach()
+
+foreach(src ${TESTS_DAPSERVER})
+	get_filename_component(tgt ${src} NAME_WE)
+	build_test(${tgt} ${src})
+	target_link_libraries(${tgt} PRIVATE dapserver)
+endforeach()
+
+foreach(src ${TESTS_WITH_TEST_TYPES})
+	get_filename_component(tgt ${src} NAME_WE)
+	build_test(${tgt} ${src})
+	target_link_libraries(${tgt} PRIVATE test-types)
+endforeach()
+
+# Here's where we link up MarshallerTest
+build_test(MarshallerTest MarshallerTest.cc)
+target_link_libraries(MarshallerTest PRIVATE test-types dapclient)
+
+## Loop through each file and build as its own executable
+#foreach(test_file ${TEST_SOURCES})
+#	# Get the base name (e.g., TestAttrTable from TestAttrTable.cc)
+#	get_filename_component(test_name ${test_file} NAME_WE)
+#
+#	# Define the executable
+#	add_executable(${test_name} ${test_file})
+#
+#	# Link to libdap and CppUnit
+#	target_link_libraries(${test_name}
+#			PRIVATE
+#			dap
+#			test_types
+#			CppUnit::CppUnit
+#			test_support
+#	)
+#
+#	# Include the top-level for headers and config_dap.h
+#	target_include_directories(${test_name}
+#			PRIVATE
+#			${CMAKE_CURRENT_BINARY_DIR}
+#			${CMAKE_SOURCE_DIR}
+#			${CMAKE_BINARY_DIR}
+#	)
+#
+#	# Register with CTest
+#	add_test(NAME ${test_name} COMMAND ${test_name})
+#	# This enables using `ctest -L unit` to run just these tests.
+#	set_tests_properties(${test_name} PROPERTIES LABELS "unit")
+#endforeach()
 
 # Set TEST_SRC_DIR to the absolute path of the test sources
 set(abs_srcdir "${CMAKE_CURRENT_SOURCE_DIR}")
