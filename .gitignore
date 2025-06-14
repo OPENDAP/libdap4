@@ -71,7 +71,6 @@ configure
 stamp-h?
 aclocal.m4
 libtool
-CMakeLists.txt
 doxy.conf
 doxygen_warnings.txt
 main_page.doxygen

@@ -279,3 +279,4 @@ install(FILES ${DAP_HDR} ${DAP4_ONLY_HDR} ${CLIENT_HDR} ${SERVER_HDR}
 enable_testing()
 add_subdirectory(tests)
 add_subdirectory(unit-tests)
+add_subdirectory(d4_ce/unit-tests)
