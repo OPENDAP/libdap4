@@ -326,7 +326,7 @@ public:
         DBG(cerr << "Entering fetch_url_test 4" << endl);
         char c;
         try {
-            string url = (string) "file://" + TEST_SRC_DIR + "/test_config.h";
+            string url = (string) "file://" + TEST_BUILD_DIR + "/test_config.h";
             unique_ptr<HTTPResponse> stuff(http->fetch_url(url));
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream()) &&
                            !feof(stuff->get_stream()));
@@ -349,7 +349,7 @@ public:
         http->set_use_cpp_streams(true);
         char c;
         try {
-            string url = (string) "file://" + TEST_SRC_DIR + "/test_config.h";
+            string url = (string) "file://" + TEST_BUILD_DIR + "/test_config.h";
             unique_ptr<HTTPResponse> stuff(http->fetch_url(url));
 
             stuff->get_cpp_stream()->read(&c, 1);
