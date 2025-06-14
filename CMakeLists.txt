@@ -12,7 +12,6 @@ find_package(LibXml2 REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Threads REQUIRED)
 
-
 include(CheckLibraryExists)
 include(CheckCXXSourceCompiles)
 
@@ -22,6 +21,7 @@ include(ConfigureChecks.cmake)
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
 option(BUILD_DEVELOPER "Build in developer mode" OFF)
 option(USE_CPP_11_REGEX "Expect and use C++11 Regex code" ON)
+option(BIG_ARRAY_TEST "Run the Big Array Unit test - takes a long time" OFF)
 
 set(COMMON_WARNINGS -Wall -Wcast-align)
 
@@ -41,6 +41,16 @@ set(LIBDAP_ROOT "${CMAKE_INSTALL_PREFIX}")
 configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
         "${CMAKE_CURRENT_BINARY_DIR}/config.h"
+)
+
+configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/dods-datatypes-static.h"
+        "${CMAKE_CURRENT_BINARY_DIR}/dods-datatypes.h"
+)
+
+configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/xdr-datatypes-static.h"
+        "${CMAKE_CURRENT_BINARY_DIR}/xdr-datatypes.h"
 )
 
 ### I am not sure we need this anymore - copied from the autotools build.
@@ -99,11 +109,6 @@ include_directories(
         # Make the built header(s) findable
         ${CMAKE_CURRENT_BINARY_DIR}
 )
-
-# Find required external packages
-#find_package(LibXml2 REQUIRED)
-#find_package(CURL REQUIRED)
-#find_package(Threads REQUIRED)
 
 # Define sources
 set(GNU_SRC GNU/GetOpt.cc GNU/GNURegex.cc)
@@ -186,8 +191,6 @@ set(GENERATED_PARSER_SRC
         ${FLEX_ErrorScanner_OUTPUTS}
 )
 
-add_library(parsers STATIC ${GENERATED_PARSER_SRC})
-
 # Ensure grammar files build before other sources
 set_source_files_properties(${GENERATED_PARSER_SRC}
         PROPERTIES GENERATED TRUE)
@@ -199,7 +202,7 @@ set_directory_properties(PROPERTIES
 )
 
 # Define libraries
-# add_library(parsers STATIC ${FLEX_SRC} ${BISON_SRC})
+add_library(parsers STATIC ${GENERATED_PARSER_SRC})
 target_include_directories(parsers PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_include_directories(parsers PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(parsers PRIVATE ${LIBXML2_LIBRARIES})
@@ -233,22 +236,6 @@ target_include_directories(getdap PRIVATE ${CURL_INCLUDE_DIRS})
 add_executable(getdap4 getdap4.cc)
 target_link_libraries(getdap4 PRIVATE dapclient dap)
 target_include_directories(getdap4 PRIVATE ${CURL_INCLUDE_DIRS})
-
-#set(COMMON_WARNINGS -Wall -Wcast-align)
-#
-#if(BUILD_DEVELOPER)
-#    set(DEV_FLAGS -g3 -O0 ${COMMON_WARNINGS})
-#else()
-#    set(DEV_FLAGS -O2 -DNDEBUG ${COMMON_WARNINGS})
-#endif()
-#
-#if(USE_ASAN)
-#    list(APPEND DEV_FLAGS -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer)
-#    set(ASAN_LINK_FLAGS -fsanitize=address -fsanitize=undefined)
-#endif()
-#
-## NB target_compile_options and ...link... are additive, but this ensures
-## commonality across all targets, including ones added in teh future.
 
 foreach(target dap dapclient dapserver getdap getdap4)
     target_compile_options(${target} PRIVATE ${DEV_FLAGS})

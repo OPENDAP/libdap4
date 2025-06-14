@@ -94,36 +94,10 @@ endforeach()
 build_test(MarshallerTest MarshallerTest.cc)
 target_link_libraries(MarshallerTest PRIVATE test-types dapclient)
 
-## Loop through each file and build as its own executable
-#foreach(test_file ${TEST_SOURCES})
-#	# Get the base name (e.g., TestAttrTable from TestAttrTable.cc)
-#	get_filename_component(test_name ${test_file} NAME_WE)
-#
-#	# Define the executable
-#	add_executable(${test_name} ${test_file})
-#
-#	# Link to libdap and CppUnit
-#	target_link_libraries(${test_name}
-#			PRIVATE
-#			dap
-#			test_types
-#			CppUnit::CppUnit
-#			test_support
-#	)
-#
-#	# Include the top-level for headers and config_dap.h
-#	target_include_directories(${test_name}
-#			PRIVATE
-#			${CMAKE_CURRENT_BINARY_DIR}
-#			${CMAKE_SOURCE_DIR}
-#			${CMAKE_BINARY_DIR}
-#	)
-#
-#	# Register with CTest
-#	add_test(NAME ${test_name} COMMAND ${test_name})
-#	# This enables using `ctest -L unit` to run just these tests.
-#	set_tests_properties(${test_name} PROPERTIES LABELS "unit")
-#endforeach()
+# This test will cause Travis to time out. jhrg 6/14/25
+if (BIG_ARRAY_TEST)
+	build_test(BigArrayTest BigArrayTest.cc)
+endif()
 
 # Set TEST_SRC_DIR to the absolute path of the test sources
 set(abs_srcdir "${CMAKE_CURRENT_SOURCE_DIR}")
