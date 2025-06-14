@@ -22,6 +22,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -62,7 +64,7 @@ private:
 
     bool re_match(Regex &r, const char *s) { return r.match(s, strlen(s)) == (int)strlen(s); }
 
-    struct REMatch : public unary_function<const string &, bool> {
+    struct REMatch {
         Regex &d_re;
         explicit REMatch(Regex &re) : d_re(re) {}
         ~REMatch() = default;

@@ -57,9 +57,6 @@ class Regex {
 private:
 #if USE_CPP_11_REGEX
     std::regex d_exp;
-
-    void init(const char *s) { d_exp = std::regex(s); }
-    void init(const std::string &s) { d_exp = std::regex(s); } // , std::regex::basic
 #else
     // d_preg was a regex_t* but I needed to include both regex.h and config.h
     // to make the gnulib code work. Because this header is installed (and is
@@ -68,9 +65,6 @@ private:
     // would be cleaner to use a special class, but for one field that seems
     // like overkill.
     void *d_preg;
-
-    void init(const char *t);
-    void init(const std::string &s) { init(s.c_str()); } // std::regex::ECMAScript
 #endif
 
     // These test classes need access to the init() methods. jhrg 6/14/25
@@ -86,8 +80,14 @@ public:
     explicit Regex(const std::string &s) { init(s); }
 
 #if USE_CPP_11_REGEX
+    void init(const char *s) { d_exp = std::regex(s); }
+    void init(const std::string &s) { d_exp = std::regex(s); } // , std::regex::basic
+
     ~Regex() = default;
 #else
+    void init(const char *t);
+    void init(const std::string &s) { init(s.c_str()); } // std::regex::ECMAScript
+
     ~Regex();
 #endif
 
