@@ -7,6 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 find_package(CppUnit REQUIRED)
+# Find required external packages
+find_package(LibXml2 REQUIRED)
+find_package(CURL REQUIRED)
+find_package(Threads REQUIRED)
+
 
 include(CheckLibraryExists)
 include(CheckCXXSourceCompiles)
@@ -16,6 +21,20 @@ include(ConfigureChecks.cmake)
 # Optional ASAN and Developer mode flags (based on CMake options)
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
 option(BUILD_DEVELOPER "Build in developer mode" OFF)
+option(USE_CPP_11_REGEX "Expect and use C++11 Regex code" ON)
+
+set(COMMON_WARNINGS -Wall -Wcast-align)
+
+if(BUILD_DEVELOPER)
+    set(DEV_FLAGS -g3 -O0 ${COMMON_WARNINGS})
+else()
+    set(DEV_FLAGS -O2 -DNDEBUG ${COMMON_WARNINGS})
+endif()
+
+if(USE_ASAN)
+    list(APPEND DEV_FLAGS -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer)
+    set(ASAN_LINK_FLAGS -fsanitize=address -fsanitize=undefined)
+endif()
 
 set(LIBDAP_ROOT "${CMAKE_INSTALL_PREFIX}")
 
@@ -82,9 +101,9 @@ include_directories(
 )
 
 # Find required external packages
-find_package(LibXml2 REQUIRED)
-find_package(CURL REQUIRED)
-find_package(Threads REQUIRED)
+#find_package(LibXml2 REQUIRED)
+#find_package(CURL REQUIRED)
+#find_package(Threads REQUIRED)
 
 # Define sources
 set(GNU_SRC GNU/GetOpt.cc GNU/GNURegex.cc)
@@ -215,19 +234,19 @@ add_executable(getdap4 getdap4.cc)
 target_link_libraries(getdap4 PRIVATE dapclient dap)
 target_include_directories(getdap4 PRIVATE ${CURL_INCLUDE_DIRS})
 
-set(COMMON_WARNINGS -Wall -Wcast-align)
-
-if(BUILD_DEVELOPER)
-    set(DEV_FLAGS -g3 -O0 ${COMMON_WARNINGS})
-else()
-    set(DEV_FLAGS -O2 -DNDEBUG ${COMMON_WARNINGS})
-endif()
-
-if(USE_ASAN)
-    list(APPEND DEV_FLAGS -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer)
-    set(ASAN_LINK_FLAGS -fsanitize=address -fsanitize=undefined)
-endif()
-
+#set(COMMON_WARNINGS -Wall -Wcast-align)
+#
+#if(BUILD_DEVELOPER)
+#    set(DEV_FLAGS -g3 -O0 ${COMMON_WARNINGS})
+#else()
+#    set(DEV_FLAGS -O2 -DNDEBUG ${COMMON_WARNINGS})
+#endif()
+#
+#if(USE_ASAN)
+#    list(APPEND DEV_FLAGS -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer)
+#    set(ASAN_LINK_FLAGS -fsanitize=address -fsanitize=undefined)
+#endif()
+#
 ## NB target_compile_options and ...link... are additive, but this ensures
 ## commonality across all targets, including ones added in teh future.
 
