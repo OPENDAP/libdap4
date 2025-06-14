@@ -3,6 +3,8 @@
 set(HTTP_DAP_TESTS HTTPCacheTest.cc HTTPConnectTest.cc HTTPThreadsConnectTest.cc)
 
 function(build_test target source_files)
+	# Added the common source file here. Could be a library. We could make a
+	# common unit test library. jhrg 6/14/25
 	add_executable(${target} ${source_files} remove_directory.cc)
 
 	target_include_directories(${target}
@@ -27,7 +29,7 @@ endfunction()
 
 foreach(src ${HTTP_DAP_TESTS})
 	get_filename_component(tgt ${src} NAME_WE)
-	build_test(${tgt} ${src})
+	build_test(${tgt} ${src})	# Adding more than one source file here did not work. jhrg 6/14/25
 endforeach()
 
 # Set TEST_SRC_DIR to the absolute path of the test sources
