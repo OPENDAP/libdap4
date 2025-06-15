@@ -7,10 +7,13 @@
 #define BYTESWAP_H
 
 #if defined(__GNUC__)
+
 #define bswap_16 __builtin_bswap16
 #define bswap_32 __builtin_bswap32
 #define bswap_64 __builtin_bswap64
+
 #else
+
 static inline uint16_t bswap_16(uint16_t x)
 {
     return ((((x) & 0x00FF) << 8) |
@@ -36,6 +39,7 @@ static inline uint64_t bswap_64(uint64_t x)
             (((x) & 0x00FF000000000000ULL) >> 40) |
             (((x) & 0xFF00000000000000ULL) >> 56));
 }
+
 #endif
 
 #endif /* BYTESWAP_H */
