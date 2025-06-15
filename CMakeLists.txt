@@ -255,12 +255,14 @@ set(DAP_HDR AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h
         DDXExceptions.h BaseType.h Byte.h Int32.h Float64.h Str.h Url.h Vector.h Array.h
         Constructor.h Structure.h Sequence.h Grid.h UInt32.h Int16.h UInt16.h Float32.h
         BaseTypeFactory.h ObjectType.h EncodingType.h SignalHandler.h Error.h InternalErr.h
-        util.h escaping.h parser.h debug.h dods-limits.h dods-datatypes.h Type.h util_mit.h
+        util.h escaping.h parser.h debug.h dods-limits.h Type.h util_mit.h
         expr.h Clause.h RValue.h ConstraintEvaluator.h ce_parser.h DapIndent.h DapObj.h
         XDRFileMarshaller.h Marshaller.h UnMarshaller.h XDRFileUnMarshaller.h
-        XDRStreamMarshaller.h XDRUtils.h xdr-datatypes.h mime_util.h cgi_util.h
+        XDRStreamMarshaller.h XDRUtils.h mime_util.h cgi_util.h
         XDRStreamUnMarshaller.h Keywords2.h XMLWriter.h ServerFunctionsList.h
         ServerFunction.h media_types.h DapXmlNamespaces.h parser-util.h MarshallerThread.h)
+
+set(DAP_GENERATED_HDR ${CMAKE_BINARY_DIR}/xdr-datatypes.h  ${CMAKE_BINARY_DIR}/dods-datatypes.h)
 
 set(DAP4_ONLY_HDR D4StreamMarshaller.h D4StreamUnMarshaller.h Int64.h UInt64.h Int8.h
         D4ParserSax2.h D4BaseTypeFactory.h D4Maps.h D4Dimensions.h D4EnumDefs.h D4Group.h
@@ -273,7 +275,7 @@ set(CLIENT_HDR RCReader.h Connect.h Resource.h D4Connect.h Response.h
 
 set(SERVER_HDR DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h)
 
-install(FILES ${DAP_HDR} ${DAP4_ONLY_HDR} ${CLIENT_HDR} ${SERVER_HDR}
+install(FILES ${DAP_HDR} ${DAP_GENERATED_HDR} ${DAP4_ONLY_HDR} ${CLIENT_HDR} ${SERVER_HDR}
         DESTINATION include/dap)
 
 enable_testing()
