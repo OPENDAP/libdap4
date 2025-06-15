@@ -230,8 +230,8 @@ HTTPCacheTable::CacheEntry *HTTPCacheTable::cache_index_parse_line(const char *l
 }
 
 /** Functor which writes a single CacheEntry to the \c .index file. */
+class WriteOneCacheEntry {
 
-class WriteOneCacheEntry : public unary_function<HTTPCacheTable::CacheEntry *, void> {
     FILE *d_fp;
 
 public:

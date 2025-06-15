@@ -103,7 +103,7 @@ static int start_line;		/* used in quote and comment error handlers */
 %option noinput
 %option 8bit
 %option prefix="das"
-%option outfile="lex.das.cc"
+/* %option outfile="lex.das.cc" */
  
 %x quote
 %x comment

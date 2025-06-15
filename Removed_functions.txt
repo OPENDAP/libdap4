@@ -13,12 +13,12 @@ CONTENTS
 INTRODUCTION
 
 This file lists methods that were marked as deprecated in previous versions
-of the library and have now been removed. In all cases there are relacement
+of the library and have now been removed. In all cases, there are replacement
 methods. The changes documented here correspond to going from the 3.5 to 3.6
 versions of libdap.
 
-For some of the methods, I've listed only the most general version
-since all the more speciifc versions were also removed. For example, if
+For some methods, I've listed only the most general version
+since all the more specific versions were also removed. For example, if
 BaseType::print_val(...) was removed, so was Int32::print_val, ...
 
 OSTREAM METHODS

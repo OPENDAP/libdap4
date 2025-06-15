@@ -92,7 +92,7 @@ static void store_word();
 %option noinput
 %option 8bit
 %option prefix="dds"
-%option outfile="lex.dds.cc"
+/* %option outfile="lex.dds.cc" */
 %x comment
 
 DATASET 	DATASET|Dataset|dataset

@@ -22,6 +22,8 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
+#include "config.h"
+
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -62,7 +64,7 @@ private:
 
     bool re_match(Regex &r, const char *s) { return r.match(s, strlen(s)) == (int)strlen(s); }
 
-    struct REMatch : public unary_function<const string &, bool> {
+    struct REMatch {
         Regex &d_re;
         explicit REMatch(Regex &re) : d_re(re) {}
         ~REMatch() = default;
@@ -324,7 +326,7 @@ public:
         DBG(cerr << "Entering fetch_url_test 4" << endl);
         char c;
         try {
-            string url = (string) "file://" + TEST_SRC_DIR + "/test_config.h";
+            string url = (string) "file://" + TEST_BUILD_DIR + "/test_config.h";
             unique_ptr<HTTPResponse> stuff(http->fetch_url(url));
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream()) &&
                            !feof(stuff->get_stream()));
@@ -347,7 +349,7 @@ public:
         http->set_use_cpp_streams(true);
         char c;
         try {
-            string url = (string) "file://" + TEST_SRC_DIR + "/test_config.h";
+            string url = (string) "file://" + TEST_BUILD_DIR + "/test_config.h";
             unique_ptr<HTTPResponse> stuff(http->fetch_url(url));
 
             stuff->get_cpp_stream()->read(&c, 1);

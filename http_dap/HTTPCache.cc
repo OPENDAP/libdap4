@@ -1009,8 +1009,7 @@ vector<string> HTTPCache::get_conditional_request_headers(const string &url) {
 
 /** Functor/Predicate which orders two MIME headers based on the header name
     only (discounting the value). */
-
-struct HeaderLess : binary_function<const string &, const string &, bool> {
+struct HeaderLess {
     bool operator()(const string &s1, const string &s2) const {
         return s1.substr(0, s1.find(':')) < s2.substr(0, s2.find(':'));
     }
