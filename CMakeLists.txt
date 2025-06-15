@@ -281,3 +281,9 @@ add_subdirectory(tests)
 add_subdirectory(unit-tests)
 add_subdirectory(d4_ce/unit-tests)
 add_subdirectory(http_dap/unit-tests)
+
+# Custom cleanup for coverage files, etc.
+set_directory_properties(PROPERTIES
+        ADDITIONAL_MAKE_CLEAN_FILES "*.gcda;*.gcno;*.gcov"
+)
+
