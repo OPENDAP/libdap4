@@ -14,7 +14,7 @@ function(build_test target source_files)
 	target_link_libraries(${target}
 			PRIVATE
 			dap
-			test_support
+			dapclient
 			CppUnit::CppUnit
 	)
 
@@ -23,7 +23,7 @@ function(build_test target source_files)
 	set_tests_properties(${test_name} PROPERTIES LABELS "unit")
 endfunction()
 
-(set HTTP_DAP_TESTS HTTPCacheTest.cc HTTPConnectTest.cc HTTPThreadsConnectTest.cc)
+set(HTTP_DAP_TESTS HTTPCacheTest.cc HTTPConnectTest.cc HTTPThreadsConnectTest.cc)
 
 foreach(src ${HTTP_DAP_TESTS})
 	get_filename_component(tgt ${src} NAME_WE)
