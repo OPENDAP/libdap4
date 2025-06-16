@@ -14,7 +14,7 @@ mkdir build/libdap4
 cmake ../../external/libdap4
 ```
 
-For the 'normal' case, where 'build' is make inside the libdap4 top-level
+For the 'normal' case, where 'build' is made inside the libdap4 top-level
 source directory:
 ```bash
 mkdir build/

@@ -276,7 +276,7 @@ set(CLIENT_HDR RCReader.h Connect.h Resource.h D4Connect.h Response.h
 set(SERVER_HDR DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h)
 
 install(FILES ${DAP_HDR} ${DAP_GENERATED_HDR} ${DAP4_ONLY_HDR} ${CLIENT_HDR} ${SERVER_HDR}
-        DESTINATION include/dap)
+        DESTINATION include/libdap)
 
 enable_testing()
 add_subdirectory(tests)
