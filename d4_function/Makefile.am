@@ -46,14 +46,14 @@ pkginclude_HEADERS = D4FunctionEvaluator.h
 # This line forces make to build the grammar files first, which is
 # important because some of the cc files include the parser headers.
 BUILT_SOURCES = lex.d4_function.cc d4_function_parser.tab.cc d4_function_parser.tab.hh \
-	location.hh
-# stack.hh position.hh; removed jhrg 6/17/25
+	location.hh stack.hh position.hh
+# stack.hh position.hh; removed for bison 3.3 jhrg 6/17/25, added back for 3.0 6/17/25
 
 libd4_function_parser_la_SOURCES = D4FunctionEvaluator.cc	\
 	D4FunctionEvaluator.h D4FunctionScanner.h	\
 	d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc \
-	location.hh
-# stack.hh position.hh; removed jhrg 6/17/25
+	location.hh stack.hh position.hh
+# stack.hh position.hh
 
 libd4_ce_parser_la_CXXFLAGS = $(AM_CPPFLAGS) $(AM_CXXFLAGS)
 
@@ -64,17 +64,15 @@ CLEANFILES = *.gcda *.gcno *.gcov
 DISTCLEANFILES = 
 
 clean-local:
-	-rm d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc position.hh
+	-rm d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc \
+	    position.hh stack.hh position.hh
+# stack.hh position.hh
 
-# stack.hh position.hh; removed jhrg 6/17/25
 %.tab.cc %.tab.hh: %.yy
 	$(YACC) $(YFLAGS) $<
 
-location.hh: d4_function_parser.tab.cc d4_function_parser.tab.hh
-# stack.hh position.hh; removed jhrg 6/17/25
-
-#d4_function_parser.tab.cc d4_function_parser.tab.hh location.hh: d4_function_parser.yy
-#	$(YACC) $(YFLAGS) $<
+location.hh stack.hh position.hh: d4_function_parser.tab.cc d4_function_parser.tab.hh
+# stack.hh position.hh
 
 # See the comment in ../d4_ce
 dist-hook:

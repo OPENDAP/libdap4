@@ -50,10 +50,10 @@ pkginclude_HEADERS = D4ConstraintEvaluator.h
 # This line forces make to build the grammar files first, which is
 # important because some of the cc files include the parser headers.
 BUILT_SOURCES = lex.d4_ce.cc d4_ce_parser.tab.hh d4_ce_parser.tab.cc \
-    location.hh
+    location.hh stack.hh position.hh
 
 libd4_ce_parser_la_SOURCES = lex.d4_ce.cc d4_ce_parser.tab.cc	\
-	d4_ce_parser.tab.hh location.hh \
+	d4_ce_parser.tab.hh location.hh stack.hh position.hh\
 	D4ConstraintEvaluator.cc  D4ConstraintEvaluator.h D4CEScanner.h   
 
 libd4_ce_parser_la_CXXFLAGS = $(AM_CPPFLAGS) $(AM_CXXFLAGS)
@@ -65,12 +65,13 @@ CLEANFILES = *.gcda *.gcno *.gcov
 DISTCLEANFILES = 
 
 clean-local:
-	-rm d4_ce_parser.tab.cc	d4_ce_parser.tab.hh lex.d4_ce.cc location.hh
+	-rm d4_ce_parser.tab.cc	d4_ce_parser.tab.hh lex.d4_ce.cc location.hh \
+	    stack.hh position.hh
 
 %.tab.cc %.tab.hh: %.yy
 	$(YACC) $(YFLAGS) $<
 
-d4_ce_parser.tab.cc d4_ce_parser.tab.hh location.hh: d4_ce_parser.yy
+d4_ce_parser.tab.cc d4_ce_parser.tab.hh location.hh stack.hh position.hh: d4_ce_parser.yy
 	$(YACC) $(YFLAGS) $<
 
 # stack.hh position.hh; These were produced by bison using d4_ce_parser.yy
