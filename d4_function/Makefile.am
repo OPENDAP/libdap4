@@ -1,7 +1,7 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-.NOTPARALLEL:
+# .NOTPARALLEL:
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir) $(XML2_CFLAGS)
@@ -46,12 +46,14 @@ pkginclude_HEADERS = D4FunctionEvaluator.h
 # This line forces make to build the grammar files first, which is
 # important because some of the cc files include the parser headers.
 BUILT_SOURCES = lex.d4_function.cc d4_function_parser.tab.cc d4_function_parser.tab.hh \
-	stack.hh location.hh position.hh
+	location.hh
+# stack.hh position.hh; removed jhrg 6/17/25
 
 libd4_function_parser_la_SOURCES = D4FunctionEvaluator.cc	\
 	D4FunctionEvaluator.h D4FunctionScanner.h	\
 	d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc \
-	stack.hh location.hh position.hh
+	location.hh
+# stack.hh position.hh; removed jhrg 6/17/25
 
 libd4_ce_parser_la_CXXFLAGS = $(AM_CPPFLAGS) $(AM_CXXFLAGS)
 
@@ -62,15 +64,16 @@ CLEANFILES = *.gcda *.gcno *.gcov
 DISTCLEANFILES = 
 
 clean-local:
-	-rm d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc \
-	    stack.hh position.hh location.hh
+	-rm d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc position.hh
 
+# stack.hh position.hh; removed jhrg 6/17/25
 %.tab.cc %.tab.hh: %.yy
 	$(YACC) $(YFLAGS) $<
 
-stack.hh location.hh position.hh: d4_function_parser.tab.cc d4_function_parser.tab.hh
+location.hh: d4_function_parser.tab.cc d4_function_parser.tab.hh
+# stack.hh position.hh; removed jhrg 6/17/25
 
-#d4_function_parser.tab.cc d4_function_parser.tab.hh stack.hh location.hh position.hh: d4_function_parser.yy
+#d4_function_parser.tab.cc d4_function_parser.tab.hh location.hh: d4_function_parser.yy
 #	$(YACC) $(YFLAGS) $<
 
 # See the comment in ../d4_ce
