@@ -76,7 +76,7 @@ d4_ce_parser.tab.cc d4_ce_parser.tab.hh stack.hh location.hh position.hh: d4_ce_
 
 # For now there are two min versions of flex's FlexLexer.h; one that
 # defines the LexerInput() method returning int and one returning size_t.
-# Including the gnerated lex.*.cc code causes a compilation error when
+# Including the generated lex.*.cc code causes a compilation error when
 # the version on the packaging machine differs from the version on the
 # building machine. For now I just remove the generated file. However, 
 # if a fix can be found, then we can remove the flex requirement from

@@ -258,7 +258,7 @@ clion-source-discovery:
 	$(YACC) $(YFLAGS) $<
 
 lex.das.cc: das.lex das.tab.cc das.tab.hh
-	$(LEX) $(LFLAGS) $<
+	$(LEX) $(LFLAGS) -o $@ $<
 
 #das.tab.cc das.tab.hh: das.yy DAS.h
 #	$(YACC) $(YFLAGS) $<
@@ -266,7 +266,7 @@ lex.das.cc: das.lex das.tab.cc das.tab.hh
 # DDS
 
 lex.dds.cc: dds.lex dds.tab.cc dds.tab.hh
-	$(LEX) $(LFLAGS) $<
+	$(LEX) $(LFLAGS) -o $@ $<
 
 #dds.tab.cc dds.tab.hh: dds.yy
 #	$(YACC) $(YFLAGS) $<
@@ -274,7 +274,7 @@ lex.dds.cc: dds.lex dds.tab.cc dds.tab.hh
 # CE
 
 lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
-	$(LEX) $(LFLAGS) $<
+	$(LEX) $(LFLAGS) -o $@ $<
 
 #ce_expr.tab.cc ce_expr.tab.hh: ce_expr.yy
 #	$(YACC) $(YFLAGS) $<
@@ -282,7 +282,7 @@ lex.ce_expr.cc: ce_expr.lex ce_expr.tab.cc ce_expr.tab.hh
 # Errors
 
 lex.Error.cc: Error.lex Error.tab.cc Error.tab.hh
-	$(LEX) $(LFLAGS) $<
+	$(LEX) $(LFLAGS) -o $@ $<
 
 #Error.tab.cc Error.tab.hh: Error.yy
 #	$(YACC) $(YFLAGS) $<
