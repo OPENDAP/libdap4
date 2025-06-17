@@ -26,7 +26,7 @@
 // A minor edit
 
 %skeleton "lalr1.cc" /* -*- C++ -*- */
-%require "3.3"
+%require "3.0"
 %defines
 
 // The d4ce_parser.tab.cc and .hh files define and declare this class

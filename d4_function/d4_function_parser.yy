@@ -24,7 +24,7 @@
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
 %skeleton "lalr1.cc" /* -*- C++ -*- */
-%require "3.3"
+%require "3.0"
 %defines
 
 // The d4_function_parser.tab.cc and .hh files define and declare this class
