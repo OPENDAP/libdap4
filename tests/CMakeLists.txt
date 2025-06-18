@@ -7,10 +7,14 @@ add_library(test-types STATIC
 		TestD4Group.cc TestGrid.cc TestStr.cc TestUrl.cc
 		TestD4Opaque.cc TestInt16.cc TestStructure.cc
 )
+set_target_properties(test-types PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-target_include_directories(test-types
-		PUBLIC
-		${CMAKE_CURRENT_SOURCE_DIR}
-)
+target_include_directories(test-types PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(test-types PRIVATE ${LIBXML2_INCLUDE_DIR})
+
+if(TIRPC_FOUND)
+	target_include_directories(test-types PRIVATE ${TIRPC_INCLUDE_DIRS})
+	target_link_libraries(test-types PRIVATE ${TIRPC_LIBRARIES})
+endif()
 
 target_link_libraries(test-types PRIVATE dap)
