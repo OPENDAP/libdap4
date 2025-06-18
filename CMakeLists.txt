@@ -5,20 +5,26 @@ set(LIBDAP_VERSION "3.21.1")
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Look for 'find' macros in the 'cmake' dir. jhrg 6/18/25
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
 find_package(CppUnit REQUIRED)
-# Find required external packages
 find_package(LibXml2 REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Threads REQUIRED)
 
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(TIRPC DEFAULT_MSG TIRPC_INCLUDE_DIRS TIRPC_LIBRARIES)
-message(STATUS "TIRPC_INCLUDE_DIRS=${TIRPC_INCLUDE_DIRS}")
-message(STATUS "TIRPC_LIBRARIES=${TIRPC_LIBRARIES}")
-
 find_path(TIRPC_INCLUDE_DIRS rpc/rpc.h PATH_SUFFIXES tirpc)
 find_library(TIRPC_LIBRARIES tirpc)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(TIRPC DEFAULT_MSG TIRPC_INCLUDE_DIR TIRPC_LIBRARY)
+
+if(TIRPC_FOUND)
+    set(TIRPC_INCLUDE_DIRS ${TIRPC_INCLUDE_DIR})
+    set(TIRPC_LIBRARIES ${TIRPC_LIBRARY})
+endif()
+
+message(STATUS "TIRPC_INCLUDE_DIRS=${TIRPC_INCLUDE_DIRS}")
+message(STATUS "TIRPC_LIBRARIES=${TIRPC_LIBRARIES}")
 
 include(CheckLibraryExists)
 include(CheckCXXSourceCompiles)
