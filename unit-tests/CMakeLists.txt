@@ -51,8 +51,8 @@ function(build_test target source_files)
 			${LIBXML2_INCLUDE_DIR}
 	)
 	if(TIRPC_FOUND)
-		target_include_directories(d4_function_parser PRIVATE ${TIRPC_INCLUDE_DIRS})
-		target_link_libraries(d4_function_parser PRIVATE ${TIRPC_LIBRARIES})
+		target_include_directories(${target} PRIVATE ${TIRPC_INCLUDE_DIRS})
+		target_link_libraries(${target} PRIVATE ${TIRPC_LIBRARIES})
 	endif()
 
 	target_link_libraries(${target}
