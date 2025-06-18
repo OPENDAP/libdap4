@@ -11,11 +11,14 @@ find_package(CppUnit REQUIRED)
 find_package(LibXml2 REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Threads REQUIRED)
-find_path(TIRPC_INCLUDE_DIRS rpc/rpc.h PATH_SUFFIXES tirpc)
-find_library(TIRPC_LIBRARIES tirpc)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(TIRPC DEFAULT_MSG TIRPC_INCLUDE_DIRS TIRPC_LIBRARIES)
+message(STATUS "TIRPC_INCLUDE_DIRS=${TIRPC_INCLUDE_DIRS}")
+message(STATUS "TIRPC_LIBRARIES=${TIRPC_LIBRARIES}")
+
+find_path(TIRPC_INCLUDE_DIRS rpc/rpc.h PATH_SUFFIXES tirpc)
+find_library(TIRPC_LIBRARIES tirpc)
 
 include(CheckLibraryExists)
 include(CheckCXXSourceCompiles)

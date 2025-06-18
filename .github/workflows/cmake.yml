@@ -26,7 +26,8 @@ jobs:
             libcurl4-openssl-dev \
             uuid-dev \
             libcppunit-dev \
-            libtirpc-dev
+            libtirpc-dev \
+            libfl-dev
 
       - name: Configure (CMake)
         run: |
