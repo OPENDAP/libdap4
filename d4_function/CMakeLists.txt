@@ -65,6 +65,8 @@ target_include_directories(d4_function_parser
         ${CMAKE_SOURCE_DIR}/d4_ce
 )
 
+target_include_directories(d4_function_parser PRIVATE ${LIBXML2_INCLUDE_DIR})
+
 # Set compiler flags
 target_compile_options(d4_function_parser PRIVATE ${D4_FUNCTION_CXXFLAGS})
 

@@ -130,10 +130,6 @@ include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-if(TIRPC_FOUND)
-    include_directories(${TIRPC_INCLUDE_DIRS}/tirpc)
-endif()
-
 if(LibXml2_FOUND)
     include_directories(${LIBXML2_INCLUDE_DIR})
     message(STATUS "LIBXML2_INCLUDE_DIR = ${LIBXML2_INCLUDE_DIR}")
@@ -242,8 +238,10 @@ add_library(dap SHARED ${DAP_SRC} ${GNU_SRC} ${DAP4_ONLY_SRC})
 target_include_directories(dap PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_include_directories(dap PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 if(TIRPC_FOUND)
+    target_include_directories(dap PRIVATE ${TIRPC_INCLUDE_DIRS})
     target_link_libraries(dap PRIVATE ${TIRPC_LIBRARIES})
 endif()
+
 target_link_libraries(dap PRIVATE parsers ${LIBXML2_LIBRARIES} Threads::Threads)
 
 set_target_properties(dap PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${LIBDAP_SO_VERSION})

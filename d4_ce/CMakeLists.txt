@@ -64,6 +64,8 @@ target_include_directories(d4_ce_parser
         ${CMAKE_BINARY_DIR}
 )
 
+target_include_directories(d4_ce_parser PRIVATE ${LIBXML2_INCLUDE_DIR})
+
 # Apply compiler flags
 target_compile_options(d4_ce_parser PRIVATE ${D4_CE_CXXFLAGS})
 

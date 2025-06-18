@@ -47,6 +47,8 @@ target_include_directories(http_dap
         ${CMAKE_SOURCE_DIR}/GNU
 )
 
+target_include_directories(http_dap PRIVATE ${LIBXML2_INCLUDE_DIR})
+
 # Set compilation flags
 target_compile_options(http_dap PRIVATE ${HTTP_DAP_CXXFLAGS})
 
