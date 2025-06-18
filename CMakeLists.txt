@@ -232,6 +232,7 @@ if(TIRPC_FOUND)
     target_include_directories(parsers PRIVATE ${TIRPC_INCLUDE_DIRS})
     target_link_libraries(parsers PRIVATE ${TIRPC_LIBRARIES})
 endif()
+set_target_properties(parsers PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 add_library(dap SHARED ${DAP_SRC} ${GNU_SRC} ${DAP4_ONLY_SRC})
 target_include_directories(dap PRIVATE ${LIBXML2_INCLUDE_DIR})
@@ -240,9 +241,7 @@ if(TIRPC_FOUND)
     target_include_directories(dap PRIVATE ${TIRPC_INCLUDE_DIRS})
     target_link_libraries(dap PRIVATE ${TIRPC_LIBRARIES})
 endif()
-
 target_link_libraries(dap PRIVATE parsers ${LIBXML2_LIBRARIES} Threads::Threads)
-
 set_target_properties(dap PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${LIBDAP_SO_VERSION})
 
 message(STATUS "INCLUDE PATHS for dap:")

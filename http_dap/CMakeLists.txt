@@ -37,6 +37,7 @@ set(HTTP_DAP_SOURCES
 
 # Create static library (noinst_LTLIBRARIES implies not installed directly)
 add_library(http_dap STATIC ${HTTP_DAP_SOURCES})
+set_target_properties(http_dap PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Include directories (matching AM_CPPFLAGS)
 target_include_directories(http_dap

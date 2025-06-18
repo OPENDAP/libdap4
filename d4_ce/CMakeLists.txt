@@ -54,6 +54,7 @@ set(D4_CE_LIB_SOURCES
 
 # Define library (static, as 'noinst_LTLIBRARIES' implies not installed)
 add_library(d4_ce_parser STATIC ${D4_CE_LIB_SOURCES})
+set_target_properties(d4_ce_parser PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Include generated headers
 target_include_directories(d4_ce_parser

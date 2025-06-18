@@ -1,8 +1,7 @@
 # unit-tests/CMakeLists.txt
 
-add_library(test_support STATIC
-		testFile.cc
-)
+add_library(test_support STATIC testFile.cc)
+set_target_properties(test_support PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(test_support
 		PUBLIC
@@ -26,13 +25,9 @@ set(TESTS_DAP_ONLY
 
 # BigArrayTest.cc seems to break things. jhrg 6/12/25
 
-set(TESTS_DAPCLIENT
-		util_mitTest.cc RCReaderTest.cc
-)
+set(TESTS_DAPCLIENT util_mitTest.cc RCReaderTest.cc)
 
-set(TESTS_DAPSERVER
-		ancT.cc
-)
+set(TESTS_DAPSERVER ancT.cc)
 
 # MarshallerTest links with both dapclient and the test-types lib. For this
 # one special case, add the dapclient library 'by hand.' See below. jhrg 6/12/25
