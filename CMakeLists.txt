@@ -24,11 +24,6 @@ if(TIRPC_INCLUDE_DIR AND TIRPC_LIBRARY)
     set(TIRPC_LIBRARIES ${TIRPC_LIBRARY})
 endif()
 
-if(TIRPC_FOUND)
-    set(TIRPC_INCLUDE_DIRS ${TIRPC_INCLUDE_DIR})
-    set(TIRPC_LIBRARIES ${TIRPC_LIBRARY})
-endif()
-
 message(STATUS "TIRPC_INCLUDE_DIRS=${TIRPC_INCLUDE_DIRS}")
 message(STATUS "TIRPC_LIBRARIES=${TIRPC_LIBRARIES}")
 
@@ -130,12 +125,12 @@ include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-if(LibXml2_FOUND)
-    include_directories(${LIBXML2_INCLUDE_DIR})
-    message(STATUS "LIBXML2_INCLUDE_DIR = ${LIBXML2_INCLUDE_DIR}")
-else()
-    message(STATUS "LIBXML2_INCLUDE_DIR not found")
-endif()
+#if(LibXml2_FOUND)
+#    include_directories(${LIBXML2_INCLUDE_DIR})
+#    message(STATUS "LIBXML2_INCLUDE_DIR = ${LIBXML2_INCLUDE_DIR}")
+#else()
+#    message(STATUS "LIBXML2_INCLUDE_DIR not found")
+#endif()
 
 # Define sources
 set(GNU_SRC GNU/GetOpt.cc GNU/GNURegex.cc)

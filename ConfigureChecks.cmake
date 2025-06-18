@@ -19,7 +19,7 @@ check_include_files("stdlib.h" HAVE_STDLIB_H)
 # Library headers
 check_include_files("libxml/xmlwriter.h" HAVE_LIBXML2)
 check_include_files("curl/curl.h" HAVE_CURL)
-check_include_files("rpc/rpc.h" HAVE_TIRPC)
+check_include_files("rpc/xdr.h" HAVE_TIRPC)
 
 # Functions
 check_symbol_exists(pthread_create pthread.h HAVE_PTHREADS)
