@@ -2,9 +2,9 @@ name: CMake CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, main ]
 
 jobs:
   build-and-test:
@@ -24,7 +24,8 @@ jobs:
             bison \
             libxml2-dev \
             libcurl4-openssl-dev \
-            uuid-dev
+            uuid-dev \
+            libcppunit-dev
 
       - name: Configure (CMake)
         run: |
