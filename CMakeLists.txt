@@ -19,12 +19,11 @@ find_package_handle_standard_args(TIRPC DEFAULT_MSG TIRPC_INCLUDE_DIRS TIRPC_LIB
 
 if(TIRPC_FOUND)
     include_directories(${TIRPC_INCLUDE_DIRS}/tirpc)
-    target_link_libraries(your_target PRIVATE ${TIRPC_LIBRARIES})
+    target_link_libraries(dap PRIVATE ${TIRPC_LIBRARIES})
 endif()
 
 if(LibXml2_FOUND)
     include_directories(${LIBXML2_INCLUDE_DIR})
-    target_link_libraries(your_target PRIVATE ${LIBXML2_LIBRARIES})
 endif()
 
 include(CheckLibraryExists)
