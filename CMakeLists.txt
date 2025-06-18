@@ -18,6 +18,12 @@ find_library(TIRPC_LIBRARY tirpc)
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(TIRPC DEFAULT_MSG TIRPC_INCLUDE_DIR TIRPC_LIBRARY)
 
+if(TIRPC_INCLUDE_DIR AND TIRPC_LIBRARY)
+    set(TIRPC_FOUND TRUE)
+    set(TIRPC_INCLUDE_DIRS ${TIRPC_INCLUDE_DIR})
+    set(TIRPC_LIBRARIES ${TIRPC_LIBRARY})
+endif()
+
 if(TIRPC_FOUND)
     set(TIRPC_INCLUDE_DIRS ${TIRPC_INCLUDE_DIR})
     set(TIRPC_LIBRARIES ${TIRPC_LIBRARY})
@@ -242,17 +248,31 @@ target_link_libraries(dap PRIVATE parsers ${LIBXML2_LIBRARIES} Threads::Threads)
 
 set_target_properties(dap PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${LIBDAP_SO_VERSION})
 
+message(STATUS "INCLUDE PATHS for dap:")
+get_target_property(DAP_INCLUDES dap INCLUDE_DIRECTORIES)
+message(STATUS "  ${DAP_INCLUDES}")
+
 add_library(dapclient SHARED ${CLIENT_SRC})
 target_include_directories(dapclient PRIVATE ${CURL_INCLUDE_DIRS})
+target_include_directories(dapclient PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_include_directories(dapclient PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(dapclient PRIVATE dap http_dap ${CURL_LIBRARIES} Threads::Threads)
 
 set_target_properties(dapclient PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${CLIENTLIB_SO_VERSION})
 
+message(STATUS "INCLUDE PATHS for dapclient:")
+get_target_property(DAPCLIENT_INCLUDES dapclient INCLUDE_DIRECTORIES)
+message(STATUS "  ${DAPCLIENT_INCLUDES}")
+
 add_library(dapserver SHARED ${SERVER_SRC})
 target_link_libraries(dapserver PRIVATE dap)
+target_include_directories(dapserver PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_include_directories(dapserver PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 set_target_properties(dapserver PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${SERVERLIB_SO_VERSION})
+
+message(STATUS "INCLUDE PATHS for dapserver:")
+get_target_property(DAPSERVER_INCLUDES dapserver INCLUDE_DIRECTORIES)
+message(STATUS "  ${DAPSERVER_INCLUDES}")
 
 # Custom compilation flags and definitions
 
