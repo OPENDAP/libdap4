@@ -66,6 +66,11 @@ target_include_directories(d4_ce_parser
 
 target_include_directories(d4_ce_parser PRIVATE ${LIBXML2_INCLUDE_DIR})
 
+if(TIRPC_FOUND)
+    target_include_directories(d4_ce_parser PRIVATE ${TIRPC_INCLUDE_DIRS})
+    target_link_libraries(d4_ce_parser PRIVATE ${TIRPC_LIBRARIES})
+endif()
+
 # Apply compiler flags
 target_compile_options(d4_ce_parser PRIVATE ${D4_CE_CXXFLAGS})
 
