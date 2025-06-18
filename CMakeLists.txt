@@ -17,15 +17,6 @@ find_library(TIRPC_LIBRARIES tirpc)
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(TIRPC DEFAULT_MSG TIRPC_INCLUDE_DIRS TIRPC_LIBRARIES)
 
-if(TIRPC_FOUND)
-    include_directories(${TIRPC_INCLUDE_DIRS}/tirpc)
-    target_link_libraries(dap PRIVATE ${TIRPC_LIBRARIES})
-endif()
-
-if(LibXml2_FOUND)
-    include_directories(${LIBXML2_INCLUDE_DIR})
-endif()
-
 include(CheckLibraryExists)
 include(CheckCXXSourceCompiles)
 
@@ -123,6 +114,14 @@ include_directories(
         # Make the built header(s) findable
         ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+if(TIRPC_FOUND)
+    include_directories(${TIRPC_INCLUDE_DIRS}/tirpc)
+endif()
+
+if(LibXml2_FOUND)
+    include_directories(${LIBXML2_INCLUDE_DIR})
+endif()
 
 # Define sources
 set(GNU_SRC GNU/GetOpt.cc GNU/GNURegex.cc)
@@ -225,7 +224,6 @@ add_library(dap SHARED ${DAP_SRC} ${GNU_SRC} ${DAP4_ONLY_SRC})
 target_include_directories(dap PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_include_directories(dap PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 if(TIRPC_FOUND)
-    include_directories(${TIRPC_INCLUDE_DIRS}/tirpc)
     target_link_libraries(dap PRIVATE ${TIRPC_LIBRARIES})
 endif()
 target_link_libraries(dap PRIVATE parsers ${LIBXML2_LIBRARIES} Threads::Threads)
