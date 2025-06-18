@@ -48,7 +48,12 @@ function(build_test target source_files)
 			${CMAKE_CURRENT_BINARY_DIR}
 			${CMAKE_SOURCE_DIR}
 			${CMAKE_BINARY_DIR}
+			${LIBXML2_INCLUDE_DIR}
 	)
+	if(TIRPC_FOUND)
+		target_include_directories(d4_function_parser PRIVATE ${TIRPC_INCLUDE_DIRS})
+		target_link_libraries(d4_function_parser PRIVATE ${TIRPC_LIBRARIES})
+	endif()
 
 	target_link_libraries(${target}
 			PRIVATE
