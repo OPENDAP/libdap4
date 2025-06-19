@@ -12,6 +12,14 @@ find_package(CppUnit REQUIRED)
 find_package(LibXml2 REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Threads REQUIRED)
+find_library(UUID_LIB uuid)
+
+if(UUID_LIB)
+    message(STATUS "Found UUID library: ${UUID_LIB}")
+else()
+    message(STATUS "UUID library not found — assuming system provides uuid functions (e.g., on macOS)")
+    set(UUID_LIB "")  # explicitly define as empty string
+endif()
 
 find_path(TIRPC_INCLUDE_DIR rpc/rpc.h PATH_SUFFIXES tirpc)
 find_library(TIRPC_LIBRARY tirpc)
@@ -265,7 +273,7 @@ get_target_property(DAPCLIENT_INCLUDES dapclient INCLUDE_DIRECTORIES)
 message(STATUS "  ${DAPCLIENT_INCLUDES}")
 
 add_library(dapserver SHARED ${SERVER_SRC})
-target_link_libraries(dapserver PRIVATE dap)
+target_link_libraries(dapserver PRIVATE dap ${UUID_LIB})
 target_include_directories(dapserver PRIVATE ${LIBXML2_INCLUDE_DIR})
 # target_include_directories(dapserver PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 if(TIRPC_FOUND)
