@@ -291,11 +291,11 @@ message(STATUS "  ${DAPSERVER_INCLUDES}")
 # Define executables
 add_executable(getdap getdap.cc)
 target_link_libraries(getdap PRIVATE dapclient dap)
-target_include_directories(getdap PRIVATE ${CURL_INCLUDE_DIRS})
+target_include_directories(getdap PRIVATE ${CURL_INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 
 add_executable(getdap4 getdap4.cc)
 target_link_libraries(getdap4 PRIVATE dapclient dap)
-target_include_directories(getdap4 PRIVATE ${CURL_INCLUDE_DIRS})
+target_include_directories(getdap4 PRIVATE ${CURL_INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
 
 foreach(target dap dapclient dapserver getdap getdap4)
     target_compile_options(${target} PRIVATE ${DEV_FLAGS})
