@@ -37,6 +37,7 @@ set(HTTP_DAP_SOURCES
 
 # Create static library (noinst_LTLIBRARIES implies not installed directly)
 add_library(http_dap STATIC ${HTTP_DAP_SOURCES})
+set_target_properties(http_dap PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Include directories (matching AM_CPPFLAGS)
 target_include_directories(http_dap
@@ -46,6 +47,8 @@ target_include_directories(http_dap
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/GNU
 )
+
+target_include_directories(http_dap PRIVATE ${LIBXML2_INCLUDE_DIR})
 
 # Set compilation flags
 target_compile_options(http_dap PRIVATE ${HTTP_DAP_CXXFLAGS})

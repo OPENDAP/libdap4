@@ -54,6 +54,7 @@ set(D4_FUNCTION_LIB_SOURCES
 
 # Define a static library
 add_library(d4_function_parser STATIC ${D4_FUNCTION_LIB_SOURCES})
+set_target_properties(d4_function_parser PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Include directories (including generated files)
 target_include_directories(d4_function_parser
@@ -64,6 +65,13 @@ target_include_directories(d4_function_parser
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/d4_ce
 )
+
+target_include_directories(d4_function_parser PRIVATE ${LIBXML2_INCLUDE_DIR})
+
+if(TIRPC_FOUND)
+    target_include_directories(d4_function_parser PRIVATE ${TIRPC_INCLUDE_DIRS})
+    target_link_libraries(d4_function_parser PRIVATE ${TIRPC_LIBRARIES})
+endif()
 
 # Set compiler flags
 target_compile_options(d4_function_parser PRIVATE ${D4_FUNCTION_CXXFLAGS})
