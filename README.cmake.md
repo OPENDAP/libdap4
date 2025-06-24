@@ -18,6 +18,7 @@ For the 'normal' case, where 'build' is made inside the libdap4 top-level
 source directory:
 ```bash
 mkdir build/
+cd build
 cmake ../
 ```
 
@@ -27,7 +28,7 @@ NB: Include these on the command line using -D<option>=<value>
 
 * **CMAKE_VERBOSE_MAKEFILE=ON**: Build Makefiles that enable debugging missing/mangled
 command line switches that are (or are not) passed to compilers, et cetera.
-* **CMAKE_INSTALL_PREFIX=$(pwd)/install**: Install in $(pwd)/install. You can use
+* **CMAKE_INSTALL_PREFIX=\$(pwd)/install**: Install in \$(pwd)/install. You can use
 any writable directory.
 
 Special switches for libdap4

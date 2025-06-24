@@ -101,7 +101,6 @@ endif()
 
 # Set TEST_SRC_DIR to the absolute path of the test sources
 set(abs_srcdir "${CMAKE_CURRENT_SOURCE_DIR}")
-# message(STATUS "TEST_SRC_DIR = ${abs_srcdir}")
 
 # Generate test_config.h from the template
 configure_file(

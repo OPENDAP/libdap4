@@ -9,6 +9,7 @@ function(build_test target source_files)
 			${CMAKE_CURRENT_BINARY_DIR}
 			${CMAKE_SOURCE_DIR}
 			${CMAKE_BINARY_DIR}
+			${LIBXML2_INCLUDE_DIR}
 	)
 
 	target_link_libraries(${target}

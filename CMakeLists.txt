@@ -8,29 +8,60 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Look for 'find' macros in the 'cmake' dir. jhrg 6/18/25
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+include(CheckCXXSourceCompiles)
+
+# Dependency packages
 find_package(CppUnit REQUIRED)
 find_package(LibXml2 REQUIRED)
 find_package(CURL REQUIRED)
 find_package(Threads REQUIRED)
 
+# Manual TIRPC detection
 find_path(TIRPC_INCLUDE_DIR rpc/rpc.h PATH_SUFFIXES tirpc)
 find_library(TIRPC_LIBRARY tirpc)
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(TIRPC DEFAULT_MSG TIRPC_INCLUDE_DIR TIRPC_LIBRARY)
-
 if(TIRPC_INCLUDE_DIR AND TIRPC_LIBRARY)
     set(TIRPC_FOUND TRUE)
     set(TIRPC_INCLUDE_DIRS ${TIRPC_INCLUDE_DIR})
     set(TIRPC_LIBRARIES ${TIRPC_LIBRARY})
 endif()
 
-message(STATUS "TIRPC_INCLUDE_DIRS=${TIRPC_INCLUDE_DIRS}")
-message(STATUS "TIRPC_LIBRARIES=${TIRPC_LIBRARIES}")
+# Perform config/feature checks
+include(FindLibdapDependencies)
+message(STATUS "Target platform: ${LIBDAP_PLATFORM}")
 
-include(CheckLibraryExists)
-include(CheckCXXSourceCompiles)
-
-include(ConfigureChecks.cmake)
+#find_package(CppUnit REQUIRED)
+#find_package(LibXml2 REQUIRED)
+#find_package(CURL REQUIRED)
+#find_package(Threads REQUIRED)
+#find_library(UUID_LIB uuid)
+#
+#if(UUID_LIB)
+#    message(STATUS "Found UUID library: ${UUID_LIB}")
+#else()
+#    message(STATUS "UUID library not found — assuming system provides uuid functions (e.g., on macOS)")
+#    set(UUID_LIB "")  # explicitly define as empty string
+#endif()
+#
+#find_path(TIRPC_INCLUDE_DIR rpc/rpc.h PATH_SUFFIXES tirpc)
+#find_library(TIRPC_LIBRARY tirpc)
+#include(FindPackageHandleStandardArgs)
+#find_package_handle_standard_args(TIRPC DEFAULT_MSG TIRPC_INCLUDE_DIR TIRPC_LIBRARY)
+#
+#if(TIRPC_INCLUDE_DIR AND TIRPC_LIBRARY)
+#    set(TIRPC_FOUND TRUE)
+#    set(TIRPC_INCLUDE_DIRS ${TIRPC_INCLUDE_DIR})
+#    set(TIRPC_LIBRARIES ${TIRPC_LIBRARY})
+#endif()
+#
+#message(STATUS "TIRPC_INCLUDE_DIRS=${TIRPC_INCLUDE_DIRS}")
+#message(STATUS "TIRPC_LIBRARIES=${TIRPC_LIBRARIES}")
+#
+#include(CheckLibraryExists)
+#include(CheckCXXSourceCompiles)
+#
+#include(ConfigureChecks.cmake)
 
 # Optional ASAN and Developer mode flags (based on CMake options)
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
@@ -258,7 +289,7 @@ get_target_property(DAPCLIENT_INCLUDES dapclient INCLUDE_DIRECTORIES)
 message(STATUS "  ${DAPCLIENT_INCLUDES}")
 
 add_library(dapserver SHARED ${SERVER_SRC})
-target_link_libraries(dapserver PRIVATE dap)
+target_link_libraries(dapserver PRIVATE dap ${UUID_LIB})
 target_include_directories(dapserver PRIVATE ${LIBXML2_INCLUDE_DIR})
 # target_include_directories(dapserver PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 if(TIRPC_FOUND)
@@ -276,11 +307,19 @@ message(STATUS "  ${DAPSERVER_INCLUDES}")
 # Define executables
 add_executable(getdap getdap.cc)
 target_link_libraries(getdap PRIVATE dapclient dap)
-target_include_directories(getdap PRIVATE ${CURL_INCLUDE_DIRS})
+target_include_directories(getdap PRIVATE ${CURL_INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
+if(TIRPC_FOUND)
+    target_include_directories(getdap PRIVATE ${TIRPC_INCLUDE_DIRS})
+    target_link_libraries(getdap PRIVATE ${TIRPC_LIBRARIES})
+endif()
 
 add_executable(getdap4 getdap4.cc)
 target_link_libraries(getdap4 PRIVATE dapclient dap)
-target_include_directories(getdap4 PRIVATE ${CURL_INCLUDE_DIRS})
+target_include_directories(getdap4 PRIVATE ${CURL_INCLUDE_DIRS} ${LIBXML2_INCLUDE_DIR})
+if(TIRPC_FOUND)
+    target_include_directories(getdap4 PRIVATE ${TIRPC_INCLUDE_DIRS})
+    target_link_libraries(getdap4 PRIVATE ${TIRPC_LIBRARIES})
+endif()
 
 foreach(target dap dapclient dapserver getdap getdap4)
     target_compile_options(${target} PRIVATE ${DEV_FLAGS})

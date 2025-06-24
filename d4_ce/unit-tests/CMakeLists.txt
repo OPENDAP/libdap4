@@ -8,6 +8,7 @@ target_include_directories(D4ConstraintEvaluatorTest
 		${CMAKE_SOURCE_DIR}/d4_ce
 		${CMAKE_CURRENT_BINARY_DIR}
 		${CMAKE_BINARY_DIR}
+		${LIBXML2_INCLUDE_DIR}
 )
 
 target_link_libraries(D4ConstraintEvaluatorTest

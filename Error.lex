@@ -79,7 +79,6 @@ void store_string();
 %option noinput
 %option 8bit
 %option prefix="Error"
-/* %option outfile="lex.Error.cc" */
 %x quote
 %x comment
 
