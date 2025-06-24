@@ -58,6 +58,8 @@
 #include "testFile.h"
 #include "test_config.h"
 
+#define prolog string("DDSTest::").append(__func__).append("() - ")
+
 #undef DBG
 #define DBG(x)                                                                                                         \
     do {                                                                                                               \
@@ -83,6 +85,7 @@ public:
     ~DDSTest() {}
 
     void setUp() {
+        DBG(cerr << "\n");
         dds1 = new DDS(&factory, "test1");
         dds2 = new DDS(&factory, "test2");
 
@@ -155,7 +158,7 @@ public:
     CPPUNIT_TEST_SUITE_END();
 
     void iterator_use_test_1() {
-        DBG(cerr << "iterator_use_test_1" << endl);
+        DBG(cerr << prolog << "BEGIN" << endl);
 
         dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
         DAS das;
@@ -186,10 +189,11 @@ public:
 
         CPPUNIT_ASSERT_MESSAGE("The number of variable should be the same", old_count == new_count);
         CPPUNIT_ASSERT_MESSAGE("The names of the variables should be the same", old_names == new_names);
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void iterator_use_test_2() {
-        DBG(cerr << "iterator_use_test_2" << endl);
+        DBG(cerr << prolog << "BEGIN" << endl);
 
         dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
         DAS das;
@@ -220,9 +224,11 @@ public:
 
         CPPUNIT_ASSERT_MESSAGE("The number of variable should be the same", old_count == new_count);
         CPPUNIT_ASSERT_MESSAGE("The names of the variables should be the same", old_names == new_names);
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void transfer_attributes_test_1() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
             DAS das;
@@ -239,9 +245,11 @@ public:
             cout << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error thrown!");
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void transfer_attributes_test_2() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
             DAS das;
@@ -258,9 +266,11 @@ public:
             cout << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Error thrown!");
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void symbol_name_test() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             // read a DDS.
             dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.18");
@@ -276,9 +286,11 @@ public:
             cerr << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught unexpected Error object");
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void print_xml_test() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b");
             ostringstream oss;
@@ -297,9 +309,11 @@ public:
             cerr << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught unexpected Error object");
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void print_xml_test2() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19c");
         DAS das;
         das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19c.das");
@@ -318,9 +332,11 @@ public:
 #endif
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void print_xml_test3() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d");
         DAS das;
         das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d.das");
@@ -340,11 +356,13 @@ public:
 
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // This tests the HDF4 <var>_dim_n attribute. support for that was
     // moved to the handler itself.
     void print_xml_test3_1() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d");
         DAS das;
         das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19d1.das");
@@ -359,9 +377,11 @@ public:
         string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19d1.xml");
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void print_xml_test4() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19e");
         DAS das;
         das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19e.das");
@@ -382,9 +402,11 @@ public:
 #endif
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void print_xml_test5() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         string dds_file((string)TEST_SRC_DIR + "/dds-testsuite/test.19f");
         dds2->parse(dds_file);
         DAS das;
@@ -417,11 +439,13 @@ public:
         DBG(cerr << oss.str() << endl);
 
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Tests flat DAS into a DDS; no longer supported by libdap; specialize
     // handlers if they make these malformed DAS objects
     void print_xml_test5_1() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19f");
         DAS das;
         das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19f1.das");
@@ -443,9 +467,11 @@ public:
         string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19f1.xml");
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void print_xml_test6() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b");
         DAS das;
         das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19b.das");
@@ -465,11 +491,13 @@ public:
 
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Tests flat DAS into a DDS; no longer supported by libdap; specialize
     // handlers if they make these malformed DAS objects
     void print_xml_test6_1() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19g");
         DAS das;
         das.parse((string)TEST_SRC_DIR + "/dds-testsuite/test.19g.das");
@@ -491,9 +519,11 @@ public:
         string baseline = read_test_baseline((string)TEST_SRC_DIR + "/dds-testsuite/test.19g.xml");
         DBG(cerr << baseline << endl);
         CPPUNIT_ASSERT(baseline == oss.str());
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void print_dmr_test() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             dds_dap4->parse((string)TEST_SRC_DIR + "/dds-testsuite/fnoc1.nc.dds");
             DAS das;
@@ -517,9 +547,11 @@ public:
         } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void get_response_size_test() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
         CPPUNIT_ASSERT(dds1->get_request_size(false) == 230400);
         DBG(cerr << "3B42.980909.5.HDF response size: " << dds1->get_request_size(false) << endl);
@@ -527,9 +559,11 @@ public:
         dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
         CPPUNIT_ASSERT(dds2->get_request_size(false) == 3119424);
         DBG(cerr << "coads_climatology.nc response size: " << dds2->get_request_size(false) << endl);
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void get_response_size_test_c() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         ConstraintEvaluator eval;
 
         dds1->parse((string)TEST_SRC_DIR + "/dds-testsuite/3B42.980909.5.HDF.dds");
@@ -543,22 +577,27 @@ public:
         DBG(cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl);
         CPPUNIT_ASSERT(dds2->get_request_size(true) == 779856);
         CPPUNIT_ASSERT(dds2->get_request_size(false) == 3119424);
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void get_response_size_test_c2() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         ConstraintEvaluator eval;
         dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
         eval.parse_constraint("SST[0:5][0:44][0:89]", *dds2);
         // cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl;
         CPPUNIT_ASSERT(dds2->get_request_size(true) == 98328);
+        DBG(cerr << prolog << "END" << endl);
     }
 
     void get_response_size_test_c3() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         ConstraintEvaluator eval;
         dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/coads_climatology.nc.dds");
         eval.parse_constraint("SST[0][0:44][0:89]", *dds2);
         DBG(cerr << "coads_climatology.nc response size: " << dds2->get_request_size(true) << endl);
         CPPUNIT_ASSERT(dds2->get_request_size(true) == 17288);
+        DBG(cerr << prolog << "END" << endl);
     }
 
 #if 0
@@ -578,16 +617,19 @@ public:
 #endif
 
     void get_response_size_test_seq_c() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         ConstraintEvaluator eval;
         dds2->parse((string)TEST_SRC_DIR + "/dds-testsuite/S2000415.HDF.dds");
         eval.parse_constraint("NSCAT%20Rev%2020.NSCAT%20L2.Low_Wind_Speed_Flag", *dds2);
         DBG(cerr << "S2000415.HDF response size: " << dds2->get_request_size(true) << endl);
         DBG(dds2->print_constrained(cerr));
         CPPUNIT_ASSERT(dds2->get_request_size(true) == 4);
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Build a DDS with attributes, then check that get_das() returns the correct thing
     void get_das_test_1() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             BaseTypeFactory btf;
             DDS dds(&btf);
@@ -609,15 +651,17 @@ public:
         } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Build a DMR, then check that get_das() returns the correct thing. Note that the
     // order of the attr tables is not exactly the same because the DMR treats Grids
     // differently. In the DMR, DAP2 Grid maps become shared dimensions and those are
     // output last. In a DAP2 DDS, they (maps) are added as 'extra' variables are written
-    // first. Thus the attribute containers for maps/shared dims are either first or last
+    // first. Thus, the attribute containers for maps/shared dims are either first or last
     // for DAP2 or DAP4, resp.
     void get_das_test_2() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             D4BaseTypeFactory d4_factory;
             DMR dmr(&d4_factory);
@@ -627,25 +671,29 @@ public:
 
             parser.intern(ifs, &dmr);
 
-            unique_ptr<DDS> dds(dmr.getDDS());
-            unique_ptr<DAS> das(dds->get_das());
+            // This fixes a sigsegv on method exit - @TODO do we understand this? Maybe?
+            auto dds = dmr.getDDS();
+            unique_ptr<DAS> das2(dds->get_das());
 
             string baseline =
                 read_test_baseline(string(TEST_SRC_DIR) + "/dmr-testsuite/coads_climatology.nc.full.dmr.das");
             ostringstream oss;
-            das->print(oss);
+            das2->print(oss);
 
             DBG(cerr << "Baseline: -->" << baseline << "<--" << endl);
             DBG(cerr << "DAS: -->" << oss.str() << "<--" << endl);
 
             CPPUNIT_ASSERT(baseline == oss.str());
+            DBG(cerr << prolog << "########## TEST PASSED #############################" << endl);
         } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Test the case whee there are no attribtues for variables
     void get_das_test_3() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             BaseTypeFactory btf;
             DDS dds(&btf);
@@ -667,10 +715,12 @@ public:
         } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Test the case where there are no global attributes
     void get_das_test_4() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             BaseTypeFactory btf;
             DDS dds(&btf);
@@ -692,10 +742,12 @@ public:
         } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Test the case where there are orphaned global attributes (one w/o an enclosing container).
     void get_das_test_5() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             D4BaseTypeFactory d4_factory;
             DMR dmr(&d4_factory);
@@ -721,10 +773,12 @@ public:
         } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 
     // Test the code that tests for a unique top-level attribute container name for orphaned TL attributes.
     void get_das_test_6() {
+        DBG(cerr << prolog << "BEGIN" << endl);
         try {
             D4BaseTypeFactory d4_factory;
             DMR dmr(&d4_factory);
@@ -749,6 +803,7 @@ public:
         } catch (Error &e) {
             CPPUNIT_FAIL(e.get_error_message());
         }
+        DBG(cerr << prolog << "END" << endl);
     }
 };
 
