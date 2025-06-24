@@ -70,6 +70,7 @@ public:
             try {
                 d_fp_future.get();
             } catch (...) {
+                // Suppress exceptions in destructor
             }
         }
     }
@@ -87,9 +88,10 @@ public:
      * @param byte_buf The bytes (a const char *)
      * @param num_bytes The number of byes
      */
-    void start_thread(std::ostream &out, const char *byte_buf, std::streamsize num_bytes) {
+    auto start_thread(std::ostream &out, const char *byte_buf, std::streamsize num_bytes) {
+        std::streampos ret_val = -1;
         if (d_ostream_future.valid()) {
-            d_ostream_future.get();
+            ret_val = d_ostream_future.get();
         }
 
         auto buffer_copy = std::make_unique<char[]>(num_bytes);
@@ -102,6 +104,8 @@ public:
             }
             return out.tellp();
         });
+
+        return ret_val;
     }
 
     /**
@@ -110,9 +114,10 @@ public:
      * @param byte_buf The bytes (a std::shared_ptr<const char>)
      * @param num_bytes The number of byes
      */
-    void start_thread(std::ostream &out, std::shared_ptr<const char> byte_buf, std::streamsize num_bytes) {
+    auto start_thread(std::ostream &out, std::shared_ptr<const char> byte_buf, std::streamsize num_bytes) {
+        std::streampos ret_val = -1;
         if (d_ostream_future.valid()) {
-            d_ostream_future.get();
+            ret_val = d_ostream_future.get();
         }
 
         d_ostream_future = std::async(std::launch::async, [buffer = std::move(byte_buf), &out, num_bytes]() {
@@ -122,11 +127,14 @@ public:
             }
             return out.tellp();
         });
+
+        return ret_val;
     }
 
-    void start_thread_part(std::ostream &out, const char *byte_buf, std::streamsize num_bytes) {
+    auto start_thread_part(std::ostream &out, const char *byte_buf, std::streamsize num_bytes) {
+        std::streampos ret_val = -1;
         if (d_ostream_future.valid()) {
-            d_ostream_future.get();
+            ret_val = d_ostream_future.get();
         }
 
         auto buffer_copy = std::make_unique<char[]>(num_bytes);
@@ -142,11 +150,14 @@ public:
             }
             return out.tellp();
         });
+
+        return ret_val;
     }
 
-    void start_thread_part(std::ostream &out, std::shared_ptr<const char> byte_buf, std::streamsize num_bytes) {
+    auto start_thread_part(std::ostream &out, std::shared_ptr<const char> byte_buf, std::streamsize num_bytes) {
+        std::streampos ret_val = -1;
         if (d_ostream_future.valid()) {
-            d_ostream_future.get();
+            ret_val = d_ostream_future.get();
         }
 
         d_ostream_future = std::async(std::launch::async, [buffer = std::move(byte_buf), &out, num_bytes]() {
@@ -159,11 +170,14 @@ public:
             }
             return out.tellp();
         });
+
+        return ret_val;
     }
 
-    void start_thread(int fd, const char *byte_buf, std::streamsize num_bytes) {
+    auto start_thread(int fd, const char *byte_buf, std::streamsize num_bytes) {
+        long ret_val = -1;
         if (d_fp_future.valid()) {
-            d_fp_future.get();
+            ret_val = d_fp_future.get();
         }
 
         auto buffer_copy = std::make_unique<char[]>(num_bytes);
@@ -176,11 +190,14 @@ public:
             }
             return written;
         });
+
+        return ret_val;
     }
 
-    void start_thread(int fd, std::shared_ptr<const char> byte_buf, std::streamsize num_bytes) {
+    auto start_thread(int fd, std::shared_ptr<const char> byte_buf, std::streamsize num_bytes) {
+        long ret_val = -1;
         if (d_fp_future.valid()) {
-            d_fp_future.get();
+            ret_val = d_fp_future.get();
         }
 
         d_fp_future = std::async(std::launch::async, [buffer = std::move(byte_buf), fd, num_bytes]() {
@@ -190,6 +207,8 @@ public:
             }
             return written;
         });
+
+        return ret_val;
     }
 };
 
