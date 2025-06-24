@@ -31,38 +31,6 @@ endif()
 include(FindLibdapDependencies)
 message(STATUS "Target platform: ${LIBDAP_PLATFORM}")
 
-#find_package(CppUnit REQUIRED)
-#find_package(LibXml2 REQUIRED)
-#find_package(CURL REQUIRED)
-#find_package(Threads REQUIRED)
-#find_library(UUID_LIB uuid)
-#
-#if(UUID_LIB)
-#    message(STATUS "Found UUID library: ${UUID_LIB}")
-#else()
-#    message(STATUS "UUID library not found — assuming system provides uuid functions (e.g., on macOS)")
-#    set(UUID_LIB "")  # explicitly define as empty string
-#endif()
-#
-#find_path(TIRPC_INCLUDE_DIR rpc/rpc.h PATH_SUFFIXES tirpc)
-#find_library(TIRPC_LIBRARY tirpc)
-#include(FindPackageHandleStandardArgs)
-#find_package_handle_standard_args(TIRPC DEFAULT_MSG TIRPC_INCLUDE_DIR TIRPC_LIBRARY)
-#
-#if(TIRPC_INCLUDE_DIR AND TIRPC_LIBRARY)
-#    set(TIRPC_FOUND TRUE)
-#    set(TIRPC_INCLUDE_DIRS ${TIRPC_INCLUDE_DIR})
-#    set(TIRPC_LIBRARIES ${TIRPC_LIBRARY})
-#endif()
-#
-#message(STATUS "TIRPC_INCLUDE_DIRS=${TIRPC_INCLUDE_DIRS}")
-#message(STATUS "TIRPC_LIBRARIES=${TIRPC_LIBRARIES}")
-#
-#include(CheckLibraryExists)
-#include(CheckCXXSourceCompiles)
-#
-#include(ConfigureChecks.cmake)
-
 # Optional ASAN and Developer mode flags (based on CMake options)
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
 option(BUILD_DEVELOPER "Build in developer mode" OFF)
