@@ -18,6 +18,7 @@ For the 'normal' case, where 'build' is made inside the libdap4 top-level
 source directory:
 ```bash
 mkdir build/
+cd build
 cmake ../
 ```
 
