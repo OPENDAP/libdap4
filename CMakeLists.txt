@@ -125,13 +125,6 @@ include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-#if(LibXml2_FOUND)
-#    include_directories(${LIBXML2_INCLUDE_DIR})
-#    message(STATUS "LIBXML2_INCLUDE_DIR = ${LIBXML2_INCLUDE_DIR}")
-#else()
-#    message(STATUS "LIBXML2_INCLUDE_DIR not found")
-#endif()
-
 # Define sources
 set(GNU_SRC GNU/GetOpt.cc GNU/GNURegex.cc)
 

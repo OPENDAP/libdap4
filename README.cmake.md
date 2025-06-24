@@ -49,7 +49,7 @@ Time to run the unit tests:
 
 Total Test time (real) =   9.18 sec
 make test  2.01s user 0.29s system 24% cpu 9.247 total
-````
+```
 
 ### Parallel build time:
 ```bash
