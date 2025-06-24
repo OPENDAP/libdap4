@@ -33,7 +33,7 @@
 #endif
 
 #ifndef XDR_UINT32
-#define XDR_UINT32 xdr_uint32_t
+#define XDR_UINT32 xdr_u_int32_t
 #endif
 
 #ifndef XDR_INT16
@@ -41,7 +41,7 @@
 #endif
 
 #ifndef XDR_UINT16
-#define XDR_UINT16 xdr_uint16_t
+#define XDR_UINT16 xdr_u_int16_t
 #endif
 
 #ifndef XDR_FLOAT64

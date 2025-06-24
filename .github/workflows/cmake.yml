@@ -1,0 +1,48 @@
+name: CMake CI
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  # Enables triggering the workflow manually (on any branch) from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            flex \
+            bison \
+            libxml2-dev \
+            libcurl4-openssl-dev \
+            uuid-dev \
+            libcppunit-dev \
+            libtirpc-dev \
+            libfl-dev
+
+      - name: Configure (CMake)
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: |
+          cd build
+          make -j$(nproc)
+
+      - name: Run tests (if applicable)
+        run: |
+          cd build
+          ctest --output-on-failure -j$(nproc)
