@@ -40,6 +40,7 @@
 
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
+#include "DMR.h"
 
 #include "debug.h"
 #include "escaping.h"
@@ -556,13 +557,15 @@ void D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         // Only send the stuff in the current subset.
         if ((*i)->send_p()) {
-            m.reset_checksum();
+            if (dmr.compute_checksums())
+                m.reset_checksum();
 
             DBG(cerr << "Serializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
             (*i)->serialize(m, dmr, filter);
-
-            DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
-            m.put_checksum();
+            if (dmr.compute_checksums()) {
+                m.put_checksum();
+                DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
+            }
         }
     }
 }
