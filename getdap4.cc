@@ -97,8 +97,11 @@ static void usage(const string &) {
 
             c: <expr> is a constraint expression. Used with -d/D 
                NB: You can use a `?' for the CE also. 
-            S: Used in conjunction with -d and will report the total size 
-               of the data referenced in the DMR.)";
+            S: Used in conjunction with -d and will report the total size
+               of the data referenced in the DMR.
+            C: Used in conjunction with -D will cause the DAP4 service to
+               compute and return DAP4 data checksums.
+)";
 
     cerr << message << endl;
 }
@@ -204,15 +207,19 @@ int main(int argc, char *argv[]) {
     int times = 1;
     int dap_client_major = 4;
     int dap_client_minor = 0;
-    string expr;
+    string constraint_expression;
+    bool compute_checksums = false;
     bool compute_size = false;
 
 #ifdef WIN32
     _setmode(_fileno(stdout), _O_BINARY);
 #endif
 
-    while ((option_char = getopt(argc, argv, "dDvVrm:Mzsc:S")) != -1) {
+    while ((option_char = getopt(argc, argv, "CdDvVrm:Mzsc:S")) != -1) {
         switch (option_char) {
+        case 'C':
+            compute_checksums = true;
+            break;
         case 'd':
             get_dmr = true;
             break;
@@ -244,7 +251,7 @@ int main(int argc, char *argv[]) {
             mime_headers = false;
             break;
         case 'c':
-            expr = optarg;
+            constraint_expression = optarg;
             break;
         case 'h':
         case '?':
@@ -259,8 +266,11 @@ int main(int argc, char *argv[]) {
         // If after processing all the command line options there is nothing
         // left (no URL or file) assume that we should read from stdin.
         for (int i = optind; i < argc; ++i) {
-            if (verbose)
-                cerr << "Fetching: " << argv[i] << endl;
+            if (verbose) {
+                cerr << "#      Fetching: " << argv[i] << endl;
+                cerr << "#       dap4.ce: " << constraint_expression << endl;
+                cerr << "# dap4.checksum: " << (compute_checksums ? "true" : "false") << endl;
+            }
 
             string name = argv[i];
             url = new D4Connect(name);
@@ -320,7 +330,7 @@ int main(int argc, char *argv[]) {
                     D4BaseTypeFactory factory;
                     DMR dmr(&factory);
                     try {
-                        url->request_dmr(dmr, expr);
+                        url->request_dmr(dmr, constraint_expression);
 
                         if (verbose) {
                             cout << "DAP version: " << url->get_protocol() << ", Server version: " << url->get_version()
@@ -346,7 +356,7 @@ int main(int argc, char *argv[]) {
                     D4BaseTypeFactory factory;
                     DMR dmr(&factory);
                     try {
-                        url->request_dap4_data(dmr, expr);
+                        url->request_dap4_data(dmr, constraint_expression, compute_checksums);
 
                         if (verbose) {
                             cout << "DAP version: " << url->get_protocol() << ", Server version: " << url->get_version()

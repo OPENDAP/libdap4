@@ -276,7 +276,7 @@ D4Connect::~D4Connect() {
         delete d_http;
 }
 
-std::string D4Connect::build_dap4_ce(const string requestSuffix, const string dap4ce) {
+std::string D4Connect::build_dap4_ce(const string requestSuffix, const string dap4ce, const bool compute_checksums) {
     std::stringstream url;
     bool needsAmpersand = false;
 
@@ -292,18 +292,25 @@ std::string D4Connect::build_dap4_ce(const string requestSuffix, const string da
             url << "&";
 
         url << DAP4_CE_QUERY_KEY << "=" << id2www_ce(dap4ce);
+        needsAmpersand = true;
     }
 
-    DBG(cerr << "D4Connect::build_dap4_ce() - Source URL: " << d_URL << endl);
+    if (compute_checksums) {
+        url << (needsAmpersand ? "&" : "") << DAP4_CE_CHECKSUM_KEY << "=true";
+    }
+
+    DBG(cerr << "D4Connect::build_dap4_ce() -              Source URL: " << d_URL << endl);
     DBG(cerr << "D4Connect::build_dap4_ce() - Source URL Query String: " << d_UrlQueryString << endl);
-    DBG(cerr << "D4Connect::build_dap4_ce() - dap4ce: " << dap4ce << endl);
-    DBG(cerr << "D4Connect::build_dap4_ce() - request URL: " << url.str() << endl);
+    DBG(cerr << "D4Connect::build_dap4_ce() -                  dap4ce: " << dap4ce << endl);
+    DBG(cerr << "D4Connect::build_dap4_ce() -       compute_checksums: " << (compute_checksums ? "true" : "false")
+             << endl);
+    DBG(cerr << "D4Connect::build_dap4_ce() -             request URL: " << url.str() << endl);
 
     return url.str();
 }
 
 void D4Connect::request_dmr(DMR &dmr, const string expr) {
-    string url = build_dap4_ce(".dmr", expr);
+    string url = build_dap4_ce(".dmr", expr, false);
 
     Response *rs = 0;
     try {
@@ -342,8 +349,8 @@ void D4Connect::request_dmr(DMR &dmr, const string expr) {
     delete rs;
 }
 
-void D4Connect::request_dap4_data(DMR &dmr, const string expr) {
-    string url = build_dap4_ce(".dap", expr);
+void D4Connect::request_dap4_data(DMR &dmr, const string dap4_ce, const bool compute_checksums) {
+    string url = build_dap4_ce(".dap", dap4_ce, compute_checksums);
 
     Response *rs = 0;
     try {

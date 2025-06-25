@@ -29,6 +29,7 @@
 #include <string>
 
 #define DAP4_CE_QUERY_KEY "dap4.ce"
+#define DAP4_CE_CHECKSUM_KEY "dap4.checksum"
 
 namespace libdap {
 
@@ -53,7 +54,7 @@ private:
     // Use when you cannot use but have a complete response with MIME headers
     void parse_mime(Response &rs);
 
-    std::string build_dap4_ce(const std::string requestSuffix, const std::string expr);
+    std::string build_dap4_ce(const std::string requestSuffix, const std::string expr, const bool compute_checksums);
 
 protected:
     /** @name Suppress the C++ defaults for these. */
@@ -97,7 +98,7 @@ public:
     std::string get_protocol() { return d_protocol; }
 
     virtual void request_dmr(DMR &dmr, const std::string expr = "");
-    virtual void request_dap4_data(DMR &dmr, const std::string expr = "");
+    virtual void request_dap4_data(DMR &dmr, const std::string dap4_ce = "", const bool compute_checksums = false);
 #if 0
     virtual void request_version();
 #endif
