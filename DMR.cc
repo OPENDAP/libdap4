@@ -77,6 +77,8 @@ void DMR::m_duplicate(const DMR &dmr) {
 
     d_ce_empty = dmr.d_ce_empty;
 
+    d_compute_dap4_checksums = dmr.d_compute_dap4_checksums;
+
     // Deep copy, using ptr_duplicate()
     // d_root can only be a D4Group, so the thing returned by ptr_duplicate() must be a D4Group.
     d_root = static_cast<D4Group *>(dmr.d_root->ptr_duplicate());
