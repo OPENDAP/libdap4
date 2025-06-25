@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# Optional: include dependencies if installed system-wide
+find_dependency(Threads)
+find_dependency(CURL)
+find_dependency(LibXml2)
+
+include("${CMAKE_CURRENT_LIST_DIR}/libdap4Targets.cmake")
