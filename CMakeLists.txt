@@ -5,6 +5,14 @@ set(LIBDAP_VERSION "3.21.1")
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Tells the linker to embed the final install path
+# (e.g., /usr/local/lib or /custom/prefix/lib) which is
+# generally less likely to break for code that does not
+# use cmake. Not sure how this will work on platforms
+# that use ...lib64. 6/27/25 jhrg
+set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib")
+
+
 # Look for 'find' macros in the 'cmake' dir. jhrg 6/18/25
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 

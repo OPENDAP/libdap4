@@ -5,12 +5,12 @@
 
 prefix="@CMAKE_INSTALL_PREFIX@"
 exec_prefix="${prefix}"
-includedir="${prefix}/include/libdap"
+includedir="${prefix}/include"
 libdir="${prefix}/lib"
 libdir64=${prefix}/lib64
 
-cflags="-I${includedir} @CURL_PKG_CFLAGS@ @XML2_PKG_CFLAGS@ @TIRPC_PKG_CFLAGS@"
-libs="-L${libdir} -L${libdir64} -ldapclient -ldapserver -ldap @CURL_PKG_LIBS@ @XML2_PKG_LIBS@ @TIRPC_PKG_LIBS@"
+cflags="-I${includedir} -I${includedir}/libdap @CURL_PKG_CFLAGS@ @XML2_PKG_CFLAGS@ @TIRPC_PKG_CFLAGS@"
+libs="-L${libdir} -L${libdir64} -ldap -ldapclient -ldapserver @CURL_PKG_LIBS@ @XML2_PKG_LIBS@ @TIRPC_PKG_LIBS@"
 
 # may need to add  @PTHREAD_LIBRARIES@ @UUID_LIB@ 6/25/25 jhrg
 
