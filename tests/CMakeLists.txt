@@ -5,7 +5,8 @@ add_library(test-types STATIC
 		TestCommon.cc TestFloat64.cc TestInt8.cc TestUInt32.cc
 		TestD4Enum.cc TestFunction.cc TestSequence.cc TestUInt64.cc
 		TestD4Group.cc TestGrid.cc TestStr.cc TestUrl.cc
-		TestD4Opaque.cc TestInt16.cc TestStructure.cc
+		TestD4Opaque.cc TestInt16.cc TestStructure.cc D4TestTypeFactory.cc
+		D4TestFunction.cc
 )
 set_target_properties(test-types PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
