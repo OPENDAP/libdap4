@@ -38,19 +38,20 @@ install(TARGETS test-types
 # I used in the top-level CMakeLists file. It will install every header here
 # which makes it more robust when files change/move but also easier to install
 # something that should be private. 6/27/25 jhrg
-file(GLOB TEST_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+# For example, it was installing the D4ResponseBuilder.h and ResponseBuilder.h
+# headers, but those should not be installed. 6/29/25 jhrg
+#
+# file(GLOB TEST_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 
+set(TEST_HEADERS
+		TestD4Enum.h		TestGrid.h			TestStructure.h TestD4Group.h
+		TestInt16.h			TestTypeFactory.h 	TestD4Opaque.h	TestInt32.h
+		TestUInt16.h 		TestD4Sequence.h	TestInt64.h		TestUInt32.h
+		TestArray.h			TestFloat32.h		TestInt8.h		TestUInt64.h
+		TestByte.h			TestFloat64.h		TestSequence.h	TestUrl.h
+		TestCommon.h		TestFunction.h		TestStr.h
+		D4TestFunction.h	D4TestTypeFactory.h)
+\
 install(FILES ${TEST_HEADERS}
 		DESTINATION include/libdap/test)
 
-#set(TEST_TYPES_HDR
-#		D4ResponseBuilder.h	TestD4Enum.h		TestGrid.h		TestStructure.h
-#		D4TestFunction.h	TestD4Group.h		TestInt16.h		TestTypeFactory.h
-#		D4TestTypeFactory.h	TestD4Opaque.h		TestInt32.h		TestUInt16.h
-#		ResponseBuilder.h	TestD4Sequence.h	TestInt64.h		TestUInt32.h
-#		TestArray.h			TestFloat32.h		TestInt8.h		TestUInt64.h
-#		TestByte.h			TestFloat64.h		TestSequence.h	TestUrl.h
-#		TestCommon.h		TestFunction.h		TestStr.h)
-#
-#install(FILES ${TEST_TYPES_HDR}
-#		DESTINATION include/libdap/test)
