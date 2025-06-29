@@ -51,7 +51,7 @@ set(TEST_HEADERS
 		TestByte.h			TestFloat64.h		TestSequence.h	TestUrl.h
 		TestCommon.h		TestFunction.h		TestStr.h
 		D4TestFunction.h	D4TestTypeFactory.h)
-\
+
 install(FILES ${TEST_HEADERS}
 		DESTINATION include/libdap/test)
 
