@@ -4,11 +4,7 @@
 #ifndef _config_dap_h
 #define _config_dap_h
 
-#ifdef HAVE_CONFIG_H
-
 #include "config.h"
-
-#endif /* HAVE_CONFIG_H */
 
 /* Shorthand for gcc's unused attribute feature */
 #if defined(__GNUG__) || defined(__GNUC__)

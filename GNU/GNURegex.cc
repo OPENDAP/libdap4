@@ -23,8 +23,6 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// #define DODS_DEBUG
-
 #include "config.h"
 
 #include <iostream>
