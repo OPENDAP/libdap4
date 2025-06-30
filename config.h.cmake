@@ -2,8 +2,8 @@
 // Created by James Gallagher on 6/8/25.
 //
 
-#ifndef S_WORKS_CONFIG_DAP_H
-#define S_WORKS_CONFIG_DAP_H
+#ifndef CONFIG_H
+#define CONFIG_H
 
 /* Libraries */
 #cmakedefine HAVE_LIBXML2
@@ -27,6 +27,7 @@
 #cmakedefine HAVE_SYS_TYPES_H_AND_SYS_STAT_H
 #cmakedefine HAVE_STRING_H
 #cmakedefine HAVE_STDLIB_H
+#cmakedefine HAVE_REGEX_H 1
 
 /* Build options */
 #cmakedefine ENABLE_ASAN
@@ -58,4 +59,4 @@
 /* Install prefix for libdap */
 #define LIBDAP_ROOT "@LIBDAP_ROOT@"
 
-#endif //S_WORKS_CONFIG_DAP_H_IN_H
+#endif //CONFIG_H_IN_H
