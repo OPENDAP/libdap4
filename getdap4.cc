@@ -63,7 +63,7 @@ const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
 
 bool verbose = false;
 
-void loog(const string &s) {
+void logd(const string &s) {
     if (verbose) {
         cerr << "# " << s << "\n";
     }
@@ -274,9 +274,9 @@ int main(int argc, char *argv[]) {
         // left (no URL or file) assume that we should read from stdin.
         for (int i = optind; i < argc; ++i) {
             string name = argv[i];
-            loog("      Fetching: " + name);
-            loog("       dap4.ce: " + constraint_expression);
-            loog(" dap4.checksum: " + string(use_checksums ? "true" : "false") );
+            logd("      Fetching: " + name);
+            logd("       dap4.ce: " + constraint_expression);
+            logd(" dap4.checksum: " + string(use_checksums ? "true" : "false") );
 
 
             url = new D4Connect(name);
@@ -289,7 +289,7 @@ int main(int argc, char *argv[]) {
                 url->set_xdap_protocol(dap_client_major, dap_client_minor);
 
             if (url->is_local()) {
-                loog("Assuming " + name + " is a file that contains a response object; decoding.");
+                logd("Assuming " + name + " is a file that contains a response object; decoding.");
 
                 try {
                     D4BaseTypeFactory factory;
@@ -312,8 +312,8 @@ int main(int argc, char *argv[]) {
                         read_response_from_file(url, dmr, r, mime_headers, get_dap4_data, get_dmr);
                     }
 
-                    loog("   DAP version: " + url->get_protocol());
-                    loog("Server version: " + url->get_version());
+                    logd("   DAP version: " + url->get_protocol());
+                    logd("Server version: " + url->get_version());
 
                     // Always write the DMR
                     XMLWriter xml;
@@ -336,9 +336,9 @@ int main(int argc, char *argv[]) {
                     try {
                         url->request_dmr(dmr, constraint_expression);
 
-                        loog("   DAP version: " + url->get_protocol());
-                        loog("Server version: " + url->get_version());
-                        loog("DMR: ");
+                        logd("   DAP version: " + url->get_protocol());
+                        logd("Server version: " + url->get_version());
+                        logd("DMR: ");
 
                         XMLWriter xml;
                         dmr.print_dap4(xml);
@@ -362,9 +362,9 @@ int main(int argc, char *argv[]) {
                     try {
                         url->request_dap4_data(dmr, constraint_expression);
 
-                        loog("   DAP version: " + url->get_protocol());
-                        loog("Server version: " + url->get_version());
-                        loog("DMR:");
+                        logd("   DAP version: " + url->get_protocol());
+                        logd("Server version: " + url->get_version());
+                        logd("DMR:");
 
                         XMLWriter xml;
                         dmr.print_dap4(xml);
@@ -395,7 +395,7 @@ int main(int argc, char *argv[]) {
                         if (verbose) {
                             vector<string> &headers = r->get_headers();
                             for (const auto header:headers) {
-                                loog(header);
+                                logd(header);
                             }
                         }
                         if (!read_data(r->get_stream())) {
