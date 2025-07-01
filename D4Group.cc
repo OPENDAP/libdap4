@@ -557,12 +557,12 @@ void D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         // Only send the stuff in the current subset.
         if ((*i)->send_p()) {
-            if (dmr.compute_checksums())
+            if (dmr.use_checksums())
                 m.reset_checksum();
 
             DBG(cerr << "Serializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
             (*i)->serialize(m, dmr, filter);
-            if (dmr.compute_checksums()) {
+            if (dmr.use_checksums()) {
                 m.put_checksum();
                 DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
             }
@@ -582,17 +582,20 @@ void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
         DBG(cerr << "Deserializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
         (*i)->deserialize(um, dmr);
 
-        D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
-        string crc = um.get_checksum_str();
-        a->add_value(crc);
-#if INCLUDE_SOURCE_BYTE_ORDER
-        if (um.is_source_big_endian())
-            a->add_value("source:big-endian");
-        else
-            a->add_value("source:little-endian");
-#endif
-        DBG(cerr << "Read CRC32: " << crc << " for " << (*i)->name() << endl);
-        (*i)->attributes()->add_attribute_nocopy(a);
+        if (dmr.use_checksums()) {
+
+            D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
+            string crc = um.get_checksum_str();
+            a->add_value(crc);
+        #if INCLUDE_SOURCE_BYTE_ORDER
+            if (um.is_source_big_endian())
+                a->add_value("source:big-endian");
+            else
+                a->add_value("source:little-endian");
+        #endif
+            DBG(cerr << "Read CRC32: " << crc << " for " << (*i)->name() << endl);
+            (*i)->attributes()->add_attribute_nocopy(a);
+        }
     }
 }
 

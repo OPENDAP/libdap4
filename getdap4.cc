@@ -61,6 +61,14 @@ using namespace libdap;
 
 const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
 
+bool verbose = false;
+
+void loog(const string &s) {
+    if (verbose) {
+        cerr << "# " << s << "\n";
+    }
+}
+
 static void usage(const string &) {
     const char *message = R"(
     Usage: getdap4 [dD vVmzsM][-c <expr>][-m <num>] <url> [<url> ...]
@@ -199,7 +207,6 @@ int main(int argc, char *argv[]) {
 
     bool get_dmr = false;
     bool get_dap4_data = false;
-    bool verbose = false;
     bool accept_deflate = false;
     bool print_rows = false;
     bool mime_headers = true;
@@ -208,7 +215,7 @@ int main(int argc, char *argv[]) {
     int dap_client_major = 4;
     int dap_client_minor = 0;
     string constraint_expression;
-    bool compute_checksums = false;
+    bool use_checksums = false;
     bool compute_size = false;
 
 #ifdef WIN32
@@ -218,7 +225,7 @@ int main(int argc, char *argv[]) {
     while ((option_char = getopt(argc, argv, "CdDvVrm:Mzsc:S")) != -1) {
         switch (option_char) {
         case 'C':
-            compute_checksums = true;
+            use_checksums = true;
             break;
         case 'd':
             get_dmr = true;
@@ -266,13 +273,12 @@ int main(int argc, char *argv[]) {
         // If after processing all the command line options there is nothing
         // left (no URL or file) assume that we should read from stdin.
         for (int i = optind; i < argc; ++i) {
-            if (verbose) {
-                cerr << "#      Fetching: " << argv[i] << endl;
-                cerr << "#       dap4.ce: " << constraint_expression << endl;
-                cerr << "# dap4.checksum: " << (compute_checksums ? "true" : "false") << endl;
-            }
-
             string name = argv[i];
+            loog("      Fetching: " + name);
+            loog("       dap4.ce: " + constraint_expression);
+            loog(" dap4.checksum: " + string(use_checksums ? "true" : "false") );
+
+
             url = new D4Connect(name);
 
             // This overrides the value set in the .dodsrc file.
@@ -283,8 +289,7 @@ int main(int argc, char *argv[]) {
                 url->set_xdap_protocol(dap_client_major, dap_client_minor);
 
             if (url->is_local()) {
-                if (verbose)
-                    cerr << "Assuming " << argv[i] << " is a file that contains a response object; decoding." << endl;
+                loog("Assuming " + name + " is a file that contains a response object; decoding.");
 
                 try {
                     D4BaseTypeFactory factory;
@@ -307,9 +312,8 @@ int main(int argc, char *argv[]) {
                         read_response_from_file(url, dmr, r, mime_headers, get_dap4_data, get_dmr);
                     }
 
-                    if (verbose)
-                        cerr << "DAP version: " << url->get_protocol().c_str()
-                             << " Server version: " << url->get_version().c_str() << endl;
+                    loog("   DAP version: " + url->get_protocol());
+                    loog("Server version: " + url->get_version());
 
                     // Always write the DMR
                     XMLWriter xml;
@@ -332,11 +336,9 @@ int main(int argc, char *argv[]) {
                     try {
                         url->request_dmr(dmr, constraint_expression);
 
-                        if (verbose) {
-                            cout << "DAP version: " << url->get_protocol() << ", Server version: " << url->get_version()
-                                 << endl;
-                            cout << "DMR:" << endl;
-                        }
+                        loog("   DAP version: " + url->get_protocol());
+                        loog("Server version: " + url->get_version());
+                        loog("DMR: ");
 
                         XMLWriter xml;
                         dmr.print_dap4(xml);
@@ -355,14 +357,14 @@ int main(int argc, char *argv[]) {
                 for (int j = 0; j < times; ++j) {
                     D4BaseTypeFactory factory;
                     DMR dmr(&factory);
-                    try {
-                        url->request_dap4_data(dmr, constraint_expression, compute_checksums);
+                    dmr.use_checksums(use_checksums);
 
-                        if (verbose) {
-                            cout << "DAP version: " << url->get_protocol() << ", Server version: " << url->get_version()
-                                 << endl;
-                            cout << "DMR:" << endl;
-                        }
+                    try {
+                        url->request_dap4_data(dmr, constraint_expression);
+
+                        loog("   DAP version: " + url->get_protocol());
+                        loog("Server version: " + url->get_version());
+                        loog("DMR:");
 
                         XMLWriter xml;
                         dmr.print_dap4(xml);
@@ -392,7 +394,9 @@ int main(int argc, char *argv[]) {
                         HTTPResponse *r = http.fetch_url(url_string);
                         if (verbose) {
                             vector<string> &headers = r->get_headers();
-                            copy(headers.begin(), headers.end(), ostream_iterator<string>(cout, "\n"));
+                            for (const auto header:headers) {
+                                loog(header);
+                            }
                         }
                         if (!read_data(r->get_stream())) {
                             continue;
