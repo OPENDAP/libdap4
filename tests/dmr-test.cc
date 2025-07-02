@@ -61,12 +61,12 @@ int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeo
 using namespace libdap;
 using namespace std;
 
-// TODO - Remove these functions before merge.
 /**
- * @brief COnverts a bool to a string of either "true" or "false" as appropriate.
+ * @brief Converts a bool to a string of either "true" or "false" as appropriate.
  * @param b The boolean value to stringify.
  * @return Either "true" or "false" according to b.
  */
+// TODO - Remove this function before merge.
 string torf(bool b) { return {b ? "true" : "false"}; }
 
 /**
@@ -74,6 +74,7 @@ string torf(bool b) { return {b ? "true" : "false"}; }
  * @param ofstrm The stream to write to
  * @param msg The message to write.
  */
+// TODO - Remove this function before merge.
 void logd(ofstream &ofstrm, const string &msg) {
     std::stringstream ss(msg); // Create a stringstream from the string
     std::string msg_line;
@@ -282,7 +283,7 @@ int main(int argc, char *argv[]) {
     string function;
     bool use_checksums = false;
 
-    // TODO - Drop This Before Merge.
+    // TODO - Remove this variable before merge.
     std::ofstream logstrm("./dmr-test.log");
 
     // process options
@@ -354,7 +355,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // TODO - Drop before merge
+    // TODO - Remove these logd() function calls before merge.
     logd(logstrm, "----------------------------------------------------");
     logd(logstrm, "           name: " + name);
     logd(logstrm, "          debug: " + torf(debug));

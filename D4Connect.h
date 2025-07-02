@@ -28,9 +28,6 @@
 
 #include <string>
 
-#define DAP4_CE_QUERY_KEY "dap4.ce"
-#define DAP4_CE_CHECKSUM_KEY "dap4.checksum"
-
 namespace libdap {
 
 class HTTPConnect;
