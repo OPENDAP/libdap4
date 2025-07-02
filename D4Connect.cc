@@ -349,7 +349,7 @@ void D4Connect::request_dmr(DMR &dmr, const string expr) {
     delete rs;
 }
 
-void D4Connect::request_dap4_data(DMR &dmr, const string dap4_ce) {
+void D4Connect::request_dap4_data(DMR &dmr, const string &dap4_ce) {
 
     string url = build_dap4_ce(".dap", dap4_ce, dmr.use_checksums());
 

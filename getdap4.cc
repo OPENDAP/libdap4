@@ -392,8 +392,8 @@ int main(int argc, char *argv[]) {
                     try {
                         HTTPResponse *r = http.fetch_url(url_string);
                         if (verbose) {
-                            vector<string> &headers = r->get_headers();
-                            for (const auto header : headers) {
+                            const auto &headers = r->get_headers();
+                            for (const auto &header : headers) {
                                 logd(header);
                             }
                         }
