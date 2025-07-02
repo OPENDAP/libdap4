@@ -153,6 +153,7 @@ string send_data(DMR *dataset, const string &constraint, const string &function,
     // function parse/eval code that immediately follows. jhrg 3/12/14
     D4TestTypeFactory d4_factory;
     auto function_result = make_unique<DMR>(&d4_factory, "function_results");
+    function_result->use_checksums(dataset->use_checksums());
 
     // The Function Parser
     if (!function.empty()) {
@@ -355,7 +356,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // TOD - Drop before merge
+    // TODO - Drop before merge
     logd(logstrm, "----------------------------------------------------");
     logd(logstrm, "           name: " + name);
     logd(logstrm, "          debug: " + torf(debug));
