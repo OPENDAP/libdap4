@@ -276,7 +276,7 @@ D4Connect::~D4Connect() {
         delete d_http;
 }
 
-std::string D4Connect::build_dap4_ce(const string requestSuffix, const string dap4ce, const bool compute_checksums) {
+std::string D4Connect::build_dap4_ce(const string requestSuffix, const string dap4ce, const bool use_checksums) {
     std::stringstream url;
     bool needsAmpersand = false;
 
@@ -295,15 +295,14 @@ std::string D4Connect::build_dap4_ce(const string requestSuffix, const string da
         needsAmpersand = true;
     }
 
-    if (compute_checksums) {
+    if (use_checksums) {
         url << (needsAmpersand ? "&" : "") << DAP4_CE_CHECKSUM_KEY << "=true";
     }
 
     DBG(cerr << "D4Connect::build_dap4_ce() -              Source URL: " << d_URL << endl);
     DBG(cerr << "D4Connect::build_dap4_ce() - Source URL Query String: " << d_UrlQueryString << endl);
     DBG(cerr << "D4Connect::build_dap4_ce() -                  dap4ce: " << dap4ce << endl);
-    DBG(cerr << "D4Connect::build_dap4_ce() -       compute_checksums: " << (compute_checksums ? "true" : "false")
-             << endl);
+    DBG(cerr << "D4Connect::build_dap4_ce() -           use_checksums: " << (use_checksums ? "true" : "false") << endl);
     DBG(cerr << "D4Connect::build_dap4_ce() -             request URL: " << url.str() << endl);
 
     return url.str();
