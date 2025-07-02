@@ -61,9 +61,7 @@ using namespace libdap;
 
 const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
 
-bool verbose = false;
-
-void logd(const string &s) {
+void logd(const string &s, bool verbose = false) {
     if (verbose) {
         cerr << "# " << s << "\n";
     }
@@ -150,14 +148,14 @@ static void read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool 
 }
 
 static void print_group_data(D4Group *g, bool print_rows = false) {
-    for (Constructor::Vars_iter i = g->var_begin(), e = g->var_end(); i != e; i++) {
+    for (auto i = g->var_begin(), e = g->var_end(); i != e; ++i) {
         if (print_rows && (*i)->type() == dods_sequence_c)
             dynamic_cast<D4Sequence &>(**i).print_val_by_rows(cout);
         else
             (*i)->print_val(cout);
     }
 
-    for (D4Group::groupsIter gi = g->grp_begin(), ge = g->grp_end(); gi != ge; ++gi) {
+    for (auto gi = g->grp_begin(), ge = g->grp_end(); gi != ge; ++gi) {
         print_group_data(*gi, print_rows);
     }
 }
@@ -204,7 +202,7 @@ unsigned long long get_size(DMR &dmr, bool constrained = false) { return get_siz
 
 int main(int argc, char *argv[]) {
     int option_char;
-
+    bool verbose = false;
     bool get_dmr = false;
     bool get_dap4_data = false;
     bool accept_deflate = false;
@@ -274,9 +272,9 @@ int main(int argc, char *argv[]) {
         // left (no URL or file) assume that we should read from stdin.
         for (int i = optind; i < argc; ++i) {
             string name = argv[i];
-            logd("      Fetching: " + name);
-            logd("       dap4.ce: " + constraint_expression);
-            logd(" dap4.checksum: " + string(use_checksums ? "true" : "false"));
+            logd("      Fetching: " + name, verbose);
+            logd("       dap4.ce: " + constraint_expression, verbose);
+            logd(" dap4.checksum: " + string(use_checksums ? "true" : "false"), verbose);
 
             url = new D4Connect(name);
 
@@ -288,7 +286,7 @@ int main(int argc, char *argv[]) {
                 url->set_xdap_protocol(dap_client_major, dap_client_minor);
 
             if (url->is_local()) {
-                logd("Assuming " + name + " is a file that contains a response object; decoding.");
+                logd("Assuming " + name + " is a file that contains a response object; decoding.", verbose);
 
                 try {
                     D4BaseTypeFactory factory;
@@ -311,8 +309,8 @@ int main(int argc, char *argv[]) {
                         read_response_from_file(url, dmr, r, mime_headers, get_dap4_data, get_dmr);
                     }
 
-                    logd("   DAP version: " + url->get_protocol());
-                    logd("Server version: " + url->get_version());
+                    logd("   DAP version: " + url->get_protocol(), verbose);
+                    logd("Server version: " + url->get_version(), verbose);
 
                     // Always write the DMR
                     XMLWriter xml;
@@ -335,9 +333,9 @@ int main(int argc, char *argv[]) {
                     try {
                         url->request_dmr(dmr, constraint_expression);
 
-                        logd("   DAP version: " + url->get_protocol());
-                        logd("Server version: " + url->get_version());
-                        logd("DMR: ");
+                        logd("   DAP version: " + url->get_protocol(), verbose);
+                        logd("Server version: " + url->get_version(), verbose);
+                        logd("DMR: ", true);
 
                         XMLWriter xml;
                         dmr.print_dap4(xml);
@@ -361,9 +359,9 @@ int main(int argc, char *argv[]) {
                     try {
                         url->request_dap4_data(dmr, constraint_expression);
 
-                        logd("   DAP version: " + url->get_protocol());
-                        logd("Server version: " + url->get_version());
-                        logd("DMR:");
+                        logd("   DAP version: " + url->get_protocol(), verbose);
+                        logd("Server version: " + url->get_version(), verbose);
+                        logd("DMR:", true);
 
                         XMLWriter xml;
                         dmr.print_dap4(xml);
@@ -394,7 +392,7 @@ int main(int argc, char *argv[]) {
                         if (verbose) {
                             const auto &headers = r->get_headers();
                             for (const auto &header : headers) {
-                                logd(header);
+                                logd(header, verbose);
                             }
                         }
                         if (!read_data(r->get_stream())) {
