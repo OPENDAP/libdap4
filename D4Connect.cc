@@ -60,8 +60,8 @@ using namespace std;
 
 namespace libdap {
 
-auto DAP4_CE_QUERY_KEY = "dap4.ce";
-auto DAP4_CE_CHECKSUM_KEY = "dap4.checksum";
+const auto DAP4_CE_QUERY_KEY = "dap4.ce";
+const auto DAP4_CE_CHECKSUM_KEY = "dap4.checksum";
 
 /** This private method process data from both local and remote sources. It
  exists to eliminate duplication of code. */
@@ -279,7 +279,8 @@ D4Connect::~D4Connect() {
         delete d_http;
 }
 
-std::string D4Connect::build_dap4_ce(const string requestSuffix, const string dap4ce, const bool use_checksums) {
+std::string D4Connect::build_dap4_ce(const string &requestSuffix, const string &dap4ce,
+                                     const bool use_checksums) const {
     std::stringstream url;
     bool needsAmpersand = false;
 

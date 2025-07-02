@@ -51,7 +51,8 @@ private:
     // Use when you cannot use but have a complete response with MIME headers
     void parse_mime(Response &rs);
 
-    std::string build_dap4_ce(const std::string requestSuffix, const std::string expr, const bool use_checksums);
+    std::string build_dap4_ce(const std::string &requestSuffix, const std::string &expr,
+                              const bool use_checksums) const;
 
 protected:
     /** @name Suppress the C++ defaults for these. */
