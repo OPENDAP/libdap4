@@ -67,14 +67,14 @@ using namespace std;
  * @param b The boolean value to stringify.
  * @return Either "true" or "false" according to b.
  */
-string torf(bool b) { return {b?"true":"false"}; }
+string torf(bool b) { return {b ? "true" : "false"}; }
 
 /**
  * @brief Simple log formater
  * @param ofstrm The stream to write to
  * @param msg The message to write.
  */
-void logd(ofstream &ofstrm, const string &msg){
+void logd(ofstream &ofstrm, const string &msg) {
     std::stringstream ss(msg); // Create a stringstream from the string
     std::string msg_line;
 
@@ -83,7 +83,6 @@ void logd(ofstream &ofstrm, const string &msg){
         ofstrm << "# " << msg_line << "\n";
     }
 }
-
 
 /**
  * Open the named XML file and parse it, assuming that it contains a DMR.
@@ -285,7 +284,6 @@ int main(int argc, char *argv[]) {
 
     // TODO - Drop This Before Merge.
     std::ofstream logstrm("./dmr-test.log");
-
 
     // process options
 

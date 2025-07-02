@@ -587,12 +587,12 @@ void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
             D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
             string crc = um.get_checksum_str();
             a->add_value(crc);
-        #if INCLUDE_SOURCE_BYTE_ORDER
+#if INCLUDE_SOURCE_BYTE_ORDER
             if (um.is_source_big_endian())
                 a->add_value("source:big-endian");
             else
                 a->add_value("source:little-endian");
-        #endif
+#endif
             DBG(cerr << "Read CRC32: " << crc << " for " << (*i)->name() << endl);
             (*i)->attributes()->add_attribute_nocopy(a);
         }

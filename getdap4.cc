@@ -276,8 +276,7 @@ int main(int argc, char *argv[]) {
             string name = argv[i];
             logd("      Fetching: " + name);
             logd("       dap4.ce: " + constraint_expression);
-            logd(" dap4.checksum: " + string(use_checksums ? "true" : "false") );
-
+            logd(" dap4.checksum: " + string(use_checksums ? "true" : "false"));
 
             url = new D4Connect(name);
 
@@ -394,7 +393,7 @@ int main(int argc, char *argv[]) {
                         HTTPResponse *r = http.fetch_url(url_string);
                         if (verbose) {
                             vector<string> &headers = r->get_headers();
-                            for (const auto header:headers) {
+                            for (const auto header : headers) {
                                 logd(header);
                             }
                         }
