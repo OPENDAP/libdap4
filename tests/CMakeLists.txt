@@ -55,3 +55,18 @@ set(TEST_HEADERS
 install(FILES ${TEST_HEADERS}
 		DESTINATION include/libdap/test)
 
+add_executable(das-test das-test.cc)
+target_link_libraries(das-test PRIVATE test-types dapserver dap)
+
+add_executable(dds-test dds-test.cc)
+target_link_libraries(dds-test PRIVATE test-types dapserver dap)
+
+add_executable(expr-test expr-test.cc ResponseBuilder.cc)
+target_include_directories(expr-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(expr-test PRIVATE test-types dapserver dapclient dap)
+
+add_executable(dmr-test dmr-test.cc D4ResponseBuilder.cc)
+target_include_directories(dmr-test
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/d4_ce  ${CMAKE_SOURCE_DIR}/d4_function)
+target_link_libraries(dmr-test PRIVATE test-types dapserver dap)
+
