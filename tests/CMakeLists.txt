@@ -10,9 +10,8 @@ add_library(test-types STATIC
 )
 set_target_properties(test-types PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-# Replace:
-# target_include_directories(test-types PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-# With the following. This enables linking locally and then installing so
+# Replace: target_include_directories(test-types PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+# with the following. This enables linking locally and then installing so
 # library users can link to these without linking to the source tree. 6/27/25 jhrg
 target_include_directories(test-types
 		PUBLIC
@@ -33,15 +32,6 @@ install(TARGETS test-types
 		EXPORT libdap4Targets
 		ARCHIVE DESTINATION lib
 		INCLUDES DESTINATION include/libdap/test)
-
-# This is an alternative to the set(VAR ...) and install(FILES ...) pattern
-# I used in the top-level CMakeLists file. It will install every header here
-# which makes it more robust when files change/move but also easier to install
-# something that should be private. 6/27/25 jhrg
-# For example, it was installing the D4ResponseBuilder.h and ResponseBuilder.h
-# headers, but those should not be installed. 6/29/25 jhrg
-#
-# file(GLOB TEST_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 
 set(TEST_HEADERS
 		TestD4Enum.h		TestGrid.h			TestStructure.h TestD4Group.h
@@ -70,7 +60,6 @@ target_include_directories(dmr-test
 		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/d4_ce  ${CMAKE_SOURCE_DIR}/d4_function)
 target_link_libraries(dmr-test PRIVATE test-types dapserver dap)
 
-# tests/CMakeLists.txt
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 #set(DAS_HELPER_SRC  "${CMAKE_CURRENT_SOURCE_DIR}/run_das_response_test.py")
@@ -80,18 +69,14 @@ find_package(Python3 COMPONENTS Interpreter REQUIRED)
 #		COPYONLY
 #)
 
-# … assume you've already done:
 file(GLOB DAS_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite"
 	"${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/*.das")
 
-message(STATUS "Found these DAS tests: ${DAS_FILES}")
-message(STATUS "Looked in: ${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite")
+# message(STATUS "Found these DAS tests: ${DAS_FILES}")
+# message(STATUS "Looked in: ${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite")
 
 # Helper to register one DAS‐response test
 function(add_das_test das_filename)
-	# Strip extension for the test name
-	get_filename_component(testname "${das_filename}" NAME_WE)
-
 	#	# get "test.1.das" → fullname="test.1.das"
 	#	message(STATUS "testname: ${testname}")
 	get_filename_component(fullname "${das_filename}" NAME)
@@ -99,7 +84,8 @@ function(add_das_test das_filename)
 	string(REGEX REPLACE "\\.das$" "" raw "${fullname}")
 	# sanitize; test.1 → test_1
 	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "${raw}")
-	message(STATUS "testname: ${testname}")
+	# message(STATUS "testname: ${testname}")
+
 	# Paths
 	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/${das_filename}")
 	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/${das_filename}.base")
@@ -113,19 +99,10 @@ function(add_das_test das_filename)
 			"\"$<TARGET_FILE:das-test>\" -p < \"${input}\" > \"${output}\" 2>&1; \
 			diff -b -B \"${baseline}\" \"${output}\""
 	)
-
 	set_tests_properties(das_${testname} PROPERTIES LABELS integration)
 endfunction()
 
 #function(add_das_response_test das_filename)
-##	# 1) strip off the .das extension
-##	message(STATUS "testname: ${testname}")
-##	get_filename_component(raw "${das_filename}" NAME_WE)
-##	message(STATUS "raw: ${raw}")
-##	# 2) sanitize it (replace any non-alphanumeric with '_')
-##	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "${raw}")
-##	message(STATUS "testname: ${testname}")
-#
 #	# get "test.1.das" → fullname="test.1.das"
 #	message(STATUS "testname: ${testname}")
 #	get_filename_component(fullname "${das_filename}" NAME)
@@ -150,16 +127,9 @@ endfunction()
 #			"${baseline}"
 #			"${diffout}"
 #	)
-#
 #	set_tests_properties(das_response_${testname} PROPERTIES LABELS integration)
-#
-## (optional) have CTest print the diff if it fails
-##	set_tests_properties(das_response_${testname} PROPERTIES
-##			FAIL_REGULAR_EXPRESSION ".*"
-##	)
 #endfunction()
 
-# then later...
 foreach(dfile IN LISTS DAS_FILES)
 	add_das_test(${dfile})
 endforeach()
