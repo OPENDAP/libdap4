@@ -383,6 +383,21 @@ add_subdirectory(unit-tests)
 add_subdirectory(d4_ce/unit-tests)
 add_subdirectory(http_dap/unit-tests)
 
+# a target that runs only the unit tests:
+add_custom_target(unit-test
+        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -L unit
+        DEPENDS unit-tests)            # or whatever your unit‐test target is
+
+# a target that runs only the integration tests:
+add_custom_target(integration-test
+        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -L integration
+        DEPENDS tests)                 # or your integration‐test deps
+
+# a “check” target to do unit → integration in order:
+add_custom_target(check
+        DEPENDS unit-test integration-test
+)
+
 # Custom cleanup for coverage files, etc.
 set_directory_properties(PROPERTIES
         ADDITIONAL_MAKE_CLEAN_FILES "*.gcda;*.gcno;*.gcov"

@@ -70,3 +70,88 @@ target_include_directories(dmr-test
 		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/d4_ce  ${CMAKE_SOURCE_DIR}/d4_function)
 target_link_libraries(dmr-test PRIVATE test-types dapserver dap)
 
+# tests/CMakeLists.txt
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+set(DAS_HELPER_SRC  "${CMAKE_CURRENT_SOURCE_DIR}/run_das_response_test.py")
+set(DAS_HELPER_BIN  "${CMAKE_CURRENT_BINARY_DIR}/run_das_response_test.py")
+configure_file(
+		${DAS_HELPER_SRC}  ${DAS_HELPER_BIN}
+		COPYONLY
+)
+
+# … assume you've already done:
+file(GLOB DAS_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite"
+	"${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/*.das")
+
+message(STATUS "Found these DAS tests: ${DAS_FILES}")
+message(STATUS "Looked in: ${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite")
+
+# Helper to register one DAS‐response test
+function(add_das_response_test das_filename)
+	# Strip extension for the test name
+	get_filename_component(testname "${das_filename}" NAME_WE)
+
+	# Paths
+	set(input      "${CMAKE_SOURCE_DIR}/das-testsuite/${das_filename}")
+	set(baseline   "${CMAKE_SOURCE_DIR}/das-testsuite/${das_filename}.base")
+	set(output     "${CMAKE_BINARY_DIR}/tests/${testname}.out")
+
+	# Add the CTest entry
+	add_test(NAME das_response_${testname}
+			COMMAND /bin/sh "-c"
+			# 1) run das-test, redirect all output into a temp file
+			"\"$<TARGET_FILE:das-test>\" -p < \"${input}\" > \"${output}\" 2>&1; \
+             # 2) diff that file against the baseline"
+			"diff -b -B \"${baseline}\" \"${output}\""
+	)
+
+	set_tests_properties(das_response_${testname} PROPERTIES LABELS integration)
+endfunction()
+
+#function(add_das_response_test das_filename)
+##	# 1) strip off the .das extension
+##	message(STATUS "testname: ${testname}")
+##	get_filename_component(raw "${das_filename}" NAME_WE)
+##	message(STATUS "raw: ${raw}")
+##	# 2) sanitize it (replace any non-alphanumeric with '_')
+##	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "${raw}")
+##	message(STATUS "testname: ${testname}")
+#
+#	# get "test.1.das" → fullname="test.1.das"
+#	message(STATUS "testname: ${testname}")
+#	get_filename_component(fullname "${das_filename}" NAME)
+#	# strip just ".das" → raw="test.1"
+#	string(REGEX REPLACE "\\.das$" "" raw "${fullname}")
+#	# sanitize → test_1
+#	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "${raw}")
+#	message(STATUS "testname: ${testname}")
+#	# 3) set up paths
+#	set(input    "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/${das_filename}")
+#	set(baseline "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/${das_filename}.base")
+#	set(diffout  "${CMAKE_CURRENT_BINARY_DIR}/${testname}.diff")
+#
+#	# 4) register the test
+#	add_test(
+#			NAME das_response_${testname}
+#			COMMAND
+#			${Python3_EXECUTABLE}
+#			"${DAS_HELPER_BIN}"
+#			$<TARGET_FILE:das-test>
+#			"${input}"
+#			"${baseline}"
+#			"${diffout}"
+#	)
+#
+#	set_tests_properties(das_response_${testname} PROPERTIES LABELS integration)
+#
+## (optional) have CTest print the diff if it fails
+##	set_tests_properties(das_response_${testname} PROPERTIES
+##			FAIL_REGULAR_EXPRESSION ".*"
+##	)
+#endfunction()
+
+# then later...
+foreach(dfile IN LISTS DAS_FILES)
+	add_das_response_test(${dfile})
+endforeach()

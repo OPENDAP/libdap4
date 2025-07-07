@@ -39,7 +39,7 @@ set(TESTS_WITH_TEST_TYPES
 
 # This cmake function sets up the base condition, linking with libdap.
 # Other code adds more libraries using additional calls to target_link_libraries()
-# which is 'additive.
+# which is 'additive.'
 function(build_test target source_files)
 	add_executable(${target} ${source_files})
 
@@ -64,7 +64,7 @@ function(build_test target source_files)
 
 	add_test(NAME ${target} COMMAND ${target})
 	# This enables using `ctest -L unit` to run just these tests.
-	set_tests_properties(${test_name} PROPERTIES LABELS "unit")
+	set_tests_properties(${target} PROPERTIES LABELS unit)
 endfunction()
 
 foreach(src ${TESTS_DAP_ONLY})
