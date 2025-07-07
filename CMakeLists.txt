@@ -21,6 +21,9 @@ include(CheckCXXSourceCompiles)
 # Dependency packages
 find_package(CppUnit REQUIRED)
 find_package(LibXml2 REQUIRED)
+message(STATUS "LIBXML2_LIBRARIES: ${LIBXML2_LIBRARIES}")
+message(STATUS "LIBXML2_INCLUDE_DIR: ${LIBXML2_INCLUDE_DIR}")
+
 find_package(CURL REQUIRED)
 find_package(Threads REQUIRED)
 
