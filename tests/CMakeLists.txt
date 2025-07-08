@@ -51,17 +51,20 @@ target_include_directories(das-test PRIVATE ${LIBXML2_INCLUDE_DIR})
 
 add_executable(dds-test dds-test.cc)
 target_link_libraries(dds-test PRIVATE test-types dapserver dap)
+target_include_directories(dds-test PRIVATE ${LIBXML2_INCLUDE_DIR})
 
 add_executable(expr-test expr-test.cc ResponseBuilder.cc)
-target_include_directories(expr-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(expr-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(expr-test PRIVATE test-types dapserver dapclient dap)
 
 add_executable(dmr-test dmr-test.cc D4ResponseBuilder.cc)
 target_include_directories(dmr-test
-		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/d4_ce  ${CMAKE_SOURCE_DIR}/d4_function)
+		PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR} ${LIBXML2_INCLUDE_DIR}
+		${CMAKE_SOURCE_DIR}/d4_ce  ${CMAKE_SOURCE_DIR}/d4_function)
 target_link_libraries(dmr-test PRIVATE test-types dapserver dap)
 
-find_package(Python3 COMPONENTS Interpreter REQUIRED)
+# find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 #set(DAS_HELPER_SRC  "${CMAKE_CURRENT_SOURCE_DIR}/run_das_response_test.py")
 #set(DAS_HELPER_BIN  "${CMAKE_CURRENT_BINARY_DIR}/run_das_response_test.py")
