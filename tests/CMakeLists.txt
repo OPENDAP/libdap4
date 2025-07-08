@@ -52,10 +52,20 @@ target_include_directories(das-test PRIVATE ${LIBXML2_INCLUDE_DIR})
 add_executable(dds-test dds-test.cc)
 target_link_libraries(dds-test PRIVATE test-types dapserver dap)
 target_include_directories(dds-test PRIVATE ${LIBXML2_INCLUDE_DIR})
+if(TIRPC_FOUND)
+	target_include_directories(dds-test PRIVATE ${TIRPC_INCLUDE_DIRS})
+	target_link_libraries(dds-test PRIVATE ${TIRPC_LIBRARIES})
+endif()
 
 add_executable(expr-test expr-test.cc ResponseBuilder.cc)
 target_include_directories(expr-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(expr-test PRIVATE test-types dapserver dapclient dap)
+if(TIRPC_FOUND)
+	target_include_directories(expr-test PRIVATE ${TIRPC_INCLUDE_DIRS})
+	target_link_libraries(expr-test PRIVATE ${TIRPC_LIBRARIES})
+endif()
+
+
 
 add_executable(dmr-test dmr-test.cc D4ResponseBuilder.cc)
 target_include_directories(dmr-test
@@ -63,6 +73,12 @@ target_include_directories(dmr-test
 		${CMAKE_CURRENT_SOURCE_DIR} ${LIBXML2_INCLUDE_DIR}
 		${CMAKE_SOURCE_DIR}/d4_ce  ${CMAKE_SOURCE_DIR}/d4_function)
 target_link_libraries(dmr-test PRIVATE test-types dapserver dap)
+if(TIRPC_FOUND)
+	target_include_directories(dmr-test PRIVATE ${TIRPC_INCLUDE_DIRS})
+	target_link_libraries(dmr-test PRIVATE ${TIRPC_LIBRARIES})
+endif()
+
+
 
 # find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
