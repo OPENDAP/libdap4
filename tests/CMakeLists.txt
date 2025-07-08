@@ -47,6 +47,7 @@ install(FILES ${TEST_HEADERS}
 
 add_executable(das-test das-test.cc)
 target_link_libraries(das-test PRIVATE test-types dapserver dap)
+target_include_directories(das-test PRIVATE ${LIBXML2_INCLUDE_DIR})
 
 add_executable(dds-test dds-test.cc)
 target_link_libraries(dds-test PRIVATE test-types dapserver dap)
