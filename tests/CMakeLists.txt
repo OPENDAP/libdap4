@@ -54,6 +54,7 @@ target_link_libraries(dds-test PRIVATE test-types dapserver dap)
 target_include_directories(dds-test PRIVATE ${LIBXML2_INCLUDE_DIR})
 if(TIRPC_FOUND)
 	target_include_directories(dds-test PRIVATE ${TIRPC_INCLUDE_DIRS})
+	message(STATUS "dds-test, TIRPC_INCLUDE_DIRS: ${TIRPC_INCLUDE_DIRS}")
 	target_link_libraries(dds-test PRIVATE ${TIRPC_LIBRARIES})
 endif()
 
@@ -62,6 +63,7 @@ target_include_directories(expr-test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${LIBXM
 target_link_libraries(expr-test PRIVATE test-types dapserver dapclient dap)
 if(TIRPC_FOUND)
 	target_include_directories(expr-test PRIVATE ${TIRPC_INCLUDE_DIRS})
+	message(STATUS "expr-test, TIRPC_INCLUDE_DIRS: ${TIRPC_INCLUDE_DIRS}")
 	target_link_libraries(expr-test PRIVATE ${TIRPC_LIBRARIES})
 endif()
 
@@ -75,6 +77,7 @@ target_include_directories(dmr-test
 target_link_libraries(dmr-test PRIVATE test-types dapserver dap)
 if(TIRPC_FOUND)
 	target_include_directories(dmr-test PRIVATE ${TIRPC_INCLUDE_DIRS})
+	message(STATUS "dmr-test, TIRPC_INCLUDE_DIRS: ${TIRPC_INCLUDE_DIRS}")
 	target_link_libraries(dmr-test PRIVATE ${TIRPC_LIBRARIES})
 endif()
 
