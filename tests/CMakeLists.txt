@@ -153,12 +153,21 @@ foreach(dfile IN LISTS DAS_FILES)
 	add_das_test(${dfile})
 endforeach()
 
+### DDS tests start here.
+
+## I used file() with GLOB to grab all of the files that match *.dds in the
+## dds-testsuite subdir. This is simple and eliminates the need to list every
+## file, but can inadvertently include files that are not part of the test.
+## Listing the files intended, one by one, is better but also tedious and means
+## that new tests have to be manually added. 7/8/25 jhrg
 file(GLOB DDS_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite"
 		"${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite/*.dds")
 
-# Helper to register one DAS‐response test
+## This function will take the name of a DDS file and use it as input to a DDS
+## test. There are some tricks here as well. 7/8/25 jhrg
 function(add_dds_test dds_filename)
-	#	# get "test.1.das" → fullname="test.1.das"
+	# Here the name of the dds file is morphed into something that will work
+	# as a cmake name (dots are not allowed in cmake names). 7/8/25 jhrg
 	#	message(STATUS "testname: ${testname}")
 	get_filename_component(fullname "${dds_filename}" NAME)
 	# strip just ".das" → raw="test.1"
@@ -172,7 +181,11 @@ function(add_dds_test dds_filename)
 	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite/${dds_filename}.base")
 	set(output     "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.out")
 
-	# Add the CTest entry
+	# Add the CTest entry. Here the shell is used so that we can employ redirection.
+	# The extra double quotes are 'best practice' for cmake, but really not needed here
+	# because we know that $<TARGET_FILE:dds-test> and the various variables (e.g. ${input})
+	# do not have spaces. The extra backslash characters make it harder to decipher
+	# what is going on. 7/8/25 jhrg
 	add_test(NAME dds_${testname}
 			COMMAND /bin/sh "-c"
 			# 1) run das-test, redirect all output into a temp file
@@ -180,9 +193,13 @@ function(add_dds_test dds_filename)
 			"\"$<TARGET_FILE:dds-test>\" -p < \"${input}\" > \"${output}\" 2>&1; \
 			diff -b -B \"${baseline}\" \"${output}\""
 	)
+	# This makes it so we cna run just these tests and also makes it easy to run the
+	# unit tests _before_ the integration tests with a 'check' target. See the top-leve
+	# CMakeLists file. 7/8/25 jhrg
 	set_tests_properties(dds_${testname} PROPERTIES LABELS integration)
 endfunction()
 
+## Iterate over all of the DDS filed and make a cmake/ctest for each one. 7/8/25 jhrg
 foreach(dfile IN LISTS DDS_FILES)
 	add_dds_test(${dfile})
 endforeach()
