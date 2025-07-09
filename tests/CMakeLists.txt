@@ -67,8 +67,6 @@ if(TIRPC_FOUND)
 	target_link_libraries(expr-test PRIVATE ${TIRPC_LIBRARIES})
 endif()
 
-
-
 add_executable(dmr-test dmr-test.cc D4ResponseBuilder.cc)
 target_include_directories(dmr-test
 		PRIVATE
@@ -80,8 +78,6 @@ if(TIRPC_FOUND)
 	message(STATUS "dmr-test, TIRPC_INCLUDE_DIRS: ${TIRPC_INCLUDE_DIRS}")
 	target_link_libraries(dmr-test PRIVATE ${TIRPC_LIBRARIES})
 endif()
-
-
 
 # find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
@@ -156,3 +152,38 @@ endfunction()
 foreach(dfile IN LISTS DAS_FILES)
 	add_das_test(${dfile})
 endforeach()
+
+file(GLOB DDS_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite"
+		"${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite/*.dds")
+
+# Helper to register one DAS‐response test
+function(add_dds_test dds_filename)
+	#	# get "test.1.das" → fullname="test.1.das"
+	#	message(STATUS "testname: ${testname}")
+	get_filename_component(fullname "${dds_filename}" NAME)
+	# strip just ".das" → raw="test.1"
+	string(REGEX REPLACE "\\.dds$" "" raw "${fullname}")
+	# sanitize; test.1 → test_1
+	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "${raw}")
+	# message(STATUS "testname: ${testname}")
+
+	# Paths
+	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite/${dds_filename}")
+	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite/${dds_filename}.base")
+	set(output     "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.out")
+
+	# Add the CTest entry
+	add_test(NAME dds_${testname}
+			COMMAND /bin/sh "-c"
+			# 1) run das-test, redirect all output into a temp file
+			# 2) diff that file against the baseline"
+			"\"$<TARGET_FILE:dds-test>\" -p < \"${input}\" > \"${output}\" 2>&1; \
+			diff -b -B \"${baseline}\" \"${output}\""
+	)
+	set_tests_properties(dds_${testname} PROPERTIES LABELS integration)
+endfunction()
+
+foreach(dfile IN LISTS DDS_FILES)
+	add_dds_test(${dfile})
+endforeach()
+
