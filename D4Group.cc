@@ -585,6 +585,8 @@ void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
         if (dmr.use_checksums()) {
 
             D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
+            // This call to um.get_checksum_str() calls um.get_Checksum which
+            // is what reads the checksum bytes from the input stream.
             string crc = um.get_checksum_str();
             a->add_value(crc);
 #if INCLUDE_SOURCE_BYTE_ORDER

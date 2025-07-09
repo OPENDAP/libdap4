@@ -291,6 +291,7 @@ int main(int argc, char *argv[]) {
                 try {
                     D4BaseTypeFactory factory;
                     DMR dmr(&factory);
+                    dmr.use_checksums(use_checksums);
 
                     if (strcmp(argv[i], "-") == 0) {
                         StdinResponse r(cin);
@@ -386,6 +387,16 @@ int main(int argc, char *argv[]) {
                     url->set_xdap_protocol(dap_client_major, dap_client_minor);
 
                 string url_string = argv[i];
+                // Use checksums but it's not in the URL?
+                if (use_checksums && url_string.find("dap4.checksum") == string::npos) {
+                    if (url_string.find("?") == string::npos)
+                        // If there is no constraint add one with the checksum param
+                        url_string += "?dap4.checksum=true";
+                    else {
+                        // Add the checksum param  as an additional parameter
+                        url_string += "&dap4.checksum=true";
+                    }
+                }
                 for (int j = 0; j < times; ++j) {
                     try {
                         HTTPResponse *r = http.fetch_url(url_string);
