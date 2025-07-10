@@ -21,6 +21,9 @@ include(CheckCXXSourceCompiles)
 # Dependency packages
 find_package(CppUnit REQUIRED)
 find_package(LibXml2 REQUIRED)
+message(STATUS "LIBXML2_LIBRARIES: ${LIBXML2_LIBRARIES}")
+message(STATUS "LIBXML2_INCLUDE_DIR: ${LIBXML2_INCLUDE_DIR}")
+
 find_package(CURL REQUIRED)
 find_package(Threads REQUIRED)
 
@@ -32,7 +35,9 @@ find_package_handle_standard_args(TIRPC DEFAULT_MSG TIRPC_INCLUDE_DIR TIRPC_LIBR
 if(TIRPC_INCLUDE_DIR AND TIRPC_LIBRARY)
     set(TIRPC_FOUND TRUE)
     set(TIRPC_INCLUDE_DIRS ${TIRPC_INCLUDE_DIR})
+    message(STATUS "TIRPC_INCLUDE_DIRS: ${TIRPC_INCLUDE_DIRS}")
     set(TIRPC_LIBRARIES ${TIRPC_LIBRARY})
+    message(STATUS "TIRPC_LIBRARIES: ${TIRPC_LIBRARIES}")
 endif()
 
 # Perform config/feature checks
@@ -279,9 +284,9 @@ endif()
 target_link_libraries(dap PRIVATE ${LIBXML2_LIBRARIES} Threads::Threads)
 set_target_properties(dap PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${LIBDAP_SO_VERSION})
 
-message(STATUS "INCLUDE PATHS for dap:")
+# message(STATUS "INCLUDE PATHS for dap:")
 get_target_property(DAP_INCLUDES dap INCLUDE_DIRECTORIES)
-message(STATUS "  ${DAP_INCLUDES}")
+# message(STATUS "  ${DAP_INCLUDES}")
 
 add_library(dapclient SHARED ${CLIENT_SRC})
 target_sources(dapclient PRIVATE
@@ -299,9 +304,9 @@ target_link_libraries(dapclient PRIVATE ${CURL_LIBRARIES} Threads::Threads)
 
 set_target_properties(dapclient PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${CLIENTLIB_SO_VERSION})
 
-message(STATUS "INCLUDE PATHS for dapclient:")
+# message(STATUS "INCLUDE PATHS for dapclient:")
 get_target_property(DAPCLIENT_INCLUDES dapclient INCLUDE_DIRECTORIES)
-message(STATUS "  ${DAPCLIENT_INCLUDES}")
+# message(STATUS "  ${DAPCLIENT_INCLUDES}")
 
 add_library(dapserver SHARED ${SERVER_SRC})
 target_link_libraries(dapserver PRIVATE dap ${UUID_LIB})
@@ -313,9 +318,9 @@ if(TIRPC_FOUND)
 endif()
 set_target_properties(dapserver PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${SERVERLIB_SO_VERSION})
 
-message(STATUS "INCLUDE PATHS for dapserver:")
+# message(STATUS "INCLUDE PATHS for dapserver:")
 get_target_property(DAPSERVER_INCLUDES dapserver INCLUDE_DIRECTORIES)
-message(STATUS "  ${DAPSERVER_INCLUDES}")
+# message(STATUS "  ${DAPSERVER_INCLUDES}")
 
 # Custom compilation flags and definitions
 
@@ -382,6 +387,21 @@ add_subdirectory(tests)
 add_subdirectory(unit-tests)
 add_subdirectory(d4_ce/unit-tests)
 add_subdirectory(http_dap/unit-tests)
+
+# a target that runs only the unit tests:
+add_custom_target(unit-test
+        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -L unit
+        DEPENDS unit-tests)            # or whatever your unit‐test target is
+
+# a target that runs only the integration tests:
+add_custom_target(integration-test
+        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -L integration
+        DEPENDS tests)                 # or your integration‐test deps
+
+# a “check” target to do unit → integration in order:
+add_custom_target(check
+        DEPENDS unit-test integration-test
+)
 
 # Custom cleanup for coverage files, etc.
 set_directory_properties(PROPERTIES
