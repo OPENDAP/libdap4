@@ -572,6 +572,8 @@ DMR_TRANS_CE([test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1[[]][[]]}], [test_arra
 
 DMR_TRANS_CE([test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1[[0]][[]]}], [test_array_7.2.xml.4.trans_base], [pass])
 
+#### STOPPED 7/11/25 jhrg ####
+
 # Test the function parser and evaluator. The function 'scale' is defined 
 # for both DAP2 and DAP4 in D4TestFunction.cc/h
 DMR_TRANS_FUNC_CE([test_array_1.xml], [scale(x,1)], [], [test_array_1.xml.1.func_base], [pass])
