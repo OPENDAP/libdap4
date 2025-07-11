@@ -282,6 +282,32 @@ add_dmr_parse_test(test_array_14.xml)
 add_dmr_parse_test(test_simple_6.2.xml)
 add_dmr_parse_test(test_simple_6.3.xml)
 
+function(add_dmr_trans_test test_input byte_order)
+	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
+	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_trans_${raw}")
+	if("${byte_order}" STREQUAL "universal")
+		set(testname "${testname}_univ")
+	endif()
+	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
+	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${byte_order}/${test_input}.trans_base")
+	set(output     "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.out")
+
+	add_test(NAME ${testname}
+			COMMAND /bin/sh "-c"
+			# 1) run das-test, redirect all output into a temp file
+			# 2) diff that file against the baseline"
+			"\"$<TARGET_FILE:dmr-test>\" -x -t \"${input}\" > \"${output}\" 2>&1; \
+			if test \"${byte_order}\" = \"universal\"; then \
+				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
+				diff -b -B \"${baseline}\" \"${output}_univ\"; \
+			else \
+				diff -b -B \"${baseline}\" \"${output}\"; \
+			fi;"
+	)
+
+	set_tests_properties(${testname} PROPERTIES LABELS integration)
+endfunction()
+
 if(CMAKE_C_BYTE_ORDER STREQUAL "LITTLE_ENDIAN")
 	set(word_order "little-endian")
 elseif(CMAKE_C_BYTE_ORDER STREQUAL "BIG_ENDIAN")
@@ -290,61 +316,46 @@ else()
 	message(WARNING "Unknown byte order for C compiler")
 endif()
 
-function(add_dmr_trans_test test_input)
-	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
-	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_trans_${raw}")
+add_dmr_trans_test(test_simple_1.xml "${word_order}")
+add_dmr_trans_test(test_simple_2.xml "${word_order}")
+add_dmr_trans_test(test_simple_3.xml "${word_order}")
+add_dmr_trans_test(test_simple_4.xml "${word_order}")
+add_dmr_trans_test(test_simple_5.xml "${word_order}")
+add_dmr_trans_test(test_simple_6.xml "${word_order}")
+add_dmr_trans_test(test_simple_7.xml "${word_order}")
+add_dmr_trans_test(test_simple_8.xml "${word_order}")
+add_dmr_trans_test(test_simple_9.xml "${word_order}")
+add_dmr_trans_test(test_simple_9.1.xml "${word_order}")
+add_dmr_trans_test(test_simple_10.xml "${word_order}")
+add_dmr_trans_test(test_enum_grp.xml "${word_order}")
 
-	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
-	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${word_order}/${test_input}.trans_base")
-	set(output     "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.out")
+add_dmr_trans_test(test_array_1.xml "${word_order}")
+add_dmr_trans_test(test_array_2.xml "${word_order}")
+add_dmr_trans_test(test_array_3.xml "${word_order}")
+add_dmr_trans_test(test_array_4.xml "${word_order}")
+add_dmr_trans_test(test_array_5.xml "${word_order}")
+add_dmr_trans_test(test_array_6.xml "${word_order}")
+add_dmr_trans_test(test_array_7.xml "${word_order}")
+add_dmr_trans_test(test_array_8.xml "${word_order}")
+add_dmr_trans_test(test_array_10.xml "${word_order}")
+add_dmr_trans_test(test_array_11.xml "${word_order}")
 
-	add_test(NAME ${testname}
-			COMMAND /bin/sh "-c"
-			# 1) run das-test, redirect all output into a temp file
-			# 2) diff that file against the baseline"
-			"\"$<TARGET_FILE:dmr-test>\" -x -t \"${input}\" > \"${output}\" 2>&1; \
-			diff -b -B \"${baseline}\" \"${output}\""
-	)
+add_dmr_trans_test(test_array_9.xml "${word_order}")
+add_dmr_trans_test(test_array_12.xml "${word_order}")
+add_dmr_trans_test(test_array_13.xml "${word_order}")
+add_dmr_trans_test(test_array_14.xml "${word_order}")
 
-	set_tests_properties(${testname} PROPERTIES LABELS integration)
-endfunction()
+add_dmr_trans_test(test_simple_6.2.xml "${word_order}")
+add_dmr_trans_test(test_simple_6.3.xml "${word_order}")
 
-add_dmr_trans_test(test_simple_1.xml)
-add_dmr_trans_test(test_simple_2.xml)
-add_dmr_trans_test(test_simple_3.xml)
-add_dmr_trans_test(test_simple_4.xml)
-add_dmr_trans_test(test_simple_5.xml)
-add_dmr_trans_test(test_simple_6.xml)
-add_dmr_trans_test(test_simple_7.xml)
-add_dmr_trans_test(test_simple_8.xml)
-add_dmr_trans_test(test_simple_9.xml)
-add_dmr_trans_test(test_simple_9.1.xml)
-add_dmr_trans_test(test_simple_10.xml)
-add_dmr_trans_test(test_enum_grp.xml)
+# Test out the 'universal' tests
+add_dmr_trans_test(test_array_9.xml "universal")
+add_dmr_trans_test(test_array_12.xml "universal")
+add_dmr_trans_test(test_array_13.xml "universal")
+add_dmr_trans_test(test_array_14.xml "universal")
 
-add_dmr_trans_test(test_array_1.xml)
-add_dmr_trans_test(test_array_2.xml)
-add_dmr_trans_test(test_array_3.xml)
-add_dmr_trans_test(test_array_4.xml)
-add_dmr_trans_test(test_array_5.xml)
-add_dmr_trans_test(test_array_6.xml)
-add_dmr_trans_test(test_array_7.xml)
-add_dmr_trans_test(test_array_8.xml)
-add_dmr_trans_test(test_array_10.xml)
-add_dmr_trans_test(test_array_11.xml)
-
-add_dmr_trans_test(test_array_9.xml)
-add_dmr_trans_test(test_array_12.xml)
-add_dmr_trans_test(test_array_13.xml)
-add_dmr_trans_test(test_array_14.xml)
-
-add_dmr_trans_test(test_simple_6.2.xml)
-add_dmr_trans_test(test_simple_6.3.xml)
-
-#AT_CHECK([$abs_builddir/dmr-test -x -i $input || true], [], [stdout], [stderr])
-#AT_CHECK([diff -b -B $baseline stdout], [], [ignore], [], [])
-#input=$abs_srcdir/dmr-testsuite/$1
-#baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$1.intern_base
+add_dmr_trans_test(test_simple_6.2.xml "universal")
+add_dmr_trans_test(test_simple_6.3.xml "universal")
 
 function(add_dmr_intern_test test_input)
 	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
@@ -390,3 +401,12 @@ add_dmr_intern_test(test_array_7.xml)
 add_dmr_intern_test(test_array_8.xml)
 add_dmr_intern_test(test_array_10.xml)
 add_dmr_intern_test(test_array_11.xml)
+
+add_dmr_intern_test(test_array_9.xml)
+add_dmr_intern_test(test_array_12.xml)
+add_dmr_intern_test(test_array_13.xml)
+add_dmr_intern_test(test_array_14.xml)
+
+add_dmr_intern_test(test_simple_6.2.xml)
+add_dmr_intern_test(test_simple_6.3.xml)
+
