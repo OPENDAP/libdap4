@@ -93,7 +93,7 @@ function(add_das_test das_filename)
 	# strip just ".das" → raw="test.1"
 	string(REGEX REPLACE "\\.das$" "" raw "${fullname}")
 	# sanitize; test.1 → test_1
-	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "${raw}")
+	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "das_${raw}")
 	# message(STATUS "testname: ${testname}")
 
 	# Paths
@@ -102,14 +102,14 @@ function(add_das_test das_filename)
 	set(output     "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.out")
 
 	# Add the CTest entry
-	add_test(NAME das_${testname}
+	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
 			# 1) run das-test, redirect all output into a temp file
 			# 2) diff that file against the baseline"
 			"\"$<TARGET_FILE:das-test>\" -p < \"${input}\" > \"${output}\" 2>&1; \
 			diff -b -B \"${baseline}\" \"${output}\""
 	)
-	set_tests_properties(das_${testname} PROPERTIES LABELS integration)
+	set_tests_properties(${testname} PROPERTIES LABELS integration)
 endfunction()
 
 # find_package(Python3 COMPONENTS Interpreter REQUIRED)
@@ -173,7 +173,7 @@ function(add_dds_test dds_filename)
 	# strip just ".das" → raw="test.1"
 	string(REGEX REPLACE "\\.dds$" "" raw "${fullname}")
 	# sanitize; test.1 → test_1
-	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "${raw}")
+	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dds_${raw}")
 	# message(STATUS "testname: ${testname}")
 
 	# Paths
@@ -186,7 +186,7 @@ function(add_dds_test dds_filename)
 	# because we know that $<TARGET_FILE:dds-test> and the various variables (e.g. ${input})
 	# do not have spaces. The extra backslash characters make it harder to decipher
 	# what is going on. 7/8/25 jhrg
-	add_test(NAME dds_${testname}
+	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
 			# 1) run das-test, redirect all output into a temp file
 			# 2) diff that file against the baseline"
@@ -196,7 +196,7 @@ function(add_dds_test dds_filename)
 	# This makes it so we can run just these tests and also makes it easy to run the
 	# unit tests _before_ the integration tests with a 'check' target. See the top-leve
 	# CMakeLists file. 7/8/25 jhrg
-	set_tests_properties(dds_${testname} PROPERTIES LABELS integration)
+	set_tests_properties(${testname} PROPERTIES LABELS integration)
 endfunction()
 
 ## Iterate over all of the DDS filed and make a cmake/ctest for each one. 7/8/25 jhrg
