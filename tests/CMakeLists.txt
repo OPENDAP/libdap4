@@ -204,3 +204,72 @@ foreach(dfile IN LISTS DDS_FILES)
 	add_dds_test(${dfile})
 endforeach()
 
+## DMR tests. Unlike the DAS and DDS test, these test enumerate the individual test
+## one by one since various tests will use different functions. 7/10/25 jhrg
+
+## This function will take the name of a DMR file and use it as input to a DMR
+## test. There are some tricks here as well. 7/8/25 jhrg
+function(add_dmr_parse_test dmr_filename)
+	# Here the name of the DMR file is morphed into something that will work
+	# as a cmake name (dots are not allowed in cmake names). 7/8/25 jhrg
+	get_filename_component(fullname "${dmr_filename}" NAME)
+	# strip just "test.1.xml" → raw="test.1"
+	string(REGEX REPLACE "\\.xml$" "" raw "${fullname}")
+	# sanitize; test.1 → test_1
+	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "${raw}")
+
+	# Paths
+	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${dmr_filename}")
+	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${dmr_filename}.baseline")
+	set(output     "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.out")
+
+	# Add the CTest entry. Here the shell is used so that we can employ redirection.
+	# The extra double quotes are 'best practice' for cmake, but really not needed here
+	# because we know that $<TARGET_FILE:dmr-test> and the various variables (e.g. ${input})
+	# do not have spaces. The extra backslash characters make it harder to decipher
+	# what is going on. 7/8/25 jhrg
+	add_test(NAME dmr_${testname}
+			COMMAND /bin/sh "-c"
+			# 1) run das-test, redirect all output into a temp file
+			# 2) diff that file against the baseline"
+			"\"$<TARGET_FILE:dmr-test>\" -x -p \"${input}\" > \"${output}\" 2>&1; \
+			diff -b -B \"${baseline}\" \"${output}\""
+	)
+	# This makes it so we cna run just these tests and also makes it easy to run the
+	# unit tests _before_ the integration tests with a 'check' target. See the top-leve
+	# CMakeLists file. 7/8/25 jhrg
+	set_tests_properties(dmr_${testname} PROPERTIES LABELS integration)
+endfunction()
+
+add_dmr_parse_test(test_simple_1.xml)
+add_dmr_parse_test(test_simple_2.xml)
+add_dmr_parse_test(test_simple_3.xml)
+
+add_dmr_parse_test(test_simple_3_error_1.xml)
+add_dmr_parse_test(test_simple_3_error_2.xml)
+add_dmr_parse_test(test_simple_3_error_3.xml)
+
+add_dmr_parse_test(test_simple_4.xml)
+add_dmr_parse_test(test_simple_5.xml)
+add_dmr_parse_test(test_simple_6.xml)
+add_dmr_parse_test(test_simple_7.xml)
+add_dmr_parse_test(test_simple_8.xml)
+add_dmr_parse_test(test_simple_9.xml)
+add_dmr_parse_test(test_simple_9.1.xml)
+add_dmr_parse_test(test_simple_10.xml)
+add_dmr_parse_test(test_enum_grp.xml)
+
+add_dmr_parse_test(test_array_1.xml)
+add_dmr_parse_test(test_array_2.xml)
+add_dmr_parse_test(test_array_3.xml)
+add_dmr_parse_test(test_array_4.xml)
+add_dmr_parse_test(test_array_5.xml)
+add_dmr_parse_test(test_array_6.xml)
+add_dmr_parse_test(test_array_7.xml)
+add_dmr_parse_test(test_array_8.xml)
+add_dmr_parse_test(test_array_10.xml)
+add_dmr_parse_test(test_array_11.xml)
+
+add_dmr_parse_test(ignore_foreign_xml_1.xml)
+add_dmr_parse_test(ignore_foreign_xml_2.xml)
+add_dmr_parse_test(ignore_foreign_xml_3.xml)
