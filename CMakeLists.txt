@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.20)
 project(libdap LANGUAGES C CXX)
 set(LIBDAP_VERSION "3.21.1")
 
