@@ -436,10 +436,7 @@ function(add_dmr_trans_ce_test test_input ce test_baseline byte_order)
 			fi;"
 	)
 
-	set_tests_properties(${testname} PROPERTIES LABELS integration)
-	set_tests_properties(${testname} PROPERTIES LABELS dmr)
-	set_tests_properties(${testname} PROPERTIES LABELS trans)
-	set_tests_properties(${testname} PROPERTIES LABELS ce)
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr")
 endfunction()
 
 if("${word_order}" STREQUAL "little-endian")
@@ -522,9 +519,8 @@ add_dmr_trans_ce_test("test_simple_7.xml" "s{i1}" "test_simple_7.xml.2.trans_bas
 # we remove the CRC from both the output and the baselines to avoid making baselines
 # for both big- and little-endian machines. jhrg 1/22/24
 add_dmr_trans_ce_test("test_simple_8.xml" "outer" "test_simple_8.xml.1.trans_base" "universal")
-#DMR_TRANS_CE_NO_CRC([test_simple_8.xml], [outer], [test_simple_8.xml.1.trans_base], [pass])
-#DMR_TRANS_CE_NO_CRC([test_simple_8.xml], [outer.s.s], [test_simple_8.xml.2.trans_base], [pass])
-#DMR_TRANS_CE_NO_CRC([test_simple_8.xml], [outer{s{s}}], [test_simple_8.xml.2.trans_base], [pass])
+add_dmr_trans_ce_test("test_simple_8.xml" "outer.s.s" "test_simple_8.xml.2.trans_base" "universal")
+add_dmr_trans_ce_test("test_simple_8.xml" "outer{s{s}}" "test_simple_8.xml.2.trans_base" "universal")
 
 add_dmr_trans_ce_test("test_array_7.xml" "s" "test_array_7.xml.1.trans_base" ${word_order})
 add_dmr_trans_ce_test("test_array_7.xml" "s{i1;s}" "test_array_7.xml.1.trans_base" ${word_order})
