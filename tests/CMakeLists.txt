@@ -75,9 +75,17 @@ target_include_directories(dmr-test
 target_link_libraries(dmr-test PRIVATE test-types dapserver dap)
 if(TIRPC_FOUND)
 	target_include_directories(dmr-test PRIVATE ${TIRPC_INCLUDE_DIRS})
-	message(STATUS "dmr-test, TIRPC_INCLUDE_DIRS: ${TIRPC_INCLUDE_DIRS}")
+	# message(STATUS "dmr-test, TIRPC_INCLUDE_DIRS: ${TIRPC_INCLUDE_DIRS}")
 	target_link_libraries(dmr-test PRIVATE ${TIRPC_LIBRARIES})
 endif()
+
+add_custom_target(clean-tests
+		COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_CURRENT_BINARY_DIR}/*.out"
+		COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_CURRENT_BINARY_DIR}/*.diff"
+		COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_CURRENT_BINARY_DIR}/*.bin"
+		COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_CURRENT_BINARY_DIR}/*.out_univ"
+		COMMENT "Cleaning up integration tests generated artifacts."
+)
 
 file(GLOB DAS_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite"
 	"${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/*.das")
@@ -99,7 +107,7 @@ function(add_das_test das_filename)
 	# Paths
 	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/${das_filename}")
 	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/${das_filename}.base")
-	set(output     "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.out")
+	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
 	# Add the CTest entry
 	add_test(NAME ${testname}
@@ -109,7 +117,7 @@ function(add_das_test das_filename)
 			"\"$<TARGET_FILE:das-test>\" -p < \"${input}\" > \"${output}\" 2>&1; \
 			diff -b -B \"${baseline}\" \"${output}\""
 	)
-	set_tests_properties(${testname} PROPERTIES LABELS integration)
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;das")
 endfunction()
 
 # find_package(Python3 COMPONENTS Interpreter REQUIRED)
@@ -179,7 +187,7 @@ function(add_dds_test dds_filename)
 	# Paths
 	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite/${dds_filename}")
 	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite/${dds_filename}.base")
-	set(output     "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.out")
+	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
 	# Add the CTest entry. Here the shell is used so that we can employ redirection.
 	# The extra double quotes are 'best practice' for cmake, but really not needed here
@@ -196,7 +204,7 @@ function(add_dds_test dds_filename)
 	# This makes it so we can run just these tests and also makes it easy to run the
 	# unit tests _before_ the integration tests with a 'check' target. See the top-leve
 	# CMakeLists file. 7/8/25 jhrg
-	set_tests_properties(${testname} PROPERTIES LABELS integration)
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;dds")
 endfunction()
 
 ## Iterate over all of the DDS filed and make a cmake/ctest for each one. 7/8/25 jhrg
@@ -220,7 +228,7 @@ function(add_dmr_parse_test test_input)
 	# Paths
 	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
 	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}.baseline")
-	set(output     "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.out")
+	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
 	# Add the CTest entry. Here the shell is used so that we can employ redirection.
 	# The extra double quotes are 'best practice' for cmake, but really not needed here
@@ -237,7 +245,7 @@ function(add_dmr_parse_test test_input)
 	# This makes it so we can run just these tests and also makes it easy to run the
 	# unit tests _before_ the integration tests with a 'check' target. See the top-leve
 	# CMakeLists file. 7/8/25 jhrg
-	set_tests_properties(${testname} PROPERTIES LABELS integration)
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr")
 endfunction()
 
 add_dmr_parse_test(test_simple_1.xml)
@@ -282,6 +290,9 @@ add_dmr_parse_test(test_array_14.xml)
 add_dmr_parse_test(test_simple_6.2.xml)
 add_dmr_parse_test(test_simple_6.3.xml)
 
+## For byte_order == universal, this test removed the <Value> information
+## and replaces it with nothing (which is different from the trans + ce
+## tests which replace the <Value> info with 'removed checksum'). 7/12/25 jhrg
 function(add_dmr_trans_test test_input byte_order)
 	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
 	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_trans_${raw}")
@@ -290,12 +301,10 @@ function(add_dmr_trans_test test_input byte_order)
 	endif()
 	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
 	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${byte_order}/${test_input}.trans_base")
-	set(output     "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.out")
+	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
-			# 1) run das-test, redirect all output into a temp file
-			# 2) diff that file against the baseline"
 			"\"$<TARGET_FILE:dmr-test>\" -x -t \"${input}\" > \"${output}\" 2>&1; \
 			if test \"${byte_order}\" = \"universal\"; then \
 				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
@@ -305,7 +314,14 @@ function(add_dmr_trans_test test_input byte_order)
 			fi;"
 	)
 
-	set_tests_properties(${testname} PROPERTIES LABELS integration)
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;trans")
+	# set_tests_properties(${testname} PROPERTIES RESOURCE_LOCKS "dmr-trans")
+	# These are run serially because the dmr-test program uses a temp file to
+	# store the 'binary data' amd different tests will make those binary data
+	# files with the same (i.e., conflicting) names. I tied using the
+	# RESOURCE_LOCKS property, but it was slower and did not stop the collisions.
+	# 7/12/25 jhrg
+	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
 endfunction()
 
 if(CMAKE_C_BYTE_ORDER STREQUAL "LITTLE_ENDIAN")
@@ -364,18 +380,16 @@ function(add_dmr_intern_test test_input)
 	# Paths
 	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
 	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${word_order}/${test_input}.intern_base")
-	set(output     "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.out")
+	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
 	# Add the CTest entry. 7/8/25 jhrg
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
-			# 1) run das-test, redirect all output into a temp file
-			# 2) diff that file against the baseline"
 			"\"$<TARGET_FILE:dmr-test>\" -x -i \"${input}\" > \"${output}\" 2>&1; \
 			diff -b -B \"${baseline}\" \"${output}\""
 	)
 	
-	set_tests_properties(${testname} PROPERTIES LABELS integration)
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr")
 endfunction()
 
 add_dmr_intern_test(test_simple_1.xml)
@@ -421,7 +435,7 @@ function(add_dmr_trans_ce_test test_input ce test_baseline byte_order)
 	endif()
 	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
 	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${byte_order}/${test_baseline}")
-	set(output     "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.out")
+	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
@@ -436,7 +450,8 @@ function(add_dmr_trans_ce_test test_input ce test_baseline byte_order)
 			fi;"
 	)
 
-	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr")
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;ce")
+	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
 endfunction()
 
 if("${word_order}" STREQUAL "little-endian")
