@@ -583,9 +583,9 @@ add_dmr_trans_ce_test("test_array_7.2.xml" "/col=[1:2];s[0]{i1[0][]}" "test_arra
 
 #AT_CHECK([$abs_builddir/dmr-test -x -t $input -f "$fe" -c "$ce" || true], [], [stdout], [stderr])
 #AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
-function(add_dmr_trans_func_test test_input func test_baseline byte_order)
+function(add_dmr_trans_func_test test_input func ce test_baseline byte_order)
 	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
-	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_trans_${func}_${raw}")
+	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_trans_${func}_${ce}_${raw}")
 	if("${byte_order}" STREQUAL "universal")
 		set(testname "${testname}_univ")
 	endif()
@@ -595,7 +595,7 @@ function(add_dmr_trans_func_test test_input func test_baseline byte_order)
 
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
-			"\"$<TARGET_FILE:dmr-test>\" -x -t \"${input}\" -f \"${func}\" > \"${output}\" 2>&1; \
+			"\"$<TARGET_FILE:dmr-test>\" -x -t \"${input}\" -f \"${func}\" -c \"${ce}\" > \"${output}\" 2>&1; \
 			if test \"${byte_order}\" = \"universal\"; then \
 				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@removed checksum@' \"${output}\" > \"${output}_univ\"; \
 				diff -b -B \"${baseline}\" \"${output}_univ\"; \
@@ -610,53 +610,53 @@ endfunction()
 
 # Test the function parser and evaluator. The function 'scale' is defined 
 # for both DAP2 and DAP4 in D4TestFunction.cc/h
-add_dmr_trans_func_test("test_array_1.xml" "scale(x,1)" "test_array_1.xml.1.func_base" "${word_order}")
-add_dmr_trans_func_test("test_array_1.xml" "scale(x,10)" "test_array_1.xml.2.func_base" "${word_order}")
-add_dmr_trans_func_test("test_array_1.xml" "scale(x,-10)" "test_array_1.xml.3.func_base" "${word_order}")
-add_dmr_trans_func_test("test_array_1.xml" "scale(x,0.001)" "test_array_1.xml.4.func_base" "${word_order}")
-add_dmr_trans_func_test("test_array_1.xml" "scale(x,-0.001)" "test_array_1.xml.5.func_base" "${word_order}")
+add_dmr_trans_func_test("test_array_1.xml" "scale(x,1)" "" "test_array_1.xml.1.func_base" "${word_order}")
+add_dmr_trans_func_test("test_array_1.xml" "scale(x,10)" "" "test_array_1.xml.2.func_base" "${word_order}")
+add_dmr_trans_func_test("test_array_1.xml" "scale(x,-10)" "" "test_array_1.xml.3.func_base" "${word_order}")
+add_dmr_trans_func_test("test_array_1.xml" "scale(x,0.001)" "" "test_array_1.xml.4.func_base" "${word_order}")
+add_dmr_trans_func_test("test_array_1.xml" "scale(x,-0.001)" "" "test_array_1.xml.5.func_base" "${word_order}")
 
 # Test the largest signed int64 value (it will be stored in a D4RValue that 
 # holds a Int64 variable).
-add_dmr_trans_func_test("test_array_1.xml" "scale(x,0x7fffffffffffffff)" "test_array_1.xml.6.func_base" "${word_order}")
+add_dmr_trans_func_test("test_array_1.xml" "scale(x,0x7fffffffffffffff)" "" "test_array_1.xml.6.func_base" "${word_order}")
 # This only fits in a unsigned long long (DAP4's UInt64)
-add_dmr_trans_func_test("test_array_1.xml" "scale(x,0x8fffffffffffffff)" "test_array_1.xml.7.func_base" "${word_order}")
+add_dmr_trans_func_test("test_array_1.xml" "scale(x,0x8fffffffffffffff)" "" "test_array_1.xml.7.func_base" "${word_order}")
 
 # test_array_5 has 64 bit ints in c and d; a and b are Int8 and UInt8 types
 # all of these test arrays that use named dimensions
-add_dmr_trans_func_test("test_array_5.xml" "scale(a,0.001)" "test_array_5.xml.1.func_base" "${word_order}")
-add_dmr_trans_func_test("test_array_5.xml" "scale(b,0.001)" "test_array_5.xml.2.func_base" "${word_order}")
+add_dmr_trans_func_test("test_array_5.xml" "scale(a,0.001)" "" "test_array_5.xml.1.func_base" "${word_order}")
+add_dmr_trans_func_test("test_array_5.xml" "scale(b,0.001)" "" "test_array_5.xml.2.func_base" "${word_order}")
 
-add_dmr_trans_func_test("test_array_5.xml" "scale(c,0.001)" "test_array_5.xml.3.func_base" "${word_order}")
-add_dmr_trans_func_test("test_array_5.xml" "scale(d,0.001)" "test_array_5.xml.4.func_base" "${word_order}")
+add_dmr_trans_func_test("test_array_5.xml" "scale(c,0.001)" "" "test_array_5.xml.3.func_base" "${word_order}")
+add_dmr_trans_func_test("test_array_5.xml" "scale(d,0.001)" "" "test_array_5.xml.4.func_base" "${word_order}")
 
 # Use the vol_1_ce_* datasets for tests
 
 # Test using variables for source values and functional composition
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(u,10)" "vol_1_ce_1.xml.1.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(u,v)" "vol_1_ce_1.xml.2.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(scale(u,10),0.01)" "vol_1_ce_1.xml.3.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(u,10)" "" "vol_1_ce_1.xml.1.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(u,v)" "" "vol_1_ce_1.xml.2.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(scale(u,10),0.01)" "" "vol_1_ce_1.xml.3.func_base" "${word_order}")
 
 # Test name parsing for Structure members
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(Point.x,10)" "vol_1_ce_1.xml.4.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(Point.x,Point.y)" "vol_1_ce_1.xml.5.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(scale(Point.x,10),0.01)" "vol_1_ce_1.xml.6.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(Point.x,10)" "" "vol_1_ce_1.xml.4.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(Point.x,Point.y)" "" "vol_1_ce_1.xml.5.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(scale(Point.x,10),0.01)" "" "vol_1_ce_1.xml.6.func_base" "${word_order}")
 
 # Test the 'array constant' special form (we need a dataset only because the parser needs a DMR to run)
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\$Byte(20:1,2,3,4),10)" "vol_1_ce_1.xml.7.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\$Int8(20:10,11,12,-9),10)" "vol_1_ce_1.xml.8.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\$UInt16(20:1,2,3,4),10)" "vol_1_ce_1.xml.9.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\$Int16(20:1,2,3,-4),10)" "vol_1_ce_1.xml.10.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\$UInt32(20:1,2,3,4),10)" "vol_1_ce_1.xml.11.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\$Int32(20:1,2,3,-4),10)" "vol_1_ce_1.xml.12.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\$UInt64(20:1,2,3,0xffffffffffffffff),1)" "vol_1_ce_1.xml.13.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\$Int64(20:1,2,3,0x7fffffffffffffff),1)" "vol_1_ce_1.xml.14.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\$Float32(20:1,2,3,4.55),10)" "vol_1_ce_1.xml.15.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\$Float64(20:1,2,3,4.55),10)" "vol_1_ce_1.xml.16.func_base" "${word_order}")
+# In cmake, '\' is the escape character and '\\' is used for a single backslash. 7/14/25 jhrg
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\\$Byte(20:1,2,3,4),10)" "" "vol_1_ce_1.xml.7.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\\$Int8(20:10,11,12,-9),10)" "" "vol_1_ce_1.xml.8.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\\$UInt16(20:1,2,3,4),10)" "" "vol_1_ce_1.xml.9.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\\$Int16(20:1,2,3,-4),10)" "" "vol_1_ce_1.xml.10.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\\$UInt32(20:1,2,3,4),10)" "" "vol_1_ce_1.xml.11.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\\$Int32(20:1,2,3,-4),10)" "" "vol_1_ce_1.xml.12.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\\$UInt64(20:1,2,3,0xffffffffffffffff),1)" "" "vol_1_ce_1.xml.13.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\\$Int64(20:1,2,3,0x7fffffffffffffff),1)" "" "vol_1_ce_1.xml.14.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\\$Float32(20:1,2,3,4.55),10)" "" "vol_1_ce_1.xml.15.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\\$Float64(20:1,2,3,4.55),10)" "" "vol_1_ce_1.xml.16.func_base" "${word_order}")
 
 # Test a sequence of function calls and the application of a Constraint to 
 # a function result
-add_dmr_trans_func_test("vol_1_ce_10.xml" "scale(lat,10)" "vol_1_ce_10.xml.1.func_base" "${word_order}")
-add_dmr_trans_func_test("vol_1_ce_10.xml" "scale(lat,10);scale(lon,10)" "vol_1_ce_10.xml.2.func_base" "${word_order}")
-# FIXME
-# add_dmr_trans_func_test("vol_1_ce_10.xml" "scale(lat,10);scale(lon,10)" "lat[[10:11]][[10:11]];lon[[10:11]][[10:11]]" "vol_1_ce_10.xml.3.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_10.xml" "scale(lat,10)" "" "vol_1_ce_10.xml.1.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_10.xml" "scale(lat,10);scale(lon,10)" "" "vol_1_ce_10.xml.2.func_base" "${word_order}")
+add_dmr_trans_func_test("vol_1_ce_10.xml" "scale(lat,10);scale(lon,10)" "lat[10:11][10:11];lon[10:11][10:11]" "vol_1_ce_10.xml.3.func_base" "${word_order}")
