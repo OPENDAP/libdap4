@@ -1,4 +1,6 @@
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 add_library(test-types STATIC
 		TestArray.cc TestD4Sequence.cc TestInt32.cc TestTypeFactory.cc
 		TestByte.cc TestFloat32.cc TestInt64.cc TestUInt16.cc
@@ -79,6 +81,8 @@ if(TIRPC_FOUND)
 	target_link_libraries(dmr-test PRIVATE ${TIRPC_LIBRARIES})
 endif()
 
+## This is me playing around with ways to clean up the stuff left over from
+## test runs. 7/14/25 jhrg.
 add_custom_target(clean-tests
 		COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_CURRENT_BINARY_DIR}/*.out"
 		COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_CURRENT_BINARY_DIR}/*.diff"
@@ -87,125 +91,8 @@ add_custom_target(clean-tests
 		COMMENT "Cleaning up integration tests generated artifacts."
 )
 
-file(GLOB DAS_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite"
-	"${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/*.das")
-
-# Helper to register one DAS‐response test
-function(add_das_test das_filename)
-	#	# get "test.1.das" → fullname="test.1.das"
-	#	message(STATUS "testname: ${testname}")
-	get_filename_component(fullname "${das_filename}" NAME)
-	# strip just ".das" → raw="test.1"
-	string(REGEX REPLACE "\\.das$" "" raw "${fullname}")
-	# sanitize; test.1 → test_1
-	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "das_${raw}")
-	# message(STATUS "testname: ${testname}")
-
-	# Paths
-	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/${das_filename}")
-	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/${das_filename}.base")
-	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
-
-	# Add the CTest entry
-	add_test(NAME ${testname}
-			COMMAND /bin/sh "-c"
-			# 1) run das-test, redirect all output into a temp file
-			# 2) diff that file against the baseline"
-			"\"$<TARGET_FILE:das-test>\" -p < \"${input}\" > \"${output}\" 2>&1; \
-			diff -b -B \"${baseline}\" \"${output}\""
-	)
-	set_tests_properties(${testname} PROPERTIES LABELS "integration;das")
-endfunction()
-
-# find_package(Python3 COMPONENTS Interpreter REQUIRED)
-
-#set(DAS_HELPER_SRC  "${CMAKE_CURRENT_SOURCE_DIR}/run_das_response_test.py")
-#set(DAS_HELPER_BIN  "${CMAKE_CURRENT_BINARY_DIR}/run_das_response_test.py")
-#configure_file(
-#		${DAS_HELPER_SRC}  ${DAS_HELPER_BIN}
-#		COPYONLY
-#)
-
-#function(add_das_response_test das_filename)
-#	# get "test.1.das" → fullname="test.1.das"
-#	message(STATUS "testname: ${testname}")
-#	get_filename_component(fullname "${das_filename}" NAME)
-#	# strip just ".das" → raw="test.1"
-#	string(REGEX REPLACE "\\.das$" "" raw "${fullname}")
-#	# sanitize → test_1
-#	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "${raw}")
-#	message(STATUS "testname: ${testname}")
-#	# 3) set up paths
-#	set(input    "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/${das_filename}")
-#	set(baseline "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/${das_filename}.base")
-#	set(diffout  "${CMAKE_CURRENT_BINARY_DIR}/${testname}.diff")
-#
-#	# 4) register the test
-#	add_test(
-#			NAME das_response_${testname}
-#			COMMAND
-#			${Python3_EXECUTABLE}
-#			"${DAS_HELPER_BIN}"
-#			$<TARGET_FILE:das-test>
-#			"${input}"
-#			"${baseline}"
-#			"${diffout}"
-#	)
-#	set_tests_properties(das_response_${testname} PROPERTIES LABELS integration)
-#endfunction()
-
-foreach(dfile IN LISTS DAS_FILES)
-	add_das_test(${dfile})
-endforeach()
-
-### DDS tests start here.
-
-## I used file() with GLOB to grab all of the files that match *.dds in the
-## dds-testsuite subdir. This is simple and eliminates the need to list every
-## file, but can inadvertently include files that are not part of the test.
-## Listing the files intended, one by one, is better but also tedious and means
-## that new tests have to be manually added. 7/8/25 jhrg
-file(GLOB DDS_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite"
-		"${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite/*.dds")
-
-## This function will take the name of a DDS file and use it as input to a DDS
-## test. There are some tricks here as well. 7/8/25 jhrg
-function(add_dds_test dds_filename)
-	# Here the name of the dds file is morphed into something that will work
-	# as a cmake name (dots are not allowed in cmake names). 7/8/25 jhrg
-	#	message(STATUS "testname: ${testname}")
-	get_filename_component(fullname "${dds_filename}" NAME)
-	# strip just ".das" → raw="test.1"
-	string(REGEX REPLACE "\\.dds$" "" raw "${fullname}")
-	# sanitize; test.1 → test_1
-	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dds_${raw}")
-	# message(STATUS "testname: ${testname}")
-
-	# Paths
-	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite/${dds_filename}")
-	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dds-testsuite/${dds_filename}.base")
-	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
-
-	# Add the CTest entry. Here the shell is used so that we can employ redirection.
-	# The extra double quotes are 'best practice' for cmake, but really not needed here
-	# because we know that $<TARGET_FILE:dds-test> and the various variables (e.g. ${input})
-	# do not have spaces. The extra backslash characters make it harder to decipher
-	# what is going on. 7/8/25 jhrg
-	add_test(NAME ${testname}
-			COMMAND /bin/sh "-c"
-			"\"$<TARGET_FILE:dds-test>\" -p < \"${input}\" > \"${output}\" 2>&1; \
-			diff -b -B \"${baseline}\" \"${output}\""
-	)
-	# This makes it so we can run just these tests and also makes it easy to run the
-	# unit tests _before_ the integration tests with a 'check' target. See the top-level
-	# CMakeLists file. 7/8/25 jhrg
-	set_tests_properties(${testname} PROPERTIES LABELS "integration;dds")
-endfunction()
-
-## Iterate over all of the DDS filed and make a cmake/ctest for each one. 7/8/25 jhrg
-foreach(dfile IN LISTS DDS_FILES)
-	add_dds_test(${dfile})
-endforeach()
+include(das-tests)
+include(dds-tests)
 
 ## DMR tests. Unlike the DAS and DDS test, these test enumerate the individual test
 ## one by one since various tests will use different functions. 7/10/25 jhrg
@@ -242,6 +129,29 @@ function(add_dmr_parse_test test_input)
 	# CMakeLists file. 7/8/25 jhrg
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr")
 endfunction()
+
+#AT_CHECK([$abs_builddir/dmr-test -x -p $input -c $ce], [ignore], [stdout], [stderr])
+#AT_CHECK([cat stdout stderr > tmp])
+#AT_CHECK([diff -b -B $baseline tmp], [0])
+#AT_XFAIL_IF([test "z$3" = "zxfail"])
+function(add_dmr_parse_ce_test test_input ce test_baseline)
+	# string(REGEX REPLACE "\\.xml$" "" raw "${test_baseline}")
+	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_parse_ce_${test_baseline}")
+
+	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
+	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_baseline}")
+	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
+
+	add_test(NAME ${testname}
+			COMMAND /bin/sh "-c"
+			# 1) run das-test, redirect all output into a temp file
+			# 2) diff that file against the baseline"
+			"\"$<TARGET_FILE:dmr-test>\" -x -p \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
+			diff -b -B \"${baseline}\" \"${output}\""
+	)
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr,parse-ce")
+endfunction()
+
 
 add_dmr_parse_test(test_simple_1.xml)
 add_dmr_parse_test(test_simple_2.xml)
@@ -284,6 +194,23 @@ add_dmr_parse_test(test_array_14.xml)
 # Test empty Structures. jhrg 1/29/16
 add_dmr_parse_test(test_simple_6.2.xml)
 add_dmr_parse_test(test_simple_6.3.xml)
+
+# Test DAP CE parse errors - ensure they don't leak the supplied
+# CE text into the error message. jhrg 4/15/20
+add_dmr_parse_ce_test("test_simple_1.xml" "nasty" "test_simple_1.xml.parse_ce_1")
+# This string is 'd1rox<script>alert(1)</script>d55je=1' (%25 --> '%')
+# That is, the % is escaped in this text: %253c --> %3c --> '<'
+add_dmr_parse_ce_test("test_simple_1.xml" "d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1" "test_simple_1.xml.parse_ce_2")
+
+add_dmr_parse_ce_test("test_simple_6.3.xml" "s.nasty" "test_simple_6.3.xml.parse_ce_1")
+add_dmr_parse_ce_test("test_simple_6.3.xml" "s.d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1" "test_simple_6.3.xml.parse_ce_2")
+
+add_dmr_parse_ce_test("vol_1_ce_12.xml" "temp[nasty]" "vol_1_ce_12.xml.parse_ce_1")
+add_dmr_parse_ce_test("vol_1_ce_12.xml" "temp[d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1]" "vol_1_ce_12.xml.parse_ce_2")
+
+# Test reversed array indices
+add_dmr_parse_ce_test("test_array_4.xml" "b[2:1][2:3]" "test_array_4.xml.error.base")
+
 
 ## For byte_order == universal, this test removed the <Value> information
 ## and replaces it with nothing (which is different from the trans + ce
@@ -432,9 +359,11 @@ function(add_dmr_trans_ce_test test_input ce test_baseline byte_order)
 	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${byte_order}/${test_baseline}")
 	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
+	#message(STATUS "CE: ${ce}")
+
 	add_test(NAME ${testname}
-			COMMAND /bin/sh "-c"
-			"\"$<TARGET_FILE:dmr-test>\" -x -t \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
+			COMMAND /bin/sh -c
+			"$<TARGET_FILE:dmr-test> -x -t ${input} -c \'${ce}\' > ${output} 2>&1; \
 			if test \"${byte_order}\" = \"universal\"; then \
 				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@removed checksum@' \"${output}\" > \"${output}_univ\"; \
 				diff -b -B \"${baseline}\" \"${output}_univ\"; \
@@ -580,6 +509,18 @@ add_dmr_trans_ce_test("test_array_7.2.xml" "/col=[1:2];s[0]{i1}" "test_array_7.2
 add_dmr_trans_ce_test("test_array_7.2.xml" "/col=[1:2];s[0]{i1[][]}" "test_array_7.2.xml.3.trans_base" ${word_order})
 
 add_dmr_trans_ce_test("test_array_7.2.xml" "/col=[1:2];s[0]{i1[0][]}" "test_array_7.2.xml.4.trans_base" ${word_order})
+
+# Test projections that only name groups
+add_dmr_trans_ce_test("vol_1_ce_2.xml" "/inst2" "vol_1_ce_2.xml.1.trans_base" ${word_order})
+add_dmr_trans_ce_test("vol_1_ce_2.xml" "inst2" "vol_1_ce_2.xml.1.trans_base" ${word_order})
+add_dmr_trans_ce_test("vol_1_ce_2.xml" "/inst2/Point" "vol_1_ce_2.xml.2.trans_base" ${word_order})
+
+add_dmr_trans_ce_test("vol_1_ce_13.xml" "/inst2" "vol_1_ce_13.xml.1.trans_base" ${word_order})
+add_dmr_trans_ce_test("vol_1_ce_13.xml" "/inst2/inst3" "vol_1_ce_13.xml.2.trans_base" ${word_order})
+
+add_dmr_trans_ce_test("vol_1_ce_13.xml" "/attr_only_global" "vol_1_ce_13.xml.3.trans_base" ${word_order})
+add_dmr_trans_ce_test("vol_1_ce_13.xml" "/inst2/attr_only" "vol_1_ce_13.xml.4.trans_base" ${word_order})
+
 
 #AT_CHECK([$abs_builddir/dmr-test -x -t $input -f "$fe" -c "$ce" || true], [], [stdout], [stderr])
 #AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
