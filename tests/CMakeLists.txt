@@ -660,3 +660,88 @@ add_dmr_trans_func_test("vol_1_ce_1.xml" "scale(\\$Float64(20:1,2,3,4.55),10)" "
 add_dmr_trans_func_test("vol_1_ce_10.xml" "scale(lat,10)" "" "vol_1_ce_10.xml.1.func_base" "${word_order}")
 add_dmr_trans_func_test("vol_1_ce_10.xml" "scale(lat,10);scale(lon,10)" "" "vol_1_ce_10.xml.2.func_base" "${word_order}")
 add_dmr_trans_func_test("vol_1_ce_10.xml" "scale(lat,10);scale(lon,10)" "lat[10:11][10:11];lon[10:11][10:11]" "vol_1_ce_10.xml.3.func_base" "${word_order}")
+
+#DMR_TRANS_SERIES_CE
+#AT_CHECK([$abs_builddir/dmr-test -x -e -t $input -c "$ce" | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [], [stdout], [])
+#AT_CHECK([diff -b -B $baseline stdout], [], [ignore],[],[])
+#AT_XFAIL_IF([test "X$4" = "Xxfail"])
+
+## Two things different about this set of tests: they assume baselines that are independent
+## of word order and they use CEs that have operators (!, <=, ...). Making a test name substituting
+## those chars with '_' doesn't make unique test names. But, for this we can use the baseline
+## names. Also, some of these tests are expected to fail. 7/14/25 jhrg
+function(add_dmr_trans_series_test test_input ce test_baseline xfail)
+	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
+	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_series_${ce}_${test_baseline}")
+
+	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
+	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/universal/${test_baseline}")
+	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
+
+	add_test(NAME ${testname}
+			COMMAND /bin/sh "-c"
+			"\"$<TARGET_FILE:dmr-test>\" -x -e -t \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
+			sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
+			mv \"${output}_univ\" \"${output}\"; \
+			diff -b -B \"${baseline}\" \"${output}\""
+	)
+
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;series")
+	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+	if("${xfail}" STREQUAL "xfail")
+		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
+	endif()
+endfunction()
+
+## These tests are all 'universal' tests (i.e., they do not need different baselines
+## for different word order machines). 7/14/25 jhrg.
+add_dmr_trans_series_test("test_simple_7.xml" "s" "test_simple_7.xml.f.trans_base" "")
+
+add_dmr_trans_series_test("test_simple_7.xml" "s|i1==1024" "test_simple_7.xml.f1.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|i1!=1024" "test_simple_7.xml.f2.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|i1<=1024" "test_simple_7.xml.f3.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|i1<1024" "test_simple_7.xml.f4.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|i1<=1024" "test_simple_7.xml.f5.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|i1>1024" "test_simple_7.xml.f6.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|i1>=1024" "test_simple_7.xml.f7.trans_base" "")
+
+add_dmr_trans_series_test("test_simple_7.xml" "s|1024<i1" "test_simple_7.xml.f8.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|1024<=i1<=32768" "test_simple_7.xml.f9.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|i1>=1024.0" "test_simple_7.xml.fa.trans_base" "")
+
+## \\\" --> \\ is a literal slash and \" is a literal double quote. 7/14/25 jhrg
+add_dmr_trans_series_test("test_simple_7.xml" "s|s==\\\"Silly test string: 2\\\"" "test_simple_7.xml.fs1.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|s!=\\\"Silly test string: 2\\\"" "test_simple_7.xml.fs2.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|s<\\\"Silly test string: 2\\\"" "test_simple_7.xml.fs3.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|s<=\\\"Silly test string: 2\\\"" "test_simple_7.xml.fs4.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|s>\\\"Silly test string: 2\\\"" "test_simple_7.xml.fs5.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|s>=\\\"Silly test string: 2\\\"" "test_simple_7.xml.fs6.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s|s~=\\\".*2\\\"" "test_simple_7.xml.fs7.trans_base" "")
+
+# Test filtering a sequence that has only one field projected, including filtering on the values
+# of a filed not projected.
+add_dmr_trans_series_test("test_simple_7.xml" "s{i1}|i1<32768" "test_simple_7.xml.g1.trans_base" "")
+add_dmr_trans_series_test("test_simple_7.xml" "s{i1}|s<=\\\"Silly test string: 2\\\"" "test_simple_7.xml.g1.trans_base" "")
+
+# A nested sequence with floats in the outer sequence and the int, string combination in the inner
+add_dmr_trans_series_test("test_simple_8.1.xml" "outer" "test_simple_8.1.xml.f1.trans_base" "")
+add_dmr_trans_series_test("test_simple_8.1.xml" "outer{x;y}" "test_simple_8.1.xml.f2.trans_base" "")
+add_dmr_trans_series_test("test_simple_8.1.xml" "outer{x;y;inner}" "test_simple_8.1.xml.f3.trans_base" "")
+add_dmr_trans_series_test("test_simple_8.1.xml" "outer{x;y;inner|i1<1000}" "test_simple_8.1.xml.f4.trans_base" "")
+add_dmr_trans_series_test("test_simple_8.1.xml" "outer{x;y;inner|i1<1000}|x<0.0" "test_simple_8.1.xml.f5.trans_base" "")
+
+# These tests are regression tests for bug Hyrax-267. Spaces in variables names
+# broke the DAP4 CE parser
+
+# These mostly fail because there's a second bug where the variables in a group are
+# not printing values.
+add_dmr_trans_series_test("names_with_spaces.dmr" "/u" "names_with_spaces.dmr.1.trans_base" "")
+add_dmr_trans_series_test("names_with_spaces.dmr" "/inst2/u" "names_with_spaces.dmr.2.trans_base" "xfail")
+
+add_dmr_trans_series_test("names_with_spaces.dmr" "/inst2/Point.x" "names_with_spaces.dmr.3.trans_base" "xfail")
+add_dmr_trans_series_test("names_with_spaces2.dmr" "/inst2/\"Point Break\".x" "names_with_spaces2.dmr.1.trans_base" "xfail")
+add_dmr_trans_series_test("names_with_spaces2.dmr" "/inst2/Point%20Break.x" "names_with_spaces2.dmr.1.trans_base" "xfail")
+add_dmr_trans_series_test("names_with_spaces2.dmr" "/inst2/\"Point%20Break\".x" "names_with_spaces2.dmr.1.trans_base" "xfail")
+
+add_dmr_trans_series_test("names_with_spaces3.dmr" "/inst2/\"New Group\"/x" "names_with_spaces3.dmr.1.trans_base" "xfail")
+add_dmr_trans_series_test("names_with_spaces3.dmr" "/inst2/New%20Group/x" "names_with_spaces3.dmr.1.trans_base" "xfail")
