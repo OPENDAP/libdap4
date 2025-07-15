@@ -4,7 +4,6 @@ function(getdap_test test_num option url baseline xfail)
 	set(baseline "${CMAKE_CURRENT_SOURCE_DIR}/getdap-testsuite/${baseline}")
 	set(output "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
-	message(STATUS "BASELINES: ${BASELINES}")
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
 			# 1) run das-test, redirect all output into a temp file
