@@ -1,18 +1,6 @@
 
-#function(getdap_baseline test_num option url baseline)
-#	set(testname "getdap_test_%{test_num}")
-#	set(baseline "${CMAKE_CURRENT_SOURCE_DIR}/getdap-testsuite/${baseline}")
-#	set(output "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
-#
-#	COMMAND /bin/sh "-c"
-## 1) run das-test, redirect all output into a temp file
-## 2) diff that file against the baseline"
-#"$<TARGET_FILE:getdap> \"${option}\" \"${url}\" > \"${output}\" 2>&1; \
-#diff -b -B \"${baseline}\" \"${output}\""
-#endfunction()
-
 function(getdap_test test_num option url baseline xfail)
-	set(testname "getdap_test_%{test_num}")
+	set(testname "getdap_test_${test_num}")
 	set(baseline "${CMAKE_CURRENT_SOURCE_DIR}/getdap-testsuite/${baseline}")
 	set(output "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
@@ -35,3 +23,5 @@ function(getdap_test test_num option url baseline xfail)
 endfunction()
 
 getdap_test(1 "-d" "http://test.opendap.org/dap/data/nc/fnoc1.nc" "fnoc1.nc.dds" "pass")
+getdap_test(2 "-a" "http://test.opendap.org/dap/data/nc/fnoc1.nc" "fnoc1.nc.das" "pass")
+
