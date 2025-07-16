@@ -61,15 +61,31 @@ using namespace libdap;
 
 const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
 
+/**
+ * @brief Converts a bool to a string of either "true" or "false" as appropriate.
+ * @param b The boolean value to stringify.
+ * @return Either "true" or "false" according to b.
+ */
 string torf(bool b) { return {b ? "true" : "false"}; }
 
-void logd(const string &s, bool verbose = false) {
+/**
+ * @brief Simple log formater
+ * @param ofstrm The stream to write to
+ * @param msg The message to write.
+ */
+void logd(const string &msg, const bool verbose) {
     if (verbose) {
-        cerr << "# " << s << "\n";
+        std::stringstream ss(msg); // Create a stringstream from the string
+        std::string msg_line;
+
+        // Read lines from the stringstream until the end
+        while (std::getline(ss, msg_line)) {
+            cerr << "# " << msg_line << "\n";
+        }
     }
 }
 
-void err_msg(string msg) { cerr << "ERROR: " << msg << "\n"; }
+void err_msg(const string &msg) { cerr << "ERROR: " << msg << "\n"; }
 
 static void usage(const string &) {
     const char *message = R"(
@@ -167,7 +183,7 @@ static void print_group_data(const D4Group *g, bool print_rows = false) {
 static void print_data(DMR &dmr, bool print_rows = false) {
     cout << "The data:" << endl;
 
-    D4Group *g = dmr.root();
+    const auto g = dmr.root();
 
     print_group_data(g, print_rows);
 
@@ -232,7 +248,6 @@ void get_dmr(D4Connect *url, const string &constraint_expression, const bool com
         }
     } catch (Error &e) {
         err_msg(e.get_error_message());
-        ;
         if (report_errors)
             throw e;
     }
@@ -270,7 +285,6 @@ void get_dap4_data(D4Connect *url, const string &constraint_expression, const bo
 
     } catch (Error &e) {
         err_msg(e.get_error_message());
-        ;
         if (report_errors) {
             throw e;
         }
@@ -335,7 +349,6 @@ void read_local_dap4(D4Connect *url, const string &name, const bool get_dmr_flag
 
     } catch (Error &e) {
         err_msg(e.get_error_message());
-        ;
         if (report_errors) {
             throw e;
         }
@@ -362,7 +375,6 @@ void get_remote_dap4(HTTPConnect &http, const string &url_string, const bool rep
     } catch (Error &e) {
         delete r;
         err_msg(e.get_error_message());
-        ;
         if (report_errors) {
             throw e;
         }
@@ -491,11 +503,9 @@ int main(int argc, char *argv[]) {
         delete url;
         if (e.get_error_code() == malformed_expr) {
             err_msg(e.get_error_message());
-            ;
             usage(argv[0]);
         } else {
             err_msg(e.get_error_message());
-            ;
         }
 
         cerr << "Exiting." << endl;

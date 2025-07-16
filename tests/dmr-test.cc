@@ -66,22 +66,20 @@ using namespace std;
  * @param b The boolean value to stringify.
  * @return Either "true" or "false" according to b.
  */
-// TODO - Remove this function before merge.
 string torf(bool b) { return {b ? "true" : "false"}; }
 
 /**
  * @brief Simple log formater
- * @param ofstrm The stream to write to
+ * @param ostrm The stream to write to
  * @param msg The message to write.
  */
-// TODO - Remove this function before merge.
-void logd(ofstream &ofstrm, const string &msg) {
+void logd(ostream &ostrm, const string &msg) {
     std::stringstream ss(msg); // Create a stringstream from the string
     std::string msg_line;
 
     // Read lines from the stringstream until the end
     while (std::getline(ss, msg_line)) {
-        ofstrm << "# " << msg_line << "\n";
+        ostrm << "# " << msg_line << "\n";
     }
 }
 
@@ -283,9 +281,6 @@ int main(int argc, char *argv[]) {
     string function;
     bool use_checksums = false;
 
-    // TODO - Remove this variable before merge.
-    std::ofstream logstrm("./dmr-test.log");
-
     // process options
 
     while ((option_char = getopt()) != -1)
@@ -355,20 +350,21 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // TODO - Remove these logd() function calls before merge.
-    logd(logstrm, "----------------------------------------------------");
-    logd(logstrm, "           name: " + name);
-    logd(logstrm, "          debug: " + torf(debug));
-    logd(logstrm, "          print: " + torf(print));
-    logd(logstrm, "          parse: " + torf(parse));
-    logd(logstrm, "           send: " + torf(send));
-    logd(logstrm, "          trans: " + torf(trans));
-    logd(logstrm, "         intern: " + torf(intern));
-    logd(logstrm, "  series_values: " + torf(series_values));
-    logd(logstrm, "ce_parser_debug: " + torf(ce_parser_debug));
-    logd(logstrm, "             ce: " + ce);
-    logd(logstrm, "       function: " + function);
-    logd(logstrm, "  use_checksums: " + torf(use_checksums));
+    if (debug) {
+        logd(cerr, "----------------------------------------------------");
+        logd(cerr, "           name: " + name);
+        logd(cerr, "          debug: " + torf(debug));
+        logd(cerr, "          print: " + torf(print));
+        logd(cerr, "          parse: " + torf(parse));
+        logd(cerr, "           send: " + torf(send));
+        logd(cerr, "          trans: " + torf(trans));
+        logd(cerr, "         intern: " + torf(intern));
+        logd(cerr, "  series_values: " + torf(series_values));
+        logd(cerr, "ce_parser_debug: " + torf(ce_parser_debug));
+        logd(cerr, "             ce: " + ce);
+        logd(cerr, "       function: " + function);
+        logd(cerr, "  use_checksums: " + torf(use_checksums));
+    }
 
     try {
         if (parse) {
