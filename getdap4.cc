@@ -61,6 +61,8 @@ using namespace libdap;
 
 const char *version = CVER " (" DVR " DAP/" DAP_PROTOCOL_VERSION ")";
 
+string torf(bool b) { return {b ? "true" : "false"}; }
+
 void logd(const string &s, bool verbose = false) {
     if (verbose) {
         cerr << "# " << s << "\n";
@@ -200,11 +202,172 @@ unsigned long long get_size(D4Group *grp, bool constrained = false) {
 
 unsigned long long get_size(DMR &dmr, bool constrained = false) { return get_size(dmr.root(), constrained); }
 
+/**
+ *
+ * @param url The D4Connect instance with the service URL inside.
+ * @param constraint_expression The dap4 CE to apply to the dataset pointed to by `url`
+ * @param compute_size  If true compute the size of the variables.
+ * @param report_errors If true, (re)throw exceptions
+ * @param verbose If true make the chatty output.
+ */
+void get_dmr(D4Connect *url, const string &constraint_expression, const bool compute_size, const bool report_errors,
+             const bool verbose) {
+
+    D4BaseTypeFactory factory;
+    DMR dmr(&factory);
+    try {
+        url->request_dmr(dmr, constraint_expression);
+
+        logd("   DAP version: " + url->get_protocol(), verbose);
+        logd("Server version: " + url->get_version(), verbose);
+        logd("DMR: ", true);
+
+        XMLWriter xml;
+        dmr.print_dap4(xml);
+        cout << xml.get_doc() << endl;
+        if (compute_size) {
+            cout << "DMR References " << get_size(dmr) << " bytes of data," << endl;
+        }
+    } catch (Error &e) {
+        cerr << "ERROR: " << e.get_error_message() << endl;
+        if (report_errors)
+            throw e;
+    }
+}
+
+/**
+ *
+ * @param url The D4Connect instance with the service URL inside.
+ * @param constraint_expression The dap4 CE to apply to the dataset pointed to by `url`
+ * @param use_checksums If true, as the service to return variable check sums
+ * @param print_rows If true, print the rows.
+ * @param report_errors If true, (re)throw exceptions
+ * @param verbose If true make the chatty output.
+ */
+void get_dap4_data(D4Connect *url, const string &constraint_expression, const bool use_checksums, const bool print_rows,
+                   const bool report_errors, const bool verbose) {
+
+    D4BaseTypeFactory factory;
+    DMR dmr(&factory);
+    dmr.use_checksums(use_checksums);
+
+    try {
+
+        url->request_dap4_data(dmr, constraint_expression);
+
+        logd("   DAP version: " + url->get_protocol(), verbose);
+        logd("Server version: " + url->get_version(), verbose);
+        logd("DMR:", true);
+
+        XMLWriter xml;
+        dmr.print_dap4(xml);
+        cout << xml.get_doc() << endl;
+
+        print_data(dmr, print_rows);
+
+    } catch (Error &e) {
+        cerr << "ERROR: " << e.get_error_message() << endl;
+        if (report_errors) {
+            throw e;
+        }
+    }
+}
+/**
+ *
+ * @param url_string The URL to which to add the dap4.checksum parameter if it's not in there already.
+ * @param use_checksums If true add the dap4.checksum query parameter to the URL
+ */
+void add_dap4_checksum_parameter_to_url(string &url_string, const bool use_checksums) {
+    // Use checksums but it's not in the URL?
+    if (use_checksums && url_string.find("dap4.checksum") == string::npos) {
+        if (url_string.find("?") == string::npos)
+            // If there is no constraint add one with the checksum param
+            url_string += "?dap4.checksum=true";
+        else {
+            // Add the checksum param  as an additional parameter
+            url_string += "&dap4.checksum=true";
+        }
+    }
+}
+
+void read_local_dap4(D4Connect *url, const string &name, const bool get_dmr_flag, const bool get_data_flag,
+                     const bool mime_headers, const bool print_rows, const bool use_checksums, const bool report_errors,
+                     const bool verbose) {
+
+    logd("Assuming " + name + " is a file that contains a response object; decoding.", verbose);
+
+    try {
+        D4BaseTypeFactory factory;
+        DMR dmr(&factory);
+        dmr.use_checksums(use_checksums);
+
+        if (strcmp(name.c_str(), "-") == 0) {
+            StdinResponse r(cin);
+
+            if (!r.get_cpp_stream())
+                throw Error("Could not open standard input.");
+
+            read_response_from_file(url, dmr, r, mime_headers, get_data_flag, get_dmr_flag);
+        } else {
+            fstream f(name, std::ios_base::in);
+            if (!f.is_open() || f.bad() || f.eof())
+                throw Error((string) "Could not open: " + name);
+
+            Response r(&f, 0);
+
+            read_response_from_file(url, dmr, r, mime_headers, get_data_flag, get_dmr_flag);
+        }
+
+        logd("   DAP version: " + url->get_protocol(), verbose);
+        logd("Server version: " + url->get_version(), verbose);
+
+        // Always write the DMR
+        XMLWriter xml;
+        dmr.print_dap4(xml);
+        cout << xml.get_doc() << endl;
+
+        if (get_data_flag)
+            print_data(dmr, print_rows);
+
+    } catch (Error &e) {
+        cerr << "ERROR: " << e.get_error_message() << endl;
+        if (report_errors) {
+            throw e;
+        }
+    }
+}
+
+void get_remote_dap4(HTTPConnect &http, const string &url_string, const bool report_errors, const bool verbose) {
+
+    HTTPResponse *r = nullptr;
+    try {
+        r = http.fetch_url(url_string);
+        if (verbose) {
+            const auto &headers = r->get_headers();
+            for (const auto &header : headers) {
+                logd(header, verbose);
+            }
+        }
+        if (!read_data(r->get_stream())) {
+            return;
+        }
+
+        delete r;
+
+    } catch (Error &e) {
+        delete r;
+        cerr << e.get_error_message() << endl;
+        if (report_errors) {
+            throw e;
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     int option_char;
     bool verbose = false;
-    bool get_dmr = false;
-    bool get_dap4_data = false;
+    bool get_dmr_flag = false;
+    bool get_dap4_data_flag = false;
     bool accept_deflate = false;
     bool print_rows = false;
     bool mime_headers = true;
@@ -226,10 +389,10 @@ int main(int argc, char *argv[]) {
             use_checksums = true;
             break;
         case 'd':
-            get_dmr = true;
+            get_dmr_flag = true;
             break;
         case 'D':
-            get_dap4_data = true;
+            get_dap4_data_flag = true;
             break;
         case 'v':
             verbose = true;
@@ -274,7 +437,7 @@ int main(int argc, char *argv[]) {
             string name = argv[i];
             logd("      Fetching: " + name, verbose);
             logd("       dap4.ce: " + constraint_expression, verbose);
-            logd(" dap4.checksum: " + string(use_checksums ? "true" : "false"), verbose);
+            logd(" dap4.checksum: " + torf(use_checksums), verbose);
 
             url = new D4Connect(name);
 
@@ -286,136 +449,32 @@ int main(int argc, char *argv[]) {
                 url->set_xdap_protocol(dap_client_major, dap_client_minor);
 
             if (url->is_local()) {
-                logd("Assuming " + name + " is a file that contains a response object; decoding.", verbose);
-
-                try {
-                    D4BaseTypeFactory factory;
-                    DMR dmr(&factory);
-                    dmr.use_checksums(use_checksums);
-
-                    if (strcmp(argv[i], "-") == 0) {
-                        StdinResponse r(cin);
-
-                        if (!r.get_cpp_stream())
-                            throw Error("Could not open standard input.");
-
-                        read_response_from_file(url, dmr, r, mime_headers, get_dap4_data, get_dmr);
-                    } else {
-                        fstream f(argv[i], std::ios_base::in);
-                        if (!f.is_open() || f.bad() || f.eof())
-                            throw Error((string) "Could not open: " + argv[i]);
-
-                        Response r(&f, 0);
-
-                        read_response_from_file(url, dmr, r, mime_headers, get_dap4_data, get_dmr);
-                    }
-
-                    logd("   DAP version: " + url->get_protocol(), verbose);
-                    logd("Server version: " + url->get_version(), verbose);
-
-                    // Always write the DMR
-                    XMLWriter xml;
-                    dmr.print_dap4(xml);
-                    cout << xml.get_doc() << endl;
-
-                    if (get_dap4_data)
-                        print_data(dmr, print_rows);
-                } catch (Error &e) {
-                    cerr << "Error: " << e.get_error_message() << endl;
-                    delete url;
-                    url = nullptr;
-                    if (report_errors)
-                        return EXIT_FAILURE;
-                }
-            } else if (get_dmr) {
+                read_local_dap4(url, name, get_dmr_flag, get_dap4_data_flag, mime_headers, print_rows, use_checksums,
+                                report_errors, verbose);
+            } else if (get_dmr_flag) {
                 for (int j = 0; j < times; ++j) {
-                    D4BaseTypeFactory factory;
-                    DMR dmr(&factory);
-                    try {
-                        url->request_dmr(dmr, constraint_expression);
-
-                        logd("   DAP version: " + url->get_protocol(), verbose);
-                        logd("Server version: " + url->get_version(), verbose);
-                        logd("DMR: ", true);
-
-                        XMLWriter xml;
-                        dmr.print_dap4(xml);
-                        cout << xml.get_doc() << endl;
-                        if (compute_size) {
-                            cout << "DMR References " << get_size(dmr) << " bytes of data," << endl;
-                        }
-                    } catch (Error &e) {
-                        cerr << e.get_error_message() << endl;
-                        if (report_errors)
-                            return EXIT_FAILURE;
-                        continue; // Goto the next URL or exit the loop.
-                    }
+                    get_dmr(url, constraint_expression, compute_size, report_errors, verbose);
                 }
-            } else if (get_dap4_data) {
+            } else if (get_dap4_data_flag) {
                 for (int j = 0; j < times; ++j) {
-                    D4BaseTypeFactory factory;
-                    DMR dmr(&factory);
-                    dmr.use_checksums(use_checksums);
-
-                    try {
-                        url->request_dap4_data(dmr, constraint_expression);
-
-                        logd("   DAP version: " + url->get_protocol(), verbose);
-                        logd("Server version: " + url->get_version(), verbose);
-                        logd("DMR:", true);
-
-                        XMLWriter xml;
-                        dmr.print_dap4(xml);
-                        cout << xml.get_doc() << endl;
-
-                        print_data(dmr, print_rows);
-                    } catch (Error &e) {
-                        cerr << e.get_error_message() << endl;
-                        if (report_errors)
-                            return EXIT_FAILURE;
-                        continue; // Goto the next URL or exit the loop.
-                    }
+                    get_dap4_data(url, constraint_expression, use_checksums, print_rows, report_errors, verbose);
                 }
             } else {
+
                 HTTPConnect http(RCReader::instance());
+
+                if (dap_client_major > 2)
+                    http.set_xdap_protocol(dap_client_major, dap_client_minor);
 
                 // This overrides the value set in the .dodsrc file.
                 if (accept_deflate)
                     http.set_accept_deflate(accept_deflate);
 
-                if (dap_client_major > 2)
-                    url->set_xdap_protocol(dap_client_major, dap_client_minor);
-
                 string url_string = argv[i];
-                // Use checksums but it's not in the URL?
-                if (use_checksums && url_string.find("dap4.checksum") == string::npos) {
-                    if (url_string.find("?") == string::npos)
-                        // If there is no constraint add one with the checksum param
-                        url_string += "?dap4.checksum=true";
-                    else {
-                        // Add the checksum param  as an additional parameter
-                        url_string += "&dap4.checksum=true";
-                    }
-                }
+                add_dap4_checksum_parameter_to_url(url_string, use_checksums);
+
                 for (int j = 0; j < times; ++j) {
-                    try {
-                        HTTPResponse *r = http.fetch_url(url_string);
-                        if (verbose) {
-                            const auto &headers = r->get_headers();
-                            for (const auto &header : headers) {
-                                logd(header, verbose);
-                            }
-                        }
-                        if (!read_data(r->get_stream())) {
-                            continue;
-                        }
-                        delete r;
-                    } catch (Error &e) {
-                        cerr << e.get_error_message() << endl;
-                        if (report_errors)
-                            return EXIT_FAILURE;
-                        continue;
-                    }
+                    get_remote_dap4(http, url_string, report_errors, verbose);
                 }
             }
 
