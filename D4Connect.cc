@@ -279,6 +279,10 @@ D4Connect::~D4Connect() {
         delete d_http;
 }
 
+std::string D4Connect::build_dap4_ce(const string &requestSuffix, const string &dap4ce) const {
+    return build_dap4_ce(requestSuffix, dap4ce, false);
+}
+
 std::string D4Connect::build_dap4_ce(const string &requestSuffix, const string &dap4ce,
                                      const bool use_checksums) const {
     std::stringstream url;
