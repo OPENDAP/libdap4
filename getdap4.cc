@@ -148,20 +148,20 @@ bool read_data(FILE *fp) {
     return true;
 }
 
-static void read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool mime_headers, bool get_dap4_data,
+static void read_response_from_file(D4Connect &url, DMR &dmr, Response &r, bool mime_headers, bool get_dap4_data,
                                     bool get_dmr) {
     if (mime_headers) {
         if (get_dap4_data)
-            url->read_data(dmr, r);
+            url.read_data(dmr, r);
         else if (get_dmr)
-            url->read_dmr(dmr, r);
+            url.read_dmr(dmr, r);
         else
             throw Error("Only supports Data or DMR responses");
     } else {
         if (get_dap4_data)
-            url->read_data_no_mime(dmr, r);
+            url.read_data_no_mime(dmr, r);
         else if (get_dmr)
-            url->read_dmr_no_mime(dmr, r);
+            url.read_dmr_no_mime(dmr, r);
         else
             throw Error("Only supports Data or DMR responses");
     }
@@ -228,16 +228,16 @@ unsigned long long get_size(DMR &dmr, bool constrained = false) { return get_siz
  * @param report_errors If true, (re)throw exceptions
  * @param verbose If true make the chatty output.
  */
-void get_dmr(D4Connect *url, const string &constraint_expression, const bool compute_size, const bool report_errors,
+void get_dmr(D4Connect &url, const string &constraint_expression, const bool compute_size, const bool report_errors,
              const bool verbose) {
 
     D4BaseTypeFactory factory;
     DMR dmr(&factory);
     try {
-        url->request_dmr(dmr, constraint_expression);
+        url.request_dmr(dmr, constraint_expression);
 
-        logd("   DAP version: " + url->get_protocol(), verbose);
-        logd("Server version: " + url->get_version(), verbose);
+        logd("   DAP version: " + url.get_protocol(), verbose);
+        logd("Server version: " + url.get_version(), verbose);
         logd("DMR: ", true);
 
         XMLWriter xml;
@@ -262,7 +262,7 @@ void get_dmr(D4Connect *url, const string &constraint_expression, const bool com
  * @param report_errors If true, (re)throw exceptions
  * @param verbose If true make the chatty output.
  */
-void get_dap4_data(D4Connect *url, const string &constraint_expression, const bool use_checksums, const bool print_rows,
+void get_dap4_data(D4Connect &url, const string &constraint_expression, const bool use_checksums, const bool print_rows,
                    const bool report_errors, const bool verbose) {
 
     D4BaseTypeFactory factory;
@@ -271,10 +271,10 @@ void get_dap4_data(D4Connect *url, const string &constraint_expression, const bo
 
     try {
 
-        url->request_dap4_data(dmr, constraint_expression);
+        url.request_dap4_data(dmr, constraint_expression);
 
-        logd("   DAP version: " + url->get_protocol(), verbose);
-        logd("Server version: " + url->get_version(), verbose);
+        logd("   DAP version: " + url.get_protocol(), verbose);
+        logd("Server version: " + url.get_version(), verbose);
         logd("DMR:", true);
 
         XMLWriter xml;
@@ -308,7 +308,7 @@ void add_dap4_checksum_parameter_to_url(string &url_string, const bool use_check
     }
 }
 
-void read_local_dap4(D4Connect *url, const string &name, const bool get_dmr_flag, const bool get_data_flag,
+void read_local_dap4(D4Connect &url, const string &name, const bool get_dmr_flag, const bool get_data_flag,
                      const bool mime_headers, const bool print_rows, const bool use_checksums, const bool report_errors,
                      const bool verbose) {
 
@@ -336,8 +336,8 @@ void read_local_dap4(D4Connect *url, const string &name, const bool get_dmr_flag
             read_response_from_file(url, dmr, r, mime_headers, get_data_flag, get_dmr_flag);
         }
 
-        logd("   DAP version: " + url->get_protocol(), verbose);
-        logd("Server version: " + url->get_version(), verbose);
+        logd("   DAP version: " + url.get_protocol(), verbose);
+        logd("Server version: " + url.get_version(), verbose);
 
         // Always write the DMR
         XMLWriter xml;
@@ -447,7 +447,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    D4Connect *url = nullptr;
     try {
         // If after processing all the command line options there is nothing
         // left (no URL or file) assume that we should read from stdin.
@@ -457,16 +456,16 @@ int main(int argc, char *argv[]) {
             logd("       dap4.ce: " + constraint_expression, verbose);
             logd(" dap4.checksum: " + torf(use_checksums), verbose);
 
-            url = new D4Connect(name);
+            D4Connect url(name);
 
             // This overrides the value set in the .dodsrc file.
             if (accept_deflate)
-                url->set_accept_deflate(accept_deflate);
+                url.set_accept_deflate(accept_deflate);
 
             if (dap_client_major > 2)
-                url->set_xdap_protocol(dap_client_major, dap_client_minor);
+                url.set_xdap_protocol(dap_client_major, dap_client_minor);
 
-            if (url->is_local()) {
+            if (url.is_local()) {
                 read_local_dap4(url, name, get_dmr_flag, get_dap4_data_flag, mime_headers, print_rows, use_checksums,
                                 report_errors, verbose);
             } else if (get_dmr_flag) {
@@ -495,12 +494,8 @@ int main(int argc, char *argv[]) {
                     get_remote_dap4(http, url_string, report_errors, verbose);
                 }
             }
-
-            delete url;
-            url = nullptr;
         }
     } catch (Error &e) {
-        delete url;
         if (e.get_error_code() == malformed_expr) {
             err_msg(e.get_error_message());
             usage(argv[0]);
@@ -511,7 +506,6 @@ int main(int argc, char *argv[]) {
         cerr << "Exiting." << endl;
         return EXIT_FAILURE;
     } catch (exception &e) {
-        delete url;
         err_msg(string("C++ library exception! message: ") + e.what());
         cerr << "Exiting." << endl;
         return EXIT_FAILURE;
