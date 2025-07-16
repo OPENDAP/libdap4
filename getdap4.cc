@@ -69,6 +69,8 @@ void logd(const string &s, bool verbose = false) {
     }
 }
 
+void err_msg(string msg) { cerr << "ERROR: " << msg << "\n"; }
+
 static void usage(const string &) {
     const char *message = R"(
     Usage: getdap4 [dD vVmzsM][-c <expr>][-m <num>] <url> [<url> ...]
@@ -229,7 +231,8 @@ void get_dmr(D4Connect *url, const string &constraint_expression, const bool com
             cout << "DMR References " << get_size(dmr) << " bytes of data," << endl;
         }
     } catch (Error &e) {
-        cerr << "ERROR: " << e.get_error_message() << endl;
+        err_msg(e.get_error_message());
+        ;
         if (report_errors)
             throw e;
     }
@@ -266,7 +269,8 @@ void get_dap4_data(D4Connect *url, const string &constraint_expression, const bo
         print_data(dmr, print_rows);
 
     } catch (Error &e) {
-        cerr << "ERROR: " << e.get_error_message() << endl;
+        err_msg(e.get_error_message());
+        ;
         if (report_errors) {
             throw e;
         }
@@ -330,7 +334,8 @@ void read_local_dap4(D4Connect *url, const string &name, const bool get_dmr_flag
             print_data(dmr, print_rows);
 
     } catch (Error &e) {
-        cerr << "ERROR: " << e.get_error_message() << endl;
+        err_msg(e.get_error_message());
+        ;
         if (report_errors) {
             throw e;
         }
@@ -356,7 +361,8 @@ void get_remote_dap4(HTTPConnect &http, const string &url_string, const bool rep
 
     } catch (Error &e) {
         delete r;
-        cerr << e.get_error_message() << endl;
+        err_msg(e.get_error_message());
+        ;
         if (report_errors) {
             throw e;
         }
@@ -484,17 +490,19 @@ int main(int argc, char *argv[]) {
     } catch (Error &e) {
         delete url;
         if (e.get_error_code() == malformed_expr) {
-            cerr << e.get_error_message() << endl;
+            err_msg(e.get_error_message());
+            ;
             usage(argv[0]);
         } else {
-            cerr << e.get_error_message() << endl;
+            err_msg(e.get_error_message());
+            ;
         }
 
         cerr << "Exiting." << endl;
         return EXIT_FAILURE;
     } catch (exception &e) {
         delete url;
-        cerr << "C++ library exception: " << e.what() << endl;
+        err_msg(string("C++ library exception! message: ") + e.what());
         cerr << "Exiting." << endl;
         return EXIT_FAILURE;
     }
