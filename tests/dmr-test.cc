@@ -73,8 +73,9 @@ string torf(bool b) { return {b ? "true" : "false"}; }
  * @param ostrm The stream to write to
  * @param msg The message to write.
  */
-void logd(ostream &ostrm, const string &msg) {
-    std::stringstream ss(msg); // Create a stringstream from the string
+void logd(const string &msg, ostream &ostrm = cerr) {
+    // Create a std::stringstream from the string so we can use std::getline()
+    std::stringstream ss(msg);
     std::string msg_line;
 
     // Read lines from the stringstream until the end
@@ -351,19 +352,19 @@ int main(int argc, char *argv[]) {
     }
 
     if (debug) {
-        logd(cerr, "----------------------------------------------------");
-        logd(cerr, "           name: " + name);
-        logd(cerr, "          debug: " + torf(debug));
-        logd(cerr, "          print: " + torf(print));
-        logd(cerr, "          parse: " + torf(parse));
-        logd(cerr, "           send: " + torf(send));
-        logd(cerr, "          trans: " + torf(trans));
-        logd(cerr, "         intern: " + torf(intern));
-        logd(cerr, "  series_values: " + torf(series_values));
-        logd(cerr, "ce_parser_debug: " + torf(ce_parser_debug));
-        logd(cerr, "             ce: " + ce);
-        logd(cerr, "       function: " + function);
-        logd(cerr, "  use_checksums: " + torf(use_checksums));
+        logd("----------------------------------------------------");
+        logd("           name: " + name);
+        logd("          debug: " + torf(debug));
+        logd("          print: " + torf(print));
+        logd("          parse: " + torf(parse));
+        logd("           send: " + torf(send));
+        logd("          trans: " + torf(trans));
+        logd("         intern: " + torf(intern));
+        logd("  series_values: " + torf(series_values));
+        logd("ce_parser_debug: " + torf(ce_parser_debug));
+        logd("             ce: " + ce);
+        logd("       function: " + function);
+        logd("  use_checksums: " + torf(use_checksums));
     }
 
     try {
