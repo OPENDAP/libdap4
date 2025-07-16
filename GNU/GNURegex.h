@@ -26,6 +26,8 @@
 #ifndef _Regex_h
 #define _Regex_h 1
 
+#include "config.h"
+
 #ifndef USE_CPP_11_REGEX
 #define USE_CPP_11_REGEX 0
 #endif
