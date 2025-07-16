@@ -61,8 +61,8 @@ expr_test(7 "-w" "test.1" "i&i=j" "test.1d" "pass")
 expr_test(8 "-W" "test.1" "i&i=j" "test.1d" "pass")
 expr_test(9 "-w" "test.2" "s1" "test.2" "pass")
 expr_test(10 "-W" "test.2" "s1" "test.2" "pass")
-expr_test(11 "-w" "test.2" "s2" "test.2a" "xfail")
-expr_test(12 "-W" "test.2" "s2" "test.2a" "xfail")
+expr_test(11 "-w" "test.2" "s2" "test.2a" "pass")
+expr_test(12 "-W" "test.2" "s2" "test.2a" "pass")
 expr_test(13 "-w" "test.2" "s2,s3" "test.2b" "pass")
 expr_test(14 "-W" "test.2" "s2,s3" "test.2b" "pass")
 expr_test(15 "-w" "test.2" "s2[2:2:4],s3.o" "test.2c" "pass")
@@ -75,8 +75,8 @@ expr_test(20 "-W" "test.2" "s2[2:2:4].m,s2[2:2:4].l" "test.2e" "pass")
 
 expr_test(21 "-w" "test.2a" "s2[2:4].m[0:4],s2[2:4].l[0:5]" "test.2f" "pass")
 expr_test(22 "-W" "test.2a" "s2[2:4].m[0:4],s2[2:4].l[0:5]" "test.2f" "pass")
-expr_test(23 "-w" "test.3" "i[1:10]" "test.3" "xfail")
-expr_test(24 "-W" "test.3" "i[1:10]" "test.3" "xfail")
+expr_test(23 "-w" "test.3" "i[1:10]" "test.3" "pass")
+expr_test(24 "-W" "test.3" "i[1:10]" "test.3" "pass")
 
 # Test the new code to limit reversed index values. 10:10 should pass. jhrg 2/3/11
 expr_test(25 "-w" "test.3" "i[10:10]" "test.3a" "pass")
@@ -130,6 +130,7 @@ expr_test(57 "-w" "test.8" "\"data%20name,y\"" "test.8b" "pass")
 expr_test(58 "-W" "test.8" "\"data%20name,y\"" "test.8b" "pass")
 expr_test(59 "-w" "test.9" "\"Data-Set-2.fakeDim0[0:3],Data-Set-2.fakeDim1[0:3]\"" "test.9" "pass")
 expr_test(60 "-W" "test.9" "\"Data-Set-2.fakeDim0[0:3],Data-Set-2.fakeDim1[0:3]\"" "test.9" "pass")
+
 expr_test(61 "-w" "test.5" "g[1:4:9]" "test.5e" "pass")
 expr_test(62 "-W" "test.5" "g[1:4:9]" "test.5e" "pass")
 expr_test(63 "-w" "test.6" "i[1:4:9]" "test.6c" "pass")
@@ -144,6 +145,7 @@ expr_test(68 "-W" "test.6" "scale\(i[2:4][3:6],2\)" "test.6.func2" "pass")
 
 expr_test(69 "-w" "test.5" "scale\(i[3],2\)" "test.5.func3" "pass")
 expr_test(70 "-W" "test.5" "scale\(i[3],2\)" "test.5.func3" "pass")
+
 # This doesn't work yet 10/23/13 jhrg
 expr_test(71 "-w" "test.5" "scale\(j,2\)" "test.5.func4" "pass")
 expr_test(72 "-W" "test.5" "scale\(j,2\)" "test.5.func4" "pass")
