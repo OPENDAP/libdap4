@@ -148,7 +148,7 @@ static void read_response_from_file(D4Connect *url, DMR &dmr, Response &r, bool 
 }
 
 static void print_group_data(D4Group *g, bool print_rows = false) {
-    for (auto i = g->var_begin(), e = g->var_end(); i != e; ++i) {
+    for(const auto var: g->variables()) {
         if (print_rows && (*i)->type() == dods_sequence_c)
             dynamic_cast<D4Sequence &>(**i).print_val_by_rows(cout);
         else
