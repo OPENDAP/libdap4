@@ -1,0 +1,23 @@
+The complete DDS:
+Dataset {
+    Int32 i[20];
+    Int32 j;
+    String s;
+    Grid {
+      Array:
+        Float64 val[length = 5][width = 6][height = 7];
+      Maps:
+        Float64 length[5];
+        Float64 width[6];
+        Float64 height[7];
+    } g;
+} test1;
+The data:
+Grid {
+  Array:
+    Float64 val[length = 3][width = 1][height = 1];
+  Maps:
+    Float64 length[3];
+    Float64 width[1];
+    Float64 height[1];
+} g = {  Array: {{{99.999}},{{99.999}},{{99.999}}}  Maps: {99.999, 99.999, 99.999}, {99.999}, {99.999} };
