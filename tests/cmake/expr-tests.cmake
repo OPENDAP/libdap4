@@ -107,10 +107,11 @@ expr_test(60 "-W" "test.9" "\"Data-Set-2.fakeDim0[0:3],Data-Set-2.fakeDim1[0:3]\
 
 # These should fail - that is, there should be stuff in stderr in addition to stdout.
 # The baselines appear malformed. 7/16/25 jhrg
-expr_test(61 "-w" "test.5" "g[1:4:9]" "test.5e.base" "xfail")
-expr_test(62 "-W" "test.5" "g[1:4:9]" "test.5e.base" "xfail")
-expr_test(63 "-w" "test.6" "i[1:4:9]" "test.6c.base" "xfail")
-expr_test(64 "-W" "test.6" "i[1:4:9]" "test.6c.base" "xfail")
+# Baselines fixed. 7/17/25 jhrg
+expr_test(61 "-w" "test.5" "g[1:4:9]" "test.5e.base" "pass")
+expr_test(62 "-W" "test.5" "g[1:4:9]" "test.5e.base" "pass")
+expr_test(63 "-w" "test.6" "i[1:4:9]" "test.6c.base" "pass")
+expr_test(64 "-W" "test.6" "i[1:4:9]" "test.6c.base" "pass")
 
 # New tests for server functions that take arrays and include array projections
 # Added 10/23/13 jhrg
@@ -168,28 +169,6 @@ expr_test(108 "-bW" "test.d" "i&i<2000" "test.df.base" "pass")
 expr_test(109 "-bw" "test.d" "i,f,a&i<0" "test.dg.base" "pass")
 expr_test(110 "-bW" "test.d" "i,f,a&i<0" "test.dg.base" "pass")
 
-## The remaining test
-#EXPR_RESPONSE_B([test.61], [i], [data.61a], [pass])
-#EXPR_RESPONSE_B([test.61], [ i[[0:2]][[0:2]] ], [data.61b], [pass])
-#EXPR_RESPONSE_B([test.61], [ i[[1:2]][[0:2]] ], [data.61c], [pass])
-#EXPR_RESPONSE_B([test.61], [ i[[1:2]][[1:2]] ], [data.61d], [pass])
-#EXPR_RESPONSE_B([test.c0], [SST], [data.z1], [pass])
-#
-#EXPR_RESPONSE_B([test.f], [""], [test.fa], [pass])
-#EXPR_RESPONSE_B([test.f], ["&i<3000"], [test.fb], [pass])
-#
-## tests for zero-length arrays. jhrg 1/28/16
-#
-#EXPR_RESPONSE_B([test.21.dds], [""], [data.21], [pass])
-#EXPR_RESPONSE_B([test.22.dds], [""], [data.22], [pass])
-#EXPR_RESPONSE_B([test.23.dds], [""], [data.23], [pass])
-#EXPR_RESPONSE_B([test.24.dds], [""], [data.24], [pass])
-#
-## Empty Structures. jhrg 1/29/16
-#
-#EXPR_RESPONSE_B([test.25.dds], [""], [data.25], [pass])
-#EXPR_RESPONSE_B([test.26.dds], [""], [data.26], [pass])
-
 expr_test(111 "-bw" "test.61" "i" "data.61a.base" "pass")
 expr_test(112 "-bW" "test.61" "i" "data.61a.base" "pass")
 
@@ -223,55 +202,16 @@ expr_test(130 "-bW" "test.23.dds" "" "data.23.base" "pass")
 expr_test(131 "-bw" "test.24.dds" "" "data.24.base" "pass")
 expr_test(132 "-bW" "test.24.dds" "" "data.24.base" "pass")
 
+## Empty Structures. jhrg 1/29/16
 expr_test(133 "-bw" "test.25.dds" "" "data.25.base" "pass")
 expr_test(134 "-bW" "test.25.dds" "" "data.25.base" "pass")
 
 expr_test(135 "-bw" "test.26.dds" "" "data.26.base" "pass")
 expr_test(136 "-bW" "test.26.dds" "" "data.26.base" "pass")
 
-#
 ## Test error responses. None of the parsers should allow any part of
 ## the malformed CE into the error messages. jhrg 4/15/20
-#
-#EXPR_RESPONSE_E([test.1], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.1.error], [pass])
-#EXPR_RESPONSE_E([test.2], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.2.error], [pass])
-#EXPR_RESPONSE_E([test.3], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.3.error], [pass])
-#EXPR_RESPONSE_E([test.5], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.5.error], [pass])
-#
-#dnl Test errant array and grid index values (stop < start).
-#dnl These tests should show the parser returning an error message. jhrg 2/3/22
-#
-#EXPR_RESPONSE_E([test.3], [i[[10:9]]], [test.3b.error], [pass])
-#EXPR_RESPONSE_E([test.3], [i[[4:1]]], [test.3c.error], [pass])
-#
-#EXPR_RESPONSE_E([test.5], [g[[2:2:1]][[0]][[0]]], [test.5a.error], [pass])
-#EXPR_RESPONSE_E([test.5], [g[[2:4]][[0]][[1:0]]], [test.5b.error], [pass])
-#
-#EXPR_RESPONSE_P([test.a], [[s[3:0]] -b], [test.a.error], [pass])
-
-#m4_define([EXPR_RESPONSE_E], [dnl
-#		AT_SETUP([Error: $1 $2 ($4)])
-#		AT_KEYWORDS([expr])
-#
-#		AS_IF([test -z "$at_verbose"], [echo "COMMAND: expr-test -e -p expr-testsuite/$1 -k $2"])
-#
-#		dds=$abs_srcdir/expr-testsuite/$1
-#		ce=$2
-#
-#		AS_IF([test -n "$baselines" -a x$baselines = xyes],
-#		[
-#		AT_CHECK([$abs_builddir/expr-test -e -p $dds -k $ce], [0], [stdout], [stderr])
-#		AT_CHECK([mv stderr $abs_srcdir/expr-testsuite/$3.tmp])
-#		],
-#		[
-#		AT_CHECK([$abs_builddir/expr-test -e -p $dds -k $ce], [0], [stdout], [stderr])
-#		AT_CHECK([diff -b -B $abs_srcdir/expr-testsuite/$3 stderr], [0])
-#		AT_XFAIL_IF([test z$4 = zxfail])
-#		])
-#
-#		AT_CLEANUP
-#		])
-
+## Morphed to cmake 7/17/25 jhrg
 function(expr_error_test test_num option input ce baseline xfail)
 	set(testname "expr_test_${test_num}")
 	set(input "${CMAKE_CURRENT_SOURCE_DIR}/expr-testsuite/${input}")
@@ -300,5 +240,5 @@ expr_error_test(142 "-ep"  "test.3" "i[4:1]" "test.3c.error" "pass")
 expr_error_test(143 "-ep"  "test.5" "g[2:2:1][0][0]" "test.5a.error" "pass")
 expr_error_test(144 "-ep"  "test.5" "g[2:4][0][1:0]" "test.5b.error" "pass")
 
-expr_test(145 "-bw"  "test.a" "s[3:0]" "test.a.error.base" "xfail")
-expr_test(146 "-bW"  "test.a" "s[3:0]" "test.a.error.base" "xfail")
+expr_test(145 "-bw"  "test.a" "s[3:0]" "test.a.error.base" "pass")
+expr_test(146 "-bW"  "test.a" "s[3:0]" "test.a.error.base" "pass")

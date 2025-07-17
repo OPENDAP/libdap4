@@ -131,7 +131,7 @@ function(add_dmr_trans_test test_input byte_order)
 
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
-			"\"$<TARGET_FILE:dmr-test>\" -x -t \"${input}\" > \"${output}\" 2>&1; \
+			"\"$<TARGET_FILE:dmr-test>\" -C -x -t \"${input}\" > \"${output}\" 2>&1; \
 			if test \"${byte_order}\" = \"universal\"; then \
 				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
 				diff -b -B \"${baseline}\" \"${output}_univ\"; \
@@ -267,7 +267,7 @@ function(add_dmr_trans_ce_test test_input ce test_baseline byte_order)
 
 	add_test(NAME ${testname}
 			COMMAND /bin/sh -c
-			"$<TARGET_FILE:dmr-test> -x -t ${input} -c \'${ce}\' > ${output} 2>&1; \
+			"$<TARGET_FILE:dmr-test> -C -x -t ${input} -c \'${ce}\' > ${output} 2>&1; \
 			if test \"${byte_order}\" = \"universal\"; then \
 				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@removed checksum@' \"${output}\" > \"${output}_univ\"; \
 				diff -b -B \"${baseline}\" \"${output}_univ\"; \
@@ -439,7 +439,7 @@ function(add_dmr_trans_func_test test_input func ce test_baseline byte_order)
 
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
-			"\"$<TARGET_FILE:dmr-test>\" -x -t \"${input}\" -f \"${func}\" -c \"${ce}\" > \"${output}\" 2>&1; \
+			"\"$<TARGET_FILE:dmr-test>\" -C -x -t \"${input}\" -f \"${func}\" -c \"${ce}\" > \"${output}\" 2>&1; \
 			if test \"${byte_order}\" = \"universal\"; then \
 				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@removed checksum@' \"${output}\" > \"${output}_univ\"; \
 				diff -b -B \"${baseline}\" \"${output}_univ\"; \
@@ -524,7 +524,7 @@ function(add_dmr_trans_series_test test_input ce test_baseline xfail)
 
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
-			"\"$<TARGET_FILE:dmr-test>\" -x -e -t \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
+			"\"$<TARGET_FILE:dmr-test>\" -C -x -e -t \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
 			sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
 			mv \"${output}_univ\" \"${output}\"; \
 			diff -b -B \"${baseline}\" \"${output}\""
