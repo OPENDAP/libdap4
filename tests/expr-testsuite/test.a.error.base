@@ -5,3 +5,4 @@ Dataset {
         Int32 j;
     } s;
 } testa;
+The start value of an index into a sequence is past the stop value.
