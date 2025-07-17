@@ -12,3 +12,4 @@ Dataset {
         Float64 height[7];
     } g;
 } test1;
+Error: The number of dimensions in the constraint must match the number in the grid.
