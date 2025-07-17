@@ -91,6 +91,9 @@ private:
     bool global_dio_flag = false;
 
     bool utf8_xml_encoding = false;
+
+    bool d_use_dap4_checksums = false;
+
     friend class DMRTest;
     friend class MockDMR;
 
@@ -233,6 +236,9 @@ public:
     // The following methods are for utf8_encoding.
     bool get_utf8_xml_encoding() const { return utf8_xml_encoding; }
     void set_utf8_xml_encoding(bool encoding_value = true) { utf8_xml_encoding = encoding_value; }
+
+    bool use_checksums() const { return d_use_dap4_checksums; }
+    void use_checksums(bool value) { d_use_dap4_checksums = value; }
 };
 
 } // namespace libdap

@@ -28,6 +28,7 @@
 
 #include <fstream>
 #include <memory>
+#include <sstream>
 
 #include "crc.h"
 
@@ -58,6 +59,30 @@
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeouts.
 
 using namespace libdap;
+using namespace std;
+
+/**
+ * @brief Converts a bool to a string of either "true" or "false" as appropriate.
+ * @param b The boolean value to stringify.
+ * @return Either "true" or "false" according to b.
+ */
+string torf(bool b) { return {b ? "true" : "false"}; }
+
+/**
+ * @brief Simple log formater
+ * @param ostrm The stream to write to
+ * @param msg The message to write.
+ */
+void logd(const string &msg, ostream &ostrm = cerr) {
+    // Create a std::stringstream from the string so we can use std::getline()
+    std::stringstream ss(msg);
+    std::string msg_line;
+
+    // Read lines from the stringstream until the end
+    while (std::getline(ss, msg_line)) {
+        ostrm << "# " << msg_line << "\n";
+    }
+}
 
 /**
  * Open the named XML file and parse it, assuming that it contains a DMR.
@@ -66,9 +91,10 @@ using namespace libdap;
  * @param print Once parsed, should the DMR object be printed?
  * @return true if the parse worked, false otherwise
  */
-DMR *test_dap4_parser(const string &name, bool debug, bool print) {
+DMR *test_dap4_parser(const string &name, bool use_checksums, bool debug, bool print) {
     D4TestTypeFactory factory;
     auto dataset = make_unique<DMR>(&factory, path_to_filename(name));
+    dataset->use_checksums(use_checksums);
 
     D4ParserSax2 parser;
     if (name == "-") {
@@ -126,6 +152,7 @@ string send_data(DMR *dataset, const string &constraint, const string &function,
     // function parse/eval code that immediately follows. jhrg 3/12/14
     D4TestTypeFactory d4_factory;
     auto function_result = make_unique<DMR>(&d4_factory, "function_results");
+    function_result->use_checksums(dataset->use_checksums());
 
     // The Function Parser
     if (!function.empty()) {
@@ -185,9 +212,10 @@ void intern_data(DMR *dataset, bool series_values) {
     dataset->root()->intern_data(/*checksum, *dataset, eval*/);
 }
 
-DMR *read_data_plain(const string &file_name, bool debug) {
+DMR *read_data_plain(const string &file_name, bool use_checksums, bool debug) {
     auto factory = make_unique<D4BaseTypeFactory>();
     auto dmr = make_unique<DMR>(factory.get(), "Test_data");
+    dmr->use_checksums(use_checksums);
 
     fstream in(file_name.c_str(), ios::in | ios::binary);
 
@@ -231,6 +259,7 @@ static void usage() {
          << "i: Intern values (ce and function will be ignored by this)" << endl
          << "c: Constraint expression " << endl
          << "f: Function expression" << endl
+         << "C: Use DAP4 Checksums" << endl
          << "d: turn on detailed xml parser debugging" << endl
          << "D: turn on detailed ce parser debugging" << endl
          << "x: print the binary object(s) built by the parse, send, trans or intern operations." << endl
@@ -238,7 +267,7 @@ static void usage() {
 }
 
 int main(int argc, char *argv[]) {
-    GetOpt getopt(argc, argv, "p:s:t:i:c:f:xdDeh?");
+    GetOpt getopt(argc, argv, "p:s:t:i:c:f:xdDehC?");
     int option_char;
     bool parse = false;
     bool debug = false;
@@ -251,6 +280,7 @@ int main(int argc, char *argv[]) {
     string name;
     string ce;
     string function;
+    bool use_checksums = false;
 
     // process options
 
@@ -278,6 +308,10 @@ int main(int argc, char *argv[]) {
 
         case 'c':
             ce = getopt.optarg;
+            break;
+
+        case 'C':
+            use_checksums = true;
             break;
 
         case 'f':
@@ -317,9 +351,25 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    if (debug) {
+        logd("----------------------------------------------------");
+        logd("           name: " + name);
+        logd("          debug: " + torf(debug));
+        logd("          print: " + torf(print));
+        logd("          parse: " + torf(parse));
+        logd("           send: " + torf(send));
+        logd("          trans: " + torf(trans));
+        logd("         intern: " + torf(intern));
+        logd("  series_values: " + torf(series_values));
+        logd("ce_parser_debug: " + torf(ce_parser_debug));
+        logd("             ce: " + ce);
+        logd("       function: " + function);
+        logd("  use_checksums: " + torf(use_checksums));
+    }
+
     try {
         if (parse) {
-            DMR *dmr = test_dap4_parser(name, debug, print);
+            DMR *dmr = test_dap4_parser(name, use_checksums, debug, print);
 
             // The CE Parser
             if (!ce.empty()) {
@@ -365,7 +415,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (send) {
-            DMR *dmr = test_dap4_parser(name, debug, print);
+            DMR *dmr = test_dap4_parser(name, use_checksums, debug, print);
 
             string file_name = send_data(dmr, ce, function, series_values, ce_parser_debug);
             if (print)
@@ -374,11 +424,11 @@ int main(int argc, char *argv[]) {
         }
 
         if (trans) {
-            DMR *dmr = test_dap4_parser(name, debug, print);
+            DMR *dmr = test_dap4_parser(name, use_checksums, debug, print);
             string file_name = send_data(dmr, ce, function, series_values, ce_parser_debug);
             delete dmr;
 
-            DMR *client = read_data_plain(file_name, debug);
+            DMR *client = read_data_plain(file_name, use_checksums, debug);
 
             if (print) {
                 XMLWriter xml;
@@ -395,7 +445,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (intern) {
-            DMR *dmr = test_dap4_parser(name, debug, print);
+            DMR *dmr = test_dap4_parser(name, use_checksums, debug, print);
             intern_data(dmr, /*ce,*/ series_values);
 
             if (print) {
