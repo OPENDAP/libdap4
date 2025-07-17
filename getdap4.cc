@@ -369,7 +369,6 @@ void get_remote_dap4(HTTPConnect &http, const string &url_string, const bool rep
         if (!read_data(r->get_stream())) {
             return;
         }
-
         delete r;
 
     } catch (Error &e) {
@@ -466,13 +465,16 @@ int main(int argc, char *argv[]) {
                 url.set_xdap_protocol(dap_client_major, dap_client_minor);
 
             if (url.is_local()) {
+                // Read the DAP4 response from a local file.
                 read_local_dap4(url, name, get_dmr_flag, get_dap4_data_flag, mime_headers, print_rows, use_checksums,
                                 report_errors, verbose);
             } else if (get_dmr_flag) {
+                // Retrieve the DAP4 DMR for url.
                 for (int j = 0; j < times; ++j) {
                     get_dmr(url, constraint_expression, compute_size, report_errors, verbose);
                 }
             } else if (get_dap4_data_flag) {
+                // Retrieve the DAP4 Data Response for url.
                 for (int j = 0; j < times; ++j) {
                     get_dap4_data(url, constraint_expression, use_checksums, print_rows, report_errors, verbose);
                 }
