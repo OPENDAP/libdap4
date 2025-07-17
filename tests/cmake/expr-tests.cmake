@@ -82,8 +82,9 @@ expr_test(24 "-W" "test.3" "i[1:10]" "test.3" "pass")
 expr_test(25 "-w" "test.3" "i[10:10]" "test.3a" "pass")
 expr_test(26 "-W" "test.3" "i[10:10]" "test.3a" "pass")
 
-expr_test(27 "-w" "test.4" "s&s=~\"^Silly.*\"" "test.4" "xfail") # these fail because the CE quoting is broken.
-expr_test(28 "-W" "test.4" "s&s=~\"^Silly.*\"" "test.4" "xfail")
+# NB: \\ -> \ and \" -> " so \\\" -> \" which then becomes " inside the quoted string. 7/16/25 jhrg
+expr_test(27 "-w" "test.4" "s&s=~\\\"^Silly.*\\\"" "test.4" "pass")
+expr_test(28 "-W" "test.4" "s&s=~\\\"^Silly.*\\\"" "test.4" "pass")
 
 # In changing the TestStr class so that it writes a constant value (Silly ...: 1)
 # I had to hack this test to use the -b option to expr-test. EXPR_RESPONSE_P uses
@@ -91,14 +92,14 @@ expr_test(28 "-W" "test.4" "s&s=~\"^Silly.*\"" "test.4" "xfail")
 # actual test macro. 12/2/13 jhrg
 #
 
-expr_test(29 "-bw" "test.e" "names.s&names.s=~\".*:.3\"" "test.ea" "xfail") # these fail because the CE quoting is broken.
-expr_test(30 "-bW" "test.e" "names.s&names.s=~\".*:.3\"" "test.ea" "xfail")
+expr_test(29 "-bw" "test.e" "names.s&names.s=~\\\".*:.3\\\"" "test.ea" "pass")
+expr_test(30 "-bW" "test.e" "names.s&names.s=~\\\".*:.3\\\"" "test.ea" "pass")
 
 # since 'Silly ...:5' will never be produced, this tests what happens when the sequence
 # does not contain the value. Note that this test does not have to be rewritten because
 # of the change to the TestStr code. 12/2/13 jhrg
-expr_test(31 "-w" "test.e" "names.s&names.s=~\".*: 5\"" "test.eb" "xfail") # these will also fail, see above
-expr_test(32 "-W" "test.e" "names.s&names.s=~\".*: 5\"" "test.eb" "xfail")
+expr_test(31 "-w" "test.e" "names.s&names.s=~\\\".*: 5\\\"" "test.eb" "pass")
+expr_test(32 "-W" "test.e" "names.s&names.s=~\\\".*: 5\\\"" "test.eb" "pass")
 
 expr_test(33 "-w" "test.5" "g[0:2:4][0][0]" "test.5" "pass")
 expr_test(34 "-W" "test.5" "g[0:2:4][0][0]" "test.5" "pass")
@@ -193,3 +194,44 @@ expr_test(107 "-bw" "test.d" "i&i<2000" "test.df" "pass")
 expr_test(108 "-bW" "test.d" "i&i<2000" "test.df" "pass")
 expr_test(109 "-bw" "test.d" "i,f,a&i<0" "test.dg" "pass")
 expr_test(110 "-bW" "test.d" "i,f,a&i<0" "test.dg" "pass")
+
+## The remaining test
+#EXPR_RESPONSE_B([test.61], [i], [data.61a], [pass])
+#EXPR_RESPONSE_B([test.61], [ i[[0:2]][[0:2]] ], [data.61b], [pass])
+#EXPR_RESPONSE_B([test.61], [ i[[1:2]][[0:2]] ], [data.61c], [pass])
+#EXPR_RESPONSE_B([test.61], [ i[[1:2]][[1:2]] ], [data.61d], [pass])
+#EXPR_RESPONSE_B([test.c0], [SST], [data.z1], [pass])
+#
+#EXPR_RESPONSE_B([test.f], [""], [test.fa], [pass])
+#EXPR_RESPONSE_B([test.f], ["&i<3000"], [test.fb], [pass])
+#
+## tests for zero-length arrays. jhrg 1/28/16
+#
+#EXPR_RESPONSE_B([test.21.dds], [""], [data.21], [pass])
+#EXPR_RESPONSE_B([test.22.dds], [""], [data.22], [pass])
+#EXPR_RESPONSE_B([test.23.dds], [""], [data.23], [pass])
+#EXPR_RESPONSE_B([test.24.dds], [""], [data.24], [pass])
+#
+## Empty Structures. jhrg 1/29/16
+#
+#EXPR_RESPONSE_B([test.25.dds], [""], [data.25], [pass])
+#EXPR_RESPONSE_B([test.26.dds], [""], [data.26], [pass])
+#
+## Test error responses. None of the parsers should allow any part of
+## the malformed CE into the error messages. jhrg 4/15/20
+#
+#EXPR_RESPONSE_E([test.1], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.1.error], [pass])
+#EXPR_RESPONSE_E([test.2], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.2.error], [pass])
+#EXPR_RESPONSE_E([test.3], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.3.error], [pass])
+#EXPR_RESPONSE_E([test.5], [d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1], [test.5.error], [pass])
+#
+#dnl Test errant array and grid index values (stop < start).
+#dnl These tests should show the parser returning an error message. jhrg 2/3/22
+#
+#EXPR_RESPONSE_E([test.3], [i[[10:9]]], [test.3b.error], [pass])
+#EXPR_RESPONSE_E([test.3], [i[[4:1]]], [test.3c.error], [pass])
+#
+#EXPR_RESPONSE_E([test.5], [g[[2:2:1]][[0]][[0]]], [test.5a.error], [pass])
+#EXPR_RESPONSE_E([test.5], [g[[2:4]][[0]][[1:0]]], [test.5b.error], [pass])
+#
+#EXPR_RESPONSE_P([test.a], [[s[3:0]] -b], [test.a.error], [pass])
