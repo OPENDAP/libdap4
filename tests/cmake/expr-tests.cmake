@@ -12,7 +12,10 @@ function(expr_test test_num option input ce baseline xfail)
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;expr")
-	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+	if(${option} STREQUAL "-w" OR ${option} STREQUAL "-bw")
+		# until we fix HYRAX-1843 the whole-enchilada tests must be run serially. 7/17/25 jhrg
+		set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+	endif()
 	if("${xfail}" STREQUAL "xfail")
 		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
 	endif()
@@ -282,12 +285,11 @@ function(expr_error_test test_num option input ce baseline xfail)
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;expr-error")
-	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+	# set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
 	if("${xfail}" STREQUAL "xfail")
 		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
 	endif()
 endfunction()
-
 
 expr_error_test(137 "-ep"  "test.1" "d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1" "test.1.error" "pass")
 expr_error_test(138 "-ep"  "test.2" "d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1" "test.2.error" "pass")
