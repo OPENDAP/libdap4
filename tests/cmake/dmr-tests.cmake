@@ -2,45 +2,62 @@
 ## one by one since various tests will use different functions. 7/10/25 jhrg
 ## Also, since the inputs are each listed explicitly, they are not paths that have to
 ## be trimmed using 'get_filename_component(fullname "${dds_filename}" NAME)'. 7/11/25 jhrg
-function(add_dmr_parse_test test_input)
-	# Here the name of the DMR file is morphed into something that will work
-	# as a cmake name (dots are not allowed in cmake names). 7/8/25 jhrg
-	# get_filename_component(fullname "${dmr_filename}" NAME)
-	# strip just "test.1.xml" → raw="test.1"
-	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
-	# sanitize; test.1 → test_1
-	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_parse_${raw}")
+#function(add_dmr_parse_test test_input)
+#	# Here the name of the DMR file is morphed into something that will work
+#	# as a cmake name (dots are not allowed in cmake names). 7/8/25 jhrg
+#	# get_filename_component(fullname "${dmr_filename}" NAME)
+#	# strip just "test.1.xml" → raw="test.1"
+#	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
+#	# sanitize; test.1 → test_1
+#	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_parse_${raw}")
+#
+#	# Paths
+#	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
+#	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}.baseline")
+#	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
+#
+#	# Add the CTest entry. Here the shell is used so that we can employ redirection.
+#	# The extra double quotes are 'best practice' for cmake, but really not needed here
+#	# because we know that $<TARGET_FILE:dmr-test> and the various variables (e.g. ${input})
+#	# do not have spaces. The extra backslash characters make it harder to decipher
+#	# what is going on. 7/8/25 jhrg
+#	add_test(NAME ${testname}
+#			COMMAND /bin/sh "-c"
+#			# 1) run das-test, redirect all output into a temp file
+#			# 2) diff that file against the baseline"
+#			"\"$<TARGET_FILE:dmr-test>\" -x -p \"${input}\" > \"${output}\" 2>&1; \
+#			diff -b -B \"${baseline}\" \"${output}\""
+#	)
+#	# This makes it so we can run just these tests and also makes it easy to run the
+#	# unit tests _before_ the integration tests with a 'check' target. See the top-leve
+#	# CMakeLists file. 7/8/25 jhrg
+#	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr")
+#endfunction()
+#
+##AT_CHECK([$abs_builddir/dmr-test -x -p $input -c $ce], [ignore], [stdout], [stderr])
+##AT_CHECK([cat stdout stderr > tmp])
+##AT_CHECK([diff -b -B $baseline tmp], [0])
+##AT_XFAIL_IF([test "z$3" = "zxfail"])
+#function(add_dmr_parse_ce_test test_input ce test_baseline)
+#	# string(REGEX REPLACE "\\.xml$" "" raw "${test_baseline}")
+#	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_parse_ce_${test_baseline}")
+#
+#	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
+#	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_baseline}")
+#	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
+#
+#	add_test(NAME ${testname}
+#			COMMAND /bin/sh "-c"
+#			# 1) run das-test, redirect all output into a temp file
+#			# 2) diff that file against the baseline"
+#			"\"$<TARGET_FILE:dmr-test>\" -x -p \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
+#			diff -b -B \"${baseline}\" \"${output}\""
+#	)
+#	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr,parse-ce")
+#endfunction()
 
-	# Paths
-	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
-	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}.baseline")
-	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
-
-	# Add the CTest entry. Here the shell is used so that we can employ redirection.
-	# The extra double quotes are 'best practice' for cmake, but really not needed here
-	# because we know that $<TARGET_FILE:dmr-test> and the various variables (e.g. ${input})
-	# do not have spaces. The extra backslash characters make it harder to decipher
-	# what is going on. 7/8/25 jhrg
-	add_test(NAME ${testname}
-			COMMAND /bin/sh "-c"
-			# 1) run das-test, redirect all output into a temp file
-			# 2) diff that file against the baseline"
-			"\"$<TARGET_FILE:dmr-test>\" -x -p \"${input}\" > \"${output}\" 2>&1; \
-			diff -b -B \"${baseline}\" \"${output}\""
-	)
-	# This makes it so we can run just these tests and also makes it easy to run the
-	# unit tests _before_ the integration tests with a 'check' target. See the top-leve
-	# CMakeLists file. 7/8/25 jhrg
-	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr")
-endfunction()
-
-#AT_CHECK([$abs_builddir/dmr-test -x -p $input -c $ce], [ignore], [stdout], [stderr])
-#AT_CHECK([cat stdout stderr > tmp])
-#AT_CHECK([diff -b -B $baseline tmp], [0])
-#AT_XFAIL_IF([test "z$3" = "zxfail"])
-function(add_dmr_parse_ce_test test_input ce test_baseline)
-	# string(REGEX REPLACE "\\.xml$" "" raw "${test_baseline}")
-	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_parse_ce_${test_baseline}")
+function(dmr_parse_ce_test test_number test_input ce test_baseline)
+	set(testname "dmr_parse_ce_test_${test_number}")
 
 	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
 	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_baseline}")
@@ -53,102 +70,71 @@ function(add_dmr_parse_ce_test test_input ce test_baseline)
 			"\"$<TARGET_FILE:dmr-test>\" -x -p \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
 			diff -b -B \"${baseline}\" \"${output}\""
 	)
-	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr,parse-ce")
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr,dmr-parse")
+	if("${xfail}" STREQUAL "xfail")
+		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
+	endif()
 endfunction()
 
+# DMR parse+CE integration tests, using dmr_parse_ce_test(test_number, test_input, ce, test_baseline)
 
-add_dmr_parse_test(test_simple_1.xml)
-add_dmr_parse_test(test_simple_2.xml)
-add_dmr_parse_test(test_simple_3.xml)
+dmr_parse_ce_test( 1  test_simple_1.xml            ""  test_simple_1.xml.baseline)
+dmr_parse_ce_test( 2  test_simple_2.xml            ""  test_simple_2.xml.baseline)
+dmr_parse_ce_test( 3  test_simple_3.xml            ""  test_simple_3.xml.baseline)
 
-add_dmr_parse_test(test_simple_3_error_1.xml)
-add_dmr_parse_test(test_simple_3_error_2.xml)
-add_dmr_parse_test(test_simple_3_error_3.xml)
+dmr_parse_ce_test( 4  test_simple_3_error_1.xml    ""  test_simple_3_error_1.xml.baseline)
+dmr_parse_ce_test( 5  test_simple_3_error_2.xml    ""  test_simple_3_error_2.xml.baseline)
+dmr_parse_ce_test( 6  test_simple_3_error_3.xml    ""  test_simple_3_error_3.xml.baseline)
 
-add_dmr_parse_test(test_simple_4.xml)
-add_dmr_parse_test(test_simple_5.xml)
-add_dmr_parse_test(test_simple_6.xml)
-add_dmr_parse_test(test_simple_7.xml)
-add_dmr_parse_test(test_simple_8.xml)
-add_dmr_parse_test(test_simple_9.xml)
-add_dmr_parse_test(test_simple_9.1.xml)
-add_dmr_parse_test(test_simple_10.xml)
-add_dmr_parse_test(test_enum_grp.xml)
+dmr_parse_ce_test( 7  test_simple_4.xml            ""  test_simple_4.xml.baseline)
+dmr_parse_ce_test( 8  test_simple_5.xml            ""  test_simple_5.xml.baseline)
+dmr_parse_ce_test( 9  test_simple_6.xml            ""  test_simple_6.xml.baseline)
+dmr_parse_ce_test(10  test_simple_7.xml            ""  test_simple_7.xml.baseline)
+dmr_parse_ce_test(11  test_simple_8.xml            ""  test_simple_8.xml.baseline)
+dmr_parse_ce_test(12  test_simple_9.xml            ""  test_simple_9.xml.baseline)
+dmr_parse_ce_test(13  test_simple_9.1.xml          ""  test_simple_9.1.xml.baseline)
+dmr_parse_ce_test(14  test_simple_10.xml           ""  test_simple_10.xml.baseline)
+dmr_parse_ce_test(15  test_enum_grp.xml            ""  test_enum_grp.xml.baseline)
 
-add_dmr_parse_test(test_array_1.xml)
-add_dmr_parse_test(test_array_2.xml)
-add_dmr_parse_test(test_array_3.xml)
-add_dmr_parse_test(test_array_4.xml)
-add_dmr_parse_test(test_array_5.xml)
-add_dmr_parse_test(test_array_6.xml)
-add_dmr_parse_test(test_array_7.xml)
-add_dmr_parse_test(test_array_8.xml)
-add_dmr_parse_test(test_array_10.xml)
-add_dmr_parse_test(test_array_11.xml)
+dmr_parse_ce_test(16  test_array_1.xml             ""  test_array_1.xml.baseline)
+dmr_parse_ce_test(17  test_array_2.xml             ""  test_array_2.xml.baseline)
+dmr_parse_ce_test(18  test_array_3.xml             ""  test_array_3.xml.baseline)
+dmr_parse_ce_test(19  test_array_4.xml             ""  test_array_4.xml.baseline)
+dmr_parse_ce_test(20  test_array_5.xml             ""  test_array_5.xml.baseline)
+dmr_parse_ce_test(21  test_array_6.xml             ""  test_array_6.xml.baseline)
+dmr_parse_ce_test(22  test_array_7.xml             ""  test_array_7.xml.baseline)
+dmr_parse_ce_test(23  test_array_8.xml             ""  test_array_8.xml.baseline)
+dmr_parse_ce_test(24  test_array_10.xml            ""  test_array_10.xml.baseline)
+dmr_parse_ce_test(25  test_array_11.xml            ""  test_array_11.xml.baseline)
 
-add_dmr_parse_test(ignore_foreign_xml_1.xml)
-add_dmr_parse_test(ignore_foreign_xml_2.xml)
-add_dmr_parse_test(ignore_foreign_xml_3.xml)
+dmr_parse_ce_test(26  ignore_foreign_xml_1.xml     ""  ignore_foreign_xml_1.xml.baseline)
+dmr_parse_ce_test(27  ignore_foreign_xml_2.xml     ""  ignore_foreign_xml_2.xml.baseline)
+dmr_parse_ce_test(28  ignore_foreign_xml_3.xml     ""  ignore_foreign_xml_3.xml.baseline)
 
-add_dmr_parse_test(test_array_9.xml)
-add_dmr_parse_test(test_array_12.xml)
-add_dmr_parse_test(test_array_13.xml)
-add_dmr_parse_test(test_array_14.xml)
+dmr_parse_ce_test(29  test_array_9.xml             ""  test_array_9.xml.baseline)
+dmr_parse_ce_test(30  test_array_12.xml            ""  test_array_12.xml.baseline)
+dmr_parse_ce_test(31  test_array_13.xml            ""  test_array_13.xml.baseline)
+dmr_parse_ce_test(32  test_array_14.xml            ""  test_array_14.xml.baseline)
 
 # Test empty Structures. jhrg 1/29/16
-add_dmr_parse_test(test_simple_6.2.xml)
-add_dmr_parse_test(test_simple_6.3.xml)
+dmr_parse_ce_test(33  test_simple_6.2.xml          ""  test_simple_6.2.xml.baseline)
+dmr_parse_ce_test(34  test_simple_6.3.xml          ""  test_simple_6.3.xml.baseline)
 
 # Test DAP CE parse errors - ensure they don't leak the supplied
 # CE text into the error message. jhrg 4/15/20
-add_dmr_parse_ce_test("test_simple_1.xml" "nasty" "test_simple_1.xml.parse_ce_1")
+dmr_parse_ce_test(35 "test_simple_1.xml" "nasty" "test_simple_1.xml.parse_ce_1")
 # This string is 'd1rox<script>alert(1)</script>d55je=1' (%25 --> '%')
 # That is, the % is escaped in this text: %253c --> %3c --> '<'
-add_dmr_parse_ce_test("test_simple_1.xml" "d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1" "test_simple_1.xml.parse_ce_2")
+dmr_parse_ce_test(36 "test_simple_1.xml" "d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1" "test_simple_1.xml.parse_ce_2")
 
-add_dmr_parse_ce_test("test_simple_6.3.xml" "s.nasty" "test_simple_6.3.xml.parse_ce_1")
-add_dmr_parse_ce_test("test_simple_6.3.xml" "s.d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1" "test_simple_6.3.xml.parse_ce_2")
+dmr_parse_ce_test(37 "test_simple_6.3.xml" "s.nasty" "test_simple_6.3.xml.parse_ce_1")
+dmr_parse_ce_test(38 "test_simple_6.3.xml" "s.d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1" "test_simple_6.3.xml.parse_ce_2")
 
-add_dmr_parse_ce_test("vol_1_ce_12.xml" "temp[nasty]" "vol_1_ce_12.xml.parse_ce_1")
-add_dmr_parse_ce_test("vol_1_ce_12.xml" "temp[d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1]" "vol_1_ce_12.xml.parse_ce_2")
+dmr_parse_ce_test(39 "vol_1_ce_12.xml" "temp[nasty]" "vol_1_ce_12.xml.parse_ce_1")
+dmr_parse_ce_test(40 "vol_1_ce_12.xml" "temp[d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1]" "vol_1_ce_12.xml.parse_ce_2")
 
 # Test reversed array indices
-add_dmr_parse_ce_test("test_array_4.xml" "b[2:1][2:3]" "test_array_4.xml.error.base")
-
-
-## For byte_order == universal, this test removed the <Value> information
-## and replaces it with nothing (which is different from the trans + ce
-## tests which replace the <Value> info with 'removed checksum'). 7/12/25 jhrg
-function(add_dmr_trans_test test_input byte_order)
-	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
-	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_trans_${raw}")
-	if("${byte_order}" STREQUAL "universal")
-		set(testname "${testname}_univ")
-	endif()
-	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
-	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${byte_order}/${test_input}.trans_base")
-	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
-
-	add_test(NAME ${testname}
-			COMMAND /bin/sh "-c"
-			"\"$<TARGET_FILE:dmr-test>\" -C -x -t \"${input}\" > \"${output}\" 2>&1; \
-			if test \"${byte_order}\" = \"universal\"; then \
-				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
-				diff -b -B \"${baseline}\" \"${output}_univ\"; \
-			else \
-				diff -b -B \"${baseline}\" \"${output}\"; \
-			fi;"
-	)
-
-	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;trans")
-	# set_tests_properties(${testname} PROPERTIES RESOURCE_LOCKS "dmr-trans")
-	# These are run serially because the dmr-test program uses a temp file to
-	# store the 'binary data' amd different tests will make those binary data
-	# files with the same (i.e., conflicting) names. I tied using the
-	# RESOURCE_LOCKS property, but it was slower and did not stop the collisions.
-	# 7/12/25 jhrg
-	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
-endfunction()
+dmr_parse_ce_test(41 "test_array_4.xml" "b[2:1][2:3]" "test_array_4.xml.error.base")
 
 if(CMAKE_C_BYTE_ORDER STREQUAL "LITTLE_ENDIAN")
 	set(word_order "little-endian")
@@ -157,47 +143,6 @@ elseif(CMAKE_C_BYTE_ORDER STREQUAL "BIG_ENDIAN")
 else()
 	message(WARNING "Unknown byte order for C compiler")
 endif()
-
-add_dmr_trans_test(test_simple_1.xml "${word_order}")
-add_dmr_trans_test(test_simple_2.xml "${word_order}")
-add_dmr_trans_test(test_simple_3.xml "${word_order}")
-add_dmr_trans_test(test_simple_4.xml "${word_order}")
-add_dmr_trans_test(test_simple_5.xml "${word_order}")
-add_dmr_trans_test(test_simple_6.xml "${word_order}")
-add_dmr_trans_test(test_simple_7.xml "${word_order}")
-add_dmr_trans_test(test_simple_8.xml "${word_order}")
-add_dmr_trans_test(test_simple_9.xml "${word_order}")
-add_dmr_trans_test(test_simple_9.1.xml "${word_order}")
-add_dmr_trans_test(test_simple_10.xml "${word_order}")
-add_dmr_trans_test(test_enum_grp.xml "${word_order}")
-
-add_dmr_trans_test(test_array_1.xml "${word_order}")
-add_dmr_trans_test(test_array_2.xml "${word_order}")
-add_dmr_trans_test(test_array_3.xml "${word_order}")
-add_dmr_trans_test(test_array_4.xml "${word_order}")
-add_dmr_trans_test(test_array_5.xml "${word_order}")
-add_dmr_trans_test(test_array_6.xml "${word_order}")
-add_dmr_trans_test(test_array_7.xml "${word_order}")
-add_dmr_trans_test(test_array_8.xml "${word_order}")
-add_dmr_trans_test(test_array_10.xml "${word_order}")
-add_dmr_trans_test(test_array_11.xml "${word_order}")
-
-add_dmr_trans_test(test_array_9.xml "${word_order}")
-add_dmr_trans_test(test_array_12.xml "${word_order}")
-add_dmr_trans_test(test_array_13.xml "${word_order}")
-add_dmr_trans_test(test_array_14.xml "${word_order}")
-
-add_dmr_trans_test(test_simple_6.2.xml "${word_order}")
-add_dmr_trans_test(test_simple_6.3.xml "${word_order}")
-
-# Test out the 'universal' tests
-add_dmr_trans_test(test_array_9.xml "universal")
-add_dmr_trans_test(test_array_12.xml "universal")
-add_dmr_trans_test(test_array_13.xml "universal")
-add_dmr_trans_test(test_array_14.xml "universal")
-
-add_dmr_trans_test(test_simple_6.2.xml "universal")
-add_dmr_trans_test(test_simple_6.3.xml "universal")
 
 function(add_dmr_intern_test test_input)
 	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
@@ -249,6 +194,83 @@ add_dmr_intern_test(test_array_14.xml)
 
 add_dmr_intern_test(test_simple_6.2.xml)
 add_dmr_intern_test(test_simple_6.3.xml)
+
+## For byte_order == universal, this test removed the <Value> information
+## and replaces it with nothing (which is different from the trans + ce
+## tests which replace the <Value> info with 'removed checksum'). 7/12/25 jhrg
+function(add_dmr_trans_test test_input byte_order)
+	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
+	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_trans_${raw}")
+	if("${byte_order}" STREQUAL "universal")
+		set(testname "${testname}_univ")
+	endif()
+	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
+	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${byte_order}/${test_input}.trans_base")
+	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
+
+	add_test(NAME ${testname}
+			COMMAND /bin/sh "-c"
+			"\"$<TARGET_FILE:dmr-test>\" -Cxt \"${input}\" -c \"\" -f \"\" > \"${output}\" 2>&1; \
+			if test \"${byte_order}\" = \"universal\"; then \
+				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
+				diff -b -B \"${baseline}\" \"${output}_univ\"; \
+			else \
+				diff -b -B \"${baseline}\" \"${output}\"; \
+			fi;"
+	)
+
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;trans")
+	# set_tests_properties(${testname} PROPERTIES RESOURCE_LOCKS "dmr-trans")
+	# These are run serially because the dmr-test program uses a temp file to
+	# store the 'binary data' amd different tests will make those binary data
+	# files with the same (i.e., conflicting) names. I tied using the
+	# RESOURCE_LOCKS property, but it was slower and did not stop the collisions.
+	# 7/12/25 jhrg
+	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+endfunction()
+
+
+add_dmr_trans_test(test_simple_1.xml "${word_order}")
+add_dmr_trans_test(test_simple_2.xml "${word_order}")
+add_dmr_trans_test(test_simple_3.xml "${word_order}")
+add_dmr_trans_test(test_simple_4.xml "${word_order}")
+add_dmr_trans_test(test_simple_5.xml "${word_order}")
+add_dmr_trans_test(test_simple_6.xml "${word_order}")
+add_dmr_trans_test(test_simple_7.xml "${word_order}")
+add_dmr_trans_test(test_simple_8.xml "${word_order}")
+add_dmr_trans_test(test_simple_9.xml "${word_order}")
+add_dmr_trans_test(test_simple_9.1.xml "${word_order}")
+add_dmr_trans_test(test_simple_10.xml "${word_order}")
+add_dmr_trans_test(test_enum_grp.xml "${word_order}")
+
+add_dmr_trans_test(test_array_1.xml "${word_order}")
+add_dmr_trans_test(test_array_2.xml "${word_order}")
+add_dmr_trans_test(test_array_3.xml "${word_order}")
+add_dmr_trans_test(test_array_4.xml "${word_order}")
+add_dmr_trans_test(test_array_5.xml "${word_order}")
+add_dmr_trans_test(test_array_6.xml "${word_order}")
+add_dmr_trans_test(test_array_7.xml "${word_order}")
+add_dmr_trans_test(test_array_8.xml "${word_order}")
+add_dmr_trans_test(test_array_10.xml "${word_order}")
+add_dmr_trans_test(test_array_11.xml "${word_order}")
+
+add_dmr_trans_test(test_array_9.xml "${word_order}")
+add_dmr_trans_test(test_array_12.xml "${word_order}")
+add_dmr_trans_test(test_array_13.xml "${word_order}")
+add_dmr_trans_test(test_array_14.xml "${word_order}")
+
+add_dmr_trans_test(test_simple_6.2.xml "${word_order}")
+add_dmr_trans_test(test_simple_6.3.xml "${word_order}")
+
+# Test out the 'universal' tests
+add_dmr_trans_test(test_array_9.xml "universal")
+add_dmr_trans_test(test_array_12.xml "universal")
+add_dmr_trans_test(test_array_13.xml "universal")
+add_dmr_trans_test(test_array_14.xml "universal")
+
+add_dmr_trans_test(test_simple_6.2.xml "universal")
+add_dmr_trans_test(test_simple_6.3.xml "universal")
+
 
 # For these tests, use the baseline filename to form the test name
 # since those are unique while the inputs are used multiple times.
