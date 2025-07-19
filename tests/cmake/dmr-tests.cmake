@@ -226,6 +226,12 @@ dmr_trans_test(32  test_array_14.xml   "" ""  test_array_14.xml.trans_base   "un
 dmr_trans_test(33  test_simple_6.2.xml "" ""  test_simple_6.2.xml.trans_base "universal" )
 dmr_trans_test(34  test_simple_6.3.xml "" ""  test_simple_6.3.xml.trans_base "universal" )
 
+# Wrapping strings in "" is often not needed in cmake.
+#
+# I removed them for some of the CEs, but it seems somewhat pointless. Still,
+# it's good to know. Any function argument with a ';' needs to be double-quoted.
+# jhrg 7/19/25
+
 if(${word_order} STREQUAL "little-endian")
 	dmr_trans_test(35  test_array_3.1.dmr      "row;x"               ""  test_array_3.1.dmr.1.trans_base  ${word_order})
 	dmr_trans_test(36  test_array_3.1.dmr      "row=[2:3];x"         ""  test_array_3.1.dmr.2.trans_base  ${word_order})
