@@ -73,19 +73,19 @@ dmr_parse_ce_test(34  test_simple_6.3.xml          ""  test_simple_6.3.xml.basel
 
 # Test DAP CE parse errors - ensure they don't leak the supplied
 # CE text into the error message. jhrg 4/15/20
-dmr_parse_ce_test(35 test_simple_1.xml "nasty" "test_simple_1.xml.parse_ce_1")
+dmr_parse_ce_test(35 test_simple_1.xml nasty test_simple_1.xml.parse_ce_1)
 # This string is 'd1rox<script>alert(1)</script>d55je=1' (%25 --> '%')
 # That is, the % is escaped in this text: %253c --> %3c --> '<'
-dmr_parse_ce_test(36 test_simple_1.xml "d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1" "test_simple_1.xml.parse_ce_2")
+dmr_parse_ce_test(36 test_simple_1.xml d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1 test_simple_1.xml.parse_ce_2)
 
-dmr_parse_ce_test(37 test_simple_6.3.xml "s.nasty" "test_simple_6.3.xml.parse_ce_1")
-dmr_parse_ce_test(38 test_simple_6.3.xml "s.d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1" "test_simple_6.3.xml.parse_ce_2")
+dmr_parse_ce_test(37 test_simple_6.3.xml s.nasty test_simple_6.3.xml.parse_ce_1)
+dmr_parse_ce_test(38 test_simple_6.3.xml s.d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1 test_simple_6.3.xml.parse_ce_2)
 
-dmr_parse_ce_test(39 vol_1_ce_12.xml "temp[nasty]" "vol_1_ce_12.xml.parse_ce_1")
-dmr_parse_ce_test(40 vol_1_ce_12.xml "temp[d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1]" "vol_1_ce_12.xml.parse_ce_2")
+dmr_parse_ce_test(39 vol_1_ce_12.xml temp[nasty] vol_1_ce_12.xml.parse_ce_1)
+dmr_parse_ce_test(40 vol_1_ce_12.xml temp[d1rox%253cscript%253ealert%25281%2529%253c%252fscript%253ed55je=1] vol_1_ce_12.xml.parse_ce_2)
 
 # Test reversed array indices
-dmr_parse_ce_test(41 test_array_4.xml "b[2:1][2:3]" "test_array_4.xml.error.base")
+dmr_parse_ce_test(41 test_array_4.xml b[2:1][2:3] test_array_4.xml.error.base)
 
 if(CMAKE_C_BYTE_ORDER STREQUAL "LITTLE_ENDIAN")
 	set(word_order "little-endian")
@@ -230,8 +230,8 @@ if(${word_order} STREQUAL "little-endian")
 	dmr_trans_test(35  test_array_3.1.dmr      "row;x"               ""  test_array_3.1.dmr.1.trans_base  ${word_order})
 	dmr_trans_test(36  test_array_3.1.dmr      "row=[2:3];x"         ""  test_array_3.1.dmr.2.trans_base  ${word_order})
 	dmr_trans_test(37  test_array_3.1.dmr      "row=[2:3];x[0:1]"    ""  test_array_3.1.dmr.3.trans_base  ${word_order})
-	dmr_trans_test(38  test_array_3.1.dmr      "x[0:1]"              ""  test_array_3.1.dmr.4.trans_base  ${word_order})
-	dmr_trans_test(39  test_array_3.1.dmr      "x"                   ""  test_array_3.1.dmr.5.trans_base  ${word_order})
+	dmr_trans_test(38  test_array_3.1.dmr      x[0:1]              ""  test_array_3.1.dmr.4.trans_base  ${word_order})
+	dmr_trans_test(39  test_array_3.1.dmr      x                   ""  test_array_3.1.dmr.5.trans_base  ${word_order})
 endif()
 
 # Test various facets of the CE parser and evaluation engine
@@ -249,7 +249,7 @@ dmr_trans_test(49  test_simple_6.xml        "s.i1"                ""  test_simpl
 dmr_trans_test(50  test_simple_6.xml        "s.s"                 ""  test_simple_6.xml.3.trans_base   ${word_order})
 dmr_trans_test(51  test_simple_6.1.xml      "s.inner.i2"          ""  test_simple_6.1.xml.1.trans_base ${word_order})
 
-dmr_trans_test(52  test_simple_6.xml        "s{i1}"               ""  test_simple_6.xml.2.trans_base   ${word_order})
+dmr_trans_test(52  test_simple_6.xml        s{i1}               ""  test_simple_6.xml.2.trans_base   ${word_order})
 dmr_trans_test(53  test_simple_6.xml        "s{s}"                ""  test_simple_6.xml.3.trans_base   ${word_order})
 dmr_trans_test(54  test_simple_6.1.xml      "s{inner.i2}"         ""  test_simple_6.1.xml.1.trans_base ${word_order})
 dmr_trans_test(55  test_simple_6.1.xml      "s{inner{i2}}"        ""  test_simple_6.1.xml.1.trans_base ${word_order})
