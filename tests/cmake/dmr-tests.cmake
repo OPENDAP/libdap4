@@ -144,13 +144,12 @@ else()
 	message(WARNING "Unknown byte order for C compiler")
 endif()
 
-function(add_dmr_intern_test test_input)
-	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
-	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_intern_${raw}")
+function(dmr_intern_test number input baseline)
+	set(testname "dmr_intern_test_${number}")
 
 	# Paths
-	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
-	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${word_order}/${test_input}.intern_base")
+	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${input}")
+	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${word_order}/${baseline}")
 	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
 	# Add the CTest entry. 7/8/25 jhrg
@@ -160,63 +159,99 @@ function(add_dmr_intern_test test_input)
 			diff -b -B \"${baseline}\" \"${output}\""
 	)
 
-	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr")
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;dmr-intern")
 endfunction()
 
-add_dmr_intern_test(test_simple_1.xml)
-add_dmr_intern_test(test_simple_2.xml)
-add_dmr_intern_test(test_simple_3.xml)
-add_dmr_intern_test(test_simple_4.xml)
-add_dmr_intern_test(test_simple_5.xml)
-add_dmr_intern_test(test_simple_6.xml)
-add_dmr_intern_test(test_simple_7.xml)
-add_dmr_intern_test(test_simple_8.xml)
-add_dmr_intern_test(test_simple_9.xml)
-add_dmr_intern_test(test_simple_9.1.xml)
-add_dmr_intern_test(test_simple_10.xml)
-add_dmr_intern_test(test_enum_grp.xml)
+dmr_intern_test( 1  test_simple_1.xml       test_simple_1.xml.intern_base)
+dmr_intern_test( 2  test_simple_2.xml       test_simple_2.xml.intern_base)
+dmr_intern_test( 3  test_simple_3.xml       test_simple_3.xml.intern_base)
+dmr_intern_test( 4  test_simple_4.xml       test_simple_4.xml.intern_base)
+dmr_intern_test( 5  test_simple_5.xml       test_simple_5.xml.intern_base)
+dmr_intern_test( 6  test_simple_6.xml       test_simple_6.xml.intern_base)
+dmr_intern_test( 7  test_simple_7.xml       test_simple_7.xml.intern_base)
+dmr_intern_test( 8  test_simple_8.xml       test_simple_8.xml.intern_base)
+dmr_intern_test( 9  test_simple_9.xml       test_simple_9.xml.intern_base)
+dmr_intern_test(10  test_simple_9.1.xml     test_simple_9.1.xml.intern_base)
+dmr_intern_test(11  test_simple_10.xml      test_simple_10.xml.intern_base)
+dmr_intern_test(12  test_enum_grp.xml       test_enum_grp.xml.intern_base)
 
-add_dmr_intern_test(test_array_1.xml)
-add_dmr_intern_test(test_array_2.xml)
-add_dmr_intern_test(test_array_3.xml)
-add_dmr_intern_test(test_array_4.xml)
-add_dmr_intern_test(test_array_5.xml)
-add_dmr_intern_test(test_array_6.xml)
-add_dmr_intern_test(test_array_7.xml)
-add_dmr_intern_test(test_array_8.xml)
-add_dmr_intern_test(test_array_10.xml)
-add_dmr_intern_test(test_array_11.xml)
+dmr_intern_test(13  test_array_1.xml        test_array_1.xml.intern_base)
+dmr_intern_test(14  test_array_2.xml        test_array_2.xml.intern_base)
+dmr_intern_test(15  test_array_3.xml        test_array_3.xml.intern_base)
+dmr_intern_test(16  test_array_4.xml        test_array_4.xml.intern_base)
+dmr_intern_test(17  test_array_5.xml        test_array_5.xml.intern_base)
+dmr_intern_test(18  test_array_6.xml        test_array_6.xml.intern_base)
+dmr_intern_test(19  test_array_7.xml        test_array_7.xml.intern_base)
+dmr_intern_test(20  test_array_8.xml        test_array_8.xml.intern_base)
+dmr_intern_test(21  test_array_10.xml       test_array_10.xml.intern_base)
+dmr_intern_test(22  test_array_11.xml       test_array_11.xml.intern_base)
 
-add_dmr_intern_test(test_array_9.xml)
-add_dmr_intern_test(test_array_12.xml)
-add_dmr_intern_test(test_array_13.xml)
-add_dmr_intern_test(test_array_14.xml)
+dmr_intern_test(23  test_array_9.xml        test_array_9.xml.intern_base)
+dmr_intern_test(24  test_array_12.xml       test_array_12.xml.intern_base)
+dmr_intern_test(25  test_array_13.xml       test_array_13.xml.intern_base)
+dmr_intern_test(26  test_array_14.xml       test_array_14.xml.intern_base)
 
-add_dmr_intern_test(test_simple_6.2.xml)
-add_dmr_intern_test(test_simple_6.3.xml)
+dmr_intern_test(27  test_simple_6.2.xml     test_simple_6.2.xml.intern_base)
+dmr_intern_test(28  test_simple_6.3.xml     test_simple_6.3.xml.intern_base)
+
+### For byte_order == universal, this test removed the <Value> information
+### and replaces it with nothing (which is different from the trans + ce
+### tests which replace the <Value> info with 'removed checksum'). 7/12/25 jhrg
+#function(add_dmr_trans_test test_input byte_order)
+#	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
+#	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_trans_${raw}")
+#	if("${byte_order}" STREQUAL "universal")
+#		set(testname "${testname}_univ")
+#	endif()
+#	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
+#	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${byte_order}/${test_input}.trans_base")
+#	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
+#
+#	add_test(NAME ${testname}
+#			COMMAND /bin/sh "-c"
+#			"\"$<TARGET_FILE:dmr-test>\" -Cxt \"${input}\" -c \"\" -f \"\" > \"${output}\" 2>&1; \
+#			if test \"${byte_order}\" = \"universal\"; then \
+#				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
+#				diff -b -B \"${baseline}\" \"${output}_univ\"; \
+#			else \
+#				diff -b -B \"${baseline}\" \"${output}\"; \
+#			fi;"
+#	)
+#
+#	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;trans")
+#	# set_tests_properties(${testname} PROPERTIES RESOURCE_LOCKS "dmr-trans")
+#	# These are run serially because the dmr-test program uses a temp file to
+#	# store the 'binary data' amd different tests will make those binary data
+#	# files with the same (i.e., conflicting) names. I tied using the
+#	# RESOURCE_LOCKS property, but it was slower and did not stop the collisions.
+#	# 7/12/25 jhrg
+#	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+#endfunction()
 
 ## For byte_order == universal, this test removed the <Value> information
 ## and replaces it with nothing (which is different from the trans + ce
 ## tests which replace the <Value> info with 'removed checksum'). 7/12/25 jhrg
-function(add_dmr_trans_test test_input byte_order)
-	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
-	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_trans_${raw}")
-	if("${byte_order}" STREQUAL "universal")
-		set(testname "${testname}_univ")
-	endif()
-	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${test_input}")
-	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${byte_order}/${test_input}.trans_base")
+function(dmr_trans_test number input ce func baseline byte_order)
+#	string(REGEX REPLACE "\\.xml$" "" raw "${test_input}")
+#	string(REGEX REPLACE "[^A-Za-z0-9_]" "_" testname "dmr_trans_${raw}")
+#	if("${byte_order}" STREQUAL "universal")
+#		set(testname "${testname}_univ")
+#	endif()
+
+	set(testname "dmr_trans_test_${number}")
+
+	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${input}")
+	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${byte_order}/${baseline}")
 	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
-			"\"$<TARGET_FILE:dmr-test>\" -Cxt \"${input}\" -c \"\" -f \"\" > \"${output}\" 2>&1; \
+			"\"$<TARGET_FILE:dmr-test>\" -Cxt \"${input}\" -c \"${ce}\" -f \"${func}\" > \"${output}\" 2>&1; \
 			if test \"${byte_order}\" = \"universal\"; then \
 				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
-				diff -b -B \"${baseline}\" \"${output}_univ\"; \
-			else \
-				diff -b -B \"${baseline}\" \"${output}\"; \
-			fi;"
+				mv \"${output}_univ\" \"${output}\"; \
+			fi; \
+			diff -b -B \"${baseline}\" \"${output}\";"
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;trans")
@@ -229,47 +264,88 @@ function(add_dmr_trans_test test_input byte_order)
 	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
 endfunction()
 
+# DMR translation tests → dmr_trans_test(number, input, ce, func, baseline, byte_order)
 
-add_dmr_trans_test(test_simple_1.xml "${word_order}")
-add_dmr_trans_test(test_simple_2.xml "${word_order}")
-add_dmr_trans_test(test_simple_3.xml "${word_order}")
-add_dmr_trans_test(test_simple_4.xml "${word_order}")
-add_dmr_trans_test(test_simple_5.xml "${word_order}")
-add_dmr_trans_test(test_simple_6.xml "${word_order}")
-add_dmr_trans_test(test_simple_7.xml "${word_order}")
-add_dmr_trans_test(test_simple_8.xml "${word_order}")
-add_dmr_trans_test(test_simple_9.xml "${word_order}")
-add_dmr_trans_test(test_simple_9.1.xml "${word_order}")
-add_dmr_trans_test(test_simple_10.xml "${word_order}")
-add_dmr_trans_test(test_enum_grp.xml "${word_order}")
+dmr_trans_test( 1  test_simple_1.xml   "" ""  test_simple_1.xml.trans_base   "${word_order}" )
+dmr_trans_test( 2  test_simple_2.xml   "" ""  test_simple_2.xml.trans_base   "${word_order}" )
+dmr_trans_test( 3  test_simple_3.xml   "" ""  test_simple_3.xml.trans_base   "${word_order}" )
+dmr_trans_test( 4  test_simple_4.xml   "" ""  test_simple_4.xml.trans_base   "${word_order}" )
+dmr_trans_test( 5  test_simple_5.xml   "" ""  test_simple_5.xml.trans_base   "${word_order}" )
+dmr_trans_test( 6  test_simple_6.xml   "" ""  test_simple_6.xml.trans_base   "${word_order}" )
+dmr_trans_test( 7  test_simple_7.xml   "" ""  test_simple_7.xml.trans_base   "${word_order}" )
+dmr_trans_test( 8  test_simple_8.xml   "" ""  test_simple_8.xml.trans_base   "${word_order}" )
+dmr_trans_test( 9  test_simple_9.xml   "" ""  test_simple_9.xml.trans_base   "${word_order}" )
+dmr_trans_test(10  test_simple_9.1.xml "" ""  test_simple_9.1.xml.trans_base "${word_order}" )
+dmr_trans_test(11  test_simple_10.xml  "" ""  test_simple_10.xml.trans_base  "${word_order}" )
+dmr_trans_test(12  test_enum_grp.xml   "" ""  test_enum_grp.xml.trans_base   "${word_order}" )
 
-add_dmr_trans_test(test_array_1.xml "${word_order}")
-add_dmr_trans_test(test_array_2.xml "${word_order}")
-add_dmr_trans_test(test_array_3.xml "${word_order}")
-add_dmr_trans_test(test_array_4.xml "${word_order}")
-add_dmr_trans_test(test_array_5.xml "${word_order}")
-add_dmr_trans_test(test_array_6.xml "${word_order}")
-add_dmr_trans_test(test_array_7.xml "${word_order}")
-add_dmr_trans_test(test_array_8.xml "${word_order}")
-add_dmr_trans_test(test_array_10.xml "${word_order}")
-add_dmr_trans_test(test_array_11.xml "${word_order}")
+dmr_trans_test(13  test_array_1.xml    "" ""  test_array_1.xml.trans_base    "${word_order}" )
+dmr_trans_test(14  test_array_2.xml    "" ""  test_array_2.xml.trans_base    "${word_order}" )
+dmr_trans_test(15  test_array_3.xml    "" ""  test_array_3.xml.trans_base    "${word_order}" )
+dmr_trans_test(16  test_array_4.xml    "" ""  test_array_4.xml.trans_base    "${word_order}" )
+dmr_trans_test(17  test_array_5.xml    "" ""  test_array_5.xml.trans_base    "${word_order}" )
+dmr_trans_test(18  test_array_6.xml    "" ""  test_array_6.xml.trans_base    "${word_order}" )
+dmr_trans_test(19  test_array_7.xml    "" ""  test_array_7.xml.trans_base    "${word_order}" )
+dmr_trans_test(20  test_array_8.xml    "" ""  test_array_8.xml.trans_base    "${word_order}" )
+dmr_trans_test(21  test_array_10.xml   "" ""  test_array_10.xml.trans_base   "${word_order}" )
+dmr_trans_test(22  test_array_11.xml   "" ""  test_array_11.xml.trans_base   "${word_order}" )
 
-add_dmr_trans_test(test_array_9.xml "${word_order}")
-add_dmr_trans_test(test_array_12.xml "${word_order}")
-add_dmr_trans_test(test_array_13.xml "${word_order}")
-add_dmr_trans_test(test_array_14.xml "${word_order}")
+dmr_trans_test(23  test_array_9.xml    "" ""  test_array_9.xml.trans_base    "${word_order}" )
+dmr_trans_test(24  test_array_12.xml   "" ""  test_array_12.xml.trans_base   "${word_order}" )
+dmr_trans_test(25  test_array_13.xml   "" ""  test_array_13.xml.trans_base   "${word_order}" )
+dmr_trans_test(26  test_array_14.xml   "" ""  test_array_14.xml.trans_base   "${word_order}" )
 
-add_dmr_trans_test(test_simple_6.2.xml "${word_order}")
-add_dmr_trans_test(test_simple_6.3.xml "${word_order}")
+dmr_trans_test(27  test_simple_6.2.xml "" ""  test_simple_6.2.xml.trans_base "${word_order}" )
+dmr_trans_test(28  test_simple_6.3.xml "" ""  test_simple_6.3.xml.trans_base "${word_order}" )
 
-# Test out the 'universal' tests
-add_dmr_trans_test(test_array_9.xml "universal")
-add_dmr_trans_test(test_array_12.xml "universal")
-add_dmr_trans_test(test_array_13.xml "universal")
-add_dmr_trans_test(test_array_14.xml "universal")
+# “Universal” runs
+dmr_trans_test(29  test_array_9.xml    "" ""  test_array_9.xml.trans_base    "universal" )
+dmr_trans_test(30  test_array_12.xml   "" ""  test_array_12.xml.trans_base   "universal" )
+dmr_trans_test(31  test_array_13.xml   "" ""  test_array_13.xml.trans_base   "universal" )
+dmr_trans_test(32  test_array_14.xml   "" ""  test_array_14.xml.trans_base   "universal" )
+dmr_trans_test(33  test_simple_6.2.xml "" ""  test_simple_6.2.xml.trans_base "universal" )
+dmr_trans_test(34  test_simple_6.3.xml "" ""  test_simple_6.3.xml.trans_base "universal" )
 
-add_dmr_trans_test(test_simple_6.2.xml "universal")
-add_dmr_trans_test(test_simple_6.3.xml "universal")
+#add_dmr_trans_test(test_simple_1.xml "${word_order}")
+#add_dmr_trans_test(test_simple_2.xml "${word_order}")
+#add_dmr_trans_test(test_simple_3.xml "${word_order}")
+#add_dmr_trans_test(test_simple_4.xml "${word_order}")
+#add_dmr_trans_test(test_simple_5.xml "${word_order}")
+#add_dmr_trans_test(test_simple_6.xml "${word_order}")
+#add_dmr_trans_test(test_simple_7.xml "${word_order}")
+#add_dmr_trans_test(test_simple_8.xml "${word_order}")
+#add_dmr_trans_test(test_simple_9.xml "${word_order}")
+#add_dmr_trans_test(test_simple_9.1.xml "${word_order}")
+#add_dmr_trans_test(test_simple_10.xml "${word_order}")
+#add_dmr_trans_test(test_enum_grp.xml "${word_order}")
+#
+#add_dmr_trans_test(test_array_1.xml "${word_order}")
+#add_dmr_trans_test(test_array_2.xml "${word_order}")
+#add_dmr_trans_test(test_array_3.xml "${word_order}")
+#add_dmr_trans_test(test_array_4.xml "${word_order}")
+#add_dmr_trans_test(test_array_5.xml "${word_order}")
+#add_dmr_trans_test(test_array_6.xml "${word_order}")
+#add_dmr_trans_test(test_array_7.xml "${word_order}")
+#add_dmr_trans_test(test_array_8.xml "${word_order}")
+#add_dmr_trans_test(test_array_10.xml "${word_order}")
+#add_dmr_trans_test(test_array_11.xml "${word_order}")
+#
+#add_dmr_trans_test(test_array_9.xml "${word_order}")
+#add_dmr_trans_test(test_array_12.xml "${word_order}")
+#add_dmr_trans_test(test_array_13.xml "${word_order}")
+#add_dmr_trans_test(test_array_14.xml "${word_order}")
+#
+#add_dmr_trans_test(test_simple_6.2.xml "${word_order}")
+#add_dmr_trans_test(test_simple_6.3.xml "${word_order}")
+#
+## Test out the 'universal' tests
+#add_dmr_trans_test(test_array_9.xml "universal")
+#add_dmr_trans_test(test_array_12.xml "universal")
+#add_dmr_trans_test(test_array_13.xml "universal")
+#add_dmr_trans_test(test_array_14.xml "universal")
+#
+#add_dmr_trans_test(test_simple_6.2.xml "universal")
+#add_dmr_trans_test(test_simple_6.3.xml "universal")
 
 
 # For these tests, use the baseline filename to form the test name
