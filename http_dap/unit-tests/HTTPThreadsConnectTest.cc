@@ -43,7 +43,7 @@
 #include "run_tests_cppunit.h"
 #include "test_config.h"
 
-#define CATCH_ALL_EXCEPTIONS                                                                                           \
+#define CATCH_ALL_TEST_EXCEPTIONS                                                                                      \
     catch (const InternalErr &e) {                                                                                     \
         CPPUNIT_FAIL("Caught an InternalErr from fetch_url: " + e.get_error_message());                                \
     }                                                                                                                  \
@@ -141,7 +141,7 @@ public:
             CPPUNIT_ASSERT(fread(&c, 1, 1, stuff->get_stream()) == 1 && !ferror(stuff->get_stream()) &&
                            !feof(stuff->get_stream()));
         }
-        CATCH_ALL_EXCEPTIONS
+        CATCH_ALL_TEST_EXCEPTIONS
     }
 
     void fetch_url_test_cpp() {
@@ -159,7 +159,7 @@ public:
             CPPUNIT_ASSERT(!stuff->get_cpp_stream()->bad());
             CPPUNIT_ASSERT(!stuff->get_cpp_stream()->eof());
         }
-        CATCH_ALL_EXCEPTIONS
+        CATCH_ALL_TEST_EXCEPTIONS
     }
 
     void fetch_url_test_304_mt() {
@@ -189,7 +189,7 @@ public:
                 CPPUNIT_ASSERT_NO_THROW_MESSAGE("fetch_url_test_304_mt async failed", f.get());
             }
         }
-        CATCH_ALL_EXCEPTIONS
+        CATCH_ALL_TEST_EXCEPTIONS
     }
 
     void fetch_url_test_304_mt_w_cache() {
@@ -216,7 +216,7 @@ public:
                 CPPUNIT_ASSERT_NO_THROW_MESSAGE("fetch_url_test_304_mt_w_cache async failed", f.get());
             }
         }
-        CATCH_ALL_EXCEPTIONS
+        CATCH_ALL_TEST_EXCEPTIONS
     }
 
     void fetch_url_test_nc_mt() {
@@ -248,7 +248,7 @@ public:
                     ++cached;
             CPPUNIT_ASSERT_MESSAGE("None should be cached; got " + to_string(cached), cached == 0);
         }
-        CATCH_ALL_EXCEPTIONS
+        CATCH_ALL_TEST_EXCEPTIONS
     }
 
     void fetch_url_test_nc_mt_w_cache() {
@@ -281,7 +281,7 @@ public:
                     ++cached;
             CPPUNIT_ASSERT_MESSAGE("Three should be cached; got " + to_string(cached), cached == 3);
         }
-        CATCH_ALL_EXCEPTIONS
+        CATCH_ALL_TEST_EXCEPTIONS
     }
 
     void fetch_url_test_diff_urls_mt_w_cache() {
@@ -320,7 +320,7 @@ public:
             for (int i = 0; i < 4; ++i)
                 CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !conns[i]->is_cached_response());
         }
-        CATCH_ALL_EXCEPTIONS
+        CATCH_ALL_TEST_EXCEPTIONS
     }
 
     void fetch_url_test_diff_urls_mt_w_cache_multi_access() {
@@ -381,7 +381,7 @@ public:
             for (int i = 0; i < 4; ++i)
                 CPPUNIT_ASSERT_MESSAGE("Should be cached on new instance", conns2[i]->is_cached_response());
         }
-        CATCH_ALL_EXCEPTIONS
+        CATCH_ALL_TEST_EXCEPTIONS
     }
 
     void fetch_url_test_302_urls_mt_w_cache_multi_access() {
@@ -443,7 +443,7 @@ public:
             for (int i = 0; i < 2; ++i)
                 CPPUNIT_ASSERT_MESSAGE("Should be cached on new instance", conns2[i]->is_cached_response());
         }
-        CATCH_ALL_EXCEPTIONS
+        CATCH_ALL_TEST_EXCEPTIONS
     }
 };
 
