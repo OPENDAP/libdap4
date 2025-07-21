@@ -565,7 +565,6 @@ public:
             throw;
         }
     }
-
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(HTTPThreadsConnectTest);
