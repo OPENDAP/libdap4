@@ -53,6 +53,11 @@ const static string cache_dir{string(TEST_BUILD_DIR) + "/cache-testsuite/http_mt
 
 namespace libdap {
 
+const auto dap_url = 26221;
+const auto dmr_url = 3103;
+const auto dds_url = 197;
+const auto das_url = 927;
+
 inline static uint64_t file_size(FILE *fp) {
     struct stat s {};
     fstat(fileno(fp), &s);
@@ -307,10 +312,10 @@ public:
                                        file_size(stuff->get_stream()) == expected_size);
             };
 
-            std::thread thread1(hc_lambda, netcdf_das_url, http_1.get(), 927);
-            std::thread thread2(hc_lambda, netcdf_das_url, http_2.get(), 927);
-            std::thread thread3(hc_lambda, netcdf_das_url, http_3.get(), 927);
-            std::thread thread4(hc_lambda, netcdf_das_url, http_4.get(), 927);
+            std::thread thread1(hc_lambda, netcdf_das_url, http_1.get(), das_url);
+            std::thread thread2(hc_lambda, netcdf_das_url, http_2.get(), das_url);
+            std::thread thread3(hc_lambda, netcdf_das_url, http_3.get(), das_url);
+            std::thread thread4(hc_lambda, netcdf_das_url, http_4.get(), das_url);
 
             thread1.join();
             thread2.join();
@@ -364,10 +369,10 @@ public:
             string netcdf_dmr_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"};
             string netcdf_dap_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"};
 
-            std::thread thread1(hc_lambda, netcdf_das_url, http_1.get(), 927);
-            std::thread thread2(hc_lambda, netcdf_dds_url, http_2.get(), 197);
-            std::thread thread3(hc_lambda, netcdf_dmr_url, http_3.get(), 3103);
-            std::thread thread4(hc_lambda, netcdf_dap_url, http_4.get(), 26221);
+            std::thread thread1(hc_lambda, netcdf_das_url, http_1.get(), das_url);
+            std::thread thread2(hc_lambda, netcdf_dds_url, http_2.get(), dds_url);
+            std::thread thread3(hc_lambda, netcdf_dmr_url, http_3.get(), dmr_url);
+            std::thread thread4(hc_lambda, netcdf_dap_url, http_4.get(), dap_url);
 
             thread1.join();
             thread2.join();
@@ -415,10 +420,10 @@ public:
             string netcdf_dmr_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"};
             string netcdf_dap_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"};
 
-            std::thread thread1(hc_lambda, netcdf_das_url, http_1.get(), 927);
-            std::thread thread2(hc_lambda, netcdf_dds_url, http_2.get(), 197);
-            std::thread thread3(hc_lambda, netcdf_dmr_url, http_3.get(), 3103);
-            std::thread thread4(hc_lambda, netcdf_dap_url, http_4.get(), 26221);
+            std::thread thread1(hc_lambda, netcdf_das_url, http_1.get(), das_url);
+            std::thread thread2(hc_lambda, netcdf_dds_url, http_2.get(), dds_url);
+            std::thread thread3(hc_lambda, netcdf_dmr_url, http_3.get(), dmr_url);
+            std::thread thread4(hc_lambda, netcdf_dap_url, http_4.get(), dap_url);
 
             thread1.join();
             thread2.join();
@@ -431,10 +436,10 @@ public:
             CPPUNIT_ASSERT_MESSAGE("Response should not be cached", !http_4->is_cached_response());
 
             // Now we access the same URLs again. The cache should be used.
-            std::thread thread5(hc_lambda, netcdf_das_url, http_1.get(), 927);
-            std::thread thread6(hc_lambda, netcdf_dds_url, http_2.get(), 197);
-            std::thread thread7(hc_lambda, netcdf_dmr_url, http_3.get(), 3103);
-            std::thread thread8(hc_lambda, netcdf_dap_url, http_4.get(), 26221);
+            std::thread thread5(hc_lambda, netcdf_das_url, http_1.get(), das_url);
+            std::thread thread6(hc_lambda, netcdf_dds_url, http_2.get(), dds_url);
+            std::thread thread7(hc_lambda, netcdf_dmr_url, http_3.get(), dmr_url);
+            std::thread thread8(hc_lambda, netcdf_dap_url, http_4.get(), dap_url);
 
             thread5.join();
             thread6.join();
@@ -454,10 +459,10 @@ public:
             auto http_7 = std::make_unique<HTTPConnect>(RCReader::instance());
             auto http_8 = std::make_unique<HTTPConnect>(RCReader::instance());
 
-            std::thread thread9(hc_lambda, netcdf_das_url, http_5.get(), 927);
-            std::thread thread10(hc_lambda, netcdf_dds_url, http_6.get(), 197);
-            std::thread thread11(hc_lambda, netcdf_dmr_url, http_7.get(), 3103);
-            std::thread thread12(hc_lambda, netcdf_dap_url, http_8.get(), 26221);
+            std::thread thread9(hc_lambda, netcdf_das_url, http_5.get(), das_url);
+            std::thread thread10(hc_lambda, netcdf_dds_url, http_6.get(), dds_url);
+            std::thread thread11(hc_lambda, netcdf_dmr_url, http_7.get(), dmr_url);
+            std::thread thread12(hc_lambda, netcdf_dap_url, http_8.get(), dap_url);
 
             thread9.join();
             thread10.join();
