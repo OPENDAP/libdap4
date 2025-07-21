@@ -362,7 +362,7 @@ public:
 
             string netcdf_dds_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"};
             string netcdf_dmr_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"};
-            string netcdf_dap_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"};
+            string netcdf_dap_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=true"};
 
             std::thread thread1(hc_lambda, netcdf_das_url, http_1.get(), 927);
             std::thread thread2(hc_lambda, netcdf_dds_url, http_2.get(), 197);
@@ -413,7 +413,7 @@ public:
 
             string netcdf_dds_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"};
             string netcdf_dmr_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"};
-            string netcdf_dap_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"};
+            string netcdf_dap_url{"http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=true"};
 
             std::thread thread1(hc_lambda, netcdf_das_url, http_1.get(), 927);
             std::thread thread2(hc_lambda, netcdf_dds_url, http_2.get(), 197);
