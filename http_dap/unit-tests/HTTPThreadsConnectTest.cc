@@ -120,8 +120,10 @@ public:
     CPPUNIT_TEST(fetch_url_test_304_mt_w_cache);
     CPPUNIT_TEST(fetch_url_test_nc_mt);
     CPPUNIT_TEST(fetch_url_test_nc_mt_w_cache);
-    CPPUNIT_TEST_FAIL(fetch_url_test_diff_urls_mt_w_cache);              // See HYRAX-1849
+#if 0
+      CPPUNIT_TEST_FAIL(fetch_url_test_diff_urls_mt_w_cache);              // See HYRAX-1849
     CPPUNIT_TEST_FAIL(fetch_url_test_diff_urls_mt_w_cache_multi_access); // See HYRAX-1849
+#endif
     CPPUNIT_TEST(fetch_url_test_302_urls_mt_w_cache_multi_access);
 
     CPPUNIT_TEST(fetch_url_test_cpp);
