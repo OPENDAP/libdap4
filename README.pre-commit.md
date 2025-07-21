@@ -18,6 +18,8 @@ commit will fail. Rerun ```git commit``` and the commit should succeed. This
 works because the clang-format not only checks but is configured to modify
 the files in place.
 
+To run it by hand: ```pre-commit run --all-files```
+
 ## Background
 
 The pre-commit hooks are managed by the pre-commit framework (https://github.com/pre-commit).
