@@ -120,9 +120,9 @@ public:
     CPPUNIT_TEST(fetch_url_test_304_mt_w_cache);
     CPPUNIT_TEST(fetch_url_test_nc_mt);
     CPPUNIT_TEST(fetch_url_test_nc_mt_w_cache);
-#if 0
-      CPPUNIT_TEST_FAIL(fetch_url_test_diff_urls_mt_w_cache);              // See HYRAX-1849
-    CPPUNIT_TEST_FAIL(fetch_url_test_diff_urls_mt_w_cache_multi_access); // See HYRAX-1849
+#if 1
+    CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache);              // See HYRAX-1849
+    CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache_multi_access); // See HYRAX-1849
 #endif
     CPPUNIT_TEST(fetch_url_test_302_urls_mt_w_cache_multi_access);
 
@@ -301,7 +301,7 @@ public:
             vector<Job> jobs = {{netcdf_das_url, das_url, conns[0].get()},
                                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"), dds_url, conns[1].get()},
                                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"), dmr_url, conns[2].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"), dap_url, conns[3].get()}};
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=true"), dap_url, conns[3].get()}};
 
             vector<future<void>> futures;
             futures.reserve(jobs.size());
@@ -341,7 +341,7 @@ public:
                 {netcdf_das_url, das_url, conns[0].get()},
                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"), dds_url, conns[1].get()},
                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"), dmr_url, conns[2].get()},
-                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"), dap_url, conns[3].get()}};
+                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=true"), dap_url, conns[3].get()}};
             vector<Job> jobs_repeat = jobs_first;
 
             auto run_jobs = [&](const vector<Job> &jobs) {
