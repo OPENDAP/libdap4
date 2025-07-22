@@ -301,7 +301,8 @@ public:
             vector<Job> jobs = {{netcdf_das_url, das_url, conns[0].get()},
                                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"), dds_url, conns[1].get()},
                                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"), dmr_url, conns[2].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=true"), dap_url, conns[3].get()}};
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=true"), dap_url,
+                                 conns[3].get()}};
 
             vector<future<void>> futures;
             futures.reserve(jobs.size());
@@ -341,7 +342,8 @@ public:
                 {netcdf_das_url, das_url, conns[0].get()},
                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"), dds_url, conns[1].get()},
                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"), dmr_url, conns[2].get()},
-                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=true"), dap_url, conns[3].get()}};
+                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=true"), dap_url,
+                 conns[3].get()}};
             vector<Job> jobs_repeat = jobs_first;
 
             auto run_jobs = [&](const vector<Job> &jobs) {
