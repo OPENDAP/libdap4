@@ -67,6 +67,7 @@ const static string cache_dir{string(TEST_BUILD_DIR) + "/cache-testsuite/http_mt
 
 namespace libdap {
 const auto dap_url = 26221;
+const auto dap_url_no_crc = 26201;
 const auto dmr_url = 3103;
 const auto dds_url = 197;
 const auto das_url = 927;
@@ -120,9 +121,11 @@ public:
     CPPUNIT_TEST(fetch_url_test_304_mt_w_cache);
     CPPUNIT_TEST(fetch_url_test_nc_mt);
     CPPUNIT_TEST(fetch_url_test_nc_mt_w_cache);
-#if 0
-      CPPUNIT_TEST_FAIL(fetch_url_test_diff_urls_mt_w_cache);              // See HYRAX-1849
-    CPPUNIT_TEST_FAIL(fetch_url_test_diff_urls_mt_w_cache_multi_access); // See HYRAX-1849
+#if 1
+    CPPUNIT_TEST(fetch_url_test_dap_url_no_crc_mt_w_cache);
+    CPPUNIT_TEST(fetch_url_test_dap_url_no_crc_no_key_mt_w_cache);
+    CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache);              // See HYRAX-1849
+    CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache_multi_access); // See HYRAX-1849
 #endif
     CPPUNIT_TEST(fetch_url_test_302_urls_mt_w_cache_multi_access);
 
@@ -286,6 +289,87 @@ public:
         CATCH_ALL_TEST_EXCEPTIONS
     }
 
+    void fetch_url_test_dap_url_no_crc_mt_w_cache() {
+        DBG(cerr << prolog << endl);
+        try {
+            vector<unique_ptr<HTTPConnect>> conns;
+            for (int i = 0; i < 4; ++i)
+                conns.emplace_back(make_unique<HTTPConnect>(RCReader::instance()));
+
+            struct Job {
+                string url;
+                uint32_t sz;
+                HTTPConnect *hc;
+            };
+            vector<Job> jobs = {{string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),
+                                 dap_url_no_crc, conns[0].get()},
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),
+                                 dap_url_no_crc, conns[1].get()},
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),
+                                 dap_url_no_crc, conns[2].get()},
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),
+                                 dap_url_no_crc, conns[3].get()}};
+
+            vector<future<void>> futures;
+            futures.reserve(jobs.size());
+            for (auto &job : jobs) {
+                futures.emplace_back(async(launch::async, [=]() {
+                    unique_ptr<HTTPResponse> resp(job.hc->fetch_url(job.url));
+                    char c;
+                    CPPUNIT_ASSERT(fread(&c, 1, 1, resp->get_stream()) == 1);
+                    CPPUNIT_ASSERT(!ferror(resp->get_stream()));
+                    CPPUNIT_ASSERT(!feof(resp->get_stream()));
+                    auto size = file_size(resp->get_stream());
+                    DBG(cerr << "Response file size: " << size << ", expected size: " << job.sz << "\n");
+                    CPPUNIT_ASSERT_MESSAGE("response size: " + to_string(size), size == job.sz);
+                }));
+            }
+            for (auto &f : futures)
+                CPPUNIT_ASSERT_NO_THROW_MESSAGE("fetch_url_test_diff_urls_mt_w_cache async failed", f.get());
+        }
+        CATCH_ALL_TEST_EXCEPTIONS
+    }
+
+    void fetch_url_test_dap_url_no_crc_no_key_mt_w_cache() {
+        DBG(cerr << prolog << endl);
+        try {
+            vector<unique_ptr<HTTPConnect>> conns;
+            for (int i = 0; i < 4; ++i)
+                conns.emplace_back(make_unique<HTTPConnect>(RCReader::instance()));
+
+            struct Job {
+                string url;
+                uint32_t sz;
+                HTTPConnect *hc;
+            };
+            vector<Job> jobs = {{string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"),
+                                 dap_url_no_crc, conns[0].get()},
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"),
+                                 dap_url_no_crc, conns[1].get()},
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"),
+                                 dap_url_no_crc, conns[2].get()},
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"),
+                                 dap_url_no_crc, conns[3].get()}};
+
+            vector<future<void>> futures;
+            futures.reserve(jobs.size());
+            for (auto &job : jobs) {
+                futures.emplace_back(async(launch::async, [=]() {
+                    unique_ptr<HTTPResponse> resp(job.hc->fetch_url(job.url));
+                    char c;
+                    CPPUNIT_ASSERT(fread(&c, 1, 1, resp->get_stream()) == 1);
+                    CPPUNIT_ASSERT(!ferror(resp->get_stream()));
+                    CPPUNIT_ASSERT(!feof(resp->get_stream()));
+                    CPPUNIT_ASSERT_MESSAGE("response size: " + to_string(file_size(resp->get_stream())),
+                                           file_size(resp->get_stream()) == job.sz);
+                }));
+            }
+            for (auto &f : futures)
+                CPPUNIT_ASSERT_NO_THROW_MESSAGE("fetch_url_test_diff_urls_mt_w_cache async failed", f.get());
+        }
+        CATCH_ALL_TEST_EXCEPTIONS
+    }
+
     void fetch_url_test_diff_urls_mt_w_cache() {
         DBG(cerr << prolog << endl);
         try {
@@ -301,7 +385,8 @@ public:
             vector<Job> jobs = {{netcdf_das_url, das_url, conns[0].get()},
                                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"), dds_url, conns[1].get()},
                                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"), dmr_url, conns[2].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"), dap_url, conns[3].get()}};
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=true"), dap_url,
+                                 conns[3].get()}};
 
             vector<future<void>> futures;
             futures.reserve(jobs.size());
@@ -341,7 +426,8 @@ public:
                 {netcdf_das_url, das_url, conns[0].get()},
                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"), dds_url, conns[1].get()},
                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"), dmr_url, conns[2].get()},
-                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"), dap_url, conns[3].get()}};
+                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=true"), dap_url,
+                 conns[3].get()}};
             vector<Job> jobs_repeat = jobs_first;
 
             auto run_jobs = [&](const vector<Job> &jobs) {
