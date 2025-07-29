@@ -122,10 +122,11 @@ public:
     CPPUNIT_TEST(fetch_url_test_nc_mt);
     CPPUNIT_TEST(fetch_url_test_nc_mt_w_cache);
 #if 1
+    // See HYRAX-1849
     CPPUNIT_TEST(fetch_url_test_dap_url_no_crc_mt_w_cache);
     CPPUNIT_TEST(fetch_url_test_dap_url_no_crc_no_key_mt_w_cache);
-    CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache);              // See HYRAX-1849
-    CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache_multi_access); // See HYRAX-1849
+    CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache);
+    CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache_multi_access);
 #endif
     CPPUNIT_TEST(fetch_url_test_302_urls_mt_w_cache_multi_access);
 
