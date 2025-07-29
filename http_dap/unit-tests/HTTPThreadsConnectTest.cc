@@ -73,7 +73,7 @@ const auto dds_url = 197;
 const auto das_url = 927;
 
 inline static uint64_t file_size(FILE *fp) {
-    struct stat s{};
+    struct stat s {};
     fstat(fileno(fp), &s);
     return s.st_size;
 }
@@ -302,10 +302,14 @@ public:
                 uint32_t sz;
                 HTTPConnect *hc;
             };
-            vector<Job> jobs = {{string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),dap_url_no_crc, conns[0].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),dap_url_no_crc, conns[1].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),dap_url_no_crc, conns[2].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),dap_url_no_crc, conns[3].get()}};
+            vector<Job> jobs = {{string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),
+                                 dap_url_no_crc, conns[0].get()},
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),
+                                 dap_url_no_crc, conns[1].get()},
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),
+                                 dap_url_no_crc, conns[2].get()},
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),
+                                 dap_url_no_crc, conns[3].get()}};
 
             vector<future<void>> futures;
             futures.reserve(jobs.size());
