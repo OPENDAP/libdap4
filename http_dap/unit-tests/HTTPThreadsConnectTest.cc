@@ -73,7 +73,7 @@ const auto dds_url = 197;
 const auto das_url = 927;
 
 inline static uint64_t file_size(FILE *fp) {
-    struct stat s {};
+    struct stat s{};
     fstat(fileno(fp), &s);
     return s.st_size;
 }
@@ -122,7 +122,7 @@ public:
     CPPUNIT_TEST(fetch_url_test_nc_mt);
     CPPUNIT_TEST(fetch_url_test_nc_mt_w_cache);
 #if 1
-    // See HYRAX-1849 
+    // See HYRAX-1849
     CPPUNIT_TEST(fetch_url_test_dap_url_no_crc_mt_w_cache);
     CPPUNIT_TEST(fetch_url_test_dap_url_no_crc_no_key_mt_w_cache);
     CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache);
@@ -302,14 +302,10 @@ public:
                 uint32_t sz;
                 HTTPConnect *hc;
             };
-            vector<Job> jobs = {{string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),
-                                 dap_url_no_crc, conns[0].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),
-                                 dap_url_no_crc, conns[1].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),
-                                 dap_url_no_crc, conns[2].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),
-                                 dap_url_no_crc, conns[3].get()}};
+            vector<Job> jobs = {{string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),dap_url_no_crc, conns[0].get()},
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),dap_url_no_crc, conns[1].get()},
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),dap_url_no_crc, conns[2].get()},
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap?dap4.checksum=false"),dap_url_no_crc, conns[3].get()}};
 
             vector<future<void>> futures;
             futures.reserve(jobs.size());
@@ -343,14 +339,11 @@ public:
                 uint32_t sz;
                 HTTPConnect *hc;
             };
-            vector<Job> jobs = {{string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"),
-                                 dap_url_no_crc, conns[0].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"),
-                                 dap_url_no_crc, conns[1].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"),
-                                 dap_url_no_crc, conns[2].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"),
-                                 dap_url_no_crc, conns[3].get()}};
+            vector<Job> jobs = {
+                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"), dap_url_no_crc, conns[0].get()},
+                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"), dap_url_no_crc, conns[1].get()},
+                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"), dap_url_no_crc, conns[2].get()},
+                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"), dap_url_no_crc, conns[3].get()}};
 
             vector<future<void>> futures;
             futures.reserve(jobs.size());
