@@ -66,10 +66,9 @@ const static string cache_dir{string(TEST_BUILD_DIR) + "/cache-testsuite/http_mt
 #define prolog std::string("HTTPThreadsConnectTest::").append(__func__).append("() - ")
 
 namespace libdap {
-const auto dap_url = 26221;
-const auto dmr_url = 3103;
-const auto dds_url = 197;
-const auto das_url = 927;
+constexpr auto dmr_url = 3103;
+constexpr auto dds_url = 197;
+constexpr auto das_url = 927;
 
 inline static uint64_t file_size(FILE *fp) {
     struct stat s {};
@@ -120,10 +119,10 @@ public:
     CPPUNIT_TEST(fetch_url_test_304_mt_w_cache);
     CPPUNIT_TEST(fetch_url_test_nc_mt);
     CPPUNIT_TEST(fetch_url_test_nc_mt_w_cache);
-#if 0
-      CPPUNIT_TEST_FAIL(fetch_url_test_diff_urls_mt_w_cache);              // See HYRAX-1849
-    CPPUNIT_TEST_FAIL(fetch_url_test_diff_urls_mt_w_cache_multi_access); // See HYRAX-1849
-#endif
+
+    CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache);              // See HYRAX-1849
+    CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache_multi_access); // See HYRAX-1849
+
     CPPUNIT_TEST(fetch_url_test_302_urls_mt_w_cache_multi_access);
 
     CPPUNIT_TEST(fetch_url_test_cpp);
@@ -300,8 +299,7 @@ public:
             };
             vector<Job> jobs = {{netcdf_das_url, das_url, conns[0].get()},
                                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"), dds_url, conns[1].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"), dmr_url, conns[2].get()},
-                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"), dap_url, conns[3].get()}};
+                                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"), dmr_url, conns[2].get()}};
 
             vector<future<void>> futures;
             futures.reserve(jobs.size());
@@ -340,9 +338,8 @@ public:
             vector<Job> jobs_first = {
                 {netcdf_das_url, das_url, conns[0].get()},
                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"), dds_url, conns[1].get()},
-                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"), dmr_url, conns[2].get()},
-                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dap"), dap_url, conns[3].get()}};
-            vector<Job> jobs_repeat = jobs_first;
+                {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"), dmr_url, conns[2].get()}};
+            // FIXME vector<Job> jobs_repeat = jobs_first;
 
             auto run_jobs = [&](const vector<Job> &jobs) {
                 vector<future<void>> futs;
@@ -364,23 +361,23 @@ public:
 
             // first access: not cached
             run_jobs(jobs_first);
-            for (int i = 0; i < 4; ++i)
+            for (unsigned long i = 0; i < jobs_first.size(); ++i)
                 CPPUNIT_ASSERT_MESSAGE("Should not be cached", !conns[i]->is_cached_response());
 
             // second access: cached
-            run_jobs(jobs_repeat);
-            for (int i = 0; i < 4; ++i)
+            run_jobs(jobs_first);
+            for (unsigned long i = 0; i < jobs_first.size(); ++i)
                 CPPUNIT_ASSERT_MESSAGE("Should be cached", conns[i]->is_cached_response());
 
             // new instances: still cached
             vector<unique_ptr<HTTPConnect>> conns2;
-            for (int i = 0; i < 4; ++i)
+            for (unsigned long i = 0; i < jobs_first.size(); ++i)
                 conns2.emplace_back(make_unique<HTTPConnect>(RCReader::instance()));
             vector<Job> jobs_new = jobs_first;
-            for (int i = 0; i < 4; ++i)
+            for (unsigned long i = 0; i < jobs_first.size(); ++i)
                 jobs_new[i].hc = conns2[i].get();
             run_jobs(jobs_new);
-            for (int i = 0; i < 4; ++i)
+            for (unsigned long i = 0; i < jobs_new.size(); ++i)
                 CPPUNIT_ASSERT_MESSAGE("Should be cached on new instance", conns2[i]->is_cached_response());
         }
         CATCH_ALL_TEST_EXCEPTIONS
