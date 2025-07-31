@@ -62,6 +62,7 @@ using namespace CppUnit;
 using namespace std;
 
 const static string cache_dir{string(TEST_BUILD_DIR) + "/cache-testsuite/http_mt_cache/"};
+constexpr auto THREAD_COUNT = 4; // Edit the code below if this is changed. jhrg 7/31/25
 
 #define prolog std::string("HTTPThreadsConnectTest::").append(__func__).append("() - ")
 
@@ -123,13 +124,13 @@ public:
     CPPUNIT_TEST(fetch_url_test_304_mt_w_cache);
     CPPUNIT_TEST(fetch_url_test_nc_mt);
     CPPUNIT_TEST(fetch_url_test_nc_mt_w_cache);
-#if 1
+
     // See HYRAX-1849
     CPPUNIT_TEST(fetch_url_test_dap_url_no_crc_mt_w_cache);
     CPPUNIT_TEST(fetch_url_test_dap_url_no_crc_no_key_mt_w_cache);
     CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache);
     CPPUNIT_TEST(fetch_url_test_diff_urls_mt_w_cache_multi_access);
-#endif
+
     CPPUNIT_TEST(fetch_url_test_302_urls_mt_w_cache_multi_access);
 
     CPPUNIT_TEST(fetch_url_test_cpp);
@@ -174,13 +175,13 @@ public:
         DBG(cerr << prolog << endl);
         try {
             vector<unique_ptr<HTTPConnect>> conns;
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < THREAD_COUNT; ++i)
                 conns.emplace_back(make_unique<HTTPConnect>(RCReader::instance()));
 
             // Launch async tasks
             vector<future<void>> futures;
-            futures.reserve(4);
-            for (int i = 0; i < 4; ++i) {
+            futures.reserve(THREAD_COUNT);
+            for (int i = 0; i < THREAD_COUNT; ++i) {
                 futures.emplace_back(async(launch::async, [&, i]() {
                     auto &hc = *conns[i];
                     hc.set_cache_enabled(false);
@@ -204,12 +205,12 @@ public:
         DBG(cerr << prolog << endl);
         try {
             vector<unique_ptr<HTTPConnect>> conns;
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < THREAD_COUNT; ++i)
                 conns.emplace_back(make_unique<HTTPConnect>(RCReader::instance()));
 
             vector<future<void>> futures;
-            futures.reserve(4);
-            for (int i = 0; i < 4; ++i) {
+            futures.reserve(THREAD_COUNT);
+            for (int i = 0; i < THREAD_COUNT; ++i) {
                 futures.emplace_back(async(launch::async, [&, i]() {
                     auto &hc = *conns[i];
                     unique_ptr<HTTPResponse> resp(hc.fetch_url(url_304));
@@ -231,12 +232,12 @@ public:
         DBG(cerr << prolog << endl);
         try {
             vector<unique_ptr<HTTPConnect>> conns;
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < THREAD_COUNT; ++i)
                 conns.emplace_back(make_unique<HTTPConnect>(RCReader::instance()));
 
             vector<future<void>> futures;
-            futures.reserve(4);
-            for (int i = 0; i < 4; ++i) {
+            futures.reserve(THREAD_COUNT);
+            for (int i = 0; i < THREAD_COUNT; ++i) {
                 futures.emplace_back(async(launch::async, [&, i]() {
                     auto &hc = *conns[i];
                     hc.set_cache_enabled(false);
@@ -263,12 +264,12 @@ public:
         DBG(cerr << prolog << endl);
         try {
             vector<unique_ptr<HTTPConnect>> conns;
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < THREAD_COUNT; ++i)
                 conns.emplace_back(make_unique<HTTPConnect>(RCReader::instance()));
 
             vector<future<void>> futures;
-            futures.reserve(4);
-            for (int i = 0; i < 4; ++i) {
+            futures.reserve(THREAD_COUNT);
+            for (int i = 0; i < THREAD_COUNT; ++i) {
                 futures.emplace_back(async(launch::async, [&, i]() {
                     auto &hc = *conns[i];
                     unique_ptr<HTTPResponse> resp(hc.fetch_url(netcdf_das_url));
@@ -296,7 +297,7 @@ public:
         DBG(cerr << prolog << endl);
         try {
             vector<unique_ptr<HTTPConnect>> conns;
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < THREAD_COUNT; ++i)
                 conns.emplace_back(make_unique<HTTPConnect>(RCReader::instance()));
 
             struct Job {
@@ -339,7 +340,7 @@ public:
         DBG(cerr << prolog << endl);
         try {
             vector<unique_ptr<HTTPConnect>> conns;
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < THREAD_COUNT; ++i)
                 conns.emplace_back(make_unique<HTTPConnect>(RCReader::instance()));
 
             struct Job {
@@ -428,7 +429,6 @@ public:
                 {netcdf_das_url, das_url, conns[0].get()},
                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dds"), dds_url, conns[1].get()},
                 {string("http://test.opendap.org/dap/data/nc/fnoc1.nc.dmr"), dmr_url, conns[2].get()}};
-            vector<Job> jobs_repeat = jobs_first;
 
             auto run_jobs = [&](const vector<Job> &jobs) {
                 vector<future<void>> futs;
@@ -454,6 +454,7 @@ public:
                 CPPUNIT_ASSERT_MESSAGE("Should not be cached", !conns[i]->is_cached_response());
 
             // second access: cached
+            vector<Job> jobs_repeat = jobs_first;
             run_jobs(jobs_repeat);
             for (int i = 0; i < 3; ++i)
                 CPPUNIT_ASSERT_MESSAGE("Should be cached", conns[i]->is_cached_response());
@@ -476,7 +477,7 @@ public:
         DBG(cerr << prolog << endl);
         try {
             vector<unique_ptr<HTTPConnect>> conns;
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < THREAD_COUNT; ++i)
                 conns.emplace_back(make_unique<HTTPConnect>(RCReader::instance()));
 
             string opendap_url{"http://test.opendap.org/opendap"};
@@ -492,7 +493,7 @@ public:
 
             // first wave
             vector<future<void>> futs;
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < THREAD_COUNT; ++i)
                 futs.emplace_back(async(launch::async, run_simple, i));
             for (auto &f : futs)
                 CPPUNIT_ASSERT_NO_THROW_MESSAGE("first 302 wave failed", f.get());
