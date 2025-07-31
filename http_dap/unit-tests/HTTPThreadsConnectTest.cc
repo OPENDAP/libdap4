@@ -450,24 +450,24 @@ public:
 
             // first access: not cached
             run_jobs(jobs_first);
-            for (int i = 0; i < 3; ++i)
+            for (int i = 0; i < jobs_first.size(); ++i)
                 CPPUNIT_ASSERT_MESSAGE("Should not be cached", !conns[i]->is_cached_response());
 
             // second access: cached
             vector<Job> jobs_repeat = jobs_first;
             run_jobs(jobs_repeat);
-            for (int i = 0; i < 3; ++i)
+            for (int i = 0; i < jobs_first.size(); ++i)
                 CPPUNIT_ASSERT_MESSAGE("Should be cached", conns[i]->is_cached_response());
 
             // new instances: still cached
             vector<unique_ptr<HTTPConnect>> conns2;
-            for (int i = 0; i < 3; ++i)
+            for (int i = 0; i < jobs_first.size(); ++i)
                 conns2.emplace_back(make_unique<HTTPConnect>(RCReader::instance()));
             vector<Job> jobs_new = jobs_first;
-            for (int i = 0; i < 3; ++i)
+            for (int i = 0; i < jobs_first.size(); ++i)
                 jobs_new[i].hc = conns2[i].get();
             run_jobs(jobs_new);
-            for (int i = 0; i < 3; ++i)
+            for (int i = 0; i < jobs_first.size(); ++i)
                 CPPUNIT_ASSERT_MESSAGE("Should be cached on new instance", conns2[i]->is_cached_response());
         }
         CATCH_ALL_TEST_EXCEPTIONS
