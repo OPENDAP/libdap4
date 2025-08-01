@@ -737,52 +737,52 @@
     </Structure>
     <Attribute name="HDF_GLOBAL" type="Container">
         <Attribute name="Producer_Agency" type="String">
-            <Value>NASA\\000</Value>
+            <Value>NASA</Value>
         </Attribute>
         <Attribute name="Producer_Institution" type="String">
-            <Value>JPL\\000</Value>
+            <Value>JPL</Value>
         </Attribute>
         <Attribute name="Sensor_Name" type="String">
-            <Value>NSCAT\\000</Value>
+            <Value>NSCAT</Value>
         </Attribute>
         <Attribute name="Project_ID" type="String">
-            <Value>NSCAT\\000</Value>
+            <Value>NSCAT</Value>
         </Attribute>
         <Attribute name="SIS_ID" type="String">
-            <Value>597-512-24/1996-07-01\\000</Value>
+            <Value>597-512-24/1996-07-01</Value>
         </Attribute>
         <Attribute name="Build_ID" type="String">
-            <Value>3.2.1/1996-11-05\\000</Value>
+            <Value>3.2.1/1996-11-05</Value>
         </Attribute>
         <Attribute name="ADEOS_Data_Package_ID" type="String">
-            <Value>S2\\000</Value>
+            <Value>S2</Value>
         </Attribute>
         <Attribute name="ADEOS_Data_Package_Type" type="String">
-            <Value>S\\000</Value>
+            <Value>S</Value>
         </Attribute>
         <Attribute name="Product_Creation_Time" type="String">
-            <Value>1996-318T01:35:16.000\\000</Value>
+            <Value>1996-318T01:35:16.000</Value>
         </Attribute>
         <Attribute name="Data_Type" type="String">
-            <Value>L2\\000</Value>
+            <Value>L2</Value>
         </Attribute>
         <Attribute name="Data_Status" type="String">
-            <Value>COMPLETE\\000</Value>
+            <Value>COMPLETE</Value>
         </Attribute>
         <Attribute name="First_Rev_Number" type="Int32">
             <Value>415</Value>
         </Attribute>
         <Attribute name="First_Rev_Eq_Crossing_Time" type="String">
-            <Value>1996-259T04:01:28.226\\000</Value>
+            <Value>1996-259T04:01:28.226</Value>
         </Attribute>
         <Attribute name="First_Rev_Eq_Crossing_Lon" type="Float32">
             <Value>279.983</Value>
         </Attribute>
         <Attribute name="First_Data_Time" type="String">
-            <Value>1996-259T03:43:48.945\\000</Value>
+            <Value>1996-259T03:43:48.945</Value>
         </Attribute>
         <Attribute name="Last_Data_Time" type="String">
-            <Value>1996-259T05:09:48.997\\000</Value>
+            <Value>1996-259T05:09:48.997</Value>
         </Attribute>
         <Attribute name="Num_Expected_Output_Records" type="Int32">
             <Value>458</Value>
@@ -791,22 +791,22 @@
             <Value>458</Value>
         </Attribute>
         <Attribute name="Ambig_Removal_Method" type="String">
-            <Value>Baseline used\\000</Value>
+            <Value>Baseline used</Value>
         </Attribute>
         <Attribute name="HDF_Build_ID" type="String">
-            <Value>JPL D-xxxxx 12/15/94\\000</Value>
+            <Value>JPL D-xxxxx 12/15/94</Value>
         </Attribute>
         <Attribute name="HDF_SIS_ID" type="String">
-            <Value>JPL D-12060 12/15/94\\000</Value>
+            <Value>JPL D-12060 12/15/94</Value>
         </Attribute>
         <Attribute name="HDF_Conversion_Organization" type="String">
-            <Value>JPL PO.DAAC\\000</Value>
+            <Value>JPL PO.DAAC</Value>
         </Attribute>
         <Attribute name="HDF_Conversion_Time" type="String">
             <Value>1996-320T17:32:34       </Value>
         </Attribute>
         <Attribute name="Data_Format_Type" type="String">
-            <Value>HDF\\000</Value>
+            <Value>HDF</Value>
         </Attribute>
     </Attribute>
 </Dataset>

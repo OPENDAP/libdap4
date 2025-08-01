@@ -35,16 +35,16 @@
     </Structure>
     <Attribute name="HDF_GLOBAL" type="Container">
         <Attribute name="Producer_Agency" type="String">
-            <Value>OPeNDAP\\000</Value>
+            <Value>OPeNDAP</Value>
         </Attribute>
         <Attribute name="Producer_Institution" type="String">
-            <Value>OPENDAP\\000</Value>
+            <Value>OPENDAP</Value>
         </Attribute>
         <Attribute name="Sensor_Name" type="String">
-            <Value>TESTS\\000</Value>
+            <Value>TESTS</Value>
         </Attribute>
         <Attribute name="Project_ID" type="String">
-            <Value>TESTS\\000</Value>
+            <Value>TESTS</Value>
         </Attribute>
     </Attribute>
 </Dataset>
