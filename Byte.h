@@ -96,7 +96,7 @@ public:
 
     bool ops(BaseType *b, int op) override;
     bool d4_ops(BaseType *b, int op) override;
-    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false) override;
 
     void dump(ostream &strm) const override;
 };

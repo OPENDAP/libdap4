@@ -221,7 +221,7 @@ public:
      */
     D4Group *root();
 
-    virtual DDS *getDDS();
+    virtual DDS *getDDS(bool show_shared_dims = false);
 
     virtual bool is_dap4_projected(std::vector<string> &inventory);
 

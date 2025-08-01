@@ -156,7 +156,8 @@ public:
 
             CPPUNIT_ASSERT(result_dmr == baseline_dmr);
 
-            unique_ptr<DDS> dds(dmr->getDDS());
+            unique_ptr<DDS> dds(dmr->getDDS(true));
+
             ostringstream result_dds;
             dds->print(result_dds);
             string baseline_dds = read_test_baseline(dds_file);

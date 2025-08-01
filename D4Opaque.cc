@@ -116,7 +116,8 @@ bool D4Opaque::set_value(const dods_opaque &value) {
     @return The value. */
 D4Opaque::dods_opaque D4Opaque::value() const { return d_buf; }
 
-std::vector<BaseType *> *D4Opaque::transform_to_dap2(AttrTable *) {
+std::vector<BaseType *> *D4Opaque::transform_to_dap2(AttrTable *, bool show_shared_dims) {
+
     DBG(cerr << __func__ << "() - Transform not implemented DAP4 Opaque type." << endl;);
     return NULL;
 }
