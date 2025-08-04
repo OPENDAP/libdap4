@@ -146,7 +146,7 @@ void D4ResponseBuilder::send_dap(ostream &out, DMR &dmr, bool with_mime_headers,
         cos << xml.get_doc() << CRLF << flush;
 
         // Write the data, chunked with checksums
-        D4StreamMarshaller m(cos);
+        D4StreamMarshaller m(cos, true, dmr.use_checksums());
         dmr.root()->serialize(m, dmr, constrained);
 
         out << flush;

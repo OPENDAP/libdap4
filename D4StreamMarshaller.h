@@ -73,7 +73,8 @@ class D4StreamMarshaller : public Marshaller {
 #endif
 
     ostream &d_out;
-    bool d_write_data = true; // jhrg 1/27/12
+    bool d_write_data = true;       // jhrg 1/27/12
+    bool d_compute_checksum = true; // jhrg 1/27/12
 
     Crc32 d_checksum;
 
@@ -84,7 +85,7 @@ class D4StreamMarshaller : public Marshaller {
 #endif
 
 public:
-    explicit D4StreamMarshaller(std::ostream &out, bool write_data = true);
+    explicit D4StreamMarshaller(std::ostream &out, bool write_data = true, bool compute_checksums = false);
 
     D4StreamMarshaller() = delete;
     D4StreamMarshaller(const D4StreamMarshaller &) = delete;
