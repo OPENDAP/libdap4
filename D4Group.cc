@@ -31,7 +31,7 @@
 #include <map>
 #include <sstream>
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "crc.h"
 
@@ -139,11 +139,6 @@ D4Group::~D4Group() {
         delete *i++;
 }
 
-#if 0
-D4Group *
-
-// I think this was a mistake. jhrg 11/17/16
-#endif
 BaseType *D4Group::ptr_duplicate() { return new D4Group(*this); }
 
 D4Group &D4Group::operator=(const D4Group &rhs) {
@@ -501,26 +496,7 @@ void D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         // Only send the stuff in the current subset.
         if ((*i)->send_p()) {
-#if 0
-		    checksum.Reset();
-#endif
             (*i)->intern_data(/*checksum, dmr, eval*/);
-#if 0
-			D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
-
-			ostringstream oss;
-		    oss.setf(ios::hex, ios::basefield);
-		    oss << setfill('0') << setw(8) << checksum.GetCrc32();
-            a->add_value(oss.str());
-#if INCLUDE_SOURCE_BYTE_ORDER
-	        if (um.is_source_big_endian())
-	            a->add_value("source:big-endian");
-	        else
-	            a->add_value("source:little-endian");
-#endif
-	        (*i)->attributes()->add_attribute_nocopy(a);
-			DBG(cerr << "CRC32: " << oss.str() << " for " << (*i)->name() << endl);
-#endif
         }
     }
 }
@@ -537,18 +513,6 @@ void D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
 void D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter) {
-#if 0
-    // This will call Constructor read which will, for everything but a Sequence,
-    // read all of the data in one shot. However, the serialize() methods for the
-    // Arrays, Structures, etc., also have read() calls in them and those can be
-    // used to control how long the data are in memory, e.g., limiting the lifetime
-    // of a large array and avoiding having overlapping arrays when they are not
-    // needed. For a sequence read() has different semantics. It is called once
-    // for every instance and the read_p flag is not used.
-    if (!read_p())
-        read();  // read() throws Error
-#endif
-
     groupsIter g = d_groups.begin();
     while (g != d_groups.end())
         (*g++)->serialize(m, dmr, filter);

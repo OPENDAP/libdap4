@@ -26,43 +26,19 @@
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
-#if 0
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#endif
 
 #include <sstream>
 
 #include "Array.h"
 #include "Byte.h"
-#if 0
-#include "Float32.h"
-#include "Float64.h"
-#include "Grid.h"
-#include "Int16.h"
-#include "Int32.h"
-#endif
-
-#include "Sequence.h"
-#if 0
-#include "Str.h"
-#include "Structure.h"
-#include "UInt16.h"
-#include "UInt32.h"
-#include "Url.h"
-#endif
-
 #include "D4BaseTypeFactory.h"
 #include "D4ParserSax2.h"
 #include "DDS.h"
 #include "DMR.h"
+#include "Sequence.h"
 #include "XMLWriter.h"
 
 #include "GNURegex.h"
-
-#if 0
-#include "debug.h"
-#endif
-
 #include "util.h"
 
 #include "run_tests_cppunit.h"
