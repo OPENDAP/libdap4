@@ -73,8 +73,8 @@ class D4StreamMarshaller : public Marshaller {
 #endif
 
     ostream &d_out;
-    bool d_write_data = true;       // jhrg 1/27/12
-    bool d_compute_checksum = true; // jhrg 1/27/12
+    bool d_write_data = true;        // jhrg 1/27/12
+    bool d_compute_checksum = false; // ndp 08/03/25
 
     Crc32 d_checksum;
 
