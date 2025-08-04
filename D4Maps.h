@@ -110,7 +110,7 @@ public:
 };
 
 /**
- * The D4Maps object holds pointers to all of the Maps used by
+ * The D4Maps object holds pointers to all the Maps used by
  * a given Array.
  */
 class D4Maps {
@@ -120,7 +120,7 @@ public:
 
 private:
     vector<D4Map *> d_maps;
-    const Array *d_parent; // Array these Maps belong to; weak pointer
+    const Array *d_parent = nullptr; // Array these Maps belong to; weak pointer
 
     void m_duplicate(const D4Maps &maps, const Array *parent) {
         d_parent = parent;
@@ -140,8 +140,8 @@ public:
     D4Maps(const D4Maps &maps, const Array *parent) { m_duplicate(maps, parent); }
 
     virtual ~D4Maps() {
-        for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i)
-            delete *i;
+        for (const auto &d_map : d_maps)
+            delete d_map;
     }
 
     // I deleted this because this class needs to set the _parent_ pointer to
@@ -156,8 +156,10 @@ public:
     void add_map(D4Map *map) { d_maps.push_back(map); }
 
     void remove_map(D4Map *map) {
-        // TODO Refactor this to use erase() and find_if(). There is no reason
-        //  to code an explicit loop like this in C++11. jhrg 9/16/22
+        d_maps.erase(
+            std::remove_if(d_maps.begin(), d_maps.end(), [&map](const D4Map *m) { return m->name() == map->name(); }),
+            d_maps.end());
+#if 0
         for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i) {
             /* && (*i)->parent() == map->parent() */
             // Don't test if the map->parent() matches - we only care about the name and array.
@@ -169,9 +171,10 @@ public:
                 break;
             }
         }
+#endif
     }
 
-    D4Map *get_map(int i) { return d_maps.at(i); }
+    D4Map *get_map(int i) const { return d_maps.at(i); }
 
     D4MapsIter map_begin() { return d_maps.begin(); }
     D4MapsIter map_end() { return d_maps.end(); }
@@ -180,8 +183,8 @@ public:
     bool empty() const { return d_maps.empty(); }
 
     virtual void print_dap4(XMLWriter &xml) {
-        for (D4MapsIter i = d_maps.begin(), e = d_maps.end(); i != e; ++i)
-            (*i)->print_dap4(xml);
+        for (const auto &d_map : d_maps)
+            d_map->print_dap4(xml);
     }
 };
 

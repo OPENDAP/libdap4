@@ -115,16 +115,12 @@ public:
      * @param das_file
      * @return A pointer to the new DMR; caller must delete
      */
-    DMR *build_dmr(const string &dds_file, const string &das_file = "") {
+    DMR *build_dmr(const string &dds_file, const string &das_file = "") const {
         DBG(cerr << __func__ << "() - BEGIN" << endl);
         DBG(cerr << __func__ << "() - dds_file: " << dds_file << endl);
         DBG(cerr << __func__ << "() - das_file: " << das_file << endl);
 
         try {
-#if 0
-            string prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
-#endif
-
             BaseTypeFactory factory;
             DDS dds(&factory, dds_file);
             dds.parse(d_prefix + dds_file);
@@ -176,9 +172,9 @@ public:
     }
 
     // This will now write out the 'result' responses to file when debug is true. jhrg 8/1/25
-    void test_roundtrip_template(const string &dds_file, const string &dmr_baseline, const string &das_file = "") {
+    void test_roundtrip_template(const string &dds_file, const string &dmr_baseline,
+                                 const string &das_file = "") const {
         DBG(cerr << __func__ << "() - BEGIN" << endl);
-
         unique_ptr<DMR> dmr = nullptr;
         try {
             dmr.reset(build_dmr(dds_file, das_file));

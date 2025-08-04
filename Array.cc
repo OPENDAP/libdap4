@@ -255,14 +255,14 @@ bool Array::is_dap2_grid() {
  *
  * This transformation may return an Array or a Grid object. The DAP2 Grid construct
  * is semantically contained in the DAP4 concept of arrays with Map arrays. If all
- * of the Maps are one dimensional then the D4Array can be represented as a
+ * the Maps are one dimensional, then the D4Array can be represented as a
  * Grid object.
  *
- * @param  The AttrTable pointer parent_attr_table is used by Groups, which disappear
- * from the DAP2 representation. Their children are returned in the the BAseType vector
+ * @param The AttrTable pointer parent_attr_table is used by Groups, which disappear
+ * from the DAP2 representation. Their children are returned in to the BAseType vector
  * their attributes are added to parent_attr_table.
  * @return A pointer to a vector of BaseType pointers (right?). In this D4Array case
- * returned vector may contain a DAP2 Array or a Grid. Or, if the Array' prototype is
+ * returned vector may contain a DAP2 Array or a Grid. Or, if the Array's prototype is
  * a type that cannot be represented in DAP2 the return will be NULL.
  */
 std::vector<BaseType *> *Array::transform_to_dap2(AttrTable *, bool show_shared_dims) {
@@ -272,16 +272,16 @@ std::vector<BaseType *> *Array::transform_to_dap2(AttrTable *, bool show_shared_
     if (!is_dap4()) { // Don't convert a DAP2 thing
         dest = ptr_duplicate();
     } else {
-        // At this point we have a DAP4 Array. It have D4Attributes and nothing
+        // At this point, we have a DAP4 Array. It may have D4Attributes and nothing
         // in the DAP2 AttrTable (which is held as a reference, defined in BaseType).
-        // This test determines in the D4 Array qualifies as a D2 Grid.
+        // This test determines if the D4 Array qualifies as a D2 Grid.
         if (is_dap2_grid()) {
             // Oh yay! Grids are special.
             DBG(cerr << __func__ << "() - Array '" << name() << "' is dap2 Grid!" << endl);
             ;
             Grid *g = new Grid(name());
             dest = g;
-            Array *grid_array = static_cast<Array *>(ptr_duplicate());
+            auto *grid_array = static_cast<Array *>(ptr_duplicate());
             grid_array->set_is_dap4(false);
             g->set_array(grid_array);
 
@@ -294,19 +294,17 @@ std::vector<BaseType *> *Array::transform_to_dap2(AttrTable *, bool show_shared_
                 throw InternalErr(__FILE__, __LINE__, string("Could not get the root group for ").append(this->name()));
             D4Maps *d4_maps = this->maps();
             vector<BaseType *> dropped_maps;
-            D4Maps::D4MapsIter miter = d4_maps->map_begin();
-            D4Maps::D4MapsIter end = d4_maps->map_end();
-            for (; miter != end; miter++) {
-                D4Map *d4_map = (*miter);
-                Array *d4_map_array = const_cast<Array *>(d4_map->array());
-                vector<BaseType *> *d2_result =
+            auto miter = d4_maps->map_begin();
+            for (auto end = d4_maps->map_end(); miter != end; miter++) {
+                const D4Map *d4_map = (*miter);
+                auto *d4_map_array = const_cast<Array *>(d4_map->array());
+                const vector<BaseType *> *d2_result =
                     d4_map_array->transform_to_dap2(&(g->get_attr_table()), show_shared_dims);
                 if (d2_result) {
                     if (d2_result->size() > 1)
                         throw Error(internal_error, "D4Map Array conversion resulted in multiple DAP2 objects.");
 
-                    // TODO - This is probably slow and needs a better pattern. const_cast? static_cast?
-                    Array *d2_map_array = dynamic_cast<Array *>((*d2_result)[0]);
+                    auto *d2_map_array = dynamic_cast<Array *>((*d2_result)[0]);
                     if (d2_map_array) {
                         if (d2_map_array->dimensions() != 1)
                             throw Error(internal_error,

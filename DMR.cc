@@ -144,7 +144,7 @@ DMR &DMR::operator=(const DMR &rhs) {
 
 /**
  * If we have a DDS that includes Attributes, use it to build the DMR. This
- * will copy all of the variables in the DDS into the DMR using BaseType::transform_to_dap4(),
+ * will copy all the variables in the DDS into the DMR using BaseType::transform_to_dap4(),
  * so the actual types added can be controlled by code that specializes
  * the various type classes.
  *
