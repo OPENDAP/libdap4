@@ -274,7 +274,8 @@ public:
 
     void test_grid_rt_02() {
         DBG(cerr << endl << __func__ << "() - BEGIN: " << "Testing Grid->D4Array->Grid with 'correct' DAS." << endl);
-        // Replaced "coads_climatology.nc.full.dmr" with "coads_climatology.nc.dmr". jhrg 8/1/25
+        // Replaced "coads_climatology.nc.full.dmr" with "coads_climatology.nc.dmr". The
+        // difference is only in the order of the variables. jhrg 8/1/25
         // Replaced "coads_climatology.nc.correct.das" with "coads_climatology.nc.das". The 'correct'
         // DAS seems to be one without the attributes for the 'extra' copies of the Dimensions.
         // This was a long-running debate, but those appear to be the default output of our server.
@@ -286,8 +287,7 @@ public:
     void test_grid_rt_03() {
         DBG(cerr << endl << __func__ << "() - BEGIN: " << "Testing Grid->D4Array->Grid with flat DAS." << endl);
         // Replaced "coads_climatology.nc.full.dmr" with "coads_climatology.nc.dmr". jhrg 8/1/25
-        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.dmr",
-                                "coads_climatology.nc.flat.das");
+        test_roundtrip_template("coads_climatology.nc.dds", "coads_climatology.nc.dmr", "coads_climatology.nc.das");
         DBG(cerr << __func__ << "() - END" << endl);
     }
 
