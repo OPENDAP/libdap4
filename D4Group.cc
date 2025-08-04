@@ -26,11 +26,18 @@
 
 #include <cassert>
 
+#include <iomanip>
 #include <iostream>
+#include <map>
 #include <sstream>
+
+#include <cstdint>
+
+#include "crc.h"
 
 #include "Array.h"
 #include "BaseType.h"
+#include "Grid.h"
 
 #include "D4Attributes.h"
 #include "D4Dimensions.h"
@@ -132,11 +139,6 @@ D4Group::~D4Group() {
         delete *i++;
 }
 
-#if 0
-D4Group *
-
-// I think this was a mistake. jhrg 11/17/16
-#endif
 BaseType *D4Group::ptr_duplicate() { return new D4Group(*this); }
 
 D4Group &D4Group::operator=(const D4Group &rhs) {
@@ -180,7 +182,7 @@ D4Group *D4Group::find_grp_internal(const string &grp_path) {
             return nullptr;
     }
 }
-// TODO Add constraint param? jhrg 11/17/13
+// Add constraint param? jhrg 11/17/13
 BaseType *D4Group::find_first_var_that_uses_dimension(D4Dimension *dim) {
     // for each group, starting with the root group
     //    for each variable in the group that is marked to send and is an array
@@ -281,7 +283,6 @@ D4Dimension *D4Group::find_dim(const string &path) {
 Array *D4Group::find_map_source(const string &path) {
     BaseType *map_source = m_find_map_source_helper(path);
 
-    // TODO more complete semantic checking jhrg 10/16/13
     if (map_source && map_source->type() == dods_array_c)
         return static_cast<Array *>(map_source);
 
@@ -495,26 +496,7 @@ void D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
         // Only send the stuff in the current subset.
         if ((*i)->send_p()) {
-#if 0
-		    checksum.Reset();
-#endif
             (*i)->intern_data(/*checksum, dmr, eval*/);
-#if 0
-			D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
-
-			ostringstream oss;
-		    oss.setf(ios::hex, ios::basefield);
-		    oss << setfill('0') << setw(8) << checksum.GetCrc32();
-            a->add_value(oss.str());
-#if INCLUDE_SOURCE_BYTE_ORDER
-	        if (um.is_source_big_endian())
-	            a->add_value("source:big-endian");
-	        else
-	            a->add_value("source:little-endian");
-#endif
-	        (*i)->attributes()->add_attribute_nocopy(a);
-			DBG(cerr << "CRC32: " << oss.str() << " for " << (*i)->name() << endl);
-#endif
         }
     }
 }
@@ -531,18 +513,6 @@ void D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
 void D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter) {
-#if 0
-    // This will call Constructor read which will, for everything but a Sequence,
-    // read all of the data in one shot. However, the serialize() methods for the
-    // Arrays, Structures, etc., also have read() calls in them and those can be
-    // used to control how long the data are in memory, e.g., limiting the lifetime
-    // of a large array and avoiding having overlapping arrays when they are not
-    // needed. For a sequence read() has different semantics. It is called once
-    // for every instance and the read_p flag is not used.
-    if (!read_p())
-        read();  // read() throws Error
-#endif
-
     groupsIter g = d_groups.begin();
     while (g != d_groups.end())
         (*g++)->serialize(m, dmr, filter);
@@ -712,37 +682,15 @@ void D4Group::print_val(ostream &out, string space, bool print_decl_p) {
         out << ";\n";
 }
 
-#if 0
-/** @brief DAP4 to DAP2 transform
+/**
+ * @brief Transform the D4Group's variables to DAP2 variables
  *
- * D4Group objects, with the exception of the root group, "disappear"
- * into the names of their member variables. Specifically the Group
- * name is add as a prefix followed by a "/" separator to the names
- * of all of the Group's member groups variables. The Group attributes
- * (metadata) are transfered to the parent_attr_table. The Group
- * members are collected returned in vector.
- *
- * @param  The AttrTable pointer parent_attr_table is used by Groups, which disappear
- * from the DAP2 representation. Their children are returned in the the BaseType vector
- * their attributes are added to parent_attr_table;
- * @return A pointer to a vector of BaseType pointers (right?). In this D4Group case the
- * vector will contain DAP2 versions of all of the member variables of the D4Group instance.
- * (ex: UInt64) the will return a NULL pointer and so this must be tested!
- */
-vector<BaseType *> *
-D4Group::transform_to_dap2(AttrTable *parent_attr_table)
-{
-    return transform_to_dap2(parent_attr_table, false);
-}
-#endif
-/** @brief Transform the D4Group's variables to DAP2 variables
- *
- * For all of the variables in a D4Group, build a vector of DAP2 variables
+ * For all the variables in a D4Group, build a vector of DAP2 variables
  * that can be directly added to DDS object. Extract the DAP4 variables'
- * attributes and transfer them the the AttrTable object passed as the first
+ * attributes and transfer them to the AttrTable object passed as the first
  * argument.
  *
- * For all variables in the D4Group that are members of child groups (i.e,
+ * For all variables in the D4Group that are members of child groups (i.e.,
  * not the root group), the name of the group (or names of the groups) will
  * be prepended to the name of the variable. Group names are separated using
  * a '/' character.
@@ -752,37 +700,33 @@ D4Group::transform_to_dap2(AttrTable *parent_attr_table)
  * @todo Fix the comment.
  *
  * @param parent_attr_table The AttrTable pointer parent_attr_table is used by Groups, which disappear
- * from the DAP2 representation. Their children are returned in the the BaseType vector
+ * from the DAP2 representation. Their children are returned in to the BaseType vector
  * their attributes are added to parent_attr_table;
- * @return A pointer to a vector of BaseType pointers (right?). In this D4Group case the
- * vector will contain DAP2 versions of all of the member variables of the D4Group instance.
+ * @param show_shared_dims is false by default;
+ * @return A pointer to a vector of BaseType pointers. In this case, the
+ * vector will contain DAP2 versions of the D4Group's variables.
  * (ex: UInt64) the will return a NULL pointer and so this must be tested!
  */
-vector<BaseType *> *D4Group::transform_to_dap2(AttrTable *parent_attr_table) {
+vector<BaseType *> *D4Group::transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims) {
     DBG(cerr << __func__ << "() - BEGIN (" << name() << ")" << endl);
 
-    vector<BaseType *> *results = new vector<BaseType *>(); // LEAK
+    auto *results = new vector<BaseType *>(); // LEAK
 
     // Get the D4Group's attributes
-#if 0
-    AttrTable *group_attrs = attributes()->get_AttrTable(name());
-#else
-    AttrTable *group_attrs = new AttrTable();
+    auto *group_attrs = new AttrTable();
     attributes()->transform_attrs_to_dap2(group_attrs);
     group_attrs->set_name(name());
-#endif
 
     // If this is the root group then copy all of its attributes into the parent_attr_table.
     // The group_attrs AttrTable* above will be replaced by the parent_attr_table.
-    bool is_root = (name() == "/");
+    const bool is_root = (name() == "/");
 
     if (is_root) {
-        assert(name() == "/");
-        for (AttrTable::Attr_iter i = group_attrs->attr_begin(), e = group_attrs->attr_end(); i != e; ++i) {
+        for (auto i = group_attrs->attr_begin(), e = group_attrs->attr_end(); i != e; ++i) {
             if ((*i)->type == Attr_container) {
                 // copy the source container so that the DAS passed in can be
                 // deleted after calling this method.
-                AttrTable *at = new AttrTable(*(*i)->attributes);
+                auto *at = new AttrTable(*(*i)->attributes);
                 parent_attr_table->append_container(at, at->get_name());
             } else {
                 parent_attr_table->append_attr((*i)->name, AttrType_to_String((*i)->type), (*i)->attr,
@@ -794,51 +738,68 @@ vector<BaseType *> *D4Group::transform_to_dap2(AttrTable *parent_attr_table) {
     }
 
     // Now we process the child variables of this group
-
+    map<string, Array *, std::less<>> potential_shared_dims; // Holds Grid maps, see below. jhrg 10/3/19
     vector<BaseType *> dropped_vars;
-    for (D4Group::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
+    for (auto var : d_vars) {
+        // for (D4Group::Vars_citer i = var_begin(), e = var_end(); i != e; ++i) {
 
         DBG(cerr << __func__ << "() - Processing member variable '" << (*i)->name()
                  << "' root: " << (is_root ? "true" : "false") << endl);
 
-        vector<BaseType *> *new_vars = (*i)->transform_to_dap2(group_attrs);
-        if (new_vars) { // Might be un-mappable
-            // It's not so game on..
-            for (vector<BaseType *>::iterator vi = new_vars->begin(), ve = new_vars->end(); vi != ve; vi++) {
-                string new_name = (is_root ? "" : FQN()) + (*vi)->name();
-                (*vi)->set_name(new_name);
-                (*vi)->set_parent(NULL);
-                results->push_back((*vi));
-#if 0
-                (*vi) = NULL;
-#endif
+        const vector<BaseType *> *new_vars = var->transform_to_dap2(group_attrs, show_shared_dims);
+        if (new_vars) { // Might be unmappable
+            // It's mappable, so game on...
+            for (auto &new_var : *new_vars) {
+                string new_name = (is_root ? "" : FQN()) + new_var->name();
+                new_var->set_name(new_name);
+                new_var->set_parent(nullptr);
+                results->push_back(new_var);
+                // collect all map dimensions from grids if show_shared_dims is false
+                if (!show_shared_dims && new_var->type() == dods_grid_c) {
+                    // Add only one copy of each Map with the same name
+                    auto *g = static_cast<Grid *>(new_var);
+                    for (auto m = g->map_begin(); m != g->map_end(); ++m) {
+                        if (!potential_shared_dims[(*m)->name()])
+                            potential_shared_dims[(*m)->name()] = dynamic_cast<Array *>(*m);
+                    }
+                }
                 DBG(cerr << __func__ << "() - Added member variable '" << (*i)->name() << "' "
                          << "to results vector. root: " << (is_root ? "true" : "false") << endl);
             }
-
             delete new_vars;
         } else {
             DBG(cerr << __func__ << "() - Dropping member variable " << (*i)->name()
                      << " root: " << (is_root ? "true" : "false") << endl);
             // Got back a NULL, so we are dropping this var.
-            dropped_vars.push_back(*i);
+            dropped_vars.push_back(var);
+        }
+    }
+
+    // If we're not showing shared dimensions, then remove the dimensions
+    if (!show_shared_dims) {
+        for (auto it = results->end(); it != results->begin();) {
+            --it;
+            if (potential_shared_dims.find((*it)->name()) != potential_shared_dims.end()) {
+                delete *it;
+                it = results->erase(it);
+            }
         }
     }
 
     // Process dropped DAP4 vars
     DBG(cerr << __func__ << "() - Processing " << dropped_vars.size() << " Dropped Variable(s)" << endl);
-
     AttrTable *dv_attr_table = make_dropped_vars_attr_table(&dropped_vars);
     if (dv_attr_table) {
         group_attrs->append_container(dv_attr_table, dv_attr_table->get_name());
     }
 
     // Get all the child groups.
-    for (D4Group::groupsIter gi = grp_begin(), ge = grp_end(); gi != ge; ++gi) {
-        vector<BaseType *> *d2_vars = (*gi)->transform_to_dap2(group_attrs);
+    for (auto group : d_groups) {
+        // for (auto gi = grp_begin(), ge = grp_end(); gi != ge; ++gi) {
+        const vector<BaseType *> *d2_vars = group->transform_to_dap2(group_attrs, false);
         if (d2_vars) {
-            for (vector<BaseType *>::iterator i = d2_vars->begin(), e = d2_vars->end(); i != e; ++i) {
-                results->push_back(*i);
+            for (auto &d2_var : *d2_vars) {
+                results->push_back(d2_var);
             }
         }
         delete d2_vars;

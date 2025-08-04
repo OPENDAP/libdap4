@@ -12,9 +12,9 @@ Attributes {
         }
     }
     HDF_GLOBAL {
-        String Producer_Agency "OPeNDAP\\000";
-        String Producer_Institution "OPENDAP\\000";
-        String Sensor_Name "TESTS\\000";
-        String Project_ID "TESTS\\000";
+        String Producer_Agency "OPeNDAP";
+        String Producer_Institution "OPENDAP";
+        String Sensor_Name "TESTS";
+        String Project_ID "TESTS";
     }
 }
