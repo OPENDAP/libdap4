@@ -186,7 +186,7 @@ public:
             DBG(cerr << prolog << "  No Checksums: " << std::setw(10) << elapsed_without << " µs" << endl);
         }
         double ratio = 100 * (double)elapsed_with / (double)elapsed_without;
-        DBG(cerr << prolog << "         Ratio: " << ratio << endl);
+        DBG(cerr << prolog << "             Ratio: " << ratio << endl);
     }
     // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
     void test_scalars_with_checksums() { test_scalars(true, path + "/test_scalars_1_bin.dat"); }
