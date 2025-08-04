@@ -183,42 +183,46 @@ void DMR::build_using_dds(DDS &dds) {
  *
  * Build a DDS from a DMR, collapsing DAP4 Groups, transforming Arrays to Grids
  * as needed, and moving the attributes around to match the new variables. All
- * of the variables in the returned DDS object are newly allocated with separate
+ * the variables in the returned DDS object are newly allocated with separate
  * lifetimes from the objects in the DMR. They are made using ptr_duplicate()
- * so that all of the variables mirror specializations for the various types.
+ * so that all the variables mirror specializations for the various types.
  * That is, if the HDF5 handler built the DMR, then the resulting DDS will hold
  * instances of H5Int32, etc.
  *
  * @note The caller is responsible for deleting the resulting DDS object.
  *
+ * @param show_shared_dims If true, include the 'extra' dimension variables
+ * as is done for the netCDF handler. The default is true.
+ *
  * @return A pointer to the newly allocated DDS.
  */
-DDS *DMR::getDDS() {
-    DBG(cerr << __func__ << "() - BEGIN" << endl);
-
+DDS *DMR::getDDS(const bool show_shared_dims) {
     BaseTypeFactory btf;
-    DDS *dds = new DDS(&btf, name());
+    auto dds = make_unique<DDS>(&btf, name());
+
+    // Rename DDS container if there is a group with explicit container's name
+    string cname;
+    for (auto &group : root()->groups()) {
+        size_t pos = group->name().find("_excon");
+        if (pos != string::npos) {
+            cname = group->name().substr(0, pos);
+        }
+    }
+    if (!cname.empty())
+        dds->container_name(cname);
+
     dds->filename(filename());
 
     // Now copy the global attributes
-    // TODO Make this a unique_ptr<> and let the compiler delete it. jhrg 6/17/19
-    // change made jhrg 2/4/22
-#if 1
-    unique_ptr<vector<BaseType *>> top_vars(root()->transform_to_dap2(&(dds->get_attr_table()) /*, true*/));
-    for (vector<BaseType *>::iterator i = top_vars->begin(), e = top_vars->end(); i != e; i++) {
-        dds->add_var_nocopy(*i);
-    }
-#else
-    vector<BaseType *> *top_vars = root()->transform_to_dap2(&(dds->get_attr_table()) /*, true*/);
-    for (vector<BaseType *>::iterator i = top_vars->begin(), e = top_vars->end(); i != e; i++) {
-        dds->add_var_nocopy(*i);
-    }
-    delete top_vars;
-#endif
-    DBG(cerr << __func__ << "() - END" << endl);
+    const unique_ptr<vector<BaseType *>> top_vars(
+        root()->transform_to_dap2(&(dds->get_attr_table()) /*, true*/, show_shared_dims));
 
-    dds->set_factory(0);
-    return dds;
+    for (const auto &var : *top_vars) {
+        dds->add_var_nocopy(var);
+    }
+
+    dds->set_factory(nullptr);
+    return dds.release();
 }
 
 /**

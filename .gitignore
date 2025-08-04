@@ -202,6 +202,9 @@ unit-tests/IsDap4ProjectedTest
 unit-tests/util_mitTest
 unit-tests/MarshallerFutureTest
 
+d4_ce/unit-tests/D4ConstraintEvaluatorTest
+d4_ce/unit-tests/test_config.h
+http_dap/unit-tests/HTTPThreadsConnectTest
 
 unit-tests/chunked-io/
 /bw-output/
