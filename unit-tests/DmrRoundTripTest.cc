@@ -198,7 +198,7 @@ public:
             CPPUNIT_ASSERT(result_dmr == baseline_dmr);
 
             unique_ptr<DDS> dds = nullptr;
-            dds.reset(dmr->getDDS(true)); // TODO Should this be the default. jhrg 8/4/25
+            dds.reset(dmr->getDDS(true)); // This is the default. jhrg 8/4/25
 
             std::ostringstream result_dds;
             dds->print(result_dds);
@@ -295,10 +295,10 @@ public:
         DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
         // When debug is true, the DMR will print. jhrg 8/1/25
         const auto dmr = parse_dmr(d_prefix + "coads_climatology.nc.dmr", debug);
-        const auto dds = dmr->getDDS(true);
+        const unique_ptr<DDS> dds(dmr->getDDS());
         ostringstream oss;
         dds->print(oss);
-        string baseline_dds = read_test_baseline(d_prefix + "coads_climatology.nc.dds");
+        const string baseline_dds = read_test_baseline(d_prefix + "coads_climatology.nc.dds");
         CPPUNIT_ASSERT_MESSAGE("The DDS build from the DMR should match the baseline.", baseline_dds == oss.str());
     }
 

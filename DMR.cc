@@ -203,7 +203,7 @@ DDS *DMR::getDDS(const bool show_shared_dims) {
     // Rename DDS container if there is a group with explicit container's name
     string cname;
     for (auto &group : root()->groups()) {
-        size_t pos = group->name().find("_excon");
+        const size_t pos = group->name().find("_excon");
         if (pos != string::npos) {
             cname = group->name().substr(0, pos);
         }
