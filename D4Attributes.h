@@ -92,7 +92,7 @@ public:
 
     void print_dap4(XMLWriter &xml) const;
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 };
 
 class D4Attributes : public DapObj {
@@ -161,7 +161,7 @@ public:
 
     void print_dap4(XMLWriter &xml) const;
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 };
 
 string D4AttributeTypeToString(D4AttributeType at);

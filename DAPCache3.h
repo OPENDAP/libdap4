@@ -151,7 +151,7 @@ public:
     static BESCache3 *get_instance(BESKeys *keys, const string &cache_dir_key, const string &prefix_key, const string &size_key);
 #endif
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap

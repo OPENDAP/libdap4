@@ -189,7 +189,7 @@ public:
     virtual void print(FILE *out, bool dereference = false);
     virtual void print(ostream &out, bool dereference = false);
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap

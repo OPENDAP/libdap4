@@ -109,43 +109,43 @@ public:
     string get_checksum_str();
     int64_t get_count();
 
-    virtual void get_byte(dods_byte &val);
+    virtual void get_byte(dods_byte &val) override;
     virtual void get_int8(dods_int8 &val);
 
-    virtual void get_int16(dods_int16 &val);
-    virtual void get_int32(dods_int32 &val);
+    virtual void get_int16(dods_int16 &val) override;
+    virtual void get_int32(dods_int32 &val) override;
 
     virtual void get_int64(dods_int64 &val);
 
-    virtual void get_float32(dods_float32 &val);
-    virtual void get_float64(dods_float64 &val);
+    virtual void get_float32(dods_float32 &val) override;
+    virtual void get_float64(dods_float64 &val) override;
 
-    virtual void get_uint16(dods_uint16 &val);
-    virtual void get_uint32(dods_uint32 &val);
+    virtual void get_uint16(dods_uint16 &val) override;
+    virtual void get_uint32(dods_uint32 &val) override;
 
     virtual void get_uint64(dods_uint64 &val);
 
-    virtual void get_str(string &val);
-    virtual void get_url(string &val);
+    virtual void get_str(string &val) override;
+    virtual void get_url(string &val) override;
 
-    virtual void get_opaque(char *, unsigned int) {
+    virtual void get_opaque(char *, unsigned int) override {
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4, use get_opaque_dap4() instead.");
     }
 
     virtual void get_opaque_dap4(char **val, int64_t &len);
     virtual void get_opaque_dap4(vector<uint8_t> &val);
 
-    virtual void get_int(int &) { throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4"); }
+    virtual void get_int(int &) override { throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4"); }
 
     // Note that DAP4 assumes clients know the size of arrays when they
     // read the data; it's the 'varying' get methods that read & return the
     // number of elements. These methods are here to appease the UnMarshaller
     // 'interface' code
-    virtual void get_vector(char **, unsigned int &, Vector &) {
+    virtual void get_vector(char **, unsigned int &, Vector &) override {
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
 
-    virtual void get_vector(char **, unsigned int &, int, Vector &) {
+    virtual void get_vector(char **, unsigned int &, int, Vector &) override {
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
 
@@ -154,7 +154,7 @@ public:
     virtual void get_vector_float32(char *val, int64_t num_elem);
     virtual void get_vector_float64(char *val, int64_t num_elem);
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap

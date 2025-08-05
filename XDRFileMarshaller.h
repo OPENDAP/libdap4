@@ -52,27 +52,27 @@ public:
     XDRFileMarshaller(FILE *out);
     virtual ~XDRFileMarshaller();
 
-    virtual void put_byte(dods_byte val);
+    virtual void put_byte(dods_byte val) override;
 
-    virtual void put_int16(dods_int16 val);
-    virtual void put_int32(dods_int32 val);
+    virtual void put_int16(dods_int16 val) override;
+    virtual void put_int32(dods_int32 val) override;
 
-    virtual void put_float32(dods_float32 val);
-    virtual void put_float64(dods_float64 val);
+    virtual void put_float32(dods_float32 val) override;
+    virtual void put_float64(dods_float64 val) override;
 
-    virtual void put_uint16(dods_uint16 val);
-    virtual void put_uint32(dods_uint32 val);
+    virtual void put_uint16(dods_uint16 val) override;
+    virtual void put_uint32(dods_uint32 val) override;
 
-    virtual void put_str(const string &val);
-    virtual void put_url(const string &val);
+    virtual void put_str(const string &val) override;
+    virtual void put_url(const string &val) override;
 
-    virtual void put_opaque(char *val, unsigned int len);
-    virtual void put_int(int val);
+    virtual void put_opaque(char *val, unsigned int len) override;
+    virtual void put_int(int val) override;
 
-    virtual void put_vector(char *val, int num, Vector &vec);
-    virtual void put_vector(char *val, int num, int width, Vector &vec);
+    virtual void put_vector(char *val, int num, Vector &vec) override;
+    virtual void put_vector(char *val, int num, int width, Vector &vec) override;
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap
