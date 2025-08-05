@@ -87,7 +87,9 @@ class D4MarshallerTest : public CppUnit::TestFixture {
     /**
      * Compare the contents of a file with a memory buffer
      */
-    bool cmp(const char *buf, unsigned int len, string file) {
+    bool cmp(const char *buf, unsigned long long len, string file) {
+
+        DBG(cerr << prolog << "buf: " << ((void *)buf) << ", len: " << len << ", baseline_file:" << file << endl);
         fstream in;
         in.open(file.c_str(), fstream::binary | fstream::in);
         if (!in)
@@ -101,11 +103,13 @@ class D4MarshallerTest : public CppUnit::TestFixture {
             throw Error(oss.str());
         }
 
-        for (unsigned int i = 0; i < len; ++i)
+        for (unsigned long long i = 0; i < len; ++i)
             if (buf[i] != fbuf[i]) {
-                DBG(cerr << prolog << "Response differs from baseline at byte " << i << endl);
-                DBG(cerr << prolog << "Expected: " << setfill('0') << setw(2) << hex << (unsigned int)fbuf[i]
-                         << "; got: " << (unsigned int)buf[i] << dec << endl);
+                cerr << prolog << "Response differs from baseline at byte " << i << endl;
+                cerr << prolog << "Baseline File[" << i << "]: 0x";
+                cerr << setfill('0') << setw(2) << hex << static_cast<unsigned int>(fbuf[i]) << "; test result: 0x"
+                     << static_cast<unsigned int>(buf[i]) << dec << endl;
+
                 return false;
             }
 
@@ -407,9 +411,14 @@ public:
             }
 
             if (!baseline_file.empty()) {
-                if (write_baselines)
+
+                if (write_baselines) {
                     write_binary_file(oss.str().data(), oss.str().length(), baseline_file);
-                CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), baseline_file));
+                }
+
+                const auto data = oss.str();
+                const auto str_len = data.length();
+                CPPUNIT_ASSERT(cmp(data.c_str(), str_len, baseline_file));
             }
         } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
