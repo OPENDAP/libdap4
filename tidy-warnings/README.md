@@ -189,15 +189,15 @@ if __name__ == "__main__":
 
 1. Make it executable:
 
-   ```bash
+```bash
    chmod +x apply_overrides.py
-   ```
+```
 
 2. Run it against your list:
 
-   ```bash
+```bash
    ./apply_overrides.py override_list.txt
-   ```
+```
 
 This will:
 
