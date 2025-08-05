@@ -1,0 +1,14 @@
+/Users/jimg/src/opendap/hyrax/libdap4/Structure.h	ptr_duplicate
+/Users/jimg/src/opendap/hyrax/libdap4/Structure.h	transform_to_dap4
+/Users/jimg/src/opendap/hyrax/libdap4/Structure.h	is_linear
+/Users/jimg/src/opendap/hyrax/libdap4/Sequence.h	ptr_duplicate
+/Users/jimg/src/opendap/hyrax/libdap4/Sequence.h	clear_local_data
+/Users/jimg/src/opendap/hyrax/libdap4/Sequence.h	transform_to_dap4
+/Users/jimg/src/opendap/hyrax/libdap4/Sequence.h	toString
+/Users/jimg/src/opendap/hyrax/libdap4/Sequence.h	is_linear
+/Users/jimg/src/opendap/hyrax/libdap4/Sequence.h	length
+/Users/jimg/src/opendap/hyrax/libdap4/Sequence.h	intern_data
+/Users/jimg/src/opendap/hyrax/libdap4/Sequence.h	serialize
+/Users/jimg/src/opendap/hyrax/libdap4/Sequence.h	deserialize
+/Users/jimg/src/opendap/hyrax/libdap4/Sequence.h	print_val
+/Users/jimg/src/opendap/hyrax/libdap4/Sequence.h	print_val
