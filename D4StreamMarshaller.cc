@@ -161,7 +161,7 @@ void D4StreamMarshaller::reset_checksum() { d_checksum.Reset(); }
 string D4StreamMarshaller::get_checksum() {
     if (!d_compute_checksum) {
         string errmsg = "Cannot get a checksum when checksums are not being computed! ";
-        errmsg.append("(d_compute_checksum: ").append(d_compute_checksum ? "true)" : "false)");
+        errmsg.append("(d_compute_checksum: false)");
         throw InternalErr(__FILE__, __LINE__, errmsg);
     }
     ostringstream oss;
@@ -180,7 +180,7 @@ string D4StreamMarshaller::get_checksum() {
 void D4StreamMarshaller::put_checksum() {
     if (!d_compute_checksum) {
         string errmsg = "Cannot put a checksum when checksums are not being computed! ";
-        errmsg.append("(d_compute_checksum: ").append(d_compute_checksum ? "true)" : "false)");
+        errmsg.append("(d_compute_checksum: false)");
         throw InternalErr(__FILE__, __LINE__, errmsg);
     }
 
