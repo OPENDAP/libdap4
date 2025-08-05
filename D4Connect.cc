@@ -149,8 +149,11 @@ void D4Connect::process_data(DMR &data, Response &rs) {
                 throw Error("Found an unexpected end of input (EOF) while reading a DAP4 data response. (1)");
 
             // get chunk
+            vector<char> chunk(chunk_size);
+#if 0
             char chunk[chunk_size];
-            cis.read(chunk, chunk_size);
+#endif
+            cis.read(chunk.data(), chunk_size);
             // parse char * with given size
             D4ParserSax2 parser;
             // permissive mode allows references to Maps that are not in the response.
@@ -158,7 +161,7 @@ void D4Connect::process_data(DMR &data, Response &rs) {
             parser.set_strict(false);
 
             // '-2' to discard the CRLF pair
-            parser.intern(chunk, chunk_size - 2, &data);
+            parser.intern(chunk.data(), chunk_size - 2, &data);
         } catch (Error &e) {
             cerr << "Exception: " << e.get_error_message() << endl;
             return;
@@ -383,15 +386,18 @@ void D4Connect::request_dap4_data(DMR &dmr, const string &dap4_ce) {
             if (chunk_size < 0)
                 throw Error("Found an unexpected end of input (EOF) while reading a DAP4 data response. (2)");
 
-            // get chunk
+                // get chunk
+#if 0
             char chunk[chunk_size];
-            cis.read(chunk, chunk_size);
+#endif
+            vector<char> chunk(chunk_size);
+            cis.read(chunk.data(), chunk_size);
             // parse char * with given size
             D4ParserSax2 parser;
             // permissive mode allows references to Maps that are not in the response.
             parser.set_strict(false);
             // '-2' to discard the CRLF pair
-            parser.intern(chunk, chunk_size - 2, &dmr, false /*debug*/);
+            parser.intern(chunk.data(), chunk_size - 2, &dmr, false /*debug*/);
 
             // Read data and store in the DMR
             D4StreamUnMarshaller um(cis, cis.twiddle_bytes());
