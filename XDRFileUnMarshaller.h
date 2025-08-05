@@ -53,25 +53,25 @@ public:
     XDRFileUnMarshaller(FILE *out);
     virtual ~XDRFileUnMarshaller();
 
-    virtual void get_byte(dods_byte &val) override;
+    void get_byte(dods_byte &val) override;
 
-    virtual void get_int16(dods_int16 &val) override;
-    virtual void get_int32(dods_int32 &val) override;
+    void get_int16(dods_int16 &val) override;
+    void get_int32(dods_int32 &val) override;
 
-    virtual void get_float32(dods_float32 &val) override;
-    virtual void get_float64(dods_float64 &val) override;
+    void get_float32(dods_float32 &val) override;
+    void get_float64(dods_float64 &val) override;
 
-    virtual void get_uint16(dods_uint16 &val) override;
-    virtual void get_uint32(dods_uint32 &val) override;
+    void get_uint16(dods_uint16 &val) override;
+    void get_uint32(dods_uint32 &val) override;
 
-    virtual void get_str(string &val) override;
-    virtual void get_url(string &val) override;
+    void get_str(string &val) override;
+    void get_url(string &val) override;
 
-    virtual void get_opaque(char *val, unsigned int len) override;
-    virtual void get_int(int &val) override;
+    void get_opaque(char *val, unsigned int len) override;
+    void get_int(int &val) override;
 
-    virtual void get_vector(char **val, unsigned int &num, Vector &vec) override;
-    virtual void get_vector(char **val, unsigned int &num, int width, Vector &vec) override;
+    void get_vector(char **val, unsigned int &num, Vector &vec) override;
+    void get_vector(char **val, unsigned int &num, int width, Vector &vec) override;
 
     void dump(ostream &strm) const override;
 };

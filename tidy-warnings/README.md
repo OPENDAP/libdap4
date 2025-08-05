@@ -206,3 +206,89 @@ This will:
 * Report each insertion with filename and line number.
 
 You can tweak the regex if you have more complex declarations, but this should handle both plain and `const` methods, as well as multiple overloads in the same file.
+
+## There's a part 3
+
+Here’s a Python script, `remove_redundant_virtual.py`, that will recursively scan your headers (by default, `.h` and `.hpp` files) and remove any leading `virtual` on lines that already contain `override`. It makes a `.bak` backup of each file before editing.
+
+```python
+#!/usr/bin/env python3
+import sys
+import shutil
+import re
+from pathlib import Path
+
+def process_file(path: Path):
+    bak = path.with_suffix(path.suffix + '.bak')
+    if not bak.exists():
+        shutil.copy2(path, bak)
+        print(f"Backed up {path} → {bak}")
+    else:
+        print(f"Backup exists: {bak}")
+
+    changed = False
+    pattern = re.compile(r'^(\s*)virtual\s+(.*\boverride\b.*)$')
+    new_lines = []
+    for lineno, line in enumerate(path.read_text().splitlines(), 1):
+        m = pattern.match(line)
+        if m:
+            indent, rest = m.groups()
+            new_line = f"{indent}{rest}"
+            if new_line != line:
+                print(f"{path}:{lineno}: removed redundant 'virtual'")
+                line = new_line
+                changed = True
+        new_lines.append(line)
+
+    if changed:
+        path.write_text("\n".join(new_lines) + "\n")
+        print(f"Updated {path}\n")
+    else:
+        print(f"No changes in {path}\n")
+
+def main():
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} <file-or-dir> [<file-or-dir> ...]", file=sys.stderr)
+        sys.exit(1)
+
+    for arg in sys.argv[1:]:
+        p = Path(arg)
+        if p.is_dir():
+            for ext in ('*.h', '*.hpp'):
+                for file in p.rglob(ext):
+                    process_file(file)
+        elif p.is_file():
+            process_file(p)
+        else:
+            print(f"Warning: not found: {arg}", file=sys.stderr)
+
+if __name__ == '__main__':
+    main()
+```
+
+### How it works
+
+1. **Backup**
+   Before editing `Foo.h` it makes `Foo.h.bak` (unless already present).
+
+2. **Pattern**
+   It looks for lines matching:
+
+   ```regex
+   ^(\s*)virtual\s+(.*\boverride\b.*)$
+   ```
+
+   * Captures any leading whitespace,
+   * ensures `override` appears later on the line,
+   * then strips out the `virtual `.
+
+3. **Usage**
+
+   ```bash
+   chmod +x remove_redundant_virtual.py
+   ./remove_redundant_virtual.py path/to/my/project/include
+   # or specify individual files:
+   ./remove_redundant_virtual.py libdap4/Structure.h libdap4/BaseType.h
+   ```
+
+This will remove only those `virtual` keywords that are truly redundant (i.e., on the same line as `override`), leaving all other `virtual` declarations intact.

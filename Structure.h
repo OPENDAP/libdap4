@@ -90,12 +90,12 @@ public:
     virtual ~Structure();
 
     Structure &operator=(const Structure &rhs);
-    virtual BaseType *ptr_duplicate() override;
+    BaseType *ptr_duplicate() override;
 
-    virtual void transform_to_dap4(D4Group *root, Constructor *container) override;
+    void transform_to_dap4(D4Group *root, Constructor *container) override;
     std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false) override;
 
-    virtual bool is_linear() override;
+    bool is_linear() override;
 
     virtual void set_leaf_sequence(int level = 1);
 
