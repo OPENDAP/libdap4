@@ -25,6 +25,7 @@
 #ifndef D4MAPS_H_
 #define D4MAPS_H_
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
