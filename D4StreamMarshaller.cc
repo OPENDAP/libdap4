@@ -115,8 +115,8 @@ void D4StreamMarshaller::m_serialize_reals(char *val, unsigned int num, int widt
  * @param out Write to this stream object.
  * @param write_data If true, write data values. True by default
  */
-D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data)
-    : d_out(out), d_write_data(write_data), tm(nullptr) {
+D4StreamMarshaller::D4StreamMarshaller(ostream &out, bool write_data, bool compute_checksums)
+    : d_out(out), d_write_data(write_data), d_compute_checksum(compute_checksums) {
     assert(sizeof(std::streamsize) >= sizeof(int64_t));
 
 #if USE_XDR_FOR_IEEE754_ENCODING
@@ -159,6 +159,11 @@ void D4StreamMarshaller::reset_checksum() { d_checksum.Reset(); }
  * @return The checksum in a string object that always has eight characters.
  */
 string D4StreamMarshaller::get_checksum() {
+    if (!d_compute_checksum) {
+        string errmsg = "Cannot get a checksum when checksums are not being computed! ";
+        errmsg.append("(d_compute_checksum: false)");
+        throw InternalErr(__FILE__, __LINE__, errmsg);
+    }
     ostringstream oss;
     oss.setf(ios::hex, ios::basefield);
     oss << setfill('0') << setw(8) << d_checksum.GetCrc32();
@@ -173,6 +178,12 @@ string D4StreamMarshaller::get_checksum() {
  * checksum, not get_checksum().
  */
 void D4StreamMarshaller::put_checksum() {
+    if (!d_compute_checksum) {
+        string errmsg = "Cannot put a checksum when checksums are not being computed! ";
+        errmsg.append("(d_compute_checksum: false)");
+        throw InternalErr(__FILE__, __LINE__, errmsg);
+    }
+
     Crc32::checksum chk = d_checksum.GetCrc32();
 #ifdef USE_POSIX_THREADS
     Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
@@ -185,7 +196,9 @@ void D4StreamMarshaller::put_checksum() {
  * zero has no effect on the checksum value.
  */
 void D4StreamMarshaller::checksum_update(const void *data, unsigned long len) {
-    d_checksum.AddData(static_cast<const uint8_t *>(data), len);
+    if (d_compute_checksum) {
+        d_checksum.AddData(static_cast<const uint8_t *>(data), len);
+    }
 }
 
 void D4StreamMarshaller::put_byte(dods_byte val) {
