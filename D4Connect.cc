@@ -150,9 +150,6 @@ void D4Connect::process_data(DMR &data, Response &rs) {
 
             // get chunk
             vector<char> chunk(chunk_size);
-#if 0
-            char chunk[chunk_size];
-#endif
             cis.read(chunk.data(), chunk_size);
             // parse char * with given size
             D4ParserSax2 parser;
@@ -386,10 +383,7 @@ void D4Connect::request_dap4_data(DMR &dmr, const string &dap4_ce) {
             if (chunk_size < 0)
                 throw Error("Found an unexpected end of input (EOF) while reading a DAP4 data response. (2)");
 
-                // get chunk
-#if 0
-            char chunk[chunk_size];
-#endif
+            // get chunk
             vector<char> chunk(chunk_size);
             cis.read(chunk.data(), chunk_size);
             // parse char * with given size
