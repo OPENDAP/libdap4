@@ -627,7 +627,7 @@ public:
 
             parser.intern(ifs, &dmr);
 
-            unique_ptr<DDS> dds(dmr.getDDS());
+            unique_ptr<DDS> dds(dmr.getDDS(false));
             unique_ptr<DAS> das(dds->get_das());
 
             string baseline =
@@ -706,7 +706,7 @@ public:
 
             parser.intern(ifs, &dmr);
 
-            unique_ptr<DDS> dds(dmr.getDDS());
+            unique_ptr<DDS> dds(dmr.getDDS(false));
             unique_ptr<DAS> das(dds->get_das());
 
             string baseline = read_test_baseline(
@@ -734,7 +734,7 @@ public:
 
             parser.intern(ifs, &dmr);
 
-            unique_ptr<DDS> dds(dmr.getDDS());
+            unique_ptr<DDS> dds(dmr.getDDS(false));
             unique_ptr<DAS> das(dds->get_das());
 
             string baseline =

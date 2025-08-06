@@ -1,22 +1,13 @@
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+#pragma once
+#ifndef TESTFILE_H
+#define TESTFILE_H
 
 #include <string>
 
 using namespace std;
 
-#if 0
-// Never use this!
-#define FILE2string(s, f, c)                                                                                           \
-    do {                                                                                                               \
-        FILE *(f) = fopen("testout", "w");                                                                             \
-        c;                                                                                                             \
-        fclose(f);                                                                                                     \
-        s = readTestBaseline("testout");                                                                               \
-        unlink("testout");                                                                                             \
-    } while (0);
-#endif
-
 string read_test_baseline(const string &fn);
+void write_test_result(const string &file_name, const string &result);
+
+#endif

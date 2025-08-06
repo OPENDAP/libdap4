@@ -28,8 +28,6 @@
 
 #include <string>
 
-#define DAP4_CE_QUERY_KEY "dap4.ce"
-
 namespace libdap {
 
 class HTTPConnect;
@@ -53,7 +51,8 @@ private:
     // Use when you cannot use but have a complete response with MIME headers
     void parse_mime(Response &rs);
 
-    std::string build_dap4_ce(const std::string requestSuffix, const std::string expr);
+    std::string build_dap4_ce(const std::string &requestSuffix, const std::string &expr) const;
+    std::string build_dap4_ce(const std::string &requestSuffix, const std::string &expr, bool use_checksums) const;
 
 protected:
     /** @name Suppress the C++ defaults for these. */
@@ -97,7 +96,7 @@ public:
     std::string get_protocol() { return d_protocol; }
 
     virtual void request_dmr(DMR &dmr, const std::string expr = "");
-    virtual void request_dap4_data(DMR &dmr, const std::string expr = "");
+    virtual void request_dap4_data(DMR &dmr, const std::string &dap4_ce = {""});
 #if 0
     virtual void request_version();
 #endif

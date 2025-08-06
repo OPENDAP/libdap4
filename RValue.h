@@ -32,7 +32,7 @@
 #ifndef _rvalue_h
 #define _rvalue_h
 
-#include <dods-datatypes.h>
+#include "dods-datatypes.h"
 
 #include "expr.h"
 

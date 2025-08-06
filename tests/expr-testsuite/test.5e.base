@@ -1,1 +1,15 @@
+The complete DDS:
+Dataset {
+    Int32 i[20];
+    Int32 j;
+    String s;
+    Grid {
+      Array:
+        Float64 val[length = 5][width = 6][height = 7];
+      Maps:
+        Float64 length[5];
+        Float64 width[6];
+        Float64 height[7];
+    } g;
+} test1;
 Error: The number of dimensions in the constraint must match the number in the grid.

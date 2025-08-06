@@ -115,7 +115,7 @@ public:
     int get_protocol_major() const { return d_server_protocol_major; }
     int get_protocol_minor() const { return d_server_protocol_minor; }
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap

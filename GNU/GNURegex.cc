@@ -23,25 +23,9 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-// #define DODS_DEBUG
-
 #include "config.h"
 
-#if 0
-#ifndef WIN32
-#include <alloca.h>
-#endif
-#include <stdlib.h>
-
-#include <regex.h>
-#include <sys/types.h>
-
-#include <new>
-#include <stdexcept>
-#include <string>
-#include <vector>
-#endif
-
+#include <iostream>
 #include <vector>
 
 #include <regex.h>
@@ -52,17 +36,12 @@
 #include "debug.h"
 #include "util.h"
 
-#if 0
-#include "debug.h"
-#include "util.h"
-#endif
-
 using namespace std;
 
 namespace libdap {
 
-void Regex::init(const char *t) {
 #if !USE_CPP_11_REGEX
+void Regex::init(const char *t) {
     DBG(cerr << "Regex::init() - BEGIN" << endl);
 
     DBG(cerr << "Regex::init() - creating new regex..." << endl);
@@ -89,41 +68,12 @@ void Regex::init(const char *t) {
     }
     DBG(cerr << "Regex::init() - Call to regcomp() SUCCEEDED" << endl);
     DBG(cerr << "Regex::init() - END" << endl);
-#else
-    d_exp = regex(t);
-#endif
 }
 
-#if 0
-void
-Regex::init(const string &t)
-{
-    d_exp = regex(t);
-}
-#endif
-
-#if !USE_CPP_11_REGEX
 Regex::~Regex() {
     regfree(static_cast<regex_t *>(d_preg));
     delete static_cast<regex_t *>(d_preg);
     d_preg = 0;
-}
-#endif
-
-#if 0
-/** Initialize a POSIX regular expression (using the 'extended' features).
-
-    @param t The regular expression pattern. */
-Regex::Regex(const char* t)
-{
-    init(t);
-}
-
-/** Compatability ctor.
-    @see Regex::Regex(const char* t) */
-Regex::Regex(const char* t, int)
-{
-    init(t);
 }
 #endif
 

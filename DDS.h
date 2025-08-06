@@ -399,7 +399,7 @@ public:
 
     bool is_dap4_projected(std::vector<string> &inventory);
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap

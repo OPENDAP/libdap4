@@ -3,3 +3,4 @@ Dataset {
     Int32 i[20][10];
     String s;
 } test1;
+Error: The number of dimensions in the constraint must match the number in the array.

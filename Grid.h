@@ -137,14 +137,14 @@ public:
     typedef std::vector<BaseType *>::reverse_iterator Map_riter;
 
     Grid &operator=(const Grid &rhs);
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
-    virtual void transform_to_dap4(D4Group *root, Constructor *container);
+    void transform_to_dap4(D4Group *root, Constructor *container) override;
 
     virtual bool is_dap2_only_type();
 
-    virtual void add_var(BaseType *bt, Part part);
-    virtual void add_var_nocopy(BaseType *bt, Part part);
+    void add_var(BaseType *bt, Part part) override;
+    void add_var_nocopy(BaseType *bt, Part part) override;
 
     virtual void set_array(Array *p_new_arr);
     virtual Array *add_map(Array *p_new_map, bool add_copy);
@@ -162,21 +162,21 @@ public:
     virtual void clear_constraint();
 
     virtual void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                            bool constrained = false);
+                            bool constrained = false) override;
 
-    virtual void print_xml(ostream &out, string space = "    ", bool constrained = false);
-    virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
+    void print_xml(ostream &out, string space = "    ", bool constrained = false) override;
+    void print_xml_writer(XMLWriter &xml, bool constrained = false) override;
 
-    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
+    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
 
     virtual void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                            bool constrained = false);
-    virtual void print_xml(FILE *out, string space = "    ", bool constrained = false);
-    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
+                            bool constrained = false) override;
+    void print_xml(FILE *out, string space = "    ", bool constrained = false) override;
+    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
 
-    virtual void transfer_attributes(AttrTable *at_container);
+    void transfer_attributes(AttrTable *at_container) override;
 
-    virtual bool check_semantics(string &msg, bool all = false);
+    bool check_semantics(string &msg, bool all = false) override;
 
     Map_iter map_begin();
     Map_iter map_end();
@@ -184,7 +184,7 @@ public:
     Map_riter map_rend();
     Map_iter get_map_iter(int i);
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap

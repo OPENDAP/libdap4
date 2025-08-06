@@ -356,7 +356,7 @@ public:
 
     void print_dap4(XMLWriter &xml);
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 };
 
 string remove_space_encoding(const string &s);

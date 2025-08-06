@@ -60,6 +60,9 @@ using namespace std;
 
 namespace libdap {
 
+const auto DAP4_CE_QUERY_KEY = "dap4.ce";
+const auto DAP4_CE_CHECKSUM_KEY = "dap4.checksum";
+
 /** This private method process data from both local and remote sources. It
  exists to eliminate duplication of code. */
 void D4Connect::process_dmr(DMR &dmr, Response &rs) {
@@ -146,8 +149,8 @@ void D4Connect::process_data(DMR &data, Response &rs) {
                 throw Error("Found an unexpected end of input (EOF) while reading a DAP4 data response. (1)");
 
             // get chunk
-            char chunk[chunk_size];
-            cis.read(chunk, chunk_size);
+            vector<char> chunk(chunk_size);
+            cis.read(chunk.data(), chunk_size);
             // parse char * with given size
             D4ParserSax2 parser;
             // permissive mode allows references to Maps that are not in the response.
@@ -155,7 +158,7 @@ void D4Connect::process_data(DMR &data, Response &rs) {
             parser.set_strict(false);
 
             // '-2' to discard the CRLF pair
-            parser.intern(chunk, chunk_size - 2, &data);
+            parser.intern(chunk.data(), chunk_size - 2, &data);
         } catch (Error &e) {
             cerr << "Exception: " << e.get_error_message() << endl;
             return;
@@ -276,7 +279,12 @@ D4Connect::~D4Connect() {
         delete d_http;
 }
 
-std::string D4Connect::build_dap4_ce(const string requestSuffix, const string dap4ce) {
+std::string D4Connect::build_dap4_ce(const string &requestSuffix, const string &dap4ce) const {
+    return build_dap4_ce(requestSuffix, dap4ce, false);
+}
+
+std::string D4Connect::build_dap4_ce(const string &requestSuffix, const string &dap4ce,
+                                     const bool use_checksums) const {
     std::stringstream url;
     bool needsAmpersand = false;
 
@@ -292,18 +300,24 @@ std::string D4Connect::build_dap4_ce(const string requestSuffix, const string da
             url << "&";
 
         url << DAP4_CE_QUERY_KEY << "=" << id2www_ce(dap4ce);
+        needsAmpersand = true;
     }
 
-    DBG(cerr << "D4Connect::build_dap4_ce() - Source URL: " << d_URL << endl);
+    if (use_checksums) {
+        url << (needsAmpersand ? "&" : "") << DAP4_CE_CHECKSUM_KEY << "=true";
+    }
+
+    DBG(cerr << "D4Connect::build_dap4_ce() -              Source URL: " << d_URL << endl);
     DBG(cerr << "D4Connect::build_dap4_ce() - Source URL Query String: " << d_UrlQueryString << endl);
-    DBG(cerr << "D4Connect::build_dap4_ce() - dap4ce: " << dap4ce << endl);
-    DBG(cerr << "D4Connect::build_dap4_ce() - request URL: " << url.str() << endl);
+    DBG(cerr << "D4Connect::build_dap4_ce() -                  dap4ce: " << dap4ce << endl);
+    DBG(cerr << "D4Connect::build_dap4_ce() -           use_checksums: " << (use_checksums ? "true" : "false") << endl);
+    DBG(cerr << "D4Connect::build_dap4_ce() -             request URL: " << url.str() << endl);
 
     return url.str();
 }
 
 void D4Connect::request_dmr(DMR &dmr, const string expr) {
-    string url = build_dap4_ce(".dmr", expr);
+    string url = build_dap4_ce(".dmr", expr, false);
 
     Response *rs = 0;
     try {
@@ -342,8 +356,9 @@ void D4Connect::request_dmr(DMR &dmr, const string expr) {
     delete rs;
 }
 
-void D4Connect::request_dap4_data(DMR &dmr, const string expr) {
-    string url = build_dap4_ce(".dap", expr);
+void D4Connect::request_dap4_data(DMR &dmr, const string &dap4_ce) {
+
+    string url = build_dap4_ce(".dap", dap4_ce, dmr.use_checksums());
 
     Response *rs = 0;
     try {
@@ -369,14 +384,14 @@ void D4Connect::request_dap4_data(DMR &dmr, const string expr) {
                 throw Error("Found an unexpected end of input (EOF) while reading a DAP4 data response. (2)");
 
             // get chunk
-            char chunk[chunk_size];
-            cis.read(chunk, chunk_size);
+            vector<char> chunk(chunk_size);
+            cis.read(chunk.data(), chunk_size);
             // parse char * with given size
             D4ParserSax2 parser;
             // permissive mode allows references to Maps that are not in the response.
             parser.set_strict(false);
             // '-2' to discard the CRLF pair
-            parser.intern(chunk, chunk_size - 2, &dmr, false /*debug*/);
+            parser.intern(chunk.data(), chunk_size - 2, &dmr, false /*debug*/);
 
             // Read data and store in the DMR
             D4StreamUnMarshaller um(cis, cis.twiddle_bytes());
