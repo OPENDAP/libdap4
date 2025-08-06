@@ -50,6 +50,12 @@ namespace libdap {
  *
  * This class is a replacement for the older MarshallerThread class that was
  * implemented using threads. It is implemented as a header-only class.
+ *
+ * @note One improvement here is that the start_thread() methods support both
+ * the old interface, where the byte buffer is copied (and thus duplicated) and
+ * a new interface that uses shared_ptrs. With the new interface, the server
+ * should, all things being equal, be able to return data variables twice as
+ * large as with the old interface.
  */
 class MarshallerThread {
     std::future<std::streampos> d_ostream_future;
