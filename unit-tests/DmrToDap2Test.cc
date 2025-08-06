@@ -61,7 +61,7 @@
 #include "testFile.h"
 #include "test_config.h"
 
-static bool mo_debug = false;
+bool mo_debug = false;
 
 #undef DBG
 #undef DBG2
@@ -82,17 +82,15 @@ using namespace CppUnit;
 using namespace std;
 using namespace libdap;
 
-static string THE_TESTS_DIR("/dmr-to-dap2-testsuite/");
+const auto THE_TESTS_DIR = "/dmr-to-dap2-testsuite/";
 
 class DmrToDap2Test : public TestFixture {
-private:
+    string d_prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
+    string d_build_prefix = string(TEST_BUILD_DIR) + THE_TESTS_DIR;
+
 public:
-    DmrToDap2Test() {}
-    ~DmrToDap2Test() {}
-
-    void setUp() {}
-
-    void tearDown() {}
+    DmrToDap2Test() = default;
+    ~DmrToDap2Test() = default;
 
     bool re_match(Regex &r, const string &s) {
         int match = r.match(s.c_str(), s.length());
@@ -101,11 +99,9 @@ public:
     }
 
     /**
-     * Given the name of a DDS and optional DAS file, build a DMR using the
-     * hackery known as transform_to_dap4 and the new DMR ctor.
+     * Given the name of a DMR, build a DMR object.
      *
-     * @param dds_file
-     * @param attr
+     * @param dmr_file
      * @return A pointer to the new DMR; caller must delete
      */
     DMR *build_dmr(const string &dmr_file) {
@@ -113,38 +109,35 @@ public:
         DBG2(cerr << __func__ << "() - dmr_file: " << dmr_file << endl);
 
         try {
-            DMR *dmr = new DMR();
+            auto dmr = make_unique<DMR>();
+            // DMR *dmr = new DMR();
             dmr->set_filename(dmr_file);
             dmr->set_name(name_path(dmr_file));
             D4BaseTypeFactory BaseFactory; // Use the factory for this handler's types
             dmr->set_factory(&BaseFactory);
             D4ParserSax2 parser;
-            ifstream in(dmr_file.c_str(), ios::in);
-            parser.intern(in, dmr, mo_debug);
-            dmr->set_factory(0);
+            ifstream in(dmr_file, ios::in);
+            parser.intern(in, dmr.get(), mo_debug);
+            dmr->set_factory(nullptr);
             DBG2(cerr << __func__ << "() - END" << endl);
-            return dmr;
+            return dmr.release();
         } catch (Error &e) {
             CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
         } catch (...) {
             CPPUNIT_FAIL(string("CPPUNIT FAIL: OUCH! Caught unknown exception! "));
         }
-
-        return 0;
     }
 
     void test_template(const string &test_base_name) {
-        string prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
-
-        string dmr_file = prefix + test_base_name + ".dmr";
-        string dds_file = prefix + test_base_name + ".dds";
-        string das_file = prefix + test_base_name + ".das";
+        string dmr_file = d_prefix + test_base_name + ".dmr";
+        string dds_file = d_prefix + test_base_name + ".dds";
+        string das_file = d_prefix + test_base_name + ".das";
 
         DBG(cerr << __func__ << "() - BEGIN (test_base: " << test_base_name << ")" << endl);
 
         try {
             unique_ptr<DMR> dmr(build_dmr(dmr_file));
-            CPPUNIT_ASSERT(dmr.get() != 0);
+            CPPUNIT_ASSERT_MESSAGE("The DMR object should be valid.", dmr.get() != nullptr);
             XMLWriter xml;
             dmr->print_dap4(xml);
             string result_dmr(xml.get_doc());
@@ -154,7 +147,7 @@ public:
                       << baseline_dmr << endl);
             DBG2(cerr << "RESULT DMR(" << result_dmr.size() << " chars): " << endl << result_dmr << endl);
 
-            CPPUNIT_ASSERT(result_dmr == baseline_dmr);
+            CPPUNIT_ASSERT_MESSAGE("The DMR object contents should match the source file.", result_dmr == baseline_dmr);
 
             unique_ptr<DDS> dds(dmr->getDDS(true));
 
@@ -165,8 +158,11 @@ public:
             DBG2(cerr << "BASELINE DDS(" << baseline_dds.size() << " chars): " << dds_file << endl
                       << baseline_dds << endl);
             DBG2(cerr << "RESULT DDS(" << result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
+            if (debug && result_dds.str() != baseline_dds) {
+                write_test_result(d_build_prefix + "result_" + dds_file, result_dds.str());
+            }
 
-            CPPUNIT_ASSERT(result_dds.str() == baseline_dds);
+            CPPUNIT_ASSERT_MESSAGE("The DDS should be correct.", result_dds.str() == baseline_dds);
 
             ostringstream result_das;
             dds->print_das(result_das);
@@ -174,14 +170,20 @@ public:
 
             DBG2(cerr << "BASELINE DAS(" << source_das.size() << " chars): " << das_file << endl << source_das << endl);
             DBG2(cerr << "RESULT DAS(" << result_das.str().size() << " chars): " << endl << result_das.str() << endl);
+            if (debug && result_das.str() != source_das) {
+                write_test_result(d_build_prefix + "result_" + das_file, result_das.str());
+            }
 
-            CPPUNIT_ASSERT(result_das.str() == source_das);
-        } catch (Error &e) {
-            CPPUNIT_FAIL(string("Caught Error: ") + e.get_error_message());
-        } catch (CPPUNIT_NS::Exception &e) {
-            CPPUNIT_FAIL(string("CPPUNIT FAIL: ") + e.message().details());
-        } catch (...) {
-            CPPUNIT_FAIL(string("CPPUNIT FAIL: OUCH! Caught unknown exception! "));
+#if 0
+            // This seems cool, but it makes for hard-to-read output. Left in place just in case... jhrg 8/6/25
+            CPPUNIT_ASSERT_MESSAGE("The DAS should be correct. \n Source:\n" + source_das + "\nResult:\n" +
+                                       result_das.str() + "\n",
+                                   result_das.str() == source_das);
+#endif
+
+            CPPUNIT_ASSERT_MESSAGE("The DAS should be correct.", result_das.str() == source_das);
+        } catch (const Error &e) {
+            CPPUNIT_FAIL(string("Caught libdap::Error: ") + e.get_error_message());
         }
 
         DBG(cerr << __func__ << "() - END" << endl);
@@ -415,7 +417,7 @@ public:
 
 // Temporarily turn off this test to reflect the change of escaping special characters.
 //  Need to re-visit in the future. KY 2022-08-25
-#if 0
+#if 1
 CPPUNIT_TEST_SUITE_REGISTRATION(DmrToDap2Test);
 #endif
 
