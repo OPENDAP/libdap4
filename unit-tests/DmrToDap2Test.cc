@@ -26,7 +26,6 @@
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <memory>
 #include <sstream>
@@ -55,7 +54,6 @@
 
 #include "debug.h"
 #include "mime_util.h"
-#include "util.h"
 
 #include "run_tests_cppunit.h"
 #include "testFile.h"
@@ -406,18 +404,18 @@ public:
     CPPUNIT_TEST(dmr_to_grid_04);
     CPPUNIT_TEST(dmr_to_grid_05);
 
-    // bad tests, here then is the woodshed of Testville.
+    // I edited the .dmr input file to make the content manageable. jhrg 8/6/25
+    CPPUNIT_TEST(big_airs_metadata);
 
-    CPPUNIT_TEST_FAIL(big_airs_metadata);    // Expect this test to fail. jhrg 6/17/19 HK-403
+    // bad tests, here then is the woodshed of Testville.
     CPPUNIT_TEST_FAIL(enum_dmr_to_dap2_1_5); // Broken: Parser issue with look-ahead
 
     CPPUNIT_TEST_SUITE_END();
 };
 
 // Temporarily turn off this test to reflect the change of escaping special characters.
-//  Need to re-visit in the future. KY 2022-08-25
-#if 1
+// Need to re-visit in the future. KY 2022-08-25
+// Use this test. jhrg 8/6/25
 CPPUNIT_TEST_SUITE_REGISTRATION(DmrToDap2Test);
-#endif
 
 int main(int argc, char *argv[]) { return run_tests<DmrToDap2Test>(argc, argv) ? 0 : 1; }
