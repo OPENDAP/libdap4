@@ -71,7 +71,7 @@ static string THE_TESTS_DIR("/dmr-rt-testsuite/");
 class DmrRoundTripTest : public TestFixture {
 private:
     string d_prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
-    string d_build_prefix = string(TEST_BUILD_DIR) + THE_TESTS_DIR;
+    string d_build_prefix = string(TEST_BUILD_DIR) + "/";
 
 public:
     DmrRoundTripTest() = default;
