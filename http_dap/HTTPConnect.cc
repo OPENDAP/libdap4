@@ -507,7 +507,7 @@ bool HTTPConnect::url_uses_no_proxy_for(const string &url) const noexcept {
 HTTPConnect::HTTPConnect(RCReader *rcr, bool use_cpp)
     : d_rcr(rcr), d_accept_deflate(rcr->get_deflate()), d_use_cpp_streams(use_cpp) {
     // Load in the default headers to send with a request. The empty Pragma
-    // headers overrides libcurl's default Pragma: no-cache header (which
+    // headers override libcurl's default Pragma: no-cache header (which
     // will disable caching by Squid, et c.). The User-Agent header helps
     // make server logs more readable. 05/05/03 jhrg
     d_request_headers.emplace_back("Pragma:");

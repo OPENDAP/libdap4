@@ -86,13 +86,13 @@ const auto THE_TESTS_DIR = "/dmr-to-dap2-testsuite/";
 
 class DmrToDap2Test : public TestFixture {
     string d_prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
-    string d_build_prefix = string(TEST_BUILD_DIR) + THE_TESTS_DIR;
+    string d_build_prefix = string(TEST_BUILD_DIR) + "/";
 
 public:
     DmrToDap2Test() = default;
-    ~DmrToDap2Test() = default;
+    ~DmrToDap2Test() override = default;
 
-    bool re_match(Regex &r, const string &s) {
+    static bool re_match(Regex &r, const string &s) {
         int match = r.match(s.c_str(), s.length());
         DBG2(cerr << "Match: " << match << " should be: " << s.length() << endl);
         return match == static_cast<int>(s.length());
@@ -104,13 +104,12 @@ public:
      * @param dmr_file
      * @return A pointer to the new DMR; caller must delete
      */
-    DMR *build_dmr(const string &dmr_file) {
+    static DMR *build_dmr(const string &dmr_file) {
         DBG2(cerr << __func__ << "() - BEGIN" << endl);
         DBG2(cerr << __func__ << "() - dmr_file: " << dmr_file << endl);
 
         try {
             auto dmr = make_unique<DMR>();
-            // DMR *dmr = new DMR();
             dmr->set_filename(dmr_file);
             dmr->set_name(name_path(dmr_file));
             D4BaseTypeFactory BaseFactory; // Use the factory for this handler's types
@@ -159,7 +158,7 @@ public:
                       << baseline_dds << endl);
             DBG2(cerr << "RESULT DDS(" << result_dds.str().size() << " chars): " << endl << result_dds.str() << endl);
             if (debug && result_dds.str() != baseline_dds) {
-                write_test_result(d_build_prefix + "result_" + dds_file, result_dds.str());
+                write_test_result(d_build_prefix + "result_" + test_base_name + ".dds", result_dds.str());
             }
 
             CPPUNIT_ASSERT_MESSAGE("The DDS should be correct.", result_dds.str() == baseline_dds);
@@ -171,7 +170,7 @@ public:
             DBG2(cerr << "BASELINE DAS(" << source_das.size() << " chars): " << das_file << endl << source_das << endl);
             DBG2(cerr << "RESULT DAS(" << result_das.str().size() << " chars): " << endl << result_das.str() << endl);
             if (debug && result_das.str() != source_das) {
-                write_test_result(d_build_prefix + "result_" + das_file, result_das.str());
+                write_test_result(d_build_prefix + "result_" + test_base_name + ".das", result_das.str());
             }
 
 #if 0
