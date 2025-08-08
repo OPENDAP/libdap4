@@ -5,8 +5,8 @@ find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
 # Define options similarly as your top-level (inherited)
-option(BUILD_DEVELOPER "Developer mode" OFF)
-option(USE_ASAN "Enable Address Sanitizer" OFF)
+#option(BUILD_DEVELOPER "Developer mode" OFF)
+#option(USE_ASAN "Enable Address Sanitizer" OFF)
 
 # Set compiler flags
 set(CMAKE_CXX_STANDARD 14)

@@ -45,7 +45,7 @@ include(FindLibdapDependencies)
 message(STATUS "Target platform: ${LIBDAP_PLATFORM}")
 
 # Optional ASAN and Developer mode flags (based on CMake options)
-option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
+option(USE_ASAN "Enable Address Sanitizer" OFF)
 option(BUILD_DEVELOPER "Build in developer mode" OFF)
 option(USE_CPP_11_REGEX "Expect and use C++11 Regex code" ON)
 option(BIG_ARRAY_TEST "Run the Big Array Unit test - takes a long time" OFF)

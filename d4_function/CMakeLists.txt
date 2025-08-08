@@ -5,8 +5,8 @@ find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
 # Options inherited from top-level CMakeLists
-option(BUILD_DEVELOPER "Developer mode" OFF)
-option(USE_ASAN "Enable Address Sanitizer" OFF)
+#option(BUILD_DEVELOPER "Developer mode" OFF)
+#option(USE_ASAN "Enable Address Sanitizer" OFF)
 
 # Set standard explicitly if required
 set(CMAKE_CXX_STANDARD 14)
