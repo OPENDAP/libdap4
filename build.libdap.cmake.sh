@@ -35,18 +35,25 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 else
     # Linux and other Unix-like systems
     echo "-- Detected Linux/Unix system, using .a libraries"
-    LIBXML2_LIB_PATH="../install/libxml2-2.14.5/lib/libxml2.a"
+    LIBXML2_LIB_PATH="../../install/libxml2-2.14.5/lib/libxml2.a"
+    LIBXML2_ABSOLUTE_PATH=$(realpath ../../install/libxml2-2.14.5)
 fi
+
+echo "LIBXML2_LIB_PATH is $LIBXML2_LIB_PATH"
+echo "LIBXML2_ABSOLUTE_PATH is $LIBXML2_ABSOLUTE_PATH"
+sleep 3
 
 cmake ../../libdap4 \
   -DCMAKE_BUILD_TYPE=Debug \
+  -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_INSTALL_PREFIX="../../install/libdap4" \
   -DCMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" \
   -DLibXml2_ROOT="../install/libxml2-2.14.5" \
   -DLIBXML2_LIBRARY="$LIBXML2_LIB_PATH" \
   -DUSE_ASAN=ON \
   -DBUILD_DEVELOPER=ON \
-  --fresh
+  -DCMAKE_VERBOSE_MAKEFILE=ON \
+  --fresh 
   
 echo "Press any key to continue..."
 read -n 1 -s

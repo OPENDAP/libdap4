@@ -21,7 +21,9 @@ pushd ../build
 pushd zlib-1.3.1
 cmake ../../ext/zlib-1.3.1 \
   -DCMAKE_INSTALL_PREFIX=../../install/zlib-1.3.1 \
-  -DBUILD_SHARED_LIBS=OFF 
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_C_FLAGS="-fPIC" \
+  -DCMAKE_CXX_FLAGS="-fPIC" 
 cmake --build . --config Debug --parallel
 cmake --install . --config Debug
 popd 

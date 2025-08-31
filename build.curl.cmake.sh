@@ -28,6 +28,8 @@ cmake ../../ext/curl-8.15.0 \
   -DBUILD_SHARED_LIBS=OFF \
   -DBUILD_CURL_EXE=OFF \
   -DBUILD_TESTING=OFF \
+  -DCMAKE_C_FLAGS="-fPIC" \
+  -DCMAKE_CXX_FLAGS="-fPIC" \
   --fresh
 cmake --build . --config Debug --parallel
 cmake --install . --config Debug
