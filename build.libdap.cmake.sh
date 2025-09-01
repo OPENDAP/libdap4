@@ -25,10 +25,10 @@ CMAKE_PREFIX_PATH="../install/cppunit-1.15.1;../install/libxml2-2.14.5;../instal
 # detect platform and set appropriate library paths
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
     echo "-- Detected Windows system, using .lib libraries"
-    LIBXML2_LIB_PATH="../install/libxml2-2.14.5/lib/libxml2sd.lib"
+    LIBXML2_LIB_PATH="../../install/libxml2-2.14.5/lib/libxml2sd.lib"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     echo "-- Detected macOS system, using .a libraries"
-    LIBXML2_LIB_PATH="../install/libxml2-2.14.5/lib/libxml2.a"
+    LIBXML2_LIB_PATH="../../install/libxml2-2.14.5/lib/libxml2.a"
 else
     echo "-- Detected Linux/Unix system, using .a libraries"
     LIBXML2_LIB_PATH="../../install/libxml2-2.14.5/lib/libxml2.a"
@@ -40,12 +40,15 @@ cmake ../../libdap4 \
   -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_INSTALL_PREFIX="../../install/libdap4" \
   -DCMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" \
-  -DLibXml2_ROOT="../../install/libxml2-2.14.5" \
+  -DLibXml2_ROOT="../install/libxml2-2.14.5" \
   -DLIBXML2_LIBRARY="$LIBXML2_LIB_PATH" \
   -DUSE_ASAN=ON \
   -DBUILD_DEVELOPER=ON \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
   --fresh 
+  
+echo "-- Press any key to build..."
+read -n 1 -s
 
 cmake --build . --target dap --config Debug --verbose
 cmake --build . --target dapserver --config Debug --verbose
