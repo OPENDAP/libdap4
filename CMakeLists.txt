@@ -26,6 +26,7 @@ find_package(LibXml2 REQUIRED)
 
 find_package(CURL REQUIRED)
 find_package(Threads REQUIRED)
+find_package(ZLIB REQUIRED)
 
 # Manual TIRPC detection
 find_path(TIRPC_INCLUDE_DIR rpc/rpc.h PATH_SUFFIXES tirpc)
@@ -281,7 +282,7 @@ if(TIRPC_FOUND)
     target_link_libraries(dap PRIVATE ${TIRPC_LIBRARIES})
 endif()
 # target_link_libraries(dap PRIVATE parsers d4_ce_parser d4_function_parser)
-target_link_libraries(dap PRIVATE ${LIBXML2_LIBRARIES} Threads::Threads)
+target_link_libraries(dap PRIVATE ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARIES} Threads::Threads)
 set_target_properties(dap PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${LIBDAP_SO_VERSION})
 
 # message(STATUS "INCLUDE PATHS for dap:")
