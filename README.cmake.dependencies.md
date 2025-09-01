@@ -160,10 +160,10 @@ build.curl.cmake.sh
 ## 4. Build CppUnit
 
 ```bash
-git -c advice.detachedHead=false clone --branch 1.15.1 --depth 1 https://anongit.freedesktop.org/git/libreoffice/cppunit.git cppunit-1.15.1
+git clone  https://github.com/pedro-vicente/cppunit cppunit-1.15.1
 ```
 
-**Important Note: Unfortunately, CMake is not part of original cppunit distribution. So, we create one using the supplied bash shell script**
+**Note: This repository provides a CMake build system; CMake is not part of original cppunit distribution.**
 
 ```bash
 build.cppunit.cmake.sh
@@ -190,15 +190,19 @@ popd
 Finnally (!), build libdap4with 
 
 ```bash
-make ../../libdap4 \
+cmake ../../libdap4 \
   -DCMAKE_BUILD_TYPE=Debug \
+  -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_INSTALL_PREFIX="../../install/libdap4" \
   -DCMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" \
-  -DLibXml2_ROOT="../../install/libxml2-2.14.5" \
+  -DLibXml2_ROOT="../install/libxml2-2.14.5" \
   -DLIBXML2_LIBRARY="$LIBXML2_LIB_PATH" \
-  -DUSE_ASAN=ON \
+  -DZLIB_ROOT="$ZLIB_ROOT_PATH" \
+  -DZLIB_INCLUDE_DIR="$ZLIB_ROOT_PATH/include" \
+  -DUSE_ASAN=OFF \
   -DBUILD_DEVELOPER=ON \
-  --fresh
+  -DCMAKE_VERBOSE_MAKEFILE=ON \
+  --fresh 
 ```
 
 Note: $LIBXML2_LIB_PATH is system dependent, see supplied script 
