@@ -41,7 +41,7 @@ fi
 
 # find zlib library file
 ZLIB_LIB_FILE=""
-for lib_name in libz.a libzlib.a zlib.lib zlibstatic.lib; do
+for lib_name in libz.a libzlib.a zlibstatic.lib zlibstaticd.lib; do
     if [ -f "$ZLIB_ROOT_PATH/lib/$lib_name" ]; then
         ZLIB_LIB_FILE="$ZLIB_ROOT_PATH/lib/$lib_name"
         echo "-- Found zlib library: $ZLIB_LIB_FILE"
@@ -57,6 +57,7 @@ cmake ../../libdap4 \
   -DLibXml2_ROOT="../install/libxml2-2.14.5" \
   -DLIBXML2_LIBRARY="$LIBXML2_LIB_PATH" \
   -DZLIB_ROOT="$ZLIB_ROOT_PATH" \
+  -DZLIB_INCLUDE_DIR="$ZLIB_ROOT_PATH/include" \
   -DUSE_ASAN=OFF \
   -DBUILD_DEVELOPER=ON \
   -DCMAKE_VERBOSE_MAKEFILE=ON \
