@@ -226,6 +226,9 @@ dmr_trans_test(32  test_array_14.xml   "" ""  test_array_14.xml.trans_base   "un
 dmr_trans_test(33  test_simple_6.2.xml "" ""  test_simple_6.2.xml.trans_base "universal" )
 dmr_trans_test(34  test_simple_6.3.xml "" ""  test_simple_6.3.xml.trans_base "universal" )
 
+dmr_trans_test(201  root_and_child_group_1.xml "" ""  root_and_child_group_1.xml.trans_base "universal" )
+dmr_trans_test(202  root_and_child_group_2.xml "" ""  root_and_child_group_2.xml.trans_base "universal" )
+
 # Wrapping strings in "" is often not needed in cmake.
 #
 # I removed them for some of the CEs, but it seems somewhat pointless. Still,
