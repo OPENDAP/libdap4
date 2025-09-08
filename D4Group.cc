@@ -513,9 +513,11 @@ void D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
 void D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter) {
+#if 1
     groupsIter g = d_groups.begin();
     while (g != d_groups.end())
         (*g++)->serialize(m, dmr, filter);
+#endif
 
     // Specialize how the top-level variables in any Group are sent; include
     // a checksum for them. A subset operation might make an interior set of
@@ -538,14 +540,24 @@ void D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &
             }
         }
     }
+
+#if 0
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end())
+        (*g++)->serialize(m, dmr, filter);
+#endif
 }
 
 void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
+#if 1
     groupsIter g = d_groups.begin();
     while (g != d_groups.end()) {
         DBG(cerr << "Deserializing group " << (*g)->name() << endl);
         (*g++)->deserialize(um, dmr);
     }
+
+#endif
+
     // Specialize how the top-level variables in any Group are received; read
     // their checksum and store the value in a magic attribute of the variable
     for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
@@ -569,6 +581,14 @@ void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
             (*i)->attributes()->add_attribute_nocopy(a);
         }
     }
+
+#if 0
+    groupsIter g = d_groups.begin();
+    while (g != d_groups.end()) {
+        DBG(cerr << "Deserializing group " << (*g)->name() << endl);
+        (*g++)->deserialize(um, dmr);
+    }
+#endif
 }
 
 void D4Group::print_dap4(XMLWriter &xml, bool constrained) {
