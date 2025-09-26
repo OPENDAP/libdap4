@@ -45,12 +45,14 @@ class ConstraintEvaluator;
 
 class ServerFunctionsList {
 private:
+#if 0
     static ServerFunctionsList *d_instance;
+#endif
     std::multimap<std::string, ServerFunction *> d_func_list;
-
+#if 0
     static void initialize_instance();
     static void delete_instance();
-
+#endif
     virtual ~ServerFunctionsList();
 
     friend class ServerFunctionsListUnitTest;
@@ -62,6 +64,9 @@ public:
     // Added typedefs to reduce clutter jhrg 3/12/14
     typedef std::multimap<std::string, ServerFunction *>::iterator SFLIter;
     typedef std::multimap<std::string, ServerFunction *>::const_iterator SFLCIter;
+
+    ServerFunctionsList(const ServerFunctionsList&) = delete;
+    ServerFunctionsList& operator=(const ServerFunctionsList&) = delete;
 
     static ServerFunctionsList *TheList();
 

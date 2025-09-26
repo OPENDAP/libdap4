@@ -107,7 +107,7 @@ private:
 
     string d_cookie_jar;
 
-    static RCReader *_instance;
+    //static RCReader *_instance;
 
     RCReader();
     ~RCReader();
@@ -120,14 +120,19 @@ private:
     string check_env_var(const string &variable_name);
     string check_string(string env_var);
 
+#if 0
     static void initialize_instance();
     static void delete_instance();
+#endif
 
     friend class RCReaderTest;
     friend class HTTPConnectTest;
 
 public:
     static RCReader *instance();
+
+    RCReader(const RCReader&) = delete;
+    RCReader& operator=(const RCReader&) = delete;
 #if 0
     static RCReader* instance(const string &rc_file_path);
 #endif

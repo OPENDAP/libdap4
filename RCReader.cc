@@ -67,12 +67,12 @@ using namespace std;
 
 namespace libdap {
 
-RCReader *RCReader::_instance = 0;
+//RCReader *RCReader::_instance = 0;
 
 // This variable (instance_control) is used to ensure that in a MT
 // environment _instance is correctly initialized. See the get_instance
 // method. 08/07/02 jhrg
-static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
+// static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
 
 /** Using values from this instance of RCReader, write out values for a
  default .dodsrc file. Nominally this will use the defaults for each thing
@@ -406,6 +406,7 @@ RCReader::RCReader() // throw (Error) jhrg 7/2/15
 
 RCReader::~RCReader() {}
 
+#if 0
 /** Static void private method. */
 void RCReader::delete_instance() {
     if (RCReader::_instance) {
@@ -423,16 +424,18 @@ void RCReader::initialize_instance() {
 
     DBG(cerr << "exiting." << endl);
 }
+#endif
 
 RCReader *RCReader::instance() {
     DBG(cerr << "Entering RCReader::instance" << endl);
     // The instance_control variable is defined at the top of this file.
     // 08/07/02 jhrg
-    pthread_once(&instance_control, initialize_instance);
+    //pthread_once(&instance_control, initialize_instance);
+    static RCReader _instance;
 
     DBG(cerr << "Instance value: " << hex << _instance << dec << endl);
 
-    return _instance;
+    return &_instance;
 }
 
 #if 0

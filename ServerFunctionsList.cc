@@ -47,6 +47,7 @@ namespace libdap {
 
 static pthread_once_t ServerFunctionsList_instance_control = PTHREAD_ONCE_INIT;
 
+#if 0
 ServerFunctionsList *ServerFunctionsList::d_instance = 0;
 
 /**
@@ -71,6 +72,7 @@ void ServerFunctionsList::delete_instance() {
     delete d_instance;
     d_instance = 0;
 }
+#endif
 
 /**
  * Private method insures that nobody can try to delete the singleton class.
@@ -88,9 +90,10 @@ ServerFunctionsList::~ServerFunctionsList() {
 }
 
 ServerFunctionsList *ServerFunctionsList::TheList() {
-    pthread_once(&ServerFunctionsList_instance_control, initialize_instance);
+    //pthread_once(&ServerFunctionsList_instance_control, initialize_instance);
     DBG(cerr << "ServerFunctionsList::TheList() - Returning singleton ServerFunctionList instance." << endl);
-    return d_instance;
+    static ServerFunctionsList d_instance;
+    return &d_instance;
 }
 
 /**
