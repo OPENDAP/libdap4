@@ -371,26 +371,6 @@ void RCReader::loadRC(){
 
 RCReader::~RCReader() {}
 
-#if 0
-/** Static void private method. */
-void RCReader::delete_instance() {
-    if (RCReader::_instance) {
-        delete RCReader::_instance;
-        RCReader::_instance = 0;
-    }
-}
-
-/** Static void private method. */
-void RCReader::initialize_instance() {
-    DBGN(cerr << "RCReader::initialize_instance() ... ");
-
-    RCReader::_instance = new RCReader;
-    atexit(RCReader::delete_instance);
-
-    DBG(cerr << "exiting." << endl);
-}
-#endif
-
 RCReader *RCReader::instance() {
     DBG(cerr << "Entering RCReader::instance" << endl);
     // The instance_control variable is defined at the top of this file.

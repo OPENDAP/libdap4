@@ -47,33 +47,6 @@ namespace libdap {
 
 static pthread_once_t ServerFunctionsList_instance_control = PTHREAD_ONCE_INIT;
 
-#if 0
-ServerFunctionsList *ServerFunctionsList::d_instance = 0;
-
-/**
- * private static that only gets called once in the life cycle of the process.
- */
-void ServerFunctionsList::initialize_instance() {
-    if (d_instance == 0) {
-        DBG(cerr << "ServerFunctionsList::initialize_instance() - Creating singleton ServerFunctionList instance."
-                 << endl);
-        d_instance = new ServerFunctionsList;
-#if HAVE_ATEXIT
-        atexit(delete_instance);
-#endif
-    }
-}
-
-/**
- * Private static function can only be called by friends andf pThreads code.
- */
-void ServerFunctionsList::delete_instance() {
-    DBG(cerr << "ServerFunctionsList::delete_instance() - Deleting singleton ServerFunctionList instance." << endl);
-    delete d_instance;
-    d_instance = 0;
-}
-#endif
-
 /**
  * Private method insures that nobody can try to delete the singleton class.
  */

@@ -152,10 +152,7 @@ public:
         string home = getenv("HOME");
         if (*home.rbegin() != '/')
             home += "/";
-#if 0
-        // RCReader::delete_instance();
-        // RCReader::initialize_instance();
-#endif
+
         RCReader *reader = RCReader::instance();
         rcr->loadRC();
         CPPUNIT_ASSERT(reader->d_rc_file_path == home + string(".dodsrc"));
@@ -175,10 +172,7 @@ public:
         remove(rc.c_str()); // make sure the RC does not exist
 
         my_putenv(string("DODS_CONF=") + string(cwd));
-#if 0
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
-#endif
+
         RCReader *reader = RCReader::instance();
         rcr->loadRC();
         DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
@@ -192,10 +186,7 @@ public:
         string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test1.rc";
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
-#if 0
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
-#endif
+
         RCReader *reader = RCReader::instance();
         rcr->loadRC();
         DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
@@ -218,10 +209,7 @@ public:
         string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test2.rc";
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
-#if 0
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
-#endif
+
         RCReader *reader = RCReader::instance();
         rcr->loadRC();
         DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
@@ -246,10 +234,6 @@ public:
             RCReader *reader = RCReader::instance();
             rcr->loadRC();
             // call setPath() fct to change path to secondary *.rc file
-#if 0
-            RCReader::delete_instance();
-            RCReader::initialize_instance();
-#endif
             CPPUNIT_ASSERT(!"initialize_instance() should throw Error.");
         } catch (Error &e) {
             DBG(cerr << e.get_error_message() << endl);
@@ -263,10 +247,6 @@ public:
         my_putenv(rc);
 
         try {
-#if 0
-            RCReader::delete_instance();
-            RCReader::initialize_instance();
-#endif
             RCReader *reader = RCReader::instance();
             rcr->loadRC();
             DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
@@ -292,10 +272,6 @@ public:
         my_putenv(rc);
 
         try {
-#if 0
-            RCReader::delete_instance();
-            RCReader::initialize_instance();
-#endif
             RCReader *reader = RCReader::instance();
             rcr->loadRC();
             DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
@@ -321,10 +297,7 @@ public:
         string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_1";
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
-#if 0
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
-#endif
+
         RCReader *reader = RCReader::instance();
         rcr->loadRC();
         reader->read_rc_file(string(TEST_SRC_DIR) + "/rcreader-testsuite/dodssrc_ssl_1");
@@ -341,10 +314,6 @@ public:
         DBG(cerr << "rc: " << rc << endl);
 
         my_putenv(rc);
-#if 0
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
-#endif
         rcr->loadRC();
 
         DBG(cerr << "reader->check_env_var(\"DODS_CONF\"): " << reader->check_env_var("DODS_CONF") << endl);
@@ -356,10 +325,6 @@ public:
         DBG(cerr << "rc: " << rc << endl);
 
         my_putenv(rc);
-#if 0
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
-#endif
         rcr->loadRC();
         DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl() << endl);
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 0);

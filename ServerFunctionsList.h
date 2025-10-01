@@ -45,14 +45,8 @@ class ConstraintEvaluator;
 
 class ServerFunctionsList {
 private:
-#if 0
-    static ServerFunctionsList *d_instance;
-#endif
     std::multimap<std::string, ServerFunction *> d_func_list;
-#if 0
-    static void initialize_instance();
-    static void delete_instance();
-#endif
+
     virtual ~ServerFunctionsList();
 
     friend class ServerFunctionsListUnitTest;
