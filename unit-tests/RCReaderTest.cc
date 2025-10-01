@@ -91,7 +91,7 @@ public:
     CPPUNIT_TEST(instance_test2);
     CPPUNIT_TEST(proxy_test1);
     CPPUNIT_TEST(proxy_test2);
-    //CPPUNIT_TEST(proxy_test3);
+    CPPUNIT_TEST(proxy_test3);
     CPPUNIT_TEST(proxy_test4);
     CPPUNIT_TEST(proxy_test5);
     CPPUNIT_TEST(validate_ssl_test);
@@ -157,6 +157,7 @@ public:
         // RCReader::initialize_instance();
 #endif
         RCReader *reader = RCReader::instance();
+        rcr->loadRC();
         CPPUNIT_ASSERT(reader->d_rc_file_path == home + string(".dodsrc"));
         DBG(cerr << "Cache root: " << reader->get_dods_cache_root() << endl);
         CPPUNIT_ASSERT(reader->get_dods_cache_root() == home + string(".dods_cache/"));
@@ -179,6 +180,7 @@ public:
         RCReader::initialize_instance();
 #endif
         RCReader *reader = RCReader::instance();
+        rcr->loadRC();
         DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
         CPPUNIT_ASSERT(reader->d_rc_file_path == string(cwd) + string("/.dodsrc"));
         DBG(cerr << "Cache root: " << reader->get_dods_cache_root() << endl);
@@ -195,6 +197,7 @@ public:
         RCReader::initialize_instance();
 #endif
         RCReader *reader = RCReader::instance();
+        rcr->loadRC();
         DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
         CPPUNIT_ASSERT(reader->d_rc_file_path == (string)TEST_SRC_DIR + "/rcreader-testsuite/test1.rc");
         CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
@@ -220,6 +223,7 @@ public:
         RCReader::initialize_instance();
 #endif
         RCReader *reader = RCReader::instance();
+        rcr->loadRC();
         DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
         CPPUNIT_ASSERT(reader->d_rc_file_path == (string)TEST_SRC_DIR + "/rcreader-testsuite/test2.rc");
         CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
@@ -232,23 +236,27 @@ public:
         CPPUNIT_ASSERT(reader->get_proxy_server_port() == 80);
         CPPUNIT_ASSERT(reader->get_proxy_server_userpw() == "");
     }
-#if 0
+
     void proxy_test3() {
         string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test3.rc";
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
 
         try {
-
+            RCReader *reader = RCReader::instance();
+            rcr->loadRC();
+            // call setPath() fct to change path to secondary *.rc file
+#if 0
             RCReader::delete_instance();
             RCReader::initialize_instance();
+#endif
             CPPUNIT_ASSERT(!"initialize_instance() should throw Error.");
         } catch (Error &e) {
             DBG(cerr << e.get_error_message() << endl);
             CPPUNIT_ASSERT(e.get_error_message() != "");
         }
     }
-#endif
+
     void proxy_test4() {
         string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test4.rc";
         DBG(cerr << "rc: " << rc << endl);
@@ -260,6 +268,7 @@ public:
             RCReader::initialize_instance();
 #endif
             RCReader *reader = RCReader::instance();
+            rcr->loadRC();
             DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
             CPPUNIT_ASSERT(reader->d_rc_file_path == (string)TEST_SRC_DIR + "/rcreader-testsuite/test4.rc");
             CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
@@ -288,6 +297,7 @@ public:
             RCReader::initialize_instance();
 #endif
             RCReader *reader = RCReader::instance();
+            rcr->loadRC();
             DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
             CPPUNIT_ASSERT(reader->d_rc_file_path == (string)TEST_SRC_DIR + "/rcreader-testsuite/test5.rc");
             string proxy = reader->get_proxy_server_host_url();
@@ -316,6 +326,7 @@ public:
         RCReader::initialize_instance();
 #endif
         RCReader *reader = RCReader::instance();
+        rcr->loadRC();
         reader->read_rc_file(string(TEST_SRC_DIR) + "/rcreader-testsuite/dodssrc_ssl_1");
         // No param set in file
         DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl() << endl);
@@ -334,7 +345,8 @@ public:
         RCReader::delete_instance();
         RCReader::initialize_instance();
 #endif
-        reader = RCReader::instance();
+        rcr->loadRC();
+
         DBG(cerr << "reader->check_env_var(\"DODS_CONF\"): " << reader->check_env_var("DODS_CONF") << endl);
         DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl() << endl);
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 1);
@@ -348,7 +360,7 @@ public:
         RCReader::delete_instance();
         RCReader::initialize_instance();
 #endif
-        reader = RCReader::instance();
+        rcr->loadRC();
         DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl() << endl);
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 0);
     }
