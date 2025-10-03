@@ -233,9 +233,8 @@ public:
         try {
             RCReader *reader = RCReader::instance();
             rcr->loadRC();
-            // call setPath() fct to change path to secondary *.rc file
             CPPUNIT_ASSERT(!"initialize_instance() should throw Error.");
-        } catch (Error &e) {
+        } catch (const Error &e) {
             DBG(cerr << e.get_error_message() << endl);
             CPPUNIT_ASSERT(e.get_error_message() != "");
         }

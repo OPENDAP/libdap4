@@ -55,8 +55,6 @@
 #define DIR_SEP_CHAR '/'
 #endif
 
-#include <pthread.h>
-
 #include <fstream>
 
 #include "Error.h"
@@ -339,7 +337,10 @@ string RCReader::check_env_var(const string &variable_name) {
 RCReader::RCReader() // throw (Error) jhrg 7/2/15
 {
     std::call_once(d_initialize, [this](){
-        loadRC();
+        try { loadRC(); }
+        catch (const Error &e){
+            DBG(cerr << "RCReader::RCReader() line 342: " << e.msg() << endl);
+        }
     });
 }
 
