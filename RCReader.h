@@ -34,6 +34,7 @@
 
 #include <iostream>
 #include <string>
+#include <mutex>
 
 #include "Error.h"
 #include "util.h"
@@ -52,13 +53,14 @@ namespace libdap {
     @author Jose Garcia <jgarcia@ucar.edu> */
 class RCReader {
 private:
-    string d_rc_file_path;
-    string d_cache_root;
+    static std::once_flag d_initialize;
+    string d_rc_file_path = "";
+    string d_cache_root = "";
 
-    bool _dods_use_cache;          // 0- Disabled 1- Enabled
-    unsigned int _dods_cache_max;  // Max cache size in Mbytes
-    unsigned int _dods_cached_obj; // Max cache entry size in Mbytes
-    int _dods_ign_expires;         // 0- Honor expires 1- Ignore them
+    bool _dods_use_cache = false;          // 0- Disabled 1- Enabled
+    unsigned int _dods_cache_max = 20;  // Max cache size in Mbytes
+    unsigned int _dods_cached_obj = 5; // Max cache entry size in Mbytes
+    int _dods_ign_expires = 0;         // 0- Honor expires 1- Ignore them
 
     // NB: NEVER_DEFLATE: I added this (12/1/99 jhrg) because libwww 5.2.9
     // cannot process compressed (i.e., deflated) documents in the cache.
@@ -72,45 +74,45 @@ private:
     //
     // Added back in, but with a better name (removed double negative).
     // 6/27/2002 jhrg
-    bool _dods_deflate; // 1- request comp responses, 0- don't
+    bool _dods_deflate = false; // 1- request comp responses, 0- don't
 
-    int _dods_default_expires; // 24 hours in seconds
-    int _dods_always_validate; // Let libwww decide by default so set to 0
+    int _dods_default_expires = 86400; // 24 hours in seconds
+    int _dods_always_validate = 0; // Let libwww decide by default so set to 0
 
     // flags for PROXY_SERVER=<protocol>,<host url>
-    string d_dods_proxy_server_protocol;
-    string d_dods_proxy_server_host;
-    int d_dods_proxy_server_port;
-    string d_dods_proxy_server_userpw;
+    string d_dods_proxy_server_protocol = "";
+    string d_dods_proxy_server_host = "";
+    int d_dods_proxy_server_port = 0;
+    string d_dods_proxy_server_userpw = "";
 
     // Should libcurl validate SSL hosts/certificates"
-    int d_validate_ssl;
+    int d_validate_ssl = 1;
 
-    string _dods_proxy_server_host_url; // deprecated
+    string _dods_proxy_server_host_url = ""; // deprecated
 
     // The proxy-for stuff is all deprecated. 06/17/04 jhrg
     // flags for PROXY_FOR=<regex>,<proxy host url>,<flags>
-    bool _dods_proxy_for; // true if proxy_for is used.
-    string _dods_proxy_for_regexp;
-    string _dods_proxy_for_proxy_host_url;
-    int _dods_proxy_for_regexp_flags; // not used w/libcurl. 6/27/2002 jhrg
+    bool _dods_proxy_for = false; // true if proxy_for is used.
+    string _dods_proxy_for_regexp = "";
+    string _dods_proxy_for_proxy_host_url = "";
+    int _dods_proxy_for_regexp_flags = 0; // not used w/libcurl. 6/27/2002 jhrg
 
     // flags for NO_PROXY_FOR=<protocol>,<host>,<port>
-    bool d_dods_no_proxy_for; // true if no_proxy_for is used.
-    string d_dods_no_proxy_for_protocol;
-    string d_dods_no_proxy_for_host;
-    int _dods_no_proxy_for_port; // not used w/libcurl. 6/27/2002 jhrg
+    bool d_dods_no_proxy_for = false; // true if no_proxy_for is used.
+    string d_dods_no_proxy_for_protocol = "";
+    string d_dods_no_proxy_for_host = "";
+    int _dods_no_proxy_for_port = 0; // not used w/libcurl. 6/27/2002 jhrg
 
     // Make this a vector of strings or support a PATH-style list. 02/26/03
     // jhrg
     string d_ais_database;
 
-    string d_cookie_jar;
-
-    static RCReader *_instance;
+    string d_cookie_jar = "";
 
     RCReader();
     ~RCReader();
+
+    void loadRC();
 
     // File I/O methods
     bool write_rc_file(const string &pathname);
@@ -120,17 +122,15 @@ private:
     string check_env_var(const string &variable_name);
     string check_string(string env_var);
 
-    static void initialize_instance();
-    static void delete_instance();
-
     friend class RCReaderTest;
     friend class HTTPConnectTest;
 
 public:
     static RCReader *instance();
-#if 0
-    static RCReader* instance(const string &rc_file_path);
-#endif
+
+    RCReader(const RCReader&) = delete;
+    RCReader& operator=(const RCReader&) = delete;
+
     // GET METHODS
     string get_dods_cache_root() const throw() { return d_cache_root; }
     bool get_use_cache() const throw() { return _dods_use_cache; }
