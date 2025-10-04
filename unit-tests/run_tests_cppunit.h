@@ -43,11 +43,13 @@
 bool debug = false;
 
 #undef DBG
-#define DBG(x)                                                                                                         \
-    do {                                                                                                               \
-        if (debug)                                                                                                     \
-            (x);                                                                                                       \
-    } while (false)
+#define DBG(x) do { if (debug) (x); } while (false)
+
+bool debug2 = false;
+
+#undef DBG2
+#define DBG2(x) do { if (debug2) (x); } while (false)
+
 
 /**
  * @brief Run the test(s)
@@ -68,7 +70,7 @@ template <class CLASS> bool run_tests(int argc, char *argv[]) {
             debug = true; // debug is a global
             break;
         case 'D':
-            debug = true; // debug is a global
+            debug2 = true; // debug is a global
             break;
         case 'h': { // help - show test names
             std::cerr << "Usage: the following tests can be run individually or in combination:" << std::endl;
@@ -86,19 +88,20 @@ template <class CLASS> bool run_tests(int argc, char *argv[]) {
     argc -= optind;
     argv += optind;
 
-    if (0 == argc) { // run them all
+    if (0 == argc) {
+        // run them all
         return runner.run("");
-    } else {
-        bool wasSuccessful = true;
-        int i = 0;
-        while (i < argc) {
-            std::string test = CLASS::suite()->getName().append("::").append(argv[i++]);
-            if (debug)
-                std::cerr << "Running " << test << std::endl;
-            wasSuccessful = wasSuccessful && runner.run(test);
-        }
-        return wasSuccessful;
     }
+
+    bool wasSuccessful = true;
+    int i = 0;
+    while (i < argc) {
+        std::string test = CLASS::suite()->getName().append("::").append(argv[i++]);
+        if (debug)
+            std::cerr << "Running " << test << std::endl;
+        wasSuccessful = wasSuccessful && runner.run(test);
+    }
+    return wasSuccessful;
 }
 
 #endif // HYRAX_GIT_RUN_TESTS_CPPUNIT_H
