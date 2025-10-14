@@ -5,7 +5,6 @@
 
 README for the OPeNDAP libdap4 library
 ======================================
-
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
 ## Updated for version 3.21.1 [![DOI](https://zenodo.org/badge/30208853.svg)](https://doi.org/10.5281/zenodo.1013914)
