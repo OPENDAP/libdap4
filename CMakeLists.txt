@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.20)
 project(libdap LANGUAGES C CXX)
 set(LIBDAP_VERSION "3.21.1")
 
@@ -21,8 +21,8 @@ include(CheckCXXSourceCompiles)
 # Dependency packages
 find_package(CppUnit REQUIRED)
 find_package(LibXml2 REQUIRED)
-message(STATUS "LIBXML2_LIBRARIES: ${LIBXML2_LIBRARIES}")
-message(STATUS "LIBXML2_INCLUDE_DIR: ${LIBXML2_INCLUDE_DIR}")
+# message(STATUS "LIBXML2_LIBRARIES: ${LIBXML2_LIBRARIES}")
+# message(STATUS "LIBXML2_INCLUDE_DIR: ${LIBXML2_INCLUDE_DIR}")
 
 find_package(CURL REQUIRED)
 find_package(Threads REQUIRED)
@@ -45,7 +45,7 @@ include(FindLibdapDependencies)
 message(STATUS "Target platform: ${LIBDAP_PLATFORM}")
 
 # Optional ASAN and Developer mode flags (based on CMake options)
-option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
+option(USE_ASAN "Enable Address Sanitizer" OFF)
 option(BUILD_DEVELOPER "Build in developer mode" OFF)
 option(USE_CPP_11_REGEX "Expect and use C++11 Regex code" ON)
 option(BIG_ARRAY_TEST "Run the Big Array Unit test - takes a long time" OFF)

@@ -227,27 +227,27 @@ public:
 
     Sequence &operator=(const Sequence &rhs);
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
-    virtual void clear_local_data();
+    void clear_local_data() override;
 
-    virtual void transform_to_dap4(D4Group *root, Constructor *container);
+    void transform_to_dap4(D4Group *root, Constructor *container) override;
 
     virtual bool is_dap2_only_type();
 
-    virtual string toString();
+    string toString() override;
 
-    virtual bool is_linear();
+    bool is_linear() override;
 
-    virtual int length() const;
+    int length() const override;
 
     virtual int number_of_rows() const;
 
     virtual bool read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval = true);
 
-    virtual void intern_data(ConstraintEvaluator &eval, DDS &dds);
-    virtual bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true);
-    virtual bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false);
+    void intern_data(ConstraintEvaluator &eval, DDS &dds) override;
+    bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
+    bool deserialize(UnMarshaller &um, DDS *dds, bool reuse = false) override;
 
     /// Rest the row number counter
     void reset_row_number();
@@ -283,12 +283,12 @@ public:
     virtual void print_one_row(ostream &out, int row, string space, bool print_row_num = false);
     virtual void print_val_by_rows(ostream &out, string space = "", bool print_decl_p = true,
                                    bool print_row_numbers = true);
-    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true);
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     virtual void print_one_row(FILE *out, int row, string space, bool print_row_num = false);
     virtual void print_val_by_rows(FILE *out, string space = "", bool print_decl_p = true,
                                    bool print_row_numbers = true);
-    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true);
+    void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     virtual void set_leaf_p(bool state);
 
@@ -296,7 +296,7 @@ public:
 
     virtual void set_leaf_sequence(int lvl = 1);
 
-    virtual void dump(ostream &strm) const;
+    void dump(ostream &strm) const override;
 };
 
 } // namespace libdap

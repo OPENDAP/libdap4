@@ -1,7 +1,7 @@
 
 // This file is no longer used. jhrg 3/12/15
 
-#include "TestCommon.h"
+#include "../../tests/TestCommon.h"
 #include "InternalErr.h"
 
 using namespace libdap;

@@ -221,7 +221,12 @@ public:
      */
     D4Group *root();
 
-    virtual DDS *getDDS();
+    virtual DDS *getDDS(bool show_shared_dims);
+    /**
+     * @brief version of getDDS() that includes the shared dimensions 'by default."
+     * @return The DDS with shared dimensions included
+     */
+    virtual DDS *getDDS() { return getDDS(true); }
 
     virtual bool is_dap4_projected(std::vector<string> &inventory);
 

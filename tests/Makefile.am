@@ -71,8 +71,6 @@ TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestD4Group.cc TestInt8.cc TestInt64.cc TestUInt64.cc TestD4Sequence.cc \
 	   TestD4Enum.cc TestD4Opaque.cc TestFunction.cc D4TestFunction.cc
 
-# TestCommon.cc Removed jhrg 3/12/15
-
 TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 	TestGrid.h TestInt16.h TestInt32.h TestSequence.h TestStr.h	      \
 	TestStructure.h TestTypeFactory.h TestUInt16.h TestUInt32.h TestUrl.h \

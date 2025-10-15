@@ -9,17 +9,15 @@
 using namespace std;
 
 string read_test_baseline(const string &fn) {
-    int length;
-
     ifstream is;
     is.open(fn.c_str(), ios::binary);
 
     if (!is)
         return "Could not read baseline file: " + fn;
 
-    // get length of file:
+    // get the length of the file:
     is.seekg(0, ios::end);
-    length = is.tellg();
+    const long length = is.tellg();
 
     // back to start
     is.seekg(0, ios::beg);
@@ -32,5 +30,15 @@ string read_test_baseline(const string &fn) {
     is.close();
     buffer[length] = '\0';
 
-    return string(buffer.data());
+    return {buffer.data()};
+}
+
+void write_test_result(const string &file_name, const string &result) {
+    ofstream os;
+    os.open(file_name, ios::binary);
+
+    if (!os)
+        throw runtime_error("Could not write result file: " + file_name);
+
+    os.write(result.data(), static_cast<std::streamsize>(result.size()));
 }

@@ -211,7 +211,7 @@ bool Int64::d4_ops(BaseType *b, int op) {
  *
  * @return A pointer to the transformed variable
  */
-vector<BaseType *> *Int64::transform_to_dap2(AttrTable *) {
+std::vector<BaseType *> *Int64::transform_to_dap2(AttrTable *, bool show_shared_dims) {
 #if 0
     BaseType *dest = this->ptr_duplicate();
     // convert the d4 attributes to a dap2 attribute table.

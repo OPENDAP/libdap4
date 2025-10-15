@@ -158,7 +158,7 @@ public:
     void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
     void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
-    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table) override;
+    std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false) override;
 };
 
 } /* namespace libdap */

@@ -55,8 +55,6 @@
 #define DIR_SEP_CHAR '/'
 #endif
 
-#include <pthread.h>
-
 #include <fstream>
 
 #include "Error.h"
@@ -65,14 +63,16 @@
 
 using namespace std;
 
+std::once_flag libdap::RCReader::d_initialize;
+
 namespace libdap {
 
-RCReader *RCReader::_instance = 0;
+//RCReader *RCReader::_instance = 0;
 
 // This variable (instance_control) is used to ensure that in a MT
 // environment _instance is correctly initialized. See the get_instance
 // method. 08/07/02 jhrg
-static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
+// static pthread_once_t instance_control = PTHREAD_ONCE_INIT;
 
 /** Using values from this instance of RCReader, write out values for a
  default .dodsrc file. Nominally this will use the defaults for each thing
@@ -336,49 +336,15 @@ string RCReader::check_env_var(const string &variable_name) {
 
 RCReader::RCReader() // throw (Error) jhrg 7/2/15
 {
-    d_rc_file_path = "";
-    d_cache_root = "";
+    std::call_once(d_initialize, [this](){
+        try { loadRC(); }
+        catch (const Error &e){
+            DBG(cerr << "RCReader::RCReader() line 342: " << e.msg() << endl);
+        }
+    });
+}
 
-    // ** Set default values **
-    // Users must explicitly turn caching on.
-    _dods_use_cache = false;
-    _dods_cache_max = 20;
-    _dods_cached_obj = 5;
-    _dods_ign_expires = 0;
-    _dods_default_expires = 86400;
-    _dods_always_validate = 0;
-
-    _dods_deflate = 0;
-    d_validate_ssl = 1;
-
-    // flags for PROXY_SERVER=<protocol>,<host url>
-    //  New syntax PROXY_SERVER=[http://][user:pw@]host[:port]
-    d_dods_proxy_server_protocol = "";
-    d_dods_proxy_server_host = "";
-    d_dods_proxy_server_port = 0;
-    d_dods_proxy_server_userpw = "";
-
-    _dods_proxy_server_host_url = ""; // deprecated
-
-    // PROXY_FOR is deprecated.
-    // flags for PROXY_FOR=<regex>,<proxy host url>,<flags>
-    _dods_proxy_for = false; // true if proxy_for is used.
-    _dods_proxy_for_regexp = "";
-    _dods_proxy_for_proxy_host_url = "";
-    _dods_proxy_for_regexp_flags = 0;
-
-    // flags for NO_PROXY_FOR=<protocol>,<host>,<port>
-    //  New syntax NO_PROXY_FOR=<host|domain>
-    d_dods_no_proxy_for = false;
-    d_dods_no_proxy_for_protocol = ""; // deprecated
-    d_dods_no_proxy_for_host = "";
-    // default to port 0 if not specified. This means all ports. Using 80
-    // will fail when the URL does not contain the port number. That's
-    // probably a bug in libwww. 10/23/2000 jhrg
-    _dods_no_proxy_for_port = 0; // deprecated
-
-    d_cookie_jar = "";
-
+void RCReader::loadRC(){
 #ifdef WIN32
     string homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");
     d_rc_file_path = check_string(homedir);
@@ -406,33 +372,16 @@ RCReader::RCReader() // throw (Error) jhrg 7/2/15
 
 RCReader::~RCReader() {}
 
-/** Static void private method. */
-void RCReader::delete_instance() {
-    if (RCReader::_instance) {
-        delete RCReader::_instance;
-        RCReader::_instance = 0;
-    }
-}
-
-/** Static void private method. */
-void RCReader::initialize_instance() {
-    DBGN(cerr << "RCReader::initialize_instance() ... ");
-
-    RCReader::_instance = new RCReader;
-    atexit(RCReader::delete_instance);
-
-    DBG(cerr << "exiting." << endl);
-}
-
 RCReader *RCReader::instance() {
     DBG(cerr << "Entering RCReader::instance" << endl);
     // The instance_control variable is defined at the top of this file.
     // 08/07/02 jhrg
-    pthread_once(&instance_control, initialize_instance);
+    //pthread_once(&instance_control, initialize_instance);
+    static RCReader _instance;
 
     DBG(cerr << "Instance value: " << hex << _instance << dec << endl);
 
-    return _instance;
+    return &_instance;
 }
 
 #if 0
