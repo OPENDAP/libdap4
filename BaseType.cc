@@ -865,9 +865,9 @@ void BaseType::deserialize(D4StreamUnMarshaller &, DMR &) {
     @see DDS
     @see DDS::CE
  */
-void BaseType::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void BaseType::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained, bool is_root_grp, bool is_array_member) {
     ostringstream oss;
-    print_decl(oss, space, print_semi, constraint_info, constrained);
+    print_decl(oss, space, print_semi, constraint_info, constrained, is_root_grp, is_array_member);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
@@ -913,13 +913,35 @@ void BaseType::print_decl(FILE *out, string space, bool print_semi, bool constra
     @see DDS
     @see DDS::CE
  */
-void BaseType::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void BaseType::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained, bool is_root_grp, bool array_member) {
     // if printing the constrained declaration, exit if this variable was not
     // selected.
     if (constrained && !send_p())
         return;
 
-    out << space << type_name() << " " << id2www(name());
+    if(get_parent()==0 || !is_dap4()) 
+        out << space << type_name() << " " << id2www(name());
+    else { 
+#if 0
+if(array_member)
+cout<<"this is an array variable "<<endl;
+if (is_root_grp)
+cout <<"this is a root group" <<endl;
+#endif
+        if (array_member) {
+            // Need to add a check for constructor's member. We don't use FQN
+            if (!is_root_grp)
+                out << space << type_name() << " " << get_parent()->FQN();
+            else 
+                out << space << type_name() << " " << id2www(name());
+        }
+        else  {
+            if (!is_root_grp)
+                out << space << type_name() << " " << FQN();
+            else 
+                out << space << type_name() << " " << id2www(name());
+        }
+    }
 
     if (constraint_info) {
         if (send_p())
@@ -946,9 +968,9 @@ variables in different ways.
 function, and controls the leading spaces of the output.
 @param print_decl_p A boolean value controlling whether the
 variable declaration is printed as well as the value. */
-void BaseType::print_val(FILE *out, string space, bool print_decl_p) {
+void BaseType::print_val(FILE *out, string space, bool print_decl_p, bool is_root_grp) {
     ostringstream oss;
-    print_val(oss, space, print_decl_p);
+    print_val(oss, space, print_decl_p, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 

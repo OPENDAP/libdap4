@@ -453,7 +453,7 @@ void D4Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p
         out << ";\n";
 }
 
-void D4Sequence::print_val(ostream &out, string space, bool print_decl_p) {
+void D4Sequence::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     DBG(cerr << name() << " isa " << type_name() << endl);
 
     print_val_by_rows(out, space, print_decl_p, false);

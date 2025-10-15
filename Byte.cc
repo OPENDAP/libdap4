@@ -211,15 +211,15 @@ bool Byte::set_value(dods_byte value) {
     @return The value. */
 dods_byte Byte::value() const { return d_buf; }
 
-void Byte::print_val(FILE *out, string space, bool print_decl_p) {
+void Byte::print_val(FILE *out, string space, bool print_decl_p, bool is_root_grp) {
     ostringstream oss;
-    print_val(oss, space, print_decl_p);
+    print_val(oss, space, print_decl_p, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Byte::print_val(ostream &out, string space, bool print_decl_p) {
+void Byte::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     if (print_decl_p) {
-        print_decl(out, space, false);
+        print_decl(out, space, false, false, false, is_root_grp, false);
         out << " = " << (int)d_buf << ";\n";
     } else
         out << (int)d_buf;

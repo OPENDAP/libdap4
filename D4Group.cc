@@ -643,23 +643,23 @@ void D4Group::print_dap4(XMLWriter &xml, bool constrained) {
     }
 }
 
-void D4Group::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void D4Group::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained, bool root_grp, bool array_member) {
     ostringstream oss;
-    print_decl(oss, space, print_semi, constraint_info, constrained);
+    print_decl(oss, space, print_semi, constraint_info, constrained, root_grp, array_member);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void D4Group::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void D4Group::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained, bool root_grp, bool array_member) {
     if (constrained && !send_p())
         return;
 
     out << space << type_name() << " {\n";
     for (auto var : d_vars) {
-        var->print_decl(out, space + "    ", true, constraint_info, constrained);
+        var->print_decl(out, space + "    ", true, constraint_info, constrained,root_grp,array_member);
     }
 
     for (auto grp : d_groups) {
-        grp->print_decl(out, space + "    ", true, constraint_info, constrained);
+        grp->print_decl(out, space + "    ", true, constraint_info, constrained, root_grp,array_member);
     }
 
     out << space << "} " << id2www(name());
@@ -675,22 +675,22 @@ void D4Group::print_decl(ostream &out, string space, bool print_semi, bool const
         out << ";\n";
 }
 
-void D4Group::print_val(FILE *out, string space, bool print_decl_p) {
+void D4Group::print_val(FILE *out, string space, bool print_decl_p, bool is_root_grp) {
     ostringstream oss;
-    print_val(oss, space, print_decl_p);
+    print_val(oss, space, print_decl_p, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void D4Group::print_val(ostream &out, string space, bool print_decl_p) {
+void D4Group::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     if (print_decl_p) {
-        print_decl(out, space, false);
+        print_decl(out, space, false, false, false, is_root_grp);
         out << " = ";
     }
 
     out << "{ ";
     bool padding_needed = false; // Add padding - which is complex with the two parts. jhrg 8/5/22
     for (Vars_citer i = d_vars.begin(), e = d_vars.end(); i != e; i++, (void)(i != e && out << ", ")) {
-        (*i)->print_val(out, "", false);
+        (*i)->print_val(out, "", false, is_root_grp);
         padding_needed = true;
     }
 
@@ -699,7 +699,7 @@ void D4Group::print_val(ostream &out, string space, bool print_decl_p) {
 
     padding_needed = false;
     for (auto grp : d_groups) {
-        grp->print_val(out, "", false);
+        grp->print_val(out, "", false, is_root_grp);
         padding_needed = true;
     }
 

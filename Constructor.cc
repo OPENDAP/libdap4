@@ -503,22 +503,27 @@ void Constructor::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
     }
 }
 
-void Constructor::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void Constructor::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained, bool is_root_grp, bool array_member) {
     ostringstream oss;
-    print_decl(oss, space, print_semi, constraint_info, constrained);
+    print_decl(oss, space, print_semi, constraint_info, constrained, is_root_grp, array_member);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Constructor::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void Constructor::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained, bool is_root_grp, bool array_member) {
     if (constrained && !send_p())
         return;
 
     out << space << type_name() << " {\n";
     for (auto var : d_vars) {
-        var->print_decl(out, space + "    ", true, constraint_info, constrained);
+        var->print_decl(out, space + "    ", true, constraint_info, constrained,true,array_member );
     }
-    out << space << "} " << id2www(name());
+    //out << space << "} " << id2www(name());
+    out << space << "} " ;
 
+    if(!is_root_grp)
+        out << FQN();
+    else
+        out <<id2www(name());
     if (constraint_info) { // Used by test drivers only.
         if (send_p())
             out << ": Send True";
@@ -530,21 +535,21 @@ void Constructor::print_decl(ostream &out, string space, bool print_semi, bool c
         out << ";\n";
 }
 
-void Constructor::print_val(FILE *out, string space, bool print_decl_p) {
+void Constructor::print_val(FILE *out, string space, bool print_decl_p, bool is_root_grp) {
     ostringstream oss;
-    print_val(oss, space, print_decl_p);
+    print_val(oss, space, print_decl_p, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Constructor::print_val(ostream &out, string space, bool print_decl_p) {
+void Constructor::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     if (print_decl_p) {
-        print_decl(out, space, false);
+        print_decl(out, space, false, false, false, is_root_grp, false);
         out << " = ";
     }
 
     out << "{ ";
     for (Vars_citer i = d_vars.begin(), e = d_vars.end(); i != e; i++, (void)(i != e && out << ", ")) {
-        (*i)->print_val(out, "", false);
+        (*i)->print_val(out, "", false, is_root_grp);
     }
 
     out << " }";

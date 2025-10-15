@@ -162,17 +162,17 @@ public:
     virtual void clear_constraint();
 
     virtual void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                            bool constrained = false);
+                            bool constrained = false, bool is_root_grp = true, bool array_member = false);
 
     virtual void print_xml(ostream &out, string space = "    ", bool constrained = false);
     virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
 
-    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true);
+    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true);
 
     virtual void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                            bool constrained = false);
+                            bool constrained = false, bool is_root_grp = true, bool array_member = false);
     virtual void print_xml(FILE *out, string space = "    ", bool constrained = false);
-    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
+    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true);
 
     virtual void transfer_attributes(AttrTable *at_container);
 

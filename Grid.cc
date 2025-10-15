@@ -636,13 +636,13 @@ void Grid::clear_constraint() {
         dynamic_cast<Array &>(*(*m)).clear_constraint();
 }
 
-void Grid::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void Grid::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained, bool is_root_grp, bool array_member) {
     ostringstream oss;
-    print_decl(oss, space, print_semi, constraint_info, constrained);
+    print_decl(oss, space, print_semi, constraint_info, constrained, is_root_grp, array_member);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Grid::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void Grid::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained, bool is_root_grp, bool array_member) {
     if (constrained && !send_p())
         return;
 
@@ -650,10 +650,10 @@ void Grid::print_decl(ostream &out, string space, bool print_semi, bool constrai
     if (constrained && !projection_yields_grid()) {
         out << space << "Structure {\n";
 
-        get_array()->print_decl(out, space + "    ", true, constraint_info, constrained);
+        get_array()->print_decl(out, space + "    ", true, constraint_info, constrained, is_root_grp, array_member);
 
         for (Map_citer i = map_begin(); i != map_end(); i++) {
-            (*i)->print_decl(out, space + "    ", true, constraint_info, constrained);
+            (*i)->print_decl(out, space + "    ", true, constraint_info, constrained, is_root_grp, array_member);
         }
 
         out << space << "} " << id2www(name());
@@ -663,11 +663,11 @@ void Grid::print_decl(ostream &out, string space, bool print_semi, bool constrai
         out << space << type_name() << " {\n";
 
         out << space << "  Array:\n";
-        get_array()->print_decl(out, space + "    ", true, constraint_info, constrained);
+        get_array()->print_decl(out, space + "    ", true, constraint_info, constrained, is_root_grp, array_member);
 
         out << space << "  Maps:\n";
         for (Map_citer i = map_begin(); i != map_end(); i++) {
-            (*i)->print_decl(out, space + "    ", true, constraint_info, constrained);
+            (*i)->print_decl(out, space + "    ", true, constraint_info, constrained, is_root_grp, array_member);
         }
 
         out << space << "} " << id2www(name());
@@ -760,15 +760,15 @@ void Grid::print_xml_writer(XMLWriter &xml, bool constrained) {
     }
 }
 
-void Grid::print_val(FILE *out, string space, bool print_decl_p) {
+void Grid::print_val(FILE *out, string space, bool print_decl_p, bool is_root_grp) {
     ostringstream oss;
-    print_val(oss, space, print_decl_p);
+    print_val(oss, space, print_decl_p, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Grid::print_val(ostream &out, string space, bool print_decl_p) {
+void Grid::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     if (print_decl_p) {
-        print_decl(out, space, false);
+        print_decl(out, space, false, false, false, is_root_grp, false);
         out << " = ";
     }
 

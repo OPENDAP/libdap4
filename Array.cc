@@ -955,9 +955,9 @@ void Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/) {
  @param constrained This argument should be TRUE if the Array is
  constrained, and FALSE otherwise.
  */
-void Array::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void Array::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained, bool child_grp, bool array_member) {
     ostringstream oss;
-    print_decl(oss, space, print_semi, constraint_info, constrained);
+    print_decl(oss, space, print_semi, constraint_info, constrained, child_grp, array_member);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
@@ -978,12 +978,12 @@ void Array::print_decl(FILE *out, string space, bool print_semi, bool constraint
  @param constrained This argument should be TRUE if the Array is
  constrained, and FALSE otherwise.
  */
-void Array::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void Array::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained, bool is_root_grp, bool array_member) {
     if (constrained && !send_p())
         return;
 
     // print it, but w/o semicolon
-    var()->print_decl(out, space, false, constraint_info, constrained);
+    var()->print_decl(out, space, false, constraint_info, constrained,is_root_grp,true);
 
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
         out << "[";
@@ -1115,9 +1115,9 @@ void Array::print_xml_writer_core(XMLWriter &xml, bool constrained, string tag) 
 
  @brief Print the value given the current constraint.
  */
-uint64_t Array::print_array(FILE *out, uint64_t index, unsigned int dims, uint64_t shape[]) {
+uint64_t Array::print_array(FILE *out, uint64_t index, unsigned int dims, uint64_t shape[], bool is_root_grp) {
     ostringstream oss;
-    uint64_t i = print_array(oss, index, dims, shape);
+    uint64_t i = print_array(oss, index, dims, shape, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 
     return i;
@@ -1134,17 +1134,17 @@ uint64_t Array::print_array(FILE *out, uint64_t index, unsigned int dims, uint64
 
  @brief Print the value given the current constraint.
  */
-uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, uint64_t shape[]) {
+uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, uint64_t shape[], bool is_root_grp) {
     if (dims == 1) {
         out << "{";
 
         // Added test in case this method is passed an array with no elements. jhrg 1/27/16
         if (shape[0] >= 1) {
             for (uint64_t i = 0; i < shape[0] - 1; ++i) {
-                var_ll(index++)->print_val(out, "", false);
+                var_ll(index++)->print_val(out, "", false, is_root_grp);
                 out << ", ";
             }
-            var_ll(index++)->print_val(out, "", false);
+            var_ll(index++)->print_val(out, "", false, is_root_grp);
         }
 
         out << "}";
@@ -1165,11 +1165,11 @@ uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, uin
         // but it's not wrong and this is really for debugging mostly. jhrg 1/28/16
         if (shape[0] > 0) {
             for (uint64_t i = 0; i < shape[0] - 1; ++i) {
-                index = print_array(out, index, dims - 1, shape + 1);
+                index = print_array(out, index, dims - 1, shape + 1, is_root_grp);
                 out << ",";
             }
 
-            index = print_array(out, index, dims - 1, shape + 1);
+            index = print_array(out, index, dims - 1, shape + 1, is_root_grp);
         }
 
         out << "}";
@@ -1178,13 +1178,13 @@ uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, uin
     }
 }
 
-void Array::print_val(FILE *out, string space, bool print_decl_p) {
+void Array::print_val(FILE *out, string space, bool print_decl_p, bool is_root_grp) {
     ostringstream oss;
-    print_val(oss, space, print_decl_p);
+    print_val(oss, space, print_decl_p, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Array::print_val(ostream &out, string space, bool print_decl_p) {
+void Array::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     // print the declaration if print decl is true.
     // for each dimension,
     //   for each element,
@@ -1192,7 +1192,7 @@ void Array::print_val(ostream &out, string space, bool print_decl_p) {
     // Add the `;'
 
     if (print_decl_p) {
-        print_decl(out, space, false, false, false);
+        print_decl(out, space, false, false, false, is_root_grp, false);
         out << " = ";
     }
 
@@ -1201,7 +1201,7 @@ void Array::print_val(ostream &out, string space, bool print_decl_p) {
     for (auto i = _shape.begin(); i != _shape.end() && index < dimensions(true); ++i)
         shape[index++] = dimension_size_ll(i, true);
 
-    print_array(out, 0, dimensions(true), shape);
+    print_array(out, 0, dimensions(true), shape, is_root_grp);
 
     delete[] shape;
     shape = nullptr;

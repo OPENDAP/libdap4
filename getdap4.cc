@@ -167,16 +167,17 @@ static void read_response_from_file(D4Connect &url, DMR &dmr, Response &r, bool 
     }
 }
 
-static void print_group_data(const D4Group *g, bool print_rows = false) {
+static void print_group_data(const D4Group *g, bool print_rows, bool is_root_grp) {
+    print_rows = false;
     for (const auto var : g->variables()) {
         if (print_rows && var->type() == dods_sequence_c)
             dynamic_cast<D4Sequence &>(*var).print_val_by_rows(cout);
         else
-            var->print_val(cout);
+            var->print_val(cout,"",true, is_root_grp);
     }
 
     for (const auto group : g->groups()) {
-        print_group_data(group, print_rows);
+        print_group_data(group, print_rows, false);
     }
 }
 
@@ -185,7 +186,7 @@ static void print_data(DMR &dmr, bool print_rows = false) {
 
     const auto g = dmr.root();
 
-    print_group_data(g, print_rows);
+    print_group_data(g, print_rows, true);
 
     cout << endl << flush;
 }
