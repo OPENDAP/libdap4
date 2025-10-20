@@ -168,7 +168,6 @@ static void read_response_from_file(D4Connect &url, DMR &dmr, Response &r, bool 
 }
 
 static void print_group_data(const D4Group *g, bool print_rows, bool is_root_grp) {
-    print_rows = false;
     for (const auto var : g->variables()) {
         if (print_rows && var->type() == dods_sequence_c)
             dynamic_cast<D4Sequence &>(*var).print_val_by_rows(cout);
