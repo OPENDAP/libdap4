@@ -28,17 +28,12 @@
 
 #define ATTR 1
 
-#if 0
 #include <cstring>
-#endif
 #include <iostream>
 #include <map>
 #include <stack>
 #include <string>
 
-#if 0
-#include <libxml/parserInternals.h>
-#endif
 #include <libxml/SAX2.h>
 
 #define CRLF "\r\n"
@@ -237,10 +232,6 @@ private:
     bool check_required_attribute(const string &attr);
     bool check_attribute(const string &attr);
     void process_variable_helper(Type t, ParseState s, const xmlChar **attrs, int nb_attributes);
-#if 0
-    void process_enum_const_helper(const xmlChar **attrs, int nb_attributes);
-    void process_enum_def_helper(const xmlChar **attrs, int nb_attributes);
-#endif
     bool process_dimension(const char *name, const xmlChar **attrs, int nb_attrs);
     bool process_dimension_def(const char *name, const xmlChar **attrs, int nb_attrs);
     bool process_map(const char *name, const xmlChar **attrs, int nb_attributes);
@@ -249,9 +240,6 @@ private:
     bool process_group(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_enum_def(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_enum_const(const char *name, const xmlChar **attrs, int nb_attributes);
-#if 0
-    void finish_variable(const char *tag, Type t, const char *expected);
-#endif
     //@}
 
     friend class D4ParserSax2Test;

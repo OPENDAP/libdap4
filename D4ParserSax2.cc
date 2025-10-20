@@ -24,17 +24,12 @@
 
 #include "config.h"
 
-// #define DODS_DEBUG 1
-
 #include <iostream>
 #include <sstream>
 
 #include <cassert>
 #include <cstdarg>
 #include <cstring>
-#if 0
-#include <libxml2/libxml/parserInternals.h>
-#endif
 #include "DMR.h"
 
 #include "Array.h"
