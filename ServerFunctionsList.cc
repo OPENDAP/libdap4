@@ -63,7 +63,7 @@ ServerFunctionsList::~ServerFunctionsList() {
 }
 
 ServerFunctionsList *ServerFunctionsList::TheList() {
-    //pthread_once(&ServerFunctionsList_instance_control, initialize_instance);
+    // pthread_once(&ServerFunctionsList_instance_control, initialize_instance);
     DBG(cerr << "ServerFunctionsList::TheList() - Returning singleton ServerFunctionList instance." << endl);
     static ServerFunctionsList d_instance;
     return &d_instance;

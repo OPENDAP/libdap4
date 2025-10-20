@@ -33,8 +33,8 @@
 #define _rc_reader_h_
 
 #include <iostream>
-#include <string>
 #include <mutex>
+#include <string>
 
 #include "Error.h"
 #include "util.h"
@@ -57,8 +57,8 @@ private:
     string d_rc_file_path = "";
     string d_cache_root = "";
 
-    bool _dods_use_cache = false;          // 0- Disabled 1- Enabled
-    unsigned int _dods_cache_max = 20;  // Max cache size in Mbytes
+    bool _dods_use_cache = false;      // 0- Disabled 1- Enabled
+    unsigned int _dods_cache_max = 20; // Max cache size in Mbytes
     unsigned int _dods_cached_obj = 5; // Max cache entry size in Mbytes
     int _dods_ign_expires = 0;         // 0- Honor expires 1- Ignore them
 
@@ -77,7 +77,7 @@ private:
     bool _dods_deflate = false; // 1- request comp responses, 0- don't
 
     int _dods_default_expires = 86400; // 24 hours in seconds
-    int _dods_always_validate = 0; // Let libwww decide by default so set to 0
+    int _dods_always_validate = 0;     // Let libwww decide by default so set to 0
 
     // flags for PROXY_SERVER=<protocol>,<host url>
     string d_dods_proxy_server_protocol = "";
@@ -128,8 +128,8 @@ private:
 public:
     static RCReader *instance();
 
-    RCReader(const RCReader&) = delete;
-    RCReader& operator=(const RCReader&) = delete;
+    RCReader(const RCReader &) = delete;
+    RCReader &operator=(const RCReader &) = delete;
 
     // GET METHODS
     string get_dods_cache_root() const throw() { return d_cache_root; }

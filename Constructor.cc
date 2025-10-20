@@ -503,27 +503,29 @@ void Constructor::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
     }
 }
 
-void Constructor::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained, bool is_root_grp, bool array_member) {
+void Constructor::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained,
+                             bool is_root_grp, bool array_member) {
     ostringstream oss;
     print_decl(oss, space, print_semi, constraint_info, constrained, is_root_grp, array_member);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Constructor::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained, bool is_root_grp, bool array_member) {
+void Constructor::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained,
+                             bool is_root_grp, bool array_member) {
     if (constrained && !send_p())
         return;
 
     out << space << type_name() << " {\n";
     for (auto var : d_vars) {
-        var->print_decl(out, space + "    ", true, constraint_info, constrained,true,array_member );
+        var->print_decl(out, space + "    ", true, constraint_info, constrained, true, array_member);
     }
-    //out << space << "} " << id2www(name());
-    out << space << "} " ;
+    // out << space << "} " << id2www(name());
+    out << space << "} ";
 
-    if(!is_root_grp)
+    if (!is_root_grp)
         out << FQN();
     else
-        out <<id2www(name());
+        out << id2www(name());
     if (constraint_info) { // Used by test drivers only.
         if (send_p())
             out << ": Send True";

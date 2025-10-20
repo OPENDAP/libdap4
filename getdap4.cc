@@ -172,7 +172,7 @@ static void print_group_data(const D4Group *g, bool print_rows, bool is_root_grp
         if (print_rows && var->type() == dods_sequence_c)
             dynamic_cast<D4Sequence &>(*var).print_val_by_rows(cout);
         else
-            var->print_val(cout,"",true, is_root_grp);
+            var->print_val(cout, "", true, is_root_grp);
     }
 
     for (const auto group : g->groups()) {

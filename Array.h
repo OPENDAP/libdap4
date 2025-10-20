@@ -296,7 +296,7 @@ public:
     // not used (?)
     virtual void print_as_map_xml(ostream &out, string space = "    ", bool constrained = false);
 
-    void print_val(ostream &out, string space = "", bool print_decl_p = true , bool is_root_grp = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     void print_xml(FILE *out, string space = "    ", bool constrained = false) override;
     virtual void print_as_map_xml(FILE *out, string space = "    ", bool constrained = false);

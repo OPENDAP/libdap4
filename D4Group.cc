@@ -613,23 +613,25 @@ void D4Group::print_dap4(XMLWriter &xml, bool constrained) {
     }
 }
 
-void D4Group::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained, bool root_grp, bool array_member) {
+void D4Group::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained,
+                         bool root_grp, bool array_member) {
     ostringstream oss;
     print_decl(oss, space, print_semi, constraint_info, constrained, root_grp, array_member);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void D4Group::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained, bool root_grp, bool array_member) {
+void D4Group::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained,
+                         bool root_grp, bool array_member) {
     if (constrained && !send_p())
         return;
 
     out << space << type_name() << " {\n";
     for (auto var : d_vars) {
-        var->print_decl(out, space + "    ", true, constraint_info, constrained,root_grp,array_member);
+        var->print_decl(out, space + "    ", true, constraint_info, constrained, root_grp, array_member);
     }
 
     for (auto grp : d_groups) {
-        grp->print_decl(out, space + "    ", true, constraint_info, constrained, root_grp,array_member);
+        grp->print_decl(out, space + "    ", true, constraint_info, constrained, root_grp, array_member);
     }
 
     out << space << "} " << id2www(name());

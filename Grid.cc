@@ -636,13 +636,15 @@ void Grid::clear_constraint() {
         dynamic_cast<Array &>(*(*m)).clear_constraint();
 }
 
-void Grid::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained, bool is_root_grp, bool array_member) {
+void Grid::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained,
+                      bool is_root_grp, bool array_member) {
     ostringstream oss;
     print_decl(oss, space, print_semi, constraint_info, constrained, is_root_grp, array_member);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Grid::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained, bool is_root_grp, bool array_member) {
+void Grid::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained,
+                      bool is_root_grp, bool array_member) {
     if (constrained && !send_p())
         return;
 

@@ -162,7 +162,7 @@ public:
     virtual void clear_constraint();
 
     void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                            bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
+                    bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
 
     void print_xml(ostream &out, string space = "    ", bool constrained = false) override;
     void print_xml_writer(XMLWriter &xml, bool constrained = false) override;
@@ -170,7 +170,7 @@ public:
     void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                            bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
+                    bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
     void print_xml(FILE *out, string space = "    ", bool constrained = false) override;
     void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 

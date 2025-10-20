@@ -123,7 +123,7 @@ bool Int8::set_value(dods_int8 i) {
 
 void Int8::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     if (print_decl_p) {
-        print_decl(out, space, false, false, false,is_root_grp, false);
+        print_decl(out, space, false, false, false, is_root_grp, false);
         out << " = " << (int)d_buf << ";\n";
     } else
         out << (int)d_buf;

@@ -52,7 +52,7 @@ class Int64 : public BaseType {
     }
     // virtual unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
     unsigned int buf2val(void **) override;
-    void print_val(FILE *, string, bool,bool) override {
+    void print_val(FILE *, string, bool, bool) override {
         throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64");
     }
 

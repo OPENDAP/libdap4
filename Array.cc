@@ -954,7 +954,8 @@ void Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/) {
  @param constrained This argument should be TRUE if the Array is
  constrained, and FALSE otherwise.
  */
-void Array::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained, bool child_grp, bool array_member) {
+void Array::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained, bool child_grp,
+                       bool array_member) {
     ostringstream oss;
     print_decl(oss, space, print_semi, constraint_info, constrained, child_grp, array_member);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
@@ -977,12 +978,13 @@ void Array::print_decl(FILE *out, string space, bool print_semi, bool constraint
  @param constrained This argument should be TRUE if the Array is
  constrained, and FALSE otherwise.
  */
-void Array::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained, bool is_root_grp, bool array_member) {
+void Array::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained,
+                       bool is_root_grp, bool array_member) {
     if (constrained && !send_p())
         return;
 
     // print it, but w/o semicolon
-    var()->print_decl(out, space, false, constraint_info, constrained,is_root_grp,true);
+    var()->print_decl(out, space, false, constraint_info, constrained, is_root_grp, true);
 
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
         out << "[";
