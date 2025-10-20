@@ -519,7 +519,6 @@ void Constructor::print_decl(ostream &out, string space, bool print_semi, bool c
     for (auto var : d_vars) {
         var->print_decl(out, space + "    ", true, constraint_info, constrained, true, array_member);
     }
-    // out << space << "} " << id2www(name());
     out << space << "} ";
 
     if (!is_root_grp)

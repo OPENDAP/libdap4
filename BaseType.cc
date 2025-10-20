@@ -923,7 +923,7 @@ void BaseType::print_decl(ostream &out, string space, bool print_semi, bool cons
     if (constrained && !send_p())
         return;
 
-    if (get_parent() == 0 || !is_dap4())
+    if (get_parent() == nullptr || !is_dap4())
         out << space << type_name() << " " << id2www(name());
     else {
 #if 0

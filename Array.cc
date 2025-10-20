@@ -1142,10 +1142,12 @@ uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, uin
         // Added test in case this method is passed an array with no elements. jhrg 1/27/16
         if (shape[0] >= 1) {
             for (uint64_t i = 0; i < shape[0] - 1; ++i) {
-                var_ll(index++)->print_val(out, "", false, is_root_grp);
+                var_ll(index)->print_val(out, "", false, is_root_grp);
+                index++;
                 out << ", ";
             }
-            var_ll(index++)->print_val(out, "", false, is_root_grp);
+            var_ll(index)->print_val(out, "", false, is_root_grp);
+            index++;
         }
 
         out << "}";

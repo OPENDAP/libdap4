@@ -395,7 +395,6 @@ void D4Sequence::print_one_row(ostream &out, int row, string space, bool print_r
     out << "{ ";
 
     const int elements = element_count();
-    // cerr<<"elements: "<<elements <<endl;
     int j = 0;
     BaseType *bt_ptr = 0;
 
@@ -408,7 +407,6 @@ void D4Sequence::print_one_row(ostream &out, int row, string space, bool print_r
     // Print the first value
     while (j < elements && !bt_ptr) {
         bt_ptr = var_value(row, j++);
-        // cerr<<"bt_ptr->name(): "<<bt_ptr->name()<<endl;
         if (bt_ptr) { // data
             if (bt_ptr->type() == dods_sequence_c)
                 static_cast<D4Sequence *>(bt_ptr)->print_val_by_rows(out, space + "    ", false, print_row_num);
@@ -433,7 +431,6 @@ void D4Sequence::print_one_row(ostream &out, int row, string space, bool print_r
 }
 
 void D4Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p, bool print_row_numbers) {
-    // cerr<<"coming to print_val_by_rows "<<endl;
     if (print_decl_p) {
         print_decl(out, space, false);
         out << " = ";
