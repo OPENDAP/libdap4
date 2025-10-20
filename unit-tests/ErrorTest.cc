@@ -30,6 +30,7 @@
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <cstdio> // For FILE*
+#include <cstring>
 #include <iostream>
 #include <sstream>
 #include <string> // Include string
