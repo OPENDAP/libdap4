@@ -32,9 +32,9 @@
 #include <cassert>
 #include <cstdarg>
 #include <cstring>
-
+#if 0
 #include <libxml2/libxml/parserInternals.h>
-
+#endif
 #include "DMR.h"
 
 #include "Array.h"
