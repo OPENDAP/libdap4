@@ -440,7 +440,6 @@ void D4Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p
 
     if (length() != 0) {
         int rows = length() - 1; // -1 because the last row is treated specially
-                                 // cerr<<"rows: "<<rows <<endl;
         for (int i = 0; i < rows; ++i) {
             print_one_row(out, i, space, print_row_numbers);
             out << ", ";

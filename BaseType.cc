@@ -926,12 +926,6 @@ void BaseType::print_decl(ostream &out, string space, bool print_semi, bool cons
     if (get_parent() == nullptr || !is_dap4())
         out << space << type_name() << " " << id2www(name());
     else {
-#if 0
-if(array_member)
-cout<<"this is an array variable "<<endl;
-if (is_root_grp)
-cout <<"this is a root group" <<endl;
-#endif
         if (array_member) {
             // Need to add a check for constructor's member. We don't use FQN
             if (!is_root_grp)
