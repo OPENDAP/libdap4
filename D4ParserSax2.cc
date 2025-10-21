@@ -27,10 +27,10 @@
 #include <iostream>
 #include <sstream>
 
+#include "DMR.h"
 #include <cassert>
 #include <cstdarg>
 #include <cstring>
-#include "DMR.h"
 
 #include "Array.h"
 #include "BaseType.h"
