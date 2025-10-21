@@ -39,12 +39,12 @@ lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
 bin_SCRIPTS = dap-config dap-config-pkgconfig
 
-bin_PROGRAMS = getdap getdap4
+bin_PROGRAMS = getdap getdap4 dmr_memory_cache
 
 # Including the generated grammar sources in BUILT_SOURCES ensures
 # they are built first. jhrg 6/18/15
 BUILT_SOURCES = $(BISON_SRC) $(FLEX_SRC) dods-datatypes.h xdr-datatypes.h \
-	getdap.1 dap-config.1 getdap4.1
+	getdap.1 dap-config.1 getdap4.1 
 
 man_MANS = getdap.1 dap-config.1 getdap4.1
 
@@ -83,6 +83,12 @@ getdap4_SOURCES = getdap4.cc
 getdap4_LDADD = libdapclient.la libdap.la
 getdap4_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/http_dap $(CURL_CFLAGS)
 
+dmr_memory_cache_SOURCES = dmr_mcache_test.cc
+dmr_memory_cache_LDADD = libdapclient.la libdap.la
+dmr_memory_cache_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/http_dap $(CURL_CFLAGS)
+
+
+
 LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
@@ -95,7 +101,7 @@ dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
 CLEANFILES = *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) \
-	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1 \
+	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1 dmr_mem_cache.1\
 	GNU/*.gcda GNU/*.gcno
 
 DISTCLEAN = libdap.spec
