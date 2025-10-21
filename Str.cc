@@ -227,9 +227,9 @@ bool Str::set_value(const string &value) {
     @return The value. */
 string Str::value() const { return d_buf; }
 
-void Str::print_val(FILE *out, string space, bool print_decl_p) {
+void Str::print_val(FILE *out, string space, bool print_decl_p, bool is_root_grp) {
     ostringstream oss;
-    print_val(oss, space, print_decl_p);
+    print_val(oss, space, print_decl_p, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
@@ -242,9 +242,9 @@ void Str::print_val(FILE *out, string space, bool print_decl_p) {
  */
 string Str::esc_string_variable_value(const string &s) { return escattr(s); }
 
-void Str::print_val(ostream &out, string space, bool print_decl_p) {
+void Str::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     if (print_decl_p) {
-        print_decl(out, space, false);
+        print_decl(out, space, false, false, false, is_root_grp, false);
         out << " = \"" << esc_string_variable_value(d_buf) << "\";" << endl;
     } else {
         out << "\"" << esc_string_variable_value(d_buf) << "\"";

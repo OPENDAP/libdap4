@@ -571,9 +571,9 @@ unsigned int D4Enum::buf2val(void **val) {
     return width();
 }
 
-void D4Enum::print_val(ostream &out, string space, bool print_decl_p) {
+void D4Enum::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     if (print_decl_p) {
-        print_decl(out, space, false);
+        print_decl(out, space, false, false, false, is_root_grp, false);
         out << " = ";
     }
 

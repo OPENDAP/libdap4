@@ -85,10 +85,12 @@ public:
     virtual bool set_value(const dods_opaque &value);
     virtual dods_opaque value() const;
 
-    void print_val(FILE *, std::string = "", bool = true) override {
+    void print_val(FILE *, std::string = "", bool = true, bool = true) override {
         throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
     }
-    void print_val(std::ostream &out, std::string space = "", bool print_decl_p = true) override;
+
+    void print_val(std::ostream &out, std::string space = "", bool print_decl_p = true,
+                   bool is_root_grp = true) override;
 
     bool ops(BaseType *, int) override { throw InternalErr(__FILE__, __LINE__, "Unimplemented method"); }
 

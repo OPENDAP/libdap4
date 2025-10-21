@@ -51,7 +51,7 @@ class UInt64 : public BaseType {
     }
     // virtual unsigned int buf2val(void **)  { throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64"); }
     unsigned int buf2val(void **) override;
-    void print_val(FILE *, string, bool) override {
+    void print_val(FILE *, string, bool, bool) override {
         throw InternalErr(__FILE__, __LINE__, "Not implemented for UInt64");
     }
 
@@ -81,7 +81,7 @@ public:
     virtual dods_uint64 value() const;
     virtual bool set_value(dods_uint64 val);
 
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     bool ops(BaseType *b, int op) override;
     bool d4_ops(BaseType *b, int op) override;
