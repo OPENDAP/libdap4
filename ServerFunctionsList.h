@@ -59,8 +59,8 @@ public:
     typedef std::multimap<std::string, ServerFunction *>::iterator SFLIter;
     typedef std::multimap<std::string, ServerFunction *>::const_iterator SFLCIter;
 
-    ServerFunctionsList(const ServerFunctionsList&) = delete;
-    ServerFunctionsList& operator=(const ServerFunctionsList&) = delete;
+    ServerFunctionsList(const ServerFunctionsList &) = delete;
+    ServerFunctionsList &operator=(const ServerFunctionsList &) = delete;
 
     static ServerFunctionsList *TheList();
 
