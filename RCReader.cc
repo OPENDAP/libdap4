@@ -67,7 +67,7 @@ std::once_flag libdap::RCReader::d_initialize;
 
 namespace libdap {
 
-//RCReader *RCReader::_instance = 0;
+// RCReader *RCReader::_instance = 0;
 
 // This variable (instance_control) is used to ensure that in a MT
 // environment _instance is correctly initialized. See the get_instance
@@ -336,15 +336,16 @@ string RCReader::check_env_var(const string &variable_name) {
 
 RCReader::RCReader() // throw (Error) jhrg 7/2/15
 {
-    std::call_once(d_initialize, [this](){
-        try { loadRC(); }
-        catch (const Error &e){
+    std::call_once(d_initialize, [this]() {
+        try {
+            loadRC();
+        } catch (const Error &e) {
             DBG(cerr << "RCReader::RCReader() line 342: " << e.msg() << endl);
         }
     });
 }
 
-void RCReader::loadRC(){
+void RCReader::loadRC() {
 #ifdef WIN32
     string homedir = string("C:") + string(DIR_SEP_STRING) + string("Dods");
     d_rc_file_path = check_string(homedir);
@@ -376,7 +377,7 @@ RCReader *RCReader::instance() {
     DBG(cerr << "Entering RCReader::instance" << endl);
     // The instance_control variable is defined at the top of this file.
     // 08/07/02 jhrg
-    //pthread_once(&instance_control, initialize_instance);
+    // pthread_once(&instance_control, initialize_instance);
     static RCReader _instance;
 
     DBG(cerr << "Instance value: " << hex << _instance << dec << endl);
