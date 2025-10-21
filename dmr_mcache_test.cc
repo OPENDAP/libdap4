@@ -1,6 +1,7 @@
 #include "config.h"
 #include <string>
 #include <sstream>
+#include <memory>
         
 #include "Array.h" 
 #include "Byte.h"
