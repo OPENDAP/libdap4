@@ -61,13 +61,14 @@ cerr<<dmr_src<<endl;
 
         DMR *dmr_2 = new DMR(*dmr);
 
+        delete dmr;
+
         XMLWriter xml2;
         dmr_2->print_dap4(xml2);
         string dmr_src2 = string(xml2.get_doc());
 cerr<<"second one" <<endl;
 cerr<<dmr_src2<<endl;
 
-        delete dmr;
         delete dmr_2;
 
     return 0;
