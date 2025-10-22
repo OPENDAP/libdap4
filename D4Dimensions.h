@@ -28,8 +28,6 @@
 #include <string>
 #include <vector>
 
-// #include "XMLWriter.h"
-
 using namespace std;
 
 namespace libdap {

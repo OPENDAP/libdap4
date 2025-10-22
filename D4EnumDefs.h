@@ -53,12 +53,14 @@ class D4EnumDef {
 
     vector<tuple> d_tuples;
 
+#if 0
     void m_duplicate(const D4EnumDef &rhs) {
         d_name = rhs.d_name;
         d_type = rhs.d_type;
         d_parent = rhs.d_parent;
         d_tuples = rhs.d_tuples;
     }
+#endif
 
     void print_value(XMLWriter &xml, const D4EnumDef::tuple &tuple) const;
 
@@ -67,16 +69,20 @@ public:
 
     D4EnumDef() : d_name(""), d_type(dods_null_c), d_parent(0) {}
     D4EnumDef(const string &n, const Type &t, D4EnumDefs *e = 0) : d_name(n), d_type(t), d_parent(e) {}
+#if 0
     D4EnumDef(const D4EnumDef &rhs) { m_duplicate(rhs); }
+#endif
 
     virtual ~D4EnumDef() {}
 
+#if 0
     D4EnumDef &operator=(const D4EnumDef &rhs) {
         if (this == &rhs)
             return *this;
         m_duplicate(rhs);
         return *this;
     }
+#endif
 
     string name() const { return d_name; }
     void set_name(const string &n) { d_name = n; }
@@ -112,6 +118,7 @@ class D4EnumDefs {
         D4EnumDefCIter i = rhs.d_enums.begin();
         while (i != rhs.d_enums.end()) {
             d_enums.push_back(new D4EnumDef(**i++)); // deep copy
+            d_enums.back()->set_parent(this);        // Set the EnumDef's parent
         }
 
         d_parent = rhs.d_parent;
@@ -141,7 +148,7 @@ public:
     bool empty() const { return d_enums.empty(); }
 
     D4Group *parent() const { return d_parent; }
-    void set_parent(D4Group *p) { d_parent = p; }
+    void set_parent(D4Group *g) { d_parent = g; }
 
     /** Append a new D4EnumDef.
      *

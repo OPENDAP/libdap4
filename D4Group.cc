@@ -85,8 +85,10 @@ void D4Group::m_duplicate(const D4Group &g) {
     }
 
     // enums; deep copy
-    if (g.d_enum_defs)
+    if (g.d_enum_defs) {
         d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
+        d_enum_defs->set_parent(this);
+    }
 
     // groups
     groupsCIter i = g.d_groups.begin();
