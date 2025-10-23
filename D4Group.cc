@@ -159,7 +159,10 @@ D4Group &D4Group::operator=(const D4Group &rhs) {
  */
 string D4Group::FQN() const {
     // The root group is named "/" (always)
-    return (name() == "/") ? "/" : static_cast<D4Group *>(get_parent())->FQN() + name() + "/";
+    if (get_parent()) 
+        return (name() == "/") ? "/" : static_cast<D4Group *>(get_parent())->FQN() + name() + "/";
+    else 
+        return name();
 }
 
 D4Group *D4Group::find_child_grp(const string &grp_name) {

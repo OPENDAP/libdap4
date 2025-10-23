@@ -64,12 +64,16 @@ cerr<<dmr_src<<endl;
         delete dmr;
 
         XMLWriter xml2;
+        if(dmr_2) {
         dmr_2->print_dap4(xml2);
         string dmr_src2 = string(xml2.get_doc());
 cerr<<"second one" <<endl;
 cerr<<dmr_src2<<endl;
 
         delete dmr_2;
+        }
+        else 
+cerr<<"the copied cache is null " <<endl;
 
     return 0;
 }
