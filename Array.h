@@ -193,7 +193,8 @@ private:
     bool direct_io_flag = false;
     var_storage_info vs_info;
 
-    void update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims);
+    //void update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims);
+    void update_dimension_pointers(D4Group *grp);
     void print_dim_element(const XMLWriter &xml, const dimension &d, bool constrained);
 
     friend class ArrayTest;

@@ -390,6 +390,7 @@ std::vector<BaseType *> *Array::transform_to_dap2(AttrTable *, bool show_shared_
  * @param old_dims The Old D4Dimension objects (held in a D4Dimensions instance)
  * @param new_dims The New D4Dimension objects.
  */
+#if 0
 void Array::update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims) {
     std::vector<dimension>::iterator i = _shape.begin(), e = _shape.end();
     while (i != e) {
@@ -404,6 +405,62 @@ void Array::update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_
         ++i;
     }
 }
+#endif
+void Array::update_dimension_pointers(D4Group *grp) {
+#if 0
+    std::vector<dimension>::iterator i = _shape.begin(), e = _shape.end();
+    while (i != e) {
+        D4Dimensions::D4DimensionsIter old_i = old_dims->dim_begin(), old_e = old_dims->dim_end();
+        while (old_i != old_e) {
+            if ((*i).dim == *old_i) {
+                (*i).dim = new_dims->find_dim((*old_i)->name());
+            }
+            ++old_i;
+        }
+
+        ++i;
+    }
+#endif
+
+    D4Group *temp_grp = grp;
+    for ( auto &vd:_shape) {
+        
+//#if 0
+        while (temp_grp) {
+//cerr<<"temp_grp name: "<<temp_grp->FQN() <<endl;
+
+            D4Dimensions *temp_dims = temp_grp->dims();
+    
+//#if 0
+            if(vd.dim) {
+cerr<<"before vd_dim_path: "<<endl;
+                //string vd_dim_path = vd.dim->fully_qualified_name();
+                string vd_dim_path = vd.dim->name();
+cerr<<"after vd_dim_path: "<<vd_dim_path <<endl;
+                D4Dimension * temp_dim = temp_dims->find_dim(vd_dim_path); 
+cerr<<"after temp_dim: "<<endl;
+                // find, update the array dim. 
+                if (temp_dim) {
+cerr<<"FOUND the dimension" <<endl;
+cerr<<"temp_dim path: "<<temp_dim->fully_qualified_name()<<endl;
+cerr<<"temp_dim name: "<<temp_dim->name()<<endl;
+                    vd.dim = temp_dim;
+                    temp_grp = grp;
+                    break;
+                }
+cerr<<"end of if vd.dim"<<endl;
+            }
+//#endif
+            
+            if (temp_grp->get_parent()) 
+                temp_grp = static_cast<D4Group*>(temp_grp->get_parent());
+            else 
+                temp_grp = nullptr;
+        }
+//#endif
+    }
+}
+
 
 /** @brief Add the BaseType pointer to this constructor type
  instance.
