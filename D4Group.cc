@@ -102,7 +102,7 @@ if(g.get_parent() == this->get_parent())
     // that reference the 'old' dimensions (g.d_dims) and not the 'new'
     // dimensions made above. Scan every array and re-wire the weak pointers.
     // jhrg 8/15/14
-//#if 0
+#if 0
     Vars_citer vi = d_vars.begin();
     while (vi != d_vars.end()) {
         if ((*vi)->type() == dods_array_c)
@@ -135,8 +135,8 @@ if(g.get_parent() == this->get_parent())
             //static_cast<Array *>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
         ++vi;
     }
-//#endif
-   // enums; deep copy
+#endif
+ // enums; deep copy
     if (g.d_enum_defs) {
         d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
         d_enum_defs->set_parent(this);
@@ -236,6 +236,18 @@ D4Group &D4Group::operator=(const D4Group &rhs) {
     Constructor::operator=(rhs);
     m_duplicate(rhs);
     return *this;
+}
+void D4Group::update_d4dimension_pointers() {
+    Vars_citer vi = d_vars.begin();
+    while (vi != d_vars.end()) {
+        if ((*vi)->type() == dods_array_c)
+            static_cast<Array *>(*vi)->update_dimension_pointers(this);
+            //static_cast<Array *>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
+        ++vi;
+    }
+    for (auto &g:this->groups()) 
+	g->update_d4dimension_pointers();
+
 }
 
 /**
