@@ -66,9 +66,9 @@ env:
   - secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw="
 
   # For the AWS user ci-user: travis encrypt --org -r OPENDAP/libdap4 AWS_ACCESS_KEY_ID=
-  - secure: "QIk09Kg5l6QLKE44W2fqlJ840b82PpGBhb74p/fWjQPmnuUTlCnBN2/BqD5egeoTetDbtwo5K3tNTFlFbiLjO6vTKmj6L2EZL6ghaPkidBv+5Tmp1oj/UwbINakdUV3S4Y/jJ5Z3iahIW9+wiwGAnxGSNbgRhOnpivZEY787qRM="
+  # - secure: "QIk09Kg5l6QLKE44W2fqlJ840b82PpGBhb74p/fWjQPmnuUTlCnBN2/BqD5egeoTetDbtwo5K3tNTFlFbiLjO6vTKmj6L2EZL6ghaPkidBv+5Tmp1oj/UwbINakdUV3S4Y/jJ5Z3iahIW9+wiwGAnxGSNbgRhOnpivZEY787qRM="
   # travis encrypt --org -r OPENDAP/libdap4 AWS_SECRET_ACCESS_KEY=
-  - secure: "MYuhqdkVABYLrY+a/wgjDsmFn0y3jXAMZMaY9UADG/wHayv7tO26gdLblLu3Y8LqzA9sq9R1aI0n1vJB//UwCMkhpSQeuNo/vYZBaRB5+uvPovdzewqJ/7Y5e806QCalTuZNtKldZE8O8ANxwy+8M7t7es6hXjImPyI+wMpdsjc="
+  # - secure: "MYuhqdkVABYLrY+a/wgjDsmFn0y3jXAMZMaY9UADG/wHayv7tO26gdLblLu3Y8LqzA9sq9R1aI0n1vJB//UwCMkhpSQeuNo/vYZBaRB5+uvPovdzewqJ/7Y5e806QCalTuZNtKldZE8O8ANxwy+8M7t7es6hXjImPyI+wMpdsjc="
 
   # GIT_UID travis-ci-opendap
   - secure: "g+SL53aSnULaToAu+HJO86Ljr6//j+aVSlVh7ROj6h80PDVmSW0xyiLUQRkA24vMrQqNY/rj6+qAXgVGORCPs2JBGcKjELzLr30eNDXfUNOjB+0actXI8sKD8I3eTZMHawOpedtk9v884Z+iQJauh04tD70sUMBp/WpCp+mXgQE="
