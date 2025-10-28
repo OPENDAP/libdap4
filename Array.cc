@@ -423,8 +423,9 @@ void Array::update_dimension_pointers(D4Group *grp) {
 #endif
 
     D4Group *temp_grp = grp;
-    for ( auto &vd:_shape) {
-        
+    //for ( auto vd:_shape) {
+    std::vector<dimension>::iterator i = _shape.begin(), e = _shape.end();
+    while (i != e) {    
 //#if 0
         while (temp_grp) {
 //cerr<<"temp_grp name: "<<temp_grp->FQN() <<endl;
@@ -432,10 +433,12 @@ void Array::update_dimension_pointers(D4Group *grp) {
             D4Dimensions *temp_dims = temp_grp->dims();
     
 //#if 0
-            if(vd.dim) {
+            if((*i).dim) {
 cerr<<"before vd_dim_path: "<<endl;
                 //string vd_dim_path = vd.dim->fully_qualified_name();
-                string vd_dim_path = vd.dim->name();
+                ///string vd_dim_path = vd.dim->name();
+                string vd_dim_path = ((*i).dim)->name();
+	
 cerr<<"after vd_dim_path: "<<vd_dim_path <<endl;
                 D4Dimension * temp_dim = temp_dims->find_dim(vd_dim_path); 
 cerr<<"after temp_dim: "<<endl;
@@ -444,7 +447,8 @@ cerr<<"after temp_dim: "<<endl;
 cerr<<"FOUND the dimension" <<endl;
 cerr<<"temp_dim path: "<<temp_dim->fully_qualified_name()<<endl;
 cerr<<"temp_dim name: "<<temp_dim->name()<<endl;
-                    vd.dim = temp_dim;
+                    //vd.dim = temp_dim;
+                    (*i).dim = temp_dim;
                     temp_grp = grp;
                     break;
                 }
@@ -457,6 +461,7 @@ cerr<<"end of if vd.dim"<<endl;
             else 
                 temp_grp = nullptr;
         }
+	++i;
 //#endif
     }
 }
@@ -923,7 +928,10 @@ void Array::print_dim_element(const XMLWriter &xml, const dimension &d, bool con
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Dim") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
 
-    string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
+    //string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
+    if(d.dim) 
+	    cerr<<"d.dim name "<<d.dim->name()<<endl;
+    string name = d.name;
     // If there is a name, there must be a Dimension (named dimension) in scope
     // so write its name but not its size.
     if (!constrained && !name.empty()) {

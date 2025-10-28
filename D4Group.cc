@@ -64,21 +64,37 @@ namespace libdap {
 
 void D4Group::m_duplicate(const D4Group &g) {
     DBG(cerr << "In D4Group::m_duplicate for " << g.name() << endl);
-
+cerr<<"g FQN: "<<g.FQN() <<endl;
+cerr<<" this FQN: "<<this->FQN()<<endl;
 //cerr<<"m_duplicate group name "<<g.name() <<endl;
     // dims; deep copy, this is the parent
+    
     if (g.d_dims) {
         d_dims = new D4Dimensions(*(g.d_dims));
         d_dims->set_parent(this);
-#if 0
- if(d_dims) {
- for (D4Dimensions::D4DimensionsIter di = d_dims->dim_begin(), de = d_dims->dim_end(); di != de; ++di) {
+//#if 0
+ if(g.d_dims) {
+ for (D4Dimensions::D4DimensionsIter di = g.d_dims->dim_begin(), de = g.d_dims->dim_end(); di != de; ++di) {
+	 cout<<"name is: " << (*di)->name() << endl;
+	 cout <<"di: " <<&(*di)<<endl;
                 cerr<< "name is: " << (*di)->name() << endl;
                 cerr<< "size is: " << (*di)->size() << endl;
                 cerr << "FQN: "<<(*di)->fully_qualified_name() << endl;
   }
  }
-#endif
+ if(this->d_dims) {
+ for (D4Dimensions::D4DimensionsIter di = this->d_dims->dim_begin(), de = this->d_dims->dim_end(); di != de; ++di) {
+	 cout<<"copied name is: " << (*di)->name() << endl;
+	 cout<<"copied di is: " << &(*di) << endl;
+                cerr<< "copied name is: " << (*di)->name() << endl;
+                cerr<< "copied size is: " << (*di)->size() << endl;
+                cerr << "copield FQN: "<<(*di)->fully_qualified_name() << endl;
+  }
+ }
+
+if(g.get_parent() == this->get_parent())
+	cerr<<"the dest group parent is the same as the source group parent"<<endl;
+//#endif
      }
     // Update all of the D4Dimension weak pointers in the Array objects.
     // This is a hack - we know that Constructor::m_duplicate() has been
@@ -86,6 +102,7 @@ void D4Group::m_duplicate(const D4Group &g) {
     // that reference the 'old' dimensions (g.d_dims) and not the 'new'
     // dimensions made above. Scan every array and re-wire the weak pointers.
     // jhrg 8/15/14
+//#if 0
     Vars_citer vi = d_vars.begin();
     while (vi != d_vars.end()) {
         if ((*vi)->type() == dods_array_c)
@@ -94,20 +111,80 @@ void D4Group::m_duplicate(const D4Group &g) {
         ++vi;
     }
 //cerr<<"after dimension update"<<endl;
-    // enums; deep copy
+     vi = d_vars.begin();
+    while (vi != d_vars.end()) {
+        if ((*vi)->type() == dods_array_c) {
+            auto t_a = static_cast<Array *>(*vi);
+
+                Array::Dim_iter dim_i = t_a->dim_begin();
+                Array::Dim_iter dim_e = t_a->dim_end();
+                for (; dim_i != dim_e; dim_i++) {
+                    if ((*dim_i).name != "") {
+                        D4Dimension *d4dim = t_a->dimension_D4dim(dim_i);
+			cout<<"d4im: "<<&(*d4dim)<<endl;
+                        if (d4dim) {
+                            cerr<< "Check dim- dim name is: " << d4dim->name() << endl;
+                            cerr<< "Check dim- dim size is: " << d4dim->size() << endl;
+                            cerr<< "Check dim- fully_qualfied_dim name is: "
+                                    << d4dim->fully_qualified_name() << endl;
+			}
+                    }
+                }
+	}
+	    
+            //static_cast<Array *>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
+        ++vi;
+    }
+//#endif
+   // enums; deep copy
     if (g.d_enum_defs) {
         d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
         d_enum_defs->set_parent(this);
     }
-
+cerr<<"before going to the child group."<<endl;
     // groups
     groupsCIter i = g.d_groups.begin();
     while (i != g.d_groups.end()) {
         // Only D4Groups are in the d_groups container.
-        D4Group *g = static_cast<D4Group *>((*i++)->ptr_duplicate());
-        add_group_nocopy(g);
+        D4Group *ng = static_cast<D4Group *>((*i++)->ptr_duplicate());
+        add_group_nocopy(ng);
     }
+#if 0
+    Vars_citer vi = d_vars.begin();
+while (vi != d_vars.end()) {
+    if ((*vi)->type() == dods_array_c)
+	static_cast<Array *>(*vi)->update_dimension_pointers(this);
+	//static_cast<Array *>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
+    ++vi;
+}
+//cerr<<"after dimension update"<<endl;
+ vi = d_vars.begin();
+while (vi != d_vars.end()) {
+    if ((*vi)->type() == dods_array_c) {
+	auto t_a = static_cast<Array *>(*vi);
 
+	    Array::Dim_iter dim_i = t_a->dim_begin();
+	    Array::Dim_iter dim_e = t_a->dim_end();
+	    for (; dim_i != dim_e; dim_i++) {
+		if ((*dim_i).name != "") {
+		    D4Dimension *d4dim = t_a->dimension_D4dim(dim_i);
+		    cout<<"d4im: "<<&(*d4dim)<<endl;
+		    if (d4dim) {
+			cerr<< "Check dim- dim name is: " << d4dim->name() << endl;
+			cerr<< "Check dim- dim size is: " << d4dim->size() << endl;
+			cerr<< "Check dim- fully_qualfied_dim name is: "
+				<< d4dim->fully_qualified_name() << endl;
+		    }
+		}
+	    }
+    }
+	
+	//static_cast<Array *>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
+    ++vi;
+}
+#endif
+
+cerr<<"after finishing the child group."<<endl;
     DBG(cerr << "Exiting D4Group::m_duplicate" << endl);
 }
 
