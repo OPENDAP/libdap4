@@ -64,15 +64,15 @@ namespace libdap {
 
 void D4Group::m_duplicate(const D4Group &g) {
     DBG(cerr << "In D4Group::m_duplicate for " << g.name() << endl);
-cerr<<"g FQN: "<<g.FQN() <<endl;
-cerr<<" this FQN: "<<this->FQN()<<endl;
+//cerr<<"g FQN: "<<g.FQN() <<endl;
+//cerr<<" this FQN: "<<this->FQN()<<endl;
 //cerr<<"m_duplicate group name "<<g.name() <<endl;
     // dims; deep copy, this is the parent
     
     if (g.d_dims) {
         d_dims = new D4Dimensions(*(g.d_dims));
         d_dims->set_parent(this);
-//#if 0
+#if 0
  if(g.d_dims) {
  for (D4Dimensions::D4DimensionsIter di = g.d_dims->dim_begin(), de = g.d_dims->dim_end(); di != de; ++di) {
 	 cout<<"name is: " << (*di)->name() << endl;
@@ -94,8 +94,8 @@ cerr<<" this FQN: "<<this->FQN()<<endl;
 
 if(g.get_parent() == this->get_parent())
 	cerr<<"the dest group parent is the same as the source group parent"<<endl;
-//#endif
-     }
+#endif
+    }
     // Update all of the D4Dimension weak pointers in the Array objects.
     // This is a hack - we know that Constructor::m_duplicate() has been
     // called at this point and any Array instances have dimension pointers
@@ -141,7 +141,7 @@ if(g.get_parent() == this->get_parent())
         d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
         d_enum_defs->set_parent(this);
     }
-cerr<<"before going to the child group."<<endl;
+//cerr<<"before going to the child group."<<endl;
     // groups
     groupsCIter i = g.d_groups.begin();
     while (i != g.d_groups.end()) {
@@ -184,7 +184,7 @@ while (vi != d_vars.end()) {
 }
 #endif
 
-cerr<<"after finishing the child group."<<endl;
+//cerr<<"after finishing the child group."<<endl;
     DBG(cerr << "Exiting D4Group::m_duplicate" << endl);
 }
 

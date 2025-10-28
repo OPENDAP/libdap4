@@ -434,25 +434,25 @@ void Array::update_dimension_pointers(D4Group *grp) {
     
 //#if 0
             if((*i).dim) {
-cerr<<"before vd_dim_path: "<<endl;
+//cerr<<"before vd_dim_path: "<<endl;
                 //string vd_dim_path = vd.dim->fully_qualified_name();
                 ///string vd_dim_path = vd.dim->name();
                 string vd_dim_path = ((*i).dim)->name();
 	
-cerr<<"after vd_dim_path: "<<vd_dim_path <<endl;
+//cerr<<"after vd_dim_path: "<<vd_dim_path <<endl;
                 D4Dimension * temp_dim = temp_dims->find_dim(vd_dim_path); 
-cerr<<"after temp_dim: "<<endl;
+//cerr<<"after temp_dim: "<<endl;
                 // find, update the array dim. 
                 if (temp_dim) {
-cerr<<"FOUND the dimension" <<endl;
-cerr<<"temp_dim path: "<<temp_dim->fully_qualified_name()<<endl;
-cerr<<"temp_dim name: "<<temp_dim->name()<<endl;
+//cerr<<"FOUND the dimension" <<endl;
+//cerr<<"temp_dim path: "<<temp_dim->fully_qualified_name()<<endl;
+//cerr<<"temp_dim name: "<<temp_dim->name()<<endl;
                     //vd.dim = temp_dim;
                     (*i).dim = temp_dim;
                     temp_grp = grp;
                     break;
                 }
-cerr<<"end of if vd.dim"<<endl;
+//cerr<<"end of if vd.dim"<<endl;
             }
 //#endif
             
@@ -928,10 +928,12 @@ void Array::print_dim_element(const XMLWriter &xml, const dimension &d, bool con
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Dim") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write Dim element");
 
-    //string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
+    string name = (d.dim) ? d.dim->fully_qualified_name() : d.name;
+#if 0
     if(d.dim) 
 	    cerr<<"d.dim name "<<d.dim->name()<<endl;
     string name = d.name;
+#endif
     // If there is a name, there must be a Dimension (named dimension) in scope
     // so write its name but not its size.
     if (!constrained && !name.empty()) {
