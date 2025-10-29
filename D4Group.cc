@@ -72,6 +72,7 @@ void D4Group::m_duplicate(const D4Group &g) {
     if (g.d_dims) {
         d_dims = new D4Dimensions(*(g.d_dims));
         d_dims->set_parent(this);
+    }
 #if 0
  if(g.d_dims) {
  for (D4Dimensions::D4DimensionsIter di = g.d_dims->dim_begin(), de = g.d_dims->dim_end(); di != de; ++di) {
@@ -95,7 +96,6 @@ void D4Group::m_duplicate(const D4Group &g) {
 if(g.get_parent() == this->get_parent())
 	cerr<<"the dest group parent is the same as the source group parent"<<endl;
 #endif
-    }
     // Update all of the D4Dimension weak pointers in the Array objects.
     // This is a hack - we know that Constructor::m_duplicate() has been
     // called at this point and any Array instances have dimension pointers
