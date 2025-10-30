@@ -71,16 +71,15 @@ void D4Group::m_duplicate(const D4Group &g) {
         d_dims->set_parent(this);
     }
 
-    //Note:  D4Dimensons of variables under this group  still point to the 'old' dimensions(g.d_dims).
-    //       Logically we can make these D4Dimensions point to the D4Dimensions of this group or the ancestor groups.
-    //       However, probably due to the implementation limitation of the way to handle group's parent pointer
-    //       or due to the handling of compilers for the recursive groups, 
-    //       this group's parent group still points to g's parent group. So once g's resource is released, 
-    //       it will cause segmentation fault when a variable's D4Dimension is actually located in one of its ancestor's group.
-    //       We have to update the D4Dimensions of all the variables from root. This is actually called in the copy constructor
-    //       of the DMR class in the DMR.cc.  
-    //       Use the copy method of a DAP4 group should start from the root. 
-    //       KY 2025-10-30
+    // Note:  D4Dimensons of variables under this group  still point to the 'old' dimensions(g.d_dims).
+    //        Logically we can make these D4Dimensions point to the D4Dimensions of this group or the ancestor groups.
+    //        However, probably due to the implementation limitation of the way to handle group's parent pointer
+    //        or due to the handling of compilers for the recursive groups,
+    //        this group's parent group still points to g's parent group. So once g's resource is released,
+    //        it will cause segmentation fault when a variable's D4Dimension is actually located in one of its
+    //        ancestor's group. We have to update the D4Dimensions of all the variables from root. This is actually
+    //        called in the copy constructor of the DMR class in the DMR.cc. Use the copy method of a DAP4 group should
+    //        start from the root. KY 2025-10-30
 
     // enums; deep copy
     if (g.d_enum_defs) {
@@ -148,7 +147,7 @@ D4Group &D4Group::operator=(const D4Group &rhs) {
     return *this;
 }
 
-// Update the DAP4 dimension pointers of all variables. 
+// Update the DAP4 dimension pointers of all variables.
 // This should be used after calling m_duplicate() and should be called from the root.
 void D4Group::update_d4dimension_pointers() {
     Vars_citer vi = d_vars.begin();
@@ -157,9 +156,8 @@ void D4Group::update_d4dimension_pointers() {
             static_cast<Array *>(*vi)->update_dimension_pointers(this);
         ++vi;
     }
-    for (auto &g:this->groups()) 
-	g->update_d4dimension_pointers();
-
+    for (auto &g : this->groups())
+        g->update_d4dimension_pointers();
 }
 
 /**
@@ -170,9 +168,9 @@ void D4Group::update_d4dimension_pointers() {
  */
 string D4Group::FQN() const {
     // The root group is named "/" (always)
-    if (get_parent()) 
+    if (get_parent())
         return (name() == "/") ? "/" : static_cast<D4Group *>(get_parent())->FQN() + name() + "/";
-    else 
+    else
         return name();
 }
 

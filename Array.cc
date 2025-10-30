@@ -407,7 +407,7 @@ void Array::update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_
 }
 #endif
 /**
- * When a new DAP4 group is copied from an old one, we need to re-wire the DAP4 Dimensions  
+ * When a new DAP4 group is copied from an old one, we need to re-wire the DAP4 Dimensions
  * of any variable under the new group since the variable's DAP4 Dimensions still points to
  * to the old group's DAP4 Dimensions. We need to make them point to the DAP4 Dimensions
  * under the new group.
@@ -416,18 +416,18 @@ void Array::update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_
 void Array::update_dimension_pointers(D4Group *grp) {
 
     D4Group *temp_grp = grp;
-    
+
     // Somehow the for loop doesn't work. use the iterator instead.
     std::vector<dimension>::iterator i = _shape.begin(), e = _shape.end();
-    while (i != e) {    
+    while (i != e) {
         while (temp_grp) {
             D4Dimensions *temp_dims = temp_grp->dims();
-    
-            if((*i).dim) {
-                // Here we need to use the dimension name, not the FQN 
+
+            if ((*i).dim) {
+                // Here we need to use the dimension name, not the FQN
                 // to find if we have the dimension under this group.
                 string vd_dim_name = ((*i).dim)->name();
-                D4Dimension * temp_dim = temp_dims->find_dim(vd_dim_name); 
+                D4Dimension *temp_dim = temp_dims->find_dim(vd_dim_name);
 
                 // find, update this dimension of this array; go to the next dimension.
                 if (temp_dim) {
@@ -436,17 +436,16 @@ void Array::update_dimension_pointers(D4Group *grp) {
                     break;
                 }
             }
-            
-            // Not find under this group, go to its parent. 
-            if (temp_grp->get_parent()) 
-                temp_grp = static_cast<D4Group*>(temp_grp->get_parent());
-            else 
+
+            // Not find under this group, go to its parent.
+            if (temp_grp->get_parent())
+                temp_grp = static_cast<D4Group *>(temp_grp->get_parent());
+            else
                 temp_grp = nullptr;
         }
-	++i;
+        ++i;
     }
 }
-
 
 /** @brief Add the BaseType pointer to this constructor type
  instance.
