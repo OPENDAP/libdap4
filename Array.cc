@@ -406,63 +406,44 @@ void Array::update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_
     }
 }
 #endif
+/**
+ * When a new DAP4 group is copied from an old one, we need to re-wire the DAP4 Dimensions  
+ * of any variable under the new group since the variable's DAP4 Dimensions still points to
+ * to the old group's DAP4 Dimensions. We need to make them point to the DAP4 Dimensions
+ * under the new group.
+ * @param grp: The pointer to the new group.
+ */
 void Array::update_dimension_pointers(D4Group *grp) {
-#if 0
-    std::vector<dimension>::iterator i = _shape.begin(), e = _shape.end();
-    while (i != e) {
-        D4Dimensions::D4DimensionsIter old_i = old_dims->dim_begin(), old_e = old_dims->dim_end();
-        while (old_i != old_e) {
-            if ((*i).dim == *old_i) {
-                (*i).dim = new_dims->find_dim((*old_i)->name());
-            }
-            ++old_i;
-        }
-
-        ++i;
-    }
-#endif
 
     D4Group *temp_grp = grp;
-    //for ( auto vd:_shape) {
+    
+    // Somehow the for loop doesn't work. use the iterator instead.
     std::vector<dimension>::iterator i = _shape.begin(), e = _shape.end();
     while (i != e) {    
-//#if 0
         while (temp_grp) {
-//cerr<<"temp_grp name: "<<temp_grp->FQN() <<endl;
-
             D4Dimensions *temp_dims = temp_grp->dims();
     
-//#if 0
             if((*i).dim) {
-//cerr<<"before vd_dim_path: "<<endl;
-                //string vd_dim_path = vd.dim->fully_qualified_name();
-                ///string vd_dim_path = vd.dim->name();
-                string vd_dim_path = ((*i).dim)->name();
-	
-//cerr<<"after vd_dim_path: "<<vd_dim_path <<endl;
-                D4Dimension * temp_dim = temp_dims->find_dim(vd_dim_path); 
-//cerr<<"after temp_dim: "<<endl;
-                // find, update the array dim. 
+                // Here we need to use the dimension name, not the FQN 
+                // to find if we have the dimension under this group.
+                string vd_dim_name = ((*i).dim)->name();
+                D4Dimension * temp_dim = temp_dims->find_dim(vd_dim_name); 
+
+                // find, update this dimension of this array; go to the next dimension.
                 if (temp_dim) {
-//cerr<<"FOUND the dimension" <<endl;
-//cerr<<"temp_dim path: "<<temp_dim->fully_qualified_name()<<endl;
-//cerr<<"temp_dim name: "<<temp_dim->name()<<endl;
-                    //vd.dim = temp_dim;
                     (*i).dim = temp_dim;
                     temp_grp = grp;
                     break;
                 }
-//cerr<<"end of if vd.dim"<<endl;
             }
-//#endif
             
+            // Not find under this group, go to its parent. 
             if (temp_grp->get_parent()) 
                 temp_grp = static_cast<D4Group*>(temp_grp->get_parent());
             else 
                 temp_grp = nullptr;
         }
 	++i;
-//#endif
     }
 }
 

@@ -53,15 +53,6 @@ class D4EnumDef {
 
     vector<tuple> d_tuples;
 
-#if 0
-    void m_duplicate(const D4EnumDef &rhs) {
-        d_name = rhs.d_name;
-        d_type = rhs.d_type;
-        d_parent = rhs.d_parent;
-        d_tuples = rhs.d_tuples;
-    }
-#endif
-
     void print_value(XMLWriter &xml, const D4EnumDef::tuple &tuple) const;
 
 public:
@@ -69,20 +60,11 @@ public:
 
     D4EnumDef() : d_name(""), d_type(dods_null_c), d_parent(0) {}
     D4EnumDef(const string &n, const Type &t, D4EnumDefs *e = 0) : d_name(n), d_type(t), d_parent(e) {}
-#if 0
-    D4EnumDef(const D4EnumDef &rhs) { m_duplicate(rhs); }
-#endif
+    D4EnumDef(const D4EnumDef &rhs) = default;
 
     virtual ~D4EnumDef() {}
 
-#if 0
-    D4EnumDef &operator=(const D4EnumDef &rhs) {
-        if (this == &rhs)
-            return *this;
-        m_duplicate(rhs);
-        return *this;
-    }
-#endif
+    D4EnumDef &operator=(const D4EnumDef &rhs) = default;
 
     string name() const { return d_name; }
     void set_name(const string &n) { d_name = n; }
