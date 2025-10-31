@@ -1,19 +1,63 @@
-
 # See https://github.com/pre-commit for more information
 # jhrg 7/14/24
+#
+# Updated via ChatGPT to fix issues with JSON files. This stemmed from
+# the addition of the CMake Preset JSON file. CLang is not a good way
+# to format JSON. This fixes that and adds a few other features. jhrg 10/31/25
+#
+# Multi-language: C/C++ (clang-format), JSON (prettier), YAML (prettier + yamllint)
+# Run:  pre-commit install  &&  pre-commit run --all-files
 
 fail_fast: false
+default_stages: [pre-commit]
+
+# Common exclusions (build outputs)
+exclude: |
+  (?x)(
+    ^autotest/|
+    ^build/|
+    ^retired/|
+    ^conf/|
+    ^gl/|
+    ^.git/|
+    ^.cache/
+  )
+
 repos:
+  # --- Baseline sanity checks (fast, safe) ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
       - id: check-yaml
       - id: check-json
+      - id: mixed-line-ending
+        args: ["--fix=lf"] # <— converts CRLF → LF on staged files
 
+  # --- C/C++ formatting (clang-format reads your .clang-format) ---
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v18.1.8
     hooks:
       - id: clang-format
-        # See https://github.com/pre-commit/mirrors-clang-format/blob/main/.pre-commit-hooks.yaml
         args: [--style=file, -i]
-        'types_or': [c++, c, json]
+        types_or: [c, c++]
+
+  # --- YAML linting (rules via .yamllint.yml if present) ---
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        types_or: [yaml]
+
+  # --- Formatting for JSON (and YAML/MD if you want) ---
+  # Pin Prettier version via additional_dependencies.
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        args: ["--no-cache"] # Problems with caching on OSX. jhrg 10/31/25
+        # Choose what Prettier formats:
+        types_or: [json, yaml, markdown]
+        additional_dependencies:
+          - prettier@3.6.0

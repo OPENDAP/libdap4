@@ -94,9 +94,7 @@
     {
       "name": "install",
       "configurePreset": "default",
-      "targets": [
-        "install"
-      ]
+      "targets": ["install"]
     }
   ],
 
@@ -109,18 +107,14 @@
       "name": "unit",
       "configurePreset": "default",
       "filter": {
-        "includeLabel": [
-          "unit"
-        ]
+        "includeLabel": ["unit"]
       }
     },
     {
       "name": "int",
       "configurePreset": "default",
       "filter": {
-        "includeLabel": [
-          "integration"
-        ]
+        "includeLabel": ["integration"]
       }
     },
 
@@ -132,20 +126,15 @@
       "name": "d-unit",
       "configurePreset": "developer",
       "filter": {
-        "includeLabel": [
-          "unit"
-        ]
+        "includeLabel": ["unit"]
       }
     },
     {
       "name": "d-int",
       "configurePreset": "developer",
       "filter": {
-        "includeLabel": [
-          "integration"
-        ]
+        "includeLabel": ["integration"]
       }
     }
-
   ]
 }
