@@ -43,24 +43,23 @@ repos:
             ^.git/|
             ^.cache/
           )
-      - id: trailing-whitespace
-        exclude: |
-          (?x)(
-            ^unit-tests/|
-            ^tests/|
-            ^autotest/|
-            ^build/|
-            ^retired/|
-            ^conf/|
-            ^gl/|
-            ^.git/|
-            ^.cache/
-          )
+      #      - id: trailing-whitespace
+      #        exclude: |
+      #          (?x)(
+      #            ^unit-tests/|
+      #            ^tests/|
+      #            ^autotest/|
+      #            ^build/|
+      #            ^retired/|
+      #            ^conf/|
+      #            ^gl/|
+      #            ^.git/|
+      #            ^.cache/
+      #          )
       - id: check-yaml
       - id: check-json
-  # Removed. jhrg 10/31/25
-  #      - id: mixed-line-ending
-  #        args: ["--fix=lf"] # <— converts CRLF → LF on staged files
+      - id: mixed-line-ending
+        args: ["--fix=lf"] # <— converts CRLF → LF on staged files
 
   # --- C/C++ formatting (clang-format reads your .clang-format) ---
   - repo: https://github.com/pre-commit/mirrors-clang-format
