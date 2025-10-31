@@ -100,37 +100,23 @@
 
   "testPresets": [
     {
-      "name": "all",
+      "name": "default",
       "configurePreset": "default"
-    },
-    {
-      "name": "unit",
-      "configurePreset": "default",
-      "filter": {
-        "includeLabel": ["unit"]
-      }
-    },
-    {
-      "name": "int",
-      "configurePreset": "default",
-      "filter": {
-        "includeLabel": ["integration"]
-      }
     },
 
     {
-      "name": "d-all",
+      "name": "developer",
       "configurePreset": "developer"
     },
     {
-      "name": "d-unit",
+      "name": "unit",
       "configurePreset": "developer",
       "filter": {
         "includeLabel": ["unit"]
       }
     },
     {
-      "name": "d-int",
+      "name": "int",
       "configurePreset": "developer",
       "filter": {
         "includeLabel": ["integration"]

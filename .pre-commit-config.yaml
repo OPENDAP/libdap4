@@ -29,16 +29,17 @@ repos:
     rev: v4.6.0
     hooks:
       - id: end-of-file-fixer
-        exclude: |
+        exclude: &test_excludes |
           (?x)(
             ^unit-tests/|
-            ^tests/|
-            ^build/
+            ^tests/
           )
       - id: trailing-whitespace
+        exclude: *test_excludes
       - id: check-yaml
       - id: check-json
       - id: mixed-line-ending
+        exclude: *test_excludes
         args: ["--fix=lf"] # <— converts CRLF → LF on staged files
 
   # --- C/C++ formatting (clang-format reads your .clang-format) ---
