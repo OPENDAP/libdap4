@@ -2,9 +2,9 @@ name: CMake CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master, main]
   pull_request:
-    branches: [ master, main ]
+    branches: [master, main]
   # Enables triggering the workflow manually (on any branch) from the Actions tab
   workflow_dispatch:
 

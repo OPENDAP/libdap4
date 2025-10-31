@@ -4,4 +4,3 @@ Dataset {
         Int32 j;
     } s;
 } structure_1;
-

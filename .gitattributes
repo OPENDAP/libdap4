@@ -1,0 +1,21 @@
+# All text files use LF in the repo and on checkout
+* text=auto eol=lf
+
+# Treat these as text explicitly (safety for uncommon extensions)
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf
+*.cmake text eol=lf
+
+# Binary files (never normalize)
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.pdf  binary
+*.zip  binary
+*.tar  binary
+*.tgz  binary
+*.gz   binary

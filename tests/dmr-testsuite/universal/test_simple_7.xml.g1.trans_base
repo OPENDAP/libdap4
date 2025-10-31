@@ -12,7 +12,7 @@ Parse successful
     <Sequence name="s">
         <Int32 name="i1"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            
+
         </Attribute>
     </Sequence>
 </Dataset>

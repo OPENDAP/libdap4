@@ -16,4 +16,3 @@ DEFLATE=1
 # part of the host name. Here we test for a mixture of the notations. The new
 # syntax to support is [<protocol>,][http://][user:pw@]host[:port].
 PROXY_SERVER=jimg:test@proxy.local.org:3128
-

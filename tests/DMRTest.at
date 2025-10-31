@@ -10,17 +10,17 @@ AT_ARG_OPTION_ARG([baselines],
 # There is no easy way to write a --generate... option for the function expression
 # tests. Better to do it by hand... Use ... .num.func_base as the extension for the
 # baselines.
- 
+
 # Usage DMR_PARSE $1 <test_input> $2 <pass/xfail>
 # The baseline is assumed to be $1.baseline
 m4_define([DMR_PARSE], [
 
     AT_SETUP([parse $1])
     AT_KEYWORDS([parse])
-    
+
     input=$abs_srcdir/$1
     baseline=$input.baseline
-    
+
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
         AT_CHECK([$abs_builddir/dmr-test -C -x -p $input], [ignore], [stdout], [stderr])
@@ -31,7 +31,7 @@ m4_define([DMR_PARSE], [
         AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
         AT_XFAIL_IF([test "$2" = "xfail"])
         ])
-    
+
     AT_CLEANUP
 ])
 
@@ -71,30 +71,30 @@ m4_define([DMR_TRANS], [
     # Test transmitting data (i.e., writing the Data DMR to a file and then decoding it)
     AT_SETUP([trans $1])
     AT_KEYWORDS([trans])
-    
+
     # WORD_ORDER is set by configure in atlocal.
     # This is a fix for the issue where the CRC32 checksum is different
     # on little- and big-endian machines, so we use different baseline
     # files.  jhrg 9/30/15
-        
+
     input=$abs_srcdir/dmr-testsuite/$1
     baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$1.trans_base
-    
+
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
         # // old version - sbl 9.4.19
         # AT_CHECK([$abs_builddir/dmr-test -C -x -t $input], [0], [stdout], [ignore])
-        
+
         AT_CHECK([$abs_builddir/dmr-test -C -x -t $input], [ignore], [stdout], [stderr])
         AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
         [
         AT_CHECK([$abs_builddir/dmr-test -C -x -t $input || true], [], [stdout], [stderr])
         AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
-    
+
         AT_XFAIL_IF([test "$2" = "xfail"])
         ])
-        
+
     AT_CLEANUP
 ])
 
@@ -104,32 +104,32 @@ m4_define([DMR_TRANS_UNIVERSAL], [
     # Test transmitting data (i.e., writing the Data DMR to a file and then decoding it)
     AT_SETUP([trans $1])
     AT_KEYWORDS([trans])
-    
+
     # WORD_ORDER is set by configure in atlocal.
     # This is a fix for the issue where the CRC32 checksum is different
     # on little- and big-endian machines, so we use different baseline
     # files.  jhrg 9/30/15
-    
+
     input=$abs_srcdir/dmr-testsuite/$1
     baseline=$abs_srcdir/dmr-testsuite/universal/$1.trans_base
-    
+
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
         echo "The command <>$abs_builddir/dmr-test -C -x -t $input $checksum_filt<>"
-        
+
         # // old version - sbl 9.4.19
         # AT_CHECK([$abs_builddir/dmr-test -C -x -t $input | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [0], [stdout], [ignore])
-        
+
         AT_CHECK([$abs_builddir/dmr-test -C -x -t $input | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [ignore], [stdout], [stderr])
         AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
         [
         AT_CHECK([$abs_builddir/dmr-test -C -x -t $input | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [], [stdout], [ignore])
         AT_CHECK([diff -b -B $baseline stdout], [], [ignore],[],[])
-    
+
         AT_XFAIL_IF([test "$2" = "xfail"])
         ])
-        
+
     AT_CLEANUP
 ])
 
@@ -140,7 +140,7 @@ m4_define([DMR_TRANS_CE], [
     # after applying a constraint expression to the source DMR.
     AT_SETUP([trans ce $1 $2 $3])
     AT_KEYWORDS([trans_ce])
-    
+
     # See above regarding $WORD_ORDER
     input=$abs_srcdir/dmr-testsuite/$1
     baseline=$abs_srcdir/dmr-testsuite/$WORD_ORDER/$3
@@ -149,7 +149,7 @@ m4_define([DMR_TRANS_CE], [
         [
         # // old version - sbl 9.4.19
         # AT_CHECK([$abs_builddir/dmr-test -C -x -t $input -c "$2"], [], [stdout], []) old version
-        
+
         AT_CHECK([$abs_builddir/dmr-test -C -x -t $input -c "$2"], [ignore], [stdout], [stderr])
         AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
@@ -158,7 +158,7 @@ m4_define([DMR_TRANS_CE], [
         AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
         AT_XFAIL_IF([test "X$4" = "Xxfail"])
         ])
-    
+
     AT_CLEANUP
 ])
 
@@ -217,7 +217,7 @@ m4_define([DMR_TRANS_FUNC_CE], [
     # the function or constraint are empty strings, they will be ignored.
     AT_SETUP([trans $1 $2 $3 $4])
     AT_KEYWORDS([trans_func_ce])
-    
+
     input=$abs_srcdir/dmr-testsuite/$1
     fe="$2"
     ce="$3"
@@ -229,7 +229,7 @@ m4_define([DMR_TRANS_FUNC_CE], [
         [
         # // old version - sbl 9.4.19
         # AT_CHECK([$abs_builddir/dmr-test -C -x -t $input -f "$fe" -c "$ce"], [], [stdout], [])
-        
+
         AT_CHECK([$abs_builddir/dmr-test -C -x -t $input -f "$fe" -c "$ce"], [ignore], [stdout], [stderr])
         AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
@@ -245,22 +245,22 @@ m4_define([DMR_TRANS_FUNC_CE], [
 # Usage DMR_TRANS_SERIES_CE <test_input> <ce> <baseline> <pass/xfail>
 # This macro tests CEs using the series values from the Test classes.
 # It's intended to be used to test the filter expressions.
-# 
+#
 # This is a 'universal' test - the baselines do not differ for word order
 # because the checksums are removed. jhrg 5/5/16
 m4_define([DMR_TRANS_SERIES_CE], [
     AT_SETUP([filter $1 $2 $3])
     AT_KEYWORDS([filter])
-    
+
     input=$abs_srcdir/dmr-testsuite/$1
     ce="$2"
     baseline=$abs_srcdir/dmr-testsuite/universal/$3
-    
+
     AS_IF([test -n "$baselines" -a x$baselines = xyes],
         [
         # // old version - sbl 9.4.19
         # AT_CHECK([$abs_builddir/dmr-test -C -x -e -t $input -c "$ce" | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [], [stdout], [])
-        
+
         AT_CHECK([$abs_builddir/dmr-test -C -x -e -t $input -c "$ce" | sed 's@<Value>[[0-9a-f]][[0-9a-f]]*</Value>@@' ], [ignore], [stdout], [stderr])
         AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
@@ -280,7 +280,7 @@ m4_define([DMR_INTERN], [
     # values without running them through serialize/deserialize)
     AT_SETUP([intern $1])
     AT_KEYWORDS([intern])
-    
+
     # WORD_ORDER is set by configure in atlocal.
     # This is a fix for the issue where the CRC32 checksum is different
     # on little- and big-endian machines, so we use different baseline
@@ -292,17 +292,17 @@ m4_define([DMR_INTERN], [
         [
         # // old version - sbl 9.4.19
         # AT_CHECK([$abs_builddir/dmr-test -C -x -i $input], [], [stdout], [])
-        
+
         AT_CHECK([$abs_builddir/dmr-test -C -x -i $input], [ignore], [stdout], [stderr])
         AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
         [
         AT_CHECK([$abs_builddir/dmr-test -C -x -i $input || true], [], [stdout], [stderr])
         AT_CHECK([diff -b -B $baseline stdout], [], [ignore], [], [])
-    
+
         AT_XFAIL_IF([test "$2" = "xfail"])
         ])
-        
+
     AT_CLEANUP
 ])
 
@@ -435,7 +435,7 @@ DMR_INTERN([test_simple_6.3.xml], [pass])
 
 # Added these tests as part of https://opendap.atlassian.net/browse/HYRAX-98.
 # jhrg 4/13/16
- 
+
 AS_IF([test "$WORD_ORDER" = "little-endian"],
 [
 DMR_TRANS_CE([test_array_3.1.dmr], [row;x], [test_array_3.1.dmr.1.trans_base], [pass])
@@ -452,11 +452,11 @@ DMR_TRANS_CE([test_array_4.xml], [a], [test_array_4.xml.1.trans_base], [pass])
 DMR_TRANS_CE([test_array_4.xml], [a[[]][[]] ], [test_array_4.xml.1.trans_base], [pass])
 
 DMR_TRANS_CE([test_array_4.xml], [/row=[[0:1]];/col=[[3]];a],  [test_array_4.xml.3.trans_base], [pass])
-    
+
 DMR_TRANS_CE([test_array_4.xml], [/row=[[0:1]];/col=[[3]];a[[]][[]] ],  [test_array_4.xml.4.trans_base], [pass])
-    
+
 DMR_TRANS_CE([test_array_4.xml], [/row=[[0:1]];/col=[[3]];a[[]][[]];b[[0]][[]];c[[0:]][[0:]] ],  [test_array_4.xml.5.trans_base], [pass])
-    
+
 DMR_TRANS_CE([test_array_4.xml], [x[[]][[]] ], [/test_array_4.xml.6.trans_base], [pass])
 DMR_TRANS_CE([test_array_4.xml], [/row=[[0:1]];x[[]][[]] ], [test_array_4.xml.7.trans_base], [pass])
 
@@ -503,7 +503,7 @@ DMR_TRANS_CE([test_array_6.1.xml], [row=[[1:2]];a[[]][[0]]{i;j} ], [test_array_6
 DMR_TRANS_CE([test_array_6.1.xml], [a{i[[1:2]][[1:3]];j} ], [test_array_6.1.xml.3.trans_base], [pass])
 DMR_TRANS_CE([test_array_6.1.xml], [a[[]][[]]{i[[1:2]][[1:3]];j} ], [test_array_6.1.xml.3.trans_base], [pass])
 
-# slice both the structure and the array it contains using both the shared dim and 
+# slice both the structure and the array it contains using both the shared dim and
 # a local slice for each
 DMR_TRANS_CE([test_array_6.1.xml], [/row=[[1]];a[[]][[0]]{i[[]][[0:1]]} ], [test_array_6.1.xml.4.trans_base], [pass])
 
@@ -574,7 +574,7 @@ DMR_TRANS_CE([test_array_7.2.xml], [/col=[[1:2]];s[[0]]{i1[[0]][[]]}], [test_arr
 
 #### STOPPED 7/11/25 jhrg ####
 
-# Test the function parser and evaluator. The function 'scale' is defined 
+# Test the function parser and evaluator. The function 'scale' is defined
 # for both DAP2 and DAP4 in D4TestFunction.cc/h
 DMR_TRANS_FUNC_CE([test_array_1.xml], [scale(x,1)], [], [test_array_1.xml.1.func_base], [pass])
 DMR_TRANS_FUNC_CE([test_array_1.xml], [scale(x,10)], [], [test_array_1.xml.2.func_base], [pass])
@@ -582,7 +582,7 @@ DMR_TRANS_FUNC_CE([test_array_1.xml], [scale(x,-10)], [], [test_array_1.xml.3.fu
 DMR_TRANS_FUNC_CE([test_array_1.xml], [scale(x,0.001)], [], [test_array_1.xml.4.func_base], [pass])
 DMR_TRANS_FUNC_CE([test_array_1.xml], [scale(x,-0.001)], [], [test_array_1.xml.5.func_base], [pass])
 
-# Test the largest signed int64 value (it will be stored in a D4RValue that 
+# Test the largest signed int64 value (it will be stored in a D4RValue that
 # holds a Int64 variable).
 DMR_TRANS_FUNC_CE([test_array_1.xml], [scale(x,0x7fffffffffffffff)], [], [test_array_1.xml.6.func_base], [pass])
 # This only fits in a unsigned long long (DAP4's UInt64)
@@ -620,7 +620,7 @@ DMR_TRANS_FUNC_CE([vol_1_ce_1.xml], [scale(\$Int64(20:1,2,3,0x7fffffffffffffff),
 DMR_TRANS_FUNC_CE([vol_1_ce_1.xml], [scale(\$Float32(20:1,2,3,4.55),10)], [], [vol_1_ce_1.xml.15.func_base], [pass])
 DMR_TRANS_FUNC_CE([vol_1_ce_1.xml], [scale(\$Float64(20:1,2,3,4.55),10)], [], [vol_1_ce_1.xml.16.func_base], [pass])
 
-# Test a sequence of function calls and the application of a Constraint to 
+# Test a sequence of function calls and the application of a Constraint to
 # a function result
 DMR_TRANS_FUNC_CE([vol_1_ce_10.xml], [scale(lat,10)], [], [vol_1_ce_10.xml.1.func_base], [pass])
 DMR_TRANS_FUNC_CE([vol_1_ce_10.xml], [scale(lat,10);scale(lon,10)], [], [vol_1_ce_10.xml.2.func_base], [pass])
@@ -629,8 +629,8 @@ DMR_TRANS_FUNC_CE([vol_1_ce_10.xml], [scale(lat,10);scale(lon,10)], [lat[[10:11]
 #### Stop here 7/13/25 ####
 
 # Tests added for the D4Sequence filter support. jhrg 4/28/16
-# These will be 'universal' tests (the idea was introduced on the 
-# master branch and tested out up above. See the calls to 
+# These will be 'universal' tests (the idea was introduced on the
+# master branch and tested out up above. See the calls to
 # DMR_TRANS_UNIVERSAL jhrg 5/5/16
 
 DMR_TRANS_SERIES_CE([test_simple_7.xml], [s], [test_simple_7.xml.f.trans_base], [pass])
@@ -670,8 +670,8 @@ DMR_TRANS_SERIES_CE([test_simple_8.1.xml], [outer{x;y;inner|i1<1000}|x<0.0], [te
 # These tests are regression tests for bug Hyrax-267. Spaces in variables names
 # broke the DAP4 CE parser
 
-# These mostly fail because thee's a second bug where the variables in a group are 
-# not printing values. 
+# These mostly fail because thee's a second bug where the variables in a group are
+# not printing values.
 DMR_TRANS_SERIES_CE([names_with_spaces.dmr], [/u], [names_with_spaces.dmr.1.trans_base], [pass])
 DMR_TRANS_SERIES_CE([names_with_spaces.dmr], [/inst2/u], [names_with_spaces.dmr.2.trans_base], [xfail])
 DMR_TRANS_SERIES_CE([names_with_spaces.dmr], [/inst2/Point.x], [names_with_spaces.dmr.3.trans_base], [xfail])

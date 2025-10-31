@@ -11,7 +11,7 @@ DISTCLEANFILES =
 # Removed. This breaks automake 1.16. jhrg 11/23/21
 # $(top_srcdir)/config.status
 
-cleanup.sh: cleanup.sh.in 
+cleanup.sh: cleanup.sh.in
 	sed -e "s%[@]srcdir[@]%${srcdir}%" $< > $(builddir)/cleanup.sh
 	chmod +x $(builddir)/cleanup.sh
 

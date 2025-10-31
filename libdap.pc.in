@@ -12,4 +12,3 @@ Libs: -L${libdir} -ldap
 Libs.private:  @xmlprivatelibs@ @PTHREAD_LIBS@
 Requires.private: @xmlprivatereq@
 Cflags: -I${includedir}/libdap
-

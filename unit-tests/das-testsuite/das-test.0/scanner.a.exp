@@ -21,9 +21,9 @@ set pass 1
 das-test_start s
 
 expect {
-    "${prompt} " { 
+    "${prompt} " {
     }
-    timeout { 
+    timeout {
 	send_user "Timeout\n"
 	set pass 0
     }
@@ -34,9 +34,9 @@ if {$pass} {
     send $thing
 
     expect {
-	-re ".*Left Brace\r\n${prompt} $" { 
+	-re ".*Left Brace\r\n${prompt} $" {
 	}
-	timeout { 
+	timeout {
 	    send_user "Timeout\n"
 	    set pass 0
 	}
@@ -48,9 +48,9 @@ if {$pass} {
     send $thing
 
     expect {
-	-re ".*Right Brace\r\n${prompt} $" { 
+	-re ".*Right Brace\r\n${prompt} $" {
 	}
-	timeout { 
+	timeout {
 	    send_user "Timeout\n"
 	    set pass 0
 	}
@@ -62,9 +62,9 @@ if {$pass} {
     send $thing
 
     expect {
-	-re ".*Semicolon\r\n${prompt} $" { 
+	-re ".*Semicolon\r\n${prompt} $" {
 	}
-	timeout { 
+	timeout {
 	    send_user "Timeout\n"
 	    set pass 0
 	}
@@ -76,9 +76,9 @@ if {$pass} {
     send $thing
 
     expect {
-	-re ".*Comma\r\n${prompt} $" { 
+	-re ".*Comma\r\n${prompt} $" {
 	}
-	timeout { 
+	timeout {
 	    send_user "Timeout\n"
 	    set pass 0
 	}

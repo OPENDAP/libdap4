@@ -15,4 +15,3 @@ Parse successful
     <Enum name="e" enum="/color"/>
     <Enum name="f" enum="/shade"/>
 </Dataset>
-

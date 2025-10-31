@@ -49,7 +49,7 @@ libgeodap_la_CXXFLAGS = $(AM_CPPFLAGS) $(AM_CXXFLAGS)
 
 EXTRA_DIST = gse.yy gse.ll
 
-DISTCLEANFILES = 
+DISTCLEANFILES =
 
 clean-local:
 	-rm lex.gse.cc gse.tab.hh gse.tab.cc
@@ -61,7 +61,7 @@ clean-local:
 # defines the LexerInput() method returning int and one returning size_t.
 # Including the gnerated lex.*.cc code causes a compilation error when
 # the version on the packaging machine differs from the version on the
-# building machine. For now I just remove the generated file. However, 
+# building machine. For now I just remove the generated file. However,
 # if a fix can be found, then we can remove the flex requirement from
 # a simple (tar.gz) source build. jhrg 7.9.15
 dist-hook:
@@ -69,4 +69,3 @@ dist-hook:
 
 lex.gse.cc: gse.ll gse.tab.cc gse.tab.hh
 	$(LEX) $(LFLAGS) $<
-

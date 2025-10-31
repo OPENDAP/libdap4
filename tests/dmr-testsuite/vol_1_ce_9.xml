@@ -10,7 +10,7 @@
     </Int32>
     <Int32 name="y"/>
   </Sequence>
-  
+
   <Sequence name="Points2">
     <Int32 name="x"/>
     <Int32 name="y"/>
@@ -20,7 +20,7 @@
       <Dim size="20"/>
     </Sequence>
   </Sequence>
-  
+
   <Structure name="Points3">
     <Int32 name="x"/>
     <Int32 name="y"/>
@@ -32,5 +32,5 @@
       <Dim size="300"/>
     </Sequence>
   </Structure>
-  
+
 </Dataset>

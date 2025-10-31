@@ -1,7 +1,7 @@
 
 AUTOMAKE_OPTIONS = foreign
 
-# We need this to make sure that parallel jobs don't fail for 
+# We need this to make sure that parallel jobs don't fail for
 # lack of stack.hh, ... because those are built by bison in one
 # shot.
 # .NOTPARALLEL:
@@ -54,7 +54,7 @@ BUILT_SOURCES = lex.d4_ce.cc d4_ce_parser.tab.hh d4_ce_parser.tab.cc \
 
 libd4_ce_parser_la_SOURCES = lex.d4_ce.cc d4_ce_parser.tab.cc	\
 	d4_ce_parser.tab.hh location.hh stack.hh position.hh\
-	D4ConstraintEvaluator.cc  D4ConstraintEvaluator.h D4CEScanner.h   
+	D4ConstraintEvaluator.cc  D4ConstraintEvaluator.h D4CEScanner.h
 
 libd4_ce_parser_la_CXXFLAGS = $(AM_CPPFLAGS) $(AM_CXXFLAGS)
 
@@ -62,7 +62,7 @@ EXTRA_DIST = d4_ce_parser.yy d4_ce_scanner.ll
 
 CLEANFILES = *.gcda *.gcno *.gcov
 
-DISTCLEANFILES = 
+DISTCLEANFILES =
 
 clean-local:
 	-rm d4_ce_parser.tab.cc	d4_ce_parser.tab.hh lex.d4_ce.cc location.hh \
@@ -81,7 +81,7 @@ d4_ce_parser.tab.cc d4_ce_parser.tab.hh location.hh stack.hh position.hh: d4_ce_
 # defines the LexerInput() method returning int and one returning size_t.
 # Including the generated lex.*.cc code causes a compilation error when
 # the version on the packaging machine differs from the version on the
-# building machine. For now I just remove the generated file. However, 
+# building machine. For now I just remove the generated file. However,
 # if a fix can be found, then we can remove the flex requirement from
 # a simple (tar.gz) source build. jhrg 7.9.15
 dist-hook:
@@ -89,4 +89,3 @@ dist-hook:
 
 lex.d4_ce.cc: d4_ce_scanner.ll d4_ce_parser.tab.cc d4_ce_parser.tab.hh
 	$(LEX) $(LFLAGS) $<
-

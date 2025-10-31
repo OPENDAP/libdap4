@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -34,7 +34,7 @@
    generator to build a parser for the DAS. It assumes that a scanner called
    `daslex()' exists and that the objects DAS and AttrTable also exist.
 
-   jhrg 7/12/94 
+   jhrg 7/12/94
 */
 
 %code requires {
@@ -62,7 +62,7 @@
 #endif
 
 #define yylex daslex
-#define yyerror daserror 
+#define yyerror daserror
 
 using namespace std;
 using namespace libdap ;
@@ -70,9 +70,9 @@ using namespace libdap ;
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
 // passed in to the parser within a structure (which itself is passed as a
-// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *.
 // The parser now throws an exception when it encounters an error. 5/23/2002
-// jhrg 
+// jhrg
 
 #define DAS_OBJ(arg) ((DAS *)((parser_arg *)(arg))->_object)
 
@@ -99,7 +99,7 @@ static vector<AttrTable *> *attr_tab_stack;
 
 #define TYPE_NAME_VALUE(x) *type << " " << *name << " " << (x)
 
-static const char *ATTR_TUPLE_MSG = 
+static const char *ATTR_TUPLE_MSG =
 "Expected an attribute type (Byte, Int16, UInt16, Int32, UInt32, Float32,\n\
 Float64, String or Url) followed by a name and value.";
 static const char *NO_DAS_MSG =
@@ -110,9 +110,9 @@ typedef int checker(const char *);
 
 int daslex(void);
 static void daserror(parser_arg *arg, const string &s /*char *s*/);
-static void add_attribute(const string &type, const string &name, 
+static void add_attribute(const string &type, const string &name,
 			  const string &value, checker *chk) throw (Error);
-static void add_alias(AttrTable *das, AttrTable *current, const string &name, 
+static void add_alias(AttrTable *das, AttrTable *current, const string &name,
 		      const string &src) throw (Error);
 static void add_bad_attribute(AttrTable *attr, const string &type,
 			      const string &name, const string &value,
@@ -150,7 +150,7 @@ static void add_bad_attribute(AttrTable *attr, const string &type,
 %%
 
 /*
-  Parser algorithm: 
+  Parser algorithm:
 
   Look for a `variable' name (this can be any identifier, but by convention
   it is either the name of a variable in a dataset or the name of a grouping
@@ -210,7 +210,7 @@ attributes:     attribute
     | attributes attribute
 
 ;
-    	    	
+
 attribute:    	SCAN_ATTR '{' attr_list '}'
         | error
         {
@@ -226,49 +226,49 @@ attr_list:  	/* empty */
 attr_tuple:	alias
 
         | SCAN_BYTE { save_str(*type, "Byte", das_line_num); }
-                name { save_str(*name, $3, das_line_num); } 
+                name { save_str(*name, $3, das_line_num); }
 		bytes ';'
 
-		| SCAN_INT16 { save_str(*type, "Int16", das_line_num); } 
-                name { save_str(*name, $3, das_line_num); } 
+		| SCAN_INT16 { save_str(*type, "Int16", das_line_num); }
+                name { save_str(*name, $3, das_line_num); }
 		int16 ';'
 
-		| SCAN_UINT16 { save_str(*type, "UInt16", das_line_num); } 
-                name { save_str(*name, $3, das_line_num); } 
+		| SCAN_UINT16 { save_str(*type, "UInt16", das_line_num); }
+                name { save_str(*name, $3, das_line_num); }
 		uint16 ';'
 
-		| SCAN_INT32 { save_str(*type, "Int32", das_line_num); } 
-                name { save_str(*name, $3, das_line_num); } 
+		| SCAN_INT32 { save_str(*type, "Int32", das_line_num); }
+                name { save_str(*name, $3, das_line_num); }
 		int32 ';'
 
-		| SCAN_UINT32 { save_str(*type, "UInt32", das_line_num); } 
-                name { save_str(*name, $3, das_line_num); } 
+		| SCAN_UINT32 { save_str(*type, "UInt32", das_line_num); }
+                name { save_str(*name, $3, das_line_num); }
 		uint32 ';'
 
-		| SCAN_FLOAT32 { save_str(*type, "Float32", das_line_num); } 
-                name { save_str(*name, $3, das_line_num); } 
+		| SCAN_FLOAT32 { save_str(*type, "Float32", das_line_num); }
+                name { save_str(*name, $3, das_line_num); }
 		float32 ';'
 
-		| SCAN_FLOAT64 { save_str(*type, "Float64", das_line_num); } 
-                name { save_str(*name, $3, das_line_num); } 
+		| SCAN_FLOAT64 { save_str(*type, "Float64", das_line_num); }
+                name { save_str(*name, $3, das_line_num); }
 		float64 ';'
 
-		| SCAN_STRING { *type = "String"; } 
-                name { *name = $3; } 
+		| SCAN_STRING { *type = "String"; }
+                name { *name = $3; }
 		strs ';'
 
-                | SCAN_URL { *type = "Url"; } 
-                name { *name = $3; } 
+                | SCAN_URL { *type = "Url"; }
+                name { *name = $3; }
                 urls ';'
 
-                | SCAN_XML { *type = "OtherXML"; } 
-                name { *name = $3; } 
+                | SCAN_XML { *type = "OtherXML"; }
+                name { *name = $3; }
                 xml ';'
 
 		| SCAN_WORD
                 {
 		    DBG(cerr << "Processing ID: " << $1 << endl);
-		    
+
 		    AttrTable *at = TOP_OF_STACK->get_attr_table($1);
 		    if (!at) {
 			try {
@@ -276,7 +276,7 @@ attr_tuple:	alias
 			}
 			catch (Error &e) {
 			    // re-throw with line number info
-			    parse_error(e.get_error_message().c_str(), 
+			    parse_error(e.get_error_message().c_str(),
 					das_line_num);
 			}
 		    }
@@ -285,7 +285,7 @@ attr_tuple:	alias
 		    DBG(cerr << " Pushed attr_tab: " << at << endl);
 
 		}
-		'{' attr_list 
+		'{' attr_list
                 {
 		    /* pop top of stack; store in attr_tab */
 		    DBG(cerr << " Popped attr_tab: " << TOP_OF_STACK << endl);
@@ -293,8 +293,8 @@ attr_tuple:	alias
 		}
 		'}'
 
-		| error 
-                { 
+		| error
+                {
 		    parse_error(ATTR_TUPLE_MSG, das_line_num, $1);
 		} ';'
 ;
@@ -399,7 +399,7 @@ xml:            SCAN_WORD
                     // artifact of the DAS syntax so they are not part of the
                     // value.
                     string xml = unescape_double_quotes($1);
-                    
+
                     if (is_quoted(xml))
                         add_attribute(*type, *name, remove_quotes(xml), 0);
                     else
@@ -416,15 +416,15 @@ str_or_id:	SCAN_WORD
 float_or_int:   SCAN_WORD
 ;
 
-name:           SCAN_WORD | SCAN_ATTR | SCAN_ALIAS | SCAN_BYTE | SCAN_INT16 
-                | SCAN_UINT16 | SCAN_INT32 | SCAN_UINT32 | SCAN_FLOAT32 
+name:           SCAN_WORD | SCAN_ATTR | SCAN_ALIAS | SCAN_BYTE | SCAN_INT16
+                | SCAN_UINT16 | SCAN_INT32 | SCAN_UINT32 | SCAN_FLOAT32
                 | SCAN_FLOAT64 | SCAN_STRING | SCAN_URL | SCAN_XML
 ;
 
 alias:          SCAN_ALIAS SCAN_WORD
-                { 
+                {
 		    *name = $2;
-		} 
+		}
                 SCAN_WORD
                 {
 		    add_alias( DAS_OBJ(arg)->get_top_level_attributes(),
@@ -448,7 +448,7 @@ a_or_an(const string &subject)
 {
     string first_char(1, subject[0]);
     string::size_type pos = first_char.find_first_of("aeiouAEIOUyY");
-    
+
     if (pos == string::npos)
 		return "a";
     else
@@ -458,7 +458,7 @@ a_or_an(const string &subject)
 // This code used to throw an exception when a bad attribute value came
 // along; now it dumps the errant value(s) into a sub container called *_DODS
 // and stores the parser's error message in a string attribute named
-// `explanation.' 
+// `explanation.'
 static void
 add_attribute(const string &type, const string &name, const string &value,
 	      checker *chk) throw (Error)
@@ -472,13 +472,13 @@ add_attribute(const string &type, const string &name, const string &value,
 		add_bad_attribute(TOP_OF_STACK, type, name, value, msg);
 		return;
     }
-    
+
     if (STACK_EMPTY) {
 		string msg = "Whoa! Attribute table stack empty when adding `" ;
 		msg += name + ".' ";
 		parse_error(msg, das_line_num);
     }
-    
+
     try {
 	    TOP_OF_STACK->append_attr(name, type, value);
     }
@@ -489,7 +489,7 @@ add_attribute(const string &type, const string &name, const string &value,
 }
 
 static void
-add_alias(AttrTable *das, AttrTable *current, const string &name, 
+add_alias(AttrTable *das, AttrTable *current, const string &name,
 	  const string &src) throw (Error)
 {
     DBG(cerr << "Adding an alias: " << name << ": " << src << endl);
@@ -524,8 +524,8 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
     // already exists, use it.
     // Add the attribute.
     // Add the error string to an attribute in the container called
-    // `<name_explanation.'. 
-    
+    // `<name_explanation.'.
+
     if (attr->get_name().find("_dods_errors") != string::npos) {
 	    attr->append_attr(name, type, value);
     }
@@ -545,4 +545,3 @@ add_bad_attribute(AttrTable *attr, const string &type, const string &name,
 #endif
     }
 }
-

@@ -56,10 +56,10 @@
     <Dim name="row"/>
     <Dim size="5"/>
   </dap:Int32>
-  
+
   <dap:Int32 name="y">
     <Dim size="5"/>
     <Dim name="col"/>
   </dap:Int32>
-  
+
 </Dataset>

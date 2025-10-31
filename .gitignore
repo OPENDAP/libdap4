@@ -43,7 +43,7 @@ lex.*.cc
 *.gcno
 *.gcda
 
-# OSX Instruments run-time profiling 
+# OSX Instruments run-time profiling
 *.trace
 
 # literal files

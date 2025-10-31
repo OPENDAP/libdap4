@@ -8,7 +8,7 @@ dataset {
         Float64 c;
         String d;
     } e;
- 
+
     Structure {
         Int32 b;
         Float64 c;

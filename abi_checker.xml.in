@@ -3,7 +3,7 @@
      Run the command 'abi-compliance-checker -lib NAME -old OLD.xml -new NEW.xml'
      where OLD.xml, ..., is this file and lib NAME is libdap, ...
      To get the abi checker, use git clone https://github.com/lvc/abi-compliance-checker -->
-     
+
 <version>
     @PACKAGE_VERSION@
 </version>

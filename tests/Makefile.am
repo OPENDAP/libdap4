@@ -53,10 +53,10 @@ testheaders_HEADERS = $(TEST_HDR)
 AM_LDFLAGS += -static
 
 das_test_SOURCES = das-test.cc
-das_test_LDADD =  libtest-types.a ../libdapserver.la ../libdap.la 
+das_test_LDADD =  libtest-types.a ../libdapserver.la ../libdap.la
 
 dds_test_SOURCES = dds-test.cc
-dds_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la 
+dds_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la
 
 expr_test_SOURCES = expr-test.cc ResponseBuilder.cc ResponseBuilder.h
 expr_test_LDADD = libtest-types.a ../libdapserver.la ../libdapclient.la ../libdap.la
@@ -109,7 +109,7 @@ DMRTESTSUITE = $(srcdir)/DMRTest
 GETDAPTESTSUITE = $(srcdir)/getdapTest
 
 check-local: atconfig atlocal $(DASTESTSUITE) $(DDSTESTSUITE) \
-$(EXPRTESTSUITE) $(DMRTESTSUITE) $(GETDAPTESTSUITE) 
+$(EXPRTESTSUITE) $(DMRTESTSUITE) $(GETDAPTESTSUITE)
 	$(SHELL) '$(DASTESTSUITE)' $(TESTSUITEFLAGS)
 	$(SHELL) '$(DDSTESTSUITE)' $(TESTSUITEFLAGS)
 	$(SHELL) '$(EXPRTESTSUITE)' $(TESTSUITEFLAGS)
@@ -119,7 +119,7 @@ $(EXPRTESTSUITE) $(DMRTESTSUITE) $(GETDAPTESTSUITE)
 # Make sure there are no spaces after the DASTESTSUITE names. jhrg 3/16/15
 # Delete the scripts here and not using CLEANFILES because this target is
 # run after the 'regular' clean: and we need the test scripts to run their
-# --clean option. Once that's done, then remove them. 
+# --clean option. Once that's done, then remove them.
 clean-local:
 	test ! -f '$(DASTESTSUITE)' || $(SHELL) $(DASTESTSUITE) --clean
 	test ! -f '$(DDSTESTSUITE)' || $(SHELL) $(DDSTESTSUITE) --clean
@@ -162,4 +162,3 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	echo 'm4_define([AT_PACKAGE_STRING],    [@PACKAGE_STRING@])' && \
 	echo 'm4_define([AT_PACKAGE_BUGREPORT], [@PACKAGE_BUGREPORT@])'; \
 	} >'$(srcdir)/package.m4'
-

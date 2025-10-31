@@ -35,7 +35,7 @@ applied to the sources and the result checked into our source code control
 system.
 
 Patches to the source from Dan Stromberg:
-    
+
     http://dcs.nac.uci.edu/~strombrg/opendap/libdap-AIX-patches.tar.gz
 
   [These patches have been applied to version 3.7.0 of the library. jhrg]
@@ -107,4 +107,3 @@ I believe that this change is more a site specific change and a firewall
 problem.
 
 Hope this helps.
-    

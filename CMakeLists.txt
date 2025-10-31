@@ -382,6 +382,7 @@ set(SERVER_HDR DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h)
 install(FILES ${DAP_HDR} ${DAP_GENERATED_HDR} ${DAP4_ONLY_HDR} ${CLIENT_HDR} ${SERVER_HDR}
         DESTINATION include/libdap)
 
+include(CTest)      # defines the BUILD_TESTING option (defaults ON)
 enable_testing()
 add_subdirectory(tests)
 add_subdirectory(unit-tests)

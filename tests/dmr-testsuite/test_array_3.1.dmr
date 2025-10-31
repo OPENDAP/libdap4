@@ -3,12 +3,12 @@
   xmlns="http://xml.opendap.org/ns/DAP/4.0#"
   xmlns:dap="http://xml.opendap.org/ns/DAP/4.0#">
 
-  <Dimension name="row" size="5"/>   
- 
+  <Dimension name="row" size="5"/>
+
    <Float32 name="row">
     <Dim name="row"/>
   </Float32>
-  
+
   <dap:String name="x">
     <Dim name="row"/>
     <Map name="row"/>

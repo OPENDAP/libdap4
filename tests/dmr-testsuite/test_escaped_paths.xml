@@ -23,9 +23,9 @@
   <Opaque name="f1"/>
   <Attribute name="a1" type="Int32"/>
   <Attribute name="a2" type="Float64">
-    <Value value="7.5"/>    
+    <Value value="7.5"/>
     <Value>10</Value>
-  </Attribute>  
+  </Attribute>
   <!-- Structure dimensions -->
   <Dim size="*"/>
   <Dim name="/d1"/>

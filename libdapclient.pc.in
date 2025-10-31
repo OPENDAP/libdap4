@@ -13,4 +13,3 @@ Libs: -L${libdir} -ldapclient
 Libs.private: @curlprivatelibs@
 Requires.private: @curlprivatereq@
 Cflags: -I${includedir}/libdap
-

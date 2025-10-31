@@ -19,9 +19,7 @@
         <Dim size="1024"/>
       </Int32>
     </Structure>
-    
+
     <Dim size="256"/>
   </Structure>
 </Dataset>
-
-

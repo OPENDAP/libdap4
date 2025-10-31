@@ -8,12 +8,12 @@
     <Dim size="100"/>
     <Dim size="50"/>
   </Float32>
-  
+
   <Float32 name="lon">
     <Dim size="100"/>
     <Dim size="50"/>
   </Float32>
-  
+
   <Float32 name="temp">
     <Dim size="100"/>
     <Dim size="50"/>

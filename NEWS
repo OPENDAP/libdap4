@@ -25,9 +25,9 @@ News for version 3.21.0
 - Removed support for RHEL 7 (CentOS 7)
 - Now require C++-11 to build the code. However, configure will use
   C++-14 if it finds that and the next release will require that.
-- Moved the functionality of is_dap4_projected() into libdap4 (#213). This 
+- Moved the functionality of is_dap4_projected() into libdap4 (#213). This
   had a number of consequences and there are new methods to support the feature.
-- Added support for 64-bit sized arrays. This was done by adding a set of 
+- Added support for 64-bit sized arrays. This was done by adding a set of
   'size methods' that have the suffix '_ll' (for long long). These should
   be used in place of the old methods, which are still in the code.
 
@@ -39,7 +39,7 @@ News for version 3.20.11
 News for version 3.20.10
 
 - Support for RHEL8
-- Fix for bugs in the ce parser around inverted indices. 
+- Fix for bugs in the ce parser around inverted indices.
 - Fix for libdap4 github issue 147:  Grid::get_map_iter() was off by one
 - Improvements to DAP4 api.
 - Fixed various memory leaks.
@@ -49,7 +49,7 @@ News for version 3.20.9
 
  Started migrating from (deprecated) auto_ptr to C++11 unique_ptr
 
- Migrated use of regex functions from outdfated GNU implementation 
+ Migrated use of regex functions from outdfated GNU implementation
  to C++11 implementation (uses compile time swicth)
 
 News for version 3.20.8
@@ -63,7 +63,7 @@ News for version 3.20.8
 
 News for version 3.20.7
 
- Added code coverage (using gcov) to the CI processes. 
+ Added code coverage (using gcov) to the CI processes.
 
  Dropped support for CentOS-6 (whew!)
 
@@ -75,7 +75,7 @@ News for version 3.20.7
 
 News for version 3.20.6
 
- Stopped CE parse errors from returning user supplied 
+ Stopped CE parse errors from returning user supplied
  strings in error messages.
 
  Switched to README.md from README
@@ -84,9 +84,9 @@ News for version 3.20.6
 
 News for version 3.20.5
 
- Fixed memory leaks in imported aws signing code. 
+ Fixed memory leaks in imported aws signing code.
 
- Minor bug fixes. 
+ Minor bug fixes.
 
  Lots of work on CI.
 
@@ -101,7 +101,7 @@ use unique_ptr<> but not null_ptr, for example.
 We have found a bug in the code that orders Dimensions,
 Enumeration definitions and Groups in the DMR. Listing the
 Groups last makes DMRs that reference Dimensions defined inside
-Groups fail silently. 
+Groups fail silently.
 
 News for version 3.20.3
 
@@ -149,7 +149,7 @@ Refactored transform_to_dap4() methods and associated API
 
 Implmented transform_to_dap2() method.
 
-Refactored test harnesses so that running individual 
+Refactored test harnesses so that running individual
 tests is now a viable option.
 
 News for version 3.18.3
@@ -201,10 +201,10 @@ Added tests for big-endian machines from Dan Horák  <dan@danny.cz>
 
 News for version 3.17.1
 
-A bug fix release. 
+A bug fix release.
 
 Fix for endian detection issues and unqualified use of 'array' (it
-should have been libdap::array). The latter affects builds with 
+should have been libdap::array). The latter affects builds with
 recent versions of gcc.
 
 See the ChangeLog for other issues that this version addresses.
@@ -218,7 +218,7 @@ as an internal error (only a few are) unless that's really the case.
 This is used, in turn, by the front end to make better error responses
 for users.
 
-The old timeout code is still present but not used. This matches 
+The old timeout code is still present but not used. This matches
 changes made in the BES to correctly process timeouts.
 
 Improved support for doxygen.
@@ -230,9 +230,9 @@ Child Groups were sometimes printed twice. No more.
 
 News for version 3.16.0
 
-I've bumped up the version because of an API change in libdap - the 
-library no longer computes the DAP4 CRC32 checksum as part of the 
-BaseType::intern_data() method. This API change affects DAP4 only. 
+I've bumped up the version because of an API change in libdap - the
+library no longer computes the DAP4 CRC32 checksum as part of the
+BaseType::intern_data() method. This API change affects DAP4 only.
 Otherwise, this is a bug-fix release for 3.15.1
 
 Bugs fixed:
@@ -241,7 +241,7 @@ getdap4 correctly produces output for dataset with child groups.
 
 Tests now work correctly for big-endian machines - before the DMR tests
 were failing because the CRC32 codes are different for the same, e.g.,
-int32 value, with different byte order. Not addressed are the issues 
+int32 value, with different byte order. Not addressed are the issues
 of how best to encode the byte order used when CRC32 computations are
 done. Thanks to the folks at RedHat for help (a VM) to work on this.
 
@@ -251,7 +251,7 @@ Bug fixes
 
 News for version 3.15.0
 
-The library now writes to the network using a child thread, allowing 
+The library now writes to the network using a child thread, allowing
 parallel processing of data reads and writes when one or more variables
 are returned (or when returning the result of an aggregation).
 
@@ -262,16 +262,16 @@ with the parallel I/O feature when serializing aggregations - other
 handlers could also take advantage of it
 
 We fixed an issue in Vector where template methods were used in a way
-that broke inheritance, introducing a hard-to-diagnose bug in the NCML 
-code. The problem was that variables that describe the 'aggregation 
+that broke inheritance, introducing a hard-to-diagnose bug in the NCML
+code. The problem was that variables that describe the 'aggregation
 dimension' could not be subset. That's now fixed.
 
 News for version 3.14.2
 
 This version of the library _changes the behavior of BaseType::serialize()_
-so that memory allocated on the heap used to hold data (e.g., for an 
+so that memory allocated on the heap used to hold data (e.g., for an
 Array) will be deleted as soon as the data are serialized. This was added
-to reduce memory consumption when returning responses with many large 
+to reduce memory consumption when returning responses with many large
 variables. The change did not affect any of the code we normally test
 against; I think it was a largely undocumented 'feature' that the data
 were still present after serialized returned. However, if a module needs
@@ -281,12 +281,12 @@ serialize_no_release() to get the old behavior.
 News for version 3.14.1
 
 We started using Travis-CI and Coverity for/with/on this code; there was
-a learning curve... ;-) Also some issues with the parsers have been 
+a learning curve... ;-) Also some issues with the parsers have been
 addressed, hopefully resulting in more straightforward builds.
 
 News for version 3.14.0
 
-This version of libdap contains the current DAP4 implementation for 
+This version of libdap contains the current DAP4 implementation for
 C++. The implementation is nearly complete, lacking only the CE filters
 for Sequences.
 
@@ -300,13 +300,13 @@ Fixed a memory leak in the CE parser when evaluating server functions.
 
 News for version 3.13.1
 
-Fix for a unit-test that uses the default server at test.opendap.org. 
+Fix for a unit-test that uses the default server at test.opendap.org.
 This affects neither the API nor ABI of libdap; only the test baseline
 was changed.
 
 News for version 3.13.0
 
-Added a xml file to serve as input for the perl-based abi compatibility 
+Added a xml file to serve as input for the perl-based abi compatibility
 checker. Seems to be pretty slick; see abi-checker.xml.in for more info.
 
 Some updates - mostly addition of #include <unistd.h> - for OSX 10.9's
@@ -335,12 +335,12 @@ more details.
 News for version 3.11.7
 
 Bug fix for the server function caching code. Now if the function
-cache directory /tmp/dap_functions_cache exists, it will be used to 
+cache directory /tmp/dap_functions_cache exists, it will be used to
 cache the results of applying server functions. If the directory does
-not exist, then the function results won't be cached - a minor 
-performance penalty in most cases. 
+not exist, then the function results won't be cached - a minor
+performance penalty in most cases.
 
-The size of the cache is set to 20GB. The size and location of the 
+The size of the cache is set to 20GB. The size and location of the
 cache are fixed for this version of libdap but they will move into
 the bes.conf file as parameters in a future version of the server.
 
@@ -363,7 +363,7 @@ Merged to trunk; tagged.
 
 News for version 3.11.3
 
-Changed the return value for dap-config --libs so that it does not contain 
+Changed the return value for dap-config --libs so that it does not contain
 the curl static libs. This causes problems when linking on CentOS 6 in some
 cases.
 
@@ -478,7 +478,7 @@ A problem with the client-side cache has been fixed.
 
 Variable names can now be quoted! That is, in a CE you can say:
 
-  "my odd name"."% H2O"[10:13] 
+  "my odd name"."% H2O"[10:13]
 
 and it will parse. Must clients and all web browsers will encode all of this
 using the web's URL escape syntax, which his hard to read, but this means that
@@ -628,7 +628,7 @@ classes and they were removed from the library to cut down on 'hierarchy
 clutter.' Some other unneeded files were also removed.
 
 The maximum size of a Str object was changes to 65535 (DODS_USHORT_INT-1) to
-accommodate HDF5 strings. 
+accommodate HDF5 strings.
 
 Checkouts from subversion now have no (?) generated files. We are keeping a
 copy of the grammars in subdirectory named 'grammarfiles.'
@@ -645,7 +645,7 @@ as part of that plan.
 
 Updated to the latest gnulib software.
 
-Memory errors fixed: 
+Memory errors fixed:
 
     In the HTTP processing code for clients which was triggered when a client
     read from an older server (older servers had malformed HTTP headers).
@@ -661,12 +661,12 @@ types unless the stdint.h header is not present.
 pkg-config support. From a patch by Patrice Dumas.
 
 General improvements to comments, strings and error messages throughout the
-libraries. 
+libraries.
 
 News for version 3.7.7, 2 May 2007
 
 Fixed a bug where the build was not installing the dapserver and dapclient
-libraries. 
+libraries.
 
 Fixed a handful of platform-specific build issues.
 
@@ -717,7 +717,7 @@ so that SSL validation can be suppressed; Fixed problems with the change from
 the first time; and add gzip and compress to the set of accepted compression
 types supported by the client side.
 
-Added Connect::request_ddx() which asks a server for the DDX response. 
+Added Connect::request_ddx() which asks a server for the DDX response.
 Previously, it was possible to use getdap to print the DDX, but that object
 was actually built using the DAS and DDS from a server. Now the server is asked
 for the DDX. Servers should support this response to be compliant with DAP 3.1.
@@ -727,7 +727,7 @@ to override a function from libdap with a new definition of the same name.
 
 I added a new interface for the scalar types: value() and set_value() can be
 used to get and set values. These are much simple to use than the older
-val2buf() and buf2val() methods. This idea was copied from copied from the 
+val2buf() and buf2val() methods. This idea was copied from copied from the
 PassiveByte, ..., classes.
 
 New server-side functions for geographical constraints have been added. These
@@ -740,7 +740,7 @@ beta release of these functions. Note that these are _server-side_ functions
 so before they can be used, servers need to be built using this library and
 installed.
 
-The dap-config script has been fixed so that it behaves more like other 
+The dap-config script has been fixed so that it behaves more like other
 such scripts.
 
 News for version 3.7.2
@@ -775,13 +775,13 @@ The grid() CE function now conforms to the design submitted to URI as part of
 the REASoN award.
 
 Fixed a bug when % signs were not handled correctly by the code in
-escaping.cc. 
+escaping.cc.
 
 News for version 3.7.0
 
 The big change: The first of the DAP3/4 features was added to the libdap
 library; the library now includes the DAP protocol version number in all
-responses. A savvy client can test for this and process accordingly. 
+responses. A savvy client can test for this and process accordingly.
 
 A second feature, representation of the data source metadata in XML, is
 supported in alpha form. Expect the 'DDX' response to change slightly in the
@@ -790,12 +790,12 @@ which we won't be using. Other than the Blob element, the current DDX
 probably will not change much except for the addition of new datatypes,
 something that will take place only after other changes are made to the
 protocol. Many of the handlers now support returning the DDX, so developers
-can begin to play with it's capabilities. 
+can begin to play with it's capabilities.
 
 What's really nice about the DDX: It's cool that the DDX now encode the
 metadata in XML, but the really nice feature is that it combines information
 from the DDS and DAS, making the association of attributes to variables much
-easier. 
+easier.
 
 Updated the reference guide (HTML pages in docs).
 
@@ -804,25 +804,25 @@ Fixed a pernicious bug in GNURegex.cc
 Added the class ConstraintEvaluator. The DDS class now takes the constraint
 evaluator as a parameter, so it's possible to replace ours with your own.
 
-The single library libdap has been split into three libraries: libdap for the 
+The single library libdap has been split into three libraries: libdap for the
 DAP functionality, libdapclient for the client-side classes and libdapserver
 for the server-side classes.
 
 Added INSTALL.AIX which contains information about building libdap on AIX
-using the _native compiler_. 
+using the _native compiler_.
 
 News for version 3.6.2
 
-This version includes two bug fixes. 
+This version includes two bug fixes.
 
 1. The library can now correctly reads binary data objects saved using the web
 interface. Before, this was very hard to do. The utility getdap has been
 modified so that it can decode these saved '.dods' files.
 
-2. The DODSFilter class used to build all of our data handlers no longer 
+2. The DODSFilter class used to build all of our data handlers no longer
 blocks when returning a data object to a web browser. This fixes a problem
 where the 'Get Binary' button on the data server's web interface would hang
-seemingly forever. In fact it did return the data blob, but only after the 
+seemingly forever. In fact it did return the data blob, but only after the
 blocked handler had timed out.
 
 News for version 3.6.1
@@ -838,21 +838,21 @@ News for version 3.6.0
 
 Added patches for RPM spec files from Patrice Dumas.
 
-Fixed a problem where Grids with two or more dimensions with the same name 
+Fixed a problem where Grids with two or more dimensions with the same name
 were flagged as broken (by Grid::check_semantics). Now they are allowed as per
 the specification.
 
-Added a new method get_parent() to AttrTable. This returns the parent 
+Added a new method get_parent() to AttrTable. This returns the parent
 container for this AttrTable.
 
 I removed the old iostream methods from the library. These methods should not
-be used because in many cases since other parts of the library use the C/stdio 
+be used because in many cases since other parts of the library use the C/stdio
 functions for I/O. In older versions of gcc, it was possible to mix the
 two types of I/O systems, but not now (and not in other compilers). To change
 your code, look in the file Removed_functions.txt to see the functions/methods
 that have been removed. In all cases there is a version that takes a FILE *
 in place of the ostream &. Use the FILE* version. If you're performing I/O
-that relies on operator<<() to do type conversions, use an ostringstream 
+that relies on operator<<() to do type conversions, use an ostringstream
 in your code and then write the string to stdout (or wherever) using fprintf
 like: fprintf(stdout, "%s", oss.str().c_str()). Ugly, but easier in some
 cases than replacing lots of tested C++ I/O with fprintf calls.
@@ -866,27 +866,27 @@ I removed the const char * overloads added to prevent collisions between
 the Pix and String (not string, but GNU's old libg String class) methods.
 
 Added protocol version number header to responses which use the set_mime...()
-functions. The new header is called "XDAP-Protocol" and its value is the 
+functions. The new header is called "XDAP-Protocol" and its value is the
 two digit DAP protocol version number. This is now used by the client-side
 deserialize() methods; I assume that a server that does not announce its
 protocol version is a 2.0 server.
 
-Removed the set_mime...() functions which take an iostream; use the ones 
+Removed the set_mime...() functions which take an iostream; use the ones
 which take the FILE* instead. We replaced the iostream versions with FILE*
 versions a long time ago because the parsers all use FILE* I/O functions
 and mixing the C++ and C I/O is not predictable. The old functions were
 deprecated. To fix your code, just change the iostream variable to a FILE*.
-In most cases this will mean changing 'cout' to 'stdout.' 
+In most cases this will mean changing 'cout' to 'stdout.'
 
 News for Release 3.5.3
 
-Changes to the Regex software. I've reimplemented the GNURegex code to 
+Changes to the Regex software. I've reimplemented the GNURegex code to
 use the only the POSIX functions. Because of this there are some subtle
 changes in the way the class Regex works. These changes address bugs that
 show up on Mac OS/X 10.4 (Tiger).
 
 1) Meta characters like '{' now have to be escaped like '\\{'
-2) See the docs for the Regex::match and Regex::serach methods. Regex:match 
+2) See the docs for the Regex::match and Regex::serach methods. Regex:match
    returns the number of characters that match or -1 if there's no match.
    Regex::serach returns the position of the _first_ match (not the longest
    as with POSIX) and the length of that first match in the value-result
@@ -894,10 +894,10 @@ show up on Mac OS/X 10.4 (Tiger).
 3) The Regex constructor now takes only one argument, the regular expression
    to compile. There's a second ctor that takes a second parameter (an int)
    but it is a dummy.
-   
+
 As a result of these changes, a small portion of the interface for libdap
 has changed.
-   
+
 Build improvements from Patrice Dumas.
 
 Added a Mac OS/X package and RedHat rpm/srpm targets. There's also a pmsp
@@ -919,7 +919,7 @@ The Test classes in the subdir 'test' should now produce the same values on
 Unit tests should all work (although one of the tests for util.cc is known to
 fail on FC4).
 
-Revamped the build to use automake. 
+Revamped the build to use automake.
 
 Regression tests and the test classes are now in the subdir 'tests.'
 
