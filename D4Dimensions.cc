@@ -56,15 +56,17 @@ string D4Dimension::fully_qualified_name() const {
 
     // d_parent is the D4Dimensions container, and its parent is the Group where
     // this Dimension is defined.
-    const D4Group *grp = d_parent->parent();
-    while (grp) {
-        // The root group is named "/" (always); this avoids '//name'
-        name = (grp->name() == "/") ? "/" + name : grp->name() + "/" + name;
+    if (d_parent) {
+        const D4Group *grp = d_parent->parent();
+        while (grp) {
+            // The root group is named "/" (always); this avoids '//name'
+            name = (grp->name() == "/") ? "/" + name : grp->name() + "/" + name;
 
-        if (grp->get_parent())
-            grp = dynamic_cast<D4Group *>(grp->get_parent());
-        else
-            grp = nullptr;
+            if (grp->get_parent())
+                grp = dynamic_cast<D4Group *>(grp->get_parent());
+            else
+                grp = nullptr;
+        }
     }
 
     return name;

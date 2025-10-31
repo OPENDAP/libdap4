@@ -80,6 +80,7 @@ public:
     // This method returned a D4Group * previously. jhrg 11/17/16
     BaseType *ptr_duplicate() override;
 
+    void update_variables_d4dimension_pointers();
     // TODO Wire up the new D4Dimensions object to have this group as its parent. jhrg 8/22/22
     /// Get the dimensions defined for this Group
     D4Dimensions *dims() {
