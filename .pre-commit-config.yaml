@@ -6,7 +6,7 @@
 # to format JSON. This fixes that and adds a few other features. jhrg 10/31/25
 #
 # Multi-language: C/C++ (clang-format), JSON (prettier), YAML (prettier + yamllint)
-# Run:  pre-commit install  &&  pre-commit run --all-files
+# Run:  pre-commit install && pre-commit run --all-files
 
 fail_fast: false
 default_stages: [pre-commit]
@@ -14,13 +14,7 @@ default_stages: [pre-commit]
 # Common exclusions (build outputs)
 exclude: |
   (?x)(
-    ^autotest/|
-    ^build/|
-    ^retired/|
-    ^conf/|
-    ^gl/|
-    ^.git/|
-    ^.cache/
+    ^(autotest|build|retired|conf|gl|\.git|\.cache)/
   )
 
 repos:
@@ -33,29 +27,13 @@ repos:
         # get it to work on OSX and in GitHub's action. jhrg 10/31/25
         exclude: |
           (?x)(
-            ^unit-tests/|
-            ^tests/|
-            ^autotest/|
-            ^build/|
-            ^retired/|
-            ^conf/|
-            ^gl/|
-            ^.git/|
-            ^.cache/
+            ^(unit-tests|tests|autotest|build|retired|conf|gl|\.git|\.cache)/
           )
-      #      - id: trailing-whitespace
-      #        exclude: |
-      #          (?x)(
-      #            ^unit-tests/|
-      #            ^tests/|
-      #            ^autotest/|
-      #            ^build/|
-      #            ^retired/|
-      #            ^conf/|
-      #            ^gl/|
-      #            ^.git/|
-      #            ^.cache/
-      #          )
+      - id: trailing-whitespace
+        exclude: |
+          (?x)(
+            ^(unit-tests|tests|autotest|build|retired|conf|gl|\.git|\.cache)/
+          )
       - id: check-yaml
       - id: check-json
       - id: mixed-line-ending
