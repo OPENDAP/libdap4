@@ -191,18 +191,18 @@ bool Float32::set_value(dods_float32 f) {
     @return The dods_float32 value. */
 dods_float32 Float32::value() const { return d_buf; }
 
-void Float32::print_val(FILE *out, string space, bool print_decl_p) {
+void Float32::print_val(FILE *out, string space, bool print_decl_p, bool is_root_grp) {
     ostringstream oss;
-    print_val(oss, space, print_decl_p);
+    print_val(oss, space, print_decl_p, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Float32::print_val(ostream &out, string space, bool print_decl_p) {
+void Float32::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     // FIX: need to set precision in the printing somehow.
     // os.precision(DODS_FLT_DIG);
 
     if (print_decl_p) {
-        print_decl(out, space, false);
+        print_decl(out, space, false, false, false, is_root_grp, false);
         out << " = " << std::setprecision(6) << d_buf << ";\n";
     } else
         out << std::setprecision(6) << d_buf;

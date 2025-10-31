@@ -122,9 +122,9 @@ std::vector<BaseType *> *D4Opaque::transform_to_dap2(AttrTable *, bool show_shar
     return NULL;
 }
 
-void D4Opaque::print_val(ostream &out, string space, bool print_decl_p) {
+void D4Opaque::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     if (print_decl_p)
-        print_decl(out, space, false);
+        print_decl(out, space, false, false, false, is_root_grp, false);
 
     if (d_buf.size()) {
         // end() - 1 is only OK if size() is > 0

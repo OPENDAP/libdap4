@@ -189,18 +189,18 @@ bool Float64::set_value(dods_float64 val) {
     return true;
 }
 
-void Float64::print_val(FILE *out, string space, bool print_decl_p) {
+void Float64::print_val(FILE *out, string space, bool print_decl_p, bool is_root_grp) {
     ostringstream oss;
-    print_val(oss, space, print_decl_p);
+    print_val(oss, space, print_decl_p, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Float64::print_val(ostream &out, string space, bool print_decl_p) {
+void Float64::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     // Set the precision to 15 digits
     std::streamsize prec = out.precision(15);
 
     if (print_decl_p) {
-        print_decl(out, space, false);
+        print_decl(out, space, false, false, false, is_root_grp, false);
         out << " = " << d_buf << ";\n";
     } else
         out << d_buf;

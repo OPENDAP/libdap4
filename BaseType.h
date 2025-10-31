@@ -317,12 +317,12 @@ public:
     virtual int64_t width_ll(bool constrained = false) const;
 
     virtual void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                            bool constrained = false);
+                            bool constrained = false, bool is_root_grp = true, bool array_member = false);
 
     virtual void print_xml(FILE *out, string space = "    ", bool constrained = false);
 
     virtual void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                            bool constrained = false);
+                            bool constrained = false, bool is_root_grp = true, bool array_member = false);
 
     virtual void print_xml(ostream &out, string space = "    ", bool constrained = false);
 
@@ -524,7 +524,7 @@ public:
     @param print_decl_p A boolean value controlling whether the
     variable declaration is printed as well as the value. */
 
-    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true);
+    virtual void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true);
 
     /** Prints the value of the variable, with its declaration. This
     function is primarily intended for debugging DODS
@@ -540,7 +540,7 @@ public:
     function, and controls the leading spaces of the output.
     @param print_decl_p A boolean value controlling whether the
     variable declaration is printed as well as the value. */
-    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true) = 0;
+    virtual void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) = 0;
     //@}
 
     virtual bool is_dap4_projected(std::vector<string> &projected_dap4_inventory);

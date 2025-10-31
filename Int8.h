@@ -47,7 +47,7 @@ class Int8 : public BaseType {
     unsigned int buf2val(void **) override {
         throw InternalErr(__FILE__, __LINE__, "buf2val: Not implemented for Int8");
     }
-    void print_val(FILE *, string, bool) override {
+    void print_val(FILE *, string, bool, bool) override {
         throw InternalErr(__FILE__, __LINE__, "print_val: Not implemented for Int8");
     }
 
@@ -77,7 +77,7 @@ public:
     virtual dods_int8 value() const;
     virtual bool set_value(dods_int8 val);
 
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     bool ops(BaseType *b, int op) override;
     bool d4_ops(BaseType *b, int op) override;

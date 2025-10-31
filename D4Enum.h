@@ -170,7 +170,7 @@ public:
     void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
     void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     void print_xml_writer(XMLWriter &xml, bool constrained) override;
 

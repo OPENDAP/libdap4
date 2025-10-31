@@ -1109,11 +1109,11 @@ void Sequence::print_val_by_rows(ostream &out, string space, bool print_decl_p, 
         out << ";\n";
 }
 
-void Sequence::print_val(FILE *out, string space, bool print_decl_p) {
+void Sequence::print_val(FILE *out, string space, bool print_decl_p, bool is_root_grp) {
     print_val_by_rows(out, space, print_decl_p, false);
 }
 
-void Sequence::print_val(ostream &out, string space, bool print_decl_p) {
+void Sequence::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     print_val_by_rows(out, space, print_decl_p, false);
 }
 
