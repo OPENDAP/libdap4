@@ -6,7 +6,7 @@
 .SH NAME
 dap-config \- get information about the libdap library
 .SH SYNOPSIS
-.B dap-config [OPTIONS] 
+.B dap-config [OPTIONS]
 .SH DESCRIPTION
 .B dap-config
 Get information about the libdap library so that it can be easily used
@@ -15,23 +15,23 @@ compilation, linking.
 .SH OPTIONS
 Available values for OPTION include:
 
-.IP  --help        
+.IP  --help
 display a help message and exit
-.IP  --cc          
+.IP  --cc
 C compiler
-.IP  --cxx         
+.IP  --cxx
 C++ compiler
-.IP  --cflags      
+.IP  --cflags
 pre-processor and compiler flags
-.IP  --libs        
+.IP  --libs
 library linking information for libdap (both clients and servers)
-.IP  --server-libs 
+.IP  --server-libs
 libraries for servers
-.IP  --client-libs 
+.IP  --client-libs
 libraries for clients
-.IP  --prefix      
+.IP  --prefix
 OPeNDAP install prefix
-.IP  --version     
+.IP  --version
 Library version
 .SH FILES
 .I none

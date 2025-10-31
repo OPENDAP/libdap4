@@ -25,7 +25,7 @@ when adding to or modifying the reference documentation.
 
 <ul>
 <li>When using the name of a parameter, use italics (the \c e
-command or \c em tag).</li> 
+command or \c em tag).</li>
 <li>Use the \c c command or \c code tag when talking about literal text.</li>
 <li>When talking about functions or methods, using <code>func()</code>
 or <code>func(arg0, ..., agrN)</code> will get Doxygen to insert a link to
@@ -37,11 +37,11 @@ may help in removing typos in the comments (and strings ...)</li>
 \subsection classes Classes
 
 Classes should be documented in the header (\c .h) file where they are
-defined. 
+defined.
 
 Commands that should be used for the documentation of classes:
 
-<dl> 
+<dl>
 <dt>author</dt><dd>Use this to attribute authorship. Include this for
 all the classes except internal ones which are not visible to users of the
 library.</dd>

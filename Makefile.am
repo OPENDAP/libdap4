@@ -51,7 +51,7 @@ man_MANS = getdap.1 dap-config.1 getdap4.1
 %.1: %.man1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
-libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)  
+libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)
 libparsers_la_CPPFLAGS =  $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
@@ -146,14 +146,14 @@ deb: dist
 
 #############################################################################
 # Library sources
-# 
+#
 
 GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc
 
 GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
 
 BISON_SRC = das.tab.cc das.tab.hh dds.tab.cc	dds.tab.hh \
-	ce_expr.tab.cc ce_expr.tab.hh Error.tab.cc Error.tab.hh 
+	ce_expr.tab.cc ce_expr.tab.hh Error.tab.cc Error.tab.hh
 
 FLEX_SRC = lex.das.cc lex.dds.cc lex.ce_expr.cc lex.Error.cc
 
@@ -245,7 +245,7 @@ clion-source-discovery:
 # Special rules for the grammars. I tried to use the automake grammar support
 # but these grammars are so hacked that it was taking too much time. Maybe if
 # each grammar was converted one by one... jhrg 6/22/05
-# 
+#
 # I switched to using flex options instead of sed and mv. jhrg 02/28/08
 #
 # Build the DAS scanner and parser

@@ -11,4 +11,3 @@ Version: @VERSION@
 Requires: libdap
 Libs: -L${libdir} -ldapserver
 Cflags: -I${includedir}/libdap
-

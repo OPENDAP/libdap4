@@ -45,15 +45,15 @@ GNU_HDR="GNU/builtin.h GNU/Pix.h GNU/GetOpt.h GNU/GNURegex.h \
 include_PROGRAMS="$DAP_HDR $CLIENT_HDR $SERVER_HDR $GNU_HDR"
 
 if test "$1" = "-u"
-   then 
+   then
    if test -n "$2"
-   then 
+   then
       DESTDIR="$2"
    else
         echo "Do you want to uninstall libdap? y/n"
         read et
         if test $et == "y" || test $et == "Y"
-        then 
+        then
             echo "Please enter the prefix of installation directory for the uninstallation"
             read DESTDIR;
         else
@@ -128,9 +128,9 @@ if test "$1" = "-u"
 ## finish unstalling
 
 elif test "$1" = "-i"
-   then 
+   then
    if test -n "$2"
-   then 
+   then
         DESTDIR="$2"
    else
         echo "Please enter the prefix of installation directory, for example, entering /usr/local if the installation directory is /usr/local/bin"
@@ -146,7 +146,7 @@ elif test "$1" = "-i"
    for p in $bin_PROGRAMS
    do
       if test -f $p
-       then 
+       then
        sed 's@^prefix=.*$@prefix='${DESTDIR}'/bin@' < $p > ${p}.tmp
        echo " INSTALLIGN '$p' at '${bindir}'"
       ${INSTALL_PROGRAM_ENV} ${LIBTOOL} --mode=install ${binPROGRAMS_INSTALL} "$p.tmp" "${DESTDIR}/${bindir}/$p" || exit 1
@@ -155,7 +155,7 @@ elif test "$1" = "-i"
    for p in $bin_PROGRAMS1
    do
       if test -f $p
-       then 
+       then
        echo " INSTALLING '$p' at '${bindir}'"
        ${binPROGRAMS_INSTALL} "$p" "${DESTDIR}/${bindir}/$p" || exit 1
       fi
@@ -166,7 +166,7 @@ elif test "$1" = "-i"
    for p in $lib_PROGRAMS
    do
       if test -f $p
-       then 
+       then
        echo " INSTALLING '$p' at '${libdir}'"
       ${INSTALL_PROGRAM_ENV} ${LIBTOOL} --mode=install ${libPROGRAMS_INSTALL} "$p" "${DESTDIR}/${libdir}/$p" || exit 1
       fi
@@ -177,7 +177,7 @@ elif test "$1" = "-i"
    for p in $share_PROGRAMS
    do
       if test -f $p
-       then 
+       then
        f=`echo $p | sed 's|^.*/||'`
        echo " INSTALLING '$f' at '${sharedir}'"
        ${datPROGRAMS_INSTALL} "$p" "${DESTDIR}/${sharedir}/$f" || exit 1
@@ -189,7 +189,7 @@ elif test "$1" = "-i"
    for p in $sbin_PROGRAMS
    do
       if test -f $p
-       then 
+       then
        echo " INSTALLING '$p' at '${sbindir}'"
       ${INSTALL_PROGRAM_ENV} ${LIBTOOL} --mode=install ${sbinPROGRAMS_INSTALL} "$p" "${DESTDIR}/${sbindir}/$p" || exit 1
       fi
@@ -200,7 +200,7 @@ elif test "$1" = "-i"
    for p in $include_PROGRAMS
    do
       if test -f $p
-       then 
+       then
        f=`echo $p | sed 's|^.*/||'`
        echo " INSTALLING '$f' at '${includedir}'"
        ${datPROGRAMS_INSTALL} "$p" "${DESTDIR}/${includedir}/$f" || exit 1

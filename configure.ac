@@ -179,8 +179,8 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 LT_INIT
 
-dnl We really need bison and not yacc. If you use AC_PROG_YACC, the resulting 
-dnl Makefile will call bison -y which doesn't know how to make the parsers 
+dnl We really need bison and not yacc. If you use AC_PROG_YACC, the resulting
+dnl Makefile will call bison -y which doesn't know how to make the parsers
 dnl we require. jhrg 6/15/05
 AC_CHECK_PROG(YACC,[bison],[bison])
 
@@ -189,7 +189,7 @@ bison_version=`bison --version | sed -n '/^bison.*/p' | sed 's@.* \(.*\)@\1@'`
 
 AC_MSG_CHECKING([for bison 3.0])
 
-AS_VERSION_COMPARE(["$bison_version"], ["3.0"], 
+AS_VERSION_COMPARE(["$bison_version"], ["3.0"],
 	[AC_MSG_ERROR([not found])],
 	[ ],
 	[ ])
@@ -225,11 +225,11 @@ AC_C_VOLATILE
 AC_C_BIGENDIAN
 
 # This is used by the DMR tests which must choose the correct set of baselines
-# based on word order given that DAP4 uses 'reader make right' and thus the 
+# based on word order given that DAP4 uses 'reader make right' and thus the
 # DAP4 data responses are different for different word order machines. jhrg 9/29/15
 AS_IF([test $ac_cv_c_bigendian = yes], [ac_word_order=big-endian], [ac_word_order=little-endian])
 AC_SUBST([ac_word_order])
-        
+
 DODS_CHECK_SIZES
 
 AC_ARG_ENABLE([runtime-endian-check],
@@ -254,7 +254,7 @@ gl_INIT
 AC_ARG_WITH([curl], [AS_HELP_STRING([--with-curl=pfx],[curl/libcurl prefix; overrides other tests including pkgconfig])],
             with_curl_prefix="$withval", with_curl_prefix="")
 
-dnl I wrote these checks because we need the *-config scripts to build, so 
+dnl I wrote these checks because we need the *-config scripts to build, so
 dnl the AC_CHECK_LIB macro is not needed.
 
 curlprivatereq=
@@ -283,7 +283,7 @@ then
     PKG_CHECK_MODULES([CURL],[$libdap_libcurl_module],,
         [libdap_pkgconfig_libcurl=no])
     AC_MSG_CHECKING([for libcurl])
-    
+
     if test $libdap_pkgconfig_libcurl = 'yes'
     then
 	   curlprivatereq=$libdap_libcurl_module
@@ -293,9 +293,9 @@ then
     then
 	   version_libcurl=`curl-config --version | sed 's@libcurl \(.*\)@\1@'`
 
-       AS_VERSION_COMPARE(["$version_libcurl"], ["7.19.0"], 
+       AS_VERSION_COMPARE(["$version_libcurl"], ["7.19.0"],
                 [AC_MSG_ERROR([I could not find libcurl 7.19.0 or newer, found $version_libcurl])])
-        
+
 	   CURL_LIBS="`curl-config --libs`"
 	   CURL_STATIC_LIBS=$CURL_LIBS
 	   curlprivatelibs="`curl-config --libs`"
@@ -322,15 +322,15 @@ dnl     [with_xml2_prefix=""])
 dnl
 dnl AS_IF([test -n "$with_xml2_prefix" -a ! -x $with_xml2_prefix/bin/xml2-config],
 dnl     [AC_MSG_ERROR([You set the libxml2 prefix directory to $with_xml2_prefix, but xml2-config is not there.])])
-dnl 
+dnl
 dnl xmlprivatereq=
 dnl xmlprivatelibs=
 dnl xml_set=
-dnl 
+dnl
 dnl # I changed this code so that it searches for libxml2 using xml2-config
 dnl # first, then pkg-config. This works more reliably when working on OSX
 dnl # given Apple's penchant for moving the lib. jhrg 8/25/20
-dnl 
+dnl
 dnl AS_IF([test -n "$with_xml2_prefix" -a -x $with_xml2_prefix/bin/xml2-config],
 dnl     [
 dnl     AC_MSG_NOTICE([Using $with_xml2_prefix as the libxml2 prefix directory.])
@@ -338,30 +338,30 @@ dnl     XML2_LIBS="`$with_xml2_prefix/bin/xml2-config --libs`"
 dnl     XML2_CFLAGS="`$with_xml2_prefix/bin/xml2-config --cflags`"
 dnl     xml_set="yes"
 dnl     ])
-dnl 
+dnl
 dnl # Try using the xml2-config script.
-dnl 
+dnl
 dnl AS_IF([test -z "$xml_set" & xml2-config --version > /dev/null 2>&1],
 dnl     [
 dnl     AC_MSG_CHECKING([for libxml2])
 dnl    	version_libxml2=`xml2-config --version`
-dnl 
+dnl
 dnl     AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"],
 dnl         [AC_MSG_ERROR([I could not find libxml2 2.7.0 or newer])])
-dnl 
+dnl
 dnl    	XML2_LIBS="`xml2-config --libs`"
 dnl    	XML2_CFLAGS="`xml2-config --cflags`"
 dnl    	xmlprivatelibs="`xml2-config --libs `"
-dnl 
+dnl
 dnl    	# If XML2_CFLAGS does not have -I that ends in /libxml2, append that to
 dnl    	# the string bound to -I. Assume there is only on -I in XML2_CFLAGS. jhrg 8/25/20
 dnl    	AS_IF([echo $XML2_CFLAGS | grep -v -e '-I.*/libxml2'],
 dnl    	    [XML2_CFLAGS=`echo $XML2_CFLAGS | sed "s@\(-I.*\)@\1/libxml2/@g"`])
-dnl 
+dnl
 dnl    	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
 dnl    	xml_set=yes
 dnl    	])
-dnl 
+dnl
 dnl # If not found, try pkg-config
 dnl AS_IF([test -z "$xml_set"],
 dnl     [
@@ -381,17 +381,17 @@ dnl         [
 dnl 	    AC_MSG_ERROR([I could not find xml2-config])
 dnl 	    ])
 dnl     ])
-dnl 
+dnl
 dnl AS_IF([test -z "xml_set"],
 dnl     [
 dnl     AC_MSG_ERROR([I could not find xml2-config])
 dnl     ])
-dnl 
+dnl
 dnl AC_SUBST([xmlprivatereq])
 dnl AC_SUBST([xmlprivatelibs])
 dnl AC_SUBST([XML2_LIBS])
 dnl AC_SUBST([XML2_CFLAGS])
-dnl 
+dnl
 dnl ******** end new, broken-for-the-bes version *********
 
 dnl Version of XML2 configuration from git commit 8624abec8e3d510508c3c97ac60082700995af2c
@@ -461,17 +461,17 @@ dnl jhrg 6/23/22
 
 OX_RHEL8_TIRPC
 
-AC_CHECK_LIB([pthread], [pthread_kill], 
+AC_CHECK_LIB([pthread], [pthread_kill],
 	[PTHREAD_LIBS="-lpthread"],
 	[AC_MSG_ERROR([I could not find pthreads])])
 AC_SUBST([PTHREAD_LIBS])
 
-AC_CHECK_LIB([uuid], [uuid_generate], 
+AC_CHECK_LIB([uuid], [uuid_generate],
 	[UUID_LIBS="-luuid"],
 	[UUID_LIBS=""])
 AC_SUBST([UUID_LIBS])
 
-AC_CHECK_LIB([crypto], [OpenSSL_add_all_algorithms], 
+AC_CHECK_LIB([crypto], [OpenSSL_add_all_algorithms],
 	[CRYPTO_LIBS="-lcrypto"],
 	[CRYPTO_LIBS=""])
 AC_SUBST([CRYPTO_LIBS])
@@ -493,7 +493,7 @@ AS_IF([test "$prefix" = "NONE"],
       [AC_DEFINE([LIBDAP_ROOT], ["/usr/local"], [Set to the prefix directory])],
 	  [AC_DEFINE_UNQUOTED([LIBDAP_ROOT], ["$prefix"], [Set to the prefix directory])])
 
-AC_ARG_ENABLE([asan], 
+AC_ARG_ENABLE([asan],
     [AS_HELP_STRING([--enable-asan], [Build using the address sanitizer if available (default: no)])])
 
 dnl Removed -fsanitize=undefined. jhrg 2/21/25
@@ -508,9 +508,9 @@ AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
        AM_CONDITIONAL([USE_ASAN], [false])])
 
 dnl An optional big array(>4GB) unit test. Since it is resource consuming, turn it off by default.
-AC_ARG_ENABLE([batest], 
+AC_ARG_ENABLE([batest],
     [AS_HELP_STRING([--enable-batest], [The big array unit test is turned on.  (default: no)])])
-           
+
 AS_IF([test x$enable_batest = xyes ],
       [AC_MSG_NOTICE([Adding big array unit test])
        AM_CONDITIONAL([USE_BA], [true])],
@@ -592,11 +592,11 @@ AC_CONFIG_FILES([Makefile
 
                  tests/Makefile
                  tests/atlocal
-                 
+
                  unit-tests/Makefile
                  unit-tests/cache-testsuite/Makefile])
 
 AC_CONFIG_FILES([dap-config], [chmod +x dap-config])
 # AC_CONFIG_FILES([unit-tests/cache-testsuite/cleanup.sh], [chmod +x unit-tests/cache-testsuite/cleanup.sh])
-	
+
 AC_OUTPUT

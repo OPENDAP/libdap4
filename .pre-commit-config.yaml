@@ -29,6 +29,12 @@ repos:
     rev: v4.6.0
     hooks:
       - id: end-of-file-fixer
+        exclude: |
+          (?x)(
+            ^unit-tests/|
+            ^tests/|
+            ^build/
+          )
       - id: trailing-whitespace
       - id: check-yaml
       - id: check-json

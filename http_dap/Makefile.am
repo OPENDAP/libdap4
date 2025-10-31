@@ -50,5 +50,4 @@ EXTRA_DIST =
 
 CLEANFILES = *.gcda *.gcno *.gcov
 
-DISTCLEANFILES = 
-
+DISTCLEANFILES =

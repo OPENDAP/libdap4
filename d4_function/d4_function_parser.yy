@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -72,7 +72,7 @@ namespace libdap {
 %initial-action
 {
     // Initialize the initial location. This is printed when the parser builds
-    // its own error messages - when the parse fails as opposed to when the 
+    // its own error messages - when the parse fails as opposed to when the
     // function(s) name(s) a missing variable, ...
 
     @$.initialize (evaluator.expression());
@@ -83,14 +83,14 @@ namespace libdap {
     #include "DMR.h"
     #include "D4RValue.h"
     #include "ServerFunctionsList.h"
-   
+
     #include "parser-util.h"
 
     /* include for all driver functions */
     #include "D4FunctionEvaluator.h"
 
     using namespace libdap ;
-    
+
     /* this is silly, but I can't figure out a way around it */
     static int yylex(libdap::D4FunctionParser::semantic_type *yylval,
                      libdap::location *loc,
@@ -125,20 +125,20 @@ namespace libdap {
 %token <std::string> WORD "word"
 %token <std::string> STRING "string"
 
-%token 
+%token
     END  0  "end of file"
-    
+
     SEMICOLON ";"
     COLON ":"
 
     LPAREN "("
     RPAREN ")"
-    
+
     COMMA ","
 
     GROUP_SEP "/"
     PATH_SEP "."
-    
+
     DOLLAR_BYTE "$Byte"
     DOLLAR_UINT8 "$UInt8"
     DOLLAR_INT8 "$Int8"
@@ -156,31 +156,31 @@ namespace libdap {
 
 %start program;
 
-program : functions 
-{ 
-    evaluator.set_result($1); 
-}
-;
-
-functions : function 
+program : functions
 {
-    $$ = new D4RValueList($1); 
+    evaluator.set_result($1);
 }
-| functions ";" function 
-{ 
-    $1->add_rvalue($3);
-    $$ = $1; 
-}
-;
-                    
-function : fname "(" args ")" 
-{ 
-    $$ = new D4RValue($1, $3); // Build a D4RValue from a D4Function pointer and a D4RValueList 
-} 
 ;
 
-fname: WORD 
-{ 
+functions : function
+{
+    $$ = new D4RValueList($1);
+}
+| functions ";" function
+{
+    $1->add_rvalue($3);
+    $$ = $1;
+}
+;
+
+function : fname "(" args ")"
+{
+    $$ = new D4RValue($1, $3); // Build a D4RValue from a D4Function pointer and a D4RValueList
+}
+;
+
+fname: WORD
+{
     D4Function f;
     if (!evaluator.sf_list()->find_function($1, &f)) {
         // ...cloud use @1.{first,last}_column in these error messages.
@@ -188,18 +188,18 @@ fname: WORD
     }
 
     $$ = f;
-}        
+}
 ;
 
 args: arg
-{ 
+{
     $$ = new D4RValueList($1); // build a D4RValueList from the D4RValue
-} 
-| args "," arg 
-{ 
+}
+| args "," arg
+{
     $1->add_rvalue($3);
     $$ = $1; // Append the D4RValue ($3) to the D4RValueList ($1), then return
-} 
+}
 ;
 
 arg: function
@@ -210,7 +210,7 @@ arg: function
 {
     $$ = $1;
 }
-| array_constant 
+| array_constant
 {
     $$ = $1;
 }
@@ -228,12 +228,12 @@ variable_or_constant : id
         // change to prevent xss attacks. jhrg 4/14/20
         throw Error(malformed_expr, "A function argument was not a variable, number or string.");
     }
-    
+
     $$ = rvalue;
 }
 ;
-  
-array_constant : 
+
+array_constant :
 DOLLAR_BYTE "(" arg_length_hint ":" fast_byte_arg_list ")"
 {
     $$ = new D4RValue(*($5));
@@ -301,11 +301,11 @@ DOLLAR_FLOAT64 "(" arg_length_hint ":" fast_float64_arg_list ")"
 }
 ;
 
-/* Here the arg length hint is stored in the eval class so it can be used by the 
+/* Here the arg length hint is stored in the eval class so it can be used by the
    method that allocates the vector. The value is passed to vector::reserve().
-   This rule is run for it's side-effect only. This is also used to track the 
+   This rule is run for it's side-effect only. This is also used to track the
    current arg number so that the hint can be used. */
-   
+
 arg_length_hint : WORD
 {
     evaluator.set_arg_length_hint(get_uint64($1.c_str()));
@@ -399,7 +399,7 @@ fast_int64_arg_list: WORD
 }
 ;
 
-// I'm using path for the $Float constants so that tokens with dots will 
+// I'm using path for the $Float constants so that tokens with dots will
 // parse. I could add a FLOAT token, and I might have to do that later on
 // when filters are added to the CE, but this will work for now.
 fast_float32_arg_list: path
@@ -454,7 +454,7 @@ group : "/" name
 }
 ;
 
-path : name 
+path : name
 {
     $$ = $1;
 }
@@ -469,11 +469,11 @@ path : name
 // Because some formats/datasets allow 'any' name for a variable, it's possible
 // that a variable name will be a number, etc. The grammar also allows STRING
 // to support "name"."name with spaces and dots (.)".x
-name : WORD 
+name : WORD
 {
     $$=$1;
 }
-| STRING 
+| STRING
 {
     $$=$1;
 }
@@ -499,6 +499,6 @@ static int yylex(libdap::D4FunctionParser::semantic_type *yylval,
 {
     if (evaluator.trace_scanning())
         scanner.set_debug(true);
-    
+
     return( scanner.yylex(yylval, loc) );
 }

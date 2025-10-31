@@ -15,7 +15,7 @@ Parse successful
         <String name="s"/>
         <Structure name="inner"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            
+
         </Attribute>
     </Structure>
 </Dataset>

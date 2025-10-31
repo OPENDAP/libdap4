@@ -8,20 +8,20 @@
     <Int32 name="x"/>
     <Int32 name="y"/>
   </Sequence>
-  
+
   <Sequence name="s2">
     <Int32 name="x"/>
     <Int32 name="y"/>
     <Dim size="100"/>
   </Sequence>
-  
+
   <Sequence name="s3">
     <Int32 name="z"/>
     <Int32 name="x">
       <Dim size="10"/>
     </Int32>
   </Sequence>
-  
+
   <Sequence name="s4">
     <Int32 name="z"/>
     <Int32 name="x">
@@ -29,5 +29,5 @@
     </Int32>
     <Dim size="100"/>
   </Sequence>
-  
+
 </Dataset>

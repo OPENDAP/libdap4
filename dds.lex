@@ -192,4 +192,3 @@ store_word()
     strncpy(ddslval.word, yytext, ID_MAX-1);
     ddslval.word[ID_MAX-1] = '\0'; // for the paranoid...
 }
-

@@ -9,15 +9,15 @@
 attributes {# weird
     var1 {#test
     	string name bob;	# bob is the only name allowed
-	string type human;	# for people ... 
+	string type human;	# for people ...
 	int32 age 19;
     }
     var2 {
 	string name joe;
-	string type dog;   
+	string type dog;
 	int32 age 8;
     }
-}   
+}
 
 # This is a C++ type comment.
 # The scanner and parser should handle a text file with several

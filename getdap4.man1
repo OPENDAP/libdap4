@@ -1,8 +1,8 @@
 .\" getdap.man
-.\" 
+.\"
 .\"  Created on: Oct 28, 2013
 .\"      Author: jimg
-.\" 
+.\"
 .\" Process this file with
 .\" groff -man -Tascii getdap4.1
 .\"
@@ -10,9 +10,9 @@
 .SH NAME
 getdap4 \- test driver for the libdap library DAP4 protocol
 .SH SYNOPSIS
-.B getdap4 [dD vVikmzst] [-c 
+.B getdap4 [dD vVikmzst] [-c
 .I expr
-.B ] [-m 
+.B ] [-m
 .I num
 .B ]
 .I url
@@ -24,7 +24,7 @@ getdap4 \- test driver for the libdap library DAP4 protocol
 .SH DESCRIPTION
 .B getdap4
 A command line interface for DAP4, the follow-on to DAP2.
-While getdap can be used to access DAP2 response objects 
+While getdap can be used to access DAP2 response objects
 and process those responses with the libdap client-side
 software, getdap4 fills the same role for DAP4.
 
@@ -42,7 +42,7 @@ and process them as if -D were given. In this case the
 information must contain valid MIME header in order
 to be processed or -M should be used.
 .SH OPTIONS
-.IP -i 
+.IP -i
 For each URL, get the server version.
 .IP -d
 For each URL, get the the DAP4 DMR response.
@@ -52,14 +52,14 @@ For each URL, get the the DAP4 Data response.
 Verbose output.
 .IP -V
 Version of this client; see 'i' for server version.
-.IP "-c expr" 
+.IP "-c expr"
 .I expr
 is a constraint expression. Used with -D/X.
 You can use a `?' for the CE also.
 .IP -k
 Keep temporary files created by libdap.
 .IP "-m num"
-Request the same URL 
+Request the same URL
 .I num
 times
 .IP -z
@@ -73,7 +73,7 @@ Assume data read from a file has no MIME headers
 .SH FILES
 .I ~/.dodsrc
 .RS
-The 
+The
 .I .dodsrc
 file contains various parameters that affect the runtime behavior for DAP clients.
 See
@@ -82,7 +82,7 @@ for further details.
 .RE
 .SH ENVIRONMENT
 .IP DODS_CONF
-Specifies an alternate file or directory for the 
+Specifies an alternate file or directory for the
 .I .dodsrc
 file.
 .SH DIAGNOSTICS
