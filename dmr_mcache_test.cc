@@ -35,7 +35,7 @@ using namespace libdap;
 int main() {
 
     D4BaseTypeFactory d4_factory;
-    DMR *dmr = new DMR(&d4_factory, "test_grp_d4_dim");
+    auto dmr = new DMR(&d4_factory, "test_grp_d4_dim");
 
     D4Group *root_grp = dmr->root();
     D4Dimensions *root_dims = root_grp->dims();
@@ -53,18 +53,18 @@ int main() {
 
     XMLWriter xml;
     dmr->print_dap4(xml);
-    string dmr_src = string(xml.get_doc());
+    auto dmr_src = string(xml.get_doc());
     cerr << "before string print" << endl;
     cerr << dmr_src << endl;
 
-    DMR *dmr_2 = new DMR(*dmr);
+    auto dmr_2 = new DMR(*dmr);
 
     delete dmr;
     cerr << "after deleting the first dmr" << endl;
     XMLWriter xml2;
     if (dmr_2) {
         dmr_2->print_dap4(xml2);
-        string dmr_src2 = string(xml2.get_doc());
+        auto dmr_src2 = string(xml2.get_doc());
         cerr << "second one" << endl;
         cerr << dmr_src2 << endl;
 

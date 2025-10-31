@@ -90,7 +90,7 @@ void D4Group::m_duplicate(const D4Group &g) {
     groupsCIter i = g.d_groups.begin();
     while (i != g.d_groups.end()) {
         // Only D4Groups are in the d_groups container.
-        D4Group *ng = static_cast<D4Group *>((*i++)->ptr_duplicate());
+        auto ng = static_cast<D4Group *>((*i++)->ptr_duplicate());
         add_group_nocopy(ng);
     }
 
@@ -149,7 +149,7 @@ D4Group &D4Group::operator=(const D4Group &rhs) {
 
 // Update the DAP4 dimension pointers of all variables.
 // This should be used after calling m_duplicate() and should be called from the root.
-void D4Group::update_d4dimension_pointers() {
+void D4Group::update_variables_d4dimension_pointers() {
     Vars_citer vi = d_vars.begin();
     while (vi != d_vars.end()) {
         if ((*vi)->type() == dods_array_c)
@@ -157,7 +157,7 @@ void D4Group::update_d4dimension_pointers() {
         ++vi;
     }
     for (auto &g : this->groups())
-        g->update_d4dimension_pointers();
+        g->update_variables_d4dimension_pointers();
 }
 
 /**
