@@ -40,7 +40,7 @@ enum D4AttributeType {
     attr_uint32_c,
     attr_float32_c,
     attr_float64_c,
-    attr_str_c,
+    attr_str_c, 
     attr_url_c,
 
     // Added for DAP4
