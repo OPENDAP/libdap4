@@ -64,6 +64,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_bindir}/getdap
 %{_bindir}/getdap4
+%{_bindir}/dmr_memory_cache
 %{_libdir}/libdap.so.*
 %{_libdir}/libtest-types.a
 %{_libdir}/libdapclient.so.*

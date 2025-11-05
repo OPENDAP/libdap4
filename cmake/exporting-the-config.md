@@ -1,4 +1,5 @@
-Yes — if you want **downstream projects** (i.e., other software that uses `libdap`) to find your configuration and build environment easily, you can set up `libdap` to export a proper **CMake package config**. This includes:
+Yes — if you want **downstream projects** (i.e., other software that uses `libdap`) to find your configuration 
+and build environment easily, you can set up `libdap` to export a proper **CMake package config**. This includes:
 
 1. Exported targets like `libdap`, `libdapclient`, etc.
 2. An installable `libdapConfig.cmake` (or `libdapTargets.cmake`)

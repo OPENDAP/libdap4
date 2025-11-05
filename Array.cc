@@ -380,27 +380,42 @@ std::vector<BaseType *> *Array::transform_to_dap2(AttrTable *, bool show_shared_
 }
 
 /**
- * Hackery that helps build a new D4Group from an old one. We need to re-wire the
- * D4Dimension (note the lack of an 's' at then end) that the copied Array objects
- * hold. This code does that. Note that these are 'weak pointers' so they should
- * never be freed - the D4Group object will take care of that.
- *
- * @note The order of the D4Dimension instances matches in 'old_dims' and 'new_dims'.
- *
- * @param old_dims The Old D4Dimension objects (held in a D4Dimensions instance)
- * @param new_dims The New D4Dimension objects.
+ * When a new DAP4 group is copied from an old one, we need to re-wire the DAP4 Dimensions
+ * of any variable under the new group since the variable's DAP4 Dimensions still points to
+ * to the old group's DAP4 Dimensions. We need to make them point to the DAP4 Dimensions
+ * under the new group.
+ * @param grp: The pointer to the new group.
  */
-void Array::update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims) {
+void Array::update_dimension_pointers(D4Group *grp) {
+
+    D4Group *temp_grp = grp;
+
+    // Somehow the for loop doesn't work. use the iterator instead.
     std::vector<dimension>::iterator i = _shape.begin(), e = _shape.end();
     while (i != e) {
-        D4Dimensions::D4DimensionsIter old_i = old_dims->dim_begin(), old_e = old_dims->dim_end();
-        while (old_i != old_e) {
-            if ((*i).dim == *old_i) {
-                (*i).dim = new_dims->find_dim((*old_i)->name());
-            }
-            ++old_i;
-        }
+        while (temp_grp) {
+            D4Dimensions *temp_dims = temp_grp->dims();
 
+            if ((*i).dim) {
+                // Here we need to use the dimension name, not the FQN
+                // to find if we have the dimension under this group.
+                string vd_dim_name = ((*i).dim)->name();
+                D4Dimension *temp_dim = temp_dims->find_dim(vd_dim_name);
+
+                // find, update this dimension of this array; go to the next dimension.
+                if (temp_dim) {
+                    (*i).dim = temp_dim;
+                    temp_grp = grp;
+                    break;
+                }
+            }
+
+            // Not find under this group, go to its parent.
+            if (temp_grp->get_parent())
+                temp_grp = static_cast<D4Group *>(temp_grp->get_parent());
+            else
+                temp_grp = nullptr;
+        }
         ++i;
     }
 }
