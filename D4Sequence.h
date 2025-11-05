@@ -297,7 +297,7 @@ public:
     virtual void print_one_row(ostream &out, int row, string space, bool print_row_num = false);
     virtual void print_val_by_rows(ostream &out, string space = "", bool print_decl_p = true,
                                    bool print_row_numbers = true);
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     void dump(ostream &strm) const override;
 };

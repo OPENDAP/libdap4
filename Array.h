@@ -202,9 +202,9 @@ private:
 protected:
     void _duplicate(const Array &a);
 
-    uint64_t print_array(FILE *out, uint64_t index, unsigned int dims, uint64_t shape[]);
+    uint64_t print_array(FILE *out, uint64_t index, unsigned int dims, uint64_t shape[], bool is_root_grp);
 
-    uint64_t print_array(ostream &out, uint64_t index, unsigned int dims, uint64_t shape[]);
+    uint64_t print_array(ostream &out, uint64_t index, unsigned int dims, uint64_t shape[], bool is_root_grp);
 
     std::vector<dimension> &shape() { return _shape; }
 
@@ -282,7 +282,7 @@ public:
     // These are all DAP2 output methods
 
     void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                    bool constrained = false) override;
+                    bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
 
     void print_xml(ostream &out, string space = "    ", bool constrained = false) override;
 
@@ -296,13 +296,13 @@ public:
     // not used (?)
     virtual void print_as_map_xml(ostream &out, string space = "    ", bool constrained = false);
 
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     void print_xml(FILE *out, string space = "    ", bool constrained = false) override;
     virtual void print_as_map_xml(FILE *out, string space = "    ", bool constrained = false);
-    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
     void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                    bool constrained = false) override;
+                    bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
 
     bool check_semantics(string &msg, bool all = false) override;
 
