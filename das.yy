@@ -111,9 +111,9 @@ typedef int checker(const char *);
 int daslex(void);
 static void daserror(parser_arg *arg, const string &s /*char *s*/);
 static void add_attribute(const string &type, const string &name,
-			  const string &value, checker *chk) throw (Error);
+			  const string &value, checker *chk);
 static void add_alias(AttrTable *das, AttrTable *current, const string &name,
-		      const string &src) throw (Error);
+		      const string &src);
 static void add_bad_attribute(AttrTable *attr, const string &type,
 			      const string &name, const string &value,
 			      const string &msg);
@@ -461,7 +461,7 @@ a_or_an(const string &subject)
 // `explanation.'
 static void
 add_attribute(const string &type, const string &name, const string &value,
-	      checker *chk) throw (Error)
+	      checker *chk)
 {
     DBG(cerr << "Adding: " << type << " " << name << " " << value \
 	<< " to Attrtable: " << TOP_OF_STACK << endl);
@@ -490,7 +490,7 @@ add_attribute(const string &type, const string &name, const string &value,
 
 static void
 add_alias(AttrTable *das, AttrTable *current, const string &name,
-	  const string &src) throw (Error)
+	  const string &src)
 {
     DBG(cerr << "Adding an alias: " << name << ": " << src << endl);
 

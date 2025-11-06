@@ -112,8 +112,8 @@ public:
             d_cache->purge_cache();
         } else {
             DBG(cerr << "Creating cache directory: " << cache_dir << endl);
-            system(("mkdir -p " + cache_dir).c_str());
-            DBG(system("ls -l cache-testsuite/http_*"));
+            (void)system(("mkdir -p " + cache_dir).c_str());
+            DBG((void)system("ls -l cache-testsuite/http_*"));
         }
     }
 
@@ -542,7 +542,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(HTTPThreadsConnectTest);
 int main(int argc, char *argv[]) {
     bool passed = run_tests<libdap::HTTPThreadsConnectTest>(argc, argv) ? 0 : 1;
 
-    system(("rm -rf " + cache_dir).c_str());
+    (void)system(("rm -rf " + cache_dir).c_str());
 
     return passed;
 }

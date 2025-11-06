@@ -165,7 +165,7 @@ request. It is given in seconds since the start of the Unix epoch
 
 @brief DODSFilter constructor. */
 
-DODSFilter::DODSFilter(int argc, char *argv[]) throw(Error) {
+DODSFilter::DODSFilter(int argc, char *argv[]) {
     initialize(argc, argv);
 
     DBG(cerr << "d_comp: " << d_comp << endl);

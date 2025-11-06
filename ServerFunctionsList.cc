@@ -44,9 +44,9 @@ using namespace std;
 using namespace libdap;
 
 namespace libdap {
-
+#if 0
 static pthread_once_t ServerFunctionsList_instance_control = PTHREAD_ONCE_INIT;
-
+#endif
 /**
  * Private method insures that nobody can try to delete the singleton class.
  */
