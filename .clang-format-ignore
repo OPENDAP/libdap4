@@ -29,3 +29,5 @@ d4_function/*.tab.cc
 d4_function/*.tab.hh
 
 unit-tests/D4-type-testsuite/*
+
+retired/*
