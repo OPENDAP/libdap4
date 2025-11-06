@@ -17,7 +17,7 @@ Parse successful
         <Float32 name="x"/>
         <Float32 name="y"/>
         <Attribute name="DAP4_Checksum_CRC32" type="String">
-            
+
         </Attribute>
     </Sequence>
 </Dataset>

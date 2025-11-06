@@ -10,12 +10,12 @@
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
 # version 2.1 of the License, or (at your option) any later version.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -26,10 +26,10 @@
 # -b <extension> causes <extension> to be used instead of `bak' when naming
 #    the backup copy of the Makefile.
 # -m <makefile name> causes depend to use <makefile name> instead of
-#    `Makefile'. 
-# -n Don't actually make the dependencies, just print out what would have been 
-#    done. 
-# -t Truncate the `Makefile' after making a backup copy. 
+#    `Makefile'.
+# -n Don't actually make the dependencies, just print out what would have been
+#    done.
+# -t Truncate the `Makefile' after making a backup copy.
 # jhrg 8/17/99
 #
 # Added -b option. Added `-E' to CFLAGS.
@@ -88,10 +88,10 @@ then
 
     if test $truncate = "0"
     then
-	# build the new Makefile in a tmp directory using the existing 
+	# build the new Makefile in a tmp directory using the existing
 	# makefile: first copy everything up to the dependencies using awk,
 	# then compute and append the dependencies of the files (which are
-	# the remaining arguments). 
+	# the remaining arguments).
 	awk 'BEGIN {found = 0}
 	    /DO NOT DELETE/ {found = 1; print $0}
 	    found != 1 {print $0}
@@ -99,7 +99,7 @@ then
     fi
     gcc $CFLAGS $* >> $tmp
 
-    mv $makefile ${makefile}.${bak}	# backup the current Makefile 
+    mv $makefile ${makefile}.${bak}	# backup the current Makefile
 
     mv $tmp $makefile
 

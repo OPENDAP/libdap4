@@ -108,21 +108,21 @@ static void usage(const string &) {
     In the second form of the command, assume the files are DAP4 data
     responses (stored in files or read from pipes)
 
-    Options: 
-            d: For each URL, get the (DAP4) DMR object. Does not get data. 
-            D: For each URL, get the DAP4 Data response. 
+    Options:
+            d: For each URL, get the (DAP4) DMR object. Does not get data.
+            D: For each URL, get the DAP4 Data response.
 
-            v: Verbose output. 
-            V: Version of this client 
-            i: For each URL, get the server version. 
-            m: Request the same URL <num> times. 
-            z: Ask the server to compress data. 
-            s: Print Sequences using numbered rows. 
-            M: Assume data read from a file has no MIME headers; use only 
-               with files 
+            v: Verbose output.
+            V: Version of this client
+            i: For each URL, get the server version.
+            m: Request the same URL <num> times.
+            z: Ask the server to compress data.
+            s: Print Sequences using numbered rows.
+            M: Assume data read from a file has no MIME headers; use only
+               with files
 
-            c: <expr> is a constraint expression. Used with -d/D 
-               NB: You can use a `?' for the CE also. 
+            c: <expr> is a constraint expression. Used with -d/D
+               NB: You can use a `?' for the CE also.
             S: Used in conjunction with -d and will report the total size
                of the data referenced in the DMR.
             C: Used in conjunction with -D will cause the DAP4 service to

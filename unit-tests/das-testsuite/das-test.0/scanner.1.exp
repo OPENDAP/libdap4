@@ -33,15 +33,13 @@ set timeout 2
 das-test_start s
 
 expect {
-    -re "^$prompt $" { 
-	pass "$test_name" 
+    -re "^$prompt $" {
+	pass "$test_name"
     }
-    timeout { 
+    timeout {
 	send_user "Timeout\n"
-	fail "$test_name" 
+	fail "$test_name"
     }
 }
 
 das-test_exit
-
-

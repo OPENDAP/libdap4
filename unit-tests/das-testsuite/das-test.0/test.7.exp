@@ -99,8 +99,6 @@ if ![string compare $test_out $comp_output] { # check comp_output
 	    send_user "comp_output ($c) and test_out ($t) differ at $i.\n"
 	}
     }
-    
+
     fail "$test_name"
 }
-
-

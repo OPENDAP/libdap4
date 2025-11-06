@@ -19,4 +19,3 @@ dataset {
 	   Int32 o;
     } s3;
 } test2;
-

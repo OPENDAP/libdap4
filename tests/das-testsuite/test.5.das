@@ -6,4 +6,3 @@ attributes {
 	string quote "this quote has no end;
     }
 }
-

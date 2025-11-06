@@ -1,12 +1,12 @@
 
 /* -*- mode: c; c-basic-offset:4 -*- */
 
-/* 
+/*
    Copyright (C) 1998 World Wide Web Consortium, (Massachusetts Institute
    of Technology, Institut National de Recherche en Informatique et en
    Automatique, Keio University). All Rights Reserved.
    http://www.w3.org/Consortium/Legal/
- 
+
    This file was derived from the libwww source code of 1998/08/20. The
    copyright for the source of this derivative work can be found in the file
    COPYRIGHT_W3C.
@@ -68,9 +68,9 @@ int main (int argc, char ** argv)
 
     /* Scan command line for parameters */
     for (arg=1; arg<argc; arg++) {
-	
+
 	if (*argv[arg] == '-') {
-     
+
 	    /* Buffer size */
 	    if (!strcmp(argv[arg], "-b")) {
 		buffer_size = (arg+1 < argc && *argv[arg+1] != '-') ?
