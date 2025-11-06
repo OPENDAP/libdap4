@@ -78,7 +78,6 @@ public:
     virtual void handle_signal(int signum) {
         if (signum != SIGALRM)
             throw Error("SIGALRM handler caught another signal!");
-
         throw Error("Timeout");
     }
 };
