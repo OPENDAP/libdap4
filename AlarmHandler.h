@@ -76,7 +76,7 @@ public:
     @param signum We know it is SIGALRM; here as a check
     @return Never returns; calls exit after sending the Error object. */
     virtual void handle_signal(int signum) {
-        if (signum != SIGALRM)
+        if (signum != SIGALRM)  
             throw Error("SIGALRM handler caught another signal!");
         throw Error("Timeout");
     }
