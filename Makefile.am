@@ -44,7 +44,7 @@ bin_PROGRAMS = getdap getdap4 dmr_memory_cache
 # Including the generated grammar sources in BUILT_SOURCES ensures
 # they are built first. jhrg 6/18/15
 BUILT_SOURCES = $(BISON_SRC) $(FLEX_SRC) dods-datatypes.h xdr-datatypes.h \
-	getdap.1 dap-config.1 getdap4.1 
+	getdap.1 dap-config.1 getdap4.1
 
 man_MANS = getdap.1 dap-config.1 getdap4.1
 

@@ -37,6 +37,10 @@ repos:
       - id: check-yaml
       - id: check-json
       - id: mixed-line-ending
+        exclude: |
+          (?x)(
+            ^(unit-tests|tests|autotest|build|retired|conf|gl|\.git|\.cache)/
+          )
         args: ["--fix=lf"] # <— converts CRLF → LF on staged files
 
   # --- C/C++ formatting (clang-format reads your .clang-format) ---
