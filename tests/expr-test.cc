@@ -420,10 +420,14 @@ void evaluate_dds(DDS &table, bool print_constrained, bool xml_syntax) {
 void parse_mime(FILE *data_source) {
     char line[256];
 
-    (void)fgets(line, 256, data_source);
+    auto ret = fgets(line, 256, data_source);
+    if (ret == nullptr)
+        return;
 
     while (strncmp(line, CRLF, 2) != 0)
-        (void)fgets(line, 256, data_source);
+        ret = fgets(line, 256, data_source);
+    if (ret == nullptr)
+        return;
 }
 
 void set_series_values(DDS &dds, bool state) {
