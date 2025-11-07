@@ -546,7 +546,11 @@ CPPUNIT_TEST_SUITE_REGISTRATION(HTTPThreadsConnectTest);
 int main(int argc, char *argv[]) {
     bool passed = run_tests<libdap::HTTPThreadsConnectTest>(argc, argv) ? 0 : 1;
 
-    (void)system(("rm -rf " + cache_dir).c_str());
+    auto status = system(("rm -rf " + cache_dir).c_str());
+    if (status != 0) {
+        cerr << "Could not remove the test cache directory.\n";
+        return 1;
+    }
 
     return passed;
 }

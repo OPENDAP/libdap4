@@ -117,7 +117,8 @@ public:
         // Set DODS_CONF to the CWD plus .dodsrc, create file called .dodsrc
         // in the CWD and test to see if check_env_var finds it.
         char cwd[1024];
-        (void)getcwd(cwd, 1024);
+        if (getcwd(cwd, 1024) == nullptr)
+            CPPUNIT_FAIL("Failed to get the CWD.");
 
         string rc = string(cwd) + string("/.dodsrc");
         ifstream ifp(rc.c_str()); // This should create .dodsrc in the CWD
@@ -133,7 +134,8 @@ public:
         // In this test we *don't* create the file, just set DODS_CONF to the
         // directory and see if check_env_var() makes the RC file.
         char cwd[1024];
-        (void)getcwd(cwd, 1024);
+        if (getcwd(cwd, 1024) == nullptr)
+            CPPUNIT_FAIL("Failed to get the CWD.");
 
         my_putenv(string("DODS_CONF=") + string(cwd));
 
@@ -164,7 +166,8 @@ public:
         // Set DODS_CONF to create a .dodsrc in the CWD, then check to make
         // sure that .dodsrc has the correct cache root.
         char cwd[1024];
-        (void)getcwd(cwd, 1024);
+        if (getcwd(cwd, 1024) == nullptr)
+            CPPUNIT_FAIL("Failed to get the CWD.");
         DBG(cerr << "CWD: " << cwd << endl);
         string rc = cwd;
         rc += "/.dodsrc";

@@ -740,7 +740,11 @@ int main(int argc, char *argv[]) {
     // Run cleanup here, so that the first run works (since this code now
     // sets up the tests).
     // This gives valgrind fits...
-    (void)system("cd cache-testsuite && ./cleanup.sh");
+    auto status = system("cd cache-testsuite && ./cleanup.sh");
+    if (status != 0) {
+        cerr << "Could not run the cache cleanup step.\n";
+        return 1;
+    }
 
     return run_tests<libdap::HTTPCacheTest>(argc, argv) ? 0 : 1;
 }
