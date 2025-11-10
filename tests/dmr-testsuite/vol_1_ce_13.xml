@@ -4,7 +4,7 @@
 
 <Dataset name="vol_1_ce_2" dapVersion="4.0" dmrVersion="1.0" xml:base="file:dap4/vol_1_ce_13.xml"
   xmlns="http://xml.opendap.org/ns/DAP/4.0#" xmlns:dap="http://xml.opendap.org/ns/DAP/4.0#">
-  
+
   <Int32 name="u"/>
   <Int32 name="v"/>
 
@@ -33,4 +33,3 @@
 
 
 </Dataset>
-

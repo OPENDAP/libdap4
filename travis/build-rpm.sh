@@ -2,15 +2,15 @@
 #
 
 # run the script like (with the obvious changes for CentOS7):
-# docker run -e os=centos6 -v $prefix/centos6/rpmbuild:/root/rpmbuild -v `pwd`:/root/travis 
-# opendap/centos6_hyrax_builder:1.1 /root/travis/build-rpm.sh 
+# docker run -e os=centos6 -v $prefix/centos6/rpmbuild:/root/rpmbuild -v `pwd`:/root/travis
+# opendap/centos6_hyrax_builder:1.1 /root/travis/build-rpm.sh
 
 # e: exit immediately on non-zero exit value from a command
 # u: treat unset env vars in substitutions as an error
 set -eux
 
-# This script will start with /home as the CWD since that's how the 
-# centos6/7 hyrax build containers are configured. The PATH will be 
+# This script will start with /home as the CWD since that's how the
+# centos6/7 hyrax build containers are configured. The PATH will be
 # set to include $prefix/bin and $prefix/deps/bin; $prefix will be
 # $HOME/install. $HOME is /root for the build container.
 

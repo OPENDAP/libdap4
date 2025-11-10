@@ -14,7 +14,7 @@ dataset {
 	float64 long_two_float;
 	float64 long_three_float;
     } long_names_one;
-    
+
     structure {
 	int32 long_one_float1;
 	int32 long_two_float1;
@@ -26,12 +26,11 @@ dataset {
 	float64 long_two_float;
 	float64 long_three_float;
     } long_names_one_and_a_half;
- 
+
     structure {
 	int32 a_very_long_name_given_what_it_accomplishes;
 	int32 another_name_nearly_as_pointless;
     } long_names_two;
 
-    
-} long_identifier_test_data_set;
 
+} long_identifier_test_data_set;

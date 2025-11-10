@@ -58,5 +58,3 @@ if ![string compare $test_out $comp_output] { # check comp_output
 } else {
     fail "$test_name"
 }
-
-

@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1994-1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -41,7 +41,7 @@
    or near the end of a rule. If ddslval returned a value (instead of a
    pointer to a value) this would not be necessary.
 
-   jhrg 8/29/94 
+   jhrg 8/29/94
 */
 
 %code requires {
@@ -79,7 +79,7 @@ using namespace libdap;
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
 // passed in to the parser within a structure (which itself is passed as a
-// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *.
 // ERROR is no longer used. These parsers now signal problems by throwing
 // exceptions. 5/22/2002 jhrg
 #define DDS_OBJ(arg) ((DDS *)((parser_arg *)(arg))->_object)
@@ -110,9 +110,9 @@ labeled properly.";
 int ddslex();
 void ddserror(parser_arg *arg, const string &s /*char *s*/);
 void error_exit_cleanup();
-void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, 
+void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current,
 	       Part p);
-void invalid_declaration(parser_arg *arg, string semantic_err_msg, 
+void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 			 char *type, char *name);
 
 } // code
@@ -147,7 +147,7 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 %token <word> SCAN_FLOAT32
 %token <word> SCAN_FLOAT64
 %token <word> SCAN_STRING
-%token <word> SCAN_URL 
+%token <word> SCAN_URL
 
 %type <boolean> datasets dataset declarations array_decl name
 
@@ -157,12 +157,12 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg,
 
 start:
         {
-		    /* On entry to the parser, make the BaseType stack. 
+		    /* On entry to the parser, make the BaseType stack.
 		       I use if (!ctor) here because in the tab.cc file,
 		       this is a case block in a switch, so it could be
 		       run more than once, causing the storage to be
 		       overwritten. jhrg 6/26/15 */
-		       
+
 		    if (!ctor)
 		    	ctor = new stack<BaseType *>;
         }
@@ -198,15 +198,15 @@ declarations:	/* empty */
 
 /* This non-terminal is here only to keep types like `List List Int32' from
    parsing. DODS does not allow Lists of Lists. Those types make translation
-   to/from arrays too hard. 
-   
+   to/from arrays too hard.
+
    NB: I removed the List type from DAP years ago. jhrg 6/26/15 */
 
-declaration:  base_type var ';' 
-        { 
+declaration:  base_type var ';'
+        {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
-			    add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+			    add_entry(*DDS_OBJ(arg), &ctor, &current, part);
 		    } else {
 		      invalid_declaration((parser_arg *)arg, smsg, $1, $2);
 		      error_exit_cleanup();
@@ -216,17 +216,17 @@ declaration:  base_type var ';'
             $$[ID_MAX-1] = '\0';
 		}
 
-		| structure  '{' declarations '}' 
-		{ 
+		| structure  '{' declarations '}'
+		{
 		    if( current ) delete current ;
-		    current = ctor->top(); 
+		    current = ctor->top();
 		    ctor->pop();
-		} 
-        var ';' 
-        { 
+		}
+        var ';'
+        {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
-			    add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+			    add_entry(*DDS_OBJ(arg), &ctor, &current, part);
 			}
 		    else {
 		        invalid_declaration((parser_arg *)arg, smsg, $1, $6);
@@ -237,17 +237,17 @@ declaration:  base_type var ';'
             $$[ID_MAX-1] = '\0';
 		}
 
-		| sequence '{' declarations '}' 
-        { 
+		| sequence '{' declarations '}'
+        {
 		    if( current ) delete current ;
-		    current = ctor->top(); 
+		    current = ctor->top();
 		    ctor->pop();
-		} 
-        var ';' 
-        { 
+		}
+        var ';'
+        {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
-			    add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+			    add_entry(*DDS_OBJ(arg), &ctor, &current, part);
 			}
 		    else {
 		      invalid_declaration((parser_arg *)arg, smsg, $1, $6);
@@ -259,7 +259,7 @@ declaration:  base_type var ';'
 		}
 
 		| grid '{' SCAN_WORD ':'
-		{ 
+		{
 		    if (is_keyword(string($3), "array")) {
 			    part = libdap::array;
 			}
@@ -271,9 +271,9 @@ declaration:  base_type var ';'
 		    }
         }
         declaration SCAN_WORD ':'
-		{ 
+		{
 		    if (is_keyword(string($7), "maps")) {
-			    part = maps; 
+			    part = maps;
 			}
 		    else {
 			    ostringstream msg;
@@ -282,18 +282,18 @@ declaration:  base_type var ';'
 			    YYABORT;
 		    }
         }
-        declarations '}' 
+        declarations '}'
 		{
 		    if( current ) delete current ;
-		    current = ctor->top(); 
+		    current = ctor->top();
 		    ctor->pop();
 		}
-        var ';' 
+        var ';'
         {
 		    string smsg;
 		    if (current->check_semantics(smsg)) {
-			    part = nil; 
-			    add_entry(*DDS_OBJ(arg), &ctor, &current, part); 
+			    part = nil;
+			    add_entry(*DDS_OBJ(arg), &ctor, &current, part);
 		    }
 		    else {
 		      invalid_declaration((parser_arg *)arg, smsg, $1, $13);
@@ -304,7 +304,7 @@ declaration:  base_type var ';'
         $$[ID_MAX-1] = '\0';
 		}
 
-        | error 
+        | error
         {
 		    ostringstream msg;
 		    msg << BAD_DECLARATION;
@@ -312,23 +312,23 @@ declaration:  base_type var ';'
 		    YYABORT;
 		}
 ;
- 
+
 
 structure:	SCAN_STRUCTURE
-		{ 
-		    ctor->push(DDS_OBJ(arg)->get_factory()->NewStructure()); 
+		{
+		    ctor->push(DDS_OBJ(arg)->get_factory()->NewStructure());
 		}
 ;
 
-sequence:	SCAN_SEQUENCE 
-		{ 
-		    ctor->push(DDS_OBJ(arg)->get_factory()->NewSequence()); 
+sequence:	SCAN_SEQUENCE
+		{
+		    ctor->push(DDS_OBJ(arg)->get_factory()->NewSequence());
 		}
 ;
 
-grid:		SCAN_GRID 
-		{ 
-		    ctor->push(DDS_OBJ(arg)->get_factory()->NewGrid()); 
+grid:		SCAN_GRID
+		{
+		    ctor->push(DDS_OBJ(arg)->get_factory()->NewGrid());
 		}
 ;
 
@@ -354,7 +354,7 @@ var_name:       SCAN_WORD | SCAN_BYTE | SCAN_INT16 | SCAN_INT32 | SCAN_UINT16
 ;
 
 array_decl:	'[' SCAN_WORD ']'
-        { 
+        {
 		    if (!check_int32($2)) {
 			    string msg = "In the dataset descriptor object:\n";
 			    msg += "Expected an array subscript.\n";
@@ -364,8 +364,8 @@ array_decl:	'[' SCAN_WORD ']'
 			    ((Array *)current)->append_dim(atoi($2));
 		    }
 		    else {
-			    Array *a = DDS_OBJ(arg)->get_factory()->NewArray(); 
-			    a->add_var(current); 
+			    Array *a = DDS_OBJ(arg)->get_factory()->NewArray();
+			    a->add_var(current);
 			    a->append_dim(atoi($2));
 			    if( current ) delete current ;
 			    current = a;
@@ -374,12 +374,12 @@ array_decl:	'[' SCAN_WORD ']'
 		    $$ = true;
 		 }
 
-		 | '[' SCAN_WORD 
+		 | '[' SCAN_WORD
 		 {
 		     if (!id) id = new string($2);
-		 } 
-         '=' SCAN_WORD 
-         { 
+		 }
+         '=' SCAN_WORD
+         {
 		     if (!check_int32($5)) {
 			     string msg = "In the dataset descriptor object:\n";
 			     msg += "Expected an array subscript.\n";
@@ -391,8 +391,8 @@ array_decl:	'[' SCAN_WORD ']'
 			     ((Array *)current)->append_dim(atoi($5), *id);
 		     }
 		     else {
-			     Array *a = DDS_OBJ(arg)->get_factory()->NewArray(); 
-			     a->add_var(current); 
+			     Array *a = DDS_OBJ(arg)->get_factory()->NewArray();
+			     a->add_var(current);
 			     a->append_dim(atoi($5), *id);
 			     if( current ) delete current ;
 			     current = a;
@@ -417,7 +417,7 @@ array_decl:	'[' SCAN_WORD ']'
 
 name:		var_name { (*DDS_OBJ(arg)).set_dataset_name($1); $$ = true;}
 		| SCAN_DATASET { (*DDS_OBJ(arg)).set_dataset_name($1); $$ = true; }
-        | error 
+        | error
         {
 		    ostringstream msg;
 		    msg << "Error parsing the dataset name." << endl
@@ -429,7 +429,7 @@ name:		var_name { (*DDS_OBJ(arg)).set_dataset_name($1); $$ = true;}
 
 %%
 
-/* 
+/*
  This function must be defined. However, use the error reporting code in
  parser-utils.cc.
  */
@@ -477,7 +477,7 @@ void invalid_declaration(parser_arg *arg, string semantic_err_msg, char *type, c
  be members and the parse rule (see `declaration' above) determines when to
  pop the stack.
 
- Returns: void 
+ Returns: void
  */
 
 void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part part)
@@ -508,4 +508,3 @@ void add_entry(DDS &table, stack<BaseType *> **ctor, BaseType **current, Part pa
         delete *current;
     *current = 0;
 }
-

@@ -1,4 +1,3 @@
-
 # Repair missing 'override' warnings
 
 ## Part 1
@@ -81,10 +80,9 @@ Below is a standalone Python script, `apply_overrides.py`, that:
 1. Reads a two-column list (`override_list.txt`) of `<header-path>\t<function_name>` (as produced by your extractor).
 2. Groups all function names by header file.
 3. For each header, makes a backup (`.bak`) and edits in-place:
-
-   * Finds every `virtual ... functionName(...)[ const];`
-   * Inserts `override` immediately before the trailing semicolon (after `const` if present).
-   * Leaves other lines untouched.
+   - Finds every `virtual ... functionName(...)[ const];`
+   - Inserts `override` immediately before the trailing semicolon (after `const` if present).
+   - Leaves other lines untouched.
 
 ```python
 #!/usr/bin/env python3
@@ -201,9 +199,9 @@ if __name__ == "__main__":
 
 This will:
 
-* Create a `.bak` copy of each header before editing.
-* Scan for each `virtual … functionName(...) [const];` and insert `override` if missing.
-* Report each insertion with filename and line number.
+- Create a `.bak` copy of each header before editing.
+- Scan for each `virtual … functionName(...) [const];` and insert `override` if missing.
+- Report each insertion with filename and line number.
 
 You can tweak the regex if you have more complex declarations, but this should handle both plain and `const` methods, as well as multiple overloads in the same file.
 
@@ -277,10 +275,9 @@ if __name__ == '__main__':
    ```regex
    ^(\s*)virtual\s+(.*\boverride\b.*)$
    ```
-
-   * Captures any leading whitespace,
-   * ensures `override` appears later on the line,
-   * then strips out the `virtual `.
+   - Captures any leading whitespace,
+   - ensures `override` appears later on the line,
+   - then strips out the `virtual `.
 
 3. **Usage**
 

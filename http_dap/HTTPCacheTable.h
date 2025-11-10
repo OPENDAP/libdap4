@@ -262,7 +262,7 @@ public:
 class cache_entry_guard {
 public:
     enum class operation { read, write };
-    
+
 private:
     operation d_op;
     HTTPCacheTable::CacheEntry *d_entry;

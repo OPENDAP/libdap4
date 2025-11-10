@@ -5,7 +5,7 @@
             <Value>EndianType=LITTLE_ENDIAN;</Value>
         </Attribute>
     </Attribute>
-    
+
     <Attribute name="DAP4_GLOBAL_1" type="Container">
         <Attribute name="MoreUslessInfo" type="String">
             <Value>EndianType=BIG_ENDIAN;</Value>
@@ -23,11 +23,11 @@
     <Attribute name="FileInfo" type="String">
         <Value>DataFormatVersion=bc;TKCodeBuildVersion=1;MetadataVersion=bc;FormatPackage=HDF5-1.8.9;BlueprintFilename=GPM.V1.1AGMI.blueprint.xml;BlueprintVersion=BV_40;TKIOVersion=3.60.4;MetadataStyle=PVL;EndianType=LITTLE_ENDIAN;</Value>
     </Attribute>
-    
+
     <String name="AlgorithmRuntimeInfo">
         <Dim size="1"/>
     </String>
-    
+
     <Group name="gmi1aHeader">
         <UInt16 name="sampleRangeFile">
             <Dim size="7"/>
@@ -40,5 +40,5 @@
             </Attribute>
         </UInt16>
     </Group>
-    
+
  </Dataset>

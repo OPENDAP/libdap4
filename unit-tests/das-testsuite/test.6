@@ -7,4 +7,3 @@ attributes {
 	string slotb val2; /* a bad comment
     }
 }
-

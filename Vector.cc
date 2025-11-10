@@ -1286,7 +1286,7 @@ unsigned int Vector::val2buf(void *val, bool reuse)
                 d_str[i] = *(static_cast<string *> (val) + i);
 #endif
             int64_t str_len = length_ll();
-            if (str_len <0) 
+            if (str_len <0)
                 throw InternalErr(__FILE__,__LINE__,"The number of string length is less than 0 ");
             d_str.resize(str_len);
             set_value_capacity(str_len);

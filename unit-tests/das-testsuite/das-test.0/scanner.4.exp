@@ -42,9 +42,9 @@ set pass 1
 das-test_start s
 
 expect {
-    "${prompt} " { 
+    "${prompt} " {
     }
-    timeout { 
+    timeout {
 	send_user "Timeout\n"
 	set pass 0
     }
@@ -55,9 +55,9 @@ if {$pass} {
     send $thing
 
     expect {
-	-re ".*WORD=${thing}${prompt} $" { 
+	-re ".*WORD=${thing}${prompt} $" {
 	}
-	timeout { 
+	timeout {
 	    send_user "Timeout\n"
 	    set pass 0
 	}
@@ -81,9 +81,9 @@ if {$pass} {
     send $thing
 
     expect {
-	-re ".*WORD=${thing2}${prompt} $" { 
+	-re ".*WORD=${thing2}${prompt} $" {
 	}
-	timeout { 
+	timeout {
 	    send_user "Timeout\n"
 	    set pass 0
 	}
@@ -99,9 +99,9 @@ if {$pass} {
     send $thing
 
     expect {
-	-re ".*WORD=${thing}${prompt} $" { 
+	-re ".*WORD=${thing}${prompt} $" {
 	}
-	timeout { 
+	timeout {
 	    send_user "Timeout\n"
 	    set pass 0
 	}
@@ -115,5 +115,3 @@ if {$pass} {
 }
 
 das-test_exit
-
-

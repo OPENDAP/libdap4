@@ -61,7 +61,7 @@ EXTRA_DIST = d4_function_parser.yy d4_function_scanner.ll
 
 CLEANFILES = *.gcda *.gcno *.gcov
 
-DISTCLEANFILES = 
+DISTCLEANFILES =
 
 clean-local:
 	-rm d4_function_parser.tab.cc d4_function_parser.tab.hh lex.d4_function.cc \

@@ -74,7 +74,7 @@ REQUIREMENTS
     --verbose' and then build as described above. You also need bison 3
     and flex 2.5.35 or greater.
 
-  o The library uses libcurl, libxml2 and libuuid (the latter on linux 
+  o The library uses libcurl, libxml2 and libuuid (the latter on linux
     but not OSX). You will need these libraries installed on your system
     to successfully run configure and build the library. You must have
     libcurl version 8.1.2 or newer and libxml2 2.9.13 or newer.
@@ -85,7 +85,7 @@ REQUIREMENTS
     and xml2-config scripts before running configure (e.g., run configure as
     'PATH="$PATH:/opt/opendap/bin';./configure'). You probably should install
     libdap.a under /opt/opendap as well, so set prefix to that path:
-    
+
 	'PATH="$PATH:/opt/opendap/bin';./configure --prefix=/opt/opendap'
 
   o We build this using gcc (GCC) 8.5.0 20210514 (Red Hat 8.5.0-10)
@@ -95,7 +95,7 @@ NOTES
 
   o Check for other INSTALL.* files to see if there's information specific to
     your OS (e.g., AIX).
-    
+
   o If you are building on a new platform (one for which we don't
     supply binaries), please run the tests and tell us about any failures.
     To do a really complete job of this you'll need to get the GNU test
@@ -103,7 +103,7 @@ NOTES
     package. It is very simple to install these and we're very willing to
     help, so don't be shy!
 
-  o If you are developing code that uses the DAP, get autotools (autoconf, 
+  o If you are developing code that uses the DAP, get autotools (autoconf,
     automake and libtools) and use git to checkout the code from GutHub.
     Our repository for libdap is at https://github.com/OPENDAP/libdap4.git
 
@@ -114,10 +114,10 @@ NOTES
     information it needs. Only developers working on libdap should ever have
     to do this.
 
-  o To build a rpm file for a source or binary distribution use 'make rpm' or 
+  o To build a rpm file for a source or binary distribution use 'make rpm' or
     'make srpm'. These targets should run 'make dist' to build the required
     tar.gz file first. You may need root privileges for these targets to work.
-    
+
   o DEBUGGING AIDS
 
     - The DAP API includes the following debugging aids that may be of help

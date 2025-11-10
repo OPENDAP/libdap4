@@ -14,7 +14,7 @@ Attributes {
 		URL my_url "http://dcz.dods.org/";
 	    }
 	}
-	
+
 	Alias url_info var1.component1.inner_component;
     }
 }
