@@ -43,6 +43,7 @@ Please find the libdap4 API documentation here: https://opendap.github.io/libdap
 
 ## Updated for version 3.20.11
 
+
 - Fixed bug in computation of request_size_kb()
 - Fixed type issue in HTTPCache.cc (#192)
 
