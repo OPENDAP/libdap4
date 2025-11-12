@@ -3,7 +3,7 @@
 
 # run the script like (with the obvious changes for CentOS7):
 # docker run -e os=centos6 -v $prefix/centos6/rpmbuild:/root/rpmbuild -v `pwd`:/root/travis
-# opendap/centos6_hyrax_builder:1.1 /root/travis/build-rpm.sh
+# opendap/centos6_hyrax_builder:1.1 /root/travis/build-rpm-8.sh
 
 # e: exit immediately on non-zero exit value from a command
 # u: treat unset env vars in substitutions as an error
@@ -16,24 +16,6 @@ set -eux
 
 echo "Inside the docker container, prefix HOME PATH:"
 printenv prefix HOME PATH
-
-# Get the pre-built dependencies (all static libraries). It might be more
-# economical to just get and build the deps since all we need for libdap
-# is the bison executable. However, using this process might translate to
-# the bes build more easily.
-#
-# These are not needed for CentOS Stream8 for libdap4. Only do this for
-# CentOS7 (libdap4 needs a newer version of bison teh C7 provides). jhrg 2/9/22
-if test -n $os -a $os = centos7
-then
-  aws s3 cp s3://opendap.travis.build/hyrax-dependencies-$os-static.tar.gz /tmp/
-
-  # This dumps the dependencies in $HOME/install/deps/{lib,bin,...}. By default
-  # our Travis yaml file installs the smaller deps that uses shared libs.
-  tar -xzvf /tmp/hyrax-dependencies-$os-static.tar.gz
-
-  ls -lR $HOME/install/deps
-fi
 
 if test -n $os -a $os = rocky8
 then

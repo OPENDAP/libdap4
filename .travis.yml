@@ -27,7 +27,6 @@ branches:
   only:
     - master
     - main
-    - RHEL9
     - /^(.*-test-deploy)$/
     - /^(.*test-scan)$/ # enables running only the scan. jhrg 1/18/24
 
@@ -162,7 +161,7 @@ jobs:
           --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
           --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=rocky8
           --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/rocky8_hyrax_builder:latest
-          /root/travis/travis/build-rpm.sh
+          /root/travis/travis/build-rpm-8.sh
 
     - stage: package
       name: "rocky9 RPMs"
@@ -174,7 +173,7 @@ jobs:
           --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
           --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=rocky9
           --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/rocky9_hyrax_builder:latest
-          /root/travis/travis/build-rpm.sh
+          /root/travis/travis/build-rpm-9.sh
 
     - stage: package
       name: "source distribution"
