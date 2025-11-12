@@ -27,6 +27,7 @@ branches:
   only:
     - master
     - main
+    - RHEL9
     - /^(.*-test-deploy)$/
     - /^(.*test-scan)$/ # enables running only the scan. jhrg 1/18/24
 
@@ -161,6 +162,18 @@ jobs:
           --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
           --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=rocky8
           --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/rocky8_hyrax_builder:latest
+          /root/travis/travis/build-rpm.sh
+
+    - stage: package
+      name: "rocky9 RPMs"
+      script:
+        - export LIBDAP_BUILD=rocky9
+        # $prefix = $HOME/install which is /home/travis/install here but should be /root/install in the image.
+        - mkdir -p $prefix/rpmbuild
+        - docker run --env prefix=/root/install --volume $prefix/rpmbuild:/root/rpmbuild
+          --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+          --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=rocky9
+          --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/rocky9_hyrax_builder:latest
           /root/travis/travis/build-rpm.sh
 
     - stage: package
