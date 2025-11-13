@@ -17,7 +17,7 @@ set -eux
 echo "Inside the docker container, prefix HOME PATH:"
 printenv prefix HOME PATH
 
-if test -n $os -a $os = rocky8
+if test -n $os -a $os = rocky9
 then
   export CPPFLAGS=-I/usr/include/tirpc
   export LDFLAGS=-ltirpc
@@ -25,7 +25,7 @@ fi
 
 # cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
 # using the docker run --volume option and set it to $TRAVIS_BUILD_DIR.
-cd $HOME/travis
+cd $HOME/libdap4
 
 # Run autoreconf so the missing, etc., scripts have the correct paths
 # for the inside of this container
