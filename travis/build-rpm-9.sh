@@ -26,9 +26,14 @@ loggy "  PATH: $PATH"
 
 if test -n $os -a $os = rocky9
 then
+  # Using the ${CPPFLAGS:-""} form to ensure that we get the empty string and not
+  # an unbound variable error if CPPFLAGS is not set.
   CPPFLAGS="${CPPFLAGS:-""} -I/usr/include/tirpc"
+  # ibid
   LDFLAGS="${LDFLAGS:-""} -ltirpc"
   loggy "Added tirpc libraries to CPPFLAGS LDFLAGS"
+  loggy "CPPFLAGS: $CPPFLAGS"
+  loggy " LDFLAGS: $LDFLAGS"
 fi
 
 # cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
