@@ -1,5 +1,7 @@
 #!/bin/sh
-#
+
+export CPPFLAGS
+export LDFLAGS
 function loggy(){
     echo  "$@" | awk '{ print "# "$0;}'  >&2
 }
@@ -24,14 +26,14 @@ loggy "  PATH: $PATH"
 
 if test -n $os -a $os = rocky9
 then
-  export CPPFLAGS="$CPPFLAGS -I/usr/include/tirpc"
-  export LDFLAGS="$LDFLAGS -ltirpc"
+  CPPFLAGS="$CPPFLAGS -I/usr/include/tirpc"
+  LDFLAGS="$LDFLAGS -ltirpc"
   loggy "Added tirpc libraries to CPPFLAGS LDFLAGS"
 fi
 
 # cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
 # using the docker run --volume option and set it to $TRAVIS_BUILD_DIR.
-cd $HOME/libdap4
+cd "$HOME/libdap4"
 
 # Run autoreconf so the missing, etc., scripts have the correct paths
 # for the inside of this container
