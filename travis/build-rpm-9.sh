@@ -14,13 +14,16 @@ set -eux
 # set to include $prefix/bin and $prefix/deps/bin; $prefix will be
 # $HOME/install. $HOME is /root for the build container.
 
-echo "Inside the docker container, prefix HOME PATH:"
-printenv prefix HOME PATH
+echo "Inside the docker container. Some ENV vars:"
+echo "prefix: $prefix"
+echo "HOME: $HOME"
+echo "PATH: $PATH"
 
 if test -n $os -a $os = rocky9
 then
-  export CPPFLAGS=-I/usr/include/tirpc
-  export LDFLAGS=-ltirpc
+  export CPPFLAGS="$CPPFLAGS -I/usr/include/tirpc"
+  export LDFLAGS="$LDFLAGS -ltirpc"
+  echo "Added tirpc libraries to CPPFLAGS LDFLAGS"
 fi
 
 # cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
