@@ -20,9 +20,10 @@ set -eu
 # $HOME/install. $HOME is /root for the build container.
 loggy "#######################################################################"
 loggy "Inside the docker container. Some ENV vars:"
-loggy "  prefix: $prefix"
-loggy "    HOME: $HOME"
-loggy "    PATH: $PATH"
+loggy "LIBDAP_BUILD_NUMBER: $LIBDAP_BUILD_NUMBER"
+loggy "             prefix: $prefix"
+loggy "               HOME: $HOME"
+loggy "               PATH: $PATH"
 
 if test -n $os -a $os = rocky9
 then
@@ -32,14 +33,14 @@ then
   # ibid
   LDFLAGS="${LDFLAGS:-""} -ltirpc"
   loggy "Added tirpc libraries to CPPFLAGS LDFLAGS"
-  loggy "CPPFLAGS: $CPPFLAGS"
-  loggy " LDFLAGS: $LDFLAGS"
+  loggy "           CPPFLAGS: $CPPFLAGS"
+  loggy "            LDFLAGS: $LDFLAGS"
 fi
 
 # cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
 # using the docker run --volume option and set it to $TRAVIS_BUILD_DIR.
 cd "$HOME/libdap4"
-loggy "     PWD: $PWD"
+loggy "                PWD: $PWD"
 
 # Run autoreconf so the missing, etc., scripts have the correct paths
 # for the inside of this container
@@ -48,7 +49,6 @@ autoreconf -fiv
 # This builds the libdap.spec file with the correct version and build number.
 # NB: prefix=$HOME/install
 
-loggy "LIBDAP_BUILD_NUMBER: $LIBDAP_BUILD_NUMBER"
 ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
 
 # Now make the source dist (which will be libdap-version.tar.gz - no build number)
