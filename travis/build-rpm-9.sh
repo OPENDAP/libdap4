@@ -39,6 +39,7 @@ fi
 # cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
 # using the docker run --volume option and set it to $TRAVIS_BUILD_DIR.
 cd "$HOME/libdap4"
+loggy "PWD: $PWD"
 
 # Run autoreconf so the missing, etc., scripts have the correct paths
 # for the inside of this container
