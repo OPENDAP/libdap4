@@ -20,9 +20,9 @@ set -eu
 # $HOME/install. $HOME is /root for the build container.
 
 loggy "Inside the docker container. Some ENV vars:"
-loggy "prefix: $prefix"
-loggy "  HOME: $HOME"
-loggy "  PATH: $PATH"
+loggy "  prefix: $prefix"
+loggy "    HOME: $HOME"
+loggy "    PATH: $PATH"
 
 if test -n $os -a $os = rocky9
 then
@@ -39,7 +39,7 @@ fi
 # cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
 # using the docker run --volume option and set it to $TRAVIS_BUILD_DIR.
 cd "$HOME/libdap4"
-loggy "PWD: $PWD"
+loggy "     PWD: $PWD"
 
 # Run autoreconf so the missing, etc., scripts have the correct paths
 # for the inside of this container
