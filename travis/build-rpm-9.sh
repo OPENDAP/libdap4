@@ -18,7 +18,7 @@ set -eu
 # centos6/7 hyrax build containers are configured. The PATH will be
 # set to include $prefix/bin and $prefix/deps/bin; $prefix will be
 # $HOME/install. $HOME is /root for the build container.
-
+loggy "#######################################################################"
 loggy "Inside the docker container. Some ENV vars:"
 loggy "  prefix: $prefix"
 loggy "    HOME: $HOME"
