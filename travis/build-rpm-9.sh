@@ -26,8 +26,8 @@ loggy "  PATH: $PATH"
 
 if test -n $os -a $os = rocky9
 then
-  CPPFLAGS="$CPPFLAGS -I/usr/include/tirpc"
-  LDFLAGS="$LDFLAGS -ltirpc"
+  CPPFLAGS="${CPPFLAGS:-""} -I/usr/include/tirpc"
+  LDFLAGS="${LDFLAGS:-""} -ltirpc"
   loggy "Added tirpc libraries to CPPFLAGS LDFLAGS"
 fi
 
