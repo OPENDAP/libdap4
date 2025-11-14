@@ -12,7 +12,7 @@ function loggy(){
 
 # e: exit immediately on non-zero exit value from a command
 # u: treat unset env vars in substitutions as an error
-set -eux
+set -eu
 
 # This script will start with /home as the CWD since that's how the
 # centos6/7 hyrax build containers are configured. The PATH will be
