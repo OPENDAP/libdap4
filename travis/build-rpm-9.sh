@@ -1,5 +1,8 @@
 #!/bin/sh
 #
+function loggy(){
+    echo  "$@" | awk '{ print "# "$0;}'  >&2
+}
 
 # run the script like (with the obvious changes for CentOS7):
 # docker run -e os=centos6 -v $prefix/centos6/rpmbuild:/root/rpmbuild -v `pwd`:/root/travis
@@ -14,16 +17,16 @@ set -eux
 # set to include $prefix/bin and $prefix/deps/bin; $prefix will be
 # $HOME/install. $HOME is /root for the build container.
 
-echo "Inside the docker container. Some ENV vars:"
-echo "prefix: $prefix"
-echo "HOME: $HOME"
-echo "PATH: $PATH"
+loggy "Inside the docker container. Some ENV vars:"
+loggy "prefix: $prefix"
+loggy "  HOME: $HOME"
+loggy "  PATH: $PATH"
 
 if test -n $os -a $os = rocky9
 then
   export CPPFLAGS="$CPPFLAGS -I/usr/include/tirpc"
   export LDFLAGS="$LDFLAGS -ltirpc"
-  echo "Added tirpc libraries to CPPFLAGS LDFLAGS"
+  loggy "Added tirpc libraries to CPPFLAGS LDFLAGS"
 fi
 
 # cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
@@ -37,7 +40,7 @@ autoreconf -fiv
 # This builds the libdap.spec file with the correct version and build number.
 # NB: prefix=$HOME/install
 
-echo "LIBDAP_BUILD_NUMBER: $LIBDAP_BUILD_NUMBER"
+loggy "LIBDAP_BUILD_NUMBER: $LIBDAP_BUILD_NUMBER"
 ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
 
 # Now make the source dist (which will be libdap-version.tar.gz - no build number)
