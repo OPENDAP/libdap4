@@ -25,7 +25,7 @@ loggy "             prefix: $prefix"
 loggy "               HOME: $HOME"
 loggy "               PATH: $PATH"
 
-mkdir -p $HOME/rpmbuild
+mkdir -vp $HOME/rpmbuild
 
 if test -n $os -a $os = rocky9
 then
