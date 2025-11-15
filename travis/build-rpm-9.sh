@@ -25,6 +25,8 @@ loggy "             prefix: $prefix"
 loggy "               HOME: $HOME"
 loggy "               PATH: $PATH"
 
+mkdir -p $HOME/rpmbuild
+
 if test -n $os -a $os = rocky9
 then
   # Using the ${CPPFLAGS:-""} form to ensure that we get the empty string and not
