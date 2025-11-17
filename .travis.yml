@@ -161,7 +161,7 @@ jobs:
           --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
           --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=rocky8
           --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/rocky8_hyrax_builder:latest
-          /root/travis/travis/build-rpm-8.sh
+          /root/travis/travis/build-rh8-rpm.sh
 
     - stage: package
       name: "rocky9 RPMs"
@@ -173,7 +173,7 @@ jobs:
           --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
           --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=rocky9
           --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/rocky9_hyrax_builder:latest
-          /root/travis/travis/build-rpm-9.sh
+          /root/travis/travis/build-rh9-rpm.sh
 
     - stage: package
       name: "source distribution"
