@@ -6,16 +6,25 @@ function loggy(){
     echo  "$@" | awk '{ print "# "$0;}'  >&2
 }
 
-# run the script like (with the obvious changes for CentOS7):
-# docker run -e os=centos6 -v $prefix/centos6/rpmbuild:/root/rpmbuild -v `pwd`:/root/travis
-# opendap/centos6_hyrax_builder:1.1 /root/travis/build-rh9-rpm.sh
+# run the script like this:
+#     Create a writable target for the rpm files, mount it to /root/rpmbuild
+#     mkdir $prefix/rpmbuild
+#     docker run
+#         --env prefix=/root/install
+#         --volume $prefix/rpmbuild:/root/rpmbuild
+#         --volume $TRAVIS_BUILD_DIR:/root/libdap4
+#         --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+#         --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+#         --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
+#         opendap/rocky9_hyrax_builder:latest
+#         /root/libdap4/travis/build-rh9-rpm.shdocker run
 
 # e: exit immediately on non-zero exit value from a command
 # u: treat unset env vars in substitutions as an error
 set -eu
 
 # This script will start with /home as the CWD since that's how the
-# centos6/7 hyrax build containers are configured. The PATH will be
+# hyrax build containers are configured. The PATH will be
 # set to include $prefix/bin and $prefix/deps/bin; $prefix will be
 # $HOME/install. $HOME is /root for the build container.
 loggy "#######################################################################"
@@ -27,17 +36,14 @@ loggy "               PATH: $PATH"
 
 mkdir -vp $HOME/rpmbuild
 
-if test -n $os -a $os = rocky9
-then
-  # Using the ${CPPFLAGS:-""} form to ensure that we get the empty string and not
-  # an unbound variable error if CPPFLAGS is not set.
-  CPPFLAGS="${CPPFLAGS:-""} -I/usr/include/tirpc"
-  # ibid
-  LDFLAGS="${LDFLAGS:-""} -ltirpc"
-  loggy "Added tirpc libraries to CPPFLAGS LDFLAGS"
-  loggy "           CPPFLAGS: $CPPFLAGS"
-  loggy "            LDFLAGS: $LDFLAGS"
-fi
+# Using the ${CPPFLAGS:-""} form to ensure that we get the empty string and not
+# an unbound variable error if CPPFLAGS is not set.
+CPPFLAGS="${CPPFLAGS:-""} -I/usr/include/tirpc"
+# ibid
+LDFLAGS="${LDFLAGS:-""} -ltirpc"
+loggy "Added tirpc libraries to CPPFLAGS LDFLAGS"
+loggy "           CPPFLAGS: $CPPFLAGS"
+loggy "            LDFLAGS: $LDFLAGS"
 
 # cd to the $TRAVIS_BUILD_DIR directory. Note that we make $HOME/travis
 # using the docker run --volume option and set it to $TRAVIS_BUILD_DIR.
