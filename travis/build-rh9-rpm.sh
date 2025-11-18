@@ -1,20 +1,23 @@
 #!/bin/sh
 #######################################################################
 #
-# Thi script is a component of a machine used to builds RHEL9 RPM
+# This script is a component of a machine used to builds RHEL9 RPM
 # binaries using a pre-configured Docker image for rocky9 to provide
 # the compile and packaging platform
 #
 # This script is passed to the docker container as part of a
 # docker run command.
 #
-# In order to run the scripit inside the docker container, in lieu of
-# an entrypoit.sh file, kaunch the docker build image like this and pass
+# In order to run the script inside the docker container, in lieu of
+# an entrypoint.sh file, launch the docker build image like this and pass
 # in the fully qualified path of this script as it appears in the docker
-# container. In the example below, we mount the directory
-# $prefix/rpmbuild onto the /root/rpmbuild directory. This because the
-# rpm build software is goine to write that stuff to ~/rpmbuild and in
-# our Docker image we know that's /root/rpmbuild
+# container.
+#
+# In the example below, we mount the directory $prefix/rpmbuild onto the
+# /root/rpmbuild directory.
+#
+# This is because the rpm build software is going to write the rpms
+# to ~/rpmbuild and in our Docker image we know that's /root/rpmbuild
 #
 # Run the script like this:
 #     docker run

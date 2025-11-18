@@ -1,9 +1,35 @@
 #!/bin/sh
+#######################################################################
 #
-
-# run the script like (with the obvious changes for CentOS7):
-# docker run -e os=centos6 -v $prefix/centos6/rpmbuild:/root/rpmbuild -v `pwd`:/root/travis
-# opendap/centos6_hyrax_builder:1.1 /root/travis/build-rh8-rpm.sh
+# This script is a component of a machine used to builds RHEL9 RPM
+# binaries using a pre-configured Docker image for rocky9 to provide
+# the compile and packaging platform
+#
+# This script is passed to the docker container as part of a
+# docker run command.
+#
+# In order to run the script inside the docker container, in lieu of
+# an entrypoint.sh file, launch the docker build image like this and pass
+# in the fully qualified path of this script as it appears in the docker
+# container.
+#
+# In the example below, we mount the directory
+# $prefix/rpmbuild onto the /root/rpmbuild directory.
+#
+# This is because the rpm build software is going to write the rpms
+# to ~/rpmbuild and in our Docker image we know that's /root/rpmbuild
+#
+# Run the script like this:
+# docker run \
+#    --env prefix=/root/install \
+#    --volume $prefix/rpmbuild:/root/rpmbuild \
+#    --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+#    --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+#    --env os=rocky8 \
+#    --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER \
+#    opendap/rocky8_hyrax_builder:latest \
+#    /root/travis/travis/build-rh8-rpm.sh
+#
 
 # e: exit immediately on non-zero exit value from a command
 # u: treat unset env vars in substitutions as an error
