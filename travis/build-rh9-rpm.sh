@@ -34,7 +34,7 @@ loggy "             prefix: $prefix"
 loggy "               HOME: $HOME"
 loggy "               PATH: $PATH"
 
-mkdir -vp $HOME/rpmbuild
+# mkdir -vp $HOME/rpmbuild
 
 # Using the ${CPPFLAGS:-""} form to ensure that we get the empty string and not
 # an unbound variable error if CPPFLAGS is not set.
