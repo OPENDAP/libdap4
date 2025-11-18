@@ -62,4 +62,4 @@ autoreconf -fiv
 make -j16 rpm
 
 # Just a little reassurance... jhrg 3/23/21
-ls -l $HOME/rpmbuild/RPMS/x86_64/
+loggy "$(ls -l $HOME/rpmbuild/RPMS/x86_64/)"
