@@ -3,7 +3,7 @@
 #
 # This script is a component of a machine used to builds RHEL9 RPM
 # binaries using a pre-configured Docker image for rocky9 to provide
-# the compile and packaging platform
+# the compile and packaging platform.
 #
 # This script is passed to the docker container as part of a
 # docker run command.
