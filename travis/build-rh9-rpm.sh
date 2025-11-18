@@ -1,14 +1,22 @@
 #!/bin/sh
-
-export CPPFLAGS
-export LDFLAGS
-function loggy(){
-    echo  "$@" | awk '{ print "# "$0;}'  >&2
-}
-
-# run the script like this:
-#     Create a writable target for the rpm files, mount it to /root/rpmbuild
-#     mkdir $prefix/rpmbuild
+#######################################################################
+#
+# Thi script is a component of a machine used to builds RHEL9 RPM
+# binaries using a pre-configured Docker image for rocky9 to provide
+# the compile and packaging platform
+#
+# This script is passed to the docker container as part of a
+# docker run command.
+#
+# In order to run the scripit inside the docker container, in lieu of
+# an entrypoit.sh file, kaunch the docker build image like this and pass
+# in the fully qualified path of this script as it appears in the docker
+# container. In the example below, we mount the directory
+# $prefix/rpmbuild onto the /root/rpmbuild directory. This because the
+# rpm build software is goine to write that stuff to ~/rpmbuild and in
+# our Docker image we know that's /root/rpmbuild
+#
+# Run the script like this:
 #     docker run
 #         --env prefix=/root/install
 #         --volume $prefix/rpmbuild:/root/rpmbuild
@@ -17,7 +25,17 @@ function loggy(){
 #         --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 #         --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
 #         opendap/rocky9_hyrax_builder:latest
-#         /root/libdap4/travis/build-rh9-rpm.shdocker run
+#         /root/libdap4/travis/build-rh9-rpm.sh
+#
+#
+#######################################################################
+function loggy(){
+    echo  "$@" | awk '{ print "# "$0;}'  >&2
+}
+
+
+export CPPFLAGS
+export LDFLAGS
 
 # e: exit immediately on non-zero exit value from a command
 # u: treat unset env vars in substitutions as an error
