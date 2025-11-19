@@ -24,8 +24,6 @@
 #         --env prefix=/root/install
 #         --volume $prefix/rpmbuild:/root/rpmbuild
 #         --volume $TRAVIS_BUILD_DIR:/root/libdap4
-#         --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-#         --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 #         --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
 #         opendap/rocky9_hyrax_builder:latest
 #         /root/libdap4/travis/build-rh9-rpm.sh
