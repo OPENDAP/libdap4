@@ -173,8 +173,6 @@ jobs:
           --env prefix=/root/install
           --volume $prefix/rpmbuild:/root/rpmbuild
           --volume $TRAVIS_BUILD_DIR:/root/libdap4
-          --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-          --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
           --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER
           opendap/rocky9_hyrax_builder:latest
           /root/libdap4/travis/build-rh9-rpm.sh
@@ -222,6 +220,8 @@ before_deploy:
     --exclude 'install/deps*' --exclude 'install/rpmbuild*' install; fi
   # rocky8 distribution prep
   - if test "$LIBDAP_BUILD" = "rocky8"; then ./travis/rpm-to-package-dir.sh "el8"; fi
+  # rocky9 distribution prep
+  - if test "$LIBDAP_BUILD" = "rocky9"; then ./travis/rpm-to-package-dir.sh "el9"; fi
   # Src dist distribution prep
   - if test "$BES_BUILD" = "srcdist"; then cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package; fi
   # Check for the stuff...
@@ -239,6 +239,5 @@ deploy:
     all_branches: true
     # Was "branch: master". Now supports the *-test-deploy feature and also
     # using 'main' as the branch name. jhrg 8/22/22
-    condition: $LIBDAP_BUILD =~ ^main|srddist|rocky8$
-    # Removed 'centos6|' jhrg 10/23/20
-    # Removed 'centos7|' jhrg 01/27/23
+    condition: $LIBDAP_BUILD =~ ^main|srddist|rocky8|rocky9$
+    # Added  'rocky9|' ndp 11/19/25
