@@ -23,4 +23,3 @@ endfunction()
 
 getdap_test(1 "-d" "http://test.opendap.org/dap/data/nc/fnoc1.nc" "fnoc1.nc.dds" "pass")
 getdap_test(2 "-a" "http://test.opendap.org/dap/data/nc/fnoc1.nc" "fnoc1.nc.das" "pass")
-

@@ -12,18 +12,18 @@
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
  version 2.1 of the License, or (at your option) any later version.
- 
+
  This library is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Lesser General Public License for more details.
- 
+
  You should have received a copy of the GNU Lesser General Public
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
  You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
-*/ 
+*/
 
 %{ /* -*- C++ -*- */
 //#include "config.h"
@@ -58,18 +58,18 @@ typedef libdap::D4CEParser::token token;
    in lex.<prefix>.cc. jhrg 8/8/13 */
 %option prefix="d4_ce"
 
-/* These two options turn on line counting - useful for error messages - 
+/* These two options turn on line counting - useful for error messages -
    and debugging, respectively. When debugging is on, it's possible to see
    which scanner rules are used at which points in the input. */
 %option yylineno
 %option debug
 
-/* Do not output the default rule (where any unmatched input is echoed to 
+/* Do not output the default rule (where any unmatched input is echoed to
    stdout). When set, nodefault will cause the scanner to exit on an error. */
 %option nodefault
 /* noyywrap makes the scanner assume that EOF/EOS is the end of the input.
-   If this is not set, the scanner will assume there are more files to 
-   scan. */ 
+   If this is not set, the scanner will assume there are more files to
+   scan. */
 %option noyywrap
 %option nounput
 /* When set, warn prints a message when the default rule can be matched
@@ -83,15 +83,15 @@ typedef libdap::D4CEParser::token token;
 NUMBER   [+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)
 
 /* This pattern just ensures that a word does not start with '#' which
-   is the DAP2 comment character. 
+   is the DAP2 comment character.
 
    Having the characters !, ~, and @ in the second set of the chars allowed
    in a WORD token meant that 'var!=' parsed as WORD == 'var!' and '=' and not
    'var' and '!='. I see that in DAP2 I did not include these in the definition
    of a WORD.
    jhrg 4/29/16 */
-   
-WORD    [-+a-zA-Z0-9_%*\\!~@][-+a-zA-Z0-9_%*\\#]* 
+
+WORD    [-+a-zA-Z0-9_%*\\!~@][-+a-zA-Z0-9_%*\\#]*
 
 %{
 // Code run each time a pattern is matched
@@ -155,9 +155,9 @@ loc->step();
                     }
                 }
 
-<quote>["]  { 
+<quote>["]  {
                 /* An unescaped double quote in the 'quote' state indicates the end of the string */
-                BEGIN(INITIAL); 
+                BEGIN(INITIAL);
                 yylval->build<std::string>(yytext);
                 return token::STRING;
             }

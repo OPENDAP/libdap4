@@ -63,37 +63,36 @@
 namespace libdap {
 
 void D4Group::m_duplicate(const D4Group &g) {
-    DBG(cerr << "In D4Group::m_duplicate for " << g.name() << endl);
 
+    DBG(cerr << "In D4Group::m_duplicate for " << g.name() << endl);
     // dims; deep copy, this is the parent
     if (g.d_dims) {
         d_dims = new D4Dimensions(*(g.d_dims));
         d_dims->set_parent(this);
-
-        // Update all the D4Dimension weak pointers in the Array objects.
-        // This is a hack - we know that Constructor::m_duplicate() has been
-        // called at this point, and any Array instances have dimension pointers
-        // that reference the 'old' dimensions (g.d_dims) and not the 'new'
-        // dimensions made above. Scan every array and re-wire the weak pointers.
-        // jhrg 8/15/14
-        Vars_citer vi = d_vars.begin();
-        while (vi != d_vars.end()) {
-            if ((*vi)->type() == dods_array_c)
-                static_cast<Array *>(*vi)->update_dimension_pointers(g.d_dims, d_dims);
-            ++vi;
-        }
     }
 
+    // Note:  D4Dimensons of variables under this group  still point to the 'old' dimensions(g.d_dims).
+    //        Logically we can make these D4Dimensions point to the D4Dimensions of this group or the ancestor groups.
+    //        However, probably due to the implementation limitation of the way to handle group's parent pointer
+    //        or due to the handling of compilers for the recursive groups,
+    //        this group's parent group still points to g's parent group. So once g's resource is released,
+    //        it will cause a segmentation fault when a variable's D4Dimension is actually located in one of its
+    //        ancestor's group. We have to update the D4Dimensions of all the variables from root. This is actually
+    //        called in the copy constructor of the DMR class in the DMR.cc. Use the copy method of a DAP4 group should
+    //        start from the root. KY 2025-10-30
+
     // enums; deep copy
-    if (g.d_enum_defs)
+    if (g.d_enum_defs) {
         d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
+        d_enum_defs->set_parent(this);
+    }
 
     // groups
     groupsCIter i = g.d_groups.begin();
     while (i != g.d_groups.end()) {
         // Only D4Groups are in the d_groups container.
-        D4Group *g = static_cast<D4Group *>((*i++)->ptr_duplicate());
-        add_group_nocopy(g);
+        auto ng = dynamic_cast<D4Group *>((*i++)->ptr_duplicate());
+        add_group_nocopy(ng);
     }
 
     DBG(cerr << "Exiting D4Group::m_duplicate" << endl);
@@ -149,6 +148,19 @@ D4Group &D4Group::operator=(const D4Group &rhs) {
     return *this;
 }
 
+// Update the DAP4 dimension pointers of all variables.
+// This should be used after calling m_duplicate() and should be called from the root.
+void D4Group::update_variables_d4dimension_pointers() {
+    Vars_citer vi = d_vars.begin();
+    while (vi != d_vars.end()) {
+        if ((*vi)->type() == dods_array_c)
+            static_cast<Array *>(*vi)->update_dimension_pointers(this);
+        ++vi;
+    }
+    for (auto &g : this->groups())
+        g->update_variables_d4dimension_pointers();
+}
+
 /**
  * Get the Fully Qualified Name for this Group, including the Group. This
  * uses the name representation described in the DAP4 specification.
@@ -157,7 +169,10 @@ D4Group &D4Group::operator=(const D4Group &rhs) {
  */
 string D4Group::FQN() const {
     // The root group is named "/" (always)
-    return (name() == "/") ? "/" : static_cast<D4Group *>(get_parent())->FQN() + name() + "/";
+    if (get_parent())
+        return (name() == "/") ? "/" : static_cast<D4Group *>(get_parent())->FQN() + name() + "/";
+    else
+        return name();
 }
 
 D4Group *D4Group::find_child_grp(const string &grp_name) {
@@ -612,23 +627,25 @@ void D4Group::print_dap4(XMLWriter &xml, bool constrained) {
     }
 }
 
-void D4Group::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void D4Group::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained,
+                         bool root_grp, bool array_member) {
     ostringstream oss;
-    print_decl(oss, space, print_semi, constraint_info, constrained);
+    print_decl(oss, space, print_semi, constraint_info, constrained, root_grp, array_member);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void D4Group::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void D4Group::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained,
+                         bool root_grp, bool array_member) {
     if (constrained && !send_p())
         return;
 
     out << space << type_name() << " {\n";
     for (auto var : d_vars) {
-        var->print_decl(out, space + "    ", true, constraint_info, constrained);
+        var->print_decl(out, space + "    ", true, constraint_info, constrained, root_grp, array_member);
     }
 
     for (auto grp : d_groups) {
-        grp->print_decl(out, space + "    ", true, constraint_info, constrained);
+        grp->print_decl(out, space + "    ", true, constraint_info, constrained, root_grp, array_member);
     }
 
     out << space << "} " << id2www(name());
@@ -644,22 +661,22 @@ void D4Group::print_decl(ostream &out, string space, bool print_semi, bool const
         out << ";\n";
 }
 
-void D4Group::print_val(FILE *out, string space, bool print_decl_p) {
+void D4Group::print_val(FILE *out, string space, bool print_decl_p, bool is_root_grp) {
     ostringstream oss;
-    print_val(oss, space, print_decl_p);
+    print_val(oss, space, print_decl_p, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void D4Group::print_val(ostream &out, string space, bool print_decl_p) {
+void D4Group::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     if (print_decl_p) {
-        print_decl(out, space, false);
+        print_decl(out, space, false, false, false, is_root_grp);
         out << " = ";
     }
 
     out << "{ ";
     bool padding_needed = false; // Add padding - which is complex with the two parts. jhrg 8/5/22
     for (Vars_citer i = d_vars.begin(), e = d_vars.end(); i != e; i++, (void)(i != e && out << ", ")) {
-        (*i)->print_val(out, "", false);
+        (*i)->print_val(out, "", false, is_root_grp);
         padding_needed = true;
     }
 
@@ -668,7 +685,7 @@ void D4Group::print_val(ostream &out, string space, bool print_decl_p) {
 
     padding_needed = false;
     for (auto grp : d_groups) {
-        grp->print_val(out, "", false);
+        grp->print_val(out, "", false, is_root_grp);
         padding_needed = true;
     }
 

@@ -125,7 +125,7 @@ public:
         this class contains. They can currently only be set using the
         argc/argv command line parameters. */
     DODSFilter() { initialize(); }
-    DODSFilter(int argc, char *argv[]) throw(Error);
+    DODSFilter(int argc, char *argv[]);
 
     virtual ~DODSFilter();
 

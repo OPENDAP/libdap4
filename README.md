@@ -1,114 +1,124 @@
+> <a href="https://travis-ci.org/OPENDAP/libdap4">
+>   <img alt="TravisCI" src="https://travis-ci.org/OPENDAP/libdap4.svg?branch=master"/>
+> </a>
 
-><a href="https://travis-ci.org/OPENDAP/libdap4">
-  <img alt="TravisCI" src="https://travis-ci.org/OPENDAP/libdap4.svg?branch=master"/>
-</a> 
-
-README for the OPeNDAP libdap4 library
-======================================
+# README for the OPeNDAP libdap4 library
 
 Please find the libdap4 API documentation here: https://opendap.github.io/libdap4/html/
 
 ## Updated for version 3.21.1 [![DOI](https://zenodo.org/badge/30208853.svg)](https://doi.org/10.5281/zenodo.1013914)
 
-* Initial support for UTF-8
-* Improved production rules.
-* Worked technical debt affecting large variables and large responses
-    (large >= 2Gb).
-* Merge PR from fork regarding configure.ac use of bash-specific syntax.
-* Merge xsputn fix for Marshaller code and likely buffer size issues.
+- Initial support for UTF-8
+- Improved production rules.
+- Worked technical debt affecting large variables and large responses
+  (large >= 2Gb).
+- Merge PR from fork regarding configure.ac use of bash-specific syntax.
+- Merge xsputn fix for Marshaller code and likely buffer size issues.
 
 ## Updated for version 3.21.0 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10564122.svg)](https://doi.org/10.5281/zenodo.10564122)
 
-* Added new Direct I/O support so that modules written using libdap
+- Added new Direct I/O support so that modules written using libdap
   can pass compressed data buffers read directly from disk to output
   files without expensive decompression and recompression operations.
-* Merged contributed fixes from Bo Anderson  <mail at boanderson.me>
+- Merged contributed fixes from Bo Anderson <mail at boanderson.me>
   Fix handling of libtirpc pkg-config files with -L flags (#228)
-* Merged contributed fixes from Dan Horák  <da at @danny.cz>
-	add missing include (#227)
-	With GCC 13 the <cstdint> header isn't included thru other headers any
-	more, thus include it explictly. Otherwise uint8_t or uint32_t type
-	remain undefined in Vector.cc.
-	Fixes: https://github.com/OPENDAP/libdap4/issues/226
-	add missing big endian baselines (#196)
-* Fixed a bug where the copy ctor for D4Maps failed to correctly set the parent Array.
-* Merged contributed fix from Orion Poplawski  <orion at nwra.com>
-	Add missing cstdint include for uint32_t (#219)
-* Removed support for RHEL 7 (CentOS 7)
-* Now require C++-11 to build the code. However, configure will use
+- Merged contributed fixes from Dan Horák <da at @danny.cz>
+  add missing include (#227)
+  With GCC 13 the <cstdint> header isn't included thru other headers any
+  more, thus include it explictly. Otherwise uint8_t or uint32_t type
+  remain undefined in Vector.cc.
+  Fixes: https://github.com/OPENDAP/libdap4/issues/226
+  add missing big endian baselines (#196)
+- Fixed a bug where the copy ctor for D4Maps failed to correctly set the parent Array.
+- Merged contributed fix from Orion Poplawski <orion at nwra.com>
+  Add missing cstdint include for uint32_t (#219)
+- Removed support for RHEL 7 (CentOS 7)
+- Now require C++-11 to build the code. However, configure will use
   C++-14 if it finds that and the next release will require that.
-* Moved the functionality of is_dap4_projected() into libdap4 (#213). This 
+- Moved the functionality of is_dap4_projected() into libdap4 (#213). This
   had a number of consequences and there are new methods to support the feature.
-* Added support for 64-bit sized arrays. This was done by adding a set of 
-  'size methods' that have the suffix '_ll' (for long long). These should
+- Added support for 64-bit sized arrays. This was done by adding a set of
+  'size methods' that have the suffix '\_ll' (for long long). These should
   be used in place of the old methods, which are still in the code.
 
-## Updated for version 3.20.11 
+## Updated for version 3.20.11
 
-* Fixed bug in computation of request_size_kb()
-* Fixed type issue in HTTPCache.cc (#192)
+- Fixed bug in computation of request_size_kb()
+- Fixed type issue in HTTPCache.cc (#192)
 
 ## Updated for version 3.20.10 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6789103.svg)](https://doi.org/10.5281/zenodo.6789103)
 
-* Support for RHEL8
-* Fix for bugs in the ce parser around inverted indices. 
-* Fix for libdap4 github issue 147:  Grid::get_map_iter() was off by one
-* Improvements to DAP4 api.
-* Fixed various memory leaks.
-* Replaced instances of &vector[0] with vector.data()  (RHEL8)
-
+- Support for RHEL8
+- Fix for bugs in the ce parser around inverted indices.
+- Fix for libdap4 github issue 147: Grid::get_map_iter() was off by one
+- Improvements to DAP4 api.
+- Fixed various memory leaks.
+- Replaced instances of &vector[0] with vector.data() (RHEL8)
 
 ### Updated for version 3.20.9 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5807905.svg)](https://doi.org/10.5281/zenodo.5807905)
-* Started migrating from (deprecated) auto_ptr to C++11 unique_ptr
-* Migrated use of regex functions from outdfated GNU implementation 
+
+- Started migrating from (deprecated) auto_ptr to C++11 unique_ptr
+- Migrated use of regex functions from outdfated GNU implementation
   to C++11 implementation (uses compile time swicth)
 
 ### Updated for version 3.20.8 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4399722.svg)](https://doi.org/10.5281/zenodo.4399722)
-* Modified Error so that it is more in line with C++11.
-* Added (shallow) unit64_t request size computations and max_request_size state.
-* Changed the internal representation of max response size to uint64_t and confined the overflow
+
+- Modified Error so that it is more in line with C++11.
+- Added (shallow) unit64_t request size computations and max_request_size state.
+- Changed the internal representation of max response size to uint64_t and confined the overflow
   to just the (deprecated) functions.
 
 ### Updated for version 3.20.7 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4399722.svg)](https://doi.org/10.5281/zenodo.4399722)
-* Added code coverage (using gcov) to the CI processes. 
-* Dropped support for CentOS-6 (whew!)
-* Improved Int64 support.
-* Corrected byte order issue with DAP4 data transmission.
-* Improved error reporting.
 
-### Updated for version 3.20.6  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3759849.svg)](https://doi.org/10.5281/zenodo.3759849)
-* Stopped CE parse errors from returning user supplied strings in error messages.
-* README is now called README.md
+- Added code coverage (using gcov) to the CI processes.
+- Dropped support for CentOS-6 (whew!)
+- Improved Int64 support.
+- Corrected byte order issue with DAP4 data transmission.
+- Improved error reporting.
 
-### Updated for version 3.20.5  [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3641778.svg)](https://doi.org/10.5281/zenodo.3641778)
-* Memory leaks. Minor bug fixes. Lots of work on CI.
+### Updated for version 3.20.6 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3759849.svg)](https://doi.org/10.5281/zenodo.3759849)
+
+- Stopped CE parse errors from returning user supplied strings in error messages.
+- README is now called README.md
+
+### Updated for version 3.20.5 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3641778.svg)](https://doi.org/10.5281/zenodo.3641778)
+
+- Memory leaks. Minor bug fixes. Lots of work on CI.
 
 ### Updated for version 3.20.4 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3267984.svg)](https://doi.org/10.5281/zenodo.3267984)
-* Updated for version 3.20.4
-* Memory leak fixes and C++11 features
+
+- Updated for version 3.20.4
+- Memory leak fixes and C++11 features
 
 ### Updated for version 3.20.3 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2566512.svg)](https://doi.org/10.5281/zenodo.2566512)
-* Fixes and Debian packaging via Travis CI
+
+- Fixes and Debian packaging via Travis CI
 
 ### Updated for version 3.20.2 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2002799.svg)](https://doi.org/10.5281/zenodo.2002799)
-* Added libdap::Array::rename_dim()
+
+- Added libdap::Array::rename_dim()
 
 ### Updated for version 3.20.1
-* Added Continuous Delivery for CentOS 6 and 7
+
+- Added Continuous Delivery for CentOS 6 and 7
 
 ### Updated for version 3.20.0
-* We now have a Debian package for libdap.
-* Bug fixes; See the ChangeLog and NEWS files.
+
+- We now have a Debian package for libdap.
+- Bug fixes; See the ChangeLog and NEWS files.
 
 ### Updated for version 3.19.1
-* Bug fixes; See the ChangeLog and NEWS files.
+
+- Bug fixes; See the ChangeLog and NEWS files.
 
 ### Updated for version 3.18.3
-* Bug fixes; See the ChangeLog and NEWS files.
+
+- Bug fixes; See the ChangeLog and NEWS files.
 
 ### Updated for version 3.18.2
-* Added support for DAP4 filter operations.
-* For other information, see NEWS and ChangeLog
+
+- Added support for DAP4 filter operations.
+- For other information, see NEWS and ChangeLog
 
 ### Updated for 3.16.0
 
@@ -147,7 +157,7 @@ A test baseline was updated to use both the DAP2 and DAP4 version of
 the XDAP/X-DAP header. This change was likely over doing things on our
 part, but it's important to have the source releases pass all their
 tests.
- 
+
 Updated 3.13.0
 
 Support for clang: Apple LLVM version 5.1 (clang-503.0.40) (based on
@@ -160,29 +170,29 @@ implemented.
 
 Updated for version 3.12.0
 
-The server functions have been moved out of libdap and into their own 
+The server functions have been moved out of libdap and into their own
 BES module. Currently this modules is part of the BES, but that will change
 in the future. This version of libdap supports building very large arrays
 made up of constant value (e.g., to be used as masks in server functions
-you write). 
+you write).
 
 For information on the way to make these functions, see:
-http://docs.opendap.org/index.php/Expanded_arguments_for_Constraint_Expressions 
+http://docs.opendap.org/index.php/Expanded_arguments_for_Constraint_Expressions
 Note that this version of libdap requires bison 2.4. This is a change so
-the parsers can use C++ I/O streams and we can eventually drop the FILE*
+the parsers can use C++ I/O streams and we can eventually drop the FILE\*
 interfaces.
 
 Updated for version 3.11.7
 
-Minor tweak for the server function caching code: turn on or off the 
-cache by adding or removing the directory /tmp/dap_functions_cache. 
+Minor tweak for the server function caching code: turn on or off the
+cache by adding or removing the directory /tmp/dap_functions_cache.
 If the directory is not present no caching of server function calls
 is done. All the other behaviors are otherwise identical.
 
 Updated for version 3.11.6
 
 There is a new cache for some kinds of response objects. It's size and
-location are currently fixed to 20GB bytes and 
+location are currently fixed to 20GB bytes and
 "/tmp/dap_functions_cache/" but these will be made BES parameters in a
 future release.
 
@@ -253,11 +263,11 @@ attribute value. The change to libdap is such that a broken handler will not
 be any more broken but a fixed handler will work for both DAS and DDX
 generation.
 
-If you have a handler and it's not adding quotes to the String attribute 
+If you have a handler and it's not adding quotes to the String attribute
 values - good, don't change that! If your handler does add quotes, please
-modify it so the DDX will be correct.  
+modify it so the DDX will be correct.
 
-Our handler's old, broken, behavior can be resurrected by removing the 
+Our handler's old, broken, behavior can be resurrected by removing the
 ATTR_STRING_QUOTE FIX define in the appropriate files.
 
 Updated for version 3.8.2 (23 June 2008)
@@ -287,7 +297,7 @@ using libdap::DAS ;
 
 3. inside your code scope the use of libdap classes.
 
-libdap::DAS *das = code_to_get_das() ;
+libdap::DAS \*das = code_to_get_das() ;
 
 Added method to HTTPCache to return not only the FILE pointer of a cached
 response but also the name of the file in the cache, to allow for this file
@@ -303,7 +313,7 @@ A bug fix release. See NEWS.
 Updated for Version 3.7.9 (13 November 2007)
 
 This release is a bug fix and refactoring release. Old classes which were no
-longer used have been removed, the FILE* output methods are slated to be
+longer used have been removed, the FILE\* output methods are slated to be
 replaced with ones which will use iostream and will support a chucked
 transfer 'Marshaller,' and the transfer_data() methods have been made a
 formal part of the library, implemented for all classes, fixed and renamed to
@@ -365,7 +375,7 @@ version information encoded using XML instead of plain text:
 [jimg@zoe libdap]$ url=http://test.opendap.org/dap/data/nc/coads_climatology.nc
 [jimg@zoe libdap]$ ./getdap -D "$url?version()"
 The data:
-String version = "Function set: version 1.0, grid 1.0, geogrid 1.0b2, 
+String version = "Function set: version 1.0, grid 1.0, geogrid 1.0b2,
 		          geoarray 0.9b1, linear_scale 1.0b1";
 
 [jimg@zoe libdap]$ ./getdap -D "$url?version(help)"
@@ -375,38 +385,38 @@ String version = "Usage: version() returns plain text information about ...
 [jimg@zoe libdap]$ ./getdap -D "$url?version(xml)"
 The data:
 String version = "<?xml version=\"1.0\"?>
-    <functions>
-        <function name=\"version\" version=\"1.0\"/>
-        <function name=\"grid\" version=\"1.0\"/>
-        <function name=\"geogrid\" version=\"1.0\"/>
-        <function name=\"geoarray\" version=\"1.0\"/>
-        <function name=\"linear_scale\" version=\"1.0\"/>
-    </functions>";
+<functions>
+<function name=\"version\" version=\"1.0\"/>
+<function name=\"grid\" version=\"1.0\"/>
+<function name=\"geogrid\" version=\"1.0\"/>
+<function name=\"geoarray\" version=\"1.0\"/>
+<function name=\"linear_scale\" version=\"1.0\"/>
+</functions>";
 
 The geogrid function can only be used with variables that are Grids:
 
 [jimg@zoe libdap]$ getdap -d "$url"
 Dataset {
-    Float64 COADSX[COADSX = 180];
-    Float64 COADSY[COADSY = 90];
-    Float64 TIME[TIME = 12];
-    Grid {
-      Array:
-        Float32 SST[TIME = 12][COADSY = 90][COADSX = 180];
-      Maps:
-        Float64 TIME[TIME = 12];
-        Float64 COADSY[COADSY = 90];
-        Float64 COADSX[COADSX = 180];
-    } SST;
-    Grid {
-    .
-    .
-    .
+Float64 COADSX[COADSX = 180];
+Float64 COADSY[COADSY = 90];
+Float64 TIME[TIME = 12];
+Grid {
+Array:
+Float32 SST[TIME = 12][COADSY = 90][COADSX = 180];
+Maps:
+Float64 TIME[TIME = 12];
+Float64 COADSY[COADSY = 90];
+Float64 COADSX[COADSX = 180];
+} SST;
+Grid {
+.
+.
+.
 </code>
-    
-Pass the name of the Grid variable and the upper-left and lower-right corners 
+
+Pass the name of the Grid variable and the upper-left and lower-right corners
 of the lat/lon rectangle to geogrid. Optionally, pass one or more relational
-expressions to select parts of dimensions that are not lat/lon. 
+expressions to select parts of dimensions that are not lat/lon.
 
 Note: in libdap 3.7.3 calling geogrid with a constraint on each dimension
 may return incorrect values that indicate missing data even though data should
@@ -423,13 +433,13 @@ Grid {
     Float64 COADSY[COADSY = 7];
     Float64 COADSX[COADSX = 2];
 } SST = {  Array: {{{24.4364, 25.0923},{23.7465, 24.4146},{19.843, 23.6033},
-{16.8464, 17.7756},{16.65, 16.818},{-1e+34, 15.3656},{18.7214, 13.1286}}}  
+{16.8464, 17.7756},{16.65, 16.818},{-1e+34, 15.3656},{18.7214, 13.1286}}}
 Maps: {366}, {19, 21, 23, 25, 27, 29, 31}, {-61, -59} };
 </code>
 
 The geoarray() function works like geogrid() except that it's used to select
 from an Array variable and not a Grid. In addition to the four lat/lon values
-for selection rectangle, the caller must supply the data's corner points. A 
+for selection rectangle, the caller must supply the data's corner points. A
 subsequent release of libdap will include a version that reads the data extent
 from the data source when possible so caller's won't normally have to know the
 data's extent ahead of time.
@@ -459,7 +469,7 @@ Notes for version 3.7.1
 
 This is a bug fix release (mostly) made for users of the netcdf client
 library who need a fix for a problem dealing with attributes from the HDF4
-server. 
+server.
 
 NOTES for version 3.7.0
 
@@ -505,8 +515,8 @@ Version 3.6.1 is bug fix release.
 
 NOTES for version 3.6.0
 
-This version of the library may not work older source code. Many of the 
-deprecated methods have been removed. 
+This version of the library may not work older source code. Many of the
+deprecated methods have been removed.
 
 Added are headers which send information about the version of the DAP protocol
 that the library implements (in contrast to the implementation of the library
@@ -514,8 +524,8 @@ itself). A new header named XOPeNDAP-Server is used to send information about
 the implementation of servers.
 
 The libtool interface version has been incremented from 3 to 4 (these versions
-do no track the software's release version since several releases might 
-present compatible binary interfaces). 
+do no track the software's release version since several releases might
+present compatible binary interfaces).
 
 NOTES for version 3.5.3
 
@@ -527,7 +537,7 @@ WHAT'S IN THIS DIRECTORY?
 
 This directory contains the OPeNDAP C++ implementation of the Data
 Access Protocol version 2 (DAP2) with some extensions that will be
-part of DAP3.  Documentation for this software can be found on the
+part of DAP3. Documentation for this software can be found on the
 OPeNDAP home page at http://www.opendap.org/. The NASA/ESE RFC which
 describes DAP2, implemented by the library, can be found at
 http://spg.gsfc.nasa.gov/rfc/004/.
@@ -546,7 +556,7 @@ build data servers and clients. The classes may be specialized to
 mimic the behavior of other data access APIs, such as netCDF. In this
 way, programs originally meant to work with local data in those
 formats can be re-linked and equipped to work with data stored
-remotely in many different formats.  The classes can also by
+remotely in many different formats. The classes can also by
 specialized to build standalone client programs.
 
 The DAP2 is contained in a single library: libdap++.a. Also included
@@ -585,7 +595,7 @@ client-side part of the protocol. Clients written using the Ocapi are
 interoperable with both the Java and C++ DAP2 libraries. Note that the
 Ocapi is in early beta and available only from CVS at this time (5 May
 2005).
-  
+
 THREAD SAFETY
 
 We don't need to do this since the STL is also not thread safe. Users
@@ -593,7 +603,7 @@ of libdap have to be sure that multiple threads never make
 simultaneous and/or overlapping calls to a single copy of libdap. If
 several threads are part of a program and each will make calls to
 libdap, either those threads must synchronize their calls or arrange
-to each use their own copy of libdap.  Some aspects of the library
+to each use their own copy of libdap. Some aspects of the library
 are thread-safe: the singleton classes are all protected as is the
 HTTP cache (which uses the local file system).
 
@@ -610,4 +620,3 @@ Temple Place, Suite 330, Boston, MA 02111-1307 USA. Older versions of
 the DAP were copyrighted by the University of Rhode Island and
 Massachusetts Institute of Technology; see the file COPYRIGHT_URI. The
 file deflate.c is also covered by COPYRIGHT_W3C.
-

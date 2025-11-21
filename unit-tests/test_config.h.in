@@ -5,4 +5,3 @@
 #define TEST_BUILD_DIR "@abs_builddir@"
 
 #endif
-

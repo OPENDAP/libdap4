@@ -552,7 +552,7 @@ void D4Attribute::print_dap4(XMLWriter &xml) const {
         // Need to escape special characters that xml doesn't allow. Note: the XML escaping is
         // not the same as the das string escaping. See escattr_xml in the escaping.cc for details.
         // KY 08-22-22
-#if 0 
+#if 0
         D4AttributeCIter i = d_values.begin();//value_begin();
 #endif
         auto i = d_values.begin();

@@ -39,7 +39,7 @@ lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
 bin_SCRIPTS = dap-config dap-config-pkgconfig
 
-bin_PROGRAMS = getdap getdap4
+bin_PROGRAMS = getdap getdap4 dmr_memory_cache
 
 # Including the generated grammar sources in BUILT_SOURCES ensures
 # they are built first. jhrg 6/18/15
@@ -51,7 +51,7 @@ man_MANS = getdap.1 dap-config.1 getdap4.1
 %.1: %.man1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
-libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)  
+libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)
 libparsers_la_CPPFLAGS =  $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
@@ -83,6 +83,12 @@ getdap4_SOURCES = getdap4.cc
 getdap4_LDADD = libdapclient.la libdap.la
 getdap4_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/http_dap $(CURL_CFLAGS)
 
+dmr_memory_cache_SOURCES = dmr_mcache_test.cc
+dmr_memory_cache_LDADD = libdapclient.la libdap.la
+dmr_memory_cache_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/http_dap $(CURL_CFLAGS)
+
+
+
 LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
@@ -95,7 +101,7 @@ dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
 CLEANFILES = *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) \
-	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1 \
+	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1 dmr_memory_cache.1\
 	GNU/*.gcda GNU/*.gcno
 
 DISTCLEAN = libdap.spec
@@ -146,14 +152,14 @@ deb: dist
 
 #############################################################################
 # Library sources
-# 
+#
 
 GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc
 
 GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
 
 BISON_SRC = das.tab.cc das.tab.hh dds.tab.cc	dds.tab.hh \
-	ce_expr.tab.cc ce_expr.tab.hh Error.tab.cc Error.tab.hh 
+	ce_expr.tab.cc ce_expr.tab.hh Error.tab.cc Error.tab.hh
 
 FLEX_SRC = lex.das.cc lex.dds.cc lex.ce_expr.cc lex.Error.cc
 
@@ -245,7 +251,7 @@ clion-source-discovery:
 # Special rules for the grammars. I tried to use the automake grammar support
 # but these grammars are so hacked that it was taking too much time. Maybe if
 # each grammar was converted one by one... jhrg 6/22/05
-# 
+#
 # I switched to using flex options instead of sed and mv. jhrg 02/28/08
 #
 # Build the DAS scanner and parser

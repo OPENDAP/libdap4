@@ -117,7 +117,8 @@ public:
         // Set DODS_CONF to the CWD plus .dodsrc, create file called .dodsrc
         // in the CWD and test to see if check_env_var finds it.
         char cwd[1024];
-        getcwd(cwd, 1024);
+        if (getcwd(cwd, 1024) == nullptr)
+            CPPUNIT_FAIL("Failed to get the CWD.");
 
         string rc = string(cwd) + string("/.dodsrc");
         ifstream ifp(rc.c_str()); // This should create .dodsrc in the CWD
@@ -133,7 +134,8 @@ public:
         // In this test we *don't* create the file, just set DODS_CONF to the
         // directory and see if check_env_var() makes the RC file.
         char cwd[1024];
-        getcwd(cwd, 1024);
+        if (getcwd(cwd, 1024) == nullptr)
+            CPPUNIT_FAIL("Failed to get the CWD.");
 
         my_putenv(string("DODS_CONF=") + string(cwd));
 
@@ -152,9 +154,9 @@ public:
         string home = getenv("HOME");
         if (*home.rbegin() != '/')
             home += "/";
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
+
         RCReader *reader = RCReader::instance();
+        rcr->loadRC();
         CPPUNIT_ASSERT(reader->d_rc_file_path == home + string(".dodsrc"));
         DBG(cerr << "Cache root: " << reader->get_dods_cache_root() << endl);
         CPPUNIT_ASSERT(reader->get_dods_cache_root() == home + string(".dods_cache/"));
@@ -164,7 +166,8 @@ public:
         // Set DODS_CONF to create a .dodsrc in the CWD, then check to make
         // sure that .dodsrc has the correct cache root.
         char cwd[1024];
-        getcwd(cwd, 1024);
+        if (getcwd(cwd, 1024) == nullptr)
+            CPPUNIT_FAIL("Failed to get the CWD.");
         DBG(cerr << "CWD: " << cwd << endl);
         string rc = cwd;
         rc += "/.dodsrc";
@@ -173,9 +176,8 @@ public:
 
         my_putenv(string("DODS_CONF=") + string(cwd));
 
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
         RCReader *reader = RCReader::instance();
+        rcr->loadRC();
         DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
         CPPUNIT_ASSERT(reader->d_rc_file_path == string(cwd) + string("/.dodsrc"));
         DBG(cerr << "Cache root: " << reader->get_dods_cache_root() << endl);
@@ -188,9 +190,8 @@ public:
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
 
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
         RCReader *reader = RCReader::instance();
+        rcr->loadRC();
         DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
         CPPUNIT_ASSERT(reader->d_rc_file_path == (string)TEST_SRC_DIR + "/rcreader-testsuite/test1.rc");
         CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
@@ -212,9 +213,8 @@ public:
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
 
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
         RCReader *reader = RCReader::instance();
+        rcr->loadRC();
         DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
         CPPUNIT_ASSERT(reader->d_rc_file_path == (string)TEST_SRC_DIR + "/rcreader-testsuite/test2.rc");
         CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
@@ -234,10 +234,10 @@ public:
         my_putenv(rc);
 
         try {
-            RCReader::delete_instance();
-            RCReader::initialize_instance();
+            RCReader *reader = RCReader::instance();
+            rcr->loadRC();
             CPPUNIT_ASSERT(!"initialize_instance() should throw Error.");
-        } catch (Error &e) {
+        } catch (const Error &e) {
             DBG(cerr << e.get_error_message() << endl);
             CPPUNIT_ASSERT(e.get_error_message() != "");
         }
@@ -249,9 +249,8 @@ public:
         my_putenv(rc);
 
         try {
-            RCReader::delete_instance();
-            RCReader::initialize_instance();
             RCReader *reader = RCReader::instance();
+            rcr->loadRC();
             DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
             CPPUNIT_ASSERT(reader->d_rc_file_path == (string)TEST_SRC_DIR + "/rcreader-testsuite/test4.rc");
             CPPUNIT_ASSERT(reader->get_proxy_server_protocol() == "http");
@@ -275,9 +274,8 @@ public:
         my_putenv(rc);
 
         try {
-            RCReader::delete_instance();
-            RCReader::initialize_instance();
             RCReader *reader = RCReader::instance();
+            rcr->loadRC();
             DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
             CPPUNIT_ASSERT(reader->d_rc_file_path == (string)TEST_SRC_DIR + "/rcreader-testsuite/test5.rc");
             string proxy = reader->get_proxy_server_host_url();
@@ -302,9 +300,8 @@ public:
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
 
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
         RCReader *reader = RCReader::instance();
+        rcr->loadRC();
         reader->read_rc_file(string(TEST_SRC_DIR) + "/rcreader-testsuite/dodssrc_ssl_1");
         // No param set in file
         DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl() << endl);
@@ -319,10 +316,8 @@ public:
         DBG(cerr << "rc: " << rc << endl);
 
         my_putenv(rc);
+        rcr->loadRC();
 
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
-        reader = RCReader::instance();
         DBG(cerr << "reader->check_env_var(\"DODS_CONF\"): " << reader->check_env_var("DODS_CONF") << endl);
         DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl() << endl);
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 1);
@@ -332,10 +327,7 @@ public:
         DBG(cerr << "rc: " << rc << endl);
 
         my_putenv(rc);
-
-        RCReader::delete_instance();
-        RCReader::initialize_instance();
-        reader = RCReader::instance();
+        rcr->loadRC();
         DBG(cerr << "reader->get_validate_ssl(): " << reader->get_validate_ssl() << endl);
         CPPUNIT_ASSERT(reader->get_validate_ssl() == 0);
     }

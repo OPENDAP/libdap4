@@ -6,7 +6,7 @@ AT_INIT([getdap])
 #    [--generate=arg   Build the baseline file for test 'arg'],
 #    dnl Break the arg into the last thing (file | url) and all of the previous things (switches)
 #    [url=
-#    
+#
 #    echo "getdap $at_arg_generate > $at_arg_generate_parse.baseline 2>&1";
 #     ./dmr-test -x -p $at_arg_generate_parse > $at_arg_generate_parse.baseline 2>&1;
 #     echo "Built baseline for $at_arg_generate_parse";

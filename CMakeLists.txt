@@ -122,35 +122,7 @@ add_definitions(-D_REENTRANT)
 
 ### End old Solaris stuff
 
-### Set the SO/dylib versions
-
-# How to set these SO variables:
-# No interfaces changed, only implementations (good): ==> Increment REVISION.
-# Interfaces added, none removed (good): ==> Increment CURRENT,
-# increment AGE, set REVISION to 0.
-# Interfaces removed or changed (BAD, breaks upward compatibility):
-# ==> Increment CURRENT, set AGE and REVISION to 0.
-
-SET(DAPLIB_CURRENT 30)
-SET(DAPLIB_REVISION 0)
-SET(DAPLIB_AGE 3)
-
-SET(LIBDAP_SO_VERSION "${DAPLIB_CURRENT}:${DAPLIB_REVISION}:${DAPLIB_AGE}")
-
-SET(CLIENTLIB_CURRENT 8)
-SET(CLIENTLIB_REVISION 0)
-SET(CLIENTLIB_AGE 2)
-
-SET(CLIENTLIB_SO_VERSION "${CLIENTLIB_CURRENT}:${CLIENTLIB_REVISION}:${CLIENTLIB_AGE}")
-
-SET(SERVERLIB_CURRENT 14)
-SET(SERVERLIB_REVISION 0)
-SET(SERVERLIB_AGE 7)
-
-SET(SERVERLIB_SO_VERSION "${SERVERLIB_CURRENT}:${SERVERLIB_REVISION}:${SERVERLIB_AGE}")
-
 # Drop the 'gl' library for now. jhrg 6/8/25
-
 # add_subdirectory(gl)
 add_subdirectory(d4_ce)
 add_subdirectory(d4_function)
@@ -258,9 +230,29 @@ set_directory_properties(PROPERTIES
 )
 
 # Define libraries
+### Set the SO/dylib versions
+
+# How to set these SO variables:
+# No interfaces changed, only implementations (good): ==> Increment REVISION.
+# Interfaces added, none removed (good): ==> Increment CURRENT,
+# increment AGE, set REVISION to 0.
+# Interfaces removed or changed (BAD, breaks upward compatibility):
+# ==> Increment CURRENT, set AGE and REVISION to 0.
+
+SET(DAPLIB_CURRENT 30)
+SET(DAPLIB_REVISION 0)
+SET(DAPLIB_AGE 3)
+
+SET(CLIENTLIB_CURRENT 8)
+SET(CLIENTLIB_REVISION 0)
+SET(CLIENTLIB_AGE 2)
+
+SET(SERVERLIB_CURRENT 14)
+SET(SERVERLIB_REVISION 0)
+SET(SERVERLIB_AGE 7)
+
 add_library(parsers OBJECT ${GENERATED_PARSER_SRC})
 target_include_directories(parsers PRIVATE ${LIBXML2_INCLUDE_DIR})
-# target_include_directories(parsers PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(parsers PRIVATE ${LIBXML2_LIBRARIES})
 if(TIRPC_FOUND)
     target_include_directories(parsers PRIVATE ${TIRPC_INCLUDE_DIRS})
@@ -275,14 +267,18 @@ target_sources(dap PRIVATE
         $<TARGET_OBJECTS:d4_function_parser>
 )
 target_include_directories(dap PRIVATE ${LIBXML2_INCLUDE_DIR})
-# target_include_directories(dap PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 if(TIRPC_FOUND)
     target_include_directories(dap PRIVATE ${TIRPC_INCLUDE_DIRS})
     target_link_libraries(dap PRIVATE ${TIRPC_LIBRARIES})
 endif()
-# target_link_libraries(dap PRIVATE parsers d4_ce_parser d4_function_parser)
 target_link_libraries(dap PRIVATE ${LIBXML2_LIBRARIES} Threads::Threads)
-set_target_properties(dap PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${LIBDAP_SO_VERSION})
+# Derive VERSION/SOVERSION from libtool semantics
+math(EXPR DAPLIB_SONAME_MAJOR "${DAPLIB_CURRENT} - ${DAPLIB_AGE}")
+set(DAPLIB_VERSION "${DAPLIB_SONAME_MAJOR}.${DAPLIB_AGE}.${DAPLIB_REVISION}")
+set_target_properties(dap PROPERTIES
+		SOVERSION "${DAPLIB_SONAME_MAJOR}"
+		VERSION   "${DAPLIB_VERSION}"
+)
 
 # message(STATUS "INCLUDE PATHS for dap:")
 get_target_property(DAP_INCLUDES dap INCLUDE_DIRECTORIES)
@@ -302,7 +298,12 @@ endif()
 target_link_libraries(dapclient PRIVATE dap)
 target_link_libraries(dapclient PRIVATE ${CURL_LIBRARIES} Threads::Threads)
 
-set_target_properties(dapclient PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${CLIENTLIB_SO_VERSION})
+math(EXPR CLIENTLIB_SONAME_MAJOR "${CLIENTLIB_CURRENT} - ${CLIENTLIB_AGE}")
+set(CLIENTLIB_VERSION "${CLIENTLIB_SONAME_MAJOR}.${CLIENTLIB_AGE}.${CLIENTLIB_REVISION}")
+set_target_properties(dapclient PROPERTIES
+		SOVERSION "${CLIENTLIB_SONAME_MAJOR}"
+		VERSION   "${CLIENTLIB_VERSION}"
+)
 
 # message(STATUS "INCLUDE PATHS for dapclient:")
 get_target_property(DAPCLIENT_INCLUDES dapclient INCLUDE_DIRECTORIES)
@@ -316,7 +317,12 @@ if(TIRPC_FOUND)
     target_include_directories(dapserver PRIVATE ${TIRPC_INCLUDE_DIRS})
     target_link_libraries(dapserver PRIVATE ${TIRPC_LIBRARIES})
 endif()
-set_target_properties(dapserver PROPERTIES VERSION ${LIBDAP_VERSION}) # SOVERSION ${SERVERLIB_SO_VERSION})
+math(EXPR SERVERLIB_SONAME_MAJOR "${SERVERLIB_CURRENT} - ${SERVERLIB_AGE}")
+set(SERVERLIB_VERSION "${SERVERLIB_SONAME_MAJOR}.${SERVERLIB_AGE}.${SERVERLIB_REVISION}")
+set_target_properties(dapserver PROPERTIES
+		SOVERSION "${SERVERLIB_SONAME_MAJOR}"
+		VERSION   "${SERVERLIB_VERSION}"
+)
 
 # message(STATUS "INCLUDE PATHS for dapserver:")
 get_target_property(DAPSERVER_INCLUDES dapserver INCLUDE_DIRECTORIES)
@@ -382,6 +388,7 @@ set(SERVER_HDR DODSFilter.h AlarmHandler.h EventHandler.h Ancillary.h)
 install(FILES ${DAP_HDR} ${DAP_GENERATED_HDR} ${DAP4_ONLY_HDR} ${CLIENT_HDR} ${SERVER_HDR}
         DESTINATION include/libdap)
 
+include(CTest)      # defines the BUILD_TESTING option (defaults ON)
 enable_testing()
 add_subdirectory(tests)
 add_subdirectory(unit-tests)

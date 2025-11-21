@@ -380,27 +380,42 @@ std::vector<BaseType *> *Array::transform_to_dap2(AttrTable *, bool show_shared_
 }
 
 /**
- * Hackery that helps build a new D4Group from an old one. We need to re-wire the
- * D4Dimension (note the lack of an 's' at then end) that the copied Array objects
- * hold. This code does that. Note that these are 'weak pointers' so they should
- * never be freed - the D4Group object will take care of that.
- *
- * @note The order of the D4Dimension instances matches in 'old_dims' and 'new_dims'.
- *
- * @param old_dims The Old D4Dimension objects (held in a D4Dimensions instance)
- * @param new_dims The New D4Dimension objects.
+ * When a new DAP4 group is copied from an old one, we need to re-wire the DAP4 Dimensions
+ * of any variable under the new group since the variable's DAP4 Dimensions still points to
+ * to the old group's DAP4 Dimensions. We need to make them point to the DAP4 Dimensions
+ * under the new group.
+ * @param grp: The pointer to the new group.
  */
-void Array::update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims) {
+void Array::update_dimension_pointers(D4Group *grp) {
+
+    D4Group *temp_grp = grp;
+
+    // Somehow the for loop doesn't work. use the iterator instead.
     std::vector<dimension>::iterator i = _shape.begin(), e = _shape.end();
     while (i != e) {
-        D4Dimensions::D4DimensionsIter old_i = old_dims->dim_begin(), old_e = old_dims->dim_end();
-        while (old_i != old_e) {
-            if ((*i).dim == *old_i) {
-                (*i).dim = new_dims->find_dim((*old_i)->name());
-            }
-            ++old_i;
-        }
+        while (temp_grp) {
+            D4Dimensions *temp_dims = temp_grp->dims();
 
+            if ((*i).dim) {
+                // Here we need to use the dimension name, not the FQN
+                // to find if we have the dimension under this group.
+                string vd_dim_name = ((*i).dim)->name();
+                D4Dimension *temp_dim = temp_dims->find_dim(vd_dim_name);
+
+                // find, update this dimension of this array; go to the next dimension.
+                if (temp_dim) {
+                    (*i).dim = temp_dim;
+                    temp_grp = grp;
+                    break;
+                }
+            }
+
+            // Not find under this group, go to its parent.
+            if (temp_grp->get_parent())
+                temp_grp = static_cast<D4Group *>(temp_grp->get_parent());
+            else
+                temp_grp = nullptr;
+        }
         ++i;
     }
 }
@@ -954,9 +969,10 @@ void Array::print_dap4(XMLWriter &xml, bool constrained /* default: false*/) {
  @param constrained This argument should be TRUE if the Array is
  constrained, and FALSE otherwise.
  */
-void Array::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void Array::print_decl(FILE *out, string space, bool print_semi, bool constraint_info, bool constrained, bool child_grp,
+                       bool array_member) {
     ostringstream oss;
-    print_decl(oss, space, print_semi, constraint_info, constrained);
+    print_decl(oss, space, print_semi, constraint_info, constrained, child_grp, array_member);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
@@ -977,12 +993,13 @@ void Array::print_decl(FILE *out, string space, bool print_semi, bool constraint
  @param constrained This argument should be TRUE if the Array is
  constrained, and FALSE otherwise.
  */
-void Array::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained) {
+void Array::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained,
+                       bool is_root_grp, bool array_member) {
     if (constrained && !send_p())
         return;
 
     // print it, but w/o semicolon
-    var()->print_decl(out, space, false, constraint_info, constrained);
+    var()->print_decl(out, space, false, constraint_info, constrained, is_root_grp, true);
 
     for (Dim_citer i = _shape.begin(); i != _shape.end(); i++) {
         out << "[";
@@ -1114,9 +1131,9 @@ void Array::print_xml_writer_core(XMLWriter &xml, bool constrained, string tag) 
 
  @brief Print the value given the current constraint.
  */
-uint64_t Array::print_array(FILE *out, uint64_t index, unsigned int dims, uint64_t shape[]) {
+uint64_t Array::print_array(FILE *out, uint64_t index, unsigned int dims, uint64_t shape[], bool is_root_grp) {
     ostringstream oss;
-    uint64_t i = print_array(oss, index, dims, shape);
+    uint64_t i = print_array(oss, index, dims, shape, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 
     return i;
@@ -1133,17 +1150,19 @@ uint64_t Array::print_array(FILE *out, uint64_t index, unsigned int dims, uint64
 
  @brief Print the value given the current constraint.
  */
-uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, uint64_t shape[]) {
+uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, uint64_t shape[], bool is_root_grp) {
     if (dims == 1) {
         out << "{";
 
         // Added test in case this method is passed an array with no elements. jhrg 1/27/16
         if (shape[0] >= 1) {
             for (uint64_t i = 0; i < shape[0] - 1; ++i) {
-                var_ll(index++)->print_val(out, "", false);
+                var_ll(index)->print_val(out, "", false, is_root_grp);
+                index++;
                 out << ", ";
             }
-            var_ll(index++)->print_val(out, "", false);
+            var_ll(index)->print_val(out, "", false, is_root_grp);
+            index++;
         }
 
         out << "}";
@@ -1164,11 +1183,11 @@ uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, uin
         // but it's not wrong and this is really for debugging mostly. jhrg 1/28/16
         if (shape[0] > 0) {
             for (uint64_t i = 0; i < shape[0] - 1; ++i) {
-                index = print_array(out, index, dims - 1, shape + 1);
+                index = print_array(out, index, dims - 1, shape + 1, is_root_grp);
                 out << ",";
             }
 
-            index = print_array(out, index, dims - 1, shape + 1);
+            index = print_array(out, index, dims - 1, shape + 1, is_root_grp);
         }
 
         out << "}";
@@ -1177,13 +1196,13 @@ uint64_t Array::print_array(ostream &out, uint64_t index, unsigned int dims, uin
     }
 }
 
-void Array::print_val(FILE *out, string space, bool print_decl_p) {
+void Array::print_val(FILE *out, string space, bool print_decl_p, bool is_root_grp) {
     ostringstream oss;
-    print_val(oss, space, print_decl_p);
+    print_val(oss, space, print_decl_p, is_root_grp);
     fwrite(oss.str().data(), sizeof(char), oss.str().length(), out);
 }
 
-void Array::print_val(ostream &out, string space, bool print_decl_p) {
+void Array::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     // print the declaration if print decl is true.
     // for each dimension,
     //   for each element,
@@ -1191,7 +1210,7 @@ void Array::print_val(ostream &out, string space, bool print_decl_p) {
     // Add the `;'
 
     if (print_decl_p) {
-        print_decl(out, space, false, false, false);
+        print_decl(out, space, false, false, false, is_root_grp, false);
         out << " = ";
     }
 
@@ -1200,7 +1219,7 @@ void Array::print_val(ostream &out, string space, bool print_decl_p) {
     for (auto i = _shape.begin(); i != _shape.end() && index < dimensions(true); ++i)
         shape[index++] = dimension_size_ll(i, true);
 
-    print_array(out, 0, dimensions(true), shape);
+    print_array(out, 0, dimensions(true), shape, is_root_grp);
 
     delete[] shape;
     shape = nullptr;

@@ -2,7 +2,7 @@ Attributes {
     g {
         String long_name "test_varaible";
     }
-    
+
     g_dim_0 {
     	String long_name "test_first_dimension";
     }

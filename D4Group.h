@@ -80,6 +80,7 @@ public:
     // This method returned a D4Group * previously. jhrg 11/17/16
     BaseType *ptr_duplicate() override;
 
+    void update_variables_d4dimension_pointers();
     // TODO Wire up the new D4Dimensions object to have this group as its parent. jhrg 8/22/22
     /// Get the dimensions defined for this Group
     D4Dimensions *dims() {
@@ -151,12 +152,12 @@ public:
     void print_dap4(XMLWriter &xml, bool constrained = false) override;
 
     void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                    bool constrained = false) override;
+                    bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
     void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                    bool constrained = false) override;
+                    bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
 
-    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false) override;
 };

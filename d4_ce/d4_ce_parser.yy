@@ -11,12 +11,12 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -59,7 +59,7 @@ namespace libdap {
 }
 
 // Pass both the scanner and parser objects to both the automatically generated
-// parser and scanner. Note that in the actions bound to the rules, 'driver' 
+// parser and scanner. Note that in the actions bound to the rules, 'driver'
 // means use the 'D4ConstraintEvaluator' instance.
 %lex-param   { D4CEScanner  &scanner  }
 %parse-param { D4CEScanner  &scanner  }
@@ -71,7 +71,7 @@ namespace libdap {
 %initial-action
 {
     // Initialize the initial location. This is printed when the parser builds
-    // its own error messages - when the parse fails as opposed to when the 
+    // its own error messages - when the parse fails as opposed to when the
     // CE names a missing variables, ...
 
     @$.initialize (driver.expression());
@@ -81,7 +81,7 @@ namespace libdap {
    #include <iostream>
    #include <cstdlib>
    #include <fstream>
-   
+
    #include "BaseType.h"
    #include "DMR.h"
    #include "D4Group.h"
@@ -110,8 +110,8 @@ namespace libdap {
 
 %token
     END  0  "end of file"
-  
-%token 
+
+%token
     SEMICOLON ";"
     PIPE "|"
 
@@ -142,7 +142,7 @@ namespace libdap {
 
     GROUP_SEP "/"
     PATH_SEP "."
-    
+
 %%
 
 %start expression;
@@ -164,17 +164,17 @@ dimension : id "=" index
 clauses : clause { $$ = $1; }
 | clauses ";" clause { $$ = $1 && $3; }
 ;
-    
+
 // Change: I moved the pop_basetype() call out of the 'fields'
 // actions in 'subset' so that I could push the basetype for
 // all of the cases. That way I'm sure to have a top_baseype()
 // when processing the 'filter' part of the grammar. I need the
 // the top basetype so that I know which Sequence to use.
 // jhrg 4/23/16
-               
+
 clause : subset { $$ = $1; driver.pop_basetype(); }
 
-// For the DAP4 at this time (3/18/15) filters apply only to D4Sequences 
+// For the DAP4 at this time (3/18/15) filters apply only to D4Sequences
 
 | subset "|" filter { driver.pop_basetype(); $$ = $1 && $3; }
 ;
@@ -183,7 +183,7 @@ clause : subset { $$ = $1; driver.pop_basetype(); }
 // Note that this is a fairly long production rule with a number
 // of different right hand sides spanning about 110 lines.
 // jhrg 4/8/16
-subset : id 
+subset : id
 {
     BaseType *btp = 0;
     if (driver.top_basetype()) {
@@ -192,18 +192,18 @@ subset : id
     else {
         btp = driver.dmr()->root()->find_var($1);
     }
-    
+
     if (!btp)
         driver.throw_not_found($1, "id");
 
     $$ = driver.mark_variable(btp);
-    
+
     // push the basetype so that it is
     // accessible if/while filters are parsed
     driver.push_basetype(btp);
 }
 
-| id indexes 
+| id indexes
 {
     BaseType *btp = 0;
     if (driver.top_basetype()) {
@@ -212,22 +212,22 @@ subset : id
     else {
         btp = driver.dmr()->root()->find_var($1);
     }
-    
+
     if (!btp)
         driver.throw_not_found($1, "id indexes");
-        
+
     if (btp->type() != dods_array_c)
         driver.throw_not_array($1, "id indexes");
-        
+
     $$ = driver.mark_variable(btp);
-    
+
     // push the basetype so that it is
     // accessible if/while filters are parsed
     driver.push_basetype(btp);
 }
 
 // Note this case is '| id fields'
-| id 
+| id
 {
     BaseType *btp = 0;
     if (driver.top_basetype()) {
@@ -239,11 +239,11 @@ subset : id
 
     if (!btp)
         driver.throw_not_found($1, "id fields");
-    
+
     if (btp->type() == dods_array_c) {
         if (btp->var() && !btp->var()->is_constructor_type())
             throw Error(no_such_variable, "The constraint expression referenced a variable that must be a Structure or Sequence to be used with {}.");
-            
+
         // This call also tests the btp to make sure it's an array
         driver.mark_array_variable(btp);
     }
@@ -253,15 +253,15 @@ subset : id
         if (!btp->is_constructor_type())
             throw Error(no_such_variable, "The constraint expression referenced a variable that must be a Structure or Sequence to be used with {}.");
     }
-    
+
     // push the basetype so that it is
     // accessible when fields and if/while filters are parsed
     driver.push_basetype(btp);
-} 
-fields 
-{ 
-    //driver.pop_basetype(); 
-    $$ = true; 
+}
+fields
+{
+    //driver.pop_basetype();
+    $$ = true;
 }
 
 // Note this case is '| id indexes fields'
@@ -278,29 +278,29 @@ fields
 
     if (!btp)
         driver.throw_not_found($1, "id indexes fields");
-    
+
     if (btp->type() != dods_array_c)
         driver.throw_not_array($1, "id indexes fields");
 
     // This call also tests the btp to make sure it's an array
     driver.mark_array_variable(btp);
-    
+
     if (!btp->var()->is_constructor_type())
         throw Error(no_such_variable, "The constraint expression referenced a variable that must be a Structure or Sequence to be used with {}.");
-      
-    driver.push_basetype(btp->var());       
-} 
-fields 
+
+    driver.push_basetype(btp->var());
+}
+fields
 {
-    $$ = true; 
+    $$ = true;
 }
 ;
 
 // push_index stores the index in the D4ConstraintEvaluator
-indexes : index 
-{ 
-    driver.push_index($1); 
-    $$ = true; 
+indexes : index
+{
+    driver.push_index($1);
+    $$ = true;
 }
 | index { driver.push_index($1); } indexes { $$ = $3; }
 ;
@@ -314,7 +314,7 @@ index   : "[" "]" { $$ = driver.make_index(); }
 | "[" WORD ":" "]" { $$ = driver.make_index($2, 1); }
 | "[" WORD ":" WORD ":" "]" { $$ = driver.make_index($2, $4); }
 ;
-        
+
 fields : "{" clauses "}" { $$ = $2; }
 ;
 
@@ -335,12 +335,12 @@ filter : predicate { $$ = true; }
 
 predicate : id op id
 { driver.add_filter_clause($2, $1, $3); $$ = true; }
-          
-| id op id op id 
-{ 
-    driver.add_filter_clause($2, $1, $3); 
-    driver.add_filter_clause($4, $3, $5); 
-    $$ = true; 
+
+| id op id op id
+{
+    driver.add_filter_clause($2, $1, $3);
+    driver.add_filter_clause($4, $3, $5);
+    $$ = true;
 
 }
 | "ND" "=" id { throw Error(malformed_expr, "The 'ND' operator is not currently supported."); }
@@ -350,7 +350,7 @@ predicate : id op id
 // for a discussion of filters that's quite a bit longer than the current
 // draft spec. << and >> are the 'less than bbox' and '> bbox' operations
 // that I'm not so sure about now; @= is the same as *= and is the mapping
-// operation. jhrg 3/18/15 
+// operation. jhrg 3/18/15
 op : "<" {$$ = "<";}
    | ">" {$$ = ">";}
    | "<=" {$$ = "<=";}
@@ -395,7 +395,7 @@ group : "/" name
 }
 ;
 
-path : name 
+path : name
 {
     $$ = $1;
 }
@@ -416,11 +416,11 @@ path : name
 // can be used for escaping stuff). However, the two cannot be mixed - if the
 // parser id passed"Point%20Break" the %20 will remain as a literal in the STRING.
 // jhrg 10/20/16
-name : WORD 
+name : WORD
 {
     $$=www2id($1);
 }
-| STRING 
+| STRING
 {
     $$=driver.remove_quotes($1);
 }
@@ -446,6 +446,6 @@ static int yylex(libdap::D4CEParser::semantic_type *yylval,
 {
     if (driver.trace_scanning())
         scanner.set_debug(true);
-    
+
     return( scanner.yylex(yylval, loc) );
 }

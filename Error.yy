@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1997,1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -47,7 +47,7 @@ using namespace libdap;
 // These macros are used to access the `arguments' passed to the parser. A
 // pointer to an error object and a pointer to an integer status variable are
 // passed in to the parser within a structure (which itself is passed as a
-// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *. 
+// pointer). Note that the ERROR macro explicitly casts OBJ to an ERROR *.
 
 #define ERROR_OBJ(arg) ((Error *)((parser_arg *)(arg))->_object)
 #define STATUS(arg) ((parser_arg *)(arg))->_status
@@ -110,18 +110,18 @@ description:	code message { $$ = $1 && $2; }
                 | code { $$ = $1; }
 ;
 
-code:		SCAN_CODE '=' SCAN_INT ';' 
-		{ 
+code:		SCAN_CODE '=' SCAN_INT ';'
+		{
 		    ERROR_OBJ(arg)->set_error_code((ErrorCode)$3);
-		    $$ = true; 
+		    $$ = true;
 		}
 ;
 
-message:	SCAN_MSG '=' SCAN_STR 
-		{ 
+message:	SCAN_MSG '=' SCAN_STR
+		{
 		    ERROR_OBJ(arg)->set_error_message($3);
-		} 
-		';' 
+		}
+		';'
                 {
 		    $$ = true;
 		}
@@ -139,4 +139,3 @@ Errorerror(parser_arg *, const string &s)
 
   throw Error(unknown_error, msg);
 }
-

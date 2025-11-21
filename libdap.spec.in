@@ -18,7 +18,7 @@ BuildRequires: pkgconfig
 # line
 Prefix: %{_prefix}
 
-%description 
+%description
 The libdap library contains an implementation of DAP2 and DAP4. This
 package contains the library, dap-config, getdap and getdap4. The
 script dap-config simplifies using the library in other projects. The
@@ -64,6 +64,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_bindir}/getdap
 %{_bindir}/getdap4
+%{_bindir}/dmr_memory_cache
 %{_libdir}/libdap.so.*
 %{_libdir}/libtest-types.a
 %{_libdir}/libdapclient.so.*
@@ -89,7 +90,7 @@ rm -rf $RPM_BUILD_ROOT
 
 * Mon Sep 13 2010 James Gallagehr <jgallagher@opendap.org> - 3.11.0
 - 3.11.0 rc 1
- 
+
 * Mon Feb  1 2010 James Gallagher <jgallagher@opendap.org> - 3.10.0
 - Removed deflate; general update for 3.10.0 release
 
@@ -143,10 +144,10 @@ rm -rf $RPM_BUILD_ROOT
 * Wed May 11 2005 James Gallagher <jimg@zoey.opendap.org> 3.5.0-1
 - Removed version numbers from .a and includes directory.
 
-* Tue May 10 2005 James Gallagher <jimg@zoey.opendap.org> 
+* Tue May 10 2005 James Gallagher <jimg@zoey.opendap.org>
 - Mostly works. Problems: Not sure if the %%post script stuff works.
 - Must also address the RHEL3 package deps issue (curl 7.12.0 isn't available;
   not sure about xml2 2.5.7). At least the deps fail when they are not present!
 
-* Fri May  6 2005 James Gallagher <jimg@zoey.opendap.org> 
+* Fri May  6 2005 James Gallagher <jimg@zoey.opendap.org>
 - Initial build.
