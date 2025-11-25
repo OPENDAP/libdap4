@@ -24,13 +24,13 @@
 
 #include "config.h"
 
+#include <string>
+#include <unistd.h> // getopt
+#if 0
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
-
-#include <string>
-#include <unistd.h> // getopt
-
+#endif
 #include "Error.h"
 #include "GNURegex.h"
 #include "debug.h"

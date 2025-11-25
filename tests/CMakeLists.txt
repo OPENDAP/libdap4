@@ -95,5 +95,5 @@ add_custom_target(clean-tests
 include(das-tests)
 include(dds-tests)
 include(dmr-tests)
-include (getdap-tests)
+include(getdap-tests)
 include(expr-tests)
