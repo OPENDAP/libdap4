@@ -30,7 +30,7 @@ dnl people building the source, it's not customary to supply a build number (i.e
 dnl if you're building the code for your own use, a build number seems like overkill).
 dnl jhrg 3/16/21
 AC_ARG_WITH([build],
-            [AS_HELP_STRING([--with-build=<number>],[Inject the integer build number (default is to not define a build number)])],
+            [AS_HELP_STRING([--with-build=<number><],[Inject the integer build number (default is to not define a build number)])],
             [build_number=${withval}], [build_number=])
 
 dnl If a build number is given and valid (it must be an integer), use it. If it's
@@ -66,12 +66,12 @@ dnl AC_SUBST(DAP2_DDX)
 dnl AC_DEFINE(DAP3_2_DDX, 1, [Build the DAP 3.2 version of the DDX])
 dnl AC_SUBST(DAP3_2_DDX)
 
-AS_IF([echo $PACKAGE_VERSION | grep '^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$'],
+AS_IF([echo $PACKAGE_VERSION | grep -q '^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$'],
       [PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$@\1@'`
        PACKAGE_MINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$@\2@'`
        PACKAGE_PATCH_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$@\3@'`
        PACKAGE_BUILD_NUMBER=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$@\4@'`],
-      [AS_IF([echo $PACKAGE_VERSION | grep '^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$'],
+      [AS_IF([echo $PACKAGE_VERSION | grep -q '^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$'],
        [PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\1@'`
         PACKAGE_MINOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\2@'`
         PACKAGE_PATCH_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)$@\3@'`
@@ -476,14 +476,19 @@ AC_CHECK_LIB([crypto], [OpenSSL_add_all_algorithms],
 	[CRYPTO_LIBS=""])
 AC_SUBST([CRYPTO_LIBS])
 
+# AM_PATH_CPPUNIT(1.12.0,
+# 	[AM_CONDITIONAL([CPPUNIT], [true])],
+#	[
+#	    PKG_CHECK_MODULES(CPPUNIT, [cppunit >= 1.12.0],
+#		[AM_CONDITIONAL([CPPUNIT], [true])],
+#		[AM_CONDITIONAL([CPPUNIT], [false])]
+#	    )
+#	]
+# )
+
 AM_PATH_CPPUNIT(1.12.0,
 	[AM_CONDITIONAL([CPPUNIT], [true])],
-	[
-	    PKG_CHECK_MODULES(CPPUNIT, [cppunit >= 1.12.0],
-		[AM_CONDITIONAL([CPPUNIT], [true])],
-		[AM_CONDITIONAL([CPPUNIT], [false])]
-	    )
-	]
+	[AM_CONDITIONAL([CPPUNIT], [false])]
 )
 
 DODS_DEBUG_OPTION
