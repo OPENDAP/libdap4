@@ -76,7 +76,7 @@ void D4Group::m_duplicate(const D4Group &g) {
     //        However, probably due to the implementation limitation of the way to handle group's parent pointer
     //        or due to the handling of compilers for the recursive groups,
     //        this group's parent group still points to g's parent group. So once g's resource is released,
-    //        it will cause segmentation fault when a variable's D4Dimension is actually located in one of its
+    //        it will cause a segmentation fault when a variable's D4Dimension is actually located in one of its
     //        ancestor's group. We have to update the D4Dimensions of all the variables from root. This is actually
     //        called in the copy constructor of the DMR class in the DMR.cc. Use the copy method of a DAP4 group should
     //        start from the root. KY 2025-10-30
@@ -86,11 +86,12 @@ void D4Group::m_duplicate(const D4Group &g) {
         d_enum_defs = new D4EnumDefs(*g.d_enum_defs);
         d_enum_defs->set_parent(this);
     }
+
     // groups
     groupsCIter i = g.d_groups.begin();
     while (i != g.d_groups.end()) {
         // Only D4Groups are in the d_groups container.
-        auto ng = static_cast<D4Group *>((*i++)->ptr_duplicate());
+        auto ng = dynamic_cast<D4Group *>((*i++)->ptr_duplicate());
         add_group_nocopy(ng);
     }
 
@@ -526,11 +527,7 @@ void D4Group::intern_data(/*Crc32 &checksum, DMR &dmr, ConstraintEvaluator &eval
  * @param filter Unused
  * @exception Error is thrown if the value needs to be read and that operation fails.
  */
-void D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter) {
-    groupsIter g = d_groups.begin();
-    while (g != d_groups.end())
-        (*g++)->serialize(m, dmr, filter);
-
+void D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, bool filter) {
     // Specialize how the top-level variables in any Group are sent; include
     // a checksum for them. A subset operation might make an interior set of
     // variables, but the parent structure will still be present and the checksum
@@ -538,36 +535,34 @@ void D4Group::serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &
     // to sort out which variables are the 'real' top-level variables and instead
     // simply computes the CRC for whatever appears as a variable in the root
     // group.
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
+    for (auto i : d_vars) {
         // Only send the stuff in the current subset.
-        if ((*i)->send_p()) {
+        if (i->send_p()) {
             if (dmr.use_checksums())
                 m.reset_checksum();
 
-            DBG(cerr << "Serializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
-            (*i)->serialize(m, dmr, filter);
+            DBG(cerr << "Serializing variable " << i->type_name() << " " << i->name() << endl);
+            i->serialize(m, dmr, filter);
             if (dmr.use_checksums()) {
                 m.put_checksum();
-                DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << (*i)->name() << endl);
+                DBG(cerr << "Wrote CRC32: " << m.get_checksum() << " for " << i->name() << endl);
             }
         }
+    }
+
+    for (auto g : d_groups) {
+        g->serialize(m, dmr, filter);
     }
 }
 
 void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
-    groupsIter g = d_groups.begin();
-    while (g != d_groups.end()) {
-        DBG(cerr << "Deserializing group " << (*g)->name() << endl);
-        (*g++)->deserialize(um, dmr);
-    }
     // Specialize how the top-level variables in any Group are received; read
     // their checksum and store the value in a magic attribute of the variable
-    for (Vars_iter i = d_vars.begin(); i != d_vars.end(); i++) {
-        DBG(cerr << "Deserializing variable " << (*i)->type_name() << " " << (*i)->name() << endl);
-        (*i)->deserialize(um, dmr);
+    for (auto i : d_vars) {
+        DBG(cerr << "Deserializing variable " << i->type_name() << " " << i->name() << endl);
+        i->deserialize(um, dmr);
 
         if (dmr.use_checksums()) {
-
             D4Attribute *a = new D4Attribute("DAP4_Checksum_CRC32", attr_str_c);
             // This call to um.get_checksum_str() calls um.get_Checksum which
             // is what reads the checksum bytes from the input stream.
@@ -579,9 +574,14 @@ void D4Group::deserialize(D4StreamUnMarshaller &um, DMR &dmr) {
             else
                 a->add_value("source:little-endian");
 #endif
-            DBG(cerr << "Read CRC32: " << crc << " for " << (*i)->name() << endl);
-            (*i)->attributes()->add_attribute_nocopy(a);
+            DBG(cerr << "Read CRC32: " << crc << " for " << i->name() << endl);
+            i->attributes()->add_attribute_nocopy(a);
         }
+    }
+
+    for (auto *g : d_groups) {
+        DBG(cerr << "Deserializing group " << g->name() << endl);
+        g->deserialize(um, dmr);
     }
 }
 

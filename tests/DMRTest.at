@@ -422,6 +422,9 @@ DMR_TRANS_UNIVERSAL([test_array_14.xml], [pass])
 DMR_TRANS_UNIVERSAL([test_simple_6.2.xml], [pass])
 DMR_TRANS_UNIVERSAL([test_simple_6.3.xml], [pass])
 
+DMR_TRANS_UNIVERSAL([root_and_child_group_1.xml], [pass])
+DMR_TRANS_UNIVERSAL([root_and_child_group_2.xml], [pass])
+
 DMR_INTERN([test_array_9.xml], [pass])
 DMR_INTERN([test_array_12.xml], [pass])
 DMR_INTERN([test_array_13.xml], [pass])
