@@ -2,7 +2,7 @@
 
 <!-- Example in the CE section of the DAP4 spec. jhrg 1/2/13 -->
 
-<Dataset name="vol_1_ce_9" dapVersion="4.0" dmrVersion="1.0" xml:base="file:dap4/vol_1_ce_9.xml"
+<Dataset name="vol_1_ce_9" dapVersion="4.0" dmrVersion="2.0" xml:base="file:dap4/vol_1_ce_9.xml"
   xmlns="http://xml.opendap.org/ns/DAP/4.0#" xmlns:dap="http://xml.opendap.org/ns/DAP/4.0#">
   <Sequence name="Points1">
     <Int32 name="x">
