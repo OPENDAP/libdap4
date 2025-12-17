@@ -69,8 +69,11 @@ private:
     /// String version of the DAP protocol number
     std::string d_dap_version = "4.0";
 
-    /// The version of the DMR document
-    std::string d_dmr_version = "1.0";
+    /// The version of the DMR document.
+    /// Version 1.0 is the original serialization scheme - Groups were serialized first,
+    /// then the top-level variables.
+    /// The 2.0 version indicate the DAP4 Serialization bug fix.
+    std::string d_dmr_version = "2.0";
 
     /// The URL for the request base
     std::string d_request_xml_base;
