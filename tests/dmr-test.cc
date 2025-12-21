@@ -48,6 +48,7 @@
 #include "D4TestTypeFactory.h"
 #include "TestCommon.h"
 
+#include "D4CEScanner.h"
 #include "D4ConstraintEvaluator.h"
 #include "D4FunctionEvaluator.h"
 #include "D4RValue.h"
@@ -81,6 +82,97 @@ void logd(const string &msg, ostream &ostrm = cerr) {
     // Read lines from the stringstream until the end
     while (std::getline(ss, msg_line)) {
         ostrm << "# " << msg_line << "\n";
+    }
+}
+
+void test_scanner(const string &input) {
+    const char *prompt = "ce-scanner: ";
+    istringstream iss(input);
+    auto s_type = make_unique<D4CEParser::semantic_type>();
+    auto loc = make_unique<location>();
+    D4CEScanner ce_scanner(iss);
+
+    cout << prompt << flush; // first prompt
+
+    int tok;
+    while ((tok = ce_scanner.yylex(s_type.get(), loc.get()))) {
+        switch (tok) {
+        case D4CEParser::token::LBRACKET:
+            cout << "LBRACKET" << endl;
+            break;
+        case D4CEParser::token::RBRACKET:
+            cout << "RBRACKET" << endl;
+            break;
+        case D4CEParser::token::COLON:
+            cout << "COLON" << endl;
+            break;
+        case D4CEParser::token::COMMA:
+            cout << "COMMA" << endl;
+            break;
+        case D4CEParser::token::SEMICOLON:
+            cout << "SEMICOLON" << endl;
+            break;
+        case D4CEParser::token::PIPE:
+            cout << "PIPE" << endl;
+            break;
+        case D4CEParser::token::LBRACE:
+            cout << "LBRACE" << endl;
+            break;
+        case D4CEParser::token::RBRACE:
+            cout << "RBRACE" << endl;
+            break;
+        case D4CEParser::token::GROUP_SEP:
+            cout << "GROUP_SEP" << endl;
+            break;
+        case D4CEParser::token::PATH_SEP:
+            cout << "PATH_SEP" << endl;
+            break;
+        case D4CEParser::token::ASSIGN:
+            cout << "ASSIGN" << endl;
+            break;
+#if 0
+            case SCAN_FLOAT32:
+                cout << "FLOAT32" << endl;
+                break;
+            case SCAN_FLOAT64:
+                cout << "FLOAT64" << endl;
+                break;
+            case SCAN_STRING:
+                cout << "STRING" << endl;
+                break;
+            case SCAN_URL:
+                cout << "Url" << endl;
+                break;
+            case SCAN_WORD:
+                cout << "WORD: " << ddslval.word << endl;
+                break;
+            case '{':
+                cout << "Left Brace" << endl;
+                break;
+            case '}':
+                cout << "Right Brace" << endl;
+                break;
+            case '[':
+                cout << "Left Bracket" << endl;
+                break;
+            case ']':
+                cout << "Right Bracket" << endl;
+                break;
+            case ';':
+                cout << "Semicolon" << endl;
+                break;
+            case ':':
+                cout << "Colon" << endl;
+                break;
+            case '=':
+                cout << "Assignment" << endl;
+                break;
+#endif
+        default:
+            cout << "Error: Unrecognized input" << endl;
+            break;
+        }
+        cout << prompt << flush; // print prompt after output
     }
 }
 
