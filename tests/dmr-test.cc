@@ -103,6 +103,12 @@ void test_scanner(const string &input) {
         case D4CEParser::token::COLON:
             cout << "COLON" << endl;
             break;
+        case D4CEParser::token::LPAREN:
+            cout << "LPAREN" << endl;
+            break;
+        case D4CEParser::token::RPAREN:
+            cout << "RPAREN" << endl;
+            break;
         case D4CEParser::token::COMMA:
             cout << "COMMA" << endl;
             break;
@@ -127,49 +133,49 @@ void test_scanner(const string &input) {
         case D4CEParser::token::ASSIGN:
             cout << "ASSIGN" << endl;
             break;
-#if 0
-            case SCAN_FLOAT32:
-                cout << "FLOAT32" << endl;
-                break;
-            case SCAN_FLOAT64:
-                cout << "FLOAT64" << endl;
-                break;
-            case SCAN_STRING:
-                cout << "STRING" << endl;
-                break;
-            case SCAN_URL:
-                cout << "Url" << endl;
-                break;
-            case SCAN_WORD:
-                cout << "WORD: " << ddslval.word << endl;
-                break;
-            case '{':
-                cout << "Left Brace" << endl;
-                break;
-            case '}':
-                cout << "Right Brace" << endl;
-                break;
-            case '[':
-                cout << "Left Bracket" << endl;
-                break;
-            case ']':
-                cout << "Right Bracket" << endl;
-                break;
-            case ';':
-                cout << "Semicolon" << endl;
-                break;
-            case ':':
-                cout << "Colon" << endl;
-                break;
-            case '=':
-                cout << "Assignment" << endl;
-                break;
-#endif
+        case D4CEParser::token::EQUAL:
+            cout << "EQUAL" << endl;
+            break;
+        case D4CEParser::token::NOT_EQUAL:
+            cout << "NOT_EQUAL" << endl;
+            break;
+        case D4CEParser::token::GREATER:
+            cout << "GREATER" << endl;
+            break;
+        case D4CEParser::token::GREATER_EQUAL:
+            cout << "GREATER_EQUAL" << endl;
+            break;
+        case D4CEParser::token::LESS:
+            cout << "LESS" << endl;
+            break;
+        case D4CEParser::token::LESS_EQUAL:
+            cout << "LESS_EQUAL" << endl;
+            break;
+        case D4CEParser::token::REGEX_MATCH:
+            cout << "REGEX_MATCH" << endl;
+            break;
+        case D4CEParser::token::LESS_BBOX:
+            cout << "LESS_BBOX" << endl;
+            break;
+        case D4CEParser::token::GREATER_BBOX:
+            cout << "GREATER_BBOX" << endl;
+            break;
+        case D4CEParser::token::MASK:
+            cout << "MASK" << endl;
+            break;
+        case D4CEParser::token::STRING:
+            cout << "STRING" << endl;
+            break;
+        case D4CEParser::token::WORD:
+            cout << "WORD: " << endl;
+            break;
         default:
             cout << "Error: Unrecognized input" << endl;
             break;
         }
+#if 0
         cout << prompt << flush; // print prompt after output
+#endif
     }
 }
 
@@ -466,6 +472,7 @@ int main(int argc, char *argv[]) {
     try {
         if (scan && !ce.empty()) {
             test_scanner(ce);
+            return 0;
         }
 
         if (parse) {

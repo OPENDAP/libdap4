@@ -89,7 +89,7 @@ typedef libdap::D4CEParser::token token;
    is the DAP2 comment character.
 
    Having the characters !, ~, and @ in the second set of the chars allowed
-   in a WORD token meant that 'var!=' parsed as WORD == 'var!' and '=' ane not
+   in a WORD token meant that 'var!=' parsed as WORD == 'var!' and '=' and not
    'var' and '!='. I see that in DAP2 I did not include these in the definition
    of a WORD.
    jhrg 4/29/16 */
@@ -111,6 +111,8 @@ loc->step();
 "["     return token::LBRACKET;
 "]"     return token::RBRACKET;
 ":"     return token::COLON;
+"("     return token::LPAREN;
+")"     return token::RPAREN;
 ","		return token::COMMA;
 ";"		return token::SEMICOLON;
 "|"     return token::PIPE;
