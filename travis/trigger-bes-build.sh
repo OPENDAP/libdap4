@@ -46,10 +46,17 @@ git push "https://${GIT_UID}:${GIT_PSWD}@github.com/OPENDAP/libdap4.git" "${libd
 
 git clone --depth 1 https://github.com/opendap/bes
 
+test_deploy=""
+if [[ "$TRAVIS_BRANCH" == *"-test-deploy" ]]
+then
+  test_deploy=" test-deploy"
+fi
+
+
 cd bes
 git checkout master
 
-echo "${LIBDAP4_SNAPSHOT}" > libdap4-snapshot
+echo "${LIBDAP4_SNAPSHOT}$test_deploy" > libdap4-snapshot
 
 cat libdap4-snapshot  >&2
 
