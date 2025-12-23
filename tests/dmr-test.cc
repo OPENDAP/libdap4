@@ -173,9 +173,6 @@ void test_scanner(const string &input) {
             cout << "Error: Unrecognized input" << endl;
             break;
         }
-#if 0
-        cout << prompt << flush; // print prompt after output
-#endif
     }
 }
 
