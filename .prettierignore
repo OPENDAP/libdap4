@@ -11,5 +11,7 @@ unit-tests/diff-match-patch
 tests/*-testsuite/**
 tests/dmrset/**
 
+retired/**
+
 # Ignore other non-source text
 build/**

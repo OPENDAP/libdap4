@@ -87,7 +87,7 @@ void logd(const string &msg, ostream &ostrm = cerr) {
 
 void test_scanner(const string &input) {
     istringstream iss(input);
-    auto s_type =  make_unique<D4CEParser::semantic_type>(); //new D4CEParser::semantic_type();
+    auto s_type = make_unique<D4CEParser::semantic_type>();
     auto loc = make_unique<location>();
     D4CEScanner ce_scanner(iss);
 
