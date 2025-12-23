@@ -83,7 +83,11 @@ typedef libdap::D4CEParser::token token;
 
 %option batch
 
+/* quote is a special state for quoted strings. value is a special state
+   for values that are used for value-based-subsetting. Values for subsetting
+   cannot contain escaped characters. jhrg 12/22/25 */
 %x quote
+%x value
 
 /* This pattern just ensures that a word does not start with '#' which
    is the DAP2 comment character.
@@ -111,8 +115,6 @@ loc->step();
 "["     return token::LBRACKET;
 "]"     return token::RBRACKET;
 ":"     return token::COLON;
-"("     return token::LPAREN;
-")"     return token::RPAREN;
 ","		return token::COMMA;
 ";"		return token::SEMICOLON;
 "|"     return token::PIPE;
@@ -166,6 +168,22 @@ loc->step();
 <quote><<EOF>>	{
                   BEGIN(INITIAL);   /* resetting the state is needed for reentrant parsers */
                   YY_FATAL_ERROR("Unterminated quote");
+                }
+
+[(]    { BEGIN(value); yymore(); }
+
+<value>[^)]*  yymore(); /* Anything that's not a right paren */
+
+<value>[)]  {
+                /* A right paren in the 'value' state indicates the end of the subset value */
+                BEGIN(INITIAL);
+                yylval->build<std::string>(yytext);
+                return token::VALUE;
+            }
+
+<value><<EOF>>	{
+                  BEGIN(INITIAL);   /* resetting the state is needed for reentrant parsers */
+                  YY_FATAL_ERROR("Unterminated subset value");
                 }
 
 .   {

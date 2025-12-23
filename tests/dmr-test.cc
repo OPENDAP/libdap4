@@ -103,12 +103,6 @@ void test_scanner(const string &input) {
         case D4CEParser::token::COLON:
             cout << "COLON" << endl;
             break;
-        case D4CEParser::token::LPAREN:
-            cout << "LPAREN" << endl;
-            break;
-        case D4CEParser::token::RPAREN:
-            cout << "RPAREN" << endl;
-            break;
         case D4CEParser::token::COMMA:
             cout << "COMMA" << endl;
             break;
@@ -163,12 +157,16 @@ void test_scanner(const string &input) {
         case D4CEParser::token::MASK:
             cout << "MASK" << endl;
             break;
-        case D4CEParser::token::STRING:
-            cout << "STRING: " << s_type->as<std::string>() << endl;
-            s_type->destroy<std::string>();
-            break;
         case D4CEParser::token::WORD:
             cout << "WORD: " << s_type->as<std::string>() << endl;
+            s_type->destroy<std::string>();
+            break;
+        case D4CEParser::token::VALUE:
+            cout << "VALUE: " << s_type->as<std::string>() << endl;
+            s_type->destroy<std::string>();
+            break;
+        case D4CEParser::token::STRING:
+            cout << "STRING: " << s_type->as<std::string>() << endl;
             s_type->destroy<std::string>();
             break;
         default:

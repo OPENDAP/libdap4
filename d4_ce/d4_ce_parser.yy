@@ -99,6 +99,7 @@ namespace libdap {
 
 // The strings used in the token definitions are used for error messages
 %token <std::string> WORD "word"
+%token <std::string> VALUE "value"
 %token <std::string> STRING "string"
 
 // %type is used to set the return type of non-terminals; %token sets the
@@ -118,9 +119,6 @@ namespace libdap {
     LBRACKET "["
     RBRACKET "]"
     COLON ":"
-
-    LPAREN "("
-    RPAREN ")"
 
     LBRACE "{"
     RBRACE "}"
