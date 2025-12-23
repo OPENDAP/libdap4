@@ -87,12 +87,12 @@ void logd(const string &msg, ostream &ostrm = cerr) {
 
 void test_scanner(const string &input) {
     istringstream iss(input);
-    auto s_type = new D4CEParser::semantic_type(); // make_unique<D4CEParser::semantic_type>();
-    auto loc = new location();                     // make_unique<location>();
+    auto s_type =  make_unique<D4CEParser::semantic_type>(); //new D4CEParser::semantic_type();
+    auto loc = make_unique<location>();
     D4CEScanner ce_scanner(iss);
 
     int tok;
-    while ((tok = ce_scanner.yylex(s_type /*.get()*/, loc /*.get()*/))) {
+    while ((tok = ce_scanner.yylex(s_type.get(), loc.get()))) {
         switch (tok) {
         case D4CEParser::token::LBRACKET:
             cout << "LBRACKET" << endl;
@@ -165,9 +165,11 @@ void test_scanner(const string &input) {
             break;
         case D4CEParser::token::STRING:
             cout << "STRING: " << s_type->as<std::string>() << endl;
+            s_type->destroy<std::string>();
             break;
         case D4CEParser::token::WORD:
             cout << "WORD: " << s_type->as<std::string>() << endl;
+            s_type->destroy<std::string>();
             break;
         default:
             cout << "Error: Unrecognized input" << endl;
