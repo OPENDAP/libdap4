@@ -20,7 +20,7 @@ exclude: |
 repos:
   # --- Baseline sanity checks (fast, safe) ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
         # This is lame, and there's supposed to be a better way, but I cannot
