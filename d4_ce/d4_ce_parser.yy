@@ -314,6 +314,19 @@ index   : "[" "]" { $$ = driver.make_index(); }
 | "[" WORD ":" WORD ":" WORD "]" { $$ = driver.make_index($2, $4, $6); }
 | "[" WORD ":" "]" { $$ = driver.make_index($2, 1); }
 | "[" WORD ":" WORD ":" "]" { $$ = driver.make_index($2, $4); }
+
+// Value-based subsetting rules. the stride must be an integer.
+// I don't think this makes much sense. "[" VALUE "]"
+| "[" VALUE ":" VALUE "]" { $$ = driver.make_value_based_index($2, $4); }
+| "[" VALUE ":" WORD ":" VALUE "]" { $$ = driver.make_value_based_index($2, $4, $6); }
+
+// Value-based subsetting starting with a value and going to the end.
+// Add these once the initial two are working. jhrg 12/23/25
+// | "[" VALUE ":" "]" { $$ = driver.make_value_based_index($2, 1); }
+// | "[" VALUE ":" WORD ":" "]" { $$ = driver.make_value_based_index($2, $4); }
+// Value-based subsetting starting at the beginning and going to a value.
+// | "[" ":" VALUE "]" { $$ = driver.make_index($2, 1); }
+// | "[" ":" VALUE ":" WORD "]" { $$ = driver.make_index($2, $4); }
 ;
 
 fields : "{" clauses "}" { $$ = $2; }
@@ -410,7 +423,7 @@ path : name
 
 // Because some formats/datasets allow 'any' name for a variable, it's possible
 // that a variable name will be a number, etc. The grammar also allows STRING
-// to support "name"."name with spaces and dots (.)".x
+// to support "name"."name with spaces and dots (.)".
 //
 // I added calls here to remove the double quotes because they were breaking
 // the parse for STRINGs and also added www2id() for WORDs (so that %20, etc.
