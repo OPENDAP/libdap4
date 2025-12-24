@@ -1,6 +1,6 @@
 # Using cmake to build libdap4
 
-## how to build outside the source tree
+## How to build outside the source tree
 
 Make a build directory (or build/libdap4 if libdap4 is a git submodule).
 Then, in that directory, run cmake with the source directory as a command line
@@ -101,7 +101,7 @@ the build to use a directory named for the preset under the ```build``` director
 For the _developer_ preset, that will be ```build/developer```:
 
 ```commandline
-hyrax_git/libdap4 % ls build/developer 
+hyrax_git/libdap4 % ls build/developer
 cmake_install.cmake		d4_ce/				http_dap/			Testing/
 CMakeCache.txt			d4_function/		libdap.pc			tests/
 CMakeFiles/			    dap-config			libdap4Config.cmake	unit-tests/
@@ -123,7 +123,7 @@ ctest --preset developer
 
 The ```ctest``` program does that ```--parallel``` but don't use that with libdap
 until the test tolls are made thread safe. If you do use ```--parallel``` by mistake
-then clean the dirs and re-run the tests. Until the tests are more solid, it might 
+then clean the dirs and re-run the tests. Until the tests are more solid, it might
 be best to just ```rm -rf build``` and start over. There are special targets to
 clean out the temp files made by the tests, that target is called _clean-tests_.
 
@@ -135,5 +135,5 @@ cmake --build . --preset developer --parallel --target clean-tests
 
 ## You can still use _make_
 
-To use ```make```, just cd to ```build/developer``` and run the usual commands to 
+To use _make_, just cd to ```build/developer``` and run the usual commands to
 build an install the code. Use the target _test_ to run the tests.
