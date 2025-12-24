@@ -86,11 +86,11 @@ class D4ConstraintEvaluator {
     // For now, if a value-based subset is given, return the entire dimension. jhrg 12/23/25
     // start and end
     static index make_value_based_index(const std::string &, const std::string &) {
-        return index(0, 0, 0, false, true, "");
+        return index(0, 1, 0, false, false, "");
     }
     // start, stride, end
     static index make_value_based_index(const std::string &, const std::string &, const std::string &) {
-        return index(0, 0, 0, false, true, "");
+        return index(0, 1, 0, false, false, "");
     }
 
     bool d_trace_scanning = false;
