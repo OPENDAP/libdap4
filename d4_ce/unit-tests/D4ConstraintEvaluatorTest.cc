@@ -125,7 +125,7 @@ public:
             D4ConstraintEvaluator::throw_not_array("id", "ident");
             CPPUNIT_FAIL("Expected throw_not_array to throw an exception");
         } catch (const Error &e) {
-            // Verify specific error message and details (if applicable)
+            // Verify a specific error message and details (if applicable)
             CPPUNIT_ASSERT_EQUAL(e.get_error_code(), no_such_variable);
             // Additional assertions for message details based on implementation
         }
