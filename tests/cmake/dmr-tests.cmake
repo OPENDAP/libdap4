@@ -458,3 +458,37 @@ dmr_series_test(177 names_with_spaces2.dmr "/inst2/\"Point%20Break\".x" names_wi
 
 dmr_series_test(178 names_with_spaces3.dmr "/inst2/\"New Group\"/x" names_with_spaces3.dmr.1.trans_base "xfail")
 dmr_series_test(179 names_with_spaces3.dmr "/inst2/New%20Group/x" names_with_spaces3.dmr.1.trans_base "xfail")
+
+# Test the value-based subsetting syntax addition. NB: vbs (value-based subsetting). jhrg 12/29/25
+# This is the baseline version to start with - the temporary hack for the parsing uses an 'index'
+# of 0:1:0. Thus, _for now_, all these CEs return the same values. That will change once the work
+# moves forward.
+
+# NB: test_array_4.xml uses shared dimensions, to the indicial syntax parses, but it does not
+# have Maps, so this kind of subsetting will actually fail. Make sure that these six following
+# tests _do_ fail once the VBS logic is coded. jhrg 12/29/25
+dmr_trans_test(180 test_array_4.xml "/row=[0];/col=[0];a[][]" "" test_array_4.xml.vbs.1a.trans_base "universal")
+dmr_trans_test(181 test_array_4.xml "/row=[(0):(1)];/col=[(0):(1)];a[][]" "" test_array_4.xml.vbs.1a.trans_base "universal")
+dmr_trans_test(182 test_array_4.xml "/row=[(10):(11.11)];/col=[(0.4):(-10.7)];a[][]" "" test_array_4.xml.vbs.1a.trans_base "universal")
+
+# The above tests were derived from, and use the same baselines as, these three below. jhrg 12/29/25
+# DMR_TRANS_CE_NO_CRC([test_array_4.xml], [/row=[0];/col=[0];a[][] ], [test_array_4.xml.vbs.1a.trans_base], [pass])
+# DMR_TRANS_CE_NO_CRC([test_array_4.xml], [/row=[(0):(1)];/col=[(0):(1)];a[][] ], [test_array_4.xml.vbs.1a.trans_base], [pass])
+# DMR_TRANS_CE_NO_CRC([test_array_4.xml], [/row=[(10):(11.11)];/col=[(0.4):(-10.7)];a[][] ], [test_array_4.xml.vbs.1a.trans_base], [pass])
+
+dmr_trans_test(183 test_array_4.xml "/row=[0];/col=[0];x[][]" "" test_array_4.xml.vbs.1x.trans_base "universal")
+dmr_trans_test(184 test_array_4.xml "/row=[(0):(1)];/col=[(0):(1)];x[][]" "" test_array_4.xml.vbs.1x.trans_base "universal")
+dmr_trans_test(185 test_array_4.xml "/row=[(10):(11.11)];/col=[(0.4):(-10.7)];x[][]" "" test_array_4.xml.vbs.1x.trans_base "universal")
+
+# DMR_TRANS_CE_NO_CRC([test_array_4.xml], [/row=[0];/col=[0];x[][] ], [test_array_4.xml.vbs.1x.trans_base], [pass])
+# DMR_TRANS_CE_NO_CRC([test_array_4.xml], [/row=[(0):(1)];/col=[(0):(1)];x[][] ], [test_array_4.xml.vbs.1x.trans_base], [pass])
+# DMR_TRANS_CE_NO_CRC([test_array_4.xml], [/row=[(10):(11.11)];/col=[(0.4):(-10.7)];x[][] ], [test_array_4.xml.vbs.1x.trans_base], [pass])
+
+# NB: vol_1_ce_7.xml has Maps and this should not only parse but also subset by value. jhrg 12/29/25
+dmr_trans_test(186 vol_1_ce_7.xml "nlon=[0:2];nlat=[0];temp[][]" "" vol_1_ce_7.xml.vbs.1.trans_base "universal")
+dmr_trans_test(187 vol_1_ce_7.xml "nlon=[0:2];nlat=[(10.0):(-17.9)];temp[][]" "" vol_1_ce_7.xml.vbs.1.trans_base "universal")
+dmr_trans_test(188 vol_1_ce_7.xml "nlon=[0:2];nlat=[(0.09):(-17.9)];temp[][]" "" vol_1_ce_7.xml.vbs.1.trans_base "universal")
+
+# DMR_TRANS_CE_NO_CRC([vol_1_ce_7.xml], [nlon=[0:2];nlat=[0];temp[][] ], [vol_1_ce_7.xml.vbs.1.trans_base], [pass])
+# DMR_TRANS_CE_NO_CRC([vol_1_ce_7.xml], [nlon=[0:2];nlat=[(10.0):(-17.9)];temp[][] ], [vol_1_ce_7.xml.vbs.1.trans_base], [pass])
+# DMR_TRANS_CE_NO_CRC([vol_1_ce_7.xml], [nlon=[0:2];nlat=[(0.09):(-17.9)];temp[][] ], [vol_1_ce_7.xml.vbs.1.trans_base], [pass])
