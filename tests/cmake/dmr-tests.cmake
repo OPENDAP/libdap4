@@ -19,7 +19,7 @@ function(dmr_parse_ce_test test_number test_input ce test_baseline)
 			# 1) run das-test, redirect all output into a temp file
 			# 2) diff that file against the baseline"
 			"\"$<TARGET_FILE:dmr-test>\" -x -p \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
-			diff -b -B \"${baseline}\" \"${output}\""
+			diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\""
 	)
 	# This makes it so we can run just these tests and also makes it easy to run the
 	# unit tests _before_ the integration tests with a 'check' target. See the top-leve
@@ -107,7 +107,7 @@ function(dmr_intern_test number input baseline)
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
 			"\"$<TARGET_FILE:dmr-test>\" -x -i \"${input}\" > \"${output}\" 2>&1; \
-			diff -b -B \"${baseline}\" \"${output}\""
+			diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\""
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;dmr-intern")
@@ -171,7 +171,7 @@ function(dmr_trans_test number input ce func baseline byte_order)
 				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@${checksum_replacement}@' \"${output}\" > \"${output}_univ\"; \
 				mv \"${output}_univ\" \"${output}\"; \
 			fi; \
-			diff -b -B \"${baseline}\" \"${output}\";"
+			diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\""
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;trans")
@@ -396,7 +396,7 @@ function(dmr_series_test number input ce baseline xfail)
 			"\"$<TARGET_FILE:dmr-test>\" -C -x -e -t \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
 			sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
 			mv \"${output}_univ\" \"${output}\"; \
-			diff -b -B \"${baseline}\" \"${output}\""
+			diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\""
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;dmr-series")

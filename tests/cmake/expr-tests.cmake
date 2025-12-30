@@ -8,7 +8,7 @@ function(expr_test test_num option input ce baseline xfail)
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
 			"\"$<TARGET_FILE:expr-test>\" \"${option}\" \"${input}\" -k \"${ce}\" -f \"dummy\"> \"${output}\" 2>&1; \
-			diff -b -B \"${baseline}\" \"${output}\""
+			diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\""
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;expr")
@@ -221,7 +221,7 @@ function(expr_error_test test_num option input ce baseline xfail)
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
 			"\"$<TARGET_FILE:expr-test>\" \"${option}\" \"${input}\" -k \"${ce}\" > /dev/null 2> \"${err_output}\"; \
-			diff -b -B \"${baseline}\" \"${err_output}\""
+			diff -b -B \"${baseline}\" \"${err_output}\" && rm -f \"${output}\""
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;expr-error")
