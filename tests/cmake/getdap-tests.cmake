@@ -4,12 +4,10 @@ function(getdap_test test_num option url baseline xfail)
 	set(baseline "${CMAKE_CURRENT_SOURCE_DIR}/getdap-testsuite/${baseline}")
 	set(output "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
+	set(the_test   "$<TARGET_FILE:getdap> ${option} ${url} > ${output} 2>&1")
+
 	add_test(NAME ${testname}
-			COMMAND /bin/sh "-c"
-			# 1) run das-test, redirect all output into a temp file
-			# 2) diff that file against the baseline"
-			"$<TARGET_FILE:getdap> \"${option}\" \"${url}\" > \"${output}\" 2>&1; \
-			diff -b -B \"${baseline}\" \"${output}\""
+			COMMAND /bin/sh -c "${the_test}; diff -b -B ${baseline} ${output} && rm -f ${output}"
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;getdap")
