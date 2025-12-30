@@ -24,11 +24,16 @@ function(add_das_test das_filename)
 	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/${das_filename}.base")
 	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
-	# Add the CTest entry. Assume das_filename has no spaces -> no need to quote the
-	# variables in the shell command -> makes the command more readable
+	# Put the command that runs the test in a variable so that the exact same command
+	# can be used with a custom target to build the test baseline.
+	#
+	# Assume das_filename has no spaces; no need to quote the variables in the
+	# shell command, which makes the command more readable.
+	set(the_test   "$<TARGET_FILE:das-test> -p < ${input} > ${output} 2>&1")
+
+	# Add the CTest entry.
 	add_test(NAME ${testname}
-			COMMAND /bin/sh -c  "$<TARGET_FILE:das-test> -p < ${input} > ${output} 2>&1; \
-					diff -u -b -B ${baseline} ${output} && rm -f ${output}"
+			COMMAND /bin/sh -c  "${the_test}; diff -u -b -B ${baseline} ${output} && rm -f ${output}"
 	)
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;das")
 
@@ -36,8 +41,7 @@ function(add_das_test das_filename)
 	set(baseline_tgt "baseline-${testname}")
 	add_custom_target(${baseline_tgt}
 			COMMAND ${CMAKE_COMMAND} -E make_directory "$<SHELL_PATH:${CMAKE_CURRENT_BINARY_DIR}/baselines>"
-			COMMAND /bin/sh -c  "$<TARGET_FILE:das-test> -p < ${input} > ${output} 2>&1; \
-         		${CMAKE_COMMAND} -E copy ${output} ${staged_baseline}"
+			COMMAND /bin/sh -c  "${the_test}; ${CMAKE_COMMAND} -E copy ${output} ${staged_baseline} && rm -f ${output}"
 			BYPRODUCTS "${staged_baseline}"
 			COMMENT "Staging DAS baseline for ${das_filename} → ${staged_baseline}"
 			VERBATIM
