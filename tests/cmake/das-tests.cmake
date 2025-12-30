@@ -20,17 +20,15 @@ function(add_das_test das_filename)
 	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/das-testsuite/${das_filename}.base")
 	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
-	# Add the CTest entry
+	# Add the CTest entry. Assume das_filename has no spaces -> no need to quote the
+	# variables in the shell command -> makes the command more readable
 	add_test(NAME ${testname}
-			COMMAND /bin/sh "-c"
-			# 1) run das-test, redirect all output into a temp file
-			# 2) diff that file against the baseline"
-			"\"$<TARGET_FILE:das-test>\" -p < \"${input}\" > \"${output}\" 2>&1; \
-			diff -b -B \"${baseline}\" \"${output}\""
+			COMMAND /bin/sh -c  "$<TARGET_FILE:das-test> -p < ${input} > ${output} 2>&1; \
+					diff -u -b -B ${baseline} ${output} && rm -f ${output}"
 	)
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;das")
 endfunction()
 
-foreach(dfile IN LISTS DAS_FILES)
-	add_das_test(${dfile})
+foreach(das_file IN LISTS DAS_FILES)
+	add_das_test(${das_file})
 endforeach()
