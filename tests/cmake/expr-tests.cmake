@@ -216,16 +216,15 @@ function(expr_error_test test_num option input ce baseline xfail)
 	set(testname "expr_test_${test_num}")
 	set(input "${CMAKE_CURRENT_SOURCE_DIR}/expr-testsuite/${input}")
 	set(baseline "${CMAKE_CURRENT_SOURCE_DIR}/expr-testsuite/${baseline}")
-	set(err_output "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
+	set(output "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
-			"\"$<TARGET_FILE:expr-test>\" \"${option}\" \"${input}\" -k \"${ce}\" > /dev/null 2> \"${err_output}\"; \
-			diff -b -B \"${baseline}\" \"${err_output}\" && rm -f \"${output}\""
+			"\"$<TARGET_FILE:expr-test>\" \"${option}\" \"${input}\" -k \"${ce}\" > /dev/null 2> \"${output}\"; \
+			diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\""
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;expr-error")
-	# set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
 	if("${xfail}" STREQUAL "xfail")
 		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
 	endif()
