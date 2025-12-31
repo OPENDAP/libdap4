@@ -392,11 +392,15 @@ function(dmr_series_test number input ce baseline xfail)
 	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
 	add_test(NAME ${testname}
-			COMMAND /bin/sh "-c"
+			COMMAND /bin/sh -c
 			"\"$<TARGET_FILE:dmr-test>\" -C -x -e -t \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
 			sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
 			mv \"${output}_univ\" \"${output}\"; \
-			diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\""
+			if test ${xfail} = xfail; then \
+			    status=diff -b -B \"${baseline}\" \"${output}\"; rm -f \"${output}\"; exit 1;
+			else \
+				diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\";\
+			fi"
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;dmr-series")
