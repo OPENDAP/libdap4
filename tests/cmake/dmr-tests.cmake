@@ -384,31 +384,40 @@ dmr_trans_test(146 vol_1_ce_10.xml "lat[10:11][10:11];lon[10:11][10:11]" "scale(
 ## of word order and they use CEs that have operators (!, <=, ...). Making a test name substituting
 ## those chars with '_' doesn't make unique test names. But, for this we can use the baseline
 ## names. Also, some of these tests are expected to fail. 7/14/25 jhrg
-function(dmr_series_test number input ce baseline xfail)
-	set(testname "dmr_series_test_${number}")
+#function(dmr_series_test number input ce baseline xfail)
+#	set(testname "dmr_series_test_${number}")
+#
+#	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${input}")
+#	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/universal/${baseline}")
+#	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
+#
+#	add_test(NAME ${testname}
+#			COMMAND /bin/sh -c
+#			"\"$<TARGET_FILE:dmr-test>\" -C -x -e -t \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
+#			sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
+#			mv \"${output}_univ\" \"${output}\"; \
+#			if test ${xfail} = xfail; then \
+#			    status=diff -b -B \"${baseline}\" \"${output}\"; rm -f \"${output}\"; exit 1;
+#			else \
+#				diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\";\
+#			fi"
+#	)
+#
+#	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;dmr-series")
+#	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+#	if("${xfail}" STREQUAL "xfail")
+#		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
+#	endif()
+#endfunction()
 
-	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${input}")
-	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/universal/${baseline}")
-	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
-
-	add_test(NAME ${testname}
-			COMMAND /bin/sh -c
-			"\"$<TARGET_FILE:dmr-test>\" -C -x -e -t \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
-			sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
-			mv \"${output}_univ\" \"${output}\"; \
-			if test ${xfail} = xfail; then \
-			    status=diff -b -B \"${baseline}\" \"${output}\"; rm -f \"${output}\"; exit 1;
-			else \
-				diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\";\
-			fi"
-	)
-
-	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;dmr-series")
-	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
-	if("${xfail}" STREQUAL "xfail")
-		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
-	endif()
-endfunction()
+# Notes about this new version:
+#
+# Run all the tests:
+#	ctest -V
+# Update all the baselines (see the script 'run_dmr_series_tes.sh' for why this works.
+# 	UPDATE_BASELINES=1 ctest -V
+# Update just one baseline:
+# 	UPDATE_BASELINES=1 ctest -R dmr_series_test_147 -V
 
 function(dmr_series_test number input ce baseline xfail)
 	set(testname "dmr_series_test_${number}")
