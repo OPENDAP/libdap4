@@ -410,6 +410,33 @@ function(dmr_series_test number input ce baseline xfail)
 	endif()
 endfunction()
 
+function(dmr_series_test number input ce baseline xfail)
+	set(testname "dmr_series_test_${number}")
+
+	set(input_path    "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${input}")
+	set(baseline_path "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/universal/${baseline}")
+	set(output_path   "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
+	set(runner        "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/run_dmr_series_test.sh")
+
+	add_test(NAME ${testname}
+			COMMAND bash "${runner}"
+			"$<TARGET_FILE:dmr-test>"
+			"${input_path}"
+			"${ce}"
+			"${baseline_path}"
+			"${output_path}"
+	)
+
+	set_tests_properties(${testname} PROPERTIES
+			LABELS "integration;dmr;dmr-series"
+			RUN_SERIAL TRUE
+	)
+
+	if("${xfail}" STREQUAL "xfail")
+		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
+	endif()
+endfunction()
+
 ## These tests are all 'universal' tests (i.e., they do not need different baselines
 ## for different word order machines). 7/14/25 jhrg.
 dmr_series_test(147 test_simple_7.xml "s" test_simple_7.xml.f.trans_base "pass")
