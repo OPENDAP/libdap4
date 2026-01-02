@@ -13,7 +13,7 @@ output="$5"
 update="${UPDATE_BASELINES:-0}"
 
 # Run the tool and capture output
-"$exe" -C -x -e -t "$input" -c "$ce" >"$output" 2>&1
+"$exe" -C -x -e -t "$input" -c "$ce" > "$output" 2>&1
 
 # Normalize output (for portability, don't use 'sed -i')
 tmp="${output}_univ"
