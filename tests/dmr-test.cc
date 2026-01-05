@@ -26,6 +26,7 @@
 
 #include "config.h"
 
+#include <cstdio>
 #include <fstream>
 #include <memory>
 #include <sstream>
@@ -55,6 +56,8 @@
 #include "ServerFunctionsList.h"
 
 #include "mime_util.h"
+
+#include "TempFile.h"
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeouts.
 
@@ -140,7 +143,9 @@ void set_series_values(DMR *dmr, bool state) {
  *
  * @param dataset
  * @param constraint
+ * @param function
  * @param series_values
+ * @param ce_parser_debug
  * @return The name of the file that hods the response.
  */
 string send_data(DMR *dataset, const string &constraint, const string &function, bool series_values,
@@ -181,8 +186,14 @@ string send_data(DMR *dataset, const string &constraint, const string &function,
     D4ResponseBuilder rb;
     rb.set_dataset_name(dataset->name());
 
-    string file_name = dataset->name() + "_data.bin";
+    char *dmr_tmp_file = {"/tmp/dmr_test.XXXXXX"};
+    mkstemp(dmr_tmp_file);
+    if (!std::tmpnam(dmr_tmp_file))
+        throw Error("Cpuld not amke a temporary file for the dmr_test send data option.");
+#if 1
+    string file_name = dmr_tmp_file; // dataset->name() + "_data.bin";
     ofstream out(file_name.c_str(), ios::out | ios::trunc | ios::binary);
+#endif
 
     if (!constraint.empty()) {
         D4ConstraintEvaluator parser(dataset);
@@ -420,6 +431,8 @@ int main(int argc, char *argv[]) {
             string file_name = send_data(dmr, ce, function, series_values, ce_parser_debug);
             if (print)
                 cout << "Response file: " << file_name << endl;
+            else
+                remove(file_name.c_str());  // New behavior. don't leave tmp files. jhrg 1/4/26
             delete dmr;
         }
 
@@ -429,6 +442,9 @@ int main(int argc, char *argv[]) {
             delete dmr;
 
             DMR *client = read_data_plain(file_name, use_checksums, debug);
+
+            // delete file_name here. jhrg 1/4/26
+            remove(file_name.c_str());
 
             if (print) {
                 XMLWriter xml;
