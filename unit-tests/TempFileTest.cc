@@ -2,14 +2,14 @@
 // Created by James Gallagher on 1/5/26.
 //
 
-#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 #include <fstream>
 #include <string>
 
-#include <unistd.h>     // access, unlink
-#include <sys/stat.h>   // stat
+#include <sys/stat.h> // stat
+#include <unistd.h>   // access, unlink
 
 #include "TempFile.h"
 
@@ -18,19 +18,15 @@
 // --- If TempFile is in the same translation unit for testing, remove this include and paste class above. ---
 
 namespace libdap {
-bool file_exists(const std::string& path) {
-    return !path.empty() && (::access(path.c_str(), F_OK) == 0);
-}
+bool file_exists(const std::string &path) { return !path.empty() && (::access(path.c_str(), F_OK) == 0); }
 
-std::string read_all(const std::string& path) {
+std::string read_all(const std::string &path) {
     std::ifstream in(path, std::ios::in | std::ios::binary);
     CPPUNIT_ASSERT_MESSAGE("Failed to open file for reading: " + path, in.is_open());
 
-    std::string contents((std::istreambuf_iterator<char>(in)),
-                         std::istreambuf_iterator<char>());
+    std::string contents((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     return contents;
 }
-
 
 class TempFileTest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(TempFileTest);

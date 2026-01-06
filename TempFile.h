@@ -5,12 +5,12 @@
 #ifndef LIBDAP_TEMPFILE_H
 #define LIBDAP_TEMPFILE_H
 
-#include <unistd.h>     // mkstemp, close, unlink
+#include <fstream>
 #include <stdexcept>
 #include <string>
-#include <utility>      // std::exchange
+#include <unistd.h> // mkstemp, close, unlink
+#include <utility>  // std::exchange
 #include <vector>
-#include <fstream>
 
 namespace libdap {
 
@@ -22,17 +22,14 @@ public:
         create_and_open(std::move(pattern), mode);
     }
 
-    ~TempFile() noexcept {
-        cleanup();
-    }
+    ~TempFile() noexcept { cleanup(); }
 
     TempFile(const TempFile &) = delete;
     TempFile &operator=(const TempFile &) = delete;
 
     TempFile(TempFile &&other) noexcept
-        : path_(std::move(other.path_))
-          , stream_(std::move(other.stream_))
-          , unlink_on_destroy_(std::exchange(other.unlink_on_destroy_, false)) {
+        : path_(std::move(other.path_)), stream_(std::move(other.stream_)),
+          unlink_on_destroy_(std::exchange(other.unlink_on_destroy_, false)) {
         other.path_.clear();
     }
 
@@ -127,6 +124,6 @@ private:
     bool unlink_on_destroy_ = false;
 };
 
-} // libdap
+} // namespace libdap
 
-#endif //LIBDAP_TEMPFILE_H
+#endif // LIBDAP_TEMPFILE_H

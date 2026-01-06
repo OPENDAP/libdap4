@@ -149,7 +149,7 @@ void set_series_values(DMR *dmr, bool state) {
  * @return The name of the file that hods the response.
  */
 TempFile send_data(DMR *dataset, const string &constraint, const string &function, bool series_values,
-                 bool ce_parser_debug) {
+                   bool ce_parser_debug) {
     set_series_values(dataset, series_values);
 
     // This will be used by the DMR that holds the results of running the functions.
@@ -171,8 +171,7 @@ TempFile send_data(DMR *dataset, const string &constraint, const string &functio
         bool parse_ok = parser.parse(function);
         if (!parse_ok) {
             throw Error("Function Expression failed to parse.");
-        }
-        else {
+        } else {
             if (ce_parser_debug)
                 cerr << "Function Parse OK" << endl;
 
