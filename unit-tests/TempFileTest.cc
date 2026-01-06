@@ -13,9 +13,11 @@
 
 #include "TempFile.h"
 
+#include "run_tests_cppunit.h"
+
 // --- If TempFile is in the same translation unit for testing, remove this include and paste class above. ---
 
-namespace {
+namespace libdap {
 bool file_exists(const std::string& path) {
     return !path.empty() && (::access(path.c_str(), F_OK) == 0);
 }
@@ -28,7 +30,7 @@ std::string read_all(const std::string& path) {
                          std::istreambuf_iterator<char>());
     return contents;
 }
-} // namespace
+
 
 class TempFileTest : public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(TempFileTest);
@@ -163,3 +165,7 @@ public:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TempFileTest);
+
+} // namespace libdap
+
+int main(int argc, char *argv[]) { return run_tests<libdap::TempFileTest>(argc, argv) ? 0 : 1; }
