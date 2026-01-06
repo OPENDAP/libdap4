@@ -8,14 +8,15 @@ function(expr_test test_num option input ce baseline xfail)
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
 			"\"$<TARGET_FILE:expr-test>\" \"${option}\" \"${input}\" -k \"${ce}\" -f \"dummy\"> \"${output}\" 2>&1; \
-			diff -b -B \"${baseline}\" \"${output}\""
+			diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\""
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;expr")
-	if(${option} STREQUAL "-w" OR ${option} STREQUAL "-bw")
+	# if(${option} STREQUAL "-w" OR ${option} STREQUAL "-bw")
 		# until we fix HYRAX-1843 the whole-enchilada tests must be run serially. 7/17/25 jhrg
-		set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
-	endif()
+		# Fixed. jhrg 1/5/26
+		# set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+	# endif()
 	if("${xfail}" STREQUAL "xfail")
 		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
 	endif()
@@ -216,16 +217,15 @@ function(expr_error_test test_num option input ce baseline xfail)
 	set(testname "expr_test_${test_num}")
 	set(input "${CMAKE_CURRENT_SOURCE_DIR}/expr-testsuite/${input}")
 	set(baseline "${CMAKE_CURRENT_SOURCE_DIR}/expr-testsuite/${baseline}")
-	set(err_output "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
+	set(output "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
 
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
-			"\"$<TARGET_FILE:expr-test>\" \"${option}\" \"${input}\" -k \"${ce}\" > /dev/null 2> \"${err_output}\"; \
-			diff -b -B \"${baseline}\" \"${err_output}\""
+			"\"$<TARGET_FILE:expr-test>\" \"${option}\" \"${input}\" -k \"${ce}\" > /dev/null 2> \"${output}\"; \
+			diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\""
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;expr-error")
-	# set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
 	if("${xfail}" STREQUAL "xfail")
 		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
 	endif()

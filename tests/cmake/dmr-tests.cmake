@@ -19,7 +19,7 @@ function(dmr_parse_ce_test test_number test_input ce test_baseline)
 			# 1) run das-test, redirect all output into a temp file
 			# 2) diff that file against the baseline"
 			"\"$<TARGET_FILE:dmr-test>\" -x -p \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
-			diff -b -B \"${baseline}\" \"${output}\""
+			diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\""
 	)
 	# This makes it so we can run just these tests and also makes it easy to run the
 	# unit tests _before_ the integration tests with a 'check' target. See the top-leve
@@ -107,7 +107,7 @@ function(dmr_intern_test number input baseline)
 	add_test(NAME ${testname}
 			COMMAND /bin/sh "-c"
 			"\"$<TARGET_FILE:dmr-test>\" -x -i \"${input}\" > \"${output}\" 2>&1; \
-			diff -b -B \"${baseline}\" \"${output}\""
+			diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\""
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;dmr-intern")
@@ -171,7 +171,7 @@ function(dmr_trans_test number input ce func baseline byte_order)
 				sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@${checksum_replacement}@' \"${output}\" > \"${output}_univ\"; \
 				mv \"${output}_univ\" \"${output}\"; \
 			fi; \
-			diff -b -B \"${baseline}\" \"${output}\";"
+			diff -b -B \"${baseline}\" \"${output}\" && rm -f \"${output}\""
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;trans")
@@ -181,7 +181,8 @@ function(dmr_trans_test number input ce func baseline byte_order)
 	# files with the same (i.e., conflicting) names. I tied using the
 	# RESOURCE_LOCKS property, but it was slower and did not stop the collisions.
 	# 7/12/25 jhrg
-	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+	# set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+	# dmr-test now uses multi-process safe temp files. jhrg 1/5/26
 endfunction()
 
 # DMR translation tests → dmr_trans_test(number, input, ce, func, baseline, byte_order)
@@ -384,23 +385,41 @@ dmr_trans_test(146 vol_1_ce_10.xml "lat[10:11][10:11];lon[10:11][10:11]" "scale(
 ## of word order and they use CEs that have operators (!, <=, ...). Making a test name substituting
 ## those chars with '_' doesn't make unique test names. But, for this we can use the baseline
 ## names. Also, some of these tests are expected to fail. 7/14/25 jhrg
+
+# New version: We switched to test numbers a while back to avoid the hack of making names
+# from the various arguments, and I updated the code so include baseline generation. For
+# the latter, I switched to an external script to run the C++ CLI program 'dmr-test.'
+# This adds a layer of indirection, but it makes the text passed to cmake's add_test()
+# easier to understand/debug. jhrg 1/2/26
+#
+# Notes about this new version:
+#
+# Run all the tests:
+#	ctest -V
+# Update all the baselines (see the script 'run_dmr_series_tes.sh' for how this works).
+# 	UPDATE_BASELINES=1 ctest -V
+# Update just one baseline:
+# 	UPDATE_BASELINES=1 ctest -R dmr_series_test_147 -V
+
 function(dmr_series_test number input ce baseline xfail)
 	set(testname "dmr_series_test_${number}")
 
-	set(input      "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${input}")
-	set(baseline   "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/universal/${baseline}")
-	set(output     "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
+	set(input_path    "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/${input}")
+	set(baseline_path "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/universal/${baseline}")
+	set(output_path   "${CMAKE_CURRENT_BINARY_DIR}/${testname}.out")
+	set(runner        "${CMAKE_CURRENT_SOURCE_DIR}/dmr-testsuite/run_dmr_series_test.sh")
 
 	add_test(NAME ${testname}
-			COMMAND /bin/sh "-c"
-			"\"$<TARGET_FILE:dmr-test>\" -C -x -e -t \"${input}\" -c \"${ce}\" > \"${output}\" 2>&1; \
-			sed 's@<Value>[0-9a-f][0-9a-f]*</Value>@@' \"${output}\" > \"${output}_univ\"; \
-			mv \"${output}_univ\" \"${output}\"; \
-			diff -b -B \"${baseline}\" \"${output}\""
+			COMMAND bash "${runner}"
+			"$<TARGET_FILE:dmr-test>"
+			"${input_path}"
+			"${ce}"
+			"${baseline_path}"
+			"${output_path}"
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;dmr-series")
-	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+
 	if("${xfail}" STREQUAL "xfail")
 		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
 	endif()
@@ -423,18 +442,18 @@ dmr_series_test(156 test_simple_7.xml "s|1024<=i1<=32768" test_simple_7.xml.f9.t
 dmr_series_test(157 test_simple_7.xml "s|i1>=1024.0" test_simple_7.xml.fa.trans_base "pass")
 
 ## \\\" --> \\ is a literal slash and \" is a literal double quote. 7/14/25 jhrg
-dmr_series_test(158 test_simple_7.xml "s|s==\\\"Silly test string: 2\\\"" test_simple_7.xml.fs1.trans_base "pass")
-dmr_series_test(159 test_simple_7.xml "s|s!=\\\"Silly test string: 2\\\"" test_simple_7.xml.fs2.trans_base "pass")
-dmr_series_test(160 test_simple_7.xml "s|s<\\\"Silly test string: 2\\\"" test_simple_7.xml.fs3.trans_base "pass")
-dmr_series_test(161 test_simple_7.xml "s|s<=\\\"Silly test string: 2\\\"" test_simple_7.xml.fs4.trans_base "pass")
-dmr_series_test(162 test_simple_7.xml "s|s>\\\"Silly test string: 2\\\"" test_simple_7.xml.fs5.trans_base "pass")
-dmr_series_test(163 test_simple_7.xml "s|s>=\\\"Silly test string: 2\\\"" test_simple_7.xml.fs6.trans_base "pass")
-dmr_series_test(164 test_simple_7.xml "s|s~=\\\".*2\\\"" test_simple_7.xml.fs7.trans_base "pass")
+dmr_series_test(158 test_simple_7.xml "s|s==\"Silly test string: 2\"" test_simple_7.xml.fs1.trans_base "pass")
+dmr_series_test(159 test_simple_7.xml "s|s!=\"Silly test string: 2\"" test_simple_7.xml.fs2.trans_base "pass")
+dmr_series_test(160 test_simple_7.xml "s|s<\"Silly test string: 2\"" test_simple_7.xml.fs3.trans_base "pass")
+dmr_series_test(161 test_simple_7.xml "s|s<=\"Silly test string: 2\"" test_simple_7.xml.fs4.trans_base "pass")
+dmr_series_test(162 test_simple_7.xml "s|s>\"Silly test string: 2\"" test_simple_7.xml.fs5.trans_base "pass")
+dmr_series_test(163 test_simple_7.xml "s|s>=\"Silly test string: 2\"" test_simple_7.xml.fs6.trans_base "pass")
+dmr_series_test(164 test_simple_7.xml "s|s~=\".*2\"" test_simple_7.xml.fs7.trans_base "pass")
 
 # Test filtering a sequence that has only one field projected, including filtering on the values
 # of a filed not projected.
 dmr_series_test(165 test_simple_7.xml "s{i1}|i1<32768" test_simple_7.xml.g1.trans_base "pass")
-dmr_series_test(166 test_simple_7.xml "s{i1}|s<=\\\"Silly test string: 2\\\"" test_simple_7.xml.g1.trans_base "pass")
+dmr_series_test(166 test_simple_7.xml "s{i1}|s<=\"Silly test string: 2\"" test_simple_7.xml.g1.trans_base "pass")
 
 # A nested sequence with floats in the outer sequence and the int, string combination in the inner
 dmr_series_test(167 test_simple_8.1.xml "outer" test_simple_8.1.xml.f1.trans_base "pass")
