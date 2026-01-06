@@ -73,7 +73,7 @@
 #include "parser.h"
 #include "util.h"
 
-#include "TempFile.h"
+#include "../TempFile.h"
 
 #include "debug.h"
 

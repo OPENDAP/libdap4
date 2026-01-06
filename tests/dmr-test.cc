@@ -57,7 +57,7 @@
 
 #include "mime_util.h"
 
-#include "TempFile.h"
+#include "../TempFile.h"
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeouts.
 
