@@ -12,10 +12,11 @@ function(expr_test test_num option input ce baseline xfail)
 	)
 
 	set_tests_properties(${testname} PROPERTIES LABELS "integration;expr")
-	if(${option} STREQUAL "-w" OR ${option} STREQUAL "-bw")
+	# if(${option} STREQUAL "-w" OR ${option} STREQUAL "-bw")
 		# until we fix HYRAX-1843 the whole-enchilada tests must be run serially. 7/17/25 jhrg
-		set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
-	endif()
+		# Fixed. jhrg 1/5/26
+		# set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+	# endif()
 	if("${xfail}" STREQUAL "xfail")
 		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)
 	endif()

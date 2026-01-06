@@ -181,7 +181,8 @@ function(dmr_trans_test number input ce func baseline byte_order)
 	# files with the same (i.e., conflicting) names. I tied using the
 	# RESOURCE_LOCKS property, but it was slower and did not stop the collisions.
 	# 7/12/25 jhrg
-	set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+	# set_tests_properties(${testname} PROPERTIES RUN_SERIAL TRUE)
+	# dmr-test now uses multi-process safe temp files. jhrg 1/5/26
 endfunction()
 
 # DMR translation tests → dmr_trans_test(number, input, ce, func, baseline, byte_order)
@@ -417,10 +418,7 @@ function(dmr_series_test number input ce baseline xfail)
 			"${output_path}"
 	)
 
-	set_tests_properties(${testname} PROPERTIES
-			LABELS "integration;dmr;dmr-series"
-			RUN_SERIAL TRUE
-	)
+	set_tests_properties(${testname} PROPERTIES LABELS "integration;dmr;dmr-series")
 
 	if("${xfail}" STREQUAL "xfail")
 		set_tests_properties(${testname} PROPERTIES WILL_FAIL TRUE)

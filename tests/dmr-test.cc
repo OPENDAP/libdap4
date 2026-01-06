@@ -148,7 +148,7 @@ void set_series_values(DMR *dmr, bool state) {
  * @param ce_parser_debug
  * @return The name of the file that hods the response.
  */
-string send_data(DMR *dataset, const string &constraint, const string &function, bool series_values,
+TempFile send_data(DMR *dataset, const string &constraint, const string &function, bool series_values,
                  bool ce_parser_debug) {
     set_series_values(dataset, series_values);
 
@@ -169,8 +169,9 @@ string send_data(DMR *dataset, const string &constraint, const string &function,
         if (ce_parser_debug)
             parser.set_trace_parsing(true);
         bool parse_ok = parser.parse(function);
-        if (!parse_ok)
+        if (!parse_ok) {
             throw Error("Function Expression failed to parse.");
+        }
         else {
             if (ce_parser_debug)
                 cerr << "Function Parse OK" << endl;
@@ -185,15 +186,7 @@ string send_data(DMR *dataset, const string &constraint, const string &function,
 
     D4ResponseBuilder rb;
     rb.set_dataset_name(dataset->name());
-
-    char *dmr_tmp_file = {"/tmp/dmr_test.XXXXXX"};
-    mkstemp(dmr_tmp_file);
-    if (!std::tmpnam(dmr_tmp_file))
-        throw Error("Cpuld not amke a temporary file for the dmr_test send data option.");
-#if 1
-    string file_name = dmr_tmp_file; // dataset->name() + "_data.bin";
-    ofstream out(file_name.c_str(), ios::out | ios::trunc | ios::binary);
-#endif
+    auto dmr_tmp_file = TempFile("/tmp/dmr_test.XXXXXX");
 
     if (!constraint.empty()) {
         D4ConstraintEvaluator parser(dataset);
@@ -208,10 +201,10 @@ string send_data(DMR *dataset, const string &constraint, const string &function,
         dataset->root()->set_send_p(true);
     }
 
-    rb.send_dap(out, *dataset, /*with mime headers*/ true, !constraint.empty());
-    out.close();
+    rb.send_dap(dmr_tmp_file.stream(), *dataset, /*with mime headers*/ true, !constraint.empty());
+    dmr_tmp_file.flush();
 
-    return file_name;
+    return dmr_tmp_file;
 }
 
 void intern_data(DMR *dataset, bool series_values) {
@@ -428,23 +421,21 @@ int main(int argc, char *argv[]) {
         if (send) {
             DMR *dmr = test_dap4_parser(name, use_checksums, debug, print);
 
-            string file_name = send_data(dmr, ce, function, series_values, ce_parser_debug);
-            if (print)
-                cout << "Response file: " << file_name << endl;
-            else
-                remove(file_name.c_str());  // New behavior. don't leave tmp files. jhrg 1/4/26
+            auto dmr_temp_file = send_data(dmr, ce, function, series_values, ce_parser_debug);
+            if (print) {
+                cout << "Response file: " << dmr_temp_file.path() << endl;
+                dmr_temp_file.release();
+            }
+
             delete dmr;
         }
 
         if (trans) {
             DMR *dmr = test_dap4_parser(name, use_checksums, debug, print);
-            string file_name = send_data(dmr, ce, function, series_values, ce_parser_debug);
+            auto dmr_temp_file = send_data(dmr, ce, function, series_values, ce_parser_debug);
             delete dmr;
 
-            DMR *client = read_data_plain(file_name, use_checksums, debug);
-
-            // delete file_name here. jhrg 1/4/26
-            remove(file_name.c_str());
+            DMR *client = read_data_plain(dmr_temp_file.path(), use_checksums, debug);
 
             if (print) {
                 XMLWriter xml;
@@ -462,7 +453,7 @@ int main(int argc, char *argv[]) {
 
         if (intern) {
             DMR *dmr = test_dap4_parser(name, use_checksums, debug, print);
-            intern_data(dmr, /*ce,*/ series_values);
+            intern_data(dmr, series_values);
 
             if (print) {
                 XMLWriter xml;
