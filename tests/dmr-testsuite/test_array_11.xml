@@ -3,7 +3,7 @@
   xml:base="file:test_simple_11.xml"
   name="test_simple_11"
   dapVersion="4.0"
-  dmrVersion="1.0">
+  dmrVersion="2.0">
   <Dimension name="d1" size="5"/>
   <Dimension name="d2" size="3"/>
 

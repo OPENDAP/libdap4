@@ -20,7 +20,7 @@ target_link_libraries(D4ConstraintEvaluatorTest
 
 add_test(NAME D4ConstraintEvaluatorTest COMMAND D4ConstraintEvaluatorTest)
 # This enables using `ctest -L unit` to run just these tests.
-set_tests_properties(${test_name} PROPERTIES LABELS "unit")
+set_tests_properties(D4ConstraintEvaluatorTest PROPERTIES LABELS "unit")
 
 # Set TEST_SRC_DIR to the absolute path of the test sources
 set(abs_srcdir "${CMAKE_CURRENT_SOURCE_DIR}")

@@ -21,7 +21,7 @@ function(build_test target source_files)
 
 	add_test(NAME ${target} COMMAND ${target})
 	# This enables using `ctest -L unit` to run just these tests.
-	set_tests_properties(${test_name} PROPERTIES LABELS "unit")
+	set_tests_properties(${target} PROPERTIES LABELS "unit")
 endfunction()
 
 set(HTTP_DAP_TESTS HTTPCacheTest.cc HTTPConnectTest.cc HTTPThreadsConnectTest.cc)
