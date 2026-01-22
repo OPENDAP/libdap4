@@ -45,7 +45,7 @@ class XMLWriter;
 
 class DDS;
 
-/** DMR is root object for a DAP4 dataset. It holds a D4Group and other
+/** DMR is the root object for a DAP4 dataset. It holds a D4Group and other
  * information about the dataset (DAP protocol number, DMR version, etc.).
  *
  * @note This class holds the dataset name and filename (which might
@@ -59,7 +59,7 @@ private:
 
     /// The name of the dataset. This should not be the pathname to a file
     std::string d_name;
-    /// The pathname or other system identifier for the dataset
+    /// The pathname or another system identifier for the dataset
     std::string d_filename;
 
     /// DAP protocol major version number. Should be '4'
@@ -70,7 +70,10 @@ private:
     std::string d_dap_version = "4.0";
 
     /// The version of the DMR document
-    std::string d_dmr_version = "1.0";
+    /// Version 1.0 is the original serialization scheme - Groups were serialized first,
+    /// then the top-level variables.
+    /// The 2.0 version indicates the DAP4 Serialization bug fix.
+    std::string d_dmr_version = "2.0";
 
     /// The URL for the request base
     std::string d_request_xml_base;
