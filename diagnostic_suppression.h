@@ -7,6 +7,8 @@
 
 // Define a macro for convenience. To keep things simple, use a macro for
 // each kind of warning. There should be few uses of this. jhrg 1/26/26
+//
+// Based on https://nelkinda.com/blog/suppress-warnings-in-gcc-and-clang/
 
 #ifdef __GNUC__
 
