@@ -22,16 +22,13 @@
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
-#include <sys/stat.h>
-#include <sys/types.h>
-
 #include "config.h"
+
+#include <sys/stat.h>
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-
-#include <cstdlib>
-#include <cstring>
 
 #include <fstream>
 #include <iostream>
@@ -39,11 +36,10 @@
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
 
 // #define DODS_DEBUG
 #include "RCReader.h"
-#include "debug.h"
+
 #include "run_tests_cppunit.h"
 #include "test_config.h"
 
@@ -55,16 +51,14 @@ static char dods_conf_ev[1024] = "";
 namespace libdap {
 
 class RCReaderTest : public TestFixture {
-private:
     RCReader *rcr;
 
-protected:
 public:
     RCReaderTest() : rcr(RCReader::instance()) {}
 
-    void setUp() {}
+    void setUp() override {}
 
-    void tearDown() {}
+    void tearDown() override {}
 
     /** Put values in an environment variable. This should be used only
      * for the env var 'DODS_CONF' and should never pass in values longer
@@ -74,7 +68,7 @@ public:
      * so any value passed in from the heap that might be freed or from the
      * stack that could be popped will cause a memory access error.
      */
-    void my_putenv(const string &value) {
+    static void my_putenv(const string &value) {
         strncpy(dods_conf_ev, value.c_str(), 1024);
         ;
         putenv(dods_conf_ev);
@@ -100,12 +94,12 @@ public:
 
     void check_env_var_test1() {
         my_putenv("DODS_CONF=");
-        CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == "");
+        CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF").empty());
     }
 
     void check_env_var_test2() {
         my_putenv("DODS_CONF=Nothing_sensible");
-        CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == "");
+        CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF").empty());
     }
 
     void check_env_var_test3() {
@@ -142,7 +136,7 @@ public:
         // Create the file.
         string rc = string(cwd) + string("/.dodsrc");
         CPPUNIT_ASSERT(rcr->check_env_var("DODS_CONF") == rc);
-        struct stat stat_info;
+        struct stat stat_info {};
         CPPUNIT_ASSERT(stat(rc.c_str(), &stat_info) == 0 && S_ISREG(stat_info.st_mode));
         remove(rc.c_str());
     }
@@ -155,7 +149,7 @@ public:
         if (*home.rbegin() != '/')
             home += "/";
 
-        RCReader *reader = RCReader::instance();
+        const RCReader *reader = RCReader::instance();
         rcr->loadRC();
         CPPUNIT_ASSERT(reader->d_rc_file_path == home + string(".dodsrc"));
         DBG(cerr << "Cache root: " << reader->get_dods_cache_root() << endl);
@@ -225,11 +219,11 @@ public:
 
         CPPUNIT_ASSERT(reader->get_proxy_server_host() == "proxy.local.org");
         CPPUNIT_ASSERT(reader->get_proxy_server_port() == 80);
-        CPPUNIT_ASSERT(reader->get_proxy_server_userpw() == "");
+        CPPUNIT_ASSERT(reader->get_proxy_server_userpw().empty());
     }
 
     void proxy_test3() {
-        string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/test3.rc";
+        const string rc = static_cast<string>("DODS_CONF=") + TEST_SRC_DIR + "/rcreader-testsuite/test3.rc";
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
 
@@ -238,7 +232,7 @@ public:
             CPPUNIT_ASSERT(!"initialize_instance() should throw Error.");
         } catch (const Error &e) {
             DBG(cerr << e.get_error_message() << endl);
-            CPPUNIT_ASSERT(e.get_error_message() != "");
+            CPPUNIT_ASSERT(!e.get_error_message().empty());
         }
     }
 
@@ -248,7 +242,7 @@ public:
         my_putenv(rc);
 
         try {
-            RCReader *reader = RCReader::instance();
+            const RCReader *reader = RCReader::instance();
             rcr->loadRC();
             DBG(cerr << "RC path: " << reader->d_rc_file_path << endl);
             CPPUNIT_ASSERT(reader->d_rc_file_path == (string)TEST_SRC_DIR + "/rcreader-testsuite/test4.rc");
@@ -263,7 +257,7 @@ public:
             CPPUNIT_ASSERT(reader->get_proxy_server_userpw() == "jimg:test");
         } catch (Error &e) {
             DBG(cerr << e.get_error_message() << endl);
-            CPPUNIT_ASSERT(e.get_error_message() != "");
+            CPPUNIT_ASSERT(!e.get_error_message().empty());
         }
     }
 
@@ -288,14 +282,14 @@ public:
             CPPUNIT_ASSERT(reader->get_proxy_server_userpw() == "jimg:test");
         } catch (Error &e) {
             DBG(cerr << e.get_error_message() << endl);
-            CPPUNIT_ASSERT(e.get_error_message() != "");
+            CPPUNIT_ASSERT(!e.get_error_message().empty());
         }
     }
 
     // This simple test checks to see that the VALIDATE_SSL parameter is
     // read correctly.
     void validate_ssl_test() {
-        string rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_1";
+        string rc = static_cast<string>("DODS_CONF=") + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_1";
         DBG(cerr << "rc: " << rc << endl);
         my_putenv(rc);
 
@@ -311,7 +305,7 @@ public:
         // string object) because the code casts away the const-ness of the
         // char* returned by c_str() and putenv does odd stuff with it. There's
         // nothing good about using env vars...
-        rc = (string) "DODS_CONF=" + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_2";
+        rc = static_cast<string>("DODS_CONF=") + TEST_SRC_DIR + "/rcreader-testsuite/dodssrc_ssl_2";
         DBG(cerr << "rc: " << rc << endl);
 
         my_putenv(rc);
