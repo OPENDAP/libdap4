@@ -270,8 +270,6 @@ public:
             CPPUNIT_ASSERT(bt);
             auto *fsarr_p = dynamic_cast<Array *>(bt);
             CPPUNIT_ASSERT(fsarr_p);
-            // dods_byte fdb[fsarr_p->length() * sizeof(dods_byte)];
-            // dods_byte db[arr->length() * sizeof(dods_byte)];
             vector<dods_byte> fdb(fsarr_p->length() * sizeof(dods_byte));
             vector<dods_byte> db(fsarr_p->length() * sizeof(dods_byte));
             fsarr_p->value(fdb.data());
