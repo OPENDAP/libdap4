@@ -1,21 +1,15 @@
+
+#include "config.h"
+
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/TestAssert.h>
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
-
-#include "config.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <fcntl.h>
-#include <pthread.h>
 
-// #define DODS_DEBUG 1
-
-#include <cstring>
 #include <fstream>
 #include <iostream>
 
@@ -44,7 +38,6 @@
 #include "debug.h"
 
 #include "run_tests_cppunit.h"
-#include "test_config.h"
 
 int test_variable_sleep_interval = 0; // Used in Test* classes for testing timeouts.
 
@@ -148,7 +141,7 @@ public:
         url_value = "http://dcz.gso.uri.edu/avhrr-archive/archive.html";
     }
 
-    void setUp() {
+    void setUp() override {
         b = new TestByte("byte");
         b->read();
 
@@ -225,41 +218,41 @@ public:
         s->set_send_p(true);
     }
 
-    void tearDown() {
+    void tearDown() override {
         delete b;
-        b = 0;
+        b = nullptr;
         delete i16;
-        i16 = 0;
+        i16 = nullptr;
         delete i32;
-        i32 = 0;
+        i32 = nullptr;
         delete ui16;
-        ui16 = 0;
+        ui16 = nullptr;
         delete ui32;
-        ui32 = 0;
+        ui32 = nullptr;
         delete f32;
-        f32 = 0;
+        f32 = nullptr;
         delete f64;
-        f64 = 0;
+        f64 = nullptr;
         delete str;
-        str = 0;
+        str = nullptr;
         delete url;
-        url = 0;
+        url = nullptr;
 
         delete ab;
-        ab = 0;
+        ab = nullptr;
         delete arr;
-        arr = 0;
+        arr = nullptr;
         delete a_f32;
-        ab = 0;
+        ab = nullptr;
         delete arr_f32;
-        arr_f32 = 0;
+        arr_f32 = nullptr;
         delete a_f64;
-        ab = 0;
+        ab = nullptr;
         delete arr_f64;
-        arr_f64 = 0;
+        arr_f64 = nullptr;
 
         delete s;
-        s = 0;
+        s = nullptr;
     }
 
     void simple_types_file_serialize_test() {
@@ -408,7 +401,7 @@ public:
 
             BaseType *bt = fs.var("fsab");
             CPPUNIT_ASSERT(bt);
-            Array *fsarr_p = dynamic_cast<Array *>(bt);
+            auto *fsarr_p = dynamic_cast<Array *>(bt);
             CPPUNIT_ASSERT(fsarr_p);
             vector<dods_byte> fdb(fsarr_p->length() * sizeof(dods_byte));
             fsarr_p->value(fdb.data());
@@ -539,16 +532,16 @@ public:
                 BaseTypeRow *row = seq.row_value(i);
                 CPPUNIT_ASSERT(row);
                 CPPUNIT_ASSERT(row->size() == 3);
-                Float64 *f64_p = dynamic_cast<Float64 *>((*row)[0]);
+                auto *f64_p = dynamic_cast<Float64 *>((*row)[0]);
                 CPPUNIT_ASSERT(f64_p);
                 CPPUNIT_ASSERT(f64_p->value() == f64->value());
 
-                Array *arr_p = dynamic_cast<Array *>((*row)[1]);
+                auto *arr_p = dynamic_cast<Array *>((*row)[1]);
                 CPPUNIT_ASSERT(arr_p);
                 arr_p->value(fdb.data());
                 CPPUNIT_ASSERT(arr_p->length() == arr->length());
                 CPPUNIT_ASSERT(!memcmp((void *)fdb.data(), (void *)db.data(), arr_p->length() * sizeof(dods_byte)));
-                Sequence *seq_p = dynamic_cast<Sequence *>((*row)[2]);
+                auto *seq_p = dynamic_cast<Sequence *>((*row)[2]);
                 CPPUNIT_ASSERT(seq_p);
                 unsigned int num_rows_sub = seq_p->number_of_rows();
                 CPPUNIT_ASSERT(num_rows == 4);
@@ -556,10 +549,10 @@ public:
                     BaseTypeRow *row_sub = seq_p->row_value(j);
                     CPPUNIT_ASSERT(row_sub);
                     CPPUNIT_ASSERT(row_sub->size() == 2);
-                    UInt16 *ui16_p = dynamic_cast<UInt16 *>((*row_sub)[0]);
+                    auto *ui16_p = dynamic_cast<UInt16 *>((*row_sub)[0]);
                     CPPUNIT_ASSERT(ui16_p);
                     CPPUNIT_ASSERT(ui16_p->value() == ui16->value());
-                    Url *url_p = dynamic_cast<Url *>((*row_sub)[1]);
+                    auto url_p = dynamic_cast<Url *>((*row_sub)[1]);
                     CPPUNIT_ASSERT(url_p);
                     CPPUNIT_ASSERT(url_p->value() == url->value());
                 }
@@ -823,13 +816,8 @@ public:
 
     void array_f32_stream_deserialize_test() {
         try {
-#if 0
-            ifstream strm( "a_test.strm", ios::in );
-            XDRStreamUnMarshaller um( strm );
-#else
             FILE *sf = fopen("a_f32_test.file", "r");
             XDRFileUnMarshaller um(sf);
-#endif
             TestFloat32 fa_f32("a_f32");
             TestArray farr("arr_f32", &fa_f32);
             farr.append_dim(5, "dim1");
@@ -908,13 +896,8 @@ public:
 
     void array_f64_stream_deserialize_test() {
         try {
-#if 0
-            ifstream strm( "a_test.strm", ios::in );
-            XDRStreamUnMarshaller um( strm );
-#else
             FILE *sf = fopen("a_f64_test.file", "r");
             XDRFileUnMarshaller um(sf);
-#endif
             TestFloat64 fa_f64("a_f64");
             TestArray farr("arr_f64", &fa_f64);
             farr.append_dim(5, "dim1");
@@ -992,13 +975,8 @@ public:
 
     void structure_stream_deserialize_test() {
         try {
-#if 0
-            ifstream strm( "struct_test.strm", ios::in );
-            XDRStreamUnMarshaller um( strm );
-#else
             FILE *sf = fopen("struct_test.strm", "r");
             XDRFileUnMarshaller um(sf);
-#endif
             TestStructure fs("fs");
             TestInt32 fsi32("fsi32");
             fs.add_var(&fsi32);
@@ -1070,13 +1048,8 @@ public:
 
     void grid_stream_deserialize_test() {
         try {
-#if 0
-            ifstream strm( "g_test.strm", ios::in );
-            XDRStreamUnMarshaller um( strm );
-#else
             FILE *sf = fopen("g_test.strm", "r");
             XDRFileUnMarshaller um(sf);
-#endif
             TestGrid tg("grid1");
             TestArray arr2("arr2", ab);
             arr2.append_dim(5, "dim1");
@@ -1133,13 +1106,8 @@ public:
 
     void sequence_stream_deserialize_test() {
         try {
-#if 0
-            ifstream strm( "seq_test.strm", ios::in );
-            XDRStreamUnMarshaller um( strm );
-#else
             FILE *sf = fopen("seq_test.strm", "r");
             XDRFileUnMarshaller um(sf);
-#endif
             vector<dods_byte> fdb(arr->length() * sizeof(dods_byte));
             ;
 
