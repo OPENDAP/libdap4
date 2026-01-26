@@ -1,14 +1,11 @@
 
-#include <cppunit/CompilerOutputter.h>
-#include <cppunit/TestAssert.h>
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/HelperMacros.h>
-
 #include "config.h"
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
+#include <cstring>
 #include <fstream>
 #include <iostream>
 
@@ -30,6 +27,11 @@
 #include "XDRFileMarshaller.h"
 #include "XDRFileUnMarshaller.h"
 #include "XDRStreamMarshaller.h"
+
+#include <cppunit/CompilerOutputter.h>
+#include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 #include "run_tests_cppunit.h"
 
