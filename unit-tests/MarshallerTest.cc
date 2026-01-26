@@ -95,51 +95,45 @@ class MarshallerTest : public CppUnit::TestFixture {
     CPPUNIT_TEST(array_stream_put_vector_thread_test_4);
     CPPUNIT_TEST(array_stream_put_vector_thread_test_5);
 
-#if 1
     CPPUNIT_TEST(array_stream_serialize_part_thread_test);
     CPPUNIT_TEST(array_stream_serialize_part_thread_test_2);
     CPPUNIT_TEST(array_stream_serialize_part_thread_test_3);
-#endif
 
     CPPUNIT_TEST_SUITE_END();
 
-    TestByte *b;
-    TestInt16 *i16;
-    TestInt32 *i32;
-    TestUInt16 *ui16;
-    TestUInt32 *ui32;
-    TestFloat32 *f32;
-    TestFloat64 *f64;
-    TestStr *str;
-    TestUrl *url;
+    TestByte *b = nullptr;
+    TestInt16 *i16 = nullptr;
+    TestInt32 *i32 = nullptr;
+    TestUInt16 *ui16 = nullptr;
+    TestUInt32 *ui32 = nullptr;
+    TestFloat32 *f32 = nullptr;
+    TestFloat64 *f64 = nullptr;
+    TestStr *str = nullptr;
+    TestUrl *url = nullptr;
 
     vector<dods_byte> db;
-    TestByte *ab;
-    TestArray *arr;
+    TestByte *ab = nullptr;
+    TestArray *arr = nullptr;
 
     vector<dods_float32> d_f32;
-    TestFloat32 *a_f32;
-    TestArray *arr_f32;
+    TestFloat32 *a_f32 = nullptr;
+    TestArray *arr_f32 = nullptr;
 
     vector<dods_float64> d_f64;
-    TestFloat64 *a_f64;
-    TestArray *arr_f64;
+    TestFloat64 *a_f64 = nullptr;
+    TestArray *arr_f64 = nullptr;
 
-    TestStructure *s;
+    TestStructure *s = nullptr;
 
     ConstraintEvaluator eval;
     TestTypeFactory ttf;
     DataDDS dds;
 
     string str_value, str2_value;
-    string url_value;
+    string url_value{"http://dcz.gso.uri.edu/avhrr-archive/archive.html"};
 
 public:
-    MarshallerTest()
-        : b(0), i16(0), i32(0), ui16(0), ui32(0), f32(0), f64(0), str(0), url(0), ab(0), arr(0), a_f32(0), arr_f32(0),
-          a_f64(0), arr_f64(0), s(0), dds(&ttf, "dds") {
-        url_value = "http://dcz.gso.uri.edu/avhrr-archive/archive.html";
-    }
+    MarshallerTest() : dds(&ttf, "dds") {}
 
     void setUp() override {
         b = new TestByte("byte");
@@ -595,13 +589,8 @@ public:
 
     void simple_types_stream_deserialize_test() {
         try {
-#if 0
-            ifstream strm( "st_test.strm", ios::in );
-            XDRStreamUnMarshaller um( strm );
-#else
             FILE *sf = fopen("st_test.strm", "r");
             XDRFileUnMarshaller um(sf);
-#endif
             Byte fb("fb");
             fb.deserialize(um, &dds, false);
             CPPUNIT_ASSERT(fb.value() == b->value());
@@ -658,13 +647,8 @@ public:
 
     void array_stream_deserialize_test() {
         try {
-#if 0
-            ifstream strm( "a_test.strm", ios::in );
-            XDRStreamUnMarshaller um( strm );
-#else
             FILE *sf = fopen("a_test.strm", "r");
             XDRFileUnMarshaller um(sf);
-#endif
             TestByte fab("ab");
             TestArray farr("arr", &fab);
             farr.append_dim(5, "dim1");
@@ -996,18 +980,17 @@ public:
             CPPUNIT_ASSERT(fsi32_p);
             CPPUNIT_ASSERT(fsi32_p->value() == i32->value());
 
-            Str *fsstr_p = dynamic_cast<Str *>(fs.var("fsstr"));
+            auto fsstr_p = dynamic_cast<Str *>(fs.var("fsstr"));
             CPPUNIT_ASSERT(fsstr_p);
             DBG(cerr << "fsstr_p->value(): " << fsstr_p->value() << endl);
             CPPUNIT_ASSERT(fsstr_p->value().find("Silly test string:") != string::npos);
 
             BaseType *bt = fs.var("fsab");
             CPPUNIT_ASSERT(bt);
-            Array *fsarr_p = dynamic_cast<Array *>(bt);
+            auto *fsarr_p = dynamic_cast<Array *>(bt);
             CPPUNIT_ASSERT(fsarr_p);
             CPPUNIT_ASSERT(fsarr_p->length() == arr->length());
             vector<dods_byte> fdb(fsarr_p->length() * sizeof(dods_byte));
-            ;
             fsarr_p->value(fdb.data());
             CPPUNIT_ASSERT(!memcmp((void *)fdb.data(), (void *)db.data(), fsarr_p->length() * sizeof(dods_byte)));
         } catch (Error &e) {
@@ -1131,15 +1114,15 @@ public:
                 BaseTypeRow *row = seq.row_value(i);
                 CPPUNIT_ASSERT(row);
                 CPPUNIT_ASSERT(row->size() == 3);
-                Float64 *f64_p = dynamic_cast<Float64 *>((*row)[0]);
+                auto *f64_p = dynamic_cast<Float64 *>((*row)[0]);
                 CPPUNIT_ASSERT(f64_p);
                 CPPUNIT_ASSERT(f64_p->value() == f64->value());
-                Array *arr_p = dynamic_cast<Array *>((*row)[1]);
+                auto *arr_p = dynamic_cast<Array *>((*row)[1]);
                 CPPUNIT_ASSERT(arr_p);
                 arr_p->value(fdb.data());
                 CPPUNIT_ASSERT(arr_p->length() == arr->length());
                 CPPUNIT_ASSERT(!memcmp((void *)fdb.data(), (void *)db.data(), arr_p->length() * sizeof(dods_byte)));
-                Sequence *seq_p = dynamic_cast<Sequence *>((*row)[2]);
+                auto *seq_p = dynamic_cast<Sequence *>((*row)[2]);
                 CPPUNIT_ASSERT(seq_p);
                 unsigned int num_rows_sub = seq_p->number_of_rows();
                 CPPUNIT_ASSERT(num_rows == 4);
@@ -1147,10 +1130,10 @@ public:
                     BaseTypeRow *row_sub = seq_p->row_value(j);
                     CPPUNIT_ASSERT(row_sub);
                     CPPUNIT_ASSERT(row_sub->size() == 2);
-                    UInt16 *ui16_p = dynamic_cast<UInt16 *>((*row_sub)[0]);
+                    const auto *ui16_p = dynamic_cast<UInt16 *>((*row_sub)[0]);
                     CPPUNIT_ASSERT(ui16_p);
                     CPPUNIT_ASSERT(ui16_p->value() == ui16->value());
-                    Url *url_p = dynamic_cast<Url *>((*row_sub)[1]);
+                    const auto url_p = dynamic_cast<Url *>((*row_sub)[1]);
                     CPPUNIT_ASSERT(url_p);
                     CPPUNIT_ASSERT(url_p->value() == url->value());
                 }
@@ -1329,7 +1312,7 @@ public:
                 throw InternalErr(__FILE__, __LINE__, "Implemented for numeric simple types only");
             }
         } catch (Error &e) {
-            string err = "failed:" + e.get_error_message();
+            const string err = "failed:" + e.get_error_message();
             CPPUNIT_FAIL(err.c_str());
         }
 
