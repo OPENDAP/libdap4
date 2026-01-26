@@ -234,7 +234,6 @@ public:
         my_putenv(rc);
 
         try {
-            RCReader *reader = RCReader::instance();
             rcr->loadRC();
             CPPUNIT_ASSERT(!"initialize_instance() should throw Error.");
         } catch (const Error &e) {
