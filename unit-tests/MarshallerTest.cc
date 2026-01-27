@@ -396,7 +396,7 @@ public:
 
             BaseType *bt = fs.var("fsab");
             CPPUNIT_ASSERT(bt);
-            auto fsarr_p = dynamic_cast<Array *>(bt);
+            auto *fsarr_p = dynamic_cast<Array *>(bt);
             CPPUNIT_ASSERT(fsarr_p);
             vector<dods_byte> fdb(fsarr_p->length() * sizeof(dods_byte));
             fsarr_p->value(fdb.data());
@@ -527,16 +527,16 @@ public:
                 BaseTypeRow *row = seq.row_value(i);
                 CPPUNIT_ASSERT(row);
                 CPPUNIT_ASSERT(row->size() == 3);
-                auto f64_p = dynamic_cast<Float64 *>((*row)[0]);
+                auto *f64_p = dynamic_cast<Float64 *>((*row)[0]);
                 CPPUNIT_ASSERT(f64_p);
                 CPPUNIT_ASSERT(f64_p->value() == f64->value());
 
-                auto arr_p = dynamic_cast<Array *>((*row)[1]);
+                auto *arr_p = dynamic_cast<Array *>((*row)[1]);
                 CPPUNIT_ASSERT(arr_p);
                 arr_p->value(fdb.data());
                 CPPUNIT_ASSERT(arr_p->length() == arr->length());
                 CPPUNIT_ASSERT(!memcmp((void *)fdb.data(), (void *)db.data(), arr_p->length() * sizeof(dods_byte)));
-                auto seq_p = dynamic_cast<Sequence *>((*row)[2]);
+                auto *seq_p = dynamic_cast<Sequence *>((*row)[2]);
                 CPPUNIT_ASSERT(seq_p);
                 unsigned int num_rows_sub = seq_p->number_of_rows();
                 CPPUNIT_ASSERT(num_rows == 4);
@@ -544,7 +544,7 @@ public:
                     BaseTypeRow *row_sub = seq_p->row_value(j);
                     CPPUNIT_ASSERT(row_sub);
                     CPPUNIT_ASSERT(row_sub->size() == 2);
-                    auto ui16_p = dynamic_cast<UInt16 *>((*row_sub)[0]);
+                    auto *ui16_p = dynamic_cast<UInt16 *>((*row_sub)[0]);
                     CPPUNIT_ASSERT(ui16_p);
                     CPPUNIT_ASSERT(ui16_p->value() == ui16->value());
                     auto url_p = dynamic_cast<Url *>((*row_sub)[1]);
@@ -988,7 +988,7 @@ public:
 
             BaseType *bt = fs.var("fsab");
             CPPUNIT_ASSERT(bt);
-            auto fsarr_p = dynamic_cast<Array *>(bt);
+            auto *fsarr_p = dynamic_cast<Array *>(bt);
             CPPUNIT_ASSERT(fsarr_p);
             CPPUNIT_ASSERT(fsarr_p->length() == arr->length());
             vector<dods_byte> fdb(fsarr_p->length() * sizeof(dods_byte));
@@ -1115,15 +1115,15 @@ public:
                 BaseTypeRow *row = seq.row_value(i);
                 CPPUNIT_ASSERT(row);
                 CPPUNIT_ASSERT(row->size() == 3);
-                auto f64_p = dynamic_cast<Float64 *>((*row)[0]);
+                auto *f64_p = dynamic_cast<Float64 *>((*row)[0]);
                 CPPUNIT_ASSERT(f64_p);
                 CPPUNIT_ASSERT(f64_p->value() == f64->value());
-                auto arr_p = dynamic_cast<Array *>((*row)[1]);
+                auto *arr_p = dynamic_cast<Array *>((*row)[1]);
                 CPPUNIT_ASSERT(arr_p);
                 arr_p->value(fdb.data());
                 CPPUNIT_ASSERT(arr_p->length() == arr->length());
                 CPPUNIT_ASSERT(!memcmp((void *)fdb.data(), (void *)db.data(), arr_p->length() * sizeof(dods_byte)));
-                auto seq_p = dynamic_cast<Sequence *>((*row)[2]);
+                auto *seq_p = dynamic_cast<Sequence *>((*row)[2]);
                 CPPUNIT_ASSERT(seq_p);
                 unsigned int num_rows_sub = seq_p->number_of_rows();
                 CPPUNIT_ASSERT(num_rows == 4);
@@ -1131,7 +1131,7 @@ public:
                     BaseTypeRow *row_sub = seq_p->row_value(j);
                     CPPUNIT_ASSERT(row_sub);
                     CPPUNIT_ASSERT(row_sub->size() == 2);
-                    const auto ui16_p = dynamic_cast<UInt16 *>((*row_sub)[0]);
+                    const auto *ui16_p = dynamic_cast<UInt16 *>((*row_sub)[0]);
                     CPPUNIT_ASSERT(ui16_p);
                     CPPUNIT_ASSERT(ui16_p->value() == ui16->value());
                     const auto url_p = dynamic_cast<Url *>((*row_sub)[1]);
