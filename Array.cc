@@ -994,7 +994,7 @@ void Array::print_decl(FILE *out, string space, bool print_semi, bool constraint
  constrained, and FALSE otherwise.
  */
 void Array::print_decl(ostream &out, string space, bool print_semi, bool constraint_info, bool constrained,
-                       bool is_root_grp, bool array_member) {
+                       bool is_root_grp, bool) {
     if (constrained && !send_p())
         return;
 

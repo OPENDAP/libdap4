@@ -218,12 +218,12 @@ protected:
                                              sequence_values_stack_t &sequence_values_stack);
 
 public:
-    Sequence(const string &n);
+    explicit Sequence(const string &n);
     Sequence(const string &n, const string &d);
 
     Sequence(const Sequence &rhs);
 
-    virtual ~Sequence();
+    ~Sequence() override;
 
     Sequence &operator=(const Sequence &rhs);
 

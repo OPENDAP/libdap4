@@ -1,16 +1,11 @@
-#include <cppunit/CompilerOutputter.h>
-#include <cppunit/TestAssert.h>
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
 
 #include "config.h"
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
-#include <cstring>
+#include <cstring> // Needed for Linux
 #include <fstream>
 #include <iostream>
 
@@ -33,10 +28,12 @@
 #include "XDRFileUnMarshaller.h"
 #include "XDRStreamMarshaller.h"
 
-#include "debug.h"
+#include <cppunit/CompilerOutputter.h>
+#include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 #include "run_tests_cppunit.h"
-#include "test_config.h"
 
 using std::cerr;
 using std::cout;
@@ -74,9 +71,9 @@ private:
 
 public:
     marshT() = default;
-    ~marshT() = default;
+    ~marshT() override = default;
 
-    void setUp() {
+    void setUp() override {
         b = new TestByte("b");
         i16 = new TestInt16("i16");
         i32 = new TestInt32("i32");
@@ -127,33 +124,33 @@ public:
         s->read();
     }
 
-    void tearDown() {
+    void tearDown() override {
         delete b;
-        b = 0;
+        b = nullptr;
         delete i16;
-        i16 = 0;
+        i16 = nullptr;
         delete i32;
-        i32 = 0;
+        i32 = nullptr;
         delete ui16;
-        ui16 = 0;
+        ui16 = nullptr;
         delete ui32;
-        ui32 = 0;
+        ui32 = nullptr;
         delete f32;
-        f32 = 0;
+        f32 = nullptr;
         delete f64;
-        f64 = 0;
+        f64 = nullptr;
 
         delete str;
-        str = 0;
+        str = nullptr;
         delete url;
-        url = 0;
+        url = nullptr;
 
         delete ab;
-        ab = 0;
+        ab = nullptr;
         delete arr;
-        arr = 0;
+        arr = nullptr;
         delete s;
-        s = 0;
+        s = nullptr;
         delete seq;
         delete seq2;
     }
@@ -173,7 +170,7 @@ public:
 
         DBG(cerr << "serializing using XDRFileMarshaller" << endl);
 
-        BaseType *bt = static_cast<BaseType *>(b);
+        auto *bt = static_cast<BaseType *>(b);
         FILE *f = fopen("test.file", "w");
         CPPUNIT_ASSERT_THROW(bt->BaseType::serialize(eval, dds, fm, false), InternalErr);
         fclose(f);
@@ -273,14 +270,14 @@ public:
 
             BaseType *bt = fs.var("fsab");
             CPPUNIT_ASSERT(bt);
-            Array *fsarr_p = dynamic_cast<Array *>(bt);
+            auto *fsarr_p = dynamic_cast<Array *>(bt);
             CPPUNIT_ASSERT(fsarr_p);
-            dods_byte fdb[fsarr_p->length() * sizeof(dods_byte)];
-            dods_byte db[arr->length() * sizeof(dods_byte)];
-            fsarr_p->value(fdb);
-            arr->value(db);
+            vector<dods_byte> fdb(fsarr_p->length() * sizeof(dods_byte));
+            vector<dods_byte> db(fsarr_p->length() * sizeof(dods_byte));
+            fsarr_p->value(fdb.data());
+            arr->value(db.data());
             CPPUNIT_ASSERT(fsarr_p->length() == arr->length());
-            CPPUNIT_ASSERT(!memcmp((void *)fdb, (void *)db, fsarr_p->length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *)fdb.data(), (void *)db.data(), fsarr_p->length() * sizeof(dods_byte)));
 
             DBG(cerr << " file array" << endl);
             TestByte fab("ab");
@@ -288,9 +285,9 @@ public:
             farr.append_dim(5, "dim1");
             farr.append_dim(3, "dim2");
             farr.deserialize(um, &dds, false);
-            farr.value(fdb);
+            farr.value(fdb.data());
             CPPUNIT_ASSERT(farr.length() == arr->length());
-            CPPUNIT_ASSERT(!memcmp((void *)fdb, (void *)db, farr.length() * sizeof(dods_byte)));
+            CPPUNIT_ASSERT(!memcmp((void *)fdb.data(), (void *)db.data(), farr.length() * sizeof(dods_byte)));
 
             TestSequence fseq("fseq");
             fseq.add_var(f64);
@@ -309,15 +306,15 @@ public:
                 BaseTypeRow *row = fseq.row_value(i);
                 CPPUNIT_ASSERT(row);
                 CPPUNIT_ASSERT(row->size() == 3);
-                Float64 *f64_p = dynamic_cast<Float64 *>((*row)[0]);
+                auto *f64_p = dynamic_cast<Float64 *>((*row)[0]);
                 CPPUNIT_ASSERT(f64_p);
                 CPPUNIT_ASSERT(f64_p->value() == f64->value());
-                Array *arr_p = dynamic_cast<Array *>((*row)[1]);
+                auto *arr_p = dynamic_cast<Array *>((*row)[1]);
                 CPPUNIT_ASSERT(arr_p);
-                arr_p->value(fdb);
+                arr_p->value(fdb.data());
                 CPPUNIT_ASSERT(arr_p->length() == arr->length());
-                CPPUNIT_ASSERT(!memcmp((void *)fdb, (void *)db, arr_p->length() * sizeof(dods_byte)));
-                Sequence *seq_p = dynamic_cast<Sequence *>((*row)[2]);
+                CPPUNIT_ASSERT(!memcmp((void *)fdb.data(), (void *)db.data(), arr_p->length() * sizeof(dods_byte)));
+                auto *seq_p = dynamic_cast<Sequence *>((*row)[2]);
                 CPPUNIT_ASSERT(seq_p);
                 unsigned int num_rows_sub = seq_p->number_of_rows();
                 CPPUNIT_ASSERT(num_rows == 4);
@@ -325,10 +322,10 @@ public:
                     BaseTypeRow *row_sub = seq_p->row_value(j);
                     CPPUNIT_ASSERT(row_sub);
                     CPPUNIT_ASSERT(row_sub->size() == 2);
-                    UInt16 *ui16_p = dynamic_cast<UInt16 *>((*row_sub)[0]);
+                    auto *ui16_p = dynamic_cast<UInt16 *>((*row_sub)[0]);
                     CPPUNIT_ASSERT(ui16_p);
                     CPPUNIT_ASSERT(ui16_p->value() == ui16->value());
-                    Url *url_p = dynamic_cast<Url *>((*row_sub)[1]);
+                    auto *url_p = dynamic_cast<Url *>((*row_sub)[1]);
                     CPPUNIT_ASSERT(url_p);
                     CPPUNIT_ASSERT(url_p->value() == url->value());
                 }

@@ -202,7 +202,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	Grid.h UInt32.h Int16.h UInt16.h Float32.h BaseTypeFactory.h	\
 	ObjectType.h EncodingType.h SignalHandler.h Error.h		\
 	InternalErr.h util.h escaping.h parser.h debug.h dods-limits.h	\
-	dods-datatypes.h Type.h		\
+	dods-datatypes.h Type.h	diagnostic_suppression.h	\
 	util_mit.h expr.h Clause.h RValue.h ConstraintEvaluator.h	\
 	ce_parser.h DapIndent.h DapObj.h XDRFileMarshaller.h		\
 	Marshaller.h UnMarshaller.h XDRFileUnMarshaller.h		\

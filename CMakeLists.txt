@@ -160,6 +160,7 @@ set(DAP4_ONLY_SRC
         D4ParserSax2.cc D4BaseTypeFactory.cc D4Dimensions.cc D4EnumDefs.cc D4Group.cc
         DMR.cc D4Attributes.cc D4Enum.cc chunked_ostream.cc chunked_istream.cc
         D4Sequence.cc D4Maps.cc D4Opaque.cc D4AsyncUtil.cc D4RValue.cc D4FilterClause.cc
+		diagnostic_suppression.h
 )
 
 set(CLIENT_SRC RCReader.cc Connect.cc D4Connect.cc util_mit.cc)
