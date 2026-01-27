@@ -136,7 +136,11 @@ namespace libdap {
     @return A C function used to encode data in the XDR format.
 */
 xdrproc_t XDRUtils::xdr_coder(const Type &t) {
-    A_cast_function_type_mismatch switch (t) {
+    // Suppress the warning about the type mismatch when casting to a function type.
+    // jhrg 1/27/26
+    A_cast_function_type_mismatch
+
+        switch (t) {
     case dods_int16_c:
         return reinterpret_cast<xdrproc_t>(XDR_INT16);
     case dods_uint16_c:
@@ -160,7 +164,10 @@ xdrproc_t XDRUtils::xdr_coder(const Type &t) {
     default:
         break;
     }
-    A_Pop return nullptr;
+    // End warning suppression.
+    A_Pop
+
+        return nullptr;
 }
 
 } // namespace libdap
