@@ -30,6 +30,7 @@
 #include <unistd.h>
 #endif
 
+#include <cstring> // Needed for Linux
 #include <fstream>
 #include <iostream>
 #include <string>

@@ -5,7 +5,7 @@
 #include <unistd.h>
 #endif
 
-#include <cstring>
+#include <cstring> // Needed for Linux
 #include <fstream>
 #include <iostream>
 
