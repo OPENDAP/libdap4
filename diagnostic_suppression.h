@@ -22,7 +22,10 @@
 
 #define A_IgnoreUnused
 #define A_Pop
+<<<<<<< HEAD
 
+=======
+>>>>>>> 16b1de8c78711c08eb5ce19acd48412584448df1
 #endif
 
 #endif // LIBDAP_DIAGNOSTIC_SUPPRESSION_H

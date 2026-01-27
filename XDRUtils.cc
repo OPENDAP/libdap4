@@ -164,6 +164,7 @@ xdrproc_t XDRUtils::xdr_coder(const Type &t) {
     default:
         break;
     }
+
     // End warning suppression.
     A_Pop;
 
