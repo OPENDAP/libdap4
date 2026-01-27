@@ -138,9 +138,9 @@ namespace libdap {
 xdrproc_t XDRUtils::xdr_coder(const Type &t) {
     // Suppress the warning about the type mismatch when casting to a function type.
     // jhrg 1/27/26
-    A_cast_function_type_mismatch
+    A_cast_function_type_mismatch;
 
-        switch (t) {
+    switch (t) {
     case dods_int16_c:
         return reinterpret_cast<xdrproc_t>(XDR_INT16);
     case dods_uint16_c:
@@ -165,9 +165,9 @@ xdrproc_t XDRUtils::xdr_coder(const Type &t) {
         break;
     }
     // End warning suppression.
-    A_Pop
+    A_Pop;
 
-        return nullptr;
+    return nullptr;
 }
 
 } // namespace libdap
