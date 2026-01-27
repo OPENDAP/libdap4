@@ -1,17 +1,18 @@
 
 #include "config.h"
 
-#include <cppunit/CompilerOutputter.h>
-#include <cppunit/TestAssert.h>
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/HelperMacros.h>
-
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
+#include <cstring> // Needed for Linux
 #include <fstream>
 #include <iostream>
+
+#include <cppunit/CompilerOutputter.h>
+#include <cppunit/TestAssert.h>
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 #include "TestArray.h"
 #include "TestByte.h"
