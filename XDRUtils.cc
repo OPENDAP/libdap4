@@ -35,6 +35,7 @@
 #include "Str.h"
 #include "XDRUtils.h"
 #include "debug.h"
+#include "diagnostic_suppression.h"
 
 using namespace libdap;
 
@@ -135,6 +136,10 @@ namespace libdap {
     @return A C function used to encode data in the XDR format.
 */
 xdrproc_t XDRUtils::xdr_coder(const Type &t) {
+    // Suppress the warning about the type mismatch when casting to a function type.
+    // jhrg 1/27/26
+    A_cast_function_type_mismatch;
+
     switch (t) {
     case dods_int16_c:
         return reinterpret_cast<xdrproc_t>(XDR_INT16);
@@ -148,6 +153,7 @@ xdrproc_t XDRUtils::xdr_coder(const Type &t) {
         return reinterpret_cast<xdrproc_t>(XDR_FLOAT32);
     case dods_float64_c:
         return reinterpret_cast<xdrproc_t>(XDR_FLOAT64);
+
     case dods_byte_c:
     case dods_str_c:
     case dods_url_c:
@@ -159,7 +165,10 @@ xdrproc_t XDRUtils::xdr_coder(const Type &t) {
         break;
     }
 
-    return NULL;
+    // End warning suppression.
+    A_Pop;
+
+    return nullptr;
 }
 
 } // namespace libdap

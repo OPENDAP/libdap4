@@ -218,21 +218,7 @@ bool UInt64::d4_ops(BaseType *b, int op) {
  *
  * @return A pointer to the transformed variable
  */
-std::vector<BaseType *> *UInt64::transform_to_dap2(AttrTable *, bool show_shared_dims) {
-
-#if 0
-    BaseType *dest = this->ptr_duplicate();
-    // convert the d4 attributes to a dap2 attribute table.
-    AttrTable *attrs = this->attributes()->get_AttrTable();
-    attrs->set_name(name());
-    dest->set_attr_table(*attrs);
-    dest->set_is_dap4(false);
-    // attrs->print(cerr,"",true);
-    return dest;
-#endif
-
-    return NULL;
-}
+std::vector<BaseType *> *UInt64::transform_to_dap2(AttrTable *, bool) { return nullptr; }
 
 /**
  * When send_p() is true a description of the instance is added to the inventory and true is returned.
