@@ -1,6 +1,6 @@
 Parse successful
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/vol_1_ce_7.xml" dapVersion="4.0" dmrVersion="1.0" name="vol_1_ce_7">
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/vol_1_ce_7.xml" dapVersion="4.0" dmrVersion="2.0" name="vol_1_ce_7">
     <Dimension name="nlat" size="100"/>
     <Dimension name="nlon" size="50"/>
     <Float32 name="lat">
@@ -37,7 +37,7 @@ Parse successful
 </Dataset>
 
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/vol_1_ce_7.xml" dapVersion="4.0" dmrVersion="1.0" name="vol_1_ce_7">
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="file:dap4/vol_1_ce_7.xml" dapVersion="4.0" dmrVersion="2.0" name="vol_1_ce_7">
     <Dimension name="nlat" size="1"/>
     <Dimension name="nlon" size="3"/>
     <Float32 name="temp">
