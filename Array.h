@@ -185,6 +185,7 @@ public:
         vector<var_chunk_info_t> var_chunk_info;
     };
 
+
 private:
     D4Maps *d_maps = nullptr;
 
@@ -192,6 +193,8 @@ private:
 
     bool direct_io_flag = false;
     var_storage_info vs_info;
+
+    float storage_size_ratio = 1;
 
     void update_dimension_pointers(D4Group *grp);
     void print_dim_element(const XMLWriter &xml, const dimension &d, bool constrained);
@@ -315,6 +318,11 @@ public:
     void set_dio_flag(bool dio_flag_value = true) { direct_io_flag = dio_flag_value; }
     var_storage_info &get_var_storage_info() { return vs_info; }
     void set_var_storage_info(const var_storage_info &my_vs_info);
+
+    // The following methods are for the applications that care about storage size.
+    // By default, the storage_size is set to be 0(we may need to set it to the total number of bytes). 
+    float get_storage_size_ratio() {return storage_size_ratio;}
+    void set_storage_size_ratio(float sr) {storage_size_ratio = sr;}
 };
 
 } // namespace libdap
