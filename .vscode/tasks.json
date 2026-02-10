@@ -1,0 +1,137 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "autotools: configure",
+            "type": "shell",
+            "command": "autoreconf -fvi && ./configure --prefix=$prefix --enable-developer",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "prefix": "/Users/jhrg/src/hyrax/build",
+                    "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+                },
+                "shell": {
+                    "executable": "/bin/zsh",
+                    "args": [
+                        "-c"
+                    ]
+                }
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "autotools: build",
+            "type": "shell",
+            "command": "make -j",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "prefix": "/Users/jhrg/src/hyrax/build",
+                    "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+                },
+                "shell": {
+                    "executable": "/bin/zsh",
+                    "args": [
+                        "-c"
+                    ]
+                }
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "autotools: check",
+            "type": "shell",
+            "command": "make -j check",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "prefix": "/Users/jhrg/src/hyrax/build",
+                    "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+                },
+                "shell": {
+                    "executable": "/bin/zsh",
+                    "args": [
+                        "-c"
+                    ]
+                }
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "autotools: install",
+            "type": "shell",
+            "command": "make install",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "prefix": "/Users/jhrg/src/hyrax/build",
+                    "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+                },
+                "shell": {
+                    "executable": "/bin/zsh",
+                    "args": [
+                        "-c"
+                    ]
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "autotools: clean",
+            "type": "shell",
+            "command": "make clean",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "prefix": "/Users/jhrg/src/hyrax/build",
+                    "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+                },
+                "shell": {
+                    "executable": "/bin/zsh",
+                    "args": [
+                        "-c"
+                    ]
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "autotools: compile_commands",
+            "type": "shell",
+            "command": "make clean && bear -- make -j && bear --append -- make -j check",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "prefix": "/Users/jhrg/src/hyrax/build",
+                    "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+                },
+                "shell": {
+                    "executable": "/bin/zsh",
+                    "args": [
+                        "-c"
+                    ]
+                }
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        }
+    ]
+}
