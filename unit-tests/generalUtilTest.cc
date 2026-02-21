@@ -65,6 +65,8 @@ public:
     CPPUNIT_TEST(munge_error_message_test);
     CPPUNIT_TEST(id2xml_test);
     CPPUNIT_TEST(xml2id_test);
+    CPPUNIT_TEST(id2www_ce_test);
+    CPPUNIT_TEST(escape_double_quotes_test);
 
     CPPUNIT_TEST(glob_test_1);
     CPPUNIT_TEST(glob_test_2);
@@ -330,6 +332,18 @@ public:
         CPPUNIT_ASSERT(xml2id("abc&amp;def&amp;") == "abc&def&");
         CPPUNIT_ASSERT(xml2id("&apos;abc&apos;def") == "'abc'def");
         CPPUNIT_ASSERT(xml2id("&quot;abc&quot;def&quot;") == "\"abc\"def\"");
+    }
+
+    void id2www_ce_test() {
+        CPPUNIT_ASSERT(id2www_ce("a*b") == "a%2ab");
+        CPPUNIT_ASSERT(id2www_ce("a*b*c") == "a%2ab%2ac");
+    }
+
+    void escape_double_quotes_test() {
+        string s = "a\"b\"c";
+        string escaped = escape_double_quotes(s);
+        CPPUNIT_ASSERT(escaped == "a\\\"b\\\"c");
+        CPPUNIT_ASSERT(unescape_double_quotes(escaped) == s);
     }
 };
 

@@ -21,6 +21,7 @@ set(TESTS_DAP_ONLY
 		D4AttributesTest.cc D4EnumTest.cc chunked_iostream_test.cc D4AsyncDocTest.cc
 		DMRTest.cc DmrRoundTripTest.cc DmrToDap2Test.cc D4FilterClauseTest.cc
 		IsDap4ProjectedTest.cc MarshallerFutureTest.cc TempFileTest.cc
+		DAPCache3Test.cc D4StreamRoundTripTest.cc ConstraintEvaluatorTest.cc MarshallerThreadTest.cc
 )
 
 # BigArrayTest.cc seems to break things. jhrg 6/12/25
