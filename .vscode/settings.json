@@ -12,7 +12,14 @@
             "makeArgs": [
                 "-j"
             ],
-            "name": "Unnamed configuration 1"
+            "name": "all"
+        },
+                {
+            "makeArgs": [
+                "-j", "check"
+            ],
+            "name": "check"
         }
+
     ]
 }
