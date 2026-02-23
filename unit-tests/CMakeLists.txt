@@ -22,6 +22,7 @@ set(TESTS_DAP_ONLY
 		DMRTest.cc DmrRoundTripTest.cc DmrToDap2Test.cc D4FilterClauseTest.cc
 		IsDap4ProjectedTest.cc MarshallerFutureTest.cc TempFileTest.cc
 		DAPCache3Test.cc D4StreamRoundTripTest.cc ConstraintEvaluatorTest.cc MarshallerThreadTest.cc
+		BaseTypeTest.cc
 )
 
 # BigArrayTest.cc seems to break things. jhrg 6/12/25
@@ -72,6 +73,9 @@ foreach(src ${TESTS_DAP_ONLY})
 	get_filename_component(tgt ${src} NAME_WE)
 	build_test(${tgt} ${src})
 endforeach()
+
+# DAPCache3 is not part of libdap, so compile its implementation into the test.
+target_sources(DAPCache3Test PRIVATE ${CMAKE_SOURCE_DIR}/DAPCache3.cc)
 
 foreach(src ${TESTS_DAPCLIENT})
 	get_filename_component(tgt ${src} NAME_WE)
