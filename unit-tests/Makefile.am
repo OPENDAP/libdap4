@@ -116,7 +116,7 @@ endif
 # kln 11/19/24
 if CPPUNIT
 if USE_BA
-UNIT_TESTS +=BigArrayTest
+UNIT_TESTS += BigArrayTest
 endif
 endif
 
@@ -185,7 +185,7 @@ DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 
 generalUtilTest_SOURCES = generalUtilTest.cc
 
-DAPCache3Test_SOURCES = DAPCache3Test.cc ../DAPCache3.cc
+DAPCache3Test_SOURCES = DAPCache3Test.cc ../DAPCache3.cc ../DAPCache3.h
 
 ConstraintEvaluatorTest_SOURCES = ConstraintEvaluatorTest.cc
 
