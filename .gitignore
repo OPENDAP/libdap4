@@ -204,7 +204,6 @@ unit-tests/IsDap4ProjectedTest
 unit-tests/util_mitTest
 unit-tests/MarshallerFutureTest
 unit-tests/BaseTypeTest
-unit-tests/BaseTypeTest.cc
 unit-tests/ConstraintEvaluatorTest
 unit-tests/D4StreamRoundTripTest
 unit-tests/DAPCache3Test
