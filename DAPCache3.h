@@ -29,27 +29,18 @@
 #ifndef DAPCache3_h_
 #define DAPCache3_h_ 1
 
-// #include <algorithm>
 #include <list>
 #include <map>
 #include <string>
-// #include <sstream>
 
 #include "DapObj.h"
-
-#if 0
-#include "BESDebug.h"
-#include "BESObj.h"
-
-class BESKeys;
-#endif
 
 namespace libdap {
 
 // These typedefs are used to record information about the files in the cache.
 // See DAPCache3.cc and look at the purge() method.
 typedef struct {
-    string name;
+    std::string name;
     unsigned long long size;
     time_t time;
 } cache_entry;
@@ -80,25 +71,19 @@ typedef std::list<cache_entry> CacheFiles;
  * on the cache info file must only be called when the lock has been obtained.
  */
 class DAPCache3 : public libdap::DapObj {
-
-private:
     static DAPCache3 *d_instance;
 
     static const char DAP_CACHE_CHAR = '#';
 
-    string d_cache_dir; /// pathname of the cache directory
-    string d_prefix;    /// tack this on the front of cache file name
+    std::string d_cache_dir; /// pathname of the cache directory
+    std::string d_prefix;    /// tack this on the front of cache file name
 
     /// How many megabytes can the cache hold before we have to purge
     unsigned long long d_max_cache_size_in_bytes;
     // When we purge, how much should we throw away. Set in the ctor to 80% of the max size.
     unsigned long long d_target_size;
-#if 0
-    // This class implements a singleton, so the constructor is hidden.
-    BESCache3(BESKeys *keys, const string &cache_dir_key, const string &prefix_key, const string &size_key);
-#endif
     // Testing
-    DAPCache3(const string &cache_dir, const string &prefix, unsigned long long size);
+    DAPCache3(const std::string &cache_dir, const std::string &prefix, unsigned long long size);
 
     // Suppress the assignment operator and default copy ctor, ...
     DAPCache3();
@@ -111,47 +96,43 @@ private:
     unsigned long long m_collect_cache_dir_info(CacheFiles &contents);
 
     /// Name of the file that tracks the size of the cache
-    string d_cache_info;
+    std::string d_cache_info;
     int d_cache_info_fd;
 
-    void m_record_descriptor(const string &file, int fd);
-    int m_get_descriptor(const string &file);
+    void m_record_descriptor(const std::string &file, int fd);
+    int m_get_descriptor(const std::string &file);
 
     // map that relates files to the descriptor used to obtain a lock
-    typedef std::map<string, int> FilesAndLockDescriptors;
+    typedef std::map<std::string, int> FilesAndLockDescriptors;
     FilesAndLockDescriptors d_locks;
 
     // Life-cycle control
-    virtual ~DAPCache3() {}
+    ~DAPCache3() override {}
     static void delete_instance();
 
 public:
-    static DAPCache3 *get_instance(const string &cache_dir, const string &prefix, unsigned long long size);
+    static DAPCache3 *get_instance(const std::string &cache_dir, const std::string &prefix, unsigned long long size);
     static DAPCache3 *get_instance();
 
-    string get_cache_file_name(const string &src, bool mangle = true);
+    std::string get_cache_file_name(const std::string &src, bool mangle = true);
 
-    virtual bool create_and_lock(const string &target, int &fd);
-    virtual bool get_read_lock(const string &target, int &fd);
+    virtual bool create_and_lock(const std::string &target, int &fd);
+    virtual bool get_read_lock(const std::string &target, int &fd);
     virtual void exclusive_to_shared_lock(int fd);
-    virtual void unlock_and_close(const string &target);
+    virtual void unlock_and_close(const std::string &target);
     virtual void unlock_and_close(int fd);
 
     virtual void lock_cache_write();
     virtual void lock_cache_read();
     virtual void unlock_cache();
 
-    virtual unsigned long long update_cache_info(const string &target);
+    virtual unsigned long long update_cache_info(const std::string &target);
     virtual bool cache_too_big(unsigned long long current_size) const;
     virtual unsigned long long get_cache_size();
-    virtual void update_and_purge(const string &new_file);
-    virtual void purge_file(const string &file);
+    virtual void update_and_purge(const std::string &new_file);
+    virtual void purge_file(const std::string &file);
 
-#if 0
-    static BESCache3 *get_instance(BESKeys *keys, const string &cache_dir_key, const string &prefix_key, const string &size_key);
-#endif
-
-    void dump(ostream &strm) const override;
+    void dump(std::ostream &strm) const override;
 };
 
 } // namespace libdap

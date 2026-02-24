@@ -8,6 +8,7 @@
 .project
 .settings
 .DS_Store
+.vscode/
 */.DS_Store
 gcovr-output/
 gcov-data/
@@ -74,6 +75,7 @@ libtool
 doxy.conf
 doxygen_warnings.txt
 main_page.doxygen
+dmr_memory_cache
 
 ## libdap specific files
 gl/*.h
@@ -201,6 +203,14 @@ unit-tests/GridTest
 unit-tests/IsDap4ProjectedTest
 unit-tests/util_mitTest
 unit-tests/MarshallerFutureTest
+unit-tests/BaseTypeTest
+unit-tests/ConstraintEvaluatorTest
+unit-tests/D4StreamRoundTripTest
+unit-tests/DAPCache3Test
+unit-tests/ErrorTest
+unit-tests/MarshallerThreadTest
+unit-tests/dmr_memory_cache
+unit-tests/dapcache3test.*
 
 d4_ce/unit-tests/D4ConstraintEvaluatorTest
 d4_ce/unit-tests/test_config.h

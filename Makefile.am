@@ -87,8 +87,6 @@ dmr_memory_cache_SOURCES = dmr_mcache_test.cc
 dmr_memory_cache_LDADD = libdapclient.la libdap.la
 dmr_memory_cache_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/http_dap $(CURL_CFLAGS)
 
-
-
 LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
@@ -131,7 +129,6 @@ cccc:
 
 # dist-hook:
 #	if test -n "$$VERSION"; then cat $$VERSION NEWS > NEWS.tmp; mv NEWS.tmp NEWS; fi
-
 
 # Build linux RPMs. Use the environment variable 'RPM_OPTIONS' to pass in
 # extra options like --nodeps and --macros
