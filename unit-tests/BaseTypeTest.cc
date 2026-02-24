@@ -15,11 +15,11 @@
 #include "BaseType.h"
 #include "BaseTypeFactory.h"
 #include "ConstraintEvaluator.h"
-#include "DDS.h"
 #include "D4Attributes.h"
 #include "D4Group.h"
 #include "D4StreamMarshaller.h"
 #include "D4StreamUnMarshaller.h"
+#include "DDS.h"
 #include "DMR.h"
 #include "Error.h"
 #include "InternalErr.h"
@@ -58,9 +58,7 @@ public:
         return sizeof(int);
     }
 
-    void compute_checksum(Crc32 &checksum) override {
-        (void)checksum;
-    }
+    void compute_checksum(Crc32 &checksum) override { (void)checksum; }
 
     void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override {
         if (print_decl_p) {

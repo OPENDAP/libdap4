@@ -75,9 +75,7 @@ public:
         }
     }
 
-    void tearDown() override {
-        cleanup_cache_files(d_cache_dir, "tst#");
-    }
+    void tearDown() override { cleanup_cache_files(d_cache_dir, "tst#"); }
 
     void test_get_cache_file_name_mangle_and_prefix() {
         string expected = d_cache_dir + "/tst#a#b#c";

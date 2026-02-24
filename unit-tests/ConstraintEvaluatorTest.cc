@@ -11,8 +11,8 @@
 #include "BaseTypeFactory.h"
 #include "ConstraintEvaluator.h"
 #include "DDS.h"
-#include "Int32.h"
 #include "Error.h"
+#include "Int32.h"
 
 #include "run_tests_cppunit.h"
 

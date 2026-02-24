@@ -386,7 +386,7 @@ public:
     }
 
     void test_roundtrip_exact_and_off_by_one_in_memory() {
-        const string exact = "ABCDEFGH"; // 8 bytes
+        const string exact = "ABCDEFGH";       // 8 bytes
         const string off_by_one = "ABCDEFGHI"; // 9 bytes
 
         CPPUNIT_ASSERT(roundtrip_in_memory(exact, 8) == exact);

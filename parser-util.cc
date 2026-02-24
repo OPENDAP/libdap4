@@ -339,7 +339,7 @@ int check_uint32(const char *val, unsigned int &v) {
         return FALSE;
     }
     // See above.
-        if (tmp > DODS_UINT_MAX) {
+    if (tmp > DODS_UINT_MAX) {
         return FALSE;
     }
 
