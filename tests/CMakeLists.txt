@@ -69,11 +69,15 @@ if(TIRPC_FOUND)
 	target_link_libraries(expr-test PRIVATE ${TIRPC_LIBRARIES})
 endif()
 
+# There are headers that are generated and put in the CURRENT_BINARY_DIR.
+# When the scanner tester was added to dmr-test, the <build>/d4_ce had
+# to be added to the target_include_directories
 add_executable(dmr-test dmr-test.cc D4ResponseBuilder.cc)
 target_include_directories(dmr-test
 		PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR} ${LIBXML2_INCLUDE_DIR}
-		${CMAKE_SOURCE_DIR}/d4_ce  ${CMAKE_SOURCE_DIR}/d4_function)
+		${CMAKE_SOURCE_DIR}/d4_ce  ${CMAKE_SOURCE_DIR}/d4_function
+		${CMAKE_BINARY_DIR}/d4_ce)
 target_link_libraries(dmr-test PRIVATE test-types dapserver dap)
 if(TIRPC_FOUND)
 	target_include_directories(dmr-test PRIVATE ${TIRPC_INCLUDE_DIRS})

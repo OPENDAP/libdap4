@@ -20,7 +20,7 @@ exclude: |
 repos:
   # --- Baseline sanity checks (fast, safe) ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
         # This is lame, and there's supposed to be a better way, but I cannot
@@ -66,6 +66,6 @@ repos:
       - id: prettier
         args: ["--no-cache"] # Problems with caching on OSX. jhrg 10/31/25
         # Choose what Prettier formats:
-        types_or: [json, yaml, markdown]
+        types_or: [json, yaml]
         additional_dependencies:
           - prettier@3.6.0

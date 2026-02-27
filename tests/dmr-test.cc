@@ -49,6 +49,7 @@
 #include "D4TestTypeFactory.h"
 #include "TestCommon.h"
 
+#include "D4CEScanner.h"
 #include "D4ConstraintEvaluator.h"
 #include "D4FunctionEvaluator.h"
 #include "D4RValue.h"
@@ -84,6 +85,97 @@ void logd(const string &msg, ostream &ostrm = cerr) {
     // Read lines from the stringstream until the end
     while (std::getline(ss, msg_line)) {
         ostrm << "# " << msg_line << "\n";
+    }
+}
+
+void test_scanner(const string &input) {
+    istringstream iss(input);
+    auto s_type = make_unique<D4CEParser::semantic_type>();
+    auto loc = make_unique<location>();
+    D4CEScanner ce_scanner(iss);
+
+    int tok;
+    while ((tok = ce_scanner.yylex(s_type.get(), loc.get()))) {
+        switch (tok) {
+        case D4CEParser::token::LBRACKET:
+            cout << "LBRACKET" << endl;
+            break;
+        case D4CEParser::token::RBRACKET:
+            cout << "RBRACKET" << endl;
+            break;
+        case D4CEParser::token::COLON:
+            cout << "COLON" << endl;
+            break;
+        case D4CEParser::token::COMMA:
+            cout << "COMMA" << endl;
+            break;
+        case D4CEParser::token::SEMICOLON:
+            cout << "SEMICOLON" << endl;
+            break;
+        case D4CEParser::token::PIPE:
+            cout << "PIPE" << endl;
+            break;
+        case D4CEParser::token::LBRACE:
+            cout << "LBRACE" << endl;
+            break;
+        case D4CEParser::token::RBRACE:
+            cout << "RBRACE" << endl;
+            break;
+        case D4CEParser::token::GROUP_SEP:
+            cout << "GROUP_SEP" << endl;
+            break;
+        case D4CEParser::token::PATH_SEP:
+            cout << "PATH_SEP" << endl;
+            break;
+        case D4CEParser::token::ASSIGN:
+            cout << "ASSIGN" << endl;
+            break;
+        case D4CEParser::token::EQUAL:
+            cout << "EQUAL" << endl;
+            break;
+        case D4CEParser::token::NOT_EQUAL:
+            cout << "NOT_EQUAL" << endl;
+            break;
+        case D4CEParser::token::GREATER:
+            cout << "GREATER" << endl;
+            break;
+        case D4CEParser::token::GREATER_EQUAL:
+            cout << "GREATER_EQUAL" << endl;
+            break;
+        case D4CEParser::token::LESS:
+            cout << "LESS" << endl;
+            break;
+        case D4CEParser::token::LESS_EQUAL:
+            cout << "LESS_EQUAL" << endl;
+            break;
+        case D4CEParser::token::REGEX_MATCH:
+            cout << "REGEX_MATCH" << endl;
+            break;
+        case D4CEParser::token::LESS_BBOX:
+            cout << "LESS_BBOX" << endl;
+            break;
+        case D4CEParser::token::GREATER_BBOX:
+            cout << "GREATER_BBOX" << endl;
+            break;
+        case D4CEParser::token::MASK:
+            cout << "MASK" << endl;
+            break;
+        case D4CEParser::token::WORD:
+            cout << "WORD: " << s_type->as<std::string>() << endl;
+            s_type->destroy<std::string>();
+            break;
+        case D4CEParser::token::VALUE:
+            cout << "VALUE: " << s_type->as<std::string>() << endl;
+            s_type->destroy<std::string>();
+            break;
+        case D4CEParser::token::STRING:
+            cout << "STRING: " << s_type->as<std::string>() << endl;
+            s_type->destroy<std::string>();
+            break;
+        default:
+            cout << "Error: Unrecognized input" << endl;
+            break;
+        }
     }
 }
 
@@ -255,23 +347,26 @@ DMR *read_data_plain(const string &file_name, bool use_checksums, bool debug) {
 }
 
 static void usage() {
-    cerr << "Usage: dmr-test -p|s|t|i <file> [-c <expr>] [-f <function expression>] [-d -x -e]" << endl
-         << "p: Parse a file (use \"-\" for stdin; if a ce or a function is passed those are parsed too)" << endl
-         << "s: Send: parse and then 'send' a response to a file" << endl
-         << "t: Transmit: parse, send and then read the response file" << endl
-         << "i: Intern values (ce and function will be ignored by this)" << endl
-         << "c: Constraint expression " << endl
-         << "f: Function expression" << endl
-         << "C: Use DAP4 Checksums" << endl
-         << "d: turn on detailed xml parser debugging" << endl
-         << "D: turn on detailed ce parser debugging" << endl
-         << "x: print the binary object(s) built by the parse, send, trans or intern operations." << endl
-         << "e: use sEries values." << endl;
+    cerr << R"(Usage: dmr-test -p|s|t|i <file> [-c <expr>] [-f <function expression>] [-d -x -e]
+S: Test the scanner using the test passed in using the -c <ce> option (-c must be given)
+p: Parse a file (use "-" for stdin; if a ce or a function is passed those are parsed too)
+s: Send: parse and then 'send' a response to a file
+t: Transmit: parse, send and then read the response file
+i: Intern values (ce and function will be ignored by this)
+c: Constraint expression
+f: Function expression
+C: Use DAP4 Checksums
+d: turn on detailed xml parser debugging
+D: turn on detailed ce parser debugging
+x: print the binary object(s) built by the parse, send, trans or intern operations.
+e: use sEries values.
+)";
 }
 
 int main(int argc, char *argv[]) {
-    GetOpt getopt(argc, argv, "p:s:t:i:c:f:xdDehC?");
+    GetOpt getopt(argc, argv, "p:s:t:i:c:f:SxdDehC?");
     int option_char;
+    bool scan = false;
     bool parse = false;
     bool debug = false;
     bool print = false;
@@ -289,6 +384,9 @@ int main(int argc, char *argv[]) {
 
     while ((option_char = getopt()) != -1)
         switch (option_char) {
+        case 'S':
+            scan = true;
+            break;
         case 'p':
             parse = true;
             name = getopt.optarg;
@@ -348,7 +446,7 @@ int main(int argc, char *argv[]) {
             return 1;
         }
 
-    if (!(parse || send || trans || intern)) {
+    if (!(parse || send || trans || intern || (scan && !ce.empty()))) {
         cerr << "Error: ";
         usage();
         return 1;
@@ -359,6 +457,7 @@ int main(int argc, char *argv[]) {
         logd("           name: " + name);
         logd("          debug: " + torf(debug));
         logd("          print: " + torf(print));
+        logd("           scan: " + torf(scan));
         logd("          parse: " + torf(parse));
         logd("           send: " + torf(send));
         logd("          trans: " + torf(trans));
@@ -371,6 +470,11 @@ int main(int argc, char *argv[]) {
     }
 
     try {
+        if (scan && !ce.empty()) {
+            test_scanner(ce);
+            return 0;
+        }
+
         if (parse) {
             DMR *dmr = test_dap4_parser(name, use_checksums, debug, print);
 

@@ -50,7 +50,7 @@ namespace libdap {
 
 class D4CEScanner : public d4_ceFlexLexer {
 public:
-    D4CEScanner(std::istream &in) : d4_ceFlexLexer(&in), yylval(0), loc(0) {};
+    explicit D4CEScanner(std::istream &in) : d4_ceFlexLexer(&in), yylval(nullptr), loc(nullptr) {};
 
     int yylex(libdap::D4CEParser::semantic_type *lval, libdap::location *l) {
         loc = l;
@@ -60,7 +60,7 @@ public:
 
 private:
     /* hide this one from public view */
-    int yylex();
+    int yylex() override;
 
     /* yyval ptr */
     libdap::D4CEParser::semantic_type *yylval;

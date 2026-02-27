@@ -715,3 +715,24 @@ DMR_TRANS_CE([vol_1_ce_13.xml], [/inst2/inst3], [vol_1_ce_13.xml.2.trans_base], 
 
 DMR_TRANS_CE([vol_1_ce_13.xml], [/attr_only_global], [vol_1_ce_13.xml.3.trans_base], [pass])
 DMR_TRANS_CE([vol_1_ce_13.xml], [/inst2/attr_only], [vol_1_ce_13.xml.4.trans_base], [pass])
+
+# Test the value-based subsetting syntax addition. NB: vbs (value-based subsetting). jhrg 12/29/25
+# This is the baseline version to start with - the temporary hack for the parsing uses an 'index'
+# of 0:1:0. Thus, _for now_, all these CEs return the same values. That will change once the work
+# moves forward.
+
+# NB: test_array_4.xml uses shared dimensions, to the indicial syntax parses, but it does not
+# have Maps, so this kind of subsetting will actually fail. Make sure that these six following
+# tests _do_ fail once the VBS logic is coded. jhrg 12/29/25
+DMR_TRANS_CE_NO_CRC([test_array_4.xml], [/row=[[0]];/col=[[0]];a[[]][[]] ], [test_array_4.xml.vbs.1a.trans_base], [pass])
+DMR_TRANS_CE_NO_CRC([test_array_4.xml], [/row=[[(0):(1)]];/col=[[(0):(1)]];a[[]][[]] ], [test_array_4.xml.vbs.1a.trans_base], [pass])
+DMR_TRANS_CE_NO_CRC([test_array_4.xml], [/row=[[(10):(11.11)]];/col=[[(0.4):(-10.7)]];a[[]][[]] ], [test_array_4.xml.vbs.1a.trans_base], [pass])
+
+DMR_TRANS_CE_NO_CRC([test_array_4.xml], [/row=[[0]];/col=[[0]];x[[]][[]] ], [test_array_4.xml.vbs.1x.trans_base], [pass])
+DMR_TRANS_CE_NO_CRC([test_array_4.xml], [/row=[[(0):(1)]];/col=[[(0):(1)]];x[[]][[]] ], [test_array_4.xml.vbs.1x.trans_base], [pass])
+DMR_TRANS_CE_NO_CRC([test_array_4.xml], [/row=[[(10):(11.11)]];/col=[[(0.4):(-10.7)]];x[[]][[]] ], [test_array_4.xml.vbs.1x.trans_base], [pass])
+
+# NB: vol_1_ce_7.xml has Maps and this should not only parse but also subset by value. jhrg 12/29/25
+DMR_TRANS_CE_NO_CRC([vol_1_ce_7.xml], [nlon=[[0:2]];nlat=[[0]];temp[[]][[]] ], [vol_1_ce_7.xml.vbs.1.trans_base], [pass])
+DMR_TRANS_CE_NO_CRC([vol_1_ce_7.xml], [nlon=[[0:2]];nlat=[[(10.0):(-17.9)]];temp[[]][[]] ], [vol_1_ce_7.xml.vbs.1.trans_base], [pass])
+DMR_TRANS_CE_NO_CRC([vol_1_ce_7.xml], [nlon=[[0:2]];nlat=[[(0.09):(-17.9)]];temp[[]][[]] ], [vol_1_ce_7.xml.vbs.1.trans_base], [pass])

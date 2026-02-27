@@ -61,9 +61,9 @@ class D4ConstraintEvaluator {
         bool empty = false;
         // When a slice is applied to an Array with Maps, we need to know the name of
         // each dimension. These names are then used to apply the slice to each of the
-        // Maps (Maps may have fewer dimensions than the Array, but the idea that a
+        // Maps. Maps may have fewer dimensions than the Array, but the idea that a
         // Map is a simple vector doesn't hold for DAP4, so the mapping between a slice's
-        // indexes and the set of Maps can be complex - use the names to make sure
+        // indexes and the set of Maps can be complex. Use the names to make sure
         // all cases are covered. The value of this field may be empty.
         std::string dim_name;
 
@@ -82,6 +82,16 @@ class D4ConstraintEvaluator {
 
     static index make_index(const std::string &i, const std::string &s);
     static index make_index(const std::string &i, int64_t s);
+
+    // For now, if a value-based subset is given, return the entire dimension. jhrg 12/23/25
+    // start and end
+    static index make_value_based_index(const std::string &, const std::string &) {
+        return index(0, 1, 0, false, false, "");
+    }
+    // start, stride, end
+    static index make_value_based_index(const std::string &, const std::string &, const std::string &) {
+        return index(0, 1, 0, false, false, "");
+    }
 
     bool d_trace_scanning = false;
     bool d_trace_parsing = false;
