@@ -339,12 +339,12 @@ int check_uint32(const char *val, unsigned int &v) {
         return FALSE;
     }
     // See above.
-    else if (tmp > DODS_UINT_MAX) {
+    if (tmp > DODS_UINT_MAX) {
         return FALSE;
-    } else {
-        v = (unsigned int)tmp;
-        return TRUE;
     }
+
+    v = (unsigned int)tmp;
+    return TRUE;
 }
 
 int check_int64(const char *val) {
@@ -362,19 +362,8 @@ int check_int64(const char *val) {
     if (errno == ERANGE) {
         return FALSE;
     }
-#if 0
-    // This could be combined with the above, or course, but I'm making it
-    // separate to highlight the test. On 64-bit linux boxes 'long' may be
-    // 64-bits and so 'v' can hold more than a DODS_INT32. jhrg 3/23/10
-    //
-    // Removed - Coverity says it can never be false. Makes sense. jhrg 5/10/16
-    else if (v <= DODS_LLONG_MAX && v >= DODS_LLONG_MIN) {
-        return FALSE;
-    }
-#endif
-    else {
-        return TRUE;
-    }
+
+    return TRUE;
 }
 
 int check_uint64(const char *val) {
@@ -398,11 +387,13 @@ int check_uint64(const char *val) {
 
     if (errno == ERANGE) {
         return FALSE;
-    } else if (v > DODS_ULLONG_MAX) { // 2^61
-        return FALSE;
-    } else {
-        return v;
     }
+
+    if (v > DODS_ULLONG_MAX) { // 2^61
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 // Check first for system errors (like numbers so small they convert

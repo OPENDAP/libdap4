@@ -149,6 +149,8 @@ public:
     CPPUNIT_TEST(duplicate_cardinal_test);
     CPPUNIT_TEST(duplicate_string_test);
     CPPUNIT_TEST(duplicate_structure_test);
+    CPPUNIT_TEST(zero_length_array_test);
+    CPPUNIT_TEST(deep_copy_cardinal_test);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -322,6 +324,37 @@ public:
         }
         delete a;
         a = 0;
+    }
+
+    void zero_length_array_test() {
+        Int16 i16("i16");
+        Array a("zero_len", &i16);
+        a.append_dim(0, "empty");
+        CPPUNIT_ASSERT_EQUAL(0, a.length());
+        CPPUNIT_ASSERT_EQUAL((int64_t)0, a.length_ll());
+        CPPUNIT_ASSERT_EQUAL((unsigned int)0, a.width());
+        CPPUNIT_ASSERT_EQUAL((int64_t)0, a.width_ll());
+    }
+
+    void deep_copy_cardinal_test() {
+        Int16 i16("i16");
+        Array a1("a1", &i16);
+        a1.append_dim(4, "d0");
+
+        dods_int16 v1[4] = {10, 20, 30, 40};
+        a1.set_value(v1, 4);
+
+        Array a2(a1);
+
+        dods_int16 v2[4] = {1, 2, 3, 4};
+        a1.set_value(v2, 4);
+
+        dods_int16 out[4] = {0, 0, 0, 0};
+        a2.value(out);
+        CPPUNIT_ASSERT(out[0] == 10);
+        CPPUNIT_ASSERT(out[1] == 20);
+        CPPUNIT_ASSERT(out[2] == 30);
+        CPPUNIT_ASSERT(out[3] == 40);
     }
 
     void duplicate_string_test() {

@@ -3,7 +3,7 @@ SUBDIRS = cache-testsuite
 
 # Tests
 
-AUTOMAKE_OPTIONS = foreign
+AUTOMAKE_OPTIONS = foreign subdir-objects
 
 # Headers in 'tests' are used by the arrayT unit tests.
 
@@ -76,10 +76,6 @@ test_config.h: test_config.h.in Makefile
 D4-xml.tar.gz: D4-xml/DMR_*[0-9].xml
 	tar -czf $@ $^
 
-# Override the default
-# check: HTTPConnectTest
-#	./HTTPConnectTest -d
-
 ############################################################################
 # Unit Tests
 #
@@ -92,17 +88,15 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	ServerFunctionsListUnitTest Int8Test Int16Test UInt16Test \
 	Int32Test UInt32Test Int64Test UInt64Test Float32Test Float64Test \
 	D4BaseTypeFactoryTest BaseTypeFactoryTest util_mitTest ErrorTest \
-	MarshallerFutureTest
-
-# ErrorAssignmentTest
-
-# Moved to http+dap/unit-tests HTTPConnectTest HTTPCacheTest
+	MarshallerFutureTest ConstraintEvaluatorTest MarshallerThreadTest \
+	DAPCache3Test BaseTypeTest
 
 # Unit tests for DAP4-only code. jhrg 2/4/22
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
 	D4EnumDefsTest D4GroupTest D4ParserSax2Test D4AttributesTest D4EnumTest \
 	chunked_iostream_test D4AsyncDocTest DMRTest D4FilterClauseTest \
-	D4SequenceTest DmrRoundTripTest DmrToDap2Test IsDap4ProjectedTest
+	D4SequenceTest DmrRoundTripTest DmrToDap2Test IsDap4ProjectedTest \
+	D4StreamRoundTripTest
 
 else
 UNIT_TESTS =
@@ -122,7 +116,7 @@ endif
 # kln 11/19/24
 if CPPUNIT
 if USE_BA
-UNIT_TESTS +=BigArrayTest
+UNIT_TESTS += BigArrayTest
 endif
 endif
 
@@ -190,6 +184,15 @@ DDXParserTest_SOURCES = DDXParserTest.cc
 DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 
 generalUtilTest_SOURCES = generalUtilTest.cc
+
+DAPCache3Test_SOURCES = DAPCache3Test.cc ../DAPCache3.cc ../DAPCache3.h
+
+ConstraintEvaluatorTest_SOURCES = ConstraintEvaluatorTest.cc
+
+MarshallerThreadTest_SOURCES = MarshallerThreadTest.cc
+
+D4StreamRoundTripTest_SOURCES = D4StreamRoundTripTest.cc
+BaseTypeTest_SOURCES = BaseTypeTest.cc
 
 # HTTPCacheTest_SOURCES = HTTPCacheTest.cc
 # HTTPCacheTest_CPPFLAGS = $(AM_CPPFLAGS) $(CURL_CFLAGS)

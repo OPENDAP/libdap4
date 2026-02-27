@@ -29,6 +29,7 @@
 #include <exception> // std::exception
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include "chunked_istream.h"
@@ -363,6 +364,35 @@ public:
         }
     }
 
+    static string roundtrip_in_memory(const string &payload, int buf_size) {
+        stringstream ss(ios::in | ios::out | ios::binary);
+        {
+            chunked_ostream out(ss, buf_size);
+            out.write(payload.data(), payload.size());
+            out.flush();
+        }
+
+        ss.seekg(0, ios::beg);
+        chunked_istream in(ss, buf_size);
+        string result;
+        char buf[16];
+        while (!in.eof()) {
+            in.read(buf, sizeof(buf));
+            auto count = in.gcount();
+            if (count > 0)
+                result.append(buf, count);
+        }
+        return result;
+    }
+
+    void test_roundtrip_exact_and_off_by_one_in_memory() {
+        const string exact = "ABCDEFGH";       // 8 bytes
+        const string off_by_one = "ABCDEFGHI"; // 9 bytes
+
+        CPPUNIT_ASSERT(roundtrip_in_memory(exact, 8) == exact);
+        CPPUNIT_ASSERT(roundtrip_in_memory(off_by_one, 8) == off_by_one);
+    }
+
     // these are the tests
     void test_write_1_read_1_small_file() {
         single_char_write(small_file, 32);
@@ -674,6 +704,7 @@ public:
     CPPUNIT_TEST(test_write_24_read_24_big_file_2_error);
 
     CPPUNIT_TEST(test_write_9000_read_5000_big_file_3);
+    CPPUNIT_TEST(test_roundtrip_exact_and_off_by_one_in_memory);
 
     CPPUNIT_TEST_SUITE_END();
 };
