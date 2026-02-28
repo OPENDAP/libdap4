@@ -4,8 +4,8 @@
     "C_Cpp.default.cppStandard": "c++14",
     "C_Cpp.default.intelliSenseMode": "macos-clang-arm64",
     "terminal.integrated.env.osx": {
-        "prefix": "/Users/jhrg/src/hyrax/build",
-        "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+        "prefix": "/Users/jhrg/src/opendap/hyrax/build",
+        "PATH": "/Users/jhrg/src/opendap//hyrax/build/bin:/Users/jhrg/src/opendap/hyrax/build/deps/bin:${env:PATH}"
     },
     "makefile.configurations": [
         {
