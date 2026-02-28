@@ -5,7 +5,6 @@
     "minor": 20,
     "patch": 0
   },
-
   "configurePresets": [
     {
       "name": "base-make",
@@ -15,10 +14,8 @@
       "cacheVariables": {
         "CMAKE_CXX_STANDARD": "14",
         "CMAKE_CXX_STANDARD_REQUIRED": "ON",
-
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "CMAKE_INSTALL_PREFIX": "$prefix",
-
         "BUILD_TESTING": "ON",
         "USE_CPP_11_REGEX": "ON",
         "USE_ASAN": "OFF",
@@ -26,7 +23,6 @@
         "BIG_ARRAY_TEST": "OFF"
       }
     },
-
     {
       "name": "default",
       "displayName": "Default (Makefiles, RWD)",
@@ -67,9 +63,19 @@
         "USE_ASAN": "ON",
         "BUILD_DEVELOPER": "ON"
       }
+    },
+    {
+      "name": "Custom configure preset",
+      "displayName": "Custom configure preset",
+      "description": "Sets Ninja generator, build and install directory",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+      }
     }
   ],
-
   "buildPresets": [
     {
       "name": "default",
@@ -97,13 +103,11 @@
       "targets": ["install"]
     }
   ],
-
   "testPresets": [
     {
       "name": "default",
       "configurePreset": "default"
     },
-
     {
       "name": "developer",
       "configurePreset": "developer"
