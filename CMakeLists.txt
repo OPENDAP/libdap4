@@ -220,6 +220,17 @@ set(GENERATED_PARSER_SRC
         ${FLEX_ErrorScanner_OUTPUTS}
 )
 
+# Suppress sign-compare warnings from flex-generated scanners only.
+set(FLEX_SCANNER_SRC
+        ${FLEX_DDSScanner_OUTPUTS}
+        ${FLEX_DASScanner_OUTPUTS}
+        ${FLEX_CEScanner_OUTPUTS}
+        ${FLEX_ErrorScanner_OUTPUTS}
+)
+set_source_files_properties(${FLEX_SCANNER_SRC} PROPERTIES
+        COMPILE_OPTIONS "$<$<COMPILE_LANG_AND_ID:CXX,AppleClang,Clang,GNU>:-Wno-sign-compare>"
+)
+
 # Ensure grammar files build before other sources
 set_source_files_properties(${GENERATED_PARSER_SRC}
         PROPERTIES GENERATED TRUE)
