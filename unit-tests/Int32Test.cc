@@ -100,7 +100,7 @@ public:
     CPPUNIT_TEST(val2buf_test);
     CPPUNIT_TEST(buf2val_test);
     CPPUNIT_TEST(set_value_test);
-    CPPUNIT_TEST(equals_test);
+    CPPUNIT_TEST(assignment_tests);
     CPPUNIT_TEST(type_compare_test);
     CPPUNIT_TEST(ops_exception_1_test);
     CPPUNIT_TEST(ops_exception_2_test);
@@ -140,13 +140,26 @@ public:
 
     void set_value_test() { CPPUNIT_ASSERT(i2->set_value(42) && i2->value() == 42); }
 
-    void equals_test() {
+    void assignment_tests() {
         Int32 i3 = Int32("a", "b");
         Int32 i4 = Int32("e");
         CPPUNIT_ASSERT(i4.set_value(42) && i4.value() == 42);
         i3 = i4;
         CPPUNIT_ASSERT(i3.value() == 42);
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-assign"
+#endif
         i3 = i3;
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+        CPPUNIT_ASSERT(i3.value() == 42);
     }
 
     void type_compare_test() {
