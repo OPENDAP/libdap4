@@ -80,7 +80,11 @@
           "args": ["-c"]
         }
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     },
     {
       "label": "autotools: clean",
@@ -97,7 +101,11 @@
           "args": ["-c"]
         }
       },
-      "problemMatcher": []
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     },
     {
       "label": "autotools: compile_commands",
@@ -115,7 +123,11 @@
           "args": ["-c"]
         }
       },
-      "problemMatcher": ["$gcc"]
+      "problemMatcher": ["$gcc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }
