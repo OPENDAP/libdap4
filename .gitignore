@@ -2,7 +2,7 @@
 .DS_Store
 */.DS_Store
 .idea
-.vscode/
+.vscode/settings.json
 .cproject
 .project
 .settings
