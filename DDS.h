@@ -215,7 +215,7 @@ public:
     DDS(BaseTypeFactory *factory, const string &name, const string &version);
     DDS(const DDS &dds);
 
-    virtual ~DDS();
+    ~DDS() override;
 
     DDS &operator=(const DDS &rhs);
 

@@ -5,7 +5,9 @@ AUTOMAKE_OPTIONS = foreign
 
 # Arrange to build with the backward compatibility mode enabled.
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/d4_ce -I$(srcdir) $(XML2_CFLAGS)
-AM_CXXFLAGS = -Wall -W -Wcast-align -Wno-inconsistent-missing-override
+AM_CXXFLAGS = -Wall -W -Wcast-align
+
+# jhrg 3/1/26 -Wno-inconsistent-missing-override
 
 if COMPILER_IS_GCC
 AM_CXXFLAGS += -Wall -W -Wcast-align

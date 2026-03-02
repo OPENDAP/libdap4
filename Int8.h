@@ -57,7 +57,7 @@ protected:
 public:
     Int8(const string &n);
     Int8(const string &n, const string &d);
-    virtual ~Int8() {}
+    ~Int8() override {}
 
     Int8(const Int8 &copy_from);
 

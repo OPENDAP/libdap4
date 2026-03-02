@@ -87,7 +87,7 @@ private:
 public:
     D4StreamUnMarshaller(istream &in, bool twiddle_bytes);
     D4StreamUnMarshaller(istream &in);
-    virtual ~D4StreamUnMarshaller();
+    ~D4StreamUnMarshaller() override;
 
     void set_twiddle_bytes(bool twiddle) { d_twiddle_bytes = twiddle; }
 

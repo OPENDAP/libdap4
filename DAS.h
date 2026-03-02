@@ -136,7 +136,7 @@ public:
     DAS() : DapObj(), d_container(0) {}
     DAS(const DAS &das) { duplicate(das); }
 
-    virtual ~DAS() {}
+    ~DAS() override {}
 
     DAS &operator=(const DAS &rhs);
 

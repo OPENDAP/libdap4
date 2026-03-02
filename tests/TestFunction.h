@@ -51,7 +51,7 @@ public:
         setFunction(libdap::function_scale);
         setVersion("1.0");
     }
-    virtual ~TestFunction() {}
+    ~TestFunction() override {}
 };
 
 } // namespace libdap

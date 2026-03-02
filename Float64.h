@@ -62,7 +62,7 @@ protected:
 public:
     Float64(const string &n);
     Float64(const string &n, const string &d);
-    virtual ~Float64() {}
+    ~Float64() override {}
 
     Float64(const Float64 &copy_from);
 

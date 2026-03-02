@@ -87,7 +87,7 @@ public:
     Structure(const string &n, const string &d);
 
     Structure(const Structure &rhs);
-    virtual ~Structure();
+    ~Structure() override;
 
     Structure &operator=(const Structure &rhs);
     BaseType *ptr_duplicate() override;

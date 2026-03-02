@@ -72,7 +72,7 @@ public:
 
     Int32 &operator=(const Int32 &rhs);
 
-    virtual ~Int32();
+    ~Int32() override;
 
     BaseType *ptr_duplicate() override;
 

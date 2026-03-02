@@ -51,7 +51,7 @@ private:
 
 public:
     XDRFileUnMarshaller(FILE *out);
-    virtual ~XDRFileUnMarshaller();
+    ~XDRFileUnMarshaller() override;
 
     void get_byte(dods_byte &val) override;
 

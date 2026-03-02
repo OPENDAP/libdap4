@@ -73,7 +73,7 @@ public:
     D4Group(const string &name, const string &dataset);
 
     D4Group(const D4Group &rhs);
-    virtual ~D4Group();
+    ~D4Group() override;
 
     D4Group &operator=(const D4Group &rhs);
 

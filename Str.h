@@ -66,7 +66,7 @@ public:
     Str(const string &n);
     Str(const string &n, const string &d);
 
-    virtual ~Str() {}
+    ~Str() override {}
 
     Str(const Str &copy_from);
 

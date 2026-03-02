@@ -51,23 +51,23 @@ using namespace libdap;
 class TestTypeFactory : public BaseTypeFactory {
 public:
     TestTypeFactory() {}
-    virtual ~TestTypeFactory() {}
+    ~TestTypeFactory() override {}
 
-    virtual Byte *NewByte(const string &n = "") const;
-    virtual Int16 *NewInt16(const string &n = "") const;
-    virtual UInt16 *NewUInt16(const string &n = "") const;
-    virtual Int32 *NewInt32(const string &n = "") const;
-    virtual UInt32 *NewUInt32(const string &n = "") const;
-    virtual Float32 *NewFloat32(const string &n = "") const;
-    virtual Float64 *NewFloat64(const string &n = "") const;
+    Byte *NewByte(const string &n = "") const override;
+    Int16 *NewInt16(const string &n = "") const override;
+    UInt16 *NewUInt16(const string &n = "") const override;
+    Int32 *NewInt32(const string &n = "") const override;
+    UInt32 *NewUInt32(const string &n = "") const override;
+    Float32 *NewFloat32(const string &n = "") const override;
+    Float64 *NewFloat64(const string &n = "") const override;
 
-    virtual Str *NewStr(const string &n = "") const;
-    virtual Url *NewUrl(const string &n = "") const;
+    Str *NewStr(const string &n = "") const override;
+    Url *NewUrl(const string &n = "") const override;
 
-    virtual Array *NewArray(const string &n = "", BaseType *v = 0) const;
-    virtual Structure *NewStructure(const string &n = "") const;
-    virtual Sequence *NewSequence(const string &n = "") const;
-    virtual Grid *NewGrid(const string &n = "") const;
+    Array *NewArray(const string &n = "", BaseType *v = 0) const override;
+    Structure *NewStructure(const string &n = "") const override;
+    Sequence *NewSequence(const string &n = "") const override;
+    Grid *NewGrid(const string &n = "") const override;
 };
 
 #endif // test_type_factory_h

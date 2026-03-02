@@ -50,18 +50,18 @@ public:
     TestInt32(const string &n, const string &d);
     TestInt32(const TestInt32 &rhs);
 
-    virtual ~TestInt32() {}
+    ~TestInt32() override {}
 
     TestInt32 &operator=(const TestInt32 &rhs);
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
-    virtual bool read();
+    bool read() override;
 
-    virtual void output_values(std::ostream &out);
+    void output_values(std::ostream &out) override;
 
-    virtual void set_series_values(bool sv) { d_series_values = sv; }
-    virtual bool get_series_values() { return d_series_values; }
+    void set_series_values(bool sv)  override { d_series_values = sv; }
+    bool get_series_values()  override { return d_series_values; }
 };
 
 #endif //_testint32_h

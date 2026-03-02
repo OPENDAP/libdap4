@@ -68,7 +68,7 @@ public:
 
     Float32 &operator=(const Float32 &rhs);
 
-    virtual ~Float32() {}
+    ~Float32() override {}
 
     BaseType *ptr_duplicate() override;
 

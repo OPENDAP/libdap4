@@ -61,7 +61,7 @@ protected:
 public:
     UInt64(const string &n);
     UInt64(const string &n, const string &d);
-    virtual ~UInt64() {}
+    ~UInt64() override {}
 
     UInt64(const UInt64 &copy_from);
 

@@ -42,18 +42,18 @@ public:
     TestUInt64(const std::string &n, const std::string &d);
     TestUInt64(const TestUInt64 &rhs);
 
-    virtual ~TestUInt64() {}
+    ~TestUInt64() override {}
 
     TestUInt64 &operator=(const TestUInt64 &rhs);
 
-    virtual libdap::BaseType *ptr_duplicate();
+    libdap::BaseType *ptr_duplicate() override;
 
-    virtual bool read();
+    bool read() override;
 
-    virtual void output_values(std::ostream &out);
+    void output_values(std::ostream &out) override;
 
-    void set_series_values(bool sv) { d_series_values = sv; }
-    bool get_series_values() { return d_series_values; }
+    void set_series_values(bool sv)  override { d_series_values = sv; }
+    bool get_series_values()  override { return d_series_values; }
 };
 
 #endif // _testuint64_h

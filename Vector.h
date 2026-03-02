@@ -128,7 +128,7 @@ public:
     Vector(const string &n, const string &d, BaseType *v, const Type &t, bool is_dap4 = false);
     Vector(const Vector &rhs);
 
-    virtual ~Vector();
+    ~Vector() override;
 
     Vector &operator=(const Vector &rhs);
     // FIXME BaseType *ptr_duplicate() = 0 override;

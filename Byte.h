@@ -64,7 +64,7 @@ public:
     Byte(const string &n);
     Byte(const string &n, const string &d);
 
-    virtual ~Byte() {}
+    ~Byte() override {}
 
     Byte(const Byte &copy_from);
 

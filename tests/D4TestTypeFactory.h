@@ -37,45 +37,45 @@ using namespace libdap;
 class D4TestTypeFactory : public D4BaseTypeFactory {
 public:
     D4TestTypeFactory() {}
-    virtual ~D4TestTypeFactory() {}
+    ~D4TestTypeFactory() override {}
 
-    virtual BaseTypeFactory *ptr_duplicate() const { return new D4TestTypeFactory; }
+    BaseTypeFactory *ptr_duplicate() const override { return new D4TestTypeFactory; }
 
-    virtual BaseType *NewVariable(Type t, const string &name) const;
+    BaseType *NewVariable(Type t, const string &name) const override;
 
-    virtual Byte *NewByte(const string &n = "") const;
-
-    // New for DAP4
-    virtual Int8 *NewInt8(const string &n = "") const;
-    virtual Byte *NewUInt8(const string &n = "") const;
-    virtual Byte *NewChar(const string &n = "") const;
-
-    virtual Int16 *NewInt16(const string &n = "") const;
-    virtual UInt16 *NewUInt16(const string &n = "") const;
-    virtual Int32 *NewInt32(const string &n = "") const;
-    virtual UInt32 *NewUInt32(const string &n = "") const;
+    Byte *NewByte(const string &n = "") const override;
 
     // New for DAP4
-    virtual Int64 *NewInt64(const string &n = "") const;
-    virtual UInt64 *NewUInt64(const string &n = "") const;
+    Int8 *NewInt8(const string &n = "") const override;
+    Byte *NewUInt8(const string &n = "") const override;
+    Byte *NewChar(const string &n = "") const override;
 
-    virtual Float32 *NewFloat32(const string &n = "") const;
-    virtual Float64 *NewFloat64(const string &n = "") const;
+    Int16 *NewInt16(const string &n = "") const override;
+    UInt16 *NewUInt16(const string &n = "") const override;
+    Int32 *NewInt32(const string &n = "") const override;
+    UInt32 *NewUInt32(const string &n = "") const override;
 
-    virtual D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const;
+    // New for DAP4
+    Int64 *NewInt64(const string &n = "") const override;
+    UInt64 *NewUInt64(const string &n = "") const override;
 
-    virtual Str *NewStr(const string &n = "") const;
-    virtual Url *NewUrl(const string &n = "") const;
-    virtual Url *NewURL(const string &n = "") const;
+    Float32 *NewFloat32(const string &n = "") const override;
+    Float64 *NewFloat64(const string &n = "") const override;
 
-    virtual D4Opaque *NewOpaque(const string &n = "") const;
+    D4Enum *NewEnum(const string &n = "", Type type = dods_null_c) const override;
 
-    virtual Array *NewArray(const string &n = "", BaseType *v = 0) const;
+    Str *NewStr(const string &n = "") const override;
+    Url *NewUrl(const string &n = "") const override;
+    Url *NewURL(const string &n = "") const override;
 
-    virtual Structure *NewStructure(const string &n = "") const;
-    virtual D4Sequence *NewD4Sequence(const string &n = "") const;
+    D4Opaque *NewOpaque(const string &n = "") const override;
 
-    virtual D4Group *NewGroup(const string &n = "") const;
+    Array *NewArray(const string &n = "", BaseType *v = 0) const override;
+
+    Structure *NewStructure(const string &n = "") const override;
+    D4Sequence *NewD4Sequence(const string &n = "") const override;
+
+    D4Group *NewGroup(const string &n = "") const override;
 };
 
 #endif // d4_test_type_factory_h

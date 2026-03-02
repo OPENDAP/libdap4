@@ -61,7 +61,7 @@ protected:
 public:
     Int16(const string &n);
     Int16(const string &n, const string &d);
-    virtual ~Int16() {}
+    ~Int16() override {}
 
     Int16(const Int16 &copy_from);
 

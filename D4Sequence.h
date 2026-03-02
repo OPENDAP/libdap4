@@ -170,7 +170,7 @@ public:
 
     D4Sequence(const D4Sequence &rhs);
 
-    virtual ~D4Sequence();
+    ~D4Sequence() override;
 
     D4Sequence &operator=(const D4Sequence &rhs);
 

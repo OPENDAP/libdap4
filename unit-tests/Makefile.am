@@ -13,7 +13,9 @@ AM_LDADD = $(XML2_LIBS)
 AM_CXXFLAGS = $(CXX_STD_FLAG)
 
 if COMPILER_IS_GCC
-AM_CXXFLAGS += -Wall -W -Wcast-align -Wno-self-assign-overloaded
+AM_CXXFLAGS += -Wall -W -Wcast-align
+
+# jhrg 3/1/26 -Wno-self-assign-overloaded
 endif
 
 if CPPUNIT

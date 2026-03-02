@@ -107,7 +107,7 @@ public:
         return *this;
     }
 
-    virtual ~D4Enum() {}
+    ~D4Enum() override {}
 
     virtual D4EnumDef *enumeration() const { return d_enum_def; }
     virtual void set_enumeration(D4EnumDef *enum_def);
