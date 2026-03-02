@@ -1,0 +1,25 @@
+{
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/compile_commands.json",
+    "C_Cpp.default.cppStandard": "c++14",
+    "C_Cpp.default.intelliSenseMode": "macos-clang-arm64",
+    "terminal.integrated.env.osx": {
+        "prefix": "~/src/opendap/hyrax/build",
+        "PATH": "~/src/opendap//hyrax/build/bin:/Users/jhrg/src/opendap/hyrax/build/deps/bin:${env:PATH}"
+    },
+    "makefile.configurations": [
+        {
+            "makeArgs": [
+                "-j"
+            ],
+            "name": "all"
+        },
+                {
+            "makeArgs": [
+                "-j", "check"
+            ],
+            "name": "check"
+        }
+
+    ]
+}
