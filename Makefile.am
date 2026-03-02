@@ -12,8 +12,6 @@ pkgconfigdir=$(libdir)/pkgconfig
 AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU -I$(top_srcdir)/http_dap $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align -Wno-deprecated-register
 
-# jhrg 3/1/26 -Wno-inconsistent-missing-override
-
 CXXFLAGS_DEBUG = -g3 -O0
 
 # Build using the Address sanitizer (gcc 4.8+ and clang 3.3+).

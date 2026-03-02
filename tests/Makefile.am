@@ -8,8 +8,6 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU -I$(top_srcdir)/d4_ce \
      $(CURL_CFLAGS) $(TIRPC_CFLAGS)
 AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align
 
-# jhrg 3/1/26 -Wno-inconsistent-missing-override
-
 CXXFLAGS_DEBUG = -g3 -O0
 
 if USE_ASAN
