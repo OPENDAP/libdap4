@@ -59,20 +59,20 @@ public:
     TestSequence(const string &n, const string &d);
     TestSequence(const TestSequence &rhs);
 
-    virtual ~TestSequence();
+    ~TestSequence() override;
 
     TestSequence &operator=(const TestSequence &rhs);
-    virtual BaseType *ptr_duplicate();
-    virtual void transform_to_dap4(libdap::D4Group *root, libdap::Constructor *container);
+    BaseType *ptr_duplicate() override;
+    void transform_to_dap4(libdap::D4Group *root, libdap::Constructor *container) override;
 
-    virtual bool read();
+    bool read() override;
 
-    virtual void output_values(std::ostream &out);
+    void output_values(std::ostream &out) override;
 
-    void set_series_values(bool);
-    bool get_series_values() { return d_series_values; }
+    void set_series_values(bool) override;
+    bool get_series_values() override { return d_series_values; }
 
-    virtual int length() const;
+    int length() const override;
 };
 
 #endif // _testsequence_h

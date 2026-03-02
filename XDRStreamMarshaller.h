@@ -70,7 +70,7 @@ private:
 
 public:
     XDRStreamMarshaller(ostream &out); //, bool checksum = false, bool write_data = true) ;
-    virtual ~XDRStreamMarshaller();
+    ~XDRStreamMarshaller() override;
 
     void put_byte(dods_byte val) override;
 

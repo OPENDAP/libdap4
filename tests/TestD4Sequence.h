@@ -44,20 +44,20 @@ public:
     TestD4Sequence(const string &n, const string &d);
     TestD4Sequence(const TestD4Sequence &rhs);
 
-    virtual ~TestD4Sequence();
+    ~TestD4Sequence() override;
 
     TestD4Sequence &operator=(const TestD4Sequence &rhs);
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
-    virtual bool read();
+    bool read() override;
 
-    virtual void output_values(std::ostream &out);
+    void output_values(std::ostream &out) override;
 
-    void set_series_values(bool);
-    bool get_series_values() { return d_series_values; }
+    void set_series_values(bool) override;
+    bool get_series_values() override { return d_series_values; }
 
-    void set_length(int64_t len) { d_len = len; }
-    virtual int length() const { return (int)d_len; }
+    void set_length(int64_t len) override { d_len = len; }
+    int length() const override { return (int)d_len; }
 };
 
 #endif // _testsequence_h

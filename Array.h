@@ -227,7 +227,7 @@ public:
     Array(const string &n, BaseType *v, bool is_dap4 = false);
     Array(const string &n, const string &d, BaseType *v, bool is_dap4 = false);
     Array(const Array &rhs);
-    virtual ~Array();
+    ~Array() override;
 
     Array &operator=(const Array &rhs);
     BaseType *ptr_duplicate() override;

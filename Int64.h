@@ -67,7 +67,7 @@ public:
 
     Int64 &operator=(const Int64 &rhs);
 
-    virtual ~Int64();
+    ~Int64() override;
 
     BaseType *ptr_duplicate() override;
 

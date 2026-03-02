@@ -99,7 +99,7 @@ public:
     CPPUNIT_TEST_SUITE(ByteTest);
 
     CPPUNIT_TEST(cons_test);
-    CPPUNIT_TEST(equals_test);
+    CPPUNIT_TEST(assignment_tests);
     CPPUNIT_TEST(checksum_test);
     CPPUNIT_TEST(val2buf_test);
     CPPUNIT_TEST(buf2val_test);
@@ -124,14 +124,26 @@ public:
         CPPUNIT_ASSERT(tb2->value() == 0);
     }
 
-    void equals_test() {
+    void assignment_tests() {
         Byte b3 = Byte("a", "b");
         Byte b4 = Byte("e");
 
         CPPUNIT_ASSERT(b3.set_value(42) && b3.value() == 42);
         b4 = b3;
         CPPUNIT_ASSERT(b3.value() == 42);
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-assign"
+#endif
         b4 = b4;
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
         CPPUNIT_ASSERT(b4.value() == 42);
     }
 

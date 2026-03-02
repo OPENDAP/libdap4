@@ -42,18 +42,18 @@ public:
     TestD4Opaque(const string &n, const string &d);
     TestD4Opaque(const TestD4Opaque &rhs);
 
-    virtual ~TestD4Opaque() {}
+    ~TestD4Opaque() override {}
 
     TestD4Opaque &operator=(const TestD4Opaque &rhs);
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
-    virtual bool read();
+    bool read() override;
 
-    virtual void output_values(std::ostream &out);
+    void output_values(std::ostream &out) override;
 
-    virtual void set_series_values(bool sv) { d_series_values = sv; }
-    virtual bool get_series_values() { return d_series_values; }
+    void set_series_values(bool sv) override { d_series_values = sv; }
+    bool get_series_values() override { return d_series_values; }
 };
 
 #endif //_testd4opaque_h

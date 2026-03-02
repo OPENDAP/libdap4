@@ -61,7 +61,7 @@ protected:
 public:
     UInt32(const string &n);
     UInt32(const string &n, const string &d);
-    virtual ~UInt32() {}
+    ~UInt32() override {}
 
     UInt32(const UInt32 &copy_from);
 

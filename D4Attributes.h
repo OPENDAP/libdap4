@@ -65,7 +65,7 @@ public:
     D4Attribute(const string &name, D4AttributeType type) : d_name(name), d_type(type), d_attributes(0) {}
 
     D4Attribute(const D4Attribute &src);
-    ~D4Attribute();
+    ~D4Attribute() override;
     D4Attribute &operator=(const D4Attribute &rhs);
 
     string name() const { return d_name; }
@@ -116,7 +116,7 @@ public:
     D4Attributes() {}
     D4Attributes(const D4Attributes &rhs) { m_duplicate(rhs); }
 
-    virtual ~D4Attributes() {
+    ~D4Attributes() override {
         D4AttributesIter i = d_attrs.begin();
         while (i != d_attrs.end()) {
             delete *i++;

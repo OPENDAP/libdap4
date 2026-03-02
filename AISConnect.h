@@ -56,9 +56,9 @@ public:
     AISConnect(const string &name) throw(AISDatabaseReadFailed);
     AISConnect(const string &name, const string &ais_db) throw(AISDatabaseReadFailed);
 
-    virtual ~AISConnect();
+    ~AISConnect() override;
 
-    virtual void request_das(DAS &das);
+    void request_das(DAS &das) override;
 };
 
 } // namespace libdap

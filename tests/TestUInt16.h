@@ -50,18 +50,18 @@ public:
     TestUInt16(const string &n, const string &d);
     TestUInt16(const TestUInt16 &rhs);
 
-    virtual ~TestUInt16() {}
+    ~TestUInt16() override {}
 
     TestUInt16 &operator=(const TestUInt16 &rhs);
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
-    virtual bool read();
+    bool read() override;
 
-    virtual void output_values(std::ostream &out);
+    void output_values(std::ostream &out) override;
 
-    void set_series_values(bool sv) { d_series_values = sv; }
-    bool get_series_values() { return d_series_values; }
+    void set_series_values(bool sv) override { d_series_values = sv; }
+    bool get_series_values() override { return d_series_values; }
 };
 
 #endif // _testuint16_h

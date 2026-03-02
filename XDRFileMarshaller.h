@@ -50,7 +50,7 @@ private:
 
 public:
     XDRFileMarshaller(FILE *out);
-    virtual ~XDRFileMarshaller();
+    ~XDRFileMarshaller() override;
 
     void put_byte(dods_byte val) override;
 

@@ -130,7 +130,7 @@ public:
     Grid(const string &n);
     Grid(const string &n, const string &d);
     Grid(const Grid &rhs);
-    virtual ~Grid();
+    ~Grid() override;
 
     typedef std::vector<BaseType *>::const_iterator Map_citer;
     typedef std::vector<BaseType *>::iterator Map_iter;

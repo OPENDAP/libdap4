@@ -59,9 +59,9 @@ public:
     Url(const std::string &n, const std::string &d);
     Url(const std::string &n, Type t);
     Url(const std::string &n, const std::string &d, Type t);
-    virtual ~Url() {}
+    ~Url() override {}
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 };
 
 } // namespace libdap

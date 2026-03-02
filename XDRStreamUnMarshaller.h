@@ -62,7 +62,7 @@ private:
 
 public:
     XDRStreamUnMarshaller(istream &in);
-    virtual ~XDRStreamUnMarshaller();
+    ~XDRStreamUnMarshaller() override;
 
     void get_byte(dods_byte &val) override;
 

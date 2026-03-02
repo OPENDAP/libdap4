@@ -59,7 +59,7 @@ protected:
 public:
     UInt16(const string &n);
     UInt16(const string &n, const string &d);
-    virtual ~UInt16() {}
+    ~UInt16() override {}
 
     UInt16(const UInt16 &copy_from);
 

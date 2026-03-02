@@ -91,7 +91,7 @@ public:
     // #ifdef DEFAULT_BASETYPE_FACTORY
     // DataDDS(const string &n = "", const string &v = "");
     // #endif
-    virtual ~DataDDS() {}
+    ~DataDDS() override {}
 
     /** Sets the version string.  This typically looks something like:
     <tt>DODS/2.15</tt>, where ``2'' is the major version number, and ``15''

@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Basic CXX flags
-set(D4_CE_CXXFLAGS -Wall -Wcast-align -Wno-inconsistent-missing-override)
+set(D4_CE_CXXFLAGS -Wall -Wcast-align)
 
 if (BUILD_DEVELOPER)
     list(APPEND D4_CE_CXXFLAGS -g3 -O0)

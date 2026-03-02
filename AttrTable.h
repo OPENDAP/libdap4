@@ -283,7 +283,7 @@ protected:
 public:
     AttrTable();
     AttrTable(const AttrTable &rhs);
-    virtual ~AttrTable();
+    ~AttrTable() override;
     AttrTable &operator=(const AttrTable &rhs);
 
     virtual void erase();
