@@ -9,7 +9,6 @@ Keep entries in reverse chronological order (newest first).
 - Improved production rules.
 - Worked technical debt affecting large variables and large responses
   (large >= 2Gb).
-
 ## Version 3.21.0
 
 - Added new Direct I/O support so that modules written using libdap
@@ -35,13 +34,11 @@ Keep entries in reverse chronological order (newest first).
 - Added support for 64-bit sized arrays. This was done by adding a set of
   'size methods' that have the suffix '_ll' (for long long). These should
   be used in place of the old methods, which are still in the code.
-
-News for version 3.20.11
+## Version 3.20.11
 
 - Fixed bug in computation of request_size_kb()
 - Fixed type issue in HTTPCache.cc (#192)
-
-News for version 3.20.10
+## Version 3.20.10
 
 - Support for RHEL8
 - Fix for bugs in the ce parser around inverted indices.
@@ -49,455 +46,348 @@ News for version 3.20.10
 - Improvements to DAP4 api.
 - Fixed various memory leaks.
 - Replaced instances of &vector[0] with vector.data()  (RHEL8)
-
-News for version 3.20.9
-
- Started migrating from (deprecated) auto_ptr to C++11 unique_ptr
-
- Migrated use of regex functions from outdfated GNU implementation
- to C++11 implementation (uses compile time swicth)
-
-News for version 3.20.8
-
- Modified Error so that it is more in line with C++11.
-
- Added (shallow) unit64_t request size computations and max_request_size state.
-
- Changed the internal representation of max response size to uint64_t and confined the overflow
- to just the (deprecated) functions.
-
-News for version 3.20.7
-
- Added code coverage (using gcov) to the CI processes.
-
- Dropped support for CentOS-6 (whew!)
-
- Improved Int64 support.
-
- Corrected byte order issue with DAP4 data transmission.
-
- Improved error reporting.
-
-News for version 3.20.6
-
- Stopped CE parse errors from returning user supplied
- strings in error messages.
-
- Switched to README.md from README
-
- Swapped out unique_ptr for auto_ptr because of CentOS6 issues.
-
-News for version 3.20.5
-
- Fixed memory leaks in imported aws signing code.
-
- Minor bug fixes.
-
- Lots of work on CI.
-
-News for version 3.20.4
-
-Fixed memory leaks in the libxml2-based DMR and DDX parsers.
-
-Moved more toward C++-11. On CentOS 6 we now build using
-c++0x while CentOS7 uses c++11. This means that we can
-use unique_ptr<> but not null_ptr, for example.
-
-We have found a bug in the code that orders Dimensions,
-Enumeration definitions and Groups in the DMR. Listing the
-Groups last makes DMRs that reference Dimensions defined inside
-Groups fail silently.
-
-News for version 3.20.3
-
-Added support for a CI build of a debian package of libdap4
-
-News for version 3.20.2
-
-Added libdap::Array::rename_dim() for HK-247 (an issue in the BES)
-
-News for version 3.20.1
-
-Support Continuous Delivery of CentOS 6 and 7 RPMs using Travis CI.
-
-News for version 3.20.0
-
-We now have debian packages for libdap, built using Travis CI
-
-The library now returns only DAP 3.2 DDX responses, ending confusion about
-what exactly the DDX syntax would be.
-
-Using libtirpc (Libtirpc is a port of Suns Transport-Independent RPC library to Linux).
-Thanks to Orion Poplawski.
-
-Use quotes when testing $CC in the configure script.
-This avoids the error "test: too many arguments" appearing in the
-configure output if CC contains multiple words, such as "ccache cc".
-Thanks to Ryan Schmidt.
-
-Testing and coverage analysis.
-Thanks to Ed Hartnett.
-
-News for version 3.19.1
-
-Portability issues: Updated gnulib and mkstemps fixed as per user
-reports. Removed a test for block_size in HTTPCacheTest that failed on
-Fedora ppc64le system with XFS system
-
-Branches/tickets merged: hyrax390 (CppUnit test improvements)
-
-News for version 3.19.0
-
-Bug fixes in memory usage for Vector types.
-
-Refactored transform_to_dap4() methods and associated API
-
-Implmented transform_to_dap2() method.
-
-Refactored test harnesses so that running individual
-tests is now a viable option.
-
-News for version 3.18.3
-
-Bug fix for DAP4 data transmissions.
-
-XML Parser fixes for DAP4: We are now tolerant of elements that
-are not in the DAP4 namespace, so the DMR document can be extended
-with additional information without breaking our parser.
-
-D4Group's clone (aka ptr_duplicate) method returned a D4Group and not
-a BaseType; fixed.
-
-News for version 3.18.2
-
-Fixed an issue with DAP4 CE parsing, double quotes and %20 escape
-characters.
-
-Type fix for getopt() for platforms where char is unsigned by default.
-
-Added more bigendian test baselines.
-
-Added libuuid to the requirements listed in INSTALL.
-
-News for version 3.18.1
-
-Minor fix for the source distribution.
-
-Fixed a long-standing bug in BaseType::set_send_p() and set_read_p().
-
-Added a way to build 'universal' baselines for tests that include
-data. Tests that included data had different checksums on different
-architectures and this meant two sets of baselines for them. No more.
-I'm keeping the old tests with their dual baselines (they test the
-checksum code) but all newer tests should use the 'universal' test
-macros.
-
-Added DAP4 filter support!
-
-News for version 3.17.3
-
-Fixed a soname error - Adding a const constructor seems to have
-*removed* the old constructor as far as some code is cncerned (it's
-still there, but with a different mangled name).
-
-News for version 3.17.2
-
-Added tests for big-endian machines from Dan Horák  <dan@danny.cz>
-
-News for version 3.17.1
-
-A bug fix release.
-
-Fix for endian detection issues and unqualified use of 'array' (it
-should have been libdap::array). The latter affects builds with
-recent versions of gcc.
-
-See the ChangeLog for other issues that this version addresses.
-
-News for version 3.17.0
-
-Better error reporting. Error objects are now always thrown with a
-code that 'make sense' and use the default code only when really
-necessary. This means that the BES will not report most Error throws
-as an internal error (only a few are) unless that's really the case.
-This is used, in turn, by the front end to make better error responses
-for users.
-
-The old timeout code is still present but not used. This matches
-changes made in the BES to correctly process timeouts.
-
-Improved support for doxygen.
-
-Support for DAP4: Attributes were sometimes mis-coded as Byte when
-they should have been Float32. Fixed.
-
-Child Groups were sometimes printed twice. No more.
-
-News for version 3.16.0
-
-I've bumped up the version because of an API change in libdap - the
-library no longer computes the DAP4 CRC32 checksum as part of the
-BaseType::intern_data() method. This API change affects DAP4 only.
-Otherwise, this is a bug-fix release for 3.15.1
-
-Bugs fixed:
-
-getdap4 correctly produces output for dataset with child groups.
-
-Tests now work correctly for big-endian machines - before the DMR tests
-were failing because the CRC32 codes are different for the same, e.g.,
-int32 value, with different byte order. Not addressed are the issues
-of how best to encode the byte order used when CRC32 computations are
-done. Thanks to the folks at RedHat for help (a VM) to work on this.
-
-News for version 3.15.1
-
-Bug fixes
-
-News for version 3.15.0
-
-The library now writes to the network using a child thread, allowing
-parallel processing of data reads and writes when one or more variables
-are returned (or when returning the result of an aggregation).
-
-The library now supports writing 'vector' data (i.e., Array variables)
-in parts so that large arrays that are being built up over time can be
-serialized in pieces as the data becomes available. This is combined
-with the parallel I/O feature when serializing aggregations - other
-handlers could also take advantage of it
-
-We fixed an issue in Vector where template methods were used in a way
-that broke inheritance, introducing a hard-to-diagnose bug in the NCML
-code. The problem was that variables that describe the 'aggregation
-dimension' could not be subset. That's now fixed.
-
-News for version 3.14.2
-
-This version of the library _changes the behavior of BaseType::serialize()_
-so that memory allocated on the heap used to hold data (e.g., for an
-Array) will be deleted as soon as the data are serialized. This was added
-to reduce memory consumption when returning responses with many large
-variables. The change did not affect any of the code we normally test
-against; I think it was a largely undocumented 'feature' that the data
-were still present after serialized returned. However, if a module needs
-the data after serialize() is called, it can use a new method called
-serialize_no_release() to get the old behavior.
-
-News for version 3.14.1
-
-We started using Travis-CI and Coverity for/with/on this code; there was
-a learning curve... ;-) Also some issues with the parsers have been
-addressed, hopefully resulting in more straightforward builds.
-
-News for version 3.14.0
-
-This version of libdap contains the current DAP4 implementation for
-C++. The implementation is nearly complete, lacking only the CE filters
-for Sequences.
-
-News for version 3.13.3
-
-Memory leak fix in RValue.cc - affects server function evaluation only.
-
-News for version 3.13.2
-
-Fixed a memory leak in the CE parser when evaluating server functions.
-
-News for version 3.13.1
-
-Fix for a unit-test that uses the default server at test.opendap.org.
-This affects neither the API nor ABI of libdap; only the test baseline
-was changed.
-
-News for version 3.13.0
-
-Added a xml file to serve as input for the perl-based abi compatibility
-checker. Seems to be pretty slick; see abi-checker.xml.in for more info.
-
-Some updates - mostly addition of #include <unistd.h> - for OSX 10.9's
-clang compiler.
-
-News for version 3.12.1
-
-Fixed the behavior of Sequence::read_row() so that the documented
-semantics of read() are used. This will require changes in some of the
-handlers but does not change the libray's ABI. Handler's that don't
-need the new/corrected behavior can use version 3.12.0.
-
-News for version 3.12.0
-
-Moved server functions out of libdap; they are now stored in a BES module.
-
-Added support for building large (constant) arrays to be used in
-server functions. The arrays are defined using a new special form that
-the ConstraintEvaluator class supports. The server side functions are
-now in their own BES module (built as part of the BES for now) and
-it's possible to name the constant arrays. Arrays of 1 million
-elements can be made in a fraction of a second (although it will take
-longer to send the constraint to the server). See the README file for
-more details.
-
-News for version 3.11.7
-
-Bug fix for the server function caching code. Now if the function
-cache directory /tmp/dap_functions_cache exists, it will be used to
-cache the results of applying server functions. If the directory does
-not exist, then the function results won't be cached - a minor
-performance penalty in most cases.
-
-The size of the cache is set to 20GB. The size and location of the
-cache are fixed for this version of libdap but they will move into
-the bes.conf file as parameters in a future version of the server.
-
-News for version 3.11.6
-
-Changes to the way constraints are evaluated when they contain server
-functions. Now DAS and DDS objects can be returned from requests that
-include those constraints. The server function call results are
-cached, so that sending the same function calls several times will not
-evaluate those functions more than once.
-
-News for version 3.11.5
-
-Fixed a memory leak in XDRStreamMarshaller and a bug in
-DDS::add_var_nocopy().
-
-News for version 3.11.4
-
-Merged to trunk; tagged.
-
-News for version 3.11.3
-
-Changed the return value for dap-config --libs so that it does not contain
-the curl static libs. This causes problems when linking on CentOS 6 in some
-cases.
-
-News for version 3.11.2
-
-The new DAP3.3 Keywords are supported by the library. These are sort
-of a hidden feature of DAP4 that might not be used.
-
-There are many bug fixes in this update; check the ChangeLog or Trac.
-Two notable fixes:
-
-* The way attributes are encoded has changed subtly so that now only
+## Version 3.20.9
+
+- Started migrating from (deprecated) auto_ptr to C++11 unique_ptr
+- Migrated use of regex functions from outdfated GNU implementation
+  to C++11 implementation (uses compile time swicth)
+## Version 3.20.8
+
+- Modified Error so that it is more in line with C++11.
+- Added (shallow) unit64_t request size computations and max_request_size state.
+- Changed the internal representation of max response size to uint64_t and confined the overflow
+  to just the (deprecated) functions.
+## Version 3.20.7
+
+- Added code coverage (using gcov) to the CI processes.
+- Dropped support for CentOS-6 (whew!)
+- Improved Int64 support.
+- Corrected byte order issue with DAP4 data transmission.
+- Improved error reporting.
+## Version 3.20.6
+
+- Stopped CE parse errors from returning user supplied
+  strings in error messages.
+- Switched to README.md from README
+- Swapped out unique_ptr for auto_ptr because of CentOS6 issues.
+## Version 3.20.5
+
+- Fixed memory leaks in imported aws signing code.
+- Minor bug fixes.
+- Lots of work on CI.
+## Version 3.20.4
+
+- Fixed memory leaks in the libxml2-based DMR and DDX parsers.
+- Moved more toward C++-11. On CentOS 6 we now build using
+  c++0x while CentOS7 uses c++11. This means that we can
+  use unique_ptr<> but not null_ptr, for example.
+- We have found a bug in the code that orders Dimensions,
+  Enumeration definitions and Groups in the DMR. Listing the
+  Groups last makes DMRs that reference Dimensions defined inside
+  Groups fail silently.
+## Version 3.20.3
+
+- Added support for a CI build of a debian package of libdap4
+## Version 3.20.2
+
+- Added libdap::Array::rename_dim() for HK-247 (an issue in the BES)
+## Version 3.20.1
+
+- Support Continuous Delivery of CentOS 6 and 7 RPMs using Travis CI.
+## Version 3.20.0
+
+- We now have debian packages for libdap, built using Travis CI
+- The library now returns only DAP 3.2 DDX responses, ending confusion about
+  what exactly the DDX syntax would be.
+- Using libtirpc (Libtirpc is a port of Suns Transport-Independent RPC library to Linux).
+  Thanks to Orion Poplawski.
+- Use quotes when testing $CC in the configure script.
+  This avoids the error "test: too many arguments" appearing in the
+  configure output if CC contains multiple words, such as "ccache cc".
+  Thanks to Ryan Schmidt.
+- Testing and coverage analysis.
+  Thanks to Ed Hartnett.
+## Version 3.19.1
+
+- Portability issues: Updated gnulib and mkstemps fixed as per user
+  reports. Removed a test for block_size in HTTPCacheTest that failed on
+  Fedora ppc64le system with XFS system
+- Branches/tickets merged: hyrax390 (CppUnit test improvements)
+## Version 3.19.0
+
+- Bug fixes in memory usage for Vector types.
+- Refactored transform_to_dap4() methods and associated API
+- Implmented transform_to_dap2() method.
+- Refactored test harnesses so that running individual
+  tests is now a viable option.
+## Version 3.18.3
+
+- Bug fix for DAP4 data transmissions.
+- XML Parser fixes for DAP4: We are now tolerant of elements that
+  are not in the DAP4 namespace, so the DMR document can be extended
+  with additional information without breaking our parser.
+- D4Group's clone (aka ptr_duplicate) method returned a D4Group and not
+  a BaseType; fixed.
+## Version 3.18.2
+
+- Fixed an issue with DAP4 CE parsing, double quotes and %20 escape
+  characters.
+- Type fix for getopt() for platforms where char is unsigned by default.
+- Added more bigendian test baselines.
+- Added libuuid to the requirements listed in INSTALL.
+## Version 3.18.1
+
+- Minor fix for the source distribution.
+- Fixed a long-standing bug in BaseType::set_send_p() and set_read_p().
+- Added a way to build 'universal' baselines for tests that include
+  data. Tests that included data had different checksums on different
+  architectures and this meant two sets of baselines for them. No more.
+  I'm keeping the old tests with their dual baselines (they test the
+  checksum code) but all newer tests should use the 'universal' test
+  macros.
+- Added DAP4 filter support!
+## Version 3.17.3
+
+- Fixed a soname error - Adding a const constructor seems to have
+  *removed* the old constructor as far as some code is cncerned (it's
+  still there, but with a different mangled name).
+## Version 3.17.2
+
+- Added tests for big-endian machines from Dan Horák  <dan@danny.cz>
+## Version 3.17.1
+
+- A bug fix release.
+- Fix for endian detection issues and unqualified use of 'array' (it
+  should have been libdap::array). The latter affects builds with
+  recent versions of gcc.
+- See the ChangeLog for other issues that this version addresses.
+## Version 3.17.0
+
+- Better error reporting. Error objects are now always thrown with a
+  code that 'make sense' and use the default code only when really
+  necessary. This means that the BES will not report most Error throws
+  as an internal error (only a few are) unless that's really the case.
+  This is used, in turn, by the front end to make better error responses
+  for users.
+- The old timeout code is still present but not used. This matches
+  changes made in the BES to correctly process timeouts.
+- Improved support for doxygen.
+- Support for DAP4: Attributes were sometimes mis-coded as Byte when
+  they should have been Float32. Fixed.
+- Child Groups were sometimes printed twice. No more.
+## Version 3.16.0
+
+- I've bumped up the version because of an API change in libdap - the
+  library no longer computes the DAP4 CRC32 checksum as part of the
+  BaseType::intern_data() method. This API change affects DAP4 only.
+  Otherwise, this is a bug-fix release for 3.15.1
+- Bugs fixed:
+- getdap4 correctly produces output for dataset with child groups.
+- Tests now work correctly for big-endian machines - before the DMR tests
+  were failing because the CRC32 codes are different for the same, e.g.,
+  int32 value, with different byte order. Not addressed are the issues
+  of how best to encode the byte order used when CRC32 computations are
+  done. Thanks to the folks at RedHat for help (a VM) to work on this.
+## Version 3.15.1
+
+- Bug fixes
+## Version 3.15.0
+
+- The library now writes to the network using a child thread, allowing
+  parallel processing of data reads and writes when one or more variables
+  are returned (or when returning the result of an aggregation).
+- The library now supports writing 'vector' data (i.e., Array variables)
+  in parts so that large arrays that are being built up over time can be
+  serialized in pieces as the data becomes available. This is combined
+  with the parallel I/O feature when serializing aggregations - other
+  handlers could also take advantage of it
+- We fixed an issue in Vector where template methods were used in a way
+  that broke inheritance, introducing a hard-to-diagnose bug in the NCML
+  code. The problem was that variables that describe the 'aggregation
+  dimension' could not be subset. That's now fixed.
+## Version 3.14.2
+
+- This version of the library _changes the behavior of BaseType::serialize()_
+  so that memory allocated on the heap used to hold data (e.g., for an
+  Array) will be deleted as soon as the data are serialized. This was added
+  to reduce memory consumption when returning responses with many large
+  variables. The change did not affect any of the code we normally test
+  against; I think it was a largely undocumented 'feature' that the data
+  were still present after serialized returned. However, if a module needs
+  the data after serialize() is called, it can use a new method called
+  serialize_no_release() to get the old behavior.
+## Version 3.14.1
+
+- We started using Travis-CI and Coverity for/with/on this code; there was
+  a learning curve... ;-) Also some issues with the parsers have been
+  addressed, hopefully resulting in more straightforward builds.
+## Version 3.14.0
+
+- This version of libdap contains the current DAP4 implementation for
+  C++. The implementation is nearly complete, lacking only the CE filters
+  for Sequences.
+## Version 3.13.3
+
+- Memory leak fix in RValue.cc - affects server function evaluation only.
+## Version 3.13.2
+
+- Fixed a memory leak in the CE parser when evaluating server functions.
+## Version 3.13.1
+
+- Fix for a unit-test that uses the default server at test.opendap.org.
+  This affects neither the API nor ABI of libdap; only the test baseline
+  was changed.
+## Version 3.13.0
+
+- Added a xml file to serve as input for the perl-based abi compatibility
+  checker. Seems to be pretty slick; see abi-checker.xml.in for more info.
+- Some updates - mostly addition of #include <unistd.h> - for OSX 10.9's
+  clang compiler.
+## Version 3.12.1
+
+- Fixed the behavior of Sequence::read_row() so that the documented
+  semantics of read() are used. This will require changes in some of the
+  handlers but does not change the libray's ABI. Handler's that don't
+  need the new/corrected behavior can use version 3.12.0.
+## Version 3.12.0
+
+- Moved server functions out of libdap; they are now stored in a BES module.
+- Added support for building large (constant) arrays to be used in
+  server functions. The arrays are defined using a new special form that
+  the ConstraintEvaluator class supports. The server side functions are
+  now in their own BES module (built as part of the BES for now) and
+  it's possible to name the constant arrays. Arrays of 1 million
+  elements can be made in a fraction of a second (although it will take
+  longer to send the constraint to the server). See the README file for
+  more details.
+## Version 3.11.7
+
+- Bug fix for the server function caching code. Now if the function
+  cache directory /tmp/dap_functions_cache exists, it will be used to
+  cache the results of applying server functions. If the directory does
+  not exist, then the function results won't be cached - a minor
+  performance penalty in most cases.
+- The size of the cache is set to 20GB. The size and location of the
+  cache are fixed for this version of libdap but they will move into
+  the bes.conf file as parameters in a future version of the server.
+## Version 3.11.6
+
+- Changes to the way constraints are evaluated when they contain server
+  functions. Now DAS and DDS objects can be returned from requests that
+  include those constraints. The server function call results are
+  cached, so that sending the same function calls several times will not
+  evaluate those functions more than once.
+## Version 3.11.5
+
+- Fixed a memory leak in XDRStreamMarshaller and a bug in
+  DDS::add_var_nocopy().
+## Version 3.11.4
+
+- Merged to trunk; tagged.
+## Version 3.11.3
+
+- Changed the return value for dap-config --libs so that it does not contain
+  the curl static libs. This causes problems when linking on CentOS 6 in some
+  cases.
+## Version 3.11.2
+
+- The new DAP3.3 Keywords are supported by the library. These are sort
+  of a hidden feature of DAP4 that might not be used.
+- There are many bug fixes in this update; check the ChangeLog or Trac.
+  Two notable fixes:
+- The way attributes are encoded has changed subtly so that now only
   spaces are escaped. This fixes a problem with our XML and RDF
   responses.
-
-* The XML output (i.e., the DDX) is now built using an XML library, so
+- The XML output (i.e., the DDX) is now built using an XML library, so
   any encoding issues are its fault ;-) But, in a pragmatic sense,
   this has greatly simplified the library and sets the stage for
   further simplification of the methods that build responses. The
   behavior of those methods has not changed.
+## Version 3.11.1
 
-News for version 3.11.1
+- Merge of the Hyrax 3.6.2 fixes.
+- A race condition in the HTTP cache was fixed.
+- Fixes for the OS/X package.
+## Version 3.11.0
 
-Merge of the Hyrax 3.6.2 fixes.
+- Constraint expressions can now include multiple function calls.
+  Previously, when a function was used in the projection part of the CE
+  and it was not a 'projection function,' but a function that returns
+  data, only function could be called in the CE. Now the evaluator
+  supports calling a series of functions. The results are returned in a
+  Dataset object as before. Because this is a new behavior for the
+  library I have bumped up the minor revision. This version is backward
+  compatible with the previous version of the library.
+- Grid now prints the XML declaration correctly when a constrained Grid
+  variable's type decays to a Structure. The expr-test program now has
+  an XML option (-x) for use with constrained DDS/DDX output. This bug
+  affected the usefulness of the DDX response.
+- the geogrid() function now takes both (grid, <box points>) and (grid,
+  lat array, lon array <box points>). This includes some minimal testing
+  of the new code.
+- Bug fixes.
+## Version 3.10.2
 
-A race condition in the HTTP cache was fixed.
+- Changed the way the DAS object's attributes are merged into a DDS
+  object, which did two things. First, the process of merging the
+  attributes has a default behavior that will work if the DAS and DDS
+  are built according to the DAP 2.0 specification, and second, the
+  handlers can specialize the process to suite their own needs. This
+  means that new handlers that build odd DAS objects will need to
+  specialize the transfer_attributes() method defined by BaseType,
+  Constructor and Grid. I've already done this for the current handlers
+  we're distributing as part of Hyrax. This means that attributes from
+  the netCDF handler appear correctly in Grid maps.
+- Speaking of the netCDF handler, it now builds with netcdf 4.1.
+- Build fixes galore, including new Requires: lines in the rpm spec
+  files which should make it easier to short circuit installation
+  problems with the handlers.
+- The DDX no longer contains attributes with &0xdd; escape codes. When
+  an XML document declares that it is UTF-8 codes < 0x20 are not
+  allowed. We're using octal escapes again.
+- The preceding fix, along with the corrected processing of the DAS
+  object mean that two major issues with the DDX that hindered the use
+  of that response in semantic web applications are gone.
+## Version 3.10.1b
 
-Fixes for the OS/X package.
+- We have removed the Server 3 (CGI) software from the dap-server
+  package and, with that change, we have removed the deflate program
+  from this library/package.
+- The geogrid() function has been much improved. It will now answer
+  requests where the latitude is upside down in the dataset and flip the
+  result so that the north pole is 'up'. It will also handle requests
+  that 'wrap around' the date line. Error messages are also improved.
+- This library now implements DAP 3.3 including the OtherXML DAP
+  attribute type (which will become AnyXML in DAP 4). The library now
+  implements simple version negotiation and a DDX response that is DAP
+  version sensitive. See the online DAP4 design documentation for more
+  information (docs.opendap.org).
+- Many, many fixes and extensions for DAP4 and NcML support. (NB: the
+  NcML handler is a separate project).
+## Version 3.9.2
 
-News for version 3.11.0
+- Memory leak fixed when using DDS::transfer_attributes on a DAS that uses the
+  Alias keyword.
+## Version 3.9.1
 
-Constraint expressions can now include multiple function calls.
-Previously, when a function was used in the projection part of the CE
-and it was not a 'projection function,' but a function that returns
-data, only function could be called in the CE. Now the evaluator
-supports calling a series of functions. The results are returned in a
-Dataset object as before. Because this is a new behavior for the
-library I have bumped up the minor revision. This version is backward
-compatible with the previous version of the library.
+- The CE parser now returns an error if an array of structures that contains
+  arrays is improperly constrained (the enclosing structure array _may_ be
+  subsampled, but that subsampling must be the same for each of its fields. The
+  fields can be independently subsampled.
+- A problem with the client-side cache has been fixed.
+- Variable names can now be quoted! That is, in a CE you can say:
+- "my odd name"."% H2O"[10:13]
+- and it will parse. Must clients and all web browsers will encode all of this
+  using the web's URL escape syntax, which his hard to read, but this means that
+  any character can now appear in a variable name (double quotes can be escaped
+  using a backslash and backslashes can be includes using '\\'). The quotes are
+  optional, of course, so all CEs that work now will continue to work.
+## Version 3.9.0
 
-Grid now prints the XML declaration correctly when a constrained Grid
-variable's type decays to a Structure. The expr-test program now has
-an XML option (-x) for use with constrained DDS/DDX output. This bug
-affected the usefulness of the DDX response.
-
-the geogrid() function now takes both (grid, <box points>) and (grid,
-lat array, lon array <box points>). This includes some minimal testing
-of the new code.
-
-Bug fixes.
-
-News for version 3.10.2
-
-Changed the way the DAS object's attributes are merged into a DDS
-object, which did two things. First, the process of merging the
-attributes has a default behavior that will work if the DAS and DDS
-are built according to the DAP 2.0 specification, and second, the
-handlers can specialize the process to suite their own needs. This
-means that new handlers that build odd DAS objects will need to
-specialize the transfer_attributes() method defined by BaseType,
-Constructor and Grid. I've already done this for the current handlers
-we're distributing as part of Hyrax. This means that attributes from
-the netCDF handler appear correctly in Grid maps.
-
-Speaking of the netCDF handler, it now builds with netcdf 4.1.
-
-Build fixes galore, including new Requires: lines in the rpm spec
-files which should make it easier to short circuit installation
-problems with the handlers.
-
-The DDX no longer contains attributes with &0xdd; escape codes. When
-an XML document declares that it is UTF-8 codes < 0x20 are not
-allowed. We're using octal escapes again.
-
-The preceding fix, along with the corrected processing of the DAS
-object mean that two major issues with the DDX that hindered the use
-of that response in semantic web applications are gone.
-
-News for version 3.10.1b
-
-We have removed the Server 3 (CGI) software from the dap-server
-package and, with that change, we have removed the deflate program
-from this library/package.
-
-The geogrid() function has been much improved. It will now answer
-requests where the latitude is upside down in the dataset and flip the
-result so that the north pole is 'up'. It will also handle requests
-that 'wrap around' the date line. Error messages are also improved.
-
-This library now implements DAP 3.3 including the OtherXML DAP
-attribute type (which will become AnyXML in DAP 4). The library now
-implements simple version negotiation and a DDX response that is DAP
-version sensitive. See the online DAP4 design documentation for more
-information (docs.opendap.org).
-
-Many, many fixes and extensions for DAP4 and NcML support. (NB: the
-NcML handler is a separate project).
-
-News for version 3.9.2
-
-Memory leak fixed when using DDS::transfer_attributes on a DAS that uses the
-Alias keyword.
-
-News for version 3.9.1
-
-The CE parser now returns an error if an array of structures that contains
-arrays is improperly constrained (the enclosing structure array _may_ be
-subsampled, but that subsampling must be the same for each of its fields. The
-fields can be independently subsampled.
-
-A problem with the client-side cache has been fixed.
-
-Variable names can now be quoted! That is, in a CE you can say:
-
-  "my odd name"."% H2O"[10:13]
-
-and it will parse. Must clients and all web browsers will encode all of this
-using the web's URL escape syntax, which his hard to read, but this means that
-any character can now appear in a variable name (double quotes can be escaped
-using a backslash and backslashes can be includes using '\\'). The quotes are
-optional, of course, so all CEs that work now will continue to work.
-
-News for version 3.9.0
-
-libdap now supports DAP 3.2. The evolving DAP 3.x protocol is described at
-http://docs.opendap.org/index.php/DAP3/4. The most important change from DAP
-3.1 to 3.2 is:
-
-  DAP 3.2 introduces the notion of protocol negotiation, similar to HTTP's
+- libdap now supports DAP 3.2. The evolving DAP 3.x protocol is described at
+  http://docs.opendap.org/index.php/DAP3/4. The most important change from DAP
+  3.1 to 3.2 is:
+- DAP 3.2 introduces the notion of protocol negotiation, similar to HTTP's
   response type or encoding negotiation. The client MAY send an XDAP-Accept
   header to tell the server the highest version of the protocol that the
   client can understand. The server MUST then respond using only responses at
@@ -508,467 +398,358 @@ http://docs.opendap.org/index.php/DAP3/4. The most important change from DAP
   client. The only functional difference between DAP 2.0, 3.0 and 3.1 is
   form/content of the version information returned in the HTTP response
   header.
-
-  By allowing the server to respond with a lower version the protocol can
+- By allowing the server to respond with a lower version the protocol can
   support old servers (since that's how they will respond) and enable newer
   clients to treat the lower version responses as errors (because the newer
   servers can be expected to discriminate between different server versions).
-
-  New servers SHOULD always return a response that conforms to the version
+- New servers SHOULD always return a response that conforms to the version
   sent from the client in the XDAP-Accept header.
-
-  In addition to returning the DAP protocol version using the XDAP header
+- In addition to returning the DAP protocol version using the XDAP header
   (which is a mechanism specific to HTTP), the protocol version will also be
   returned in the DDX Dataset element using the XML attribute dap-version.
   See DDX.
-
-With this version of libdap the DDX is slightly different for DAP 3.2 - it
-now includes DAP protocol version information and an xmlbase element.
-
-There was ambiguity regarding how an array of structures would be constrained.
-The web page of DAP 2 Errata has been updated with a clarification of this and
-the constraint expression parser has been updated to reflect that fix. See
-the DAP3/4 page and ticket 975 for the complete info. Short version: Suppose
-'s' is an array of structures and 'm' is an array that is a member of 's'.
-You can constraint 'm' like this: s2[0:4].m[2:7]
-
-Now the notion that a dataset identifier (e.g., a file name) is bound to the
-DDS has been  dropped and that identifier is bound to a variable. This lets
-the library be used in contexts where a DDS holds variables from several
-different places (e.g., files).
-
-String attribute values were always quoted (quotes were added if not present
-in the data set) and while this was OK for the DAS response, it broke the
-DDX. Now quotes are added to DAS response but not the values themselves. See
-ticket 1163.
-
-Nested Sequences were failing when the constraint forced one or more rows of
-the inner Sequence to be empty. Fixed.
-
-A number of build issues have been fixed in this version, see the ChangeLog
-file.
-
-News for version 3.8.2
-
-Significant improvements to the HTTP cache. The cache software could return
-erroneous responses in some rare cases when using multi-threaded code. Fixed.
-Also the entire caching system is now much more robust since the 'table' that
-contains information about individual entries is encapsulated in it's own
-class. The HTTP cache is still both thread-safe and _not_ multi-process safe.
-However, it should be possible to modify the HTTPCacheTable class to use a
-database system like MySQL or SQLite to make it MP-safe.
-
-The 'ancillary information' functions have been moved to their own class
-(from DODSFilter and the file cgi_util.cc).
-
-I fixed the libdap win32 installer so that it does not install stuff in the
-win32 system directories anymore.
-
-News for version 3.8.1
-
-The syntax for PROXY_SERVER and NO_PROXY_FOR have been fixed so that they are
-easier to use. PROXY_SERVER now takes a value like
-'http://user:pw@squid.proxy.edu:3128' and uses it correctly. In that value,
-all parts but the host name (squid.proxy.edu) are optional and the old syntax,
-as well as several common variants, are accepted. For the NO_PROXY_FOR entry,
-the '<protocol>,' is now optional. Only the HTTP protocol is supported or the
-proxy server.
-
-News for version 3.8.0, 29 February 2008
-
-The libdap classes and code are now inside of the libdap namespace. In order
-to access any of the classes, for example, you will need to do one of the
-following. After including the libdap headers you can:
-
-1. add a using statement for the entire libdap namespace:
-
-using namespace libdap ;
-
-2. add a using statement for the classes that you will be using:
-
-using libdap::DAS ;
-
-3. inside your code scope the use of libdap classes.
-
-libdap::DAS *das = code_to_get_das() ;
-
-HTTPCache updated to cache an entry, returning not only the FILE pointer but
-also the name of the file in the cache. This way, the cached item could be
-passed to a data handler, such as the netcdf_handler, and read.
-
-The pkg build for Mac OSX was updated to automate the creation of the
-ReadMe.txt file, add a README and NEWS file to the dmg and automatically
-create the dmg using DropDMG.
-
-News for version 3.7.10, 28 November 2007
-
-Fixed XDRStreamMarshaller so that it no longer allocates a huge buffer. This
-fixes a bug where the BES fails to start on smaller machines.
-
-News for version 3.7.9, 21 November 2007
-
-Bumped up the soname version numbers for libdapclient and libdapserver due
-to changes in the HTTPResponse and AlarmHandler interfaces.
-
-The transfer_data() method defined for Sequence and Structure has been
-generalized and implemented for all classes. In the process, so issues with
-the way nested sequences were handled have been fixed. I renamed the method
-to intern_data() since it is now a part of libdap (and not just two classes).
-The method uses the read() methods defined for the type classes (Byte, ...,
-Grid) to read data into variables in a DDS as if they were read in using
-deserialize(). This is used by the ASCII response generator and might be used
-by other 'formatted output' generators.
-
-Generated files (like the grammar files) are now shipped with the source
-distributions. (From Patrice Dumas)
-
-Methods which write output using the C++ iostream system have been added back
-into the library and are going to replace the FILE* versions of those
-methods. We have also added an 'Un/Marshaller' set of classes so that we can
-release a version of Hyrax (slated to be 1.4) that will improve BES/OLFS
-communication efficiency.
-
-The functionality of the Passive* type classes was subsumed by their parent
-classes and they were removed from the library to cut down on 'hierarchy
-clutter.' Some other unneeded files were also removed.
-
-The maximum size of a Str object was changes to 65535 (DODS_USHORT_INT-1) to
-accommodate HDF5 strings.
-
-Checkouts from subversion now have no (?) generated files. We are keeping a
-copy of the grammars in subdirectory named 'grammarfiles.'
-
-HTTP response codes are now available in libdap HTTPResponse objects. From
-Darren Hardy.
-
-News for version 3.7.8, 26 June 2007
-
-Updated the email address for support to support at opendap.org and changed
-the tech email list address to opendap-tech at opendap.org. This is part of
-the plan to shift support services to OPeNDAP and to use the tech email list
-as part of that plan.
-
-Updated to the latest gnulib software.
-
-Memory errors fixed:
-
-    In the HTTP processing code for clients which was triggered when a client
-    read from an older server (older servers had malformed HTTP headers).
-
-    An error in the regular expression class (Regex) where the build
-    generated flawed code on a 64-bit machine.
-
-OSX Build improvements.
-
-Patrice Dumas' changes to dods-datatypes.h - Now the header uses the C99
-types unless the stdint.h header is not present.
-
-pkg-config support. From a patch by Patrice Dumas.
-
-General improvements to comments, strings and error messages throughout the
-libraries.
-
-News for version 3.7.7, 2 May 2007
-
-Fixed a bug where the build was not installing the dapserver and dapclient
-libraries.
-
-Fixed a handful of platform-specific build issues.
-
-There are some minor performance improvements to the constraint evaluator.
-
-Repaired some problems with the server-side functions.
-
-News for version 3.7.6, 12 March 2007
-
-Fixed a bug in the linear_scale() Constraint Expression function when that
-function was used with plain arrays.
-
-I fixed a build issue on linux for ml-structs caused by a bad/missing
-#include in GnuRegex.h.
-
-News for version 3.7.5, 7 Feb 2007
-
-Many bug fixes for the Server-Side functions linear_scale(), grid(),
-geogrid() and geoarray().
-
-Added dump method to the BaseType classes, DAS, DDS, DataDDS. To do
-this, created a DapObj base class for all of these to inherit from
-(directly or indirectly) and in the DapObj class is the operator<<
-method. This will aid in debugging. Created an indentation classes to
-help with dumping objects.
-
-Win32 port fixes. The Win32 build is closer to the Unix build. Our
-hope is to get the two to be almost identical so that we can all build
-on Win32 and thus get away from having the win32 releases lag behind the
-Unix releases.
-
-Fix in Vector for gcc 4.1
-
-News for version 3.7.4, 02 Jan 2007
-
-Build enhancements and bug fixes. See ChangeLog for specifics.
-
-News for version 3.7.3, 24 Nov 2006
-
-Fixed unescattr() so that it works!
-
-Rob added improvements to the win32 build.
-
-Fixed a number of bugs including: Problems with the DDS::transfer_attributes()
-method which broke libnc-dap; Added a new configuration parameter to .dodsrc
-so that SSL validation can be suppressed; Fixed problems with the change from
-\n to \r\n line terminators for MIME headers which slipped through the cracks
-the first time; and add gzip and compress to the set of accepted compression
-types supported by the client side.
-
-Added Connect::request_ddx() which asks a server for the DDX response.
-Previously, it was possible to use getdap to print the DDX, but that object
-was actually built using the DAS and DDS from a server. Now the server is asked
-for the DDX. Servers should support this response to be compliant with DAP 3.1.
-
-In the ConstraintEvaluator class, the add_function() method now allows a server
-to override a function from libdap with a new definition of the same name.
-
-I added a new interface for the scalar types: value() and set_value() can be
-used to get and set values. These are much simple to use than the older
-val2buf() and buf2val() methods. This idea was copied from copied from the
-PassiveByte, ..., classes.
-
-New server-side functions for geographical constraints have been added. These
-functions provide a way to select parts of Grid or Array variables using
-Latitude and Longitude. Also added is a version() function which can be used
-by clients to figure out which version of functions is present. The version
-function has two forms, one which returns the information as plain text and
-one which returns the information in a small XML document. libdap 3.7.3 is a
-beta release of these functions. Note that these are _server-side_ functions
-so before they can be used, servers need to be built using this library and
-installed.
-
-The dap-config script has been fixed so that it behaves more like other
-such scripts.
-
-News for version 3.7.2
-
-Fixed a persistent bug in the GNURegex code. (ticket 389)
-
-Fixed a problem in HTTPConnect where the change from newline to cr/nl line
-terminators was not accommodated (no ticket, but part of the issues behind
-ticket 552).
-
-Added Sequence::transfer_data(). This method uses the read() method to read
-data and follows the same logic used by serialize to determine which data is
-'sent' but instead records the data in the d_values field. Thus a Sequence
-can transfer data to itself. The locally stored data apes the ability of the
-other classes to store a complete response and is the basis for the new ASCII
-response code (in dap-server/asciival) which Server4 uses.
-
-There's a fair amount of the geogrid() code now in place, although the
-function does not work, I have added a GeoConstraint class which is close to
-complete. The CEFunctionsTest unit tests fail.
-
-News for version 3.7.1
-
-Fixed bug #480. Attributes from the HDF4 server were not being handled in a
-way that made sense to netCDF clients.
-
-Added a new method to AttrTable so that a vector of strings can be used to
-set a vector of attribute values in one call. No more need to build a loop
-every time you want to set values.
-
-The grid() CE function now conforms to the design submitted to URI as part of
-the REASoN award.
-
-Fixed a bug when % signs were not handled correctly by the code in
-escaping.cc.
-
-News for version 3.7.0
-
-The big change: The first of the DAP3/4 features was added to the libdap
-library; the library now includes the DAP protocol version number in all
-responses. A savvy client can test for this and process accordingly.
-
-A second feature, representation of the data source metadata in XML, is
-supported in alpha form. Expect the 'DDX' response to change slightly in the
-next release. The DDX returned now contains an obsolete element named 'Blob'
-which we won't be using. Other than the Blob element, the current DDX
-probably will not change much except for the addition of new datatypes,
-something that will take place only after other changes are made to the
-protocol. Many of the handlers now support returning the DDX, so developers
-can begin to play with it's capabilities.
-
-What's really nice about the DDX: It's cool that the DDX now encode the
-metadata in XML, but the really nice feature is that it combines information
-from the DDS and DAS, making the association of attributes to variables much
-easier.
-
-Updated the reference guide (HTML pages in docs).
-
-Fixed a pernicious bug in GNURegex.cc
-
-Added the class ConstraintEvaluator. The DDS class now takes the constraint
-evaluator as a parameter, so it's possible to replace ours with your own.
-
-The single library libdap has been split into three libraries: libdap for the
-DAP functionality, libdapclient for the client-side classes and libdapserver
-for the server-side classes.
-
-Added INSTALL.AIX which contains information about building libdap on AIX
-using the _native compiler_.
-
-News for version 3.6.2
-
-This version includes two bug fixes.
-
-1. The library can now correctly reads binary data objects saved using the web
-interface. Before, this was very hard to do. The utility getdap has been
-modified so that it can decode these saved '.dods' files.
-
-2. The DODSFilter class used to build all of our data handlers no longer
-blocks when returning a data object to a web browser. This fixes a problem
-where the 'Get Binary' button on the data server's web interface would hang
-seemingly forever. In fact it did return the data blob, but only after the
-blocked handler had timed out.
-
-News for version 3.6.1
-
-Fixed a bug in deflate.c: Some comments used the C++ style comments and gcc
-rejected that.
-
-Data server filters built with the 3.6.0 library were not compatible with the
-dap-server 3.6.0 software because the DODSFilter class did not recognize the
--t option (which is used to pass the handler a timeout value).
-
-News for version 3.6.0
-
-Added patches for RPM spec files from Patrice Dumas.
-
-Fixed a problem where Grids with two or more dimensions with the same name
-were flagged as broken (by Grid::check_semantics). Now they are allowed as per
-the specification.
-
-Added a new method get_parent() to AttrTable. This returns the parent
-container for this AttrTable.
-
-I removed the old iostream methods from the library. These methods should not
-be used because in many cases since other parts of the library use the C/stdio
-functions for I/O. In older versions of gcc, it was possible to mix the
-two types of I/O systems, but not now (and not in other compilers). To change
-your code, look in the file Removed_functions.txt to see the functions/methods
-that have been removed. In all cases there is a version that takes a FILE *
-in place of the ostream &. Use the FILE* version. If you're performing I/O
-that relies on operator<<() to do type conversions, use an ostringstream
-in your code and then write the string to stdout (or wherever) using fprintf
-like: fprintf(stdout, "%s", oss.str().c_str()). Ugly, but easier in some
-cases than replacing lots of tested C++ I/O with fprintf calls.
-
-I removed old methods in Connect that have been deprecated for more than
-a year. See Removed_functions.txt
-
-I removed the old Pix methods. See removed_functions.txt.
-
-I removed the const char * overloads added to prevent collisions between
-the Pix and String (not string, but GNU's old libg String class) methods.
-
-Added protocol version number header to responses which use the set_mime...()
-functions. The new header is called "XDAP-Protocol" and its value is the
-two digit DAP protocol version number. This is now used by the client-side
-deserialize() methods; I assume that a server that does not announce its
-protocol version is a 2.0 server.
-
-Removed the set_mime...() functions which take an iostream; use the ones
-which take the FILE* instead. We replaced the iostream versions with FILE*
-versions a long time ago because the parsers all use FILE* I/O functions
-and mixing the C++ and C I/O is not predictable. The old functions were
-deprecated. To fix your code, just change the iostream variable to a FILE*.
-In most cases this will mean changing 'cout' to 'stdout.'
-
-News for Release 3.5.3
-
-Changes to the Regex software. I've reimplemented the GNURegex code to
-use the only the POSIX functions. Because of this there are some subtle
-changes in the way the class Regex works. These changes address bugs that
-show up on Mac OS/X 10.4 (Tiger).
-
-1) Meta characters like '{' now have to be escaped like '\\{'
-2) See the docs for the Regex::match and Regex::serach methods. Regex:match
-   returns the number of characters that match or -1 if there's no match.
-   Regex::serach returns the position of the _first_ match (not the longest
-   as with POSIX) and the length of that first match in the value-result
-   parameter 'matchlen'.
-3) The Regex constructor now takes only one argument, the regular expression
-   to compile. There's a second ctor that takes a second parameter (an int)
-   but it is a dummy.
-
-As a result of these changes, a small portion of the interface for libdap
-has changed.
-
-Build improvements from Patrice Dumas.
-
-Added a Mac OS/X package and RedHat rpm/srpm targets. There's also a pmsp
-file for use with Mac's PackageMaker.
-
-News for Release 3.5.2
-
-Fixed a bug where malformed Error objects from servers caused an exception.
-This caused the original error message to be lost, not very helpful.
-
-The library used a compile-time switch to control use of the factory class for
-creation of objects at run-time. This was causing more trouble than it was
-preventing, so I removed it. Code should switch from the 'virtual
-constructors' to the factory class now.
-
-The Test classes in the subdir 'test' should now produce the same values on
-64- and 32-bit machines.
-
-Unit tests should all work (although one of the tests for util.cc is known to
-fail on FC4).
-
-Revamped the build to use automake.
-
-Regression tests and the test classes are now in the subdir 'tests.'
-
-The unit tests are now in the subdir 'unit-tests' and are not built or run by
-default. Some of these tests require access to the Internet to work and I
-decided to make then not run using the make check target from the top level
-(the regression tests in 'tests' do run using the top-level check target) so
-that the build would work w/o access to the net.
-
-The rpm spec file has been updated. See INSTALL for information about
-building rpm distributions.
-
-Thanks to Patrice Dumas for help on the autoconf/make, with gnulib and the
-rpm spec file.
-
-News for Release 3.5.1 beta 2005/05/13
-
-I changed some of the build parameters; the utility script is now named
-dap-config, the headers now install into $prefix/include/dap and the static
-library no longer has a version number appended. I've also written a rpm spec
-file which can be used to build a rpm file of/for a binary distribution. At
-this stage you'll need to be pretty savvy with RPM to get it to work; I'll
-write up instructions soon.
-
-News for Release 3.5.0 beta 2005/05/05
-
-Changes in the way the software is organized:
-
-* First, the old 'DODS' CVS module is being broken up to facilitate more
+- With this version of libdap the DDX is slightly different for DAP 3.2 - it
+  now includes DAP protocol version information and an xmlbase element.
+- There was ambiguity regarding how an array of structures would be constrained.
+  The web page of DAP 2 Errata has been updated with a clarification of this and
+  the constraint expression parser has been updated to reflect that fix. See
+  the DAP3/4 page and ticket 975 for the complete info. Short version: Suppose
+  's' is an array of structures and 'm' is an array that is a member of 's'.
+  You can constraint 'm' like this: s2[0:4].m[2:7]
+- Now the notion that a dataset identifier (e.g., a file name) is bound to the
+  DDS has been  dropped and that identifier is bound to a variable. This lets
+  the library be used in contexts where a DDS holds variables from several
+  different places (e.g., files).
+- String attribute values were always quoted (quotes were added if not present
+  in the data set) and while this was OK for the DAS response, it broke the
+  DDX. Now quotes are added to DAS response but not the values themselves. See
+  ticket 1163.
+- Nested Sequences were failing when the constraint forced one or more rows of
+  the inner Sequence to be empty. Fixed.
+- A number of build issues have been fixed in this version, see the ChangeLog
+  file.
+## Version 3.8.2
+
+- Significant improvements to the HTTP cache. The cache software could return
+  erroneous responses in some rare cases when using multi-threaded code. Fixed.
+  Also the entire caching system is now much more robust since the 'table' that
+  contains information about individual entries is encapsulated in it's own
+  class. The HTTP cache is still both thread-safe and _not_ multi-process safe.
+  However, it should be possible to modify the HTTPCacheTable class to use a
+  database system like MySQL or SQLite to make it MP-safe.
+- The 'ancillary information' functions have been moved to their own class
+  (from DODSFilter and the file cgi_util.cc).
+- I fixed the libdap win32 installer so that it does not install stuff in the
+  win32 system directories anymore.
+## Version 3.8.1
+
+- The syntax for PROXY_SERVER and NO_PROXY_FOR have been fixed so that they are
+  easier to use. PROXY_SERVER now takes a value like
+  'http://user:pw@squid.proxy.edu:3128' and uses it correctly. In that value,
+  all parts but the host name (squid.proxy.edu) are optional and the old syntax,
+  as well as several common variants, are accepted. For the NO_PROXY_FOR entry,
+  the '<protocol>,' is now optional. Only the HTTP protocol is supported or the
+  proxy server.
+## Version 3.8.0, 29 February 2008
+
+- The libdap classes and code are now inside of the libdap namespace. In order
+  to access any of the classes, for example, you will need to do one of the
+  following. After including the libdap headers you can:
+- 1. add a using statement for the entire libdap namespace:
+- using namespace libdap ;
+- 2. add a using statement for the classes that you will be using:
+- using libdap::DAS ;
+- 3. inside your code scope the use of libdap classes.
+- libdap::DAS *das = code_to_get_das() ;
+- HTTPCache updated to cache an entry, returning not only the FILE pointer but
+  also the name of the file in the cache. This way, the cached item could be
+  passed to a data handler, such as the netcdf_handler, and read.
+- The pkg build for Mac OSX was updated to automate the creation of the
+  ReadMe.txt file, add a README and NEWS file to the dmg and automatically
+  create the dmg using DropDMG.
+## Version 3.7.10, 28 November 2007
+
+- Fixed XDRStreamMarshaller so that it no longer allocates a huge buffer. This
+  fixes a bug where the BES fails to start on smaller machines.
+## Version 3.7.9, 21 November 2007
+
+- Bumped up the soname version numbers for libdapclient and libdapserver due
+  to changes in the HTTPResponse and AlarmHandler interfaces.
+- The transfer_data() method defined for Sequence and Structure has been
+  generalized and implemented for all classes. In the process, so issues with
+  the way nested sequences were handled have been fixed. I renamed the method
+  to intern_data() since it is now a part of libdap (and not just two classes).
+  The method uses the read() methods defined for the type classes (Byte, ...,
+  Grid) to read data into variables in a DDS as if they were read in using
+  deserialize(). This is used by the ASCII response generator and might be used
+  by other 'formatted output' generators.
+- Generated files (like the grammar files) are now shipped with the source
+  distributions. (From Patrice Dumas)
+- Methods which write output using the C++ iostream system have been added back
+  into the library and are going to replace the FILE* versions of those
+  methods. We have also added an 'Un/Marshaller' set of classes so that we can
+  release a version of Hyrax (slated to be 1.4) that will improve BES/OLFS
+  communication efficiency.
+- The functionality of the Passive* type classes was subsumed by their parent
+  classes and they were removed from the library to cut down on 'hierarchy
+  clutter.' Some other unneeded files were also removed.
+- The maximum size of a Str object was changes to 65535 (DODS_USHORT_INT-1) to
+  accommodate HDF5 strings.
+- Checkouts from subversion now have no (?) generated files. We are keeping a
+  copy of the grammars in subdirectory named 'grammarfiles.'
+- HTTP response codes are now available in libdap HTTPResponse objects. From
+  Darren Hardy.
+## Version 3.7.8, 26 June 2007
+
+- Updated the email address for support to support at opendap.org and changed
+  the tech email list address to opendap-tech at opendap.org. This is part of
+  the plan to shift support services to OPeNDAP and to use the tech email list
+  as part of that plan.
+- Updated to the latest gnulib software.
+- Memory errors fixed:
+- In the HTTP processing code for clients which was triggered when a client
+  read from an older server (older servers had malformed HTTP headers).
+- An error in the regular expression class (Regex) where the build
+  generated flawed code on a 64-bit machine.
+- OSX Build improvements.
+- Patrice Dumas' changes to dods-datatypes.h - Now the header uses the C99
+  types unless the stdint.h header is not present.
+- pkg-config support. From a patch by Patrice Dumas.
+- General improvements to comments, strings and error messages throughout the
+  libraries.
+## Version 3.7.7, 2 May 2007
+
+- Fixed a bug where the build was not installing the dapserver and dapclient
+  libraries.
+- Fixed a handful of platform-specific build issues.
+- There are some minor performance improvements to the constraint evaluator.
+- Repaired some problems with the server-side functions.
+## Version 3.7.6, 12 March 2007
+
+- Fixed a bug in the linear_scale() Constraint Expression function when that
+  function was used with plain arrays.
+- I fixed a build issue on linux for ml-structs caused by a bad/missing
+  #include in GnuRegex.h.
+## Version 3.7.5, 7 Feb 2007
+
+- Many bug fixes for the Server-Side functions linear_scale(), grid(),
+  geogrid() and geoarray().
+- Added dump method to the BaseType classes, DAS, DDS, DataDDS. To do
+  this, created a DapObj base class for all of these to inherit from
+  (directly or indirectly) and in the DapObj class is the operator<<
+  method. This will aid in debugging. Created an indentation classes to
+  help with dumping objects.
+- Win32 port fixes. The Win32 build is closer to the Unix build. Our
+  hope is to get the two to be almost identical so that we can all build
+  on Win32 and thus get away from having the win32 releases lag behind the
+  Unix releases.
+- Fix in Vector for gcc 4.1
+## Version 3.7.4, 02 Jan 2007
+
+- Build enhancements and bug fixes. See ChangeLog for specifics.
+## Version 3.7.3, 24 Nov 2006
+
+- Fixed unescattr() so that it works!
+- Rob added improvements to the win32 build.
+- Fixed a number of bugs including: Problems with the DDS::transfer_attributes()
+  method which broke libnc-dap; Added a new configuration parameter to .dodsrc
+  so that SSL validation can be suppressed; Fixed problems with the change from
+  \n to \r\n line terminators for MIME headers which slipped through the cracks
+  the first time; and add gzip and compress to the set of accepted compression
+  types supported by the client side.
+- Added Connect::request_ddx() which asks a server for the DDX response.
+  Previously, it was possible to use getdap to print the DDX, but that object
+  was actually built using the DAS and DDS from a server. Now the server is asked
+  for the DDX. Servers should support this response to be compliant with DAP 3.1.
+- In the ConstraintEvaluator class, the add_function() method now allows a server
+  to override a function from libdap with a new definition of the same name.
+- I added a new interface for the scalar types: value() and set_value() can be
+  used to get and set values. These are much simple to use than the older
+  val2buf() and buf2val() methods. This idea was copied from copied from the
+  PassiveByte, ..., classes.
+- New server-side functions for geographical constraints have been added. These
+  functions provide a way to select parts of Grid or Array variables using
+  Latitude and Longitude. Also added is a version() function which can be used
+  by clients to figure out which version of functions is present. The version
+  function has two forms, one which returns the information as plain text and
+  one which returns the information in a small XML document. libdap 3.7.3 is a
+  beta release of these functions. Note that these are _server-side_ functions
+  so before they can be used, servers need to be built using this library and
+  installed.
+- The dap-config script has been fixed so that it behaves more like other
+  such scripts.
+## Version 3.7.2
+
+- Fixed a persistent bug in the GNURegex code. (ticket 389)
+- Fixed a problem in HTTPConnect where the change from newline to cr/nl line
+  terminators was not accommodated (no ticket, but part of the issues behind
+  ticket 552).
+- Added Sequence::transfer_data(). This method uses the read() method to read
+  data and follows the same logic used by serialize to determine which data is
+  'sent' but instead records the data in the d_values field. Thus a Sequence
+  can transfer data to itself. The locally stored data apes the ability of the
+  other classes to store a complete response and is the basis for the new ASCII
+  response code (in dap-server/asciival) which Server4 uses.
+- There's a fair amount of the geogrid() code now in place, although the
+  function does not work, I have added a GeoConstraint class which is close to
+  complete. The CEFunctionsTest unit tests fail.
+## Version 3.7.1
+
+- Fixed bug #480. Attributes from the HDF4 server were not being handled in a
+  way that made sense to netCDF clients.
+- Added a new method to AttrTable so that a vector of strings can be used to
+  set a vector of attribute values in one call. No more need to build a loop
+  every time you want to set values.
+- The grid() CE function now conforms to the design submitted to URI as part of
+  the REASoN award.
+- Fixed a bug when % signs were not handled correctly by the code in
+  escaping.cc.
+## Version 3.7.0
+
+- The big change: The first of the DAP3/4 features was added to the libdap
+  library; the library now includes the DAP protocol version number in all
+  responses. A savvy client can test for this and process accordingly.
+- A second feature, representation of the data source metadata in XML, is
+  supported in alpha form. Expect the 'DDX' response to change slightly in the
+  next release. The DDX returned now contains an obsolete element named 'Blob'
+  which we won't be using. Other than the Blob element, the current DDX
+  probably will not change much except for the addition of new datatypes,
+  something that will take place only after other changes are made to the
+  protocol. Many of the handlers now support returning the DDX, so developers
+  can begin to play with it's capabilities.
+- What's really nice about the DDX: It's cool that the DDX now encode the
+  metadata in XML, but the really nice feature is that it combines information
+  from the DDS and DAS, making the association of attributes to variables much
+  easier.
+- Updated the reference guide (HTML pages in docs).
+- Fixed a pernicious bug in GNURegex.cc
+- Added the class ConstraintEvaluator. The DDS class now takes the constraint
+  evaluator as a parameter, so it's possible to replace ours with your own.
+- The single library libdap has been split into three libraries: libdap for the
+  DAP functionality, libdapclient for the client-side classes and libdapserver
+  for the server-side classes.
+- Added INSTALL.AIX which contains information about building libdap on AIX
+  using the _native compiler_.
+## Version 3.6.2
+
+- This version includes two bug fixes.
+- 1. The library can now correctly reads binary data objects saved using the web
+  interface. Before, this was very hard to do. The utility getdap has been
+  modified so that it can decode these saved '.dods' files.
+- 2. The DODSFilter class used to build all of our data handlers no longer
+  blocks when returning a data object to a web browser. This fixes a problem
+  where the 'Get Binary' button on the data server's web interface would hang
+  seemingly forever. In fact it did return the data blob, but only after the
+  blocked handler had timed out.
+## Version 3.6.1
+
+- Fixed a bug in deflate.c: Some comments used the C++ style comments and gcc
+  rejected that.
+- Data server filters built with the 3.6.0 library were not compatible with the
+  dap-server 3.6.0 software because the DODSFilter class did not recognize the
+  -t option (which is used to pass the handler a timeout value).
+## Version 3.6.0
+
+- Added patches for RPM spec files from Patrice Dumas.
+- Fixed a problem where Grids with two or more dimensions with the same name
+  were flagged as broken (by Grid::check_semantics). Now they are allowed as per
+  the specification.
+- Added a new method get_parent() to AttrTable. This returns the parent
+  container for this AttrTable.
+- I removed the old iostream methods from the library. These methods should not
+  be used because in many cases since other parts of the library use the C/stdio
+  functions for I/O. In older versions of gcc, it was possible to mix the
+  two types of I/O systems, but not now (and not in other compilers). To change
+  your code, look in the file Removed_functions.txt to see the functions/methods
+  that have been removed. In all cases there is a version that takes a FILE *
+  in place of the ostream &. Use the FILE* version. If you're performing I/O
+  that relies on operator<<() to do type conversions, use an ostringstream
+  in your code and then write the string to stdout (or wherever) using fprintf
+  like: fprintf(stdout, "%s", oss.str().c_str()). Ugly, but easier in some
+  cases than replacing lots of tested C++ I/O with fprintf calls.
+- I removed old methods in Connect that have been deprecated for more than
+  a year. See Removed_functions.txt
+- I removed the old Pix methods. See removed_functions.txt.
+- I removed the const char * overloads added to prevent collisions between
+  the Pix and String (not string, but GNU's old libg String class) methods.
+- Added protocol version number header to responses which use the set_mime...()
+  functions. The new header is called "XDAP-Protocol" and its value is the
+  two digit DAP protocol version number. This is now used by the client-side
+  deserialize() methods; I assume that a server that does not announce its
+  protocol version is a 2.0 server.
+- Removed the set_mime...() functions which take an iostream; use the ones
+  which take the FILE* instead. We replaced the iostream versions with FILE*
+  versions a long time ago because the parsers all use FILE* I/O functions
+  and mixing the C++ and C I/O is not predictable. The old functions were
+  deprecated. To fix your code, just change the iostream variable to a FILE*.
+  In most cases this will mean changing 'cout' to 'stdout.'
+## Version 3.5.3
+
+- Changes to the Regex software. I've reimplemented the GNURegex code to
+  use the only the POSIX functions. Because of this there are some subtle
+  changes in the way the class Regex works. These changes address bugs that
+  show up on Mac OS/X 10.4 (Tiger).
+- 1) Meta characters like '{' now have to be escaped like '\\{'
+  2) See the docs for the Regex::match and Regex::serach methods. Regex:match
+  returns the number of characters that match or -1 if there's no match.
+  Regex::serach returns the position of the _first_ match (not the longest
+  as with POSIX) and the length of that first match in the value-result
+  parameter 'matchlen'.
+  3) The Regex constructor now takes only one argument, the regular expression
+  to compile. There's a second ctor that takes a second parameter (an int)
+  but it is a dummy.
+- As a result of these changes, a small portion of the interface for libdap
+  has changed.
+- Build improvements from Patrice Dumas.
+- Added a Mac OS/X package and RedHat rpm/srpm targets. There's also a pmsp
+  file for use with Mac's PackageMaker.
+## Version 3.5.2
+
+- Fixed a bug where malformed Error objects from servers caused an exception.
+  This caused the original error message to be lost, not very helpful.
+- The library used a compile-time switch to control use of the factory class for
+  creation of objects at run-time. This was causing more trouble than it was
+  preventing, so I removed it. Code should switch from the 'virtual
+  constructors' to the factory class now.
+- The Test classes in the subdir 'test' should now produce the same values on
+  64- and 32-bit machines.
+- Unit tests should all work (although one of the tests for util.cc is known to
+  fail on FC4).
+- Revamped the build to use automake.
+- Regression tests and the test classes are now in the subdir 'tests.'
+- The unit tests are now in the subdir 'unit-tests' and are not built or run by
+  default. Some of these tests require access to the Internet to work and I
+  decided to make then not run using the make check target from the top level
+  (the regression tests in 'tests' do run using the top-level check target) so
+  that the build would work w/o access to the net.
+- The rpm spec file has been updated. See INSTALL for information about
+  building rpm distributions.
+- Thanks to Patrice Dumas for help on the autoconf/make, with gnulib and the
+  rpm spec file.
+## Version 3.5.1 beta 2005/05/13
+
+- I changed some of the build parameters; the utility script is now named
+  dap-config, the headers now install into $prefix/include/dap and the static
+  library no longer has a version number appended. I've also written a rpm spec
+  file which can be used to build a rpm file of/for a binary distribution. At
+  this stage you'll need to be pretty savvy with RPM to get it to work; I'll
+  write up instructions soon.
+## Version 3.5.0 beta 2005/05/05
+
+- Changes in the way the software is organized:
+- First, the old 'DODS' CVS module is being broken up to facilitate more
   frequent releases of software. libdap++ has a new CVS module named
   'libdap.' To access the software using CVS, use 'cvs co libdap' (where in
   the past you used 'cvs co DODS/src/dap' or 'cvs co DODS' and then changed
   into the DODS/src/dap directory).
-
-* The autoconf scripts have been updated; still no libtool or Makefile.am,
+- The autoconf scripts have been updated; still no libtool or Makefile.am,
   but the scripts are much more robust.
-
-* The third-party packages are no longer bundled with the library. In a sense
+- The third-party packages are no longer bundled with the library. In a sense
   they never were, but they _were_ a part of the DODS CVS module. Now it's up
   to you to get and install the required packages. Look on the web site (or
   Google) for libxml2 and curl. We build using curl version 7.12.3 and libxml
   version 2.6.16; curl 7.12.0 and libxml2 2.5.7 should work.
-
-* The libdap software now installs in $prefix/{lib,include,bin} instead of
+- The libdap software now installs in $prefix/{lib,include,bin} instead of
   inside the 'DODS tree.' By default $prefix is /usr/local; use the --prefix
   option of configure to specify a different directory than /usr/local. The
   library itself installs in $prefix/lib as libdap++.a.3.5; libdap++.a is
@@ -985,13 +766,10 @@ Changes in the way the software is organized:
   program, which is used by some servers to provide compressed responses and
   is called by the library is not stored in $prefix/sbin (except on win32
   where it's stored in $prefix/bin).
-
-  The usage program is not currently installed; once we complete the
+- The usage program is not currently installed; once we complete the
   reorganization process it will find a good home.
-
-Other changes to libdap++:
-
-* The library now uses a factory class to determine how to instantiate
+- Other changes to libdap++:
+- The library now uses a factory class to determine how to instantiate
   specializations of Byte, Int32, et cetera. The class BaseTypeFactory
   defines the interface for the factory and provides a default implementation
   of the class. This implementation instantiates Byte, ..., Grid. Also
@@ -1003,8 +781,7 @@ Other changes to libdap++:
   factory to the DDS constructor (or use the new DDS::set_factory() method).
   Look at BaseTypeFactory and the example specialization TestTypeFactory.
   It's very straightforward to make the change.
-
-  For applications which don't specialize the type classes, the default
+- For applications which don't specialize the type classes, the default
   factory should be fine. To avoid using the new DDS constructor (which
   requires that a pointer to an instance of BaseTypeFactory be supplied), your
   code must #define the symbol DEFAULT_BASETYPE_FACTORY. If this symbol is
@@ -1012,31 +789,26 @@ Other changes to libdap++:
   (the idea being this will prevent software from building and silently
   ignoring specializations of the type classes). If defined, this use the
   default factory class.
-
-  The documentation for the DDS constructor has some more information.
-
-* The library contains support for the DDX object. The DDX will become the
+- The documentation for the DDS constructor has some more information.
+- The library contains support for the DDX object. The DDX will become the
   foundation of the DAP3 protocol. It uses XML to describe the information
   currently represented using our 'curly-brace' notation and also bundles
   the attributes along with the variables they describe. This will simplify
   many processing tasks for clients. The software provided simplifies
   generating the DDX by building it from existing DAS and DDS objects.
-
-* There has also been some significant re-factoring in DDS and DAS: The
+- There has also been some significant re-factoring in DDS and DAS: The
   DDS:send() method has been copied over to DODSFilter and the version in DDS
   has been deprecated and will be removed in a future version of the library.
   The library uses STL iterators almost exclusively and the next version will
   eliminate the ancient Pix class.
-
-* The function dods_root() is now called libdap_root() and tests the
+- The function dods_root() is now called libdap_root() and tests the
   environment variable LIBDAP_ROOT. If that variable is not set,
   libdap_root() returns the value passed to the --prefix option of configure
   or /usr/local if the option was not used. Added to libdap++ is a function
   libdap_version() which returns the version number of the library. Note that
   libdap_version() is declared as extern "C" so that it can be used in
   configure tests to check for the library.
-
-* The servers no longer provide three programs to handle the das, dds and
+- The servers no longer provide three programs to handle the das, dds and
   data requests. Instead one *_handler is provided. This reduces the size of
   the servers by a factor of three and paves the way toward integration of
   the HTML and ASCII code into the server binary, which will improve the
