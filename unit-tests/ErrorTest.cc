@@ -167,7 +167,19 @@ void ErrorTest::test_assignment_self() {
     int line = 2345;
     Error error(code, message, file, line);
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-assign"
+#endif
     error = error; // Self-assignment
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
     CPPUNIT_ASSERT_EQUAL(code, error.get_error_code());
     CPPUNIT_ASSERT_EQUAL(message, error.get_error_message());
     CPPUNIT_ASSERT_EQUAL(file, error.get_file());
