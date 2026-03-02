@@ -15,7 +15,7 @@
                 },
                 {
                     "name": "PATH",
-                    "value": "/Users/jimg/src/opendap/hyrax/build/bin:/Users/jimg/src/opendap/hyrax/build/deps/bin:${env:PATH}"
+                    "value": "~/opendap/hyrax/build/bin:~/src/opendap/hyrax/build/deps/bin:${env:PATH}"
                 }
             ],
             "MIMode": "lldb",

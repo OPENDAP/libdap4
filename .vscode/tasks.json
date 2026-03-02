@@ -8,8 +8,8 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "prefix": "/Users/jhrg/src/hyrax/build",
-                    "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+                    "prefix": "~/src/hyrax/build",
+                    "PATH": "~/src/hyrax/build/bin:~/src/hyrax/build/deps/bin:${env:PATH}"
                 },
                 "shell": {
                     "executable": "/bin/zsh",
@@ -31,8 +31,8 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "prefix": "/Users/jhrg/src/hyrax/build",
-                    "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+                    "prefix": "~/src/hyrax/build",
+                    "PATH": "~/src/hyrax/build/bin:~/src/hyrax/build/deps/bin:${env:PATH}"
                 },
                 "shell": {
                     "executable": "/bin/zsh",
@@ -56,8 +56,8 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "prefix": "/Users/jhrg/src/hyrax/build",
-                    "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+                    "prefix": "~/src/hyrax/build",
+                    "PATH": "~/src/hyrax/build/bin:~/src/hyrax/build/deps/bin:${env:PATH}"
                 },
                 "shell": {
                     "executable": "/bin/zsh",
@@ -81,8 +81,8 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "prefix": "/Users/jhrg/src/hyrax/build",
-                    "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+                    "prefix": "~/src/hyrax/build",
+                    "PATH": "~/src/hyrax/build/bin:~/src/hyrax/build/deps/bin:${env:PATH}"
                 },
                 "shell": {
                     "executable": "/bin/zsh",
@@ -100,8 +100,8 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "prefix": "/Users/jhrg/src/hyrax/build",
-                    "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+                    "prefix": "~/src/hyrax/build",
+                    "PATH": "~/src/hyrax/build/bin:~/src/hyrax/build/deps/bin:${env:PATH}"
                 },
                 "shell": {
                     "executable": "/bin/zsh",
@@ -119,8 +119,8 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "prefix": "/Users/jhrg/src/hyrax/build",
-                    "PATH": "/Users/jhrg/src/hyrax/build/bin:/Users/jhrg/src/hyrax/build/deps/bin:${env:PATH}"
+                    "prefix": "~/src/hyrax/build",
+                    "PATH": "~/src/hyrax/build/bin:~/src/hyrax/build/deps/bin:${env:PATH}"
                 },
                 "shell": {
                     "executable": "/bin/zsh",
