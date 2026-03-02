@@ -1,11 +1,16 @@
-News for version 3.21.1
+# libdap4 Release Notes
 
-  - Initial support for UTF-8
-  - Improved production rules.
-  - Worked technical debt affecting large variables and large responses
-    (large >= 2Gb).
+This file is the canonical, version-by-version record of user-visible changes.
+Keep entries in reverse chronological order (newest first).
 
-News for version 3.21.0
+## Version 3.21.1
+
+- Initial support for UTF-8
+- Improved production rules.
+- Worked technical debt affecting large variables and large responses
+  (large >= 2Gb).
+
+## Version 3.21.0
 
 - Added new Direct I/O support so that modules written using libdap
   can pass compressed data buffers read directly from disk to output
@@ -13,15 +18,15 @@ News for version 3.21.0
 - Merged contributed fixes from Bo Anderson  <mail at boanderson.me>
   Fix handling of libtirpc pkg-config files with -L flags (#228)
 - Merged contributed fixes from Dan Horák  <da at @danny.cz>
-	add missing include (#227)
-	With GCC 13 the <cstdint> header isn't included thru other headers any
-	more, thus include it explictly. Otherwise uint8_t or uint32_t type
-	remain undefined in Vector.cc.
-	Fixes: https://github.com/OPENDAP/libdap4/issues/226
-	add missing big endian baselines (#196)
+  add missing include (#227)
+  With GCC 13 the <cstdint> header isn't included thru other headers any
+  more, thus include it explictly. Otherwise uint8_t or uint32_t type
+  remain undefined in Vector.cc.
+  Fixes: https://github.com/OPENDAP/libdap4/issues/226
+  add missing big endian baselines (#196)
 - Fixed a bug where the copy ctor for D4Maps failed to correctly set the parent Array.
 - Merged contributed fix from Orion Poplawski  <orion at nwra.com>
-	Add missing cstdint include for uint32_t (#219)
+  Add missing cstdint include for uint32_t (#219)
 - Removed support for RHEL 7 (CentOS 7)
 - Now require C++-11 to build the code. However, configure will use
   C++-14 if it finds that and the next release will require that.
