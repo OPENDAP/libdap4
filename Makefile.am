@@ -55,6 +55,12 @@ libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)
 libparsers_la_CPPFLAGS =  $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
 
+# Suppress sign-compare warnings from flex-generated scanners only.
+libparsers_la-lex.das.lo \
+libparsers_la-lex.dds.lo \
+libparsers_la-lex.ce_expr.lo \
+libparsers_la-lex.Error.lo: AM_CXXFLAGS += -Wno-sign-compare
+
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)  $(DAP4_ONLY_SRC)
 
 libdap_la_LDFLAGS = -version-info $(LIBDAP_VERSION)
