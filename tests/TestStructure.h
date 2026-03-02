@@ -67,7 +67,7 @@ public:
     void output_values(std::ostream &out) override;
 
     void set_series_values(bool) override;
-    bool get_series_values()  override { return d_series_values; }
+    bool get_series_values() override { return d_series_values; }
 };
 
 #endif // _teststructure_h

@@ -54,9 +54,9 @@ public:
     void output_values(std::ostream &out) override;
 
     void set_series_values(bool) override;
-    bool get_series_values()  override { return d_series_values; }
+    bool get_series_values() override { return d_series_values; }
 
-    void set_length(int64_t len)  override { d_len = len; }
+    void set_length(int64_t len) override { d_len = len; }
     int length() const override { return (int)d_len; }
 };
 

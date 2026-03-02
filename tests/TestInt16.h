@@ -60,8 +60,8 @@ public:
 
     void output_values(std::ostream &out) override;
 
-    void set_series_values(bool sv)  override { d_series_values = sv; }
-    bool get_series_values()  override { return d_series_values; }
+    void set_series_values(bool sv) override { d_series_values = sv; }
+    bool get_series_values() override { return d_series_values; }
 };
 
 #endif // _testint16_h
