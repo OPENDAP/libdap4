@@ -43,8 +43,11 @@ make check
 ## Requirements (summary)
 
 - Modern C++ compiler (configure checks C++11/C++14 support).
+- `autotools` or `cmake` to build the code.
 - `libcurl` and `libxml2` (and `libuuid` on Linux).
 - `flex` and `bison` for parser generation.
+- `groff` for the man pages to render.
+- `bear` for the `compile_commands.json` database used by vscode (and CLion)
 - `CppUnit` to run `make check`.
 
 For exact versions and platform notes, see [`INSTALL`](INSTALL).
