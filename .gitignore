@@ -44,6 +44,7 @@ docs
 html
 latex
 tmp
+compile_commands.json
 libdap_VERSION
 libdap.spec
 libdap4-autotest-*
