@@ -229,6 +229,8 @@ TAB_SIZE               =
 # newlines.
 
 ALIASES                =
+ALIASES += today="@CONFIG_DATE@"
+ALIASES += package_version="@PACKAGE_VERSION@"
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding "class=itcl::class"
