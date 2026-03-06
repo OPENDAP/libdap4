@@ -56,10 +56,14 @@ private:
     friend class func_name_is;
 
 public:
+    /** @brief Read-only iterator over parsed CE clauses. */
     typedef std::vector<Clause *>::const_iterator Clause_citer;
+    /** @brief Mutable iterator over parsed CE clauses. */
     typedef std::vector<Clause *>::iterator Clause_iter;
 
+    /** @brief Read-only iterator over temporary constant values. */
     typedef std::vector<BaseType *>::const_iterator Constants_citer;
+    /** @brief Mutable iterator over temporary constant values. */
     typedef std::vector<BaseType *>::iterator Constants_iter;
 
     ConstraintEvaluator();

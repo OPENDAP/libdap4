@@ -40,6 +40,7 @@ class D4RValue;
 // Factory class to build RValue objects. User by the parser/ce-evaluator
 D4RValue *D4RValueFactory(std::string cpps);
 
+/** @brief Container for parsed DAP4 function/filter rvalues. */
 class D4RValueList {
 private:
     std::vector<D4RValue *> d_rvalues;
@@ -47,14 +48,22 @@ private:
     void m_duplicate(const D4RValueList &src);
 
 public:
+    /** @brief Mutable iterator over `D4RValue*` entries. */
     typedef std::vector<D4RValue *>::iterator iter;
 
     D4RValueList() {}
+    /** @brief Copy-constructs an rvalue list. @param src Source list. */
     D4RValueList(const D4RValueList &src) { m_duplicate(src); }
+    /** @brief Builds a one-element rvalue list. @param rv Initial rvalue pointer. */
     D4RValueList(D4RValue *rv) { add_rvalue(rv); }
 
     virtual ~D4RValueList();
 
+    /**
+     * @brief Assigns this list from another list.
+     * @param rhs Source list.
+     * @return This list after assignment.
+     */
     D4RValueList &operator=(const D4RValueList &rhs) {
         if (this == &rhs)
             return *this;
@@ -62,13 +71,25 @@ public:
         return *this;
     }
 
+    /**
+     * @brief Appends an rvalue pointer.
+     * @param rv Rvalue pointer to append.
+     */
     void add_rvalue(D4RValue *rv) { d_rvalues.push_back(rv); }
 
+    /**
+     * @brief Returns an rvalue by index.
+     * @param i Zero-based index.
+     * @return Rvalue pointer at index `i`.
+     */
     D4RValue *get_rvalue(unsigned int i) { return d_rvalues.at(i); }
 
+    /** @brief Returns an iterator to the first rvalue. */
     iter begin() { return d_rvalues.begin(); }
+    /** @brief Returns an iterator one past the last rvalue. */
     iter end() { return d_rvalues.end(); }
 
+    /** @brief Returns the number of rvalues in this list. */
     unsigned int size() const { return d_rvalues.size(); }
 };
 
@@ -78,6 +99,7 @@ public:
  */
 class D4RValue {
 public:
+    /** @brief Identifies what source currently provides this rvalue's value. */
     enum value_kind { unknown, basetype, function, constant };
 
 private:
@@ -97,28 +119,53 @@ private:
 
 public:
     D4RValue() : d_variable(0), d_func(0), d_args(0), d_constant(0), d_value_kind(unknown) {}
+    /** @brief Copy-constructs an rvalue. @param src Source rvalue. */
     D4RValue(const D4RValue &src) { m_duplicate(src); }
+    /** @brief Builds an rvalue that references a dataset variable. @param btp Variable pointer. */
     D4RValue(BaseType *btp) : d_variable(btp), d_func(0), d_args(0), d_constant(0), d_value_kind(basetype) {}
+    /** @brief Builds an rvalue that evaluates a function call.
+     * @param f Function pointer.
+     * @param args Function argument list.
+     */
     D4RValue(D4Function f, D4RValueList *args)
         : d_variable(0), d_func(f), d_args(args), d_constant(0), d_value_kind(function) {}
 
+    /** @brief Builds an unsigned-integer constant rvalue. @param ui Constant value. */
     D4RValue(unsigned long long ui);
+    /** @brief Builds a signed-integer constant rvalue. @param i Constant value. */
     D4RValue(long long i);
+    /** @brief Builds a floating-point constant rvalue. @param r Constant value. */
     D4RValue(double r);
+    /** @brief Builds a string constant rvalue. @param s Constant value. */
     D4RValue(std::string s);
+    /** @brief Builds a byte-vector constant rvalue. @param byte_args Constant values. */
     D4RValue(std::vector<dods_byte> &byte_args);
+    /** @brief Builds an int8-vector constant rvalue. @param byte_int8 Constant values. */
     D4RValue(std::vector<dods_int8> &byte_int8);
+    /** @brief Builds a uint16-vector constant rvalue. @param byte_uint16 Constant values. */
     D4RValue(std::vector<dods_uint16> &byte_uint16);
+    /** @brief Builds an int16-vector constant rvalue. @param byte_int16 Constant values. */
     D4RValue(std::vector<dods_int16> &byte_int16);
+    /** @brief Builds a uint32-vector constant rvalue. @param byte_uint32 Constant values. */
     D4RValue(std::vector<dods_uint32> &byte_uint32);
+    /** @brief Builds an int32-vector constant rvalue. @param byte_int32 Constant values. */
     D4RValue(std::vector<dods_int32> &byte_int32);
+    /** @brief Builds a uint64-vector constant rvalue. @param byte_uint64 Constant values. */
     D4RValue(std::vector<dods_uint64> &byte_uint64);
+    /** @brief Builds an int64-vector constant rvalue. @param byte_int64 Constant values. */
     D4RValue(std::vector<dods_int64> &byte_int64);
+    /** @brief Builds a float32-vector constant rvalue. @param byte_float32 Constant values. */
     D4RValue(std::vector<dods_float32> &byte_float32);
+    /** @brief Builds a float64-vector constant rvalue. @param byte_float64 Constant values. */
     D4RValue(std::vector<dods_float64> &byte_float64);
 
     virtual ~D4RValue();
 
+    /**
+     * @brief Assigns this rvalue from another rvalue.
+     * @param rhs Source rvalue.
+     * @return This rvalue after assignment.
+     */
     D4RValue &operator=(D4RValue &rhs) {
         if (this == &rhs)
             return *this;
