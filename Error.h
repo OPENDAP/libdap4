@@ -91,9 +91,13 @@ typedef int ErrorCode; // using standard errno+netCDF error codes from server
 
 class Error : public std::exception {
 protected:
+    /// Numeric code used by clients/servers to classify this error.
     ErrorCode _error_code;
+    /// Human-readable description suitable for logs and user messages.
     std::string _error_message;
+    /// Source filename recorded when the error was created.
     std::string d_file;
+    /// Source line number recorded when the error was created.
     int d_line = 0;
 
 public:
@@ -127,26 +131,51 @@ public:
         : exception(), _error_code(unknown_error), _error_message(std::move(msg)), d_file(std::move(file)),
           d_line(line) {}
 
+    /** @brief Copy-construct an Error instance.
+     * @param copy_from Source error to copy.
+     */
     Error(const Error &copy_from) noexcept
         : exception(), _error_code(copy_from._error_code), _error_message(copy_from._error_message),
           d_file(copy_from.d_file), d_line(copy_from.d_line) {}
 
     ~Error() override = default;
 
+    /** @brief Assign all error fields from another Error.
+     * @param rhs Source error to copy.
+     * @return This instance.
+     */
     Error &operator=(const Error &rhs);
 
     bool OK() const;
     bool parse(FILE *fp);
     void print(FILE *out) const;
+    /** @brief Serialize this error in DAP text form.
+     * @param out Destination stream.
+     */
     void print(std::ostream &out) const;
     ErrorCode get_error_code() const;
     std::string get_error_message() const;
     void set_error_code(ErrorCode ec = undefined_error);
     void set_error_message(const std::string &msg = "");
 
+    /** @brief Get the recorded source filename.
+     * @return Source filename, or empty if not set.
+     */
     std::string get_file() const { return d_file; }
+
+    /** @brief Set the source filename metadata.
+     * @param f Source filename.
+     */
     void set_file(std::string f) { d_file = std::move(f); }
+
+    /** @brief Get the recorded source line number.
+     * @return Source line number, or 0 if not set.
+     */
     int get_line() const { return d_line; }
+
+    /** @brief Set the source line metadata.
+     * @param l Source line number.
+     */
     void set_line(int l) { d_line = l; }
 
     /// The pointer is valid only for the lifetime of the Error instance. jhrg 9/22/20

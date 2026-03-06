@@ -34,6 +34,10 @@ namespace libdap {
 class D4ParseError : public Error {
 public:
     D4ParseError() : Error("The DMR response document parse failed.") {}
+
+    /** @brief Build a DMR parse-failure error with additional details.
+     * @param msg Additional parse context.
+     */
     explicit D4ParseError(const string &msg) : Error(string("The DMR response document parse failed: ") + msg) {}
 };
 

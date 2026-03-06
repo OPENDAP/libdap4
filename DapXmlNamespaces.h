@@ -29,8 +29,10 @@
 
 namespace libdap {
 
+/** @brief Supported DAP XML namespace/schema versions. */
 enum DAPVersion { DAP_2_0, DAP_3_2, DAP_4_0 };
 
+/** @brief Helper for namespace and schema URIs used in DAP XML documents. */
 class DapXmlNamspaces {
 
 public:

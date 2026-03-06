@@ -266,9 +266,27 @@ public:
         d_dmr_sax_parser.endElementNs = &D4ParserSax2::dmr_end_element;
     }
 
+    /** @brief Parse a DMR document from an input stream.
+     * @param f Stream containing XML DMR text.
+     * @param dest_dmr Destination DMR populated by parsing.
+     * @param debug Enable parser debug tracing when true.
+     */
     void intern(istream &f, DMR *dest_dmr, bool debug = false);
+
     // Deprecated - this does not read from a file, it parses text in the string 'document'
+    /** @brief Parse a DMR document from in-memory XML text.
+     * @param document XML DMR document text.
+     * @param dest_dmr Destination DMR populated by parsing.
+     * @param debug Enable parser debug tracing when true.
+     */
     void intern(const string &document, DMR *dest_dmr, bool debug = false);
+
+    /** @brief Parse a DMR document from a raw memory buffer.
+     * @param buffer Pointer to XML DMR bytes.
+     * @param size Number of bytes available in `buffer`.
+     * @param dest_dmr Destination DMR populated by parsing.
+     * @param debug Enable parser debug tracing when true.
+     */
     void intern(const char *buffer, int size, DMR *dest_dmr, bool debug = false);
 
     /**
