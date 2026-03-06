@@ -48,7 +48,8 @@ void save_str(std::string &dst, const char *src, const int);
 bool is_keyword(std::string id, const std::string &keyword);
 
 /**
- * @defgroup check_type
+ * @name check types
+ * Check types
  * @{
  * @brief Can the given string be converted into a byte, ...?
  */
@@ -73,7 +74,7 @@ int check_url(const char *val);
 /** @} */
 
 /**
- * @defgroup check type and set value
+ * @name check type and set value
  * @{
  * @brief Like 'test and set,' check a type and set a value in one go.
  */
@@ -84,7 +85,8 @@ int check_float64(const char *val, double &v);
 /** @} */
 
 /**
- * @defgroup get_type
+ * @name get type
+ * Get the type
  * @{
  * @brief Convert the string to a value; throw if the conversion fails.
  */

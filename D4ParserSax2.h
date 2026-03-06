@@ -290,7 +290,8 @@ public:
     void intern(const char *buffer, int size, DMR *dest_dmr, bool debug = false);
 
     /**
-     * @defgroup strict The 'strict' mode
+     * @name strict
+     * The 'strict' mode
      * @{
      * The strict mode of the parser is the default. In this mode any error
      * will result in an exception and parsing will stop. When strict mode
