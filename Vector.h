@@ -124,12 +124,32 @@ private:
     void m_duplicate(const Vector &v);
 
 public:
+    /**
+     * @brief Constructs a vector with an element prototype.
+     * @param n Variable name.
+     * @param v Element prototype.
+     * @param t Concrete vector type tag.
+     * @param is_dap4 True when this variable is part of a DAP4 model.
+     */
     Vector(const string &n, BaseType *v, const Type &t, bool is_dap4 = false);
+    /**
+     * @brief Constructs a vector with declaration metadata and prototype.
+     * @param n Variable name.
+     * @param d Declaration context.
+     * @param v Element prototype.
+     * @param t Concrete vector type tag.
+     * @param is_dap4 True when this variable is part of a DAP4 model.
+     */
     Vector(const string &n, const string &d, BaseType *v, const Type &t, bool is_dap4 = false);
     Vector(const Vector &rhs);
 
     ~Vector() override;
 
+    /**
+     * @brief Assigns from another vector.
+     * @param rhs Source vector.
+     * @return This instance after assignment.
+     */
     Vector &operator=(const Vector &rhs);
     // FIXME BaseType *ptr_duplicate() = 0 override;
 
@@ -160,6 +180,10 @@ public:
      */
     vector<BaseType *> &get_compound_buf() { return d_compound_buf; }
 
+    /**
+     * @brief Returns the element prototype used by this vector.
+     * @return Prototype object describing each element.
+     */
     virtual BaseType *prototype() const { return d_proto; }
 
     /**
@@ -228,30 +252,70 @@ public:
 
     // DAP4
     void compute_checksum(Crc32 &checksum) override;
+    /** @brief Reads any required DAP4-side data into this vector. */
     void intern_data(/*Crc32 &checksum*/) override;
+    /**
+     * @brief Serializes this vector using DAP4 binary encoding.
+     * @param m Target stream marshaller.
+     * @param dmr DMR context for encoding decisions.
+     * @param filter True to apply active projection/filtering.
+     */
     void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false) override;
     void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
     unsigned int val2buf(void *val, bool reuse = false) override;
     unsigned int buf2val(void **val) override;
 
+    /**
+     * @brief Writes vector values from a 64-bit indexed source buffer.
+     * @param val Pointer to source values.
+     * @param reuse True to reuse existing storage when possible.
+     * @return Number of elements copied.
+     */
     int64_t val2buf_ll(void *val, bool reuse = false);
+    /**
+     * @brief Copies vector values into a caller-provided buffer.
+     * @param val Output pointer to receive copied values.
+     * @return Number of elements copied.
+     */
     int64_t buf2val_ll(void **val);
 
     void set_vec(unsigned int i, BaseType *val);
     void set_vec_nocopy(unsigned int i, BaseType *val);
 
+    /**
+     * @brief Sets an element at a 64-bit index by copying from `val`.
+     * @param i Zero-based element index.
+     * @param val Source element value.
+     */
     void set_vec_ll(uint64_t i, BaseType *val);
+    /**
+     * @brief Sets an element at a 64-bit index without copying `val`.
+     * @param i Zero-based element index.
+     * @param val Element object to store directly.
+     */
     void set_vec_nocopy_ll(uint64_t i, BaseType *val);
 
     void vec_resize(int l);
+    /**
+     * @brief Resizes vector storage using 64-bit element counts.
+     * @param l New number of elements.
+     */
     void vec_resize_ll(int64_t l);
 
     void clear_local_data() override;
 
     virtual unsigned int get_value_capacity() const;
+    /**
+     * @brief Returns reserved capacity in elements using 64-bit precision.
+     * @return Current capacity available for values.
+     */
     virtual uint64_t get_value_capacity_ll() const;
 
+    /**
+     * @brief Sets value-storage capacity.
+     * @param l New capacity in elements.
+     */
     void set_value_capacity(uint64_t l);
     virtual void reserve_value_capacity(unsigned int numElements);
     virtual void reserve_value_capacity();
@@ -352,9 +416,19 @@ public:
     BaseType *var(const string &name, btp_stack &s) override;
 
     virtual BaseType *var(unsigned int i);
+    /**
+     * @brief Returns element `i` from vectors indexed with 64-bit sizes.
+     * @param i Zero-based element index.
+     * @return Element at index `i`.
+     */
     virtual BaseType *var_ll(uint64_t i);
 
     void add_var(BaseType *v, Part p = nil) override;
+    /**
+     * @brief Adds a child variable without copying.
+     * @param v Variable to append.
+     * @param p Constructor part selector.
+     */
     void add_var_nocopy(BaseType *v, Part p = nil) override;
 
     bool check_semantics(string &msg, bool all = false) override;
