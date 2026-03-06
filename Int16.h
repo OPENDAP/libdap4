@@ -56,6 +56,7 @@ class DMR;
 
 class Int16 : public BaseType {
 protected:
+    /// Stored scalar 16-bit signed integer value.
     dods_int16 d_buf;
 
 public:

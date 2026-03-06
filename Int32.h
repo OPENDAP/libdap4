@@ -62,6 +62,7 @@ class ConstraintEvaluator;
 
 class Int32 : public BaseType {
 protected:
+    /// Stored scalar 32-bit signed integer value.
     dods_int32 d_buf;
 
 public:

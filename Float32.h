@@ -58,6 +58,7 @@ class DMR;
     */
 class Float32 : public BaseType {
 protected:
+    /// Stored scalar 32-bit floating-point value.
     dods_float32 d_buf;
 
 public:

@@ -57,6 +57,7 @@ class Int64 : public BaseType {
     }
 
 protected:
+    /// Stored scalar 64-bit signed integer value.
     dods_int64 d_buf;
 
 public:

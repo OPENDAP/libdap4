@@ -56,6 +56,7 @@ class UInt64 : public BaseType {
     }
 
 protected:
+    /// Stored scalar 64-bit unsigned integer value.
     dods_uint64 d_buf;
 
 public:

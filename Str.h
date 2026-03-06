@@ -61,6 +61,7 @@ const unsigned int max_str_len = DODS_USHRT_MAX - 1;
 
 class Str : public BaseType {
 protected:
+    /// Stored scalar string value.
     string d_buf;
 
 public:

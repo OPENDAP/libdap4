@@ -57,6 +57,7 @@ namespace libdap {
 
 class Float64 : public BaseType {
 protected:
+    /// Stored scalar 64-bit floating-point value.
     dods_float64 d_buf;
 
 public:

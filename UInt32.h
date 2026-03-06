@@ -56,6 +56,7 @@ namespace libdap {
 
 class UInt32 : public BaseType {
 protected:
+    /// Stored scalar 32-bit unsigned integer value.
     dods_uint32 d_buf;
 
 public:

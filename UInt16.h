@@ -54,6 +54,7 @@ namespace libdap {
 
 class UInt16 : public BaseType {
 protected:
+    /// Stored scalar 16-bit unsigned integer value.
     dods_uint16 d_buf;
 
 public:

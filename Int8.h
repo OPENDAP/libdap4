@@ -52,6 +52,7 @@ class Int8 : public BaseType {
     }
 
 protected:
+    /// Stored scalar 8-bit signed integer value.
     dods_int8 d_buf;
 
 public:

@@ -58,6 +58,7 @@ namespace libdap {
     */
 class Byte : public BaseType {
 protected:
+    /// Stored scalar byte value.
     dods_byte d_buf;
 
 public:
