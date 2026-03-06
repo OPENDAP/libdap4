@@ -63,29 +63,72 @@ public:
     UInt64(const string &n, const string &d);
     ~UInt64() override {}
 
+    /**
+     * @brief Copy-constructs from another 64-bit unsigned integer variable.
+     *
+     * @param copy_from Source instance.
+     */
     UInt64(const UInt64 &copy_from);
 
+    /**
+     * @brief Assigns from another 64-bit unsigned integer variable.
+     *
+     * @param rhs Source instance.
+     * @return This instance after assignment.
+     */
     UInt64 &operator=(const UInt64 &rhs);
 
     BaseType *ptr_duplicate() override;
 
     unsigned int width(bool = false) const override { return sizeof(dods_uint64); }
 
-    int64_t width_ll(bool = false) const override { return sizeof(dods_uint64); }
+    /**
+     * @brief Returns the storage width in bytes.
+     *
+     * @param constrained Ignored for scalar values.
+     * @return Number of bytes used by this value.
+     */
+    int64_t width_ll(bool constrained = false) const override { return sizeof(dods_uint64); }
 
     // DAP4
     void compute_checksum(Crc32 &checksum) override;
     void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
     void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
+    /**
+     * @brief Returns the current value.
+     *
+     * @return Stored unsigned 64-bit value.
+     */
     virtual dods_uint64 value() const;
+    /**
+     * @brief Sets the current value.
+     *
+     * @param val New unsigned 64-bit value.
+     * @return True when the value is accepted.
+     */
     virtual bool set_value(dods_uint64 val);
 
+    /**
+     * @brief Writes this value using C++ stream output.
+     *
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in the root group context.
+     */
     void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     bool ops(BaseType *b, int op) override;
     bool d4_ops(BaseType *b, int op) override;
 
+    /**
+     * @brief Converts this DAP4 value into equivalent DAP2 value objects.
+     *
+     * @param parent_attr_table Destination attribute table for converted metadata.
+     * @param show_shared_dims True to include shared-dimension annotations.
+     * @return A heap-allocated list of DAP2 values corresponding to this object.
+     */
     std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false) override;
 
     bool is_dap4_projected(std::vector<string> &inventory) override;
