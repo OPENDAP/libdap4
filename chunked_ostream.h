@@ -53,12 +53,17 @@ class chunked_outbuf : public std::streambuf {
     friend class chunked_ostream;
 
 protected:
-    std::ostream &d_os;       // Write stuff here
-    int d_buf_size = 0;       // Size of the data buffer
-    char *d_buffer = nullptr; // Data buffer
-    bool d_big_endian = false;
+    std::ostream &d_os;       ///< Destination stream.
+    int d_buf_size = 0;       ///< Size of the write buffer.
+    char *d_buffer = nullptr; ///< Write buffer storage.
+    bool d_big_endian = false; ///< True when local host byte order is big-endian.
 
 public:
+    /**
+     * @brief Builds a chunked output buffer.
+     * @param os Destination stream.
+     * @param buf_size Chunk payload buffer size.
+     */
     chunked_outbuf(std::ostream &os, int buf_size) : d_os(os), d_buf_size(buf_size) {
         if (d_buf_size & CHUNK_TYPE_MASK)
             throw std::out_of_range(
@@ -120,12 +125,13 @@ protected:
  */
 class chunked_ostream : public std::ostream {
 protected:
-    chunked_outbuf d_cbuf;
+    chunked_outbuf d_cbuf; ///< Backing chunked stream buffer.
 
 public:
     /**
      * Get a chunked_ostream with a buffer.
      * @note The buffer size must not be more than 2^24 bytes (0x00ffffff)
+     * @param os Destination stream.
      * @param buf_size The size of the buffer in bytes.
      */
     chunked_ostream(std::ostream &os, int buf_size) : std::ostream(&d_cbuf), d_cbuf(os, buf_size) {}

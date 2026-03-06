@@ -54,6 +54,7 @@ extern "C" bool_t xdr_str(XDR *xdrs, string &buf);
 
 namespace libdap {
 
+/** @brief Utility helpers for mapping DAP types to XDR coder functions. */
 class XDRUtils {
 private:
     XDRUtils() {}
@@ -62,6 +63,11 @@ public:
     // xdr_coder is used as an argument to xdr procedures that encode groups
     // of things (e.g., xdr_array()). Each leaf class's constructor must set
     // this.
+    /**
+     * @brief Returns the XDR coder function for a DAP type.
+     * @param t DAP type to encode or decode.
+     * @return XDR procedure pointer for `t`.
+     */
     static xdrproc_t xdr_coder(const Type &t);
 };
 

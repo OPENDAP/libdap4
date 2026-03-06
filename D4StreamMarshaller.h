@@ -85,6 +85,12 @@ class D4StreamMarshaller : public Marshaller {
 #endif
 
 public:
+    /**
+     * @brief Builds a DAP4 stream marshaller.
+     * @param out Destination stream.
+     * @param write_data True to emit serialized bytes to `out`.
+     * @param compute_checksums True to update/emit checksums while writing.
+     */
     explicit D4StreamMarshaller(std::ostream &out, bool write_data = true, bool compute_checksums = false);
 
     D4StreamMarshaller() = delete;
@@ -102,23 +108,41 @@ public:
     virtual void put_checksum();
     virtual void put_count(int64_t count);
 
+    /** @copydoc Marshaller::put_byte */
     void put_byte(dods_byte val) override;
+    /** @brief Serialize one DAP4 `Int8` value.
+     * @param val Value to serialize.
+     */
     virtual void put_int8(dods_int8 val);
 
+    /** @copydoc Marshaller::put_int16 */
     void put_int16(dods_int16 val) override;
+    /** @copydoc Marshaller::put_int32 */
     void put_int32(dods_int32 val) override;
     // Added
+    /** @brief Serialize one DAP4 `Int64` value.
+     * @param val Value to serialize.
+     */
     virtual void put_int64(dods_int64 val);
 
+    /** @copydoc Marshaller::put_float32 */
     void put_float32(dods_float32 val) override;
+    /** @copydoc Marshaller::put_float64 */
     void put_float64(dods_float64 val) override;
 
+    /** @copydoc Marshaller::put_uint16 */
     void put_uint16(dods_uint16 val) override;
+    /** @copydoc Marshaller::put_uint32 */
     void put_uint32(dods_uint32 val) override;
     // Added
+    /** @brief Serialize one DAP4 `UInt64` value.
+     * @param val Value to serialize.
+     */
     virtual void put_uint64(dods_uint64 val);
 
+    /** @copydoc Marshaller::put_str */
     void put_str(const string &val) override;
+    /** @copydoc Marshaller::put_url */
     void put_url(const string &val) override;
 
     /// @brief Not supported by DAP4
@@ -126,12 +150,28 @@ public:
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4; use put_opaque_dap4() instead.");
     }
 
+    /**
+     * @brief Serialize DAP4 opaque bytes.
+     * @param val Buffer containing bytes.
+     * @param num_bytes Number of bytes to serialize.
+     */
     virtual void put_opaque_dap4(const char *val, int64_t num_bytes);
 
     /// @brief Not supported by DAP4
     void put_int(int) override { throw InternalErr(__FILE__, __LINE__, "Not Implemented; use put_length_prefix."); }
 
+    /**
+     * @brief Serialize a contiguous byte block.
+     * @param val Buffer containing serialized element bytes.
+     * @param num_bytes Number of bytes to write.
+     */
     virtual void put_vector(char *val, int64_t num_bytes);
+    /**
+     * @brief Serialize a vector with explicit element count and element width.
+     * @param val Buffer containing vector bytes.
+     * @param num_elem Number of elements.
+     * @param elem_size Number of bytes per element.
+     */
     virtual void put_vector(char *val, int64_t num_elem, int elem_size);
     virtual void put_vector_float32(char *val, int64_t num_elem);
     virtual void put_vector_float64(char *val, int64_t num_elem);

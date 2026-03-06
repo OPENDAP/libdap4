@@ -122,6 +122,12 @@ public:
         });
     }
 
+    /**
+     * @brief Start a thread to write a partial chunk payload from a raw buffer.
+     * @param out Destination stream.
+     * @param byte_buf Shared bytes whose first four bytes are skipped.
+     * @param num_bytes Total bytes in `byte_buf`.
+     */
     void start_thread_part(std::ostream &out, const char *byte_buf, std::streamsize num_bytes) {
         if (d_ostream_future.valid()) {
             d_ostream_future.get();
@@ -142,6 +148,12 @@ public:
         });
     }
 
+    /**
+     * @brief Start a thread to write a partial chunk payload from shared bytes.
+     * @param out Destination stream.
+     * @param byte_buf Shared bytes whose first four bytes are skipped.
+     * @param num_bytes Total bytes in `byte_buf`.
+     */
     void start_thread_part(std::ostream &out, std::shared_ptr<const char> byte_buf, std::streamsize num_bytes) {
         if (d_ostream_future.valid()) {
             d_ostream_future.get();
@@ -159,6 +171,12 @@ public:
         });
     }
 
+    /**
+     * @brief Start a thread to write bytes to a file descriptor from a raw buffer.
+     * @param fd Destination file descriptor.
+     * @param byte_buf Source bytes.
+     * @param num_bytes Number of bytes to write.
+     */
     void start_thread(int fd, const char *byte_buf, std::streamsize num_bytes) {
         if (d_fp_future.valid()) {
             d_fp_future.get();
@@ -176,6 +194,12 @@ public:
         });
     }
 
+    /**
+     * @brief Start a thread to write bytes to a file descriptor from shared bytes.
+     * @param fd Destination file descriptor.
+     * @param byte_buf Source bytes.
+     * @param num_bytes Number of bytes to write.
+     */
     void start_thread(int fd, std::shared_ptr<const char> byte_buf, std::streamsize num_bytes) {
         if (d_fp_future.valid()) {
             d_fp_future.get();

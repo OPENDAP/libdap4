@@ -49,16 +49,17 @@ namespace libdap {
  */
 class fdoutbuf : public std::streambuf {
 protected:
-    int fd; // file descriptor
-    bool close;
-    static const int bufferSize = 4096; // Size of the data buffer
-    char buffer[bufferSize];            // data buffer
+    int fd; ///< File descriptor.
+    bool close; ///< True to close `fd` when the buffer is destroyed.
+    static const int bufferSize = 4096; ///< Size of the data buffer.
+    char buffer[bufferSize]; ///< Write buffer.
 
 public:
     fdoutbuf(int _fd, bool _close);
     virtual ~fdoutbuf();
 
 protected:
+    /** @brief Flushes buffered output bytes to the file descriptor. */
     int flushBuffer();
 
     virtual int overflow(int c);
@@ -76,7 +77,7 @@ protected:
  */
 class fdostream : public std::ostream {
 protected:
-    fdoutbuf buf;
+    fdoutbuf buf; ///< Backing stream buffer.
 
 public:
     /** Make a new fdostream and initialize it to use a specific file descriptor.
@@ -98,11 +99,11 @@ public:
  */
 class fdinbuf : public std::streambuf {
 protected:
-    int fd; // file descriptor
-    bool close;
-    static const int bufferSize = 4096; // Size of the data buffer
-    static const int putBack = 128;
-    char buffer[bufferSize]; // data buffer
+    int fd; ///< File descriptor.
+    bool close; ///< True to close `fd` when the buffer is destroyed.
+    static const int bufferSize = 4096; ///< Size of the data buffer.
+    static const int putBack = 128; ///< Put-back area size.
+    char buffer[bufferSize]; ///< Read buffer.
 
 public:
     fdinbuf(int _fd, bool close);
@@ -123,9 +124,14 @@ protected:
  */
 class fdistream : public std::istream {
 protected:
-    fdinbuf buf;
+    fdinbuf buf; ///< Backing stream buffer.
 
 public:
+    /**
+     * @brief Builds an input stream from a file descriptor.
+     * @param fd Source file descriptor.
+     * @param close True to close `fd` when this stream is destroyed.
+     */
     fdistream(int fd, bool close = false) : std::istream(&buf), buf(fd, close) {}
 };
 
@@ -139,11 +145,11 @@ public:
  */
 class fpinbuf : public std::streambuf {
 protected:
-    FILE *fp; // FILE *
-    bool close;
-    static const int bufferSize = 4096; // Size of the data buffer
-    static const int putBack = 128;
-    char buffer[bufferSize]; // data buffer
+    FILE *fp; ///< Source FILE pointer.
+    bool close; ///< True to close `fp` when the buffer is destroyed.
+    static const int bufferSize = 4096; ///< Size of the data buffer.
+    static const int putBack = 128; ///< Put-back area size.
+    char buffer[bufferSize]; ///< Read buffer.
 
 public:
     fpinbuf(FILE *_fp, bool _close);
@@ -165,9 +171,14 @@ protected:
  */
 class fpistream : public std::istream {
 protected:
-    fpinbuf buf;
+    fpinbuf buf; ///< Backing stream buffer.
 
 public:
+    /**
+     * @brief Builds an input stream from a `FILE*`.
+     * @param fp Source file pointer.
+     * @param close True to close `fp` when this stream is destroyed.
+     */
     fpistream(FILE *fp, bool close = false) : std::istream(&buf), buf(fp, close) {}
 };
 
