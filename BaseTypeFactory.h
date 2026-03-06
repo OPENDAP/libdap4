@@ -82,13 +82,15 @@ public:
     virtual ~BaseTypeFactory() {}
 
     /**
+     * @brief Build a new variable for the requested type.
      * Build a new variable and return it using a BaseType pointer. The
-     * type of the variable is given using  Type enumeration.
+     * type of the variable is given using Type enumeration.
      *
      * @note Added for DAP4
      *
-     * @param t The type of the variable to create
-     * @parma name The (optional) name of the variable.
+     * @param t The type of the variable to create.
+     * @param name Optional variable name.
+     * @return Newly allocated variable instance.
      */
     virtual BaseType *NewVariable(Type t, const string &name = "") const;
 
@@ -99,20 +101,38 @@ public:
      */
     virtual BaseTypeFactory *ptr_duplicate() const { throw InternalErr(__FILE__, __LINE__, "Not Implemented."); }
 
+    /** @brief Builds a `Byte` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual Byte *NewByte(const string &n = "") const;
+    /** @brief Builds an `Int16` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual Int16 *NewInt16(const string &n = "") const;
+    /** @brief Builds a `UInt16` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual UInt16 *NewUInt16(const string &n = "") const;
+    /** @brief Builds an `Int32` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual Int32 *NewInt32(const string &n = "") const;
+    /** @brief Builds a `UInt32` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual UInt32 *NewUInt32(const string &n = "") const;
+    /** @brief Builds a `Float32` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual Float32 *NewFloat32(const string &n = "") const;
+    /** @brief Builds a `Float64` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual Float64 *NewFloat64(const string &n = "") const;
 
+    /** @brief Builds a `Str` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual Str *NewStr(const string &n = "") const;
+    /** @brief Builds a `Url` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual Url *NewUrl(const string &n = "") const;
 
+    /**
+     * @brief Builds an `Array` variable.
+     * @param n Optional variable name.
+     * @param v Optional element prototype.
+     * @return Newly allocated variable instance.
+     */
     virtual Array *NewArray(const string &n = "", BaseType *v = 0) const;
+    /** @brief Builds a `Structure` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual Structure *NewStructure(const string &n = "") const;
+    /** @brief Builds a `Sequence` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual Sequence *NewSequence(const string &n = "") const;
+    /** @brief Builds a `Grid` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual Grid *NewGrid(const string &n = "") const;
 };
 
