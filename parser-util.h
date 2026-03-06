@@ -25,6 +25,8 @@
 #ifndef PARSER_UTIL_H_
 #define PARSER_UTIL_H_
 
+#include <string>
+
 namespace libdap {
 
 /** Given a string (<tt>const char *src</tt>), save it to the
@@ -39,10 +41,7 @@ namespace libdap {
 
     @return void
     @brief Save a string to a temporary variable during the parse.
-    */
-#if 0
-void save_str(char *dst, const char *src, const int line_num);
-#endif
+*/
 void save_str(std::string &dst, const char *src, const int);
 
 bool is_keyword(std::string id, const std::string &keyword);
