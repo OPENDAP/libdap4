@@ -89,8 +89,8 @@ public:
     };
 
 protected:
-    bool d_comp;        ///< True if the output should be compressed.
-    bool d_bad_options; ///< True if command-line options were invalid.
+    bool d_comp;                ///< True if the output should be compressed.
+    bool d_bad_options;         ///< True if command-line options were invalid.
     bool d_conditional_request; ///< True when request includes conditional headers.
 
     string d_program_name; ///< Name of the filter program.

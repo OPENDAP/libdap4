@@ -70,7 +70,7 @@ struct parser_arg {
     /// Error object returned on parse failure.
     Error *_error; // a pointer to an Error object
     /// Non-zero on success; zero on error.
-    int _status;   // parser status
+    int _status; // parser status
 
     parser_arg() : _object(0), _error(0), _status(1) {}
 

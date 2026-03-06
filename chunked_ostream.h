@@ -53,9 +53,9 @@ class chunked_outbuf : public std::streambuf {
     friend class chunked_ostream;
 
 protected:
-    std::ostream &d_os;       ///< Destination stream.
-    int d_buf_size = 0;       ///< Size of the write buffer.
-    char *d_buffer = nullptr; ///< Write buffer storage.
+    std::ostream &d_os;        ///< Destination stream.
+    int d_buf_size = 0;        ///< Size of the write buffer.
+    char *d_buffer = nullptr;  ///< Write buffer storage.
     bool d_big_endian = false; ///< True when local host byte order is big-endian.
 
 public:

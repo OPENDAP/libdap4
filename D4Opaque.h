@@ -46,7 +46,8 @@ protected:
 public:
     /** @brief Builds an opaque variable with a name. @param n Variable name. */
     D4Opaque(const std::string &n) : BaseType(n, dods_opaque_c, true /*is_dap4*/), d_buf(0) {}
-    /** @brief Builds an opaque variable with name and dataset context. @param n Variable name. @param d Dataset context. */
+    /** @brief Builds an opaque variable with name and dataset context. @param n Variable name. @param d Dataset
+     * context. */
     D4Opaque(const std::string &n, const std::string &d) : BaseType(n, d, dods_opaque_c, true /*is_dap4*/), d_buf(0) {}
 
     ~D4Opaque() override {}

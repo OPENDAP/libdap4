@@ -45,11 +45,11 @@ class GSEClause;
     throws; Error objects are not returned. */
 struct gse_arg {
     /// Parsed clause result.
-    GSEClause *_gsec;    // The gse parsed.
+    GSEClause *_gsec; // The gse parsed.
     /// Grid being constrained by the parsed expression.
     libdap::Grid *_grid; // The Grid being constrained.
     /// Parser success/failure status.
-    int _status;         // The parser's status.
+    int _status; // The parser's status.
 
     gse_arg() : _gsec(0), _grid(0), _status(1) {}
 

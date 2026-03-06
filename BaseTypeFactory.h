@@ -103,17 +103,23 @@ public:
 
     /** @brief Builds a `Byte` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual Byte *NewByte(const string &n = "") const;
-    /** @brief Builds an `Int16` variable. @param n Optional variable name. @return Newly allocated variable instance. */
+    /** @brief Builds an `Int16` variable. @param n Optional variable name. @return Newly allocated variable instance.
+     */
     virtual Int16 *NewInt16(const string &n = "") const;
-    /** @brief Builds a `UInt16` variable. @param n Optional variable name. @return Newly allocated variable instance. */
+    /** @brief Builds a `UInt16` variable. @param n Optional variable name. @return Newly allocated variable instance.
+     */
     virtual UInt16 *NewUInt16(const string &n = "") const;
-    /** @brief Builds an `Int32` variable. @param n Optional variable name. @return Newly allocated variable instance. */
+    /** @brief Builds an `Int32` variable. @param n Optional variable name. @return Newly allocated variable instance.
+     */
     virtual Int32 *NewInt32(const string &n = "") const;
-    /** @brief Builds a `UInt32` variable. @param n Optional variable name. @return Newly allocated variable instance. */
+    /** @brief Builds a `UInt32` variable. @param n Optional variable name. @return Newly allocated variable instance.
+     */
     virtual UInt32 *NewUInt32(const string &n = "") const;
-    /** @brief Builds a `Float32` variable. @param n Optional variable name. @return Newly allocated variable instance. */
+    /** @brief Builds a `Float32` variable. @param n Optional variable name. @return Newly allocated variable instance.
+     */
     virtual Float32 *NewFloat32(const string &n = "") const;
-    /** @brief Builds a `Float64` variable. @param n Optional variable name. @return Newly allocated variable instance. */
+    /** @brief Builds a `Float64` variable. @param n Optional variable name. @return Newly allocated variable instance.
+     */
     virtual Float64 *NewFloat64(const string &n = "") const;
 
     /** @brief Builds a `Str` variable. @param n Optional variable name. @return Newly allocated variable instance. */
@@ -128,9 +134,11 @@ public:
      * @return Newly allocated variable instance.
      */
     virtual Array *NewArray(const string &n = "", BaseType *v = 0) const;
-    /** @brief Builds a `Structure` variable. @param n Optional variable name. @return Newly allocated variable instance. */
+    /** @brief Builds a `Structure` variable. @param n Optional variable name. @return Newly allocated variable
+     * instance. */
     virtual Structure *NewStructure(const string &n = "") const;
-    /** @brief Builds a `Sequence` variable. @param n Optional variable name. @return Newly allocated variable instance. */
+    /** @brief Builds a `Sequence` variable. @param n Optional variable name. @return Newly allocated variable instance.
+     */
     virtual Sequence *NewSequence(const string &n = "") const;
     /** @brief Builds a `Grid` variable. @param n Optional variable name. @return Newly allocated variable instance. */
     virtual Grid *NewGrid(const string &n = "") const;

@@ -74,7 +74,8 @@ public:
 
     virtual ~D4EnumDef() {}
 
-    /** @brief Assigns this definition from another definition. @param rhs Source definition. @return This definition. */
+    /** @brief Assigns this definition from another definition. @param rhs Source definition. @return This definition.
+     */
     D4EnumDef &operator=(const D4EnumDef &rhs) = default;
 
     /** @brief Returns the enumeration name. */

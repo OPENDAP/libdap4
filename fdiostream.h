@@ -49,10 +49,10 @@ namespace libdap {
  */
 class fdoutbuf : public std::streambuf {
 protected:
-    int fd; ///< File descriptor.
-    bool close; ///< True to close `fd` when the buffer is destroyed.
+    int fd;                             ///< File descriptor.
+    bool close;                         ///< True to close `fd` when the buffer is destroyed.
     static const int bufferSize = 4096; ///< Size of the data buffer.
-    char buffer[bufferSize]; ///< Write buffer.
+    char buffer[bufferSize];            ///< Write buffer.
 
 public:
     fdoutbuf(int _fd, bool _close);
@@ -99,11 +99,11 @@ public:
  */
 class fdinbuf : public std::streambuf {
 protected:
-    int fd; ///< File descriptor.
-    bool close; ///< True to close `fd` when the buffer is destroyed.
+    int fd;                             ///< File descriptor.
+    bool close;                         ///< True to close `fd` when the buffer is destroyed.
     static const int bufferSize = 4096; ///< Size of the data buffer.
-    static const int putBack = 128; ///< Put-back area size.
-    char buffer[bufferSize]; ///< Read buffer.
+    static const int putBack = 128;     ///< Put-back area size.
+    char buffer[bufferSize];            ///< Read buffer.
 
 public:
     fdinbuf(int _fd, bool close);
@@ -145,11 +145,11 @@ public:
  */
 class fpinbuf : public std::streambuf {
 protected:
-    FILE *fp; ///< Source FILE pointer.
-    bool close; ///< True to close `fp` when the buffer is destroyed.
+    FILE *fp;                           ///< Source FILE pointer.
+    bool close;                         ///< True to close `fp` when the buffer is destroyed.
     static const int bufferSize = 4096; ///< Size of the data buffer.
-    static const int putBack = 128; ///< Put-back area size.
-    char buffer[bufferSize]; ///< Read buffer.
+    static const int putBack = 128;     ///< Put-back area size.
+    char buffer[bufferSize];            ///< Read buffer.
 
 public:
     fpinbuf(FILE *_fp, bool _close);

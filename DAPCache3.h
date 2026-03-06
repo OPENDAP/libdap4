@@ -41,9 +41,9 @@ namespace libdap {
 // See DAPCache3.cc and look at the purge() method.
 /** @brief Metadata for one file found in the DAP cache directory. */
 typedef struct {
-    std::string name; ///< Cache file name.
+    std::string name;        ///< Cache file name.
     unsigned long long size; ///< Cache file size in bytes.
-    time_t time; ///< Last-modified time.
+    time_t time;             ///< Last-modified time.
 } cache_entry;
 
 /** @brief List of cache-file metadata entries. */

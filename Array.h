@@ -191,9 +191,9 @@ public:
 
     /** @brief Storage layout and filter metadata for direct-I/O reads. */
     struct var_storage_info {
-        string filter;                         ///< Filter pipeline description.
-        vector<unsigned int> deflate_levels;  ///< Deflate levels per filter stage.
-        vector<size_t> chunk_dims;            ///< Chunk dimensions in row-major order.
+        string filter;                           ///< Filter pipeline description.
+        vector<unsigned int> deflate_levels;     ///< Deflate levels per filter stage.
+        vector<size_t> chunk_dims;               ///< Chunk dimensions in row-major order.
         vector<var_chunk_info_t> var_chunk_info; ///< Per-chunk metadata records.
     };
 
@@ -344,7 +344,7 @@ public:
 
     virtual void clear_constraint(); // deprecated
 
-    virtual void update_length(int size = 0);                   // should be used internally only
+    virtual void update_length(int size = 0); // should be used internally only
     /**
      * @brief Recomputes total element count using 64-bit arithmetic.
      * @param size Optional explicit size override; zero recomputes from dimensions.

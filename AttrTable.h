@@ -159,7 +159,7 @@ public:
         string name;   ///< Attribute name within the containing table.
         AttrType type; ///< Attribute type tag.
 
-        bool is_alias;   ///< True when this entry aliases another entry's value/container.
+        bool is_alias;     ///< True when this entry aliases another entry's value/container.
         string aliased_to; ///< Alias target path or name.
 
         bool is_global; ///< Marks non-container attributes that are global to their constructor context.
@@ -168,7 +168,7 @@ public:
 
         // If type == Attr_container, use attributes to read the contained
         // table, otherwise use attr to read the vector of values.
-        AttrTable *attributes;      ///< Nested container table when `type == Attr_container`.
+        AttrTable *attributes;     ///< Nested container table when `type == Attr_container`.
         std::vector<string> *attr; ///< Scalar/vector values for non-container attributes.
 
         entry()
