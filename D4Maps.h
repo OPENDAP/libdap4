@@ -86,9 +86,12 @@ public:
     ///@}
     virtual ~D4Map() = default;
 
+    /** @brief Returns this map name. */
     const string &name() const { return d_name; }
+    /** @brief Sets this map name. @param name Map name. */
     void set_name(const string &name) { d_name = name; }
 
+    /** @brief Returns the fully-qualified path to the source array. */
     const std::string &get_array_path() const { return d_array_path; }
     ///@note We can set the path even if the referenced Array does not yet exist!
     void set_array_path(const std::string &array) { d_array_path = array; }
@@ -102,11 +105,19 @@ public:
     Array *array() const { return d_array; }
     ///@}
 
+    /**
+     * @brief Sets the cached source-array pointer and path.
+     * @param array Source array.
+     */
     void set_array(Array *array) {
         d_array = array;
         d_array_path = array->FQN();
     }
 
+    /**
+     * @brief Prints this map in DAP4 DMR form.
+     * @param xml Destination XML writer.
+     */
     virtual void print_dap4(XMLWriter &xml);
 };
 
@@ -116,7 +127,9 @@ public:
  */
 class D4Maps {
 public:
+    /** @brief Mutable iterator over map objects. */
     typedef vector<D4Map *>::iterator D4MapsIter;
+    /** @brief Read-only iterator over map objects. */
     typedef vector<D4Map *>::const_iterator D4MapsCIter;
 
 private:
@@ -137,7 +150,17 @@ public:
     // See comment below at operator=(). jhrg 9/12/23
     D4Maps(const D4Maps &maps) = delete;
 
+    /**
+     * @brief Builds an empty map collection for a parent array.
+     * @param parent Parent array that owns this map collection.
+     */
     explicit D4Maps(const Array *parent) : d_parent(parent) {}
+
+    /**
+     * @brief Copy-constructs a map collection for a new parent array.
+     * @param maps Source map collection.
+     * @param parent Parent array for the copy.
+     */
     D4Maps(const D4Maps &maps, const Array *parent) { m_duplicate(maps, parent); }
 
     virtual ~D4Maps() {
@@ -156,6 +179,10 @@ public:
      */
     void add_map(D4Map *map) { d_maps.push_back(map); }
 
+    /**
+     * @brief Removes a map by name.
+     * @param map Map identifying the name to remove.
+     */
     void remove_map(D4Map *map) {
         d_maps.erase(
             std::remove_if(d_maps.begin(), d_maps.end(), [&map](const D4Map *m) { return m->name() == map->name(); }),
@@ -175,14 +202,27 @@ public:
 #endif
     }
 
+    /**
+     * @brief Returns one map by index.
+     * @param i Zero-based map index.
+     * @return Map at index `i`.
+     */
     D4Map *get_map(int i) const { return d_maps.at(i); }
 
+    /** @brief Returns an iterator to the first map. */
     D4MapsIter map_begin() { return d_maps.begin(); }
+    /** @brief Returns an iterator one past the last map. */
     D4MapsIter map_end() { return d_maps.end(); }
 
+    /** @brief Returns the number of maps in this collection. */
     int size() const { return d_maps.size(); }
+    /** @brief Returns true when this collection has no maps. */
     bool empty() const { return d_maps.empty(); }
 
+    /**
+     * @brief Prints all maps in DAP4 DMR form.
+     * @param xml Destination XML writer.
+     */
     virtual void print_dap4(XMLWriter &xml) {
         for (const auto &d_map : d_maps)
             d_map->print_dap4(xml);
