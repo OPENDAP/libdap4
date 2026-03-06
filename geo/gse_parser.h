@@ -44,19 +44,49 @@ class GSEClause;
 /** Argument to the GSE parser. Assumes all errors will be signaled by
     throws; Error objects are not returned. */
 struct gse_arg {
-    GSEClause *_gsec;    // The gse parsed.
+    /// Parsed clause result.
+    GSEClause *_gsec; // The gse parsed.
+    /// Grid being constrained by the parsed expression.
     libdap::Grid *_grid; // The Grid being constrained.
-    int _status;         // The parser's status.
+    /// Parser success/failure status.
+    int _status; // The parser's status.
 
     gse_arg() : _gsec(0), _grid(0), _status(1) {}
+
+    /** @brief Build parser args with a target grid.
+     * @param g Grid being constrained.
+     */
     gse_arg(libdap::Grid *g) : _gsec(0), _grid(g), _status(1) {}
     virtual ~gse_arg() {}
 
+    /** @brief Store the parsed clause.
+     * @param gsec Parsed GSE clause object.
+     */
     void set_gsec(GSEClause *gsec) { _gsec = gsec; }
+
+    /** @brief Get the parsed clause.
+     * @return Parsed clause pointer.
+     */
     GSEClause *get_gsec() { return _gsec; }
+
+    /** @brief Set the grid being constrained.
+     * @param g Grid pointer.
+     */
     void set_grid(libdap::Grid *g) { _grid = g; }
+
+    /** @brief Get the grid being constrained.
+     * @return Grid pointer.
+     */
     libdap::Grid *get_grid() { return _grid; }
+
+    /** @brief Set parser status.
+     * @param stat Non-zero for success, zero for failure.
+     */
     void set_status(int stat) { _status = stat; }
+
+    /** @brief Get parser status.
+     * @return Non-zero for success, zero for failure.
+     */
     int get_status() { return _status; }
 };
 

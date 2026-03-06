@@ -77,7 +77,7 @@ xdr-datatypes.h
 dmr_memory_cache
 doxy.conf
 doxygen_warnings.txt
-main_page.doxygen
+doxygen.log
 
 ## conf/ generated files
 conf/compile

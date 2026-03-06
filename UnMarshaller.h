@@ -52,24 +52,69 @@ class Vector;
  */
 class UnMarshaller : public DapObj {
 public:
+    /** @brief Deserialize one `Byte` value.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_byte(dods_byte &val) = 0;
 
+    /** @brief Deserialize one `Int16` value.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_int16(dods_int16 &val) = 0;
+    /** @brief Deserialize one `Int32` value.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_int32(dods_int32 &val) = 0;
 
+    /** @brief Deserialize one `Float32` value.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_float32(dods_float32 &val) = 0;
+    /** @brief Deserialize one `Float64` value.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_float64(dods_float64 &val) = 0;
 
+    /** @brief Deserialize one `UInt16` value.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_uint16(dods_uint16 &val) = 0;
+    /** @brief Deserialize one `UInt32` value.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_uint32(dods_uint32 &val) = 0;
 
+    /** @brief Deserialize one DAP string value.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_str(string &val) = 0;
+    /** @brief Deserialize one DAP URL value.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_url(string &val) = 0;
 
+    /** @brief Deserialize opaque bytes.
+     * @param val Destination buffer.
+     * @param len Number of bytes to decode.
+     */
     virtual void get_opaque(char *val, unsigned int len) = 0;
+    /** @brief Deserialize one legacy DAP integer.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_int(int &val) = 0;
 
+    /** @brief Deserialize a vector where element width is inferred from `vec`.
+     * @param val Destination pointer for allocated or reused vector data.
+     * @param num Number of decoded elements.
+     * @param vec Vector metadata used for typing.
+     */
     virtual void get_vector(char **val, unsigned int &num, Vector &vec) = 0;
+    /** @brief Deserialize a vector with explicit element width.
+     * @param val Destination pointer for allocated or reused vector data.
+     * @param num Number of decoded elements.
+     * @param width Bytes per element.
+     * @param vec Vector metadata used for typing.
+     */
     virtual void get_vector(char **val, unsigned int &num, int width, Vector &vec) = 0;
 
     virtual void dump(std::ostream &strm) const = 0;

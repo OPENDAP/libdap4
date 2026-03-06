@@ -105,8 +105,24 @@ private:
     Clause &operator=(const Clause &);
 
 public:
+    /**
+     * @brief Builds a relational clause.
+     * @param oper Relational operator token.
+     * @param a1 Left-hand operand.
+     * @param rv Right-hand operand list.
+     */
     Clause(const int oper, rvalue *a1, rvalue_list *rv);
+    /**
+     * @brief Builds a boolean-function clause.
+     * @param func Boolean function to evaluate.
+     * @param rv Function argument list.
+     */
     Clause(bool_func func, rvalue_list *rv);
+    /**
+     * @brief Builds a value-returning function clause.
+     * @param func Function returning a `BaseType*`.
+     * @param rv Function argument list.
+     */
     Clause(btp_func func, rvalue_list *rv);
     Clause();
 

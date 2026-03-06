@@ -13,6 +13,10 @@ dnl base value for the build number. jhrg 3/22/21
 
 AC_INIT([libdap],[3.21.1],[opendap-tech@opendap.org])
 
+# Get today's date in ISO 8601 format (YYYY-MM-DD)
+CONFIG_DATE=$(date +%Y-%m-%d)
+AC_SUBST([CONFIG_DATE])
+
 dnl As an alternative, we can...
 dnl Read the version number from the file VERSION. The file must contain
 dnl only the version number in the form x.y.z or x.y.z-b. Newlines are
@@ -582,7 +586,6 @@ AC_CONFIG_FILES([Makefile
                  libdap.pc
                  libdapclient.pc
                  libdapserver.pc
-                 main_page.doxygen
 	             doxy.conf
 	             abi_checker.xml
 

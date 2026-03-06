@@ -72,6 +72,12 @@ string id2xml(string in, const string &not_allowed = "><&'\"");
 string xml2id(string in);
 
 string esc2underscore(string s);
+
+/** @brief Replace escaped octal bytes with their ASCII character values.
+ * @param s Source string that may contain escaped octal bytes.
+ * @param escape Regular-expression pattern used to find escape sequences.
+ * @return Converted string.
+ */
 string char2ASCII(string s, const string escape = "%[0-7][0-9a-fA-F]");
 string escattr(string s);
 string escattr_xml(string s);

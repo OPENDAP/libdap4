@@ -52,11 +52,29 @@ private:
     static string _indent;
 
 public:
+    /** @brief Increase current indentation by one level. */
     static void Indent();
+
+    /** @brief Decrease current indentation by one level. */
     static void UnIndent();
+
+    /** @brief Reset indentation to an empty string. */
     static void Reset();
+
+    /** @brief Get the current indentation string.
+     * @return Current indentation text.
+     */
     static const string &GetIndent();
+
+    /** @brief Set the indentation string explicitly.
+     * @param indent New indentation text.
+     */
     static void SetIndent(const string &indent);
+
+    /** @brief Write the current indentation to a stream.
+     * @param strm Stream that receives indentation text.
+     * @return `strm`, for chaining.
+     */
     static ostream &LMarg(ostream &strm);
 };
 

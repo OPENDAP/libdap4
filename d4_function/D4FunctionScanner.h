@@ -48,10 +48,19 @@
 
 namespace libdap {
 
+/** @brief Flex scanner adapter for the DAP4 server-function parser. */
 class D4FunctionScanner : public d4_functionFlexLexer {
 public:
+    /** @brief Construct a scanner that reads from a C++ stream.
+     * @param in Input stream for tokenization.
+     */
     D4FunctionScanner(std::istream &in) : d4_functionFlexLexer(&in), yylval(0), loc(0) {};
 
+    /** @brief Lex the next token for the Bison parser.
+     * @param lval Semantic value output.
+     * @param l Source location output.
+     * @return Token id or 0 at end of input.
+     */
     int yylex(libdap::D4FunctionParser::semantic_type *lval, libdap::location *l) {
         loc = l;
         yylval = lval;

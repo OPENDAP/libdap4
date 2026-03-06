@@ -46,6 +46,7 @@ namespace libdap {
 
 class BaseType;
 
+/** @brief Legacy maximum URL length used by older protocol constraints. */
 const unsigned int max_url_len = 255;
 
 /** @brief Holds an Internet address (URL).
@@ -57,7 +58,22 @@ class Url : public Str {
 public:
     Url(const std::string &n);
     Url(const std::string &n, const std::string &d);
+    /**
+     * @brief Constructs a URL variable with an explicit type tag.
+     *
+     * Use this when callers need to preserve a specific runtime type marker.
+     *
+     * @param n Variable name.
+     * @param t Explicit libdap type tag.
+     */
     Url(const std::string &n, Type t);
+    /**
+     * @brief Constructs a URL variable with declaration and explicit type.
+     *
+     * @param n Variable name.
+     * @param d Declaration string.
+     * @param t Explicit libdap type tag.
+     */
     Url(const std::string &n, const std::string &d, Type t);
     ~Url() override {}
 

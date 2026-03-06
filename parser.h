@@ -65,11 +65,18 @@ namespace libdap {
     */
 
 struct parser_arg {
+    /// Parsed object pointer returned on success.
     void *_object; // nominally a pointer to an object
+    /// Error object returned on parse failure.
     Error *_error; // a pointer to an Error object
-    int _status;   // parser status
+    /// Non-zero on success; zero on error.
+    int _status; // parser status
 
     parser_arg() : _object(0), _error(0), _status(1) {}
+
+    /** @brief Build parser args initialized with an output object.
+     * @param obj Parsed-object destination pointer.
+     */
     parser_arg(void *obj) : _object(obj), _error(0), _status(1) {}
     virtual ~parser_arg() {
         if (_error) {
@@ -78,11 +85,34 @@ struct parser_arg {
         }
     }
 
+    /** @brief Get the parsed object pointer.
+     * @return Object pointer.
+     */
     void *object() { return _object; }
+
+    /** @brief Set the parsed object pointer.
+     * @param obj Parsed-object pointer.
+     */
     void set_object(void *obj) { _object = obj; }
+
+    /** @brief Get the parse error object.
+     * @return Error pointer, or null.
+     */
     Error *error() { return _error; }
+
+    /** @brief Set the parse error object.
+     * @param obj Error pointer.
+     */
     void set_error(Error *obj) { _error = obj; }
+
+    /** @brief Get parser status.
+     * @return Non-zero on success; zero on failure.
+     */
     int status() { return _status; }
+
+    /** @brief Set parser status.
+     * @param val Non-zero for success, zero for failure.
+     */
     void set_status(int val = 0) { _status = val; }
 };
 

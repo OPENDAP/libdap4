@@ -50,6 +50,9 @@ public:
     // Ensure that d_stream gets initialized...
     AlarmHandler() : d_file(0) {}
 
+    /** @brief Build an alarm handler that writes timeout errors to a FILE sink.
+     * @param s Destination stream used by the handler.
+     */
     explicit AlarmHandler(FILE *s)
         : d_file(s) //, d_stream( cout )
     {}

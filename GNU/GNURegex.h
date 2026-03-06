@@ -82,12 +82,16 @@ public:
     explicit Regex(const std::string &s) { init(s); }
 
 #if USE_CPP_11_REGEX
+    /// @brief Compile a C-string regular expression.
     void init(const char *s) { d_exp = std::regex(s); }
+    /// @brief Compile a C++-string regular expression.
     void init(const std::string &s) { d_exp = std::regex(s); } // , std::regex::basic
 
     ~Regex() = default;
 #else
+    /// @brief Compile a C-string regular expression.
     void init(const char *t);
+    /// @brief Compile a C++-string regular expression.
     void init(const std::string &s) { init(s.c_str()); } // std::regex::ECMAScript
 
     ~Regex();

@@ -42,14 +42,27 @@
 
 namespace libdap {
 
+/** @brief Locate and read ancillary DAS/DDS sidecar documents. */
 class Ancillary {
 public:
     static string find_ancillary_file(const string &pathname, const string &ext, const string &dir, const string &file);
 
     static string find_group_ancillary_file(const string &pathname, const string &ext);
 
+    /** @brief Read ancillary DAS content and merge it into a `DAS`.
+     * @param das Destination DAS to populate.
+     * @param pathname Source dataset path or URL.
+     * @param dir Optional directory override for sidecar lookup.
+     * @param file Optional explicit ancillary filename.
+     */
     static void read_ancillary_das(DAS &das, const string &pathname, const string &dir = "", const string &file = "");
 
+    /** @brief Read ancillary DDS content and merge it into a `DDS`.
+     * @param dds Destination DDS to populate.
+     * @param pathname Source dataset path or URL.
+     * @param dir Optional directory override for sidecar lookup.
+     * @param file Optional explicit ancillary filename.
+     */
     static void read_ancillary_dds(DDS &dds, const string &pathname, const string &dir = "", const string &file = "");
 };
 

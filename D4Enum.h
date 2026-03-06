@@ -56,7 +56,7 @@ class D4Enum : public BaseType {
 protected:
     // Use an unsigned 64-bit int. the value() and set_value()
     // accessors cast to other types as needed, including signed ones.
-    uint64_t d_buf;
+    uint64_t d_buf; ///< Stored enumeration value.
 
 private:
     Type d_element_type;
@@ -91,14 +91,36 @@ private:
     D4Enum(); // No empty constructor
 
 public:
+    /**
+     * @brief Builds an enum from the enumeration-definition name.
+     * @param name Variable name.
+     * @param enum_type Enumeration-definition name.
+     */
     D4Enum(const string &name, const string &enum_type);
 
+    /**
+     * @brief Builds an enum with an explicit backing integer type.
+     * @param name Variable name.
+     * @param type Backing integer type.
+     */
     D4Enum(const string &name, Type type);
 
+    /**
+     * @brief Builds an enum with dataset context and explicit backing type.
+     * @param name Variable name.
+     * @param dataset Dataset declaration context.
+     * @param type Backing integer type.
+     */
     D4Enum(const string &name, const string &dataset, Type type);
 
+    /** @brief Copy-constructs an enum variable. @param src Source enum variable. */
     D4Enum(const D4Enum &src) : BaseType(src) { m_duplicate(src); }
 
+    /**
+     * @brief Assigns this enum from another enum.
+     * @param rhs Source enum.
+     * @return This enum after assignment.
+     */
     D4Enum &operator=(const D4Enum &rhs) {
         if (this == &rhs)
             return *this;
@@ -109,15 +131,33 @@ public:
 
     ~D4Enum() override {}
 
+    /** @brief Returns the linked enumeration definition. */
     virtual D4EnumDef *enumeration() const { return d_enum_def; }
+
+    /**
+     * @brief Links this variable to an enumeration definition.
+     * @param enum_def Enumeration definition to use.
+     */
     virtual void set_enumeration(D4EnumDef *enum_def);
 
     BaseType *ptr_duplicate() override { return new D4Enum(*this); }
 
+    /** @brief Returns the enum backing integer type. */
     Type element_type() { return d_element_type; }
+
+    /**
+     * @brief Sets the enum backing integer type.
+     * @param type Backing integer type.
+     */
     void set_element_type(Type type) { d_element_type = type; }
 
+    /** @brief Returns whether this enum should be interpreted as signed. */
     bool is_signed() const { return d_is_signed; }
+
+    /**
+     * @brief Sets signedness based on a DAP type.
+     * @param t DAP type used to infer signedness.
+     */
     void set_is_signed(Type t);
 
     /**
@@ -172,6 +212,11 @@ public:
 
     void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
+    /**
+     * @brief Prints this enum in DAP4 XML form.
+     * @param xml Destination XML writer.
+     * @param constrained True to emit constrained form.
+     */
     void print_xml_writer(XMLWriter &xml, bool constrained) override;
 
     bool ops(BaseType *b, int op) override;
@@ -181,6 +226,12 @@ public:
     unsigned int val2buf(void *, bool) override;
     unsigned int buf2val(void **) override;
 
+    /**
+     * @brief Converts this enum to its DAP2 representation.
+     * @param parent_attr_table Destination attribute table for converted metadata.
+     * @param show_shared_dims True to include shared-dimension metadata where relevant.
+     * @return Newly allocated DAP2 variable list.
+     */
     std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims) override;
 };
 

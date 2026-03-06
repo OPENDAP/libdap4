@@ -81,6 +81,10 @@ public:
 
     ~InternalErr() noexcept override;
 
+    /** @brief Assign this instance from another InternalErr.
+     * @param rhs Source error to copy.
+     * @return This instance.
+     */
     InternalErr &operator=(const InternalErr &rhs);
 
     bool OK();

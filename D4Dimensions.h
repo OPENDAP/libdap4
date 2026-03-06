@@ -36,6 +36,7 @@ class D4Group;
 class D4Dimensions;
 class XMLWriter;
 
+/** @brief Describes one named DAP4 shared dimension. */
 class D4Dimension {
     string d_name;
     unsigned long long d_size;
@@ -51,32 +52,52 @@ public:
     D4Dimension()
         : d_name(""), d_size(0), d_parent(0), d_constrained(false), d_c_start(0), d_c_stride(0), d_c_stop(0),
           d_used_by_projected_var(false) {}
+
+    /**
+     * @brief Builds a named shared dimension.
+     * @param name Dimension name.
+     * @param size Unconstrained size.
+     * @param d Parent dimensions collection.
+     */
     D4Dimension(const string &name, unsigned long long size, D4Dimensions *d = 0)
         : d_name(name), d_size(size), d_parent(d), d_constrained(false), d_c_start(0), d_c_stride(0), d_c_stop(0),
           d_used_by_projected_var(false) {}
 
+    /** @brief Returns the dimension name. */
     string name() const { return d_name; }
+    /** @brief Sets the dimension name. @param name Dimension name. */
     void set_name(const string &name) { d_name = name; }
     string fully_qualified_name() const;
 
+    /** @brief Returns the unconstrained dimension size. */
     unsigned long long size() const { return d_size; }
+    /** @brief Sets the unconstrained dimension size. @param size Dimension size. */
     void set_size(unsigned long long size) { d_size = size; }
     // Because we build these in the XML parser and it's all text...
+    /** @brief Sets the unconstrained dimension size from text. @param size Dimension size text. */
     void set_size(const string &size);
 
+    /** @brief Returns the parent dimensions collection. */
     D4Dimensions *parent() const { return d_parent; }
+    /** @brief Sets the parent dimensions collection. @param d Parent dimensions collection. */
     void set_parent(D4Dimensions *d) { d_parent = d; }
 
+    /** @brief Returns true when this dimension is constrained by a slice. */
     bool constrained() const { return d_constrained; }
+    /** @brief Returns the constrained start index. */
     int64_t c_start() const { return d_c_start; }
+    /** @brief Returns the constrained stride. */
     int64_t c_stride() const { return d_c_stride; }
+    /** @brief Returns the constrained stop index. */
     int64_t c_stop() const { return d_c_stop; }
 
+    /** @brief Returns whether any projected variable uses this shared dimension. */
     bool used_by_projected_var() const { return d_used_by_projected_var; }
+    /** @brief Sets whether any projected variable uses this shared dimension. @param state Usage flag. */
     void set_used_by_projected_var(bool state) { d_used_by_projected_var = state; }
 
     /**
-     * Set this Shared Diemension's constraint. While an Array Dimension object uses a
+     * Set this Shared Dimension's constraint. While an Array Dimension object uses a
      * stop value of -1 to indicate the end of the dimension, this method does not support
      * that; the caller will have to sort out the correct end value for 'stop'.
      * @param start Starting index (zero-based)
@@ -90,6 +111,10 @@ public:
         d_constrained = true;
     }
 
+    /**
+     * @brief Prints this dimension in DAP4 DMR form.
+     * @param xml Destination XML writer.
+     */
     void print_dap4(XMLWriter &xml) const;
 };
 
@@ -107,6 +132,10 @@ protected:
     // Note Code in Array depends on the order of these 'new' dimensions
     // matching the 'old' dimensions they are derived from. See
     // Array::update_dimension_pointers. jhrg 8/25/14
+    /**
+     * @brief Deep-copies dimensions and parent linkage from another collection.
+     * @param rhs Source dimensions collection.
+     */
     void m_duplicate(const D4Dimensions &rhs) {
         D4DimensionsCIter i = rhs.d_dims.begin();
         while (i != rhs.d_dims.end()) {
@@ -120,10 +149,21 @@ protected:
 public:
     /// Iterator used for D4Dimensions
     typedef vector<D4Dimension *>::iterator D4DimensionsIter;
+    /// Read-only iterator used for D4Dimensions
     typedef vector<D4Dimension *>::const_iterator D4DimensionsCIter;
 
     D4Dimensions() : d_parent(0) {}
+
+    /**
+     * @brief Builds a dimensions collection owned by a group.
+     * @param g Owning group.
+     */
     D4Dimensions(D4Group *g) : d_parent(g) {}
+
+    /**
+     * @brief Copy-constructs a dimensions collection.
+     * @param rhs Source collection.
+     */
     D4Dimensions(const D4Dimensions &rhs) : d_parent(0) { m_duplicate(rhs); }
 
     virtual ~D4Dimensions() {
@@ -132,6 +172,11 @@ public:
             delete *i++;
     }
 
+    /**
+     * @brief Assigns this dimensions collection from another collection.
+     * @param rhs Source collection.
+     * @return This collection after assignment.
+     */
     D4Dimensions &operator=(const D4Dimensions &rhs) {
         if (this == &rhs)
             return *this;
@@ -142,7 +187,9 @@ public:
     /// Does this D4Dimensions object actually have dimensions?
     bool empty() const { return d_dims.empty(); }
 
+    /** @brief Returns the owning group. */
     D4Group *parent() const { return d_parent; }
+    /** @brief Sets the owning group. @param g Owning group. */
     void set_parent(D4Group *g) { d_parent = g; }
 
     /** Append a new dimension.
@@ -169,6 +216,11 @@ public:
     /// Get an iterator to the end of the dimensions
     D4DimensionsIter dim_end() { return d_dims.end(); }
 
+    /**
+     * @brief Finds a dimension by name.
+     * @param name Dimension name.
+     * @return Matching dimension or null.
+     */
     D4Dimension *find_dim(const string &name);
 
     /** Insert a dimension.
@@ -189,6 +241,11 @@ public:
         d_dims.insert(i, dim);
     }
 
+    /**
+     * @brief Prints all dimensions in DAP4 DMR form.
+     * @param xml Destination XML writer.
+     * @param constrained True to print constrained dimensions when available.
+     */
     void print_dap4(XMLWriter &xml, bool constrained = false) const;
 };
 
