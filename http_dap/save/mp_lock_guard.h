@@ -47,8 +47,16 @@ public:
     mp_lock_guard_logger() = default;
     virtual ~mp_lock_guard_logger() = default;
 
+    /**
+     * @brief Writes a non-fatal diagnostic message.
+     * @param msg Message text.
+     */
     virtual void log(const std::string &msg) const = 0;
 
+    /**
+     * @brief Reports a fatal lock-guard error.
+     * @param msg Message text.
+     */
     virtual void error(const std::string &msg) const = 0;
 };
 
@@ -62,8 +70,10 @@ public:
     mp_lock_guard_logger_default() = default;
     ~mp_lock_guard_logger_default() override = default;
 
+    /** @copydoc mp_lock_guard_logger::log */
     void log(const std::string &msg) const override { std::cerr << "~mp_lock_guard: " << msg << std::endl; }
 
+    /** @copydoc mp_lock_guard_logger::error */
     void error(const std::string &msg) const override { throw std::runtime_error("mp_lock_guard: " + msg); }
 };
 
@@ -78,6 +88,7 @@ public:
  */
 class mp_lock_guard {
 public:
+    /** @brief Lock operation mode for `mp_lock_guard`. */
     enum class operation { read, write };
 
 private:
@@ -126,6 +137,7 @@ public:
      * @param fd The file descriptor of the cache control file.
      * @param op The operation to perform. If op is 'write' then the lock is
      * a write lock; if op is 'read' then the lock is a read lock.
+     * @param logger Logger implementation used for diagnostics and errors.
      */
     mp_lock_guard(int fd, operation op, const mp_lock_guard_logger &logger = mp_lock_guard_logger_default())
         : d_fd(fd), d_op(op), d_logger(logger) {

@@ -128,8 +128,13 @@ public:
 
     void set_xdap_protocol(int major, int minor);
 
+    /** @brief Returns whether responses should be materialized as C++ streams. */
     bool use_cpp_streams() const { return d_use_cpp_streams; }
 
+    /**
+     * @brief Enables/disables C++ stream based response objects.
+     * @param use_cpp_streams True to use C++ streams, false to use `FILE*` streams.
+     */
     void set_use_cpp_streams(bool use_cpp_streams) {
         std::lock_guard<std::mutex> lock(d_connect_mutex);
         d_use_cpp_streams = use_cpp_streams;

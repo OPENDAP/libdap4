@@ -126,21 +126,31 @@ private:
     friend class HTTPConnectTest;
 
 public:
+    /** @brief Returns the singleton RCReader instance. */
     static RCReader *instance();
 
     RCReader(const RCReader &) = delete;
     RCReader &operator=(const RCReader &) = delete;
 
     // GET METHODS
+    /** @brief Returns configured cache root directory. */
     string get_dods_cache_root() const throw() { return d_cache_root; }
+    /** @brief Returns whether HTTP caching is enabled. */
     bool get_use_cache() const throw() { return _dods_use_cache; }
+    /** @brief Returns maximum cache size (MB). */
     int get_max_cache_size() const throw() { return _dods_cache_max; }
+    /** @brief Returns max per-object cache size (MB). */
     unsigned int get_max_cached_obj() const throw() { return _dods_cached_obj; }
+    /** @brief Returns ignore-expires flag. */
     int get_ignore_expires() const throw() { return _dods_ign_expires; }
+    /** @brief Returns default expiration interval (seconds). */
     int get_default_expires() const throw() { return _dods_default_expires; }
+    /** @brief Returns always-validate flag. */
     int get_always_validate() const throw() { return _dods_always_validate; }
+    /** @brief Returns SSL certificate/host validation setting. */
     int get_validate_ssl() const throw() { return d_validate_ssl; }
 
+    /** @brief Returns whether compressed responses are requested. */
     bool get_deflate() const throw() { return _dods_deflate; }
 
     /// Get the proxy server protocol
@@ -178,31 +188,48 @@ public:
     // real need for suppressing proxy access for the local domain. The
     // ..._port() method is bogus, however, so it is deprecated. There's no
     // code that uses it. 06/17/04 jhrg
+    /** @brief Returns whether NO_PROXY_FOR settings are active. */
     bool is_no_proxy_for_used() throw() { return d_dods_no_proxy_for; }
+    /** @brief Returns NO_PROXY_FOR protocol selector. */
     string get_no_proxy_for_protocol() const throw() { return d_dods_no_proxy_for_protocol; }
+    /** @brief Returns NO_PROXY_FOR host selector. */
     string get_no_proxy_for_host() const throw() { return d_dods_no_proxy_for_host; }
 
     /// @deprecated
     int get_no_proxy_for_port() const throw() { return _dods_no_proxy_for_port; }
 
+    /** @brief Returns configured AIS database path/name. */
     string get_ais_database() const throw() { return d_ais_database; }
 
+    /** @brief Returns configured cookie-jar file path. */
     string get_cookie_jar() const throw() { return d_cookie_jar; }
 
     // SET METHODS
+    /** @brief Sets whether HTTP caching is enabled. @param b New setting. */
     void set_use_cache(bool b) throw() { _dods_use_cache = b; }
+    /** @brief Sets maximum cache size (MB). @param i New setting. */
     void set_max_cache_size(int i) throw() { _dods_cache_max = i; }
+    /** @brief Sets max per-object cache size (MB). @param i New setting. */
     void set_max_cached_obj(int i) throw() { _dods_cached_obj = i; }
+    /** @brief Sets ignore-expires flag. @param i New setting. */
     void set_ignore_expires(int i) throw() { _dods_ign_expires = i; }
+    /** @brief Sets default expiration interval (seconds). @param i New setting. */
     void set_default_expires(int i) throw() { _dods_default_expires = i; }
+    /** @brief Sets always-validate flag. @param i New setting. */
     void set_always_validate(int i) throw() { _dods_always_validate = i; }
+    /** @brief Sets SSL validation behavior. @param i New setting. */
     void set_validate_ssl(int i) throw() { d_validate_ssl = i; }
 
+    /** @brief Sets whether to request compressed responses. @param b New setting. */
     void set_deflate(bool b) throw() { _dods_deflate = b; }
 
+    /** @brief Sets proxy protocol. @param s Proxy protocol token. */
     void set_proxy_server_protocol(const string &s) throw() { d_dods_proxy_server_protocol = s; }
+    /** @brief Sets proxy host. @param s Proxy host. */
     void set_proxy_server_host(const string &s) throw() { d_dods_proxy_server_host = s; }
+    /** @brief Sets proxy port. @param l Proxy port. */
     void set_proxy_server_port(int l) throw() { d_dods_proxy_server_port = l; }
+    /** @brief Sets proxy user/password token. @param s Proxy credentials token. */
     void set_proxy_server_userpw(const string &s) throw() { d_dods_proxy_server_userpw = s; }
 
     /// @deprecated
@@ -215,12 +242,15 @@ public:
     /// @deprecated
     void set_proxy_for_regexp_flags(int i) throw() { _dods_proxy_for_regexp_flags = i; }
 
+    /** @brief Sets NO_PROXY_FOR protocol selector. @param s Protocol selector. */
     void set_no_proxy_for_protocol(const string &s) throw() { d_dods_no_proxy_for_protocol = s; }
+    /** @brief Sets NO_PROXY_FOR host selector. @param s Host selector. */
     void set_no_proxy_for_host(const string &s) throw() { d_dods_no_proxy_for_host = s; }
 
     /// @deprecated
     void set_no_proxy_for_port(int i) throw() { _dods_no_proxy_for_port = i; }
 
+    /** @brief Sets AIS database path/name. @param db AIS database path/name. */
     void set_ais_database(const string &db) throw() { d_ais_database = db; }
 };
 
