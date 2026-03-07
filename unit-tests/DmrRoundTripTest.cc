@@ -24,9 +24,6 @@
 
 #include "config.h"
 
-#include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-
 #include <sstream>
 
 #include "Array.h"
@@ -44,23 +41,6 @@
 #include "run_tests_cppunit.h"
 #include "testFile.h"
 #include "test_config.h"
-
-static bool debug2 = false;
-
-#undef DBG
-#define DBG(x)                                                                                                         \
-    do {                                                                                                               \
-        if (debug) {                                                                                                   \
-            x;                                                                                                         \
-        }                                                                                                              \
-    } while (false)
-#undef DBG2
-#define DBG2(x)                                                                                                        \
-    do {                                                                                                               \
-        if (debug2) {                                                                                                  \
-            x;                                                                                                         \
-        }                                                                                                              \
-    } while (false)
 
 using namespace CppUnit;
 using namespace std;
