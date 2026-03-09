@@ -4,11 +4,11 @@
     "C_Cpp.default.cppStandard": "c++14",
     "C_Cpp.default.intelliSenseMode": "macos-clang-arm64",
     "terminal.integrated.env.osx": {
-        "HYRAX_PREFIX": The litteral value of $prefix.,
+        "prefix": The litteral value of $prefix
         "PATH": $prefix litteral value + /bin: $prefix litteral value + deps/bin:${env:PATH}
     },
     "terminal.integrated.env.linux": {
-        "HYRAX_PREFIX": The litteral value of $prefix.,
+        "prefix": The litteral value of $prefix
         "PATH": $prefix litteral value + /bin: $prefix litteral value + deps/bin:${env:PATH}"
     }
 }

@@ -1,7 +1,7 @@
 **Documentation Plan Prompt**
 
-You are working in `libdap4`. Document public methods in stages, with review after each stage.  
-Target baseline is **1,918 undocumented public methods** (from prior scan).  
+You are working in `libdap4`. Document public methods in stages, with review after each stage.
+Target baseline is **1,918 undocumented public methods** (from prior scan).
 Use existing Doxygen settings from `doxy.conf` exactly as-is.
 
 **Doxygen Constraints To Respect**
