@@ -4,9 +4,8 @@
         "cwd": "${workspaceFolder}",
         "env": {
             "TESTSUITEFLAGS": "-j",
-            "prefix": Set to $prefix
-            "PATH": $prefix value /bin:$prefix value /deps/bin:${env:PATH
-            }
+            "prefix": "${config:prefix}",
+            "PATH": "${config:PATH}"
         },
         "shell": {
             "executable": "/bin/zsh",
