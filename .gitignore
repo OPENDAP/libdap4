@@ -41,7 +41,6 @@ lex.*.cc
 
 ## Top-level generated artifacts
 Default
-docs
 html
 latex
 tmp
