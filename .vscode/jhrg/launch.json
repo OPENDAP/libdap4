@@ -15,7 +15,7 @@
         },
         {
           "name": "PATH",
-          "value": "${env:HYRAX_PREFIX}/bin:${env:HYRAX_PREFIX}/deps/bin:${env:PATH}"
+          "value": "${config:PATH}"
         }
       ],
       "MIMode": "lldb",
