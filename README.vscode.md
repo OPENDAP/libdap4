@@ -1,113 +1,140 @@
 # VS Code Workspace Guide
 
-This document describes the workspace automation in `.vscode/tasks.json`, `.vscode/launch.json`, and `.vscode/settings.json.template`.
+This document describes the VS Code workspace pattern used in this repository.
 
-## Tasks (`.vscode/tasks.json`)
+VS Code reads its active workspace files from:
 
-All configured tasks are shell tasks that run from `${workspaceFolder}` with `/bin/zsh`, and they inject:
+- `.vscode/tasks.json`
+- `.vscode/launch.json`
+- `.vscode/settings.json`
 
-- `prefix` from `HYRAX_PREFIX`
-- `PATH` prefixed with `${HYRAX_PREFIX}/bin:${HYRAX_PREFIX}/deps/bin`
+Those top-level JSON files are intentionally not tracked by git. Instead, each developer can keep versioned copies of their own working configuration under a personal subdirectory such as:
 
-Run tasks from:
+- `.vscode/jhrg/tasks.json`
+- `.vscode/jhrg/launch.json`
+- `.vscode/jhrg/settings.json`
 
-- `Terminal` -> `Run Task...`
-- Or `Cmd+Shift+P` / `Ctrl+Shift+P` -> `Tasks: Run Task`
+The intent is:
 
-Task catalog:
+- avoid conflicts between developers with different local paths and preferences
+- make it easy for each developer to keep their own VS Code setup under version control
+- let people learn from each other's configurations by browsing the per-user directories
 
-| Label                         | Command                                                              | Purpose                                                               |
-| ----------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `autotools: configure`        | `autoreconf -fvi && ./configure --prefix=$prefix --enable-developer` | Regenerates autotools files and runs configure for a developer build. |
-| `autotools: build`            | `make -j`                                                            | Builds the project in parallel.                                       |
-| `autotools: check`            | `make -j check`                                                      | Runs the autotools test target in parallel.                           |
-| `autotools: install`          | `make install`                                                       | Installs into the configured prefix.                                  |
-| `autotools: clean`            | `make clean`                                                         | Removes build artifacts from the current tree.                        |
-| `autotools: compile_commands` | `make clean && bear -- make -j && bear --append -- make -j check`    | Rebuilds and captures compile commands for IntelliSense/navigation.   |
+## Recommended workflow
 
-Notes:
+1. Create a personal directory under `.vscode/` if you do not already have one.
+2. Keep your versioned copies of `tasks.json`, `launch.json`, and `settings.json` there.
+3. Copy those files into `.vscode/` when you want VS Code to use them locally.
 
-- `autotools: configure` both regenerates (`autoreconf`) and configures (`./configure`) the tree.
-- `autotools: build` is a good default after configure.
-- `autotools: compile_commands` requires `bear` to be installed.
+For example, if your directory is `.vscode/jhrg/`, copy:
 
-## Debug Launch Targets (`.vscode/launch.json`)
+- `.vscode/jhrg/tasks.json` -> `.vscode/tasks.json`
+- `.vscode/jhrg/launch.json` -> `.vscode/launch.json`
+- `.vscode/jhrg/settings.json` -> `.vscode/settings.json`
 
-Current launch configuration:
+The tracked files serve as examples and personal baselines. The untracked top-level files are the ones VS Code actually reads.
 
-- `Debug getdap4`
-  - Launches `${workspaceFolder}/.libs/getdap4`
-  - Uses args: `-d http://test.opendap.org/opendap/data/nc/fnoc1.nc`
-  - Uses LLDB (`MIMode: lldb`)
-  - Sets:
-    - `DYLD_LIBRARY_PATH=${workspaceFolder}/.libs:${env:DYLD_LIBRARY_PATH}`
-    - `PATH=${env:HYRAX_PREFIX}/bin:${env:HYRAX_PREFIX}/deps/bin:${env:PATH}`
+## Configuration variables
 
-Run it from:
+The current setup uses VS Code configuration variables instead of hard-coding environment values directly into tasks and launch configurations.
 
-- `Run and Debug` view -> pick `Debug getdap4` -> Start
+In `.vscode/<your-name>/settings.json`, define:
 
-### Adding new launch targets for unit tests
+- `prefix`
+- `PATH`
 
-Add another object in `configurations` using the same structure. Typical edits:
+Then reference them from tasks and launch configurations using:
 
-- Change `name` (for example, `Debug unit-tests: arrayT`)
-- Change `program` to the unit test executable (for example, `${workspaceFolder}/unit-tests/.libs/arrayT`)
-- Adjust `args` as needed by that test
-- Keep `cwd`, `environment`, `MIMode`, and `setupCommands` unless a test needs something different
+- `${config:prefix}`
+- `${config:PATH}`
+
+This is important for `libdap4` because `prefix` and `PATH` must be set correctly for configure, build, test, and debug workflows.
 
 Example:
 
 ```json
 {
-  "name": "Debug unit-tests: arrayT",
-  "type": "cppdbg",
-  "request": "launch",
-  "program": "${workspaceFolder}/unit-tests/.libs/arrayT",
-  "args": [],
-  "cwd": "${workspaceFolder}",
-  "environment": [
-    {
-      "name": "DYLD_LIBRARY_PATH",
-      "value": "${workspaceFolder}/.libs:${env:DYLD_LIBRARY_PATH}"
-    },
-    {
-      "name": "PATH",
-      "value": "${env:HYRAX_PREFIX}/bin:${env:HYRAX_PREFIX}/deps/bin:${env:PATH}"
-    }
-  ],
-  "MIMode": "lldb"
-}
-```
-
-## Local-Only Settings (`.vscode/settings.json.template` -> `.vscode/settings.json`)
-
-Use `.vscode/settings.json.template` as a starting point, then create/edit `.vscode/settings.json` with machine-specific values.
-
-Recommended process:
-
-1. Copy the template keys into `.vscode/settings.json`.
-2. Replace placeholder text with real values for your machine.
-3. Set `HYRAX_PREFIX` to the literal install prefix path (for example, `/Users/you/hyrax`).
-4. Build `PATH` from that prefix plus the existing path.
-
-Example local values:
-
-```json
-{
-  "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
-  "C_Cpp.default.compileCommands": "${workspaceFolder}/compile_commands.json",
-  "C_Cpp.default.cppStandard": "c++14",
-  "C_Cpp.default.intelliSenseMode": "macos-clang-arm64",
+  "prefix": "/Users/you/hyrax/build",
+  "PATH": "${config:prefix}/bin:${config:prefix}/deps/bin:${env:PATH}",
   "terminal.integrated.env.osx": {
-    "HYRAX_PREFIX": "/Users/you/hyrax",
-    "PATH": "/Users/you/hyrax/bin:/Users/you/hyrax/deps/bin:${env:PATH}"
+    "prefix": "${config:prefix}",
+    "PATH": "${config:PATH}"
   },
   "terminal.integrated.env.linux": {
-    "HYRAX_PREFIX": "/home/you/hyrax",
-    "PATH": "/home/you/hyrax/bin:/home/you/hyrax/deps/bin:${env:PATH}"
+    "prefix": "${config:prefix}",
+    "PATH": "${config:PATH}"
   }
 }
 ```
 
-Keep local values in `.vscode/settings.json` so each developer can use a different prefix/path without changing shared workspace docs or task/launch definitions.
+Notes:
+
+- `prefix` is the install/build prefix passed to `./configure --prefix=$prefix`
+- `PATH` should usually prepend `${config:prefix}/bin` and `${config:prefix}/deps/bin`
+- the terminal environment mirrors those values so interactive shells inside VS Code behave the same way as tasks
+
+## Tasks
+
+The tracked example at `.vscode/jhrg/tasks.json` defines shell tasks that run from `${workspaceFolder}` using `/bin/zsh`.
+
+Its task-wide environment sets:
+
+- `TESTSUITEFLAGS=-j`
+- `prefix=${config:prefix}`
+- `PATH=${config:PATH}`
+
+Current task catalog:
+
+| Label                         | Command                                                                                        | Purpose                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `autotools: configure`        | `echo "prefix: $prefix" && autoreconf -fvi && ./configure --prefix=$prefix --enable-developer` | Regenerates autotools files and configures a developer build.       |
+| `autotools: build`            | `make -j`                                                                                      | Builds the project in parallel.                                     |
+| `autotools: check`            | `make -j check`                                                                                | Runs the autotools test target in parallel.                         |
+| `autotools: install`          | `make install`                                                                                 | Installs into the configured prefix.                                |
+| `autotools: clean`            | `make clean`                                                                                   | Removes build artifacts from the current tree.                      |
+| `autotools: compile_commands` | `make clean && bear -- make -j && bear --append -- make -j check`                              | Rebuilds and captures compile commands for IntelliSense/navigation. |
+
+Run tasks from:
+
+- `Terminal` -> `Run Task...`
+- `Cmd+Shift+P` / `Ctrl+Shift+P` -> `Tasks: Run Task`
+
+Notes:
+
+- `autotools: configure` assumes your `prefix` setting is valid
+- `autotools: compile_commands` requires `bear`
+- these task definitions belong in your versioned per-user file and can then be copied to `.vscode/tasks.json`
+
+## Launch configurations
+
+The tracked example at `.vscode/jhrg/launch.json` currently defines one launch target:
+
+- `Debug getdap4`
+
+It launches:
+
+- `${workspaceFolder}/.libs/getdap4`
+
+With:
+
+- args: `-d http://test.opendap.org/opendap/data/nc/fnoc1.nc`
+- `DYLD_LIBRARY_PATH=${workspaceFolder}/.libs:${env:DYLD_LIBRARY_PATH}`
+- `PATH=${config:PATH}`
+- `MIMode=lldb`
+
+Run it from:
+
+- `Run and Debug` view -> select `Debug getdap4` -> start
+
+If you add new launch targets, keep them in your personal versioned file and then copy that file to `.vscode/launch.json` for local use.
+
+## Settings
+
+The tracked example at `.vscode/jhrg/settings.json` includes:
+
+- `prefix`
+- `PATH`
+- C/C++ extension settings for compile commands and IntelliSense
+- terminal environment values for macOS and Linux
+
+Keep machine-specific values in your personal versioned settings file. That preserves the pattern of shared examples plus conflict-free local activation.
