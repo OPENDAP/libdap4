@@ -39,12 +39,14 @@ namespace libdap {
 
 // These typedefs are used to record information about the files in the cache.
 // See DAPCache3.cc and look at the purge() method.
+/** @brief Metadata for one file found in the DAP cache directory. */
 typedef struct {
-    std::string name;
-    unsigned long long size;
-    time_t time;
+    std::string name;        ///< Cache file name.
+    unsigned long long size; ///< Cache file size in bytes.
+    time_t time;             ///< Last-modified time.
 } cache_entry;
 
+/** @brief List of cache-file metadata entries. */
 typedef std::list<cache_entry> CacheFiles;
 
 /** @brief Implementation of a caching mechanism for compressed data.
@@ -111,14 +113,31 @@ class DAPCache3 : public libdap::DapObj {
     static void delete_instance();
 
 public:
+    /**
+     * @brief Returns/creates the singleton cache instance.
+     * @param cache_dir Cache root directory.
+     * @param prefix Filename prefix used for cache entries.
+     * @param size Maximum cache size in bytes.
+     * @return Singleton cache instance.
+     */
     static DAPCache3 *get_instance(const std::string &cache_dir, const std::string &prefix, unsigned long long size);
     static DAPCache3 *get_instance();
 
     std::string get_cache_file_name(const std::string &src, bool mangle = true);
 
     virtual bool create_and_lock(const std::string &target, int &fd);
+    /**
+     * @brief Opens an existing cache file and acquires a shared read lock.
+     * @param target Cache file path.
+     * @param fd Output file descriptor associated with the lock.
+     * @return True when the file exists and lock acquisition succeeds.
+     */
     virtual bool get_read_lock(const std::string &target, int &fd);
     virtual void exclusive_to_shared_lock(int fd);
+    /**
+     * @brief Releases lock and closes the descriptor tracked for a target file.
+     * @param target Cache file path whose tracked descriptor should be closed.
+     */
     virtual void unlock_and_close(const std::string &target);
     virtual void unlock_and_close(int fd);
 

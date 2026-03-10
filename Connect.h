@@ -155,6 +155,7 @@ public:
 
     virtual ~Connect();
 
+    /** @brief Returns true when this connection targets a local dataset/file. */
     bool is_local();
 
     // *** Add get_* versions of accessors. 02/27/03 jhrg
@@ -166,8 +167,14 @@ public:
     void set_xdap_protocol(int major, int minor);
 
     void set_cache_enabled(bool enabled);
+    /** @brief Returns whether HTTP caching is enabled for this connection. */
     bool is_cache_enabled();
 
+    /**
+     * @brief Sets the `XDAP-Accept` header version sent to the server.
+     * @param major Accepted protocol major version.
+     * @param minor Accepted protocol minor version.
+     */
     void set_xdap_accept(int major, int minor);
 
     /** Return the protocol/implementation version of the most recent
@@ -201,12 +208,31 @@ public:
     virtual void request_data(DataDDS &data, string expr = "");
     virtual void request_data_url(DataDDS &data);
 
+    /**
+     * @brief Requests a DataDDX response for this dataset.
+     * @param data Destination DataDDS object.
+     * @param expr Optional constraint expression.
+     */
     virtual void request_data_ddx(DataDDS &data, string expr = "");
+    /**
+     * @brief Requests a DataDDX response using the CE embedded in the current URL.
+     * @param data Destination DataDDS object.
+     */
     virtual void request_data_ddx_url(DataDDS &data);
 
     virtual void read_data(DataDDS &data, Response *rs);
     virtual void read_data_no_mime(DataDDS &data, Response *rs);
+    /**
+     * @brief Parses a DAP2 data response (with MIME headers) into a DDS.
+     * @param data Destination DDS.
+     * @param rs Response object containing the payload.
+     */
     virtual void read_data(DDS &data, Response *rs);
+    /**
+     * @brief Parses a DAP2 data response body (without MIME headers) into a DDS.
+     * @param data Destination DDS.
+     * @param rs Response object containing the payload.
+     */
     virtual void read_data_no_mime(DDS &data, Response *rs);
 };
 

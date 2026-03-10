@@ -56,6 +56,7 @@ class DMR;
 
 class Int16 : public BaseType {
 protected:
+    /// Stored scalar 16-bit signed integer value.
     dods_int16 d_buf;
 
 public:
@@ -63,15 +64,32 @@ public:
     Int16(const string &n, const string &d);
     ~Int16() override {}
 
+    /**
+     * @brief Copy-constructs from another 16-bit signed integer variable.
+     *
+     * @param copy_from Source instance.
+     */
     Int16(const Int16 &copy_from);
 
+    /**
+     * @brief Assigns from another 16-bit signed integer variable.
+     *
+     * @param rhs Source instance.
+     * @return This instance after assignment.
+     */
     Int16 &operator=(const Int16 &rhs);
 
     BaseType *ptr_duplicate() override;
 
     unsigned int width(bool = false) const override { return sizeof(dods_int16); }
 
-    int64_t width_ll(bool = false) const override { return sizeof(dods_int16); }
+    /**
+     * @brief Returns the storage width in bytes.
+     *
+     * @param constrained Ignored for scalar values.
+     * @return Number of bytes used by this value.
+     */
+    int64_t width_ll(bool constrained = false) const override { return sizeof(dods_int16); }
 
     // DAP2
     bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;
@@ -85,10 +103,37 @@ public:
     unsigned int val2buf(void *val, bool reuse = false) override;
     unsigned int buf2val(void **val) override;
 
+    /**
+     * @brief Returns the current value.
+     *
+     * @return Stored signed 16-bit value.
+     */
     virtual dods_int16 value() const;
+    /**
+     * @brief Sets the current value.
+     *
+     * @param val New signed 16-bit value.
+     * @return True when the value is accepted.
+     */
     virtual bool set_value(dods_int16 val);
 
+    /**
+     * @brief Writes this value using C stdio output.
+     *
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in the root group context.
+     */
     void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
+    /**
+     * @brief Writes this value using C++ stream output.
+     *
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in the root group context.
+     */
     void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     bool ops(BaseType *b, int op) override;

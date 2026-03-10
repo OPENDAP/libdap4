@@ -67,10 +67,24 @@ public:
     /** Destructor. Does not close standard input. */
     ~StdinResponse() override {}
 
+    /** @brief Return the `FILE*` input stream.
+     * @return Stored C stdio input stream.
+     */
     FILE *get_stream() const override { return d_stdin; }
+
+    /** @brief Set the `FILE*` input stream.
+     * @param s C stdio input stream.
+     */
     void set_stream(FILE *s) override { d_stdin = s; }
 
+    /** @brief Return the C++ input stream.
+     * @return Stored C++ input stream pointer.
+     */
     std::istream *get_cpp_stream() const override { return d_cin; }
+
+    /** @brief Set the C++ input stream.
+     * @param in C++ input stream pointer.
+     */
     void set_cpp_stream(std::istream *in) override { d_cin = in; }
 };
 

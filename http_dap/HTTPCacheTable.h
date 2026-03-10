@@ -113,30 +113,43 @@ public:
         friend class WriteOneCacheEntry;
 
     public:
+        /** @brief Returns cache filename for this entry. */
         std::string get_cachename() const { return cachename; }
 
+        /** @brief Returns response ETag value. */
         std::string get_etag() const { return etag; }
 
+        /** @brief Returns `Last-Modified` timestamp. */
         time_t get_lm() const { return lm; }
 
+        /** @brief Returns `Expires` timestamp. */
         time_t get_expires() const { return expires; }
 
+        /** @brief Returns parsed `Cache-Control: max-age` value. */
         time_t get_max_age() const { return max_age; }
 
+        /** @brief Sets cached response body size in bytes. @param sz Body size in bytes. */
         void set_size(unsigned long sz) { size = sz; }
 
+        /** @brief Returns computed freshness lifetime. */
         time_t get_freshness_lifetime() const { return freshness_lifetime; }
 
+        /** @brief Returns response-time timestamp used for age calculations. */
         time_t get_response_time() const { return response_time; }
 
+        /** @brief Returns corrected initial age value. */
         time_t get_corrected_initial_age() const { return corrected_initial_age; }
 
+        /** @brief Returns `must-revalidate` directive state. */
         bool get_must_revalidate() const { return must_revalidate; }
 
+        /** @brief Sets `no-cache` directive state. @param state New state. */
         void set_no_cache(bool state) { no_cache = state; }
 
+        /** @brief Returns `no-cache` directive state. */
         bool is_no_cache() const { return no_cache; }
 
+        /** @brief Acquires read lock accounting for concurrent readers. */
         void lock_read_response() {
             // if the response_lock cannot be acquired, it might be a reader or a writer. If it is a writer, then
             // we need to wait for the writer to finish. If it is a reader, then we don't care and increment the
@@ -149,6 +162,7 @@ public:
             readers++; // Record number of readers
         }
 
+        /** @brief Releases a previously acquired read lock. */
         void unlock_read_response() {
             std::lock_guard<std::mutex> lock(d_readers_lock);
             readers--;
@@ -157,8 +171,10 @@ public:
             }
         }
 
+        /** @brief Acquires exclusive write lock for this entry. */
         void lock_write_response() { std::lock(d_response_read_lock, d_response_write_lock); }
 
+        /** @brief Releases exclusive write lock for this entry. */
         void unlock_write_response() {
             d_response_read_lock.unlock();
             d_response_write_lock.unlock();
@@ -166,6 +182,7 @@ public:
 
         CacheEntry() = default;
 
+        /** @brief Builds an entry with URL and computed hash. @param u Cached resource URL. */
         explicit CacheEntry(std::string u) : url(std::move(u)) { hash = get_hash(url); }
     }; // CacheEntry
 
@@ -175,7 +192,9 @@ public:
     // vector (that's how hash collisions are resolved). Search the inner
     // vector for a specific match.
 
+    /** @brief Bucket of cache-entry pointers for one hash slot. */
     using CacheEntries = std::vector<CacheEntry *>;
+    /** @brief Full hash table of cache-entry buckets. */
     using CacheTable = std::vector<CacheEntries>;
 
     friend class HTTPCacheTest;
@@ -200,6 +219,11 @@ private:
     void remove_cache_entry(const HTTPCacheTable::CacheEntry *entry);
 
 public:
+    /**
+     * @brief Builds a cache table rooted at `cache_root`.
+     * @param cache_root Cache root directory.
+     * @param block_size Filesystem block size used for accounting.
+     */
     HTTPCacheTable(const std::string &cache_root, int block_size);
     HTTPCacheTable(const HTTPCacheTable &) = delete;
     HTTPCacheTable &operator=(const HTTPCacheTable &) = delete;
@@ -243,9 +267,19 @@ public:
                        const std::vector<std::string> &headers);
 
     // These should move back to HTTPCache
+    /**
+     * @brief Associates an open response stream with a read-locked cache entry.
+     * @param entry Cache entry that owns the response body.
+     * @param body Open response stream.
+     */
     void bind_entry_to_data(CacheEntry *entry, FILE *body);
+    /**
+     * @brief Removes a response-stream to cache-entry association.
+     * @param body Open response stream previously bound to an entry.
+     */
     void uncouple_entry_from_data(FILE *body);
 
+    /** @brief Returns true if any responses are currently read-locked. */
     bool is_locked_read_responses() const;
 };
 

@@ -43,6 +43,10 @@ public:
 class AISDatabaseReadFailed : public Error {
 public:
     AISDatabaseReadFailed() : Error("The AIS database read failed.") {}
+
+    /** @brief Build an AIS read-failure error with additional context.
+     * @param msg Additional details about the read failure.
+     */
     explicit AISDatabaseReadFailed(const string &msg) : Error(string("The AIS database read failed: ") + msg) {}
 };
 
@@ -50,6 +54,10 @@ public:
 class AISDatabaseWriteFailed : public Error {
 public:
     AISDatabaseWriteFailed() : Error("The AIS database write failed.") {}
+
+    /** @brief Build an AIS write-failure error with additional context.
+     * @param msg Additional details about the write failure.
+     */
     explicit AISDatabaseWriteFailed(const string &msg) : Error(string("The AIS database write failed: ") + msg) {}
 };
 

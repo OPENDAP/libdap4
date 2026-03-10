@@ -146,6 +146,7 @@ protected:
     void m_duplicate(const BaseType &bt);
 
 public:
+    /** @brief Stack type used to record traversal paths through constructor variables. */
     typedef stack<BaseType *> btp_stack;
 
     // These ctors assume is_dap4 is false
@@ -158,10 +159,22 @@ public:
     virtual string toString();
 
     virtual void transform_to_dap4(D4Group *root, Constructor *container);
+
+    /**
+     * @brief Convert this variable to its DAP2 form.
+     * @param parent_attr_table Destination attribute table that receives translated DAP4 metadata.
+     * @param show_shared_dims True to emit shared-dimension information where supported.
+     * @return Newly allocated DAP2 variables that represent this object.
+     */
     virtual std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false);
 
     void dump(ostream &strm) const override;
 
+    /**
+     * @brief Assigns this variable from another variable.
+     * @param rhs Source variable.
+     * @return This instance after assignment.
+     */
     BaseType &operator=(const BaseType &rhs);
 
     /**
@@ -178,7 +191,16 @@ public:
      */
     virtual void clear_local_data() { set_read_p(false); }
 
+    /**
+     * @brief Reports whether this variable uses DAP4 semantics.
+     * @return True when this instance belongs to a DAP4 model.
+     */
     virtual bool is_dap4() const { return d_is_dap4; }
+
+    /**
+     * @brief Sets whether this variable uses DAP4 semantics.
+     * @param v True when this instance belongs to a DAP4 model.
+     */
     virtual void set_is_dap4(const bool v) { d_is_dap4 = v; }
 
     /** Clone this instance. Allocate a new instance and copy \c *this into
@@ -261,6 +283,10 @@ public:
     virtual void set_parent(BaseType *parent);
     virtual BaseType *get_parent() const;
 
+    /**
+     * @brief Returns the root-most ancestor in this variable's containment chain.
+     * @return The outermost containing variable, or this variable when it has no parent.
+     */
     virtual BaseType *get_ancestor();
 
     virtual void transfer_attributes(AttrTable *at);
@@ -303,6 +329,12 @@ public:
     virtual BaseType *var(const string &name, btp_stack &s);
 
     virtual void add_var(BaseType *bt, Part part = nil);
+
+    /**
+     * @brief Adds a child variable without transferring ownership through duplication.
+     * @param bt Child variable to add.
+     * @param part Constructor section where the variable belongs.
+     */
     virtual void add_var_nocopy(BaseType *bt, Part part = nil);
 
     virtual bool read();
@@ -314,18 +346,49 @@ public:
 
     virtual unsigned int width(bool constrained = false) const;
 
+    /**
+     * @brief Returns the serialized width in bytes as a 64-bit value.
+     * @param constrained True to compute size for the constrained projection.
+     * @return Width in bytes.
+     */
     virtual int64_t width_ll(bool constrained = false) const;
 
+    /**
+     * @brief Prints this variable declaration to a C stdio stream.
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_semi True to print a trailing semicolon.
+     * @param constraint_info True to include projection details.
+     * @param constrained True to emit constrained form.
+     * @param is_root_grp True when printing in root-group context.
+     * @param array_member True when printing as an array member declaration.
+     * @param is_array_member Alias for `array_member` used by some implementations.
+     */
     virtual void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
                             bool constrained = false, bool is_root_grp = true, bool array_member = false);
 
     virtual void print_xml(FILE *out, string space = "    ", bool constrained = false);
 
+    /**
+     * @brief Prints this variable declaration to a C++ stream.
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_semi True to print a trailing semicolon.
+     * @param constraint_info True to include projection details.
+     * @param constrained True to emit constrained form.
+     * @param is_root_grp True when printing in root-group context.
+     * @param array_member True when printing as an array member declaration.
+     */
     virtual void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
                             bool constrained = false, bool is_root_grp = true, bool array_member = false);
 
     virtual void print_xml(ostream &out, string space = "    ", bool constrained = false);
 
+    /**
+     * @brief Prints this variable in XML form using an XML writer.
+     * @param xml Destination XML writer.
+     * @param constrained True to emit constrained form.
+     */
     virtual void print_xml_writer(XMLWriter &xml, bool constrained = false);
 
     virtual void print_dap4(XMLWriter &xml, bool constrained = false);
@@ -522,7 +585,8 @@ public:
     @param space This value is passed to the print_decl()
     function, and controls the leading spaces of the output.
     @param print_decl_p A boolean value controlling whether the
-    variable declaration is printed as well as the value. */
+    variable declaration is printed as well as the value.
+    @param is_root_grp True when printing in root-group context. */
 
     virtual void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true);
 
@@ -539,7 +603,8 @@ public:
     @param space This value is passed to the print_decl()
     function, and controls the leading spaces of the output.
     @param print_decl_p A boolean value controlling whether the
-    variable declaration is printed as well as the value. */
+    variable declaration is printed as well as the value.
+    @param is_root_grp True when printing in root-group context. */
     virtual void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) = 0;
     //@}
 

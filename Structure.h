@@ -89,6 +89,11 @@ public:
     Structure(const Structure &rhs);
     ~Structure() override;
 
+    /**
+     * @brief Assigns from another structure.
+     * @param rhs Source structure.
+     * @return This instance after assignment.
+     */
     Structure &operator=(const Structure &rhs);
     BaseType *ptr_duplicate() override;
 

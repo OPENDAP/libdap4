@@ -134,10 +134,20 @@ private:
 
 public:
     DAS() : DapObj(), d_container(0) {}
+
+    /**
+     * @brief Copy-constructs a DAS.
+     * @param das Source DAS.
+     */
     DAS(const DAS &das) { duplicate(das); }
 
     ~DAS() override {}
 
+    /**
+     * @brief Assigns this DAS from another DAS.
+     * @param rhs Source DAS.
+     * @return This DAS after assignment.
+     */
     DAS &operator=(const DAS &rhs);
 
     /** @brief Returns the name of the current attribute container when multiple

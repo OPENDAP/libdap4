@@ -36,6 +36,10 @@ namespace libdap {
 class DDXParseFailed : public Error {
 public:
     DDXParseFailed() : Error("The DDX response document parse failed.") {}
+
+    /** @brief Build a DDX parse-failure error with additional details.
+     * @param msg Additional parse context.
+     */
     DDXParseFailed(const string &msg) : Error(string("The DDX response document parse failed: ") + msg) {}
 };
 
