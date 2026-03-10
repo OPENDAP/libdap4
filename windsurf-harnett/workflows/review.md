@@ -57,6 +57,7 @@ This workflow performs a comprehensive code review on a pull request and adds re
 ```
 
 Example:
+
 ```
 /review 123
 ```
@@ -68,4 +69,4 @@ Example:
 - Include code references using GitHub's line selection
 - Review focuses on code quality, not creating separate issues
 - For critical issues that need separate tracking, suggest creating issues in comments
-- Group related issues when appropriate 
+- Group related issues when appropriate

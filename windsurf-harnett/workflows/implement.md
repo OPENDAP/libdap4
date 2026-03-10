@@ -21,7 +21,7 @@ This workflow implements GitHub issues by extracting planning information and fo
 2. **Extract Implementation Plan from Issue**
    - Look for these sections in issue body and comments:
      - "Implementation Plan", "Implementation Steps", or "Implementation Roadmap"
-     - "Requirements & Acceptance Criteria" 
+     - "Requirements & Acceptance Criteria"
      - "Technical Details" or "Technical Approach"
      - "Dependencies" and "Testing Requirements"
    - Extract numbered/bulleted task lists with time estimates
@@ -84,6 +84,7 @@ This workflow implements GitHub issues by extracting planning information and fo
 ## Implementation Guidelines
 
 ### Code Quality Standards
+
 - Follow existing code style and patterns
 - Maintain backward compatibility
 - Use established error handling patterns
@@ -91,6 +92,7 @@ This workflow implements GitHub issues by extracting planning information and fo
 - Add appropriate logging and debugging support
 
 ### Testing Requirements
+
 - Unit tests for all new functions
 - Integration tests for new features
 - Error handling path testing
@@ -98,6 +100,7 @@ This workflow implements GitHub issues by extracting planning information and fo
 - Performance testing if applicable
 
 ### Documentation Standards
+
 - Update API documentation for new functions
 - Add inline comments for complex logic
 - Update design documents if architecture changes
@@ -120,6 +123,7 @@ This workflow implements GitHub issues by extracting planning information and fo
 ## Example Implementation Flow
 
 For issue 92 (CRS Metadata Extraction):
+
 1. Fetch issue → Extract 7-step implementation plan
 2. Review docs/design.md → Understand GeoTIFF architecture
 3. Examine src/geotifffile.c → Locate placeholder code

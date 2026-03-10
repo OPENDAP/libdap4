@@ -10,6 +10,7 @@ This workflow runs all C and Fortran tests to validate implementation against is
 ## Prerequisites
 
 Ensure the project is built with both CMake and Autotools build systems:
+
 ```bash
 cd /home/ed/NEP
 # CMake build
@@ -28,36 +29,48 @@ cd ..
 ## Steps
 
 ### 1. Parse Issue Implementation Plan
+
 - Read the GitHub issue to identify testing requirements from the implementation plan
 - Extract specific test scenarios mentioned in the issue
 - Note any special testing requirements (edge cases, error conditions, etc.)
 
 ### 2. Run CMake Tests (C tests)
+
 // turbo
+
 ```bash
 cd /home/ed/NEP/build
 ctest --output-on-failure
 ```
+
 **Expected:** All C tests pass. Tests include LZ4 compression tests and UDF handler tests.
 
 ### 3. Run Autotools Tests (C tests)
+
 // turbo
+
 ```bash
 cd /home/ed/NEP/build_autotools/test
 ./run_tests.sh
 ```
+
 **Expected:** All C tests pass with proper HDF5 plugin path configuration.
 
 ### 4. Run Fortran Tests (if built)
+
 // turbo
+
 ```bash
 cd /home/ed/NEP/build_autotools/ftest
 ./run_tests.sh
 ```
+
 **Expected:** All Fortran tests pass. Tests include nep compression tests.
 
 ### 5. Verify Test Coverage Requirements
+
 // turbo
+
 ```bash
 cd /home/ed/NEP/build
 # Generate coverage report
@@ -66,18 +79,23 @@ gcov -r ../src/*.c ../src/*.h
 coverage=$(gcov -r ../src/*.c | grep "Lines executed:" | awk '{sum += $3} END {print sum/NR}')
 echo "Coverage: $coverage%"
 ```
+
 **Expected:** Minimum 80% coverage for new/modified code as specified in issue requirements.
 
 ### 6. Check for Compiler Warnings
+
 ```bash
 cd /home/ed/NEP/build
 make clean
 make VERBOSE=1 2>&1 | grep -i "warning"
 ```
+
 **Expected:** No new warnings introduced. Review any warnings and fix if critical.
 
 ### 7. Report Results to GitHub Issue
+
 Post a summary comment on the GitHub issue with test results:
+
 - Test execution status (pass/fail)
 - Coverage percentage (meets requirements?)
 - Any warnings found
@@ -85,11 +103,11 @@ Post a summary comment on the GitHub issue with test results:
 
 ## Success Criteria
 
-✅ **CMake Tests**: All CTest tests pass (LZ4, UDF handlers)  
-✅ **Autotools C Tests**: All tests in test/run_tests.sh pass  
-✅ **Fortran Tests**: All tests in ftest/run_tests.sh pass (if Fortran enabled)  
-✅ **Test Coverage**: Minimum 80% coverage for new/modified code  
-✅ **Compiler Warnings**: No critical warnings introduced  
+✅ **CMake Tests**: All CTest tests pass (LZ4, UDF handlers)
+✅ **Autotools C Tests**: All tests in test/run_tests.sh pass
+✅ **Fortran Tests**: All tests in ftest/run_tests.sh pass (if Fortran enabled)
+✅ **Test Coverage**: Minimum 80% coverage for new/modified code
+✅ **Compiler Warnings**: No critical warnings introduced
 ✅ **GitHub Reporting**: Results posted to issue with clear status
 
 ## Troubleshooting

@@ -174,25 +174,26 @@ status = nf90_close(ncid)
 ### NetCDF External Types and Fortran Constants
 
 | NetCDF Type | Fortran 90 Constant | Bits |
-|-------------|---------------------|------|
-| byte        | NF90_BYTE          | 8    |
-| char        | NF90_CHAR          | 8    |
-| short       | NF90_SHORT         | 16   |
-| int         | NF90_INT           | 32   |
-| float       | NF90_FLOAT         | 32   |
-| double      | NF90_DOUBLE        | 64   |
-| ubyte       | NF90_UBYTE         | 8    |
-| ushort      | NF90_USHORT        | 16   |
-| uint        | NF90_UINT          | 32   |
-| int64       | NF90_INT64         | 64   |
-| uint64      | NF90_UINT64        | 64   |
-| string      | NF90_STRING        | -    |
+| ----------- | ------------------- | ---- |
+| byte        | NF90_BYTE           | 8    |
+| char        | NF90_CHAR           | 8    |
+| short       | NF90_SHORT          | 16   |
+| int         | NF90_INT            | 32   |
+| float       | NF90_FLOAT          | 32   |
+| double      | NF90_DOUBLE         | 64   |
+| ubyte       | NF90_UBYTE          | 8    |
+| ushort      | NF90_USHORT         | 16   |
+| uint        | NF90_UINT           | 32   |
+| int64       | NF90_INT64          | 64   |
+| uint64      | NF90_UINT64         | 64   |
+| string      | NF90_STRING         | -    |
 
 ## Variable I/O Flexibility
 
 The `NF90_PUT_VAR` and `NF90_GET_VAR` functions support flexible data access:
 
 ### Basic Usage
+
 ```fortran
 ! Write entire array
 status = nf90_put_var(ncid, varid, data_array)
@@ -202,6 +203,7 @@ status = nf90_get_var(ncid, varid, data_array)
 ```
 
 ### Subsetting with start/count
+
 ```fortran
 ! Write a subset starting at index (10,20) with size (5,10)
 status = nf90_put_var(ncid, varid, data_array, &
@@ -209,6 +211,7 @@ status = nf90_put_var(ncid, varid, data_array, &
 ```
 
 ### Strided Access
+
 ```fortran
 ! Read every other element
 status = nf90_get_var(ncid, varid, data_array, &
@@ -216,6 +219,7 @@ status = nf90_get_var(ncid, varid, data_array, &
 ```
 
 ### Mapped Access
+
 ```fortran
 ! Non-contiguous memory mapping
 status = nf90_put_var(ncid, varid, data_array, &
@@ -311,31 +315,37 @@ call MPI_Finalize(ierr)
 ## Best Practices
 
 ### 1. Always Check Return Status
+
 ```fortran
 if (status /= NF90_NOERR) call handle_error(status)
 ```
 
 ### 2. Close Files Explicitly
+
 ```fortran
 status = nf90_close(ncid)
 ```
 
 ### 3. Use NF90_SYNC for Critical Data
+
 ```fortran
 ! Ensure data is written to disk
 status = nf90_sync(ncid)
 ```
 
 ### 4. Minimize Define Mode Transitions
+
 Define all dimensions, variables, and attributes before entering data mode to avoid performance overhead.
 
 ### 5. Use Chunking for Large Arrays (NetCDF-4)
+
 ```fortran
 status = nf90_def_var(ncid, "data", NF90_FLOAT, dimids, varid, &
                       chunksizes=[100,100,1])
 ```
 
 ### 6. Enable Compression for Large Datasets
+
 ```fortran
 status = nf90_def_var(ncid, "data", NF90_FLOAT, dimids, varid, &
                       deflate_level=4, shuffle=.true.)

@@ -20,6 +20,7 @@ This Windsurf skill provides comprehensive knowledge of the NetCDF-C library arc
 ## When to Use
 
 Use this skill when:
+
 - Adding new features to NetCDF-C
 - Debugging format-specific issues
 - Understanding data flow through the library
@@ -49,6 +50,7 @@ To use this skill in Windsurf:
 ## Maintenance
 
 Update this skill when:
+
 - New dispatch tables are added
 - Major architectural changes occur
 - New storage backends are implemented

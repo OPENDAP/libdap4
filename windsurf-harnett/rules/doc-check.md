@@ -3,7 +3,9 @@ trigger: always_on
 ---
 
 # Documentation Check Rule
+
 Before planning any code changes:
+
 1. **Review Architecture & Design**: Check [docs/design.md](../../../docs/design.md) for system architecture, component interactions, and technical specifications.
 2. **Verify Requirements**: Consult [docs/prd.md](../../../docs/prd.md) to ensure changes align with product requirements, API specifications, and feature definitions.
 3. **Understand User Impact**: Read [docs/prfaq.md](../../../docs/prfaq.md) to consider how changes affect users, compatibility, and use cases.

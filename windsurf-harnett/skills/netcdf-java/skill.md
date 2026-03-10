@@ -1,9 +1,11 @@
 # NetCDF-Java Library
 
 ## Overview
+
 The netCDF-Java library is a 100% Java framework for reading and writing scientific data formats. It implements the Common Data Model (CDM), which is an abstract data model that merges netCDF, OPeNDAP, and HDF5 data models to create a unified API for accessing many types of scientific data.
 
 **Key Capabilities:**
+
 - Read netCDF-3, netCDF-4, HDF5, GRIB, BUFR, and many other scientific data formats
 - Write netCDF-3 files natively
 - Write netCDF-4 files via JNI to netCDF-C library
@@ -13,6 +15,7 @@ The netCDF-Java library is a 100% Java framework for reading and writing scienti
 - Scientific feature type support (grids, point data, radial data, etc.)
 
 ## Documentation and Resources
+
 - **GitHub Repository:** https://github.com/Unidata/netcdf-java
 - **Main Documentation:** https://docs.unidata.ucar.edu/netcdf-java/current/userguide/
 - **API Reference:** Available through Maven artifacts
@@ -24,20 +27,26 @@ The netCDF-Java library is a 100% Java framework for reading and writing scienti
 The CDM has three layers that build on each other:
 
 ### 1. Data Access Layer (Syntactic Layer)
+
 Handles data reading and writing through:
+
 - **NetcdfFile:** Read-only access to datasets
 - **NetcdfFiles:** Static methods for opening files
 - **IOServiceProvider:** Interface for format-specific implementations
 - **Variable, Dimension, Attribute, Group, Structure:** Metadata objects
 
 ### 2. Coordinate System Layer
+
 Identifies coordinates of data arrays:
+
 - General coordinate concepts for scientific data
 - Specialized georeferencing coordinate systems for Earth Science
 - CoordinateAxis and CoordinateSystem objects
 
 ### 3. Scientific Feature Types Layer
+
 Specialized methods for specific data types:
+
 - Grids
 - Point data
 - Radial data (radar, lidar)
@@ -52,21 +61,21 @@ Specialized methods for specific data types:
 // Open a NetCDF file
 try (NetcdfFile ncfile = NetcdfFiles.open(pathToFile)) {
     // File is automatically closed when try block exits
-    
+
     // Find a variable by name
     Variable v = ncfile.findVariable("temperature");
     if (v == null) {
         System.err.println("Variable not found");
         return;
     }
-    
+
     // Read all data from the variable
     Array data = v.read();
-    
+
     // Read a subset using section specification
     // Format: "dim1_start:dim1_end:dim1_stride, dim2_start:dim2_end, ..."
     Array subset = v.read("0:10:2, :, 5");
-    
+
 } catch (IOException e) {
     e.printStackTrace();
 }
@@ -81,23 +90,23 @@ try (NetcdfFile ncfile = NetcdfFiles.open(pathToFile)) {
         System.out.println("Variable: " + var.getFullName());
         System.out.println("  Type: " + var.getDataType());
         System.out.println("  Shape: " + Arrays.toString(var.getShape()));
-        
+
         // Get attributes
         for (Attribute attr : var.attributes()) {
             System.out.println("  Attribute: " + attr.getFullName() + " = " + attr.getValue());
         }
     }
-    
+
     // List dimensions
     for (Dimension dim : ncfile.getDimensions()) {
         System.out.println("Dimension: " + dim.getFullName() + " = " + dim.getLength());
     }
-    
+
     // Get global attributes
     for (Attribute attr : ncfile.getGlobalAttributes()) {
         System.out.println("Global: " + attr.getFullName() + " = " + attr.getValue());
     }
-    
+
 } catch (IOException e) {
     e.printStackTrace();
 }
@@ -136,6 +145,7 @@ for (int t = 0; t < shape3d[0]; t++) {
 ### Array Section Syntax
 
 NetCDF-Java uses Fortran 90 array section syntax with zero-based indexing:
+
 - `":"` - all elements in dimension
 - `"start:end"` - elements from start to end (inclusive)
 - `"start:end:stride"` - elements with stride
@@ -144,6 +154,7 @@ NetCDF-Java uses Fortran 90 array section syntax with zero-based indexing:
 ## NetCDF Markup Language (NcML)
 
 NcML is an XML representation of netCDF metadata that can:
+
 - Describe netCDF file structure (similar to CDL)
 - Modify existing datasets (add/change attributes, variables)
 - Create virtual datasets through aggregation
@@ -155,7 +166,7 @@ NcML is an XML representation of netCDF metadata that can:
 <?xml version="1.0" encoding="UTF-8"?>
 <netcdf xmlns="http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2">
   <attribute name="title" value="Modified Dataset" />
-  
+
   <variable name="temperature">
     <attribute name="units" value="Celsius" />
     <attribute name="long_name" value="Air Temperature" />
@@ -166,6 +177,7 @@ NcML is an XML representation of netCDF metadata that can:
 ### NcML Aggregation
 
 NcML supports several aggregation types:
+
 - **joinExisting:** Concatenate along existing dimension
 - **joinNew:** Create new dimension for aggregation
 - **union:** Combine variables from multiple files
@@ -216,6 +228,7 @@ NetCDF-Java automatically handles compressed files (.Z, .zip, .gzip, .gz, .bz2) 
 ## File Format Support
 
 The library can read many formats through IOServiceProvider implementations:
+
 - NetCDF-3 (classic and 64-bit offset)
 - NetCDF-4 (HDF5-based)
 - HDF4 and HDF5
@@ -259,6 +272,7 @@ dependencies {
 ## ToolsUI Application
 
 ToolsUI is a graphical application for browsing and debugging NetCDF files:
+
 - Download: `toolsUI.jar` from netCDF-Java downloads page
 - Run: `java -Xmx1g -jar toolsUI.jar`
 - Features: Browse metadata, view data, test coordinate systems, debug IOSPs
@@ -284,6 +298,7 @@ ToolsUI is a graphical application for browsing and debugging NetCDF files:
 ## Integration with THREDDS
 
 The THREDDS Data Server (TDS) is built on top of netCDF-Java and provides:
+
 - Remote data access via OPeNDAP, WCS, WMS, HTTP
 - Catalog services for dataset discovery
 - Aggregation and virtual dataset support
@@ -298,6 +313,7 @@ The THREDDS Data Server (TDS) is built on top of netCDF-Java and provides:
 ## When to Use NetCDF-Java
 
 Use netCDF-Java when you need to:
+
 - Read scientific data in Java applications
 - Support multiple file formats with a single API
 - Work with remote datasets (OPeNDAP, HTTP, S3)

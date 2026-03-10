@@ -22,6 +22,7 @@ This Windsurf skill provides comprehensive knowledge of OPeNDAP (Open-source Pro
 ## When to Use
 
 Use this skill when:
+
 - Accessing remote scientific data via OPeNDAP URLs
 - Writing programs that use OPeNDAP services
 - Constructing constraint expressions for data subsetting

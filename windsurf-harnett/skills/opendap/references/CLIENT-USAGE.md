@@ -15,20 +15,20 @@ int main() {
     size_t start[3] = {0, 0, 0};
     size_t count[3] = {1, 10, 10};
     float data[10][10];
-    
+
     char *url = "http://test.opendap.org/dap/data/nc/sst.mnmean.nc.gz";
-    
+
     status = nc_open(url, NC_NOWRITE, &ncid);
     if (status != NC_NOERR) {
         fprintf(stderr, "Error opening URL: %s\n", nc_strerror(status));
         return 1;
     }
-    
+
     status = nc_inq_varid(ncid, "sst", &varid);
     status = nc_get_vara_float(ncid, varid, start, count, &data[0][0]);
-    
+
     printf("Data at [0][5][5]: %f\n", data[5][5]);
-    
+
     nc_close(ncid);
     return 0;
 }
@@ -63,30 +63,30 @@ for (int i = 0; i < nvars; i++) {
 program read_opendap
   use netcdf
   implicit none
-  
+
   integer :: ncid, varid, status
   integer :: start(3), count(3)
   real :: data(10, 10, 1)
   character(len=256) :: url
-  
+
   url = "http://test.opendap.org/dap/data/nc/sst.mnmean.nc.gz"
-  
+
   status = nf90_open(url, NF90_NOWRITE, ncid)
   if (status /= NF90_NOERR) then
     print *, "Error: ", trim(nf90_strerror(status))
     stop
   end if
-  
+
   status = nf90_inq_varid(ncid, "sst", varid)
-  
+
   start = [1, 1, 1]
   count = [10, 10, 1]
   status = nf90_get_var(ncid, varid, data, start=start, count=count)
-  
+
   print *, "Sample value: ", data(5, 5, 1)
-  
+
   status = nf90_close(ncid)
-  
+
 end program read_opendap
 ```
 
@@ -96,26 +96,26 @@ end program read_opendap
 program time_series
   use netcdf
   implicit none
-  
+
   integer :: ncid, varid, status, nt
   real, allocatable :: temp(:)
   character(len=256) :: url
-  
+
   url = "http://server.org/data.nc?temp[0:1000][45][90]"
-  
+
   status = nf90_open(url, NF90_NOWRITE, ncid)
   status = nf90_inq_varid(ncid, "temp", varid)
   status = nf90_inq_dimlen(ncid, 1, nt)
-  
+
   allocate(temp(nt))
   status = nf90_get_var(ncid, varid, temp)
-  
+
   print *, "Time series length: ", nt
   print *, "Mean: ", sum(temp)/nt
-  
+
   deallocate(temp)
   status = nf90_close(ncid)
-  
+
 end program time_series
 ```
 
@@ -306,6 +306,7 @@ for var_name in var_names:
 ### Using .netrc
 
 Create `~/.netrc`:
+
 ```
 machine server.org
 login username
@@ -313,6 +314,7 @@ password mypassword
 ```
 
 Set permissions:
+
 ```bash
 chmod 600 ~/.netrc
 ```

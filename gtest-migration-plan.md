@@ -5,15 +5,18 @@
 This plan covers only the CppUnit-based tests that are built and run through the autotools `make check` path.
 
 Included:
+
 - `unit-tests/Makefile.am`
 - `http_dap/unit-tests/Makefile.am`
 - `d4_ce/unit-tests/Makefile.am`
 
 Excluded:
+
 - CMake test wiring
 - The autotest integration suites in `tests/Makefile.am`, except for shared test support such as `libtest-types.a`
 
 The current autotools CppUnit surface is 63 test binaries:
+
 - 59 in `unit-tests/`
 - 3 in `http_dap/unit-tests/`
 - 1 in `d4_ce/unit-tests/`
@@ -67,6 +70,7 @@ Use one consistent conversion pattern across the tree:
 - `setUp()` / `tearDown()` to `SetUp()` / `TearDown()`
 
 Preserve test logic during the framework switch:
+
 - keep fixture setup and cleanup behavior unchanged
 - keep environment-variable setup unchanged
 - keep test asset paths and generated `test_config.h` usage unchanged
@@ -79,16 +83,19 @@ The batches are ordered to establish the GoogleTest pattern on low-risk tests fi
 ### Batch 0: Build Skeleton And Proof Of Pattern
 
 Purpose:
+
 - land the autotools GoogleTest dependency wiring
 - add the shared runner/helper
 - prove the conversion style in one test per subtree
 
 Tests:
+
 - `unit-tests/BaseTypeTest`
 - `d4_ce/unit-tests/D4ConstraintEvaluatorTest`
 - `http_dap/unit-tests/HTTPConnectTest`
 
 Exit criteria:
+
 - `autoreconf -fi`
 - `./configure`
 - each converted binary builds and runs under `make check`
@@ -96,10 +103,12 @@ Exit criteria:
 ### Batch 1: Scalar And Utility Core Tests
 
 Purpose:
+
 - convert low-coupling tests with straightforward fixtures and assertions
 - validate the assertion mapping and runner helper
 
 Tests:
+
 - `unit-tests/RegexTest`
 - `unit-tests/ByteTest`
 - `unit-tests/MIMEUtilTest`
@@ -118,6 +127,7 @@ Tests:
 - `unit-tests/Float64Test`
 
 Why this batch:
+
 - mostly local assertions
 - little shared state
 - low filesystem and network sensitivity
@@ -125,9 +135,11 @@ Why this batch:
 ### Batch 2: Core DAP2 Model And Container Tests
 
 Purpose:
+
 - convert the core object-model tests that exercise the library boundaries described in `docs/deep-dive-codex.md`
 
 Tests:
+
 - `unit-tests/ArrayTest`
 - `unit-tests/GridTest`
 - `unit-tests/AttrTableTest`
@@ -141,15 +153,18 @@ Tests:
 - `unit-tests/BaseTypeTest`
 
 Why this batch:
+
 - still mostly in-process
 - builds confidence in fixture conversion before older legacy-style tests are touched
 
 ### Batch 3: Legacy CppUnit Pattern Tests
 
 Purpose:
+
 - convert the older tests that still use the historic `*T` naming and older fixture style
 
 Tests:
+
 - `unit-tests/marshT`
 - `unit-tests/arrayT`
 - `unit-tests/attrTableT`
@@ -161,15 +176,18 @@ Tests:
 - `unit-tests/util_mitTest`
 
 Why this batch:
+
 - these are likely to require the most mechanical cleanup
 - separating them avoids slowing down the cleaner modern conversions
 
 ### Batch 4: Parser, XML, And Translation Tests
 
 Purpose:
+
 - migrate the tests that depend on XML parsing, generated config, and DAP2/DAP4 translation paths
 
 Tests:
+
 - `unit-tests/DDXParserTest`
 - `unit-tests/D4ParserSax2Test`
 - `unit-tests/DMRTest`
@@ -186,15 +204,18 @@ Tests:
 - `unit-tests/D4AsyncDocTest`
 
 Why this batch:
+
 - these tests are tightly tied to the DAP4 parsing and translation flows
 - they are a good midpoint between simple unit tests and stream/cache tests
 
 ### Batch 5: Marshaller, Stream, And Concurrency Tests
 
 Purpose:
+
 - convert tests that exercise serialization, streaming, and threading behavior
 
 Tests:
+
 - `unit-tests/MarshallerTest`
 - `unit-tests/MarshallerFutureTest`
 - `unit-tests/MarshallerThreadTest`
@@ -204,46 +225,56 @@ Tests:
 - `unit-tests/chunked_iostream_test`
 
 Why this batch:
+
 - more sensitive to fatal vs non-fatal assertions
 - often easier to debug after the general fixture strategy is already proven
 
 ### Batch 6: Cache And Local Filesystem Tests
 
 Purpose:
+
 - convert tests that create, clean, or inspect local cache state and generated files
 
 Tests:
+
 - `unit-tests/RCReaderTest`
 - `unit-tests/DAPCache3Test`
 - `unit-tests/ResponseCacheTest` if re-enabled for autotools
 - `http_dap/unit-tests/HTTPCacheTest`
 
 Why this batch:
+
 - fixture cleanup matters
 - stale temp files and cache locks can hide migration bugs
 
 ### Batch 7: HTTP And External-Environment Tests
 
 Purpose:
+
 - convert the most environment-sensitive tests last
 
 Tests:
+
 - `http_dap/unit-tests/HTTPConnectTest`
 - `http_dap/unit-tests/HTTPThreadsConnectTest`
 
 Why this batch:
+
 - network behavior and remote state can obscure framework migration issues
 - these should be used only after the helper, fixture, and assertion patterns are stable
 
 ### Batch 8: Optional Resource-Heavy Test
 
 Purpose:
+
 - convert the largest and least convenient test only after the main migration is complete
 
 Tests:
+
 - `unit-tests/BigArrayTest`
 
 Why this batch:
+
 - already optional under autotools
 - high runtime and resource cost
 - poor candidate for early validation

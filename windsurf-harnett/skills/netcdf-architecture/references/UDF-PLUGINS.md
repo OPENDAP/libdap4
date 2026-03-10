@@ -32,7 +32,7 @@ A UDF plugin consists of three main components:
 typedef struct NC_Dispatch {
     int model;              /* NC_FORMATX_UDF0 through NC_FORMATX_UDF9 */
     int dispatch_version;   /* Must be NC_DISPATCH_VERSION */
-    
+
     /* Function pointers for all netCDF operations (~70 total) */
     int (*create)(...);
     int (*open)(...);
@@ -53,7 +53,7 @@ typedef struct NC_Dispatch {
 static NC_Dispatch my_dispatcher = {
     NC_FORMATX_UDF0,        /* Use UDF slot 0 */
     NC_DISPATCH_VERSION,    /* Current ABI version */
-    
+
     NC_RO_create,           /* Read-only: use predefined function */
     my_open,                /* Custom open function */
     NC_RO_redef,
@@ -64,7 +64,7 @@ static NC_Dispatch my_dispatcher = {
     NC_RO_set_fill,
     my_inq_format,
     my_inq_format_extended,
-    
+
     /* Inquiry functions - can use NC4_* defaults */
     NC4_inq,
     NC4_inq_type,
@@ -81,7 +81,7 @@ static NC_Dispatch my_dispatcher = {
     NC4_inq_type_equal,
     NC4_inq_user_type,
     NC4_inq_typeid,
-    
+
     /* Variable I/O */
     my_get_vara,
     NC_RO_put_vara,         /* Read-only */
@@ -89,24 +89,24 @@ static NC_Dispatch my_dispatcher = {
     NC_RO_put_vars,
     NCDEFAULT_get_varm,     /* Use default mapped implementation */
     NC_RO_put_varm,
-    
+
     /* Attributes */
     NC4_get_att,
     NC_RO_put_att,
-    
+
     /* Dimensions */
     NC4_inq_dim,
     NC_RO_def_dim,
     NC4_inq_unlimdims,
     NC_RO_rename_dim,
-    
+
     /* Variables */
     NC4_inq_var_all,
     NC_RO_def_var,
     NC_RO_rename_var,
     NC4_var_par_access,
     NC_RO_def_var_fill,
-    
+
     /* NetCDF-4 features not supported */
     NC_NOTNC4_show_metadata,
     NC_NOTNC4_inq_grps,
@@ -147,6 +147,7 @@ Use these for operations your format doesn't support:
 **File**: `libdispatch/dreadonly.c`
 
 Returns `NC_EPERM` (operation not permitted):
+
 - `NC_RO_create` - File creation
 - `NC_RO_redef` - Enter define mode
 - `NC_RO__enddef` - Leave define mode
@@ -168,6 +169,7 @@ Returns `NC_EPERM` (operation not permitted):
 **File**: `libdispatch/dnotnc4.c`
 
 Returns `NC_ENOTNC4` (not a NetCDF-4 file):
+
 - `NC_NOTNC4_def_grp` - Define group
 - `NC_NOTNC4_rename_grp` - Rename group
 - `NC_NOTNC4_def_compound` - Define compound type
@@ -186,6 +188,7 @@ Returns `NC_ENOTNC4` (not a NetCDF-4 file):
 **File**: `libdispatch/dvar.c`
 
 Generic implementations built on simpler operations:
+
 - `NCDEFAULT_get_vars` - Strided read using `get_vara`
 - `NCDEFAULT_put_vars` - Strided write using `put_vara`
 - `NCDEFAULT_get_varm` - Mapped read using `get_vars`
@@ -196,6 +199,7 @@ Generic implementations built on simpler operations:
 **Files**: `libsrc4/*.c`
 
 Use internal metadata model for inquiry operations:
+
 - `NC4_inq` - Inquire about file
 - `NC4_inq_type` - Inquire about type
 - `NC4_inq_dimid` - Get dimension ID
@@ -234,17 +238,17 @@ extern NC_Dispatch my_dispatcher;
 int my_plugin_init(void)
 {
     int ret;
-    
+
     /* Register dispatch table with magic number */
-    ret = nc_def_user_format(NC_UDF0 | NC_NETCDF4, 
+    ret = nc_def_user_format(NC_UDF0 | NC_NETCDF4,
                              &my_dispatcher,
                              "MYFMT");
     if (ret != NC_NOERR)
         return ret;
-    
+
     /* Additional initialization if needed */
     /* ... */
-    
+
     return NC_NOERR;
 }
 ```
@@ -261,7 +265,7 @@ int my_open(const char *path, int mode, int basepe, size_t *chunksizehintp,
     /* 2. Populate internal metadata structures */
     /* 3. Store format-specific data in NC->dispatchdata */
     /* 4. Return NC_NOERR on success */
-    
+
     return NC_NOERR;
 }
 ```
@@ -274,7 +278,7 @@ int my_close(int ncid, void *v)
     /* 1. Clean up resources */
     /* 2. Close file handles */
     /* 3. Free format-specific data */
-    
+
     return NC_NOERR;
 }
 ```
@@ -287,7 +291,7 @@ int my_abort(int ncid, void *v)
     /* 1. Discard any pending changes */
     /* 2. Clean up resources */
     /* 3. Close file handles */
-    
+
     return NC_NOERR;
 }
 ```
@@ -322,7 +326,7 @@ int my_get_vara(int ncid, int varid, const size_t *start,
     /* 2. Read data from your format */
     /* 3. Convert to requested memory type if needed */
     /* 4. Copy to value buffer */
-    
+
     return NC_NOERR;
 }
 ```
@@ -332,6 +336,7 @@ int my_get_vara(int ncid, int varid, const size_t *start,
 ### Unix/Linux/macOS
 
 **Makefile**:
+
 ```makefile
 CC = gcc
 CFLAGS = -fPIC -I/usr/local/include
@@ -345,6 +350,7 @@ install:
 ```
 
 **Command line**:
+
 ```bash
 gcc -shared -fPIC -I/usr/local/include -o myplugin.so myplugin.c -lnetcdf
 ```
@@ -352,6 +358,7 @@ gcc -shared -fPIC -I/usr/local/include -o myplugin.so myplugin.c -lnetcdf
 ### Windows
 
 **Command line**:
+
 ```batch
 cl /LD /I"C:\netcdf\include" myplugin.c /link /LIBPATH:"C:\netcdf\lib" netcdf.lib
 ```
@@ -386,16 +393,16 @@ extern int my_plugin_init(void);
 int main() {
     int ret;
     NC_Dispatch *disp;
-    
+
     /* Test initialization */
     ret = my_plugin_init();
     assert(ret == NC_NOERR);
-    
+
     /* Verify registration */
     ret = nc_inq_user_format(NC_UDF0, &disp, NULL);
     assert(ret == NC_NOERR);
     assert(disp == &my_dispatcher);
-    
+
     printf("Plugin tests passed\n");
     return 0;
 }
@@ -409,21 +416,21 @@ int main() {
 
 int main() {
     int ncid, ret;
-    
+
     /* Initialize and register plugin */
     my_plugin_init();
-    
+
     /* Test file operations */
     ret = nc_open("testfile.dat", NC_UDF0, &ncid);
     if (ret != NC_NOERR) {
         fprintf(stderr, "Open failed: %s\n", nc_strerror(ret));
         return 1;
     }
-    
+
     /* Test operations */
     int format;
     nc_inq_format(ncid, &format);
-    
+
     nc_close(ncid);
     printf("Integration test passed\n");
     return 0;
@@ -433,6 +440,7 @@ int main() {
 ### RC File Testing
 
 Create `.ncrc`:
+
 ```ini
 NETCDF.UDF0.LIBRARY=/path/to/myplugin.so
 NETCDF.UDF0.INIT=my_plugin_init
@@ -440,6 +448,7 @@ NETCDF.UDF0.MAGIC=MYFMT
 ```
 
 Test automatic loading:
+
 ```c
 int main() {
     /* Plugin loads automatically during nc_initialize() */
@@ -462,11 +471,13 @@ export NC_LOG_LEVEL=3
 ### Check Symbol Exports
 
 **Unix**:
+
 ```bash
 nm -D libmyplugin.so | grep init
 ```
 
 **Windows**:
+
 ```batch
 dumpbin /EXPORTS myplugin.dll
 ```
@@ -483,16 +494,19 @@ gdb ./test_program
 ### Common Issues
 
 **Plugin not loaded**:
+
 - Check RC file syntax
 - Verify both LIBRARY and INIT are present
 - Use absolute path for LIBRARY
 
 **Init function not found**:
+
 - Ensure function is not static
 - Check function name matches INIT key
 - Verify symbol is exported
 
 **ABI version mismatch**:
+
 - Recompile against current netCDF-C headers
 - Check `NC_DISPATCH_VERSION` value
 
@@ -511,6 +525,7 @@ gdb ./test_program
 ### How They Work
 
 When `nc_open()` is called without a specific format flag:
+
 1. File's first bytes are read
 2. Compared against all registered magic numbers
 3. If match found, corresponding UDF dispatcher is used

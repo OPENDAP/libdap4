@@ -3,8 +3,8 @@ name: netcdf-architecture
 description: Understanding the NetCDF-C library architecture including dispatch tables, format implementations (NetCDF-3, HDF5, Zarr, DAP), I/O layers, and metadata structures. Use when working on NetCDF-C codebase, debugging format issues, adding new features, or understanding how different storage backends interact.
 metadata:
   author: netcdf-analysis
-  version: "1.0"
-  date: "2026-01-14"
+  version: '1.0'
+  date: '2026-01-14'
 ---
 
 # NetCDF-C Architecture Skill
@@ -28,21 +28,21 @@ Every file format implements the same `NC_Dispatch` interface containing ~70 fun
 struct NC_Dispatch {
     int model;                    // Format identifier
     int dispatch_version;         // Compatibility version
-    
+
     // File operations
     int (*create)(...);
     int (*open)(...);
     int (*close)(...);
-    
+
     // Variable I/O
     int (*get_vara)(...);
     int (*put_vara)(...);
-    
+
     // Metadata operations
     int (*def_dim)(...);
     int (*def_var)(...);
     int (*put_att)(...);
-    
+
     // ... ~60 more function pointers
 };
 ```
@@ -94,6 +94,7 @@ typedef struct NC {
 **Purpose**: Provides unified API facade and routes calls to appropriate format implementations.
 
 **Critical Files**:
+
 - `ddispatch.c` - Dispatch initialization, global state management
 - `dfile.c` - File open/create orchestration, format detection
 - `dvarget.c`, `dvarput.c` - Variable I/O entry points
@@ -101,12 +102,14 @@ typedef struct NC {
 - `dinfermodel.c` - Format detection (magic numbers, URLs)
 
 **Format Detection Logic**:
+
 1. Check magic number (first 8 bytes) - includes user-defined magic numbers
 2. Parse URL scheme (http://, s3://, file://)
 3. Analyze mode flags (NC_NETCDF4, NC_CLASSIC_MODEL, NC_UDF0-NC_UDF9, etc.)
 4. Select appropriate dispatch table (built-in or user-defined)
 
 **Utilities**:
+
 - `ncjson.c` - JSON parsing
 - `ncuri.c` - URI parsing
 - `dauth.c` - Authentication (includes RC file parsing for UDF configuration)
@@ -124,6 +127,7 @@ typedef struct NC {
 **Metadata Structure**: `NC3_INFO` - Simple arrays with hashmaps
 
 **Critical Files**:
+
 - `nc3dispatch.c` (517 lines) - Dispatch table implementation
 - `nc3internal.c` - Metadata management
 - `ncx.c` (743KB) - XDR-like encoding/decoding for all data types
@@ -132,12 +136,14 @@ typedef struct NC {
 - `var.c`, `dim.c` - Variable and dimension management
 
 **I/O Abstraction (ncio layer)**:
+
 - `posixio.c` - Standard POSIX file I/O
 - `memio.c` - In-memory files
 - `httpio.c` - HTTP byte-range access
 - `s3io.c` - S3 object storage
 
 **Data Structures**:
+
 ```c
 typedef struct NC3_INFO {
     NC_dimarray dims;      // Dimensions
@@ -158,6 +164,7 @@ typedef struct NC3_INFO {
 **Note**: This is NOT a complete implementation - it delegates to HDF5 or Zarr backends.
 
 **Files**:
+
 - `nc4dispatch.c` - Minimal initialization
 - `nc4attr.c`, `nc4dim.c`, `nc4var.c` - Enhanced metadata operations
 - `nc4grp.c` - Group operations
@@ -173,6 +180,7 @@ typedef struct NC3_INFO {
 **Metadata Structure**: `NC_FILE_INFO_T` with hierarchical groups
 
 **Critical Files**:
+
 - `hdf5dispatch.c` (152 lines) - Dispatch table
 - `nc4hdf.c` (87KB) - Core HDF5 integration
 - `hdf5open.c` (99KB) - File opening, metadata reading from HDF5
@@ -182,6 +190,7 @@ typedef struct NC3_INFO {
 - `H5FDhttp.c` - HTTP virtual file driver for byte-range access
 
 **Key Data Structures**:
+
 ```c
 typedef struct NC_FILE_INFO_T {
     NC_GRP_INFO_T* root_grp;    // Root group
@@ -214,6 +223,7 @@ typedef struct NC_VAR_INFO_T {
 **Metadata Structure**: `NC_FILE_INFO_T` (same as HDF5)
 
 **Critical Files**:
+
 - `zdispatch.c` (323 lines) - Dispatch table
 - `zarr.c` - Main Zarr implementation
 - `zsync.c` (84KB) - Data synchronization, chunk management
@@ -222,6 +232,7 @@ typedef struct NC_VAR_INFO_T {
 - `zxcache.c` - Chunk caching
 
 **Storage Abstraction (zmap)**:
+
 - `zmap.c` - Abstract storage interface
 - `zmap_file.c` - Filesystem backend
 - `zmap_s3sdk.c` - AWS S3 backend
@@ -236,12 +247,14 @@ typedef struct NC_VAR_INFO_T {
 **Dispatch Table**: `NCD2_dispatcher` in `ncd2dispatch.c`
 
 **Components**:
+
 - `ncd2dispatch.c` (85KB) - Dispatch implementation
 - `getvara.c` (44KB) - Maps NetCDF API to DAP requests
 - `constraints.c` - DAP constraint expression handling
 - `cache.c` - Response caching
 
 **OC2 Library** (OPeNDAP Client in `oc2/`):
+
 - `oc.c` (62KB) - Main client implementation
 - `dapparse.c`, `daplex.c` - DDS/DAS parsing
 - `ocdata.c` - Data retrieval and decoding
@@ -254,6 +267,7 @@ typedef struct NC_VAR_INFO_T {
 **Dispatch Table**: `NCD4_dispatcher` in `ncd4dispatch.c`
 
 **Critical Files**:
+
 - `ncd4dispatch.c` (24KB) - Dispatch table
 - `d4parser.c` (49KB) - DMR (Dataset Metadata Response) parsing
 - `d4data.c` - Binary data handling
@@ -270,6 +284,7 @@ typedef struct NC_VAR_INFO_T {
 **Dispatch Tables**: Registered via `nc_def_user_format()` or RC file configuration
 
 **Key Features**:
+
 - **Plugin loading**: Automatic loading from RC files during `nc_initialize()`
 - **Magic number detection**: Optional automatic format detection
 - **Shared libraries**: .so (Unix) or .dll (Windows) plugins
@@ -284,6 +299,7 @@ typedef struct NC_VAR_INFO_T {
 **Registration Methods**:
 
 **Programmatic Registration**:
+
 ```c
 // Register UDF in slot 0 with magic number
 nc_def_user_format(NC_UDF0 | NC_NETCDF4, &my_dispatcher, "MYFORMAT");
@@ -294,6 +310,7 @@ nc_inq_user_format(NC_UDF0, &disp, magic_buffer);
 ```
 
 **RC File Configuration** (`.ncrc`):
+
 ```ini
 NETCDF.UDF0.LIBRARY=/usr/local/lib/libmyformat.so
 NETCDF.UDF0.INIT=myformat_init
@@ -301,6 +318,7 @@ NETCDF.UDF0.MAGIC=MYFORMAT
 ```
 
 **Plugin Loading Process**:
+
 1. RC files parsed during `nc_initialize()`
 2. Library loaded via `dlopen()` (Unix) or `LoadLibrary()` (Windows)
 3. Init function located via `dlsym()` or `GetProcAddress()`
@@ -309,6 +327,7 @@ NETCDF.UDF0.MAGIC=MYFORMAT
 6. Plugin remains loaded for process lifetime
 
 **RC File Search Order**:
+
 1. `$HOME/.ncrc`
 2. `$HOME/.daprc`
 3. `$HOME/.dodsrc`
@@ -317,10 +336,12 @@ NETCDF.UDF0.MAGIC=MYFORMAT
 6. `$CWD/.dodsrc`
 
 **UDF Slot Modes**:
+
 - **UDF0, UDF1**: Original slots, mode flags in lower 16 bits
 - **UDF2-UDF9**: Extended slots, mode flags in upper 16 bits
 
 **Pre-defined Dispatch Functions** (for plugin use):
+
 - `NC_RO_*` - Read-only stubs (return `NC_EPERM`)
 - `NC_NOTNC4_*` - Not-NetCDF-4 stubs (return `NC_ENOTNC4`)
 - `NC_NOTNC3_*` - Not-NetCDF-3 stubs (return `NC_ENOTNC3`)
@@ -329,6 +350,7 @@ NETCDF.UDF0.MAGIC=MYFORMAT
 - `NC4_*` - NetCDF-4 inquiry functions using internal metadata model
 
 **Critical Files**:
+
 - `libdispatch/dfile.c` - UDF dispatch table storage (`UDF0_dispatch_table`, etc.)
 - `libdispatch/ddispatch.c` - `nc_def_user_format()`, `nc_inq_user_format()`
 - `libdispatch/drc.c` - RC file parsing for UDF configuration
@@ -338,13 +360,14 @@ NETCDF.UDF0.MAGIC=MYFORMAT
 - `libdispatch/dnotnc*.c` - Pre-defined not-supported stubs
 
 **Example Plugin Structure**:
+
 ```c
 #include "netcdf_dispatch.h"
 
 static NC_Dispatch my_dispatcher = {
     NC_FORMATX_UDF0,        // Use UDF slot 0
     NC_DISPATCH_VERSION,    // Current ABI version
-    
+
     NC_RO_create,           // Read-only: use predefined function
     my_open,                // Custom open function
     my_close,               // Custom close function
@@ -354,19 +377,21 @@ static NC_Dispatch my_dispatcher = {
 
 // Initialization function - must be exported
 int my_plugin_init(void) {
-    return nc_def_user_format(NC_UDF0 | NC_NETCDF4, 
-                              &my_dispatcher, 
+    return nc_def_user_format(NC_UDF0 | NC_NETCDF4,
+                              &my_dispatcher,
                               "MYFMT");
 }
 ```
 
 **Security Considerations**:
+
 - RC files must specify absolute library paths
 - Plugins execute arbitrary code in process space
 - Only load trusted libraries
 - Library verifies dispatch table ABI version
 
 **Common Use Cases**:
+
 - Proprietary or specialized file formats
 - Custom storage backends
 - Format translation layers
@@ -417,18 +442,21 @@ Return ncid to user
 ### 3. Metadata Access
 
 All formats use indexed structures for fast lookup:
+
 - **NC3**: Arrays with `NC_hashmap`
 - **NC4/HDF5/Zarr**: `NCindex` (hash-based index)
 
 ## Important Headers
 
 ### Public API
+
 - `netcdf.h` - Main public API
 - `netcdf_par.h` - Parallel I/O extensions
 - `netcdf_filter.h` - Filter API
 - `netcdf_mem.h` - In-memory file API
 
 ### Internal Interfaces
+
 - `ncdispatch.h` - Dispatch layer interfaces
 - `netcdf_dispatch.h` - NC_Dispatch structure definition
 - `nc.h` - NC structure and common functions
@@ -439,6 +467,7 @@ All formats use indexed structures for fast lookup:
 ## When to Use This Skill
 
 Use this skill when:
+
 - **Adding new features** to NetCDF-C
 - **Debugging format-specific issues** (e.g., HDF5 vs Zarr differences)
 - **Understanding data flow** through the library
@@ -465,18 +494,21 @@ Use this skill when:
 ### Common Tasks
 
 **Adding a new API function**:
+
 1. Add to `include/netcdf.h`
 2. Add entry point in `libdispatch/`
 3. Add to `NC_Dispatch` structure
 4. Implement in each format's dispatch table
 
 **Adding a new format**:
+
 1. Create new library directory
 2. Implement `NC_Dispatch` table
 3. Register in `libdispatch/ddispatch.c`
 4. Add format detection logic
 
 **Debugging I/O issues**:
+
 1. Enable logging: `export NETCDF_LOG_LEVEL=5`
 2. Check dispatch table selection
 3. Trace through format-specific implementation

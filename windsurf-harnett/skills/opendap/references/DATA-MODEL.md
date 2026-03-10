@@ -13,54 +13,63 @@ Base types represent atomic data values.
 ### Numeric Types
 
 **Byte** (8-bit signed integer):
+
 ```
 Byte temperature;
 Range: -128 to 127
 ```
 
 **Int16** (16-bit signed integer):
+
 ```
 Int16 elevation;
 Range: -32,768 to 32,767
 ```
 
 **Int32** (32-bit signed integer):
+
 ```
 Int32 station_id;
 Range: -2,147,483,648 to 2,147,483,647
 ```
 
 **Int64** (64-bit signed integer, DAP4 only):
+
 ```
 Int64 timestamp;
 Range: -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807
 ```
 
 **UInt16** (16-bit unsigned integer):
+
 ```
 UInt16 count;
 Range: 0 to 65,535
 ```
 
 **UInt32** (32-bit unsigned integer):
+
 ```
 UInt32 pixel_value;
 Range: 0 to 4,294,967,295
 ```
 
 **UInt64** (64-bit unsigned integer, DAP4 only):
+
 ```
 UInt64 file_size;
 Range: 0 to 18,446,744,073,709,551,615
 ```
 
 **Float32** (32-bit floating point):
+
 ```
 Float32 temperature;
 IEEE 754 single precision
 ```
 
 **Float64** (64-bit floating point):
+
 ```
 Float64 latitude;
 IEEE 754 double precision
@@ -69,12 +78,14 @@ IEEE 754 double precision
 ### String Types
 
 **String** (variable-length character string):
+
 ```
 String station_name;
 String comment;
 ```
 
 **URL** (Uniform Resource Locator):
+
 ```
 URL data_source;
 ```
@@ -88,11 +99,13 @@ Constructor types build complex data structures from base types and other constr
 Multi-dimensional arrays of any base or constructor type.
 
 **Syntax**:
+
 ```
 Type name[dim1][dim2]...[dimN];
 ```
 
 **Examples**:
+
 ```
 Float32 temperature[time=100][lat=50][lon=80];
 Int16 elevation[y=1000][x=1000];
@@ -100,12 +113,14 @@ String station_names[stations=25];
 ```
 
 **Characteristics**:
+
 - Fixed dimensions at creation
 - Homogeneous (all elements same type)
 - Zero-indexed
 - Rectangular (not ragged)
 
 **Subsetting**:
+
 ```
 temperature[0:10][20:30][40:50]  # Hyperslab
 temperature[5][25][60]            # Single element
@@ -117,6 +132,7 @@ temperature[0:2:100]              # With stride
 Named collection of variables (like a C struct).
 
 **Syntax**:
+
 ```
 Structure {
     Type1 field1;
@@ -126,6 +142,7 @@ Structure {
 ```
 
 **Example**:
+
 ```
 Structure {
     Float64 latitude;
@@ -136,11 +153,13 @@ Structure {
 ```
 
 **Characteristics**:
+
 - Heterogeneous (different types)
 - Named fields
 - Accessed via dot notation: `station.latitude`
 
 **Use Cases**:
+
 - Grouping related metadata
 - Station information
 - Coordinate pairs
@@ -151,6 +170,7 @@ Structure {
 Ordered collection of instances (like database rows).
 
 **Syntax**:
+
 ```
 Sequence {
     Type1 field1;
@@ -160,6 +180,7 @@ Sequence {
 ```
 
 **Example**:
+
 ```
 Sequence {
     Float64 time;
@@ -170,12 +191,14 @@ Sequence {
 ```
 
 **Characteristics**:
+
 - Variable length (number of instances unknown)
 - Each instance is a Structure
 - Can be filtered with selection expressions
 - Accessed one instance at a time
 
 **Nested Sequences**:
+
 ```
 Sequence {
     Int32 station_id;
@@ -190,6 +213,7 @@ Sequence {
 ```
 
 **Filtering**:
+
 ```
 ?cast&cast.temperature>20
 ?cast.depth,cast.temperature&cast.depth<100
@@ -200,6 +224,7 @@ Sequence {
 Array with coordinate map vectors (georeferenced data).
 
 **Syntax**:
+
 ```
 Grid {
     Array:
@@ -212,6 +237,7 @@ Grid {
 ```
 
 **Example**:
+
 ```
 Grid {
     Array:
@@ -224,12 +250,14 @@ Grid {
 ```
 
 **Characteristics**:
+
 - Combines array with coordinate variables
 - Maps provide independent variable values
 - Common for geospatial data
 - Subsetting returns both array and corresponding maps
 
 **Use Cases**:
+
 - Gridded climate data
 - Satellite imagery
 - Model output
@@ -244,16 +272,17 @@ DAP4 adds several enhancements to the data model.
 Hierarchical organization of variables (like HDF5 groups).
 
 **Example**:
+
 ```
 Group {
     Float64 time[time=100];
-    
+
     Group heights {
         Float32 delta_time[time=100];
         Float64 lat_ph[time=100];
         Float64 lon_ph[time=100];
     }
-    
+
     Group quality {
         Int32 qa_flag[time=100];
     }
@@ -261,6 +290,7 @@ Group {
 ```
 
 **Access**:
+
 ```
 ?/gt3r/heights/lat_ph
 ?/gt3r/quality/qa_flag
@@ -271,11 +301,13 @@ Group {
 Binary data of unknown structure.
 
 **Syntax**:
+
 ```
 Opaque name;
 ```
 
 **Use Cases**:
+
 - Embedded images
 - Compressed data
 - Proprietary formats
@@ -286,6 +318,7 @@ Opaque name;
 Named integer constants (like C enum).
 
 **Syntax**:
+
 ```
 Enum quality_flag {
     good = 0,
@@ -296,6 +329,7 @@ Enum quality_flag {
 ```
 
 **Usage**:
+
 ```
 quality_flag qa[time=100];
 ```
@@ -305,12 +339,14 @@ quality_flag qa[time=100];
 ### From NetCDF-3 to OPeNDAP
 
 **NetCDF-3 Dimensions** → **OPeNDAP Array dimensions**:
+
 ```
 NetCDF: float temp(time, lat, lon);
 OPeNDAP: Float32 temp[time][lat][lon];
 ```
 
 **NetCDF-3 Variables** → **OPeNDAP Grid** (if coordinate variables exist):
+
 ```
 NetCDF:
   float sst(time, lat, lon);
@@ -328,6 +364,7 @@ OPeNDAP:
 ```
 
 **NetCDF-3 Attributes** → **OPeNDAP DAS**:
+
 ```
 NetCDF: sst:units = "degC";
 OPeNDAP DAS:
@@ -339,18 +376,21 @@ OPeNDAP DAS:
 ### From HDF5 to OPeNDAP
 
 **HDF5 Groups** → **DAP4 Groups**:
+
 ```
 HDF5: /group1/subgroup/dataset
 DAP4: /group1/subgroup/dataset
 ```
 
 **HDF5 Datasets** → **OPeNDAP Arrays**:
+
 ```
 HDF5: Dataset "temperature" [100][50][80]
 DAP4: Float32 temperature[100][50][80];
 ```
 
 **HDF5 Compound Types** → **OPeNDAP Structures**:
+
 ```
 HDF5 Compound:
   {
@@ -370,6 +410,7 @@ OPeNDAP:
 ### From Relational Database to OPeNDAP
 
 **Database Table** → **OPeNDAP Sequence**:
+
 ```
 SQL Table:
   CREATE TABLE stations (
@@ -389,6 +430,7 @@ OPeNDAP:
 ```
 
 **SQL WHERE** → **OPeNDAP Selection**:
+
 ```
 SQL: SELECT * FROM stations WHERE lat > 0;
 OPeNDAP: ?stations&stations.lat>0
@@ -396,19 +438,19 @@ OPeNDAP: ?stations&stations.lat>0
 
 ## Data Type Sizes
 
-| Type | Size (bytes) | Notes |
-|------|--------------|-------|
-| Byte | 1 | Signed |
-| Int16 | 2 | Signed |
-| Int32 | 4 | Signed |
-| Int64 | 8 | Signed, DAP4 only |
-| UInt16 | 2 | Unsigned |
-| UInt32 | 4 | Unsigned |
-| UInt64 | 8 | Unsigned, DAP4 only |
-| Float32 | 4 | IEEE 754 |
-| Float64 | 8 | IEEE 754 |
-| String | Variable | Null-terminated |
-| URL | Variable | Null-terminated |
+| Type    | Size (bytes) | Notes               |
+| ------- | ------------ | ------------------- |
+| Byte    | 1            | Signed              |
+| Int16   | 2            | Signed              |
+| Int32   | 4            | Signed              |
+| Int64   | 8            | Signed, DAP4 only   |
+| UInt16  | 2            | Unsigned            |
+| UInt32  | 4            | Unsigned            |
+| UInt64  | 8            | Unsigned, DAP4 only |
+| Float32 | 4            | IEEE 754            |
+| Float64 | 8            | IEEE 754            |
+| String  | Variable     | Null-terminated     |
+| URL     | Variable     | Null-terminated     |
 
 ## Attributes
 
@@ -417,6 +459,7 @@ Attributes provide metadata about variables and datasets.
 ### Attribute Types
 
 All base types can be used as attributes:
+
 ```
 String long_name "Sea Surface Temperature";
 String units "degrees_C";
@@ -428,6 +471,7 @@ Int32 missing_value -9999;
 ### Attribute Containers
 
 **Variable attributes**:
+
 ```
 sst {
     String long_name "Sea Surface Temperature";
@@ -437,6 +481,7 @@ sst {
 ```
 
 **Global attributes**:
+
 ```
 NC_GLOBAL {
     String title "COADS 1-degree Enhanced";
@@ -448,6 +493,7 @@ NC_GLOBAL {
 ### Standard Attributes
 
 **CF Conventions**:
+
 - `units` - Physical units
 - `long_name` - Descriptive name
 - `standard_name` - CF standard name
@@ -492,7 +538,7 @@ Dataset {
             Float64 lower_right_lon;
         } bounds;
     } metadata;
-    
+
     Grid {
         Array:
             UInt16 radiance[line=1000][pixel=1000];
@@ -516,7 +562,7 @@ Dataset {
             Float32 lat[lat=180];
             Float32 lon[lon=360];
     } air_temperature;
-    
+
     Grid {
         Array:
             Float32 u_wind[time=365][level=50][lat=180][lon=360];

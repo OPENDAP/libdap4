@@ -23,12 +23,14 @@ This workflow breaks down a version's work into 1-5 detailed sprint planning doc
 ## Scope
 
 **Do:**
+
 - Analyze the specified version's work and break it into 1-5 sprints
 - Identify technical gaps and missing requirements across all sprints
 - Create version-specific GitHub Project with sprint breakdown and task organization
 - Ensure logical dependency flow between sprints
 
 **Don't:**
+
 - Modify other versions not specified
 - Implement code (save for `/plan` workflow)
 - Create more than 5 sprints for a version
@@ -41,18 +43,22 @@ This workflow breaks down a version's work into 1-5 detailed sprint planning doc
 ## Project Creation Process
 
 ### Naming Convention
+
 Version-specific projects follow the pattern: `NEP Version {version} - {brief description}`
 
 **Examples:**
+
 - "NEP Version 1.6.0 - GeoTIFF metadata to CF"
 - "NEP Version 1.7.0 - GRIB2 write support"
 - "NEP Version 1.8.0 - Performance optimization"
 
 ### Project Structure
+
 Each version-specific project includes:
+
 - **Organization-level project** (not repository-specific)
 - **Standard fields**: Version, Sprint, Task Status, Priority, Component
-- **Field values**: 
+- **Field values**:
   - Version: "{version}" for all issues
   - Sprint: 1-5 for respective sprint issues
   - Task Status: Backlog → In Progress → Review → Done
@@ -61,6 +67,7 @@ Each version-specific project includes:
 - **Issues**: Main version issue + individual sprint issues
 
 ### Implementation Tools
+
 - **GitHub CLI** (`gh project create`) for automated creation
 - **GitHub API** as fallback for advanced configuration
 - **Manual creation** option when automation fails
@@ -114,6 +121,7 @@ Each version-specific project includes:
 ### 5. Ask 3-6 numbered clarifying questions
 
 **Focus areas:**
+
 - Sprint organization and dependency flow based on user-provided description
 - Ambiguous requirements or missing technical details from the initial prompt
 - Error handling strategies and NetCDF error code mapping
@@ -123,6 +131,7 @@ Each version-specific project includes:
 - Integration with native format libraries (NCEPLIBS-g2, libgeotiff, NASA CDF)
 
 **Question format:**
+
 - Provide suggested answers, labeled with letters, so questions can be answered with just a letter
 - Recommend an answer and provide justification for your recommendation
 - Ask minimum 3 questions, maximum 6 questions
@@ -132,6 +141,7 @@ Each version-specific project includes:
 **Wait for user responses before proceeding**
 
 **If answers are incomplete:**
+
 - Ask follow-up questions to clarify
 - Maximum 2 rounds of questions total
 
@@ -147,6 +157,7 @@ Each version-specific project includes:
 - Link related Issues/PRs to project items for implementation
 
 **Important:**
+
 - **DO NOT** add proposed code changes to project item descriptions
 - Code implementation should be tracked in separate Issues/PRs linked to project items
 - If example code is presented by the user, that may be included in item descriptions
@@ -154,6 +165,7 @@ Each version-specific project includes:
 ### 7. Update related documentation (if needed)
 
 **Only update if clarifications revealed:**
+
 - Architecture changes → Update `docs/design.md`
 - Functional requirement changes → Update `docs/prd.md`
 - NC_Dispatch or UDF handler design notes → Add to `docs/design.md`
@@ -163,6 +175,7 @@ Each version-specific project includes:
 ### 8. Verify completion criteria
 
 **Confirm all items are satisfied:**
+
 - ✓ Version work is broken into 1-5 logical sprints
 - ✓ Each sprint has a coherent theme and clear deliverables
 - ✓ Dependencies between sprints are documented
@@ -183,35 +196,42 @@ Each version-specific project includes:
 ## Error Handling
 
 **If version not found:**
+
 - Report "Version {version} not found in GitHub Project"
 - List available versions from project
 - Stop workflow
 
 **If version is v1.5.0 or earlier:**
+
 - Report "Historical versions (v1.5.0 and earlier) are not supported"
 - Stop workflow
 
 **If version scope is too large for 5 sprints:**
+
 - Report: "Version {version} work is too complex for 5 sprints"
 - Suggest breaking into multiple versions or reducing scope
 - Ask user how to proceed
 
 **If version has insufficient work for 1 sprint:**
+
 - Report: "Version {version} has minimal work, consider combining with another version"
 - Ask user if they want to proceed with a single sprint
 
 **If dependencies not met:**
+
 - Report: "Previous version dependencies not satisfied"
 - List missing dependencies
 - Ask user if they want to proceed anyway
 
 **If GitHub Project creation fails:**
+
 - Report specific GitHub API errors for project creation
 - Suggest manual project creation with the naming convention "NEP Version {version} - {brief description}"
 - Provide field configuration details for manual setup
 - Stop workflow
 
 **If GitHub Project operations fail:**
+
 - Report specific GitHub API errors
 - Suggest manual project updates as fallback
 - Continue with documentation updates if possible

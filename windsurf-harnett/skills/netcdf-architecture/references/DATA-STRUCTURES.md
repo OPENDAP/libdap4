@@ -22,6 +22,7 @@ typedef struct NC {
 **Purpose**: Common handle for all open files, regardless of format.
 
 **Key Fields**:
+
 - `ext_ncid`: The ID returned to users, managed globally
 - `int_ncid`: Format-specific ID (e.g., NetCDF-3 has its own ID space)
 - `dispatch`: Points to format-specific function table
@@ -33,7 +34,7 @@ typedef struct NC {
 struct NC_Dispatch {
     int model;                       // NC_FORMATX_NC3, NC_FORMATX_NC4, etc.
     int dispatch_version;            // Must match NC_DISPATCH_VERSION
-    
+
     // File operations
     int (*create)(const char *path, int cmode, ...);
     int (*open)(const char *path, int mode, ...);
@@ -42,16 +43,16 @@ struct NC_Dispatch {
     int (*sync)(int);
     int (*abort)(int);
     int (*close)(int, void *);
-    
+
     // Metadata operations
     int (*def_dim)(int, const char *, size_t, int *);
     int (*def_var)(int, const char *, nc_type, int, const int *, int *);
     int (*put_att)(int, int, const char *, nc_type, size_t, const void *, nc_type);
-    
+
     // Variable I/O
     int (*get_vara)(int, int, const size_t *, const size_t *, void *, nc_type);
     int (*put_vara)(int, int, const size_t *, const size_t *, const void *, nc_type);
-    
+
     // ... ~60 more function pointers
 };
 ```
@@ -59,6 +60,7 @@ struct NC_Dispatch {
 **Location**: `include/netcdf_dispatch.h:34-256`
 
 **Implementations**:
+
 - `NC3_dispatcher` - NetCDF-3 (libsrc/nc3dispatch.c)
 - `HDF5_dispatcher` - HDF5 (libhdf5/hdf5dispatch.c)
 - `NCZ_dispatcher` - Zarr (libnczarr/zdispatch.c)
@@ -77,11 +79,11 @@ typedef struct NC3_INFO {
     size_t begin_rec;      // Offset to record variables
     size_t recsize;        // Size of one record
     size_t numrecs;        // Number of records written
-    
+
     NC_dimarray dims;      // Dimensions
     NC_attrarray attrs;    // Global attributes
     NC_vararray vars;      // Variables
-    
+
     ncio* nciop;          // I/O provider
     int flags;            // File flags
     int old_format;       // CDF-1, CDF-2, or CDF-5
@@ -110,7 +112,7 @@ typedef struct NC_var {
     nc_type type;         // Data type
     size_t len;           // Product of dimension sizes
     size_t begin;         // Offset in file
-    
+
     // For record variables
     size_t* shape;        // Cached dimension sizes
     size_t* dsizes;       // Cached dimension products
@@ -153,7 +155,7 @@ typedef struct NC_FILE_INFO_T {
     int no_write;                    // Read-only flag
     int ignore_att_convention;       // Ignore _NCProperties
     void* format_file_info;          // Format-specific data (HDF5/Zarr)
-    
+
     // Provenance tracking
     char* provenance;
     int provenance_size;
@@ -169,13 +171,13 @@ typedef struct NC_GRP_INFO_T {
     NC_OBJ hdr;                      // Name and ID
     struct NC_FILE_INFO_T* nc4_info; // Parent file
     struct NC_GRP_INFO_T* parent;    // Parent group (NULL for root)
-    
+
     NCindex* children;               // Child groups
     NCindex* dim;                    // Dimensions
     NCindex* att;                    // Attributes
     NCindex* type;                   // User-defined types
     NCindex* vars;                   // Variables
-    
+
     void* format_grp_info;           // Format-specific data
 } NC_GRP_INFO_T;
 ```
@@ -189,11 +191,11 @@ typedef struct NC_VAR_INFO_T {
     NC_OBJ hdr;                      // Name and ID
     char* alt_name;                  // Alternate name (for format differences)
     struct NC_GRP_INFO_T* container; // Parent group
-    
+
     size_t ndims;                    // Number of dimensions
     int* dimids;                     // Dimension IDs
     NC_DIM_INFO_T** dim;            // Dimension pointers
-    
+
     nc_bool_t is_new_var;           // Newly created
     nc_bool_t was_coord_var;        // Was a coordinate variable
     nc_bool_t became_coord_var;     // Became a coordinate variable
@@ -201,31 +203,31 @@ typedef struct NC_VAR_INFO_T {
     nc_bool_t attr_dirty;           // Attributes need rewriting
     nc_bool_t created;              // Already created in file
     nc_bool_t written_to;           // Has data been written
-    
+
     struct NC_TYPE_INFO* type_info; // Type information
     int atts_read;                  // Attributes read flag
     nc_bool_t meta_read;            // Metadata read flag
     nc_bool_t coords_read;          // Coordinates read flag
-    
+
     NCindex* att;                   // Attributes
-    
+
     nc_bool_t no_fill;              // No fill value
     void* fill_value;               // Fill value
-    
+
     size_t* chunksizes;             // Chunk sizes (if chunked)
     int storage;                    // NC_CHUNKED, NC_CONTIGUOUS, NC_COMPACT
     int endianness;                 // NC_ENDIAN_NATIVE, NC_ENDIAN_LITTLE, NC_ENDIAN_BIG
     int parallel_access;            // NC_COLLECTIVE or NC_INDEPENDENT
-    
+
     struct ChunkCache {
         size_t size;                // Cache size in bytes
         size_t nelems;              // Number of cache slots
         float preemption;           // Preemption policy
     } chunkcache;
-    
+
     int quantize_mode;              // Quantization mode
     int nsd;                        // Number of significant digits
-    
+
     void* format_var_info;          // Format-specific data
     void* filters;                  // Filter list
 } NC_VAR_INFO_T;
@@ -276,17 +278,17 @@ typedef struct NC_TYPE_INFO_T {
     nc_type nc_type_class;           // NC_VLEN, NC_COMPOUND, NC_OPAQUE, NC_ENUM
     void* format_type_info;          // Format-specific data
     int varsized;                    // Variable-sized flag
-    
+
     union {
         struct {
             NClist* enum_member;     // Enum members
             nc_type base_nc_typeid;  // Base type
         } e;
-        
+
         struct {
             NClist* field;           // Compound fields
         } c;
-        
+
         struct {
             nc_type base_nc_typeid;  // Base type
         } v;
@@ -360,7 +362,7 @@ typedef struct ncio {
     off_t offset;                   // Current offset
     size_t extent;                  // File extent
     size_t nciop_size;              // Provider-specific size
-    
+
     // Function pointers
     int (*rel)(ncio*, off_t, int);
     int (*get)(ncio*, off_t, size_t, int, void**);
@@ -369,7 +371,7 @@ typedef struct ncio {
     int (*filesize)(ncio*, off_t*);
     int (*pad_length)(ncio*, off_t);
     int (*close)(ncio*, int);
-    
+
     void* pvt;                      // Private data
 } ncio;
 ```
@@ -387,21 +389,21 @@ typedef struct NCglobalstate {
     char* tempdir;                  // Temporary directory
     char* home;                     // Home directory
     char* cwd;                      // Current working directory
-    
+
     struct NCRCinfo* rcinfo;        // RC file info
-    
+
     struct {
         size_t size;                // Chunk cache size
         size_t nelems;              // Number of elements
         float preemption;           // Preemption policy
     } chunkcache;
-    
+
     struct {
         int threshold;              // Alignment threshold
         int alignment;              // Alignment value
         int defined;                // Set flag
     } alignment;
-    
+
     struct {
         char* default_region;       // AWS region
         char* config_file;          // Config file path
@@ -409,7 +411,7 @@ typedef struct NCglobalstate {
         char* access_key_id;        // Access key
         char* secret_access_key;    // Secret key
     } aws;
-    
+
     NClist* pluginpaths;            // Filter plugin paths
 } NCglobalstate;
 ```
