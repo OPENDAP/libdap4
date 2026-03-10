@@ -1,4 +1,3 @@
-
 dnl -*- autoconf -*-
 dnl Process this file with autoconf to produce a configure script.
 
@@ -56,15 +55,6 @@ AC_DEFINE(CNAME, "libdap", [What sort of HTTP client is this?])
 AC_DEFINE_UNQUOTED(CVER, "$PACKAGE_VERSION", [Client version number])
 AC_DEFINE_UNQUOTED(DVR, "libdap/$PACKAGE_VERSION", [Client name and version combined])
 AC_SUBST(DVR)
-
-dnl This block of code can be removed since the DDS now only builds the v3.2 DDX.
-dnl jhrg 2/4/22
-dnl
-dnl Use one of these two blocks to build a DAP2 or DAP 3.2 DDX
-dnl AC_DEFINE(DAP2_DDX, 1, [Build the DAP 2 version of the DDX])
-dnl AC_SUBST(DAP2_DDX)
-dnl AC_DEFINE(DAP3_2_DDX, 1, [Build the DAP 3.2 version of the DDX])
-dnl AC_SUBST(DAP3_2_DDX)
 
 AS_IF([echo $PACKAGE_VERSION | grep -q '^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$'],
       [PACKAGE_MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's@^\([[0-9]]\)*\.\([[0-9]]*\)\.\([[0-9]]*\)-\([[0-9]]*\)$@\1@'`
@@ -197,17 +187,7 @@ AS_VERSION_COMPARE(["$bison_version"], ["3.0"],
 AC_MSG_RESULT([found version $bison_version])
 
 dnl Checks for header files.
-AC_HEADER_DIRENT
-# Use this once we can update to autoconf 2.70. jhrg 2/13/25 AC_CHECK_INCLUDES_DEFAULT
-AC_PROG_EGREP
-AC_CHECK_HEADERS([getopt.h limits.h locale.h])
-
-
-AC_HEADER_SYS_WAIT
-
-AC_CHECK_HEADERS_ONCE([fcntl.h malloc.h memory.h stddef.h stdlib.h string.h strings.h unistd.h pthread.h])
-AC_CHECK_HEADERS_ONCE([sys/param.h sys/time.h])
-AC_CHECK_HEADERS_ONCE([netinet/in.h])
+AC_CHECK_HEADERS_ONCE([stdlib.h string.h unistd.h pthread.h])
 
 dnl Do this because we have had a number of problems with the UUID header/library
 AC_CHECK_HEADERS([uuid/uuid.h],[found_uuid_uuid_h=true],[found_uuid_uuid_h=false])
@@ -215,13 +195,6 @@ AC_CHECK_HEADERS([uuid.h],[found_uuid_h=true],[found_uuid_h=false])
 
 AS_IF([test $found_uuid_uuid_h = true -o $found_uuid_h = true], [], [AC_MSG_ERROR([Could not find uuid.h])])
 
-dnl Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_C_INLINE
-AC_TYPE_SIZE_T
-AC_CHECK_MEMBERS([struct stat.st_blksize])
-AC_STRUCT_TM
-AC_C_VOLATILE
 AC_C_BIGENDIAN
 
 # This is used by the DMR tests which must choose the correct set of baselines
@@ -243,7 +216,7 @@ AS_IF([test "x$enable_runtime_endian_check" = "xyes"], [
 # Checks for library functions.
 
 dnl using AC_CHECK_FUNCS does not run macros from gnulib.
-AC_CHECK_FUNCS([alarm atexit bzero dup2 getcwd getpagesize localtime_r memmove memset pow putenv setenv strchr strerror strtol strtoul timegm mktime])
+AC_CHECK_FUNCS([atexit timegm mktime])
 
 gl_SOURCE_BASE(gl)
 gl_M4_BASE(gl/m4)
@@ -251,210 +224,8 @@ gl_MODULES(regex btyeswap)
 
 gl_INIT
 
-AC_ARG_WITH([curl], [AS_HELP_STRING([--with-curl=pfx],[curl/libcurl prefix; overrides other tests including pkgconfig])],
-            with_curl_prefix="$withval", with_curl_prefix="")
-
-dnl I wrote these checks because we need the *-config scripts to build, so
-dnl the AC_CHECK_LIB macro is not needed.
-
-curlprivatereq=
-curlprivatelibs=
-curl_set=
-
-if test -n "$with_curl_prefix" -a -x $with_curl_prefix/bin/curl-config
-then
-    AC_MSG_NOTICE([Using $with_curl_prefix as the curl prefix directory.])
-    CURL_LIBS="`$with_curl_prefix/bin/curl-config --libs`"
-    CURL_STATIC_LIBS=$CURL_LIBS
-    curlprivatelibs="`$with_curl_prefix/bin/curl-config --libs`"
-    CURL_CFLAGS="`$with_curl_prefix/bin/curl-config --cflags`"
-    curl_set="yes"
-elif test -n "$with_curl_prefix"
-then
-    AC_MSG_ERROR([You set the curl-prefix directory to $with_curl_prefix, but curl-config is not there.])
-fi
-
-if test -z "$curl_set"
-then
-    # curlprivatereq=
-    # curlprivatelibs=
-    libdap_pkgconfig_libcurl=yes
-    libdap_libcurl_module='libcurl >= 7.19.0'
-    PKG_CHECK_MODULES([CURL],[$libdap_libcurl_module],,
-        [libdap_pkgconfig_libcurl=no])
-    AC_MSG_CHECKING([for libcurl])
-
-    if test $libdap_pkgconfig_libcurl = 'yes'
-    then
-	   curlprivatereq=$libdap_libcurl_module
-	   CURL_STATIC_LIBS="`$PKG_CONFIG --static --libs libcurl`"
-	   AC_MSG_RESULT([yes; used pkg-config])
-    elif curl-config --version > /dev/null 2>&1
-    then
-	   version_libcurl=`curl-config --version | sed 's@libcurl \(.*\)@\1@'`
-
-       AS_VERSION_COMPARE(["$version_libcurl"], ["7.19.0"],
-                [AC_MSG_ERROR([I could not find libcurl 7.19.0 or newer, found $version_libcurl])])
-
-	   CURL_LIBS="`curl-config --libs`"
-	   CURL_STATIC_LIBS=$CURL_LIBS
-	   curlprivatelibs="`curl-config --libs`"
-	   CURL_CFLAGS="`curl-config --cflags`"
-	   AC_MSG_RESULT([yes; used curl-config and found version $version_libcurl])
-    else
-	   AC_MSG_ERROR([I could not find libcurl])
-    fi
-fi
-
-AC_SUBST([curlprivatereq])
-AC_SUBST([curlprivatelibs])
-AC_SUBST([CURL_LIBS])
-AC_SUBST([CURL_STATIC_LIBS])
-AC_SUBST([CURL_CFLAGS])
-
-dnl ******** new version, breaks the bes package step ********
-dnl jhrg 8/31/20
-dnl
-dnl AC_ARG_WITH(xml2,
-dnl     [AS_HELP_STRING([--with-xml2=PFX],[dnl         Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.])],
-dnl     [with_xml2_prefix="$withval"],
-dnl     [with_xml2_prefix=""])
-dnl
-dnl AS_IF([test -n "$with_xml2_prefix" -a ! -x $with_xml2_prefix/bin/xml2-config],
-dnl     [AC_MSG_ERROR([You set the libxml2 prefix directory to $with_xml2_prefix, but xml2-config is not there.])])
-dnl
-dnl xmlprivatereq=
-dnl xmlprivatelibs=
-dnl xml_set=
-dnl
-dnl # I changed this code so that it searches for libxml2 using xml2-config
-dnl # first, then pkg-config. This works more reliably when working on OSX
-dnl # given Apple's penchant for moving the lib. jhrg 8/25/20
-dnl
-dnl AS_IF([test -n "$with_xml2_prefix" -a -x $with_xml2_prefix/bin/xml2-config],
-dnl     [
-dnl     AC_MSG_NOTICE([Using $with_xml2_prefix as the libxml2 prefix directory.])
-dnl     XML2_LIBS="`$with_xml2_prefix/bin/xml2-config --libs`"
-dnl     XML2_CFLAGS="`$with_xml2_prefix/bin/xml2-config --cflags`"
-dnl     xml_set="yes"
-dnl     ])
-dnl
-dnl # Try using the xml2-config script.
-dnl
-dnl AS_IF([test -z "$xml_set" & xml2-config --version > /dev/null 2>&1],
-dnl     [
-dnl     AC_MSG_CHECKING([for libxml2])
-dnl    	version_libxml2=`xml2-config --version`
-dnl
-dnl     AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"],
-dnl         [AC_MSG_ERROR([I could not find libxml2 2.7.0 or newer])])
-dnl
-dnl    	XML2_LIBS="`xml2-config --libs`"
-dnl    	XML2_CFLAGS="`xml2-config --cflags`"
-dnl    	xmlprivatelibs="`xml2-config --libs `"
-dnl
-dnl    	# If XML2_CFLAGS does not have -I that ends in /libxml2, append that to
-dnl    	# the string bound to -I. Assume there is only on -I in XML2_CFLAGS. jhrg 8/25/20
-dnl    	AS_IF([echo $XML2_CFLAGS | grep -v -e '-I.*/libxml2'],
-dnl    	    [XML2_CFLAGS=`echo $XML2_CFLAGS | sed "s@\(-I.*\)@\1/libxml2/@g"`])
-dnl
-dnl    	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
-dnl    	xml_set=yes
-dnl    	])
-dnl
-dnl # If not found, try pkg-config
-dnl AS_IF([test -z "$xml_set"],
-dnl     [
-dnl     libdap_libxml2_module='libxml-2.0 >= 2.7.0'
-dnl     PKG_CHECK_MODULES([XML2], [libdap_libxml2_module],
-dnl         [libdap_pkgconfig_libxml2=yes],
-dnl         [libdap_pkgconfig_libxml2=no])
-dnl     AS_IF([test $libdap_pkgconfig_libxml2 = yes],
-dnl         [
-dnl         XML2_LIBS="`$PKG_CONFIG --libs libxml-2.0`"
-dnl         XML2_CFLAGS="`$PKG_CONFIG --cflags libxml-2.0`"
-dnl         AC_MSG_RESULT([yes; used pkg-config])
-dnl         xmlprivatereq=$libdap_libxml2_module
-dnl         xml_set=yes
-dnl         ],
-dnl         [
-dnl 	    AC_MSG_ERROR([I could not find xml2-config])
-dnl 	    ])
-dnl     ])
-dnl
-dnl AS_IF([test -z "xml_set"],
-dnl     [
-dnl     AC_MSG_ERROR([I could not find xml2-config])
-dnl     ])
-dnl
-dnl AC_SUBST([xmlprivatereq])
-dnl AC_SUBST([xmlprivatelibs])
-dnl AC_SUBST([XML2_LIBS])
-dnl AC_SUBST([XML2_CFLAGS])
-dnl
-dnl ******** end new, broken-for-the-bes version *********
-
-dnl Version of XML2 configuration from git commit 8624abec8e3d510508c3c97ac60082700995af2c
-dnl jhrg 8/31/20
-
-AC_ARG_WITH(xml2,[  --with-xml2=PFX   Prefix where libxml2 is installed (optional). This will override pkgconfig, etc.],
-            with_xml2_prefix="$withval", with_xml2_prefix="")
-
-xmlprivatereq=
-xmlprivatelibs=
-xml_set=
-
-if test -n "$with_xml2_prefix" -a -x $with_xml2_prefix/bin/xml2-config
-then
-    AC_MSG_NOTICE([Using $with_xml2_prefix as the libxml2 prefix directory.])
-    XML2_LIBS="`$with_xml2_prefix/bin/xml2-config --libs`"
-    dnl XML2_STATIC_LIBS=$XML2_LIBS
-    xmlprivatelibs="`$with_xml2_prefix/bin/xml2-config --libs`"
-    XML2_CFLAGS="`$with_xml2_prefix/bin/xml2-config --cflags`"
-    xml_set="yes"
-elif test -n "$with_xml2_prefix"
-then
-    AC_MSG_ERROR([You set the libxml2 prefix directory to $with_xml2_prefix, but xml2-config is not there.])
-fi
-
-if test -z "$xml_set"
-then
-libdap_pkgconfig_libxml2=yes
-libdap_libxml2_module='libxml-2.0 >= 2.7.0'
-PKG_CHECK_MODULES([XML2],[$libdap_libxml2_module], ,[libdap_pkgconfig_libxml2=no])
-AC_MSG_CHECKING([for libxml2])
-if test $libdap_pkgconfig_libxml2 = 'yes'
-then
-	xmlprivatereq=$libdap_libxml2_module
-	dnl XML2_STATIC_LIBS="`$PKG_CONFIG --static --libs libxml-2.0`"
-	XML2_LIBS="`$PKG_CONFIG --libs libxml-2.0`"
-	AC_MSG_RESULT([yes; used pkg-config])
-elif xml2-config --version > /dev/null 2>&1
-then
-	version_libxml2=`xml2-config --version`
-
-        AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"],
-                [AC_MSG_ERROR([I could not find libxml2 2.7.0 or newer])])
-
-	XML2_LIBS="`xml2-config --libs`"
-	dnl XML2_STATIC_LIBS=$XML2_LIBS
-	XML2_CFLAGS="`xml2-config --cflags`"
-	xmlprivatelibs="`xml2-config --libs `"
-	dnl `
-	AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
-else
-	AC_MSG_ERROR([I could not find xml2-config])
-fi
-fi
-
-AC_SUBST([xmlprivatereq])
-AC_SUBST([xmlprivatelibs])
-AC_SUBST([XML2_LIBS])
-dnl AC_SUBST([XML2_STATIC_LIBS])
-AC_SUBST([XML2_CFLAGS])
-
-dnl End old version of XML2 configuration. jhrg 8/31/20
-dnl ********
+LIBDAP_CHECK_CURL
+LIBDAP_CHECK_XML2
 
 dnl Check for the RHEL 8 requirement libtirpc and its headers.
 dnl jhrg 6/23/22
@@ -476,20 +247,20 @@ AC_CHECK_LIB([crypto], [OpenSSL_add_all_algorithms],
 	[CRYPTO_LIBS=""])
 AC_SUBST([CRYPTO_LIBS])
 
-# AM_PATH_CPPUNIT(1.12.0,
-# 	[AM_CONDITIONAL([CPPUNIT], [true])],
-#	[
-#	    PKG_CHECK_MODULES(CPPUNIT, [cppunit >= 1.12.0],
-#		[AM_CONDITIONAL([CPPUNIT], [true])],
-#		[AM_CONDITIONAL([CPPUNIT], [false])]
-#	    )
-#	]
-# )
+AC_ARG_ENABLE([cppunit],
+    [AS_HELP_STRING([--disable-cppunit], [Skip CppUnit detection and disable CppUnit-based tests (default: detect)])],
+    [],
+    [enable_cppunit=auto])
 
-AM_PATH_CPPUNIT(1.12.0,
-	[AM_CONDITIONAL([CPPUNIT], [true])],
-	[AM_CONDITIONAL([CPPUNIT], [false])]
-)
+AS_IF([test "x$enable_cppunit" = xno],
+      [CPPUNIT_CFLAGS=
+       CPPUNIT_LIBS=
+       AM_CONDITIONAL([CPPUNIT], [false])],
+      [AM_PATH_CPPUNIT(1.12.0,
+           [AM_CONDITIONAL([CPPUNIT], [true])],
+           [AM_CONDITIONAL([CPPUNIT], [false])])])
+AC_SUBST([CPPUNIT_CFLAGS])
+AC_SUBST([CPPUNIT_LIBS])
 
 DODS_DEBUG_OPTION
 
@@ -503,8 +274,10 @@ AC_ARG_ENABLE([asan],
 
 dnl Removed -fsanitize=undefined. jhrg 2/21/25
 
-ASAN_OPTIONS="-fsanitize=address -fno-omit-frame-pointer"
-CXX_FLAGS_CHECK([$ASAN_OPTIONS], [has_asan=yes], [has_asan=no])
+has_asan=no
+AS_IF([test x$enable_asan = xyes],
+      [ASAN_OPTIONS="-fsanitize=address -fno-omit-frame-pointer"
+       CXX_FLAGS_CHECK([$ASAN_OPTIONS], [has_asan=yes], [has_asan=no])])
 
 AS_IF([test x$enable_asan = xyes -a x$has_asan = xyes],
       [AC_MSG_NOTICE([Building Address Sanitizer version])
@@ -525,9 +298,9 @@ AS_IF([test x$enable_batest = xyes ],
 AC_ARG_ENABLE([leaks],
     [AS_HELP_STRING([--enable-leaks], [Run unit tests on OSX using the 'leaks' if available (default: no)])])
 
-# The 'leaks' tool on OSX can be used to test if a program leaks memory.
-# Look for 'leaks' and set LEAKS to it if found, else set it to 'no'
-AC_CHECK_PROG(LEAKS, [leaks], [leaks], [no])
+LEAKS=no
+AS_IF([test x$enable_leaks = xyes],
+      [AC_CHECK_PROG(LEAKS, [leaks], [leaks], [no])])
 
 AS_IF([test x$enable_leaks = xyes -a x$LEAKS != xno],
       [AC_MSG_NOTICE([Will run unit-tests using leaks])
@@ -553,18 +326,20 @@ AS_IF([test x$enable_developer = xyes],
 AC_ARG_ENABLE([coverage],
     [AS_HELP_STRING([--enable-coverage], [Build so tests emit coverage data and enable coverage target (default: no)])])
 
-AC_CHECK_LIB([gcov], [gcov_open], [GCOV_LIBS="-lgcov"], [GCOV_LIBS=])
-
-AS_IF([test x$enable_coverage = xyes && which gcov],
-      [AC_MSG_NOTICE([Building coverage version])
-       AM_CONDITIONAL([ENABLE_COVERAGE], [true])
-       AS_IF([gcov -help | grep LLVM],
-       	     [GCOVR_FLAGS=],
-	         [GCOVR_FLAGS="-k -e '.*Test.cc' -e '.*T.cc' -e '.*-test.cc'"
-	          LIBS="-lgcov $LIBS"])],
+GCOVR_FLAGS=
+AS_IF([test x$enable_coverage = xyes],
+      [AC_PATH_PROG([GCOV], [gcov], [no])
+       AS_IF([test "x$GCOV" != xno],
+             [AC_MSG_NOTICE([Building coverage version])
+              AM_CONDITIONAL([ENABLE_COVERAGE], [true])
+              AS_IF([$GCOV -help 2>&1 | grep -q LLVM],
+                    [GCOVR_FLAGS=],
+                    [GCOVR_FLAGS="-k -e '.*Test.cc' -e '.*T.cc' -e '.*-test.cc'"
+                     LIBS="-lgcov $LIBS"])],
+             [AC_MSG_NOTICE([Not building coverage version])
+              AC_MSG_NOTICE([Check that gcov is on your PATH])
+              AM_CONDITIONAL([ENABLE_COVERAGE], [false])])],
       [AC_MSG_NOTICE([Not building coverage version])
-       AS_IF([test x$enable_coverage = xyes],
-             [AC_MSG_NOTICE([Check that gcov is on your PATH])])
        AM_CONDITIONAL([ENABLE_COVERAGE], [false])])
 
 AC_SUBST([GCOVR_FLAGS])
