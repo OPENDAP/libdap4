@@ -139,10 +139,14 @@ public:
     MarshallerThread();
     virtual ~MarshallerThread();
 
+    /** @brief Returns the mutex guarding shared output state. */
     pthread_mutex_t &get_mutex() { return d_out_mutex; }
+    /** @brief Returns the condition variable used to signal child-thread completion. */
     pthread_cond_t &get_cond() { return d_out_cond; }
 
+    /** @brief Returns the current number of active child threads. */
     int &get_child_thread_count() { return d_child_thread_count; }
+    /** @brief Increments the active child-thread count. */
     void increment_child_thread_count() { ++d_child_thread_count; }
 
     void start_thread(void *(*thread)(void *arg), std::ostream &out, char *byte_buf, std::streamsize bytes_written);

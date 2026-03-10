@@ -34,6 +34,7 @@
 
 namespace libdap {
 
+/** @brief C-compatible signal handler function signature. */
 typedef void Sigfunc(int); // Plauger, 1992
 
 /** Singleton to handle signals. This class adapts the C-style function call

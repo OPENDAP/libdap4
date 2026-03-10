@@ -34,6 +34,7 @@ Foundation 51 Franklin Street, Suite 500, Boston, MA 02110-1335 USA.
 
 // #include <stdio.h>
 
+/** @brief GNU-style command-line option parser helper. */
 class GetOpt {
 private:
     /* The next char to be scanned in the option-element
@@ -92,6 +93,7 @@ public:
        Also, when `ordering' is RETURN_IN_ORDER,
        each non-option ARGV-element is returned here.  */
 
+    /// Argument value for the current option.
     char *optarg;
 
     /* Index in ARGV of the next element to be scanned.
@@ -105,18 +107,32 @@ public:
        Otherwise, `optind' communicates from one call to the next
        how much of ARGV has been scanned so far.  */
 
+    /// Index in `argv` of the next element to process.
     int optind;
 
     /* Callers store zero here to inhibit the error message
        for unrecognized options.  */
 
+    /// When zero, suppresses unknown-option diagnostics.
     int opterr;
 
+    /// Cached `argc` value for parser state.
     int nargc;
+    /// Cached `argv` value for parser state.
     char **nargv;
+    /// Option-specification string used by the parser.
     const char *noptstring;
 
+    /** @brief Build an option parser for one argv vector.
+     * @param argc Argument count.
+     * @param argv Argument vector.
+     * @param optstring Option definition string.
+     */
     GetOpt(int argc, char **argv, const char *optstring);
+
+    /** @brief Parse and return the next option token.
+     * @return Option character, `EOF` when parsing is complete, or `'?'` on error.
+     */
     int operator()(void);
 };
 

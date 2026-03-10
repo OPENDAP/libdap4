@@ -20,15 +20,16 @@ Use existing Doxygen settings from `doxy.conf` exactly as-is.
 **Documentation Style Rules**
 
 1. Add Doxygen comments in headers (`.h`, `.hh`) directly above public method declarations. Document in header by default; use implementation comments only for complex algorithm/side-effect details.
-2. Prefer this form:
+2. Insert a blank line between a new documentation comment and the preceding method declaration if there is no blank line already.
+3. Prefer this form:
    - `@brief` one-sentence behavior summary.
    - Follow with a paragraph-level detailed description (behavior, constraints, side effects, preconditions/postconditions as needed).
    - `@param` for each parameter.
    - `@return` when non-void.
    - `@throw` when exceptions are part of method contract.
-3. Keep wording behavior-focused, not implementation-focused.
-4. For overloads, document each overload’s distinct contract.
-5. For inherited overrides with identical behavior, use concise comments and rely on inherited docs only where it is semantically correct.
+4. Keep wording behavior-focused, not implementation-focused.
+5. For overloads, document each overload’s distinct contract.
+6. For inherited overrides with identical behavior, use concise comments and rely on inherited docs only where it is semantically correct.
 
 **Per-Stage Workflow (repeat for every stage)**
 

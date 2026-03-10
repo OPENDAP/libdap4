@@ -45,8 +45,11 @@ using namespace std;
 
 namespace libdap {
 
+/** @brief Sequence of ancillary resources associated with a primary entry. */
 typedef vector<Resource> ResourceVector;
+/** @brief Mutable iterator over a `ResourceVector`. */
 typedef ResourceVector::iterator ResourceVectorIter;
+/** @brief Constant iterator over a `ResourceVector`. */
 typedef ResourceVector::const_iterator ResourceVectorCIter;
 
 /** Maintain a database of AIS resources. Groups of AIS resources are

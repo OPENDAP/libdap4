@@ -42,6 +42,9 @@ namespace libdap {
 class SignalHandlerRegisteredErr : public Error {
 
 public:
+    /** @brief Build a cache signal-handler registration error with details.
+     * @param msg Additional context for the registration failure.
+     */
     SignalHandlerRegisteredErr(const string &msg) : Error() {
         _error_code = unknown_error;
         _error_message = "";
