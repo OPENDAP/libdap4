@@ -1,4 +1,6 @@
 {
+  // See https://code.visualstudio.com/docs/editor/settings for more information about this file.
+  // This file can be edited to chnage prefix and PATH. jhrg 3//10/2
   "prefix": "/Users/jimg/src/opendap/hyrax_git/build",
   "PATH": "${config:prefix}/bin:${config:prefix}/deps/bin:${env:PATH}",
   "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",

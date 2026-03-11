@@ -36,6 +36,10 @@ repos:
           )
       - id: check-yaml
       - id: check-json
+        exclude: |
+          (?x)(
+            ^(\.vscode)/
+          )
       - id: mixed-line-ending
         exclude: |
           (?x)(
