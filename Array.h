@@ -191,6 +191,7 @@ public:
 
     /** @brief Storage layout and filter metadata for direct-I/O reads. */
     struct var_storage_info {
+        bool has_filled_chunks;                  ///< Whether this array has chunks that only contain filled values.
         string filter;                           ///< Filter pipeline description.
         vector<unsigned int> deflate_levels;     ///< Deflate levels per filter stage.
         vector<size_t> chunk_dims;               ///< Chunk dimensions in row-major order.
@@ -507,8 +508,14 @@ public:
     void set_var_storage_info(const var_storage_info &my_vs_info);
 
     // The following methods are for the applications that care about storage size.
-    // By default, the storage_size is set to be 0(we may need to set it to the total number of bytes). 
+
+    /** @brief Returns the ratio of logical size to the real storage size for this array. */
     float get_storage_size_ratio() {return storage_size_ratio;}
+
+    /** 
+     * @brief set the ratio of the logical size to the real storage size for this array. 
+     * @param the ratio of the logical size to the real storage size for this array.
+     */
     void set_storage_size_ratio(float sr) {storage_size_ratio = sr;}
 };
 
