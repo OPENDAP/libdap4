@@ -198,7 +198,6 @@ public:
         vector<var_chunk_info_t> var_chunk_info; ///< Per-chunk metadata records.
     };
 
-
 private:
     D4Maps *d_maps = nullptr;
 
@@ -510,13 +509,13 @@ public:
     // The following methods are for the applications that care about storage size.
 
     /** @brief Returns the ratio of logical size to the real storage size for this array. */
-    float get_storage_size_ratio() {return storage_size_ratio;}
+    float get_storage_size_ratio() { return storage_size_ratio; }
 
-    /** 
-     * @brief set the ratio of the logical size to the real storage size for this array. 
+    /**
+     * @brief set the ratio of the logical size to the real storage size for this array.
      * @param the ratio of the logical size to the real storage size for this array.
      */
-    void set_storage_size_ratio(float sr) {storage_size_ratio = sr;}
+    void set_storage_size_ratio(float sr) { storage_size_ratio = sr; }
 };
 
 } // namespace libdap
