@@ -509,7 +509,7 @@ public:
     // The following methods are for the applications that care about storage size.
 
     /** @brief Returns the ratio of logical size to the real storage size for this array. */
-    float get_storage_size_ratio() { return storage_size_ratio; }
+    float get_storage_size_ratio() const { return storage_size_ratio; }
 
     /**
      * @brief set the ratio of the logical size to the real storage size for this array.
