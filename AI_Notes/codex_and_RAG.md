@@ -1,3 +1,5 @@
+Prompt: When I used codex with the codex vscode plugin, is RAG used to locate relevant parts of the code in a particular repo (assume I'm always working from a github repo)?
+
 Not in the way the public docs describe it.
 
 For the **VS Code extension / local IDE workflow**, OpenAI documents Codex as getting context from:

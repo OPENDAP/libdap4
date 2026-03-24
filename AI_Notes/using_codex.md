@@ -1,3 +1,5 @@
+Prompt: How do I used Codex for software engineering? I am looking for a software engineering process that will use 'skills' and an AGENTS.md in combination with other things. I'd like references to existing texts and also direct guidance.
+
 Yes — the process you’re describing is a strong way to use Codex.
 
 The clean pattern is:
