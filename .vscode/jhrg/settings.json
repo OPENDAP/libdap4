@@ -14,5 +14,15 @@
   "terminal.integrated.env.linux": {
     "prefix": "${config:prefix}",
     "PATH": "${config:PATH}"
-  }
+  },
+  "cSpell.words": [
+    "asan",
+    "autoreconf",
+    "autotools",
+    "ctest",
+    "Doxygen",
+    "libdap",
+    "TESTSUITEFLAGS",
+    "worktree"
+  ]
 }
