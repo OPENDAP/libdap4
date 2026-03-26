@@ -312,3 +312,113 @@ dnl  AC_SUBST([DAP_CLIENT_STATIC_LIBS])
 dnl  AC_SUBST([DAP_SERVER_STATIC_LIBS])
 dnl  AC_SUBST([DAP_ROOT])
 ])
+
+# LIBDAP_CHECK_CURL()
+# Resolve libcurl flags, preferring pkg-config and falling back to curl-config.
+AC_DEFUN([LIBDAP_CHECK_CURL],
+[
+  AC_ARG_WITH([curl],
+    [AS_HELP_STRING([--with-curl=PFX],[curl/libcurl prefix; overrides pkg-config and curl-config fallback])],
+    [with_curl_prefix="$withval"],
+    [with_curl_prefix=""])
+
+  curlprivatereq=
+  curlprivatelibs=
+  libdap_libcurl_module='libcurl >= 7.19.0'
+
+  AC_MSG_CHECKING([for libcurl])
+
+  AS_IF([test -n "$with_curl_prefix"],
+    [
+      CURL_CONFIG="$with_curl_prefix/bin/curl-config"
+      AS_IF([test ! -x "$CURL_CONFIG"],
+        [AC_MSG_ERROR([You set the curl prefix directory to $with_curl_prefix, but curl-config is not there.])])
+
+      CURL_LIBS=`$CURL_CONFIG --libs`
+      CURL_CFLAGS=`$CURL_CONFIG --cflags`
+      curlprivatelibs=$CURL_LIBS
+      AC_MSG_RESULT([yes; used $CURL_CONFIG])
+    ],
+    [
+      PKG_CHECK_MODULES([CURL],[$libdap_libcurl_module],
+        [
+          curlprivatereq=$libdap_libcurl_module
+          curlprivatelibs=`$PKG_CONFIG --static --libs libcurl`
+          AC_MSG_RESULT([yes; used pkg-config])
+        ],
+        [
+          AC_PATH_PROG([CURL_CONFIG], [curl-config], [no])
+          AS_IF([test "x$CURL_CONFIG" = xno],
+            [AC_MSG_ERROR([I could not find libcurl])])
+
+          version_libcurl=`$CURL_CONFIG --version | sed 's@libcurl \(.*\)@\1@'`
+          AS_VERSION_COMPARE(["$version_libcurl"], ["7.19.0"],
+            [AC_MSG_ERROR([I could not find libcurl 7.19.0 or newer, found $version_libcurl])])
+
+          CURL_LIBS=`$CURL_CONFIG --libs`
+          CURL_CFLAGS=`$CURL_CONFIG --cflags`
+          curlprivatelibs=$CURL_LIBS
+          AC_MSG_RESULT([yes; used curl-config and found version $version_libcurl])
+        ])
+    ])
+
+  AC_SUBST([curlprivatereq])
+  AC_SUBST([curlprivatelibs])
+  AC_SUBST([CURL_LIBS])
+  AC_SUBST([CURL_CFLAGS])
+])
+
+# LIBDAP_CHECK_XML2()
+# Resolve libxml2 flags, preferring pkg-config and falling back to xml2-config.
+AC_DEFUN([LIBDAP_CHECK_XML2],
+[
+  AC_ARG_WITH([xml2],
+    [AS_HELP_STRING([--with-xml2=PFX],[libxml2 prefix; overrides pkg-config and xml2-config fallback])],
+    [with_xml2_prefix="$withval"],
+    [with_xml2_prefix=""])
+
+  xmlprivatereq=
+  xmlprivatelibs=
+  libdap_libxml2_module='libxml-2.0 >= 2.7.0'
+
+  AC_MSG_CHECKING([for libxml2])
+
+  AS_IF([test -n "$with_xml2_prefix"],
+    [
+      XML2_CONFIG="$with_xml2_prefix/bin/xml2-config"
+      AS_IF([test ! -x "$XML2_CONFIG"],
+        [AC_MSG_ERROR([You set the libxml2 prefix directory to $with_xml2_prefix, but xml2-config is not there.])])
+
+      XML2_LIBS=`$XML2_CONFIG --libs`
+      XML2_CFLAGS=`$XML2_CONFIG --cflags`
+      xmlprivatelibs=$XML2_LIBS
+      AC_MSG_RESULT([yes; used $XML2_CONFIG])
+    ],
+    [
+      PKG_CHECK_MODULES([XML2],[$libdap_libxml2_module],
+        [
+          xmlprivatereq=$libdap_libxml2_module
+          xmlprivatelibs=`$PKG_CONFIG --libs libxml-2.0`
+          AC_MSG_RESULT([yes; used pkg-config])
+        ],
+        [
+          AC_PATH_PROG([XML2_CONFIG], [xml2-config], [no])
+          AS_IF([test "x$XML2_CONFIG" = xno],
+            [AC_MSG_ERROR([I could not find libxml2])])
+
+          version_libxml2=`$XML2_CONFIG --version`
+          AS_VERSION_COMPARE(["$version_libxml2"], ["2.7.0"],
+            [AC_MSG_ERROR([I could not find libxml2 2.7.0 or newer])])
+
+          XML2_LIBS=`$XML2_CONFIG --libs`
+          XML2_CFLAGS=`$XML2_CONFIG --cflags`
+          xmlprivatelibs=$XML2_LIBS
+          AC_MSG_RESULT([yes; used xml2-config and found version $version_libxml2])
+        ])
+    ])
+
+  AC_SUBST([xmlprivatereq])
+  AC_SUBST([xmlprivatelibs])
+  AC_SUBST([XML2_LIBS])
+  AC_SUBST([XML2_CFLAGS])
+])

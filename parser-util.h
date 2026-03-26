@@ -25,6 +25,8 @@
 #ifndef PARSER_UTIL_H_
 #define PARSER_UTIL_H_
 
+#include <string>
+
 namespace libdap {
 
 /** Given a string (<tt>const char *src</tt>), save it to the
@@ -39,16 +41,14 @@ namespace libdap {
 
     @return void
     @brief Save a string to a temporary variable during the parse.
-    */
-#if 0
-void save_str(char *dst, const char *src, const int line_num);
-#endif
+*/
 void save_str(std::string &dst, const char *src, const int);
 
 bool is_keyword(std::string id, const std::string &keyword);
 
 /**
- * @defgroup check_type
+ * @name check types
+ * Check types
  * @{
  * @brief Can the given string be converted into a byte, ...?
  */
@@ -73,7 +73,7 @@ int check_url(const char *val);
 /** @} */
 
 /**
- * @defgroup check type and set value
+ * @name check type and set value
  * @{
  * @brief Like 'test and set,' check a type and set a value in one go.
  */
@@ -84,7 +84,8 @@ int check_float64(const char *val, double &v);
 /** @} */
 
 /**
- * @defgroup get_type
+ * @name get type
+ * Get the type
  * @{
  * @brief Convert the string to a value; throw if the conversion fails.
  */

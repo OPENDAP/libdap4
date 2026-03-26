@@ -104,8 +104,8 @@ EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	    \
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
-CLEANFILES = *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) \
-	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1 dmr_memory_cache.1\
+CLEANFILES = *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) doxy.conf doxygen.log \
+	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1 dmr_memory_cache.1 \
 	GNU/*.gcda GNU/*.gcno
 
 DISTCLEAN = libdap.spec
@@ -115,13 +115,15 @@ clean-local:
 	-rm -rf gcovr-output
 
 HTML_DOCS=html
-DOXYGEN_CONF=doxy.conf
+
+doxy.conf: doxy.conf.in
+	config.status --no-create --file=$@ $<
 
 # This target only builds the documents, it does not move them to
 # github. See README.gh-pages.md for that
 .PHONY: docs
-docs: ${DOXYGEN_CONF} main_page.doxygen
-	doxygen ${DOXYGEN_CONF}
+docs: doxy.conf
+	doxygen doxy.conf > doxygen.log
 
 # cccc computes metrics like Lines of code and McCabe. It's available
 # on the web...

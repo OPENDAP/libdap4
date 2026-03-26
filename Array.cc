@@ -1337,6 +1337,8 @@ void Array::dump(std::ostream &strm) const {
  */
 void Array::set_var_storage_info(const var_storage_info &my_vs_info) {
 
+    vs_info.has_filled_chunks = my_vs_info.has_filled_chunks;
+
     vs_info.filter = my_vs_info.filter;
 
     for (const auto &def_lev : my_vs_info.deflate_levels)

@@ -48,24 +48,69 @@ class Vector;
  */
 class Marshaller : public DapObj {
 public:
+    /** @brief Serialize one `Byte` value.
+     * @param val Value to serialize.
+     */
     virtual void put_byte(dods_byte val) = 0;
 
+    /** @brief Serialize one `Int16` value.
+     * @param val Value to serialize.
+     */
     virtual void put_int16(dods_int16 val) = 0;
+    /** @brief Serialize one `Int32` value.
+     * @param val Value to serialize.
+     */
     virtual void put_int32(dods_int32 val) = 0;
 
+    /** @brief Serialize one `Float32` value.
+     * @param val Value to serialize.
+     */
     virtual void put_float32(dods_float32 val) = 0;
+    /** @brief Serialize one `Float64` value.
+     * @param val Value to serialize.
+     */
     virtual void put_float64(dods_float64 val) = 0;
 
+    /** @brief Serialize one `UInt16` value.
+     * @param val Value to serialize.
+     */
     virtual void put_uint16(dods_uint16 val) = 0;
+    /** @brief Serialize one `UInt32` value.
+     * @param val Value to serialize.
+     */
     virtual void put_uint32(dods_uint32 val) = 0;
 
+    /** @brief Serialize one DAP string value.
+     * @param val Value to serialize.
+     */
     virtual void put_str(const std::string &val) = 0;
+    /** @brief Serialize one DAP URL value.
+     * @param val Value to serialize.
+     */
     virtual void put_url(const std::string &val) = 0;
 
+    /** @brief Serialize opaque bytes.
+     * @param val Buffer containing bytes.
+     * @param len Number of bytes to serialize.
+     */
     virtual void put_opaque(char *val, unsigned int len) = 0;
+    /** @brief Serialize one legacy DAP integer.
+     * @param val Value to serialize.
+     */
     virtual void put_int(int val) = 0;
 
+    /** @brief Serialize a vector where element width is inferred from `vec`.
+     * @param val Pointer to vector data bytes.
+     * @param num Number of elements.
+     * @param vec Vector metadata used for typing.
+     */
     virtual void put_vector(char *val, int num, Vector &vec) = 0;
+    /** @brief Serialize a vector with explicit element width.
+     * @param val Pointer to vector data bytes.
+     * @param num Number of elements.
+     * @param width Bytes per element.
+     * @param vec Vector metadata used for typing.
+     */
     virtual void put_vector(char *val, int num, int width, Vector &vec) = 0;
 
     /**

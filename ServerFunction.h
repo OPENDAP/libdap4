@@ -39,6 +39,7 @@
 
 namespace libdap {
 
+/** @brief Metadata and function-pointer wrapper for a callable server function. */
 class ServerFunction {
 
 private:
@@ -59,33 +60,85 @@ private:
 
 public:
     ServerFunction();
+    /**
+     * @brief Builds a boolean server function descriptor.
+     * @param name Function name.
+     * @param version Function version string.
+     * @param description Human-readable description.
+     * @param usage Usage string.
+     * @param doc_url Documentation URL.
+     * @param role Function role/category.
+     * @param f Boolean CE function pointer.
+     */
     ServerFunction(std::string name, std::string version, std::string description, std::string usage,
                    std::string doc_url, std::string role, bool_func f);
+    /**
+     * @brief Builds a BaseType-returning server function descriptor.
+     * @param name Function name.
+     * @param version Function version string.
+     * @param description Human-readable description.
+     * @param usage Usage string.
+     * @param doc_url Documentation URL.
+     * @param role Function role/category.
+     * @param f Value-returning CE function pointer.
+     */
     ServerFunction(std::string name, std::string version, std::string description, std::string usage,
                    std::string doc_url, std::string role, btp_func f);
+    /**
+     * @brief Builds a projection-function descriptor.
+     * @param name Function name.
+     * @param version Function version string.
+     * @param description Human-readable description.
+     * @param usage Usage string.
+     * @param doc_url Documentation URL.
+     * @param role Function role/category.
+     * @param f Projection CE function pointer.
+     */
     ServerFunction(std::string name, std::string version, std::string description, std::string usage,
                    std::string doc_url, std::string role, proj_func f);
+    /**
+     * @brief Builds a DAP4-function descriptor.
+     * @param name Function name.
+     * @param version Function version string.
+     * @param description Human-readable description.
+     * @param usage Usage string.
+     * @param doc_url Documentation URL.
+     * @param role Function role/category.
+     * @param f DAP4 function pointer.
+     */
     ServerFunction(std::string name, std::string version, std::string description, std::string usage,
                    std::string doc_url, std::string role, D4Function f);
 
     virtual ~ServerFunction() {}
 
+    /** @brief Returns the registered function name. */
     std::string getName() { return name; }
+    /** @brief Sets the registered function name. @param n Function name. */
     void setName(const std::string &n) { name = n; }
 
+    /** @brief Returns the usage/help string. */
     std::string getUsageString() { return usage; }
+    /** @brief Sets the usage/help string. @param u Usage/help string. */
     void setUsageString(const std::string &u) { usage = u; }
 
+    /** @brief Returns the documentation URL. */
     std::string getDocUrl() { return doc_url; }
+    /** @brief Sets the documentation URL. @param url Documentation URL. */
     void setDocUrl(const std::string &url) { doc_url = url; }
 
+    /** @brief Returns the role/category string. */
     std::string getRole() { return role; }
+    /** @brief Sets the role/category string. @param r Role/category string. */
     void setRole(const std::string &r) { role = r; }
 
+    /** @brief Returns the description string. */
     std::string getDescriptionString() { return description; }
+    /** @brief Sets the description string. @param desc Description text. */
     void setDescriptionString(const std::string &desc) { description = desc; }
 
+    /** @brief Returns the function version string. */
     std::string getVersion() { return version; }
+    /** @brief Sets the function version string. @param ver Version string. */
     void setVersion(const std::string &ver) { version = ver; }
 
     /**
@@ -117,14 +170,19 @@ public:
      *
      * @param bf
      */
+    /** @brief Installs a boolean CE function pointer. @param bf Boolean function pointer. */
     void setFunction(bool_func bf) { d_bool_func = bf; }
 
+    /** @brief Installs a value-returning CE function pointer. @param btp Value-returning function pointer. */
     void setFunction(btp_func btp) { d_btp_func = btp; }
 
+    /** @brief Installs a projection CE function pointer. @param pf Projection function pointer. */
     void setFunction(proj_func pf) { d_proj_func = pf; }
 
+    /** @brief Installs a DAP4 function pointer. @param pf DAP4 function pointer. */
     void setFunction(D4Function pf) { d_d4_function = pf; }
 
+    /** @brief Returns a string label for the currently installed function type. */
     std::string getTypeString() {
         if (d_bool_func)
             return "boolean";
@@ -137,9 +195,13 @@ public:
         return "null";
     }
 
+    /** @brief Returns the installed boolean CE function pointer. */
     bool_func get_bool_func() { return d_bool_func; }
+    /** @brief Returns the installed value-returning CE function pointer. */
     btp_func get_btp_func() { return d_btp_func; }
+    /** @brief Returns the installed projection CE function pointer. */
     proj_func get_proj_func() { return d_proj_func; }
+    /** @brief Returns the installed DAP4 function pointer. */
     D4Function get_d4_function() { return d_d4_function; }
 };
 

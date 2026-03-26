@@ -48,10 +48,19 @@
 
 namespace libdap {
 
+/** @brief Flex scanner adapter for the DAP4 constraint-expression parser. */
 class D4CEScanner : public d4_ceFlexLexer {
 public:
+    /** @brief Construct a scanner that reads from a C++ stream.
+     * @param in Input stream for tokenization.
+     */
     D4CEScanner(std::istream &in) : d4_ceFlexLexer(&in), yylval(0), loc(0) {};
 
+    /** @brief Lex the next token for the Bison parser.
+     * @param lval Semantic value output.
+     * @param l Source location output.
+     * @return Token id or 0 at end of input.
+     */
     int yylex(libdap::D4CEParser::semantic_type *lval, libdap::location *l) {
         loc = l;
         yylval = lval;

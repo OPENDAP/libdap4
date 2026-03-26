@@ -124,6 +124,10 @@ private:
     bool d_is_array_set;
 
 protected: // subclasses need access [mjohnson 11 nov 2009]
+    /**
+     * @brief Copies Grid-specific state from another grid.
+     * @param s Source grid.
+     */
     void m_duplicate(const Grid &s);
 
 public:
@@ -132,10 +136,18 @@ public:
     Grid(const Grid &rhs);
     ~Grid() override;
 
+    /** @brief Iterator type for read-only traversal of map variables. */
     typedef std::vector<BaseType *>::const_iterator Map_citer;
+    /** @brief Iterator type for mutable traversal of map variables. */
     typedef std::vector<BaseType *>::iterator Map_iter;
+    /** @brief Reverse iterator type for mutable traversal of map variables. */
     typedef std::vector<BaseType *>::reverse_iterator Map_riter;
 
+    /**
+     * @brief Assigns from another grid.
+     * @param rhs Source grid.
+     * @return This instance after assignment.
+     */
     Grid &operator=(const Grid &rhs);
     BaseType *ptr_duplicate() override;
 
@@ -161,17 +173,56 @@ public:
 
     virtual void clear_constraint();
 
+    /**
+     * @brief Prints the declaration using C++ streams.
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_semi True to print a trailing semicolon.
+     * @param constraint_info True to include projection details.
+     * @param constrained True to print constrained declarations.
+     * @param is_root_grp True when printing in root-group context.
+     * @param array_member True when printing as an array member declaration.
+     */
     void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
                     bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
 
     void print_xml(ostream &out, string space = "    ", bool constrained = false) override;
+    /**
+     * @brief Prints XML representation using an XML writer.
+     * @param xml Output XML writer.
+     * @param constrained True to emit constrained form.
+     */
     void print_xml_writer(XMLWriter &xml, bool constrained = false) override;
 
+    /**
+     * @brief Prints values using C++ streams.
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in root-group context.
+     */
     void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
+    /**
+     * @brief Prints the declaration using C stdio.
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_semi True to print a trailing semicolon.
+     * @param constraint_info True to include projection details.
+     * @param constrained True to print constrained declarations.
+     * @param is_root_grp True when printing in root-group context.
+     * @param array_member True when printing as an array member declaration.
+     */
     void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
                     bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
     void print_xml(FILE *out, string space = "    ", bool constrained = false) override;
+    /**
+     * @brief Prints values using C stdio.
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in root-group context.
+     */
     void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     void transfer_attributes(AttrTable *at_container) override;

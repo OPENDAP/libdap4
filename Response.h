@@ -63,6 +63,7 @@ private:
     int d_status = 0;
 
 protected:
+    /// True when this object owns and should delete `d_cpp_stream`.
     // Hack for HTTPResponse which may allocate a fstream pointer in a setter. jhrg 2/5/25
     bool d_delete_cpp_stream_ptr = false;
 
@@ -84,6 +85,10 @@ public:
         @param status The HTTP response status code.*/
     explicit Response(FILE *s, int status = 0) : d_stream(s), d_status(status) {}
 
+    /** @brief Initialize with a C++ stream.
+     * @param s Read data from this C++ stream.
+     * @param status The HTTP response status code.
+     */
     explicit Response(std::fstream *s, int status = 0) : d_cpp_stream(s), d_status(status) {}
 
     /** Close the stream. */

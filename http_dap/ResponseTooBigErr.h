@@ -43,6 +43,10 @@ namespace libdap {
 class ResponseTooBigErr : public Error {
 
 public:
+    /**
+     * @brief Builds a cache-size error with message text.
+     * @param msg Error message.
+     */
     ResponseTooBigErr(const string &msg);
     ResponseTooBigErr();
 };

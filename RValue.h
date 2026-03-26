@@ -51,14 +51,29 @@ private:
     std::vector<rvalue *> *d_args; // arguments to the function
 
 public:
+    /** @brief Mutable iterator over function-call argument rvalues. */
     typedef std::vector<rvalue *>::iterator Args_iter;
+    /** @brief Read-only iterator over function-call argument rvalues. */
     typedef std::vector<rvalue *>::const_iterator Args_citer;
 
+    /**
+     * @brief Builds an rvalue from a dataset variable/value node.
+     * @param bt BaseType node used as this rvalue's source.
+     */
     rvalue(BaseType *bt);
+    /**
+     * @brief Builds an rvalue from a function and argument list.
+     * @param f Function pointer.
+     * @param a Function arguments.
+     */
     rvalue(btp_func f, std::vector<rvalue *> *a);
     rvalue();
 
     virtual ~rvalue();
+    /**
+     * @brief Returns a display name for this rvalue.
+     * @return Human-readable value or function identifier.
+     */
     std::string value_name();
 
     BaseType *bvalue(DDS &dds);
@@ -66,16 +81,26 @@ public:
 
 // This type def must come after the class definition above. It is used in
 // the Clause and DDS classes.
+/** @brief Container type for parser/evaluator rvalues. */
 typedef std::vector<rvalue *> rvalue_list;
+/** @brief Read-only iterator for `rvalue_list`. */
 typedef std::vector<rvalue *>::const_iterator rvalue_list_citer;
+/** @brief Mutable iterator for `rvalue_list`. */
 typedef std::vector<rvalue *>::iterator rvalue_list_iter;
 
+/** @brief Pointer to a vector of `Byte` function arguments. */
 typedef std::vector<dods_byte> *byte_arg_list;
+/** @brief Pointer to a vector of `Int16` function arguments. */
 typedef std::vector<dods_int16> *int16_arg_list;
+/** @brief Pointer to a vector of `UInt16` function arguments. */
 typedef std::vector<dods_uint16> *uint16_arg_list;
+/** @brief Pointer to a vector of `Int32` function arguments. */
 typedef std::vector<dods_int32> *int32_arg_list;
+/** @brief Pointer to a vector of `UInt32` function arguments. */
 typedef std::vector<dods_uint32> *uint32_arg_list;
+/** @brief Pointer to a vector of `Float32` function arguments. */
 typedef std::vector<dods_float32> *float32_arg_list;
+/** @brief Pointer to a vector of `Float64` function arguments. */
 typedef std::vector<dods_float64> *float64_arg_list;
 
 rvalue_list *make_rvalue_list(rvalue *rv);

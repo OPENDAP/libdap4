@@ -34,6 +34,7 @@ class HTTPConnect;
 class DMR;
 class Response;
 
+/** @brief Client-side helper for requesting/parsing DAP4 DMR and data responses. */
 class D4Connect {
 private:
     HTTPConnect *d_http;
@@ -61,6 +62,12 @@ protected:
     D4Connect &operator=(const D4Connect &);
 
 public:
+    /**
+     * @brief Builds a DAP4 connection to a URL.
+     * @param url Dataset URL.
+     * @param uname Optional username for authenticated requests.
+     * @param password Optional password for authenticated requests.
+     */
     D4Connect(const std::string &url, std::string uname = "", std::string password = "");
 
     virtual ~D4Connect();

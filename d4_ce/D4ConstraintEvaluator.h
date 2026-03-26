@@ -126,24 +126,54 @@ class D4ConstraintEvaluator {
 
 public:
     D4ConstraintEvaluator() = default;
+    /**
+     * @brief Builds a constraint evaluator bound to a DMR.
+     * @param dmr Dataset metadata root used for name lookup and projection edits.
+     */
     explicit D4ConstraintEvaluator(DMR *dmr) : d_dmr(dmr) {}
 
     virtual ~D4ConstraintEvaluator() = default;
 
+    /**
+     * @brief Parses and applies a DAP4 constraint expression.
+     * @param expr Constraint expression text.
+     * @return True when parsing and application succeed.
+     */
     bool parse(const std::string &expr);
 
+    /** @brief Returns whether scanner tracing is enabled. */
     bool trace_scanning() const { return d_trace_scanning; }
+    /** @brief Enables or disables scanner tracing.
+     * @param ts True to enable scanner tracing.
+     */
     void set_trace_scanning(bool ts) { d_trace_scanning = ts; }
 
+    /** @brief Returns whether parser tracing is enabled. */
     bool trace_parsing() const { return d_trace_parsing; }
+    /** @brief Enables or disables parser tracing.
+     * @param tp True to enable parser tracing.
+     */
     void set_trace_parsing(bool tp) { d_trace_parsing = tp; }
 
+    /** @brief Returns the last parse/evaluation result flag. */
     bool result() const { return d_result; }
+    /** @brief Sets the last parse/evaluation result flag.
+     * @param r Result value.
+     */
     void set_result(bool r) { d_result = r; }
 
+    /** @brief Returns the bound DMR pointer. */
     DMR *dmr() const { return d_dmr; }
+    /** @brief Binds this evaluator to a DMR.
+     * @param dmr Dataset metadata root.
+     */
     void set_dmr(DMR *dmr) { d_dmr = dmr; }
 
+    /**
+     * @brief Throws a parse error with source location context.
+     * @param l Parser/scanner location of the error.
+     * @param m Error message.
+     */
     [[noreturn]] static void error(const libdap::location &l, const std::string &m);
 };
 

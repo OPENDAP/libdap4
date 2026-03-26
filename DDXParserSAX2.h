@@ -226,6 +226,9 @@ private:
     friend class DDXParserTest;
 
 public:
+    /** @brief Build a parser bound to a BaseType factory.
+     * @param factory Factory used to allocate parsed variables.
+     */
     DDXParser(BaseTypeFactory *factory)
         : d_factory(factory), other_xml(""), other_xml_depth(0), unknown_depth(0), error_msg(""), ctxt(0), dds(0),
           blob_href(0), dods_attr_name(""), dods_attr_type(""), char_data(""), root_ns("") {
@@ -246,7 +249,14 @@ public:
     }
     void intern(const string &document, DDS *dest_dds, string &cid);
     void intern_stream(FILE *in, DDS *dds, string &cid, const string &boundary = "");
-    void intern_stream(istream &in, DDS *dds, string &cid, const string &boundary = "");
+
+    /** @brief Parse a DDX document from an input stream.
+     * @param in Stream containing a DDX document.
+     * @param dest_dds Destination DDS populated by parsing.
+     * @param cid Output MIME content-id for blob data, if present.
+     * @param boundary MIME multipart boundary when parsing multipart input.
+     */
+    void intern_stream(istream &in, DDS *dest_dds, string &cid, const string &boundary = "");
 
     static void ddx_start_document(void *parser);
     static void ddx_end_document(void *parser);

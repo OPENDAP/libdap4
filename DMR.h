@@ -37,6 +37,7 @@
 
 namespace libdap {
 
+/** @brief Default XML namespace URI for DAP4 DMR documents. */
 const string c_dap40_namespace = "http://xml.opendap.org/ns/DAP/4.0#";
 
 class D4Group;
@@ -112,6 +113,11 @@ public:
 
     ~DMR() override;
 
+    /**
+     * @brief Assigns this DMR from another DMR.
+     * @param rhs Source DMR.
+     * @return This DMR after assignment.
+     */
     DMR &operator=(const DMR &rhs);
 
     virtual void build_using_dds(DDS &dds);
@@ -149,12 +155,28 @@ public:
     void set_filename(const std::string &fn) { d_filename = fn; }
     //@}
 
+    /** @brief Returns the DAP protocol version string. */
     std::string dap_version() const { return d_dap_version; }
+
+    /**
+     * @brief Sets the DAP protocol version string and parsed major/minor values.
+     * @param version_string DAP protocol version (for example, `4.0`).
+     */
     void set_dap_version(const std::string &version_string);
+
+    /** @brief Returns the DAP protocol major version number. */
     int dap_major() const { return d_dap_major; }
+
+    /** @brief Returns the DAP protocol minor version number. */
     int dap_minor() const { return d_dap_minor; }
 
+    /** @brief Returns the DMR document version string. */
     std::string dmr_version() const { return d_dmr_version; }
+
+    /**
+     * @brief Sets the DMR document version string.
+     * @param v DMR version value.
+     */
     void set_dmr_version(const std::string &v) { d_dmr_version = v; }
 
     /// Get the URL that will return this DMR
@@ -238,14 +260,32 @@ public:
     void dump(std::ostream &strm) const override;
 
     // The following methods are for direct IO optimization.
+    /** @brief Returns the global direct-I/O optimization flag. */
     bool get_global_dio_flag() const { return global_dio_flag; }
+
+    /**
+     * @brief Sets the global direct-I/O optimization flag.
+     * @param dio_flag_value True to enable direct-I/O optimizations.
+     */
     void set_global_dio_flag(bool dio_flag_value = true) { global_dio_flag = dio_flag_value; }
 
     // The following methods are for utf8_encoding.
+    /** @brief Returns whether XML output should declare UTF-8 encoding. */
     bool get_utf8_xml_encoding() const { return utf8_xml_encoding; }
+
+    /**
+     * @brief Sets whether XML output should declare UTF-8 encoding.
+     * @param encoding_value True to emit UTF-8 encoding metadata.
+     */
     void set_utf8_xml_encoding(bool encoding_value = true) { utf8_xml_encoding = encoding_value; }
 
+    /** @brief Returns whether DAP4 checksums are enabled for data responses. */
     bool use_checksums() const { return d_use_dap4_checksums; }
+
+    /**
+     * @brief Enables or disables DAP4 checksums for data responses.
+     * @param value True to include checksums.
+     */
     void use_checksums(bool value) { d_use_dap4_checksums = value; }
 };
 
