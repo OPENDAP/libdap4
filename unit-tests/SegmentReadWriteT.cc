@@ -6,7 +6,7 @@
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <experimental/filesystem>
+#include <sys/stat.h> // POSIX header
 #include <cstring>
 
 // #define DODS_DEBUG
@@ -25,49 +25,48 @@ class SegmentReadWriteT : public TestFixture {
         SegmentReadWriteT() = default;
         ~SegmentReadWriteT() = default;
 
-        void setUp() override {}
+        void setUp() override {
+            string path_str = "/tmp/srwt";
+            // Permissions: read/write/execute for owner (0700)
+            // You can use S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH for 0755
+            mode_t mode = 0700;
+
+            if (mkdir(path_str.c_str(), mode) == 0) {
+                DBG(cerr << "Directory '" << path_str << "' created successfully." << endl);
+            }
+            else{
+                DBG(cerr << "Unable to create " << path_str << endl);
+            }
+        } // end setUp()
 
         void tearDown() override {
-#if 0
-            dirPath = "/tmp/srwt";
-            std::error_code ec; // Use an error code to prevent exceptions
-            // remove_all attempts to delete the contents and the directory itself recursively
-            if (fs::remove_all(dirPath, ec) == static_cast<std::uintmax_t>(-1) || ec) {
-                std::cerr << "Error deleting directory " << dirPath << ": " << ec.message() << std::endl;
+            auto command = "rm -rf /tmp/srwt";
+
+            int return_code = system(command);
+            if (return_code == 0) {
+                DBG(cerr << "rm command executed successfully." << endl);
             } else {
-                std::cout << "Successfully deleted directory: " << dirPath << std::endl;
+                DBG(cerr << "rm command failed with return code: " << return_code << endl);
             }
-#endif
-        }
+        } // end tearDown()
 
         bool gen_large_test_file(uint64_t size, string filepath) {
             // use dd to gen and write an extremely large file here
-            //  number should be size in bytes the file should be
-            uint64_t bufferSize = 10'000'000;
-            uint64_t count;
-            if (size > bufferSize){
-                count = size / bufferSize;
-            }
-            else {
-                bufferSize = size;
-                count = 1;
-            }
+            auto command = "dd if=/dev/urandom of=" + filepath + " bs=" + to_string(size) + "c iflag=fullblock count=1 status=none";
 
-            auto command = "dd if=/dev/urandom of=" + filepath + " bs=10M count=" + to_string(count);
-
-            std::cout << "Running command: " << command << std::endl;
+            DBG(cerr << "Running command: " << command << endl);
 
             // Execute the dd command
-            int return_code = std::system(command.c_str());
+            int return_code = system(command.c_str());
 
             if (return_code == 0) {
-                std::cout << "dd command executed successfully." << std::endl;
+                DBG(cerr << "dd command executed successfully." << endl);
             } else {
-                std::cerr << "dd command failed with return code: " << return_code << std::endl;
+                DBG(cerr << "dd command failed with return code: " << return_code << endl);
             }
 
             return return_code;
-        }
+        } // end gen_large_test_file(...)
 
         void write_buffer_to_file(char *buffer, uint64_t buffer_length, string filepath) {
             // Open the file in binary mode
@@ -86,7 +85,7 @@ class SegmentReadWriteT : public TestFixture {
             outfile.close();
 
             DBG(cerr << "Buffer written to output.bin as binary data." << endl);
-        }
+        } // end write_buffer_to_file(...)
 
         void seg_read_test_0() {
             // setup test file
@@ -110,19 +109,7 @@ class SegmentReadWriteT : public TestFixture {
             }
             CPPUNIT_ASSERT_MESSAGE("buffer should be 0", buff2[0] == 0);
             CPPUNIT_ASSERT_MESSAGE("buffer should be 9", buff2[9] == 9);
-
-#if 0
-            // take seg_read data and write to file
-            string filepath2 = "/tmp/srwt/segReadWriteTest2.bin";
-            write_buffer_to_file(buff2.data(), bytes, filepath2);
-
-            // assert (compare files)
-            auto command = "cmp " + filepath + " " + filepath2;
-            std::cout << "Running command: " << command << std::endl;
-            int return_code = std::system(command.c_str());
-            CPPUNIT_ASSERT(return_code == 0);
-#endif
-        } // end seg_read_test_1()
+        } // end seg_read_test_0()
 
         void seg_write_test_0() {
             // setup test file
@@ -156,12 +143,11 @@ class SegmentReadWriteT : public TestFixture {
             }
 
 
-        } // end seg_write_test_1()
+        } // end seg_write_test_0()
 
         void seg_read_test_1() {
             // setup test file
-            // uint64_t bytes = std::pow(2, 32);
-            uint64_t bytes = 1000;
+            uint64_t bytes = std::pow(2, 31);
             string filepath = "/tmp/srwt/segReadWriteTest1.bin";
             int code = gen_large_test_file(bytes, filepath);
             if (code != 0) {
@@ -183,16 +169,80 @@ class SegmentReadWriteT : public TestFixture {
 
             // assert (compare files)
             auto command = "cmp " + filepath + " " + filepath2;
-            std::cout << "Running command: " << command << std::endl;
+            DBG(cerr << "Running command: " << command << endl);
             int return_code = std::system(command.c_str());
             CPPUNIT_ASSERT(return_code == 0);
         } // end seg_read_test_1()
 
+        void seg_read_test_2() {
+            // setup test file
+            uint64_t bytes = std::pow(2, 31) - 1;
+            string filepath = "/tmp/srwt/segReadWriteTest1.bin";
+            int code = gen_large_test_file(bytes, filepath);
+            if (code != 0) {
+                CPPUNIT_FAIL("dd command failed with return code: " + to_string(code));
+            }
+
+            // call seg_read on file
+            vector<char> buff(bytes);
+            std::filebuf fb;
+            if (fb.open(filepath, std::ios::in)) {
+                std::istream is(&fb);
+                segmented_read(is, buff.data(), bytes);
+                fb.close();
+            }
+
+            // take seg_read data and write to file
+            string filepath2 = "/tmp/srwt/segReadWriteTest2.bin";
+            write_buffer_to_file(buff.data(), bytes, filepath2);
+
+            // assert (compare files)
+            auto command = "cmp " + filepath + " " + filepath2;
+            DBG(cerr << "Running command: " << command << endl);
+            int return_code = std::system(command.c_str());
+            CPPUNIT_ASSERT(return_code == 0);
+        } // end seg_read_test_2()
+
+        void seg_read_test_3() {
+            // setup test file
+            uint64_t bytes = std::pow(2, 31) + 1;
+            string filepath = "/tmp/srwt/segReadWriteTest1.bin";
+            int code = gen_large_test_file(bytes, filepath);
+            if (code != 0) {
+                CPPUNIT_FAIL("dd command failed with return code: " + to_string(code));
+            }
+
+            // call seg_read on file
+            vector<char> buff(bytes);
+            std::filebuf fb;
+            if (fb.open(filepath, std::ios::in)) {
+                std::istream is(&fb);
+                segmented_read(is, buff.data(), bytes);
+                fb.close();
+            }
+
+            // take seg_read data and write to file
+            string filepath2 = "/tmp/srwt/segReadWriteTest2.bin";
+            write_buffer_to_file(buff.data(), bytes, filepath2);
+
+            // assert (compare files)
+            auto command = "cmp " + filepath + " " + filepath2;
+            DBG(cerr << "Running command: " << command << endl);
+            int return_code = std::system(command.c_str());
+            CPPUNIT_ASSERT(return_code == 0);
+        } // end seg_read_test_3()
+
         CPPUNIT_TEST_SUITE(SegmentReadWriteT);
 
-        CPPUNIT_TEST(seg_read_test_0); // seg_read test 2^32
+        // Baby tests
+        CPPUNIT_TEST(seg_read_test_0);
         CPPUNIT_TEST(seg_write_test_0);
-        // CPPUNIT_TEST(...);             // seg_read test 2^31
+
+        // 2GB tests
+        CPPUNIT_TEST(seg_read_test_1);    // seg_read test 2^31
+        CPPUNIT_TEST(seg_read_test_2);    // seg_read test 2^31 - 1
+        CPPUNIT_TEST(seg_read_test_3);    // seg_read test 2^31 + 1
+
         // CPPUNIT_TEST(...);             // seg_read test (2^32)-1 byte
         // CPPUNIT_TEST(...);             // seg_write test 2^32
         // CPPUNIT_TEST(...);             // seg_write test 2^31
