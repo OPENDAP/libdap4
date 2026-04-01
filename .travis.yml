@@ -33,6 +33,9 @@ branches:
 # This cache is used to speed up sonar scan runs. See https://docs.travis-ci.com/user/caching.
 # Each branch gets its own cache. jhrg 2/11/22
 cache:
+  ccache: true
+  pip: true
+  apt: true
   directories:
     - ./.cache/sonar/
 
@@ -48,6 +51,7 @@ addons:
       - gcovr
       - libfl-dev # needed for focal, but not xenial. jhrg 1/18/24
       - libtool-bin
+      - ccache
     # - openjdk-17-jre  # Removed, see hack in before_install: jhrg 1/23/24
     # remove support for debian packages. jhrg 2/23/21
     # - build-essential
@@ -62,6 +66,10 @@ env:
     - prefix=$HOME/install
     - PATH=$prefix/bin:$PATH
     - TESTSUITEFLAGS=-j7
+    - CCACHE_DIR=$HOME/.ccache
+    - CCACHE_BASEDIR=$TRAVIS_BUILD_DIR
+    - CCACHE_MAXSIZE=10G
+    - CCACHE_COMPRESS=true
 
     # SONAR_LOGIN, created using travis encrypt --org -r OPENDAP/libdap4 SONAR_LOGIN=<sonar login key>
     - secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw="
@@ -77,13 +85,13 @@ env:
     - secure: "Oi3LunWs6lnFSW83d8z1llVBGIfUx3E+0d6wRAnkO0Q3muTMr8zm/bmaBt7XxnUQ3uKjRp9Uwkqtt7jJDHfTMeO5mXqYz018mc+PxwPmfFk6mnCQVbu1fk2tDRFbKYBPxILk0lvkShqzfKJJ9g/5b1IBJ/oxZAErf21qMqi1IHU="
 
 before_install:
-  - pip install --user awscli
+  - if test -n "$AWS_ACCESS_KEY_ID" -a \( "$TRAVIS_JOB_NAME" = "make" -o "$TRAVIS_JOB_NAME" = "asan" -o "$TRAVIS_JOB_NAME" = "distcheck" \); then pip install --user awscli; fi
   # fix for Java 17 install for Sonar from Travis CI support. jhrg 1/23/24
-  - curl -s "https://get.sdkman.io" | bash
-  - source "$HOME/.sdkman/bin/sdkman-init.sh"
-  - sdk install java 17.0.2-open
-  - sdk use java 17.0.2-open
-  - java -version
+  - if test "$TRAVIS_JOB_NAME" = "scan"; then curl -s "https://get.sdkman.io" | bash; fi
+  - if test "$TRAVIS_JOB_NAME" = "scan"; then source "$HOME/.sdkman/bin/sdkman-init.sh"; fi
+  - if test "$TRAVIS_JOB_NAME" = "scan"; then sdk install java 17.0.2-open; fi
+  - if test "$TRAVIS_JOB_NAME" = "scan"; then sdk use java 17.0.2-open; fi
+  - if test "$TRAVIS_JOB_NAME" = "scan"; then java -version; fi
 
 install:
   # $HOME is /home/travis and $TRAVIS_BUILD_DIR is /home/travis/build/OPENDAP/libdap4
@@ -98,6 +106,8 @@ before_script:
   - source travis/travis_libdap_build_offset.sh
   - export LIBDAP_BUILD_NUMBER=$(expr $TRAVIS_BUILD_NUMBER - $LIBDAP_TRAVIS_BUILD_OFFSET)
   - echo "LIBDAP_BUILD_NUMBER is ${LIBDAP_BUILD_NUMBER} = ${TRAVIS_BUILD_NUMBER} - ${LIBDAP_TRAVIS_BUILD_OFFSET}"
+  - ccache --zero-stats || true
+  - ccache --max-size "$CCACHE_MAXSIZE" || true
   # moved down below to individual steps. jhrg 3/23/21 autoreconf --force --install --verbose
 
 stages:
@@ -117,6 +127,7 @@ jobs:
   include:
     - stage: build
       name: "make"
+      env: CACHE_NAME=make
       script:
         - export LIBDAP_BUILD=main
         - autoreconf --force --install --verbose
@@ -125,6 +136,7 @@ jobs:
 
     - stage: build
       name: "asan"
+      env: CACHE_NAME=asan
       script:
         - export LIBDAP_BUILD=asan
         - autoreconf --force --install --verbose
@@ -133,6 +145,7 @@ jobs:
 
     - stage: build
       name: "distcheck"
+      env: CACHE_NAME=distcheck
       script:
         - export LIBDAP_BUILD=distcheck
         - autoreconf --force --install --verbose
@@ -141,6 +154,7 @@ jobs:
 
     - stage: scan
       name: "scan"
+      env: CACHE_NAME=scan
       script:
         - export LIBDAP_BUILD=sonar
         - export SONAR_TOKEN=$SONAR_LOGIN
@@ -181,9 +195,11 @@ jobs:
 
     - stage: package
       name: "source distribution"
+      env: CACHE_NAME=srcdist
       script:
         - export LIBDAP_BUILD=srcdist
         - mkdir -p $TRAVIS_BUILD_DIR/package
+        - mkdir -p $TRAVIS_BUILD_DIR/.travis-workspace/snapshot
         - autoreconf --force --install --verbose
         - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
         - make dist -j7
@@ -193,18 +209,29 @@ jobs:
         # number passed into configure when it is run. jhrg 3/23/21
         - SOURCE_VERSION=$(cat libdap_VERSION)
         - mv libdap-*.tar.gz libdap-$SOURCE_VERSION.tar.gz
-        - cp libdap-$SOURCE_VERSION.tar.gz libdap-snapshot.tar.gz;
+        - cp libdap-$SOURCE_VERSION.tar.gz libdap-snapshot.tar.gz
+        - cp libdap_VERSION $TRAVIS_BUILD_DIR/.travis-workspace/snapshot/
+        - cp libdap-$SOURCE_VERSION.tar.gz $TRAVIS_BUILD_DIR/.travis-workspace/snapshot/
+        - cp libdap-snapshot.tar.gz $TRAVIS_BUILD_DIR/.travis-workspace/snapshot/
+      workspaces:
+        create:
+          name: snapshot-release
+          paths:
+            - .travis-workspace/snapshot
 
     - stage: hyrax-bes-trigger
       name: "Hyrax BES Trigger"
+      env: CACHE_NAME=hyrax-bes-trigger
+      workspaces:
+        use: snapshot-release
       script:
         - export STAGE=hyrax-bes
         - echo $STAGE
-        - autoreconf --force --install --verbose
-        - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
+        - cp .travis-workspace/snapshot/libdap_VERSION ./libdap_VERSION
         - ./travis/trigger-bes-build.sh
 
 after_script:
+  - ccache --show-stats || true
   - ./travis/upload-test-results.sh
 
 before_deploy:
