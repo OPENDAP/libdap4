@@ -23,7 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
-      CCACHE_MAXSIZE: 1G
+      # From the logs, it looks like the needed cache is a little over 8GB. jhrg 4/1/26
+      CCACHE_MAXSIZE: 10G
       CCACHE_COMPRESS: "true"
 
     steps:

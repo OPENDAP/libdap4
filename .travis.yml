@@ -37,7 +37,8 @@ cache:
     - ./.cache/sonar/
 
 addons:
-  sonarcloud: true
+  sonarcloud:
+    organization: "opendap"
   apt:
     packages:
       - libxml2-dev
@@ -142,14 +143,15 @@ jobs:
       name: "scan"
       script:
         - export LIBDAP_BUILD=sonar
+        - export SONAR_TOKEN=$SONAR_LOGIN
         - autoreconf --force --install --verbose
         - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-coverage
         - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
         - make check -j7
         - gcovr --config gcovr.config --sonarqube coverage.xml
-        - sonar-scanner -Dsonar.token=$SONAR_LOGIN # Dsonar.login --> Dsonar.token. Fix a warning. jhrg 1/18/24
-        # Test the result of the scan and fail a PR/build if the quality gate fails
-        - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
+        - sonar-scanner
+        # The scanner waits for the quality gate because sonar.qualitygate.wait=true is set
+        # in sonar-project.properties, so no extra badge/API polling is needed here.
 
     - stage: package
       name: "rocky8 RPMs"
