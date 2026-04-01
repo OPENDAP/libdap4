@@ -65,6 +65,16 @@
       }
     },
     {
+      "name": "ci",
+      "displayName": "CI (Makefiles, Release, ccache)",
+      "inherits": "release",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+      }
+    },
+    {
       "name": "Custom configure preset",
       "displayName": "Custom configure preset",
       "description": "Sets Ninja generator, build and install directory",
@@ -98,6 +108,10 @@
       "configurePreset": "asan"
     },
     {
+      "name": "ci",
+      "configurePreset": "ci"
+    },
+    {
       "name": "install",
       "configurePreset": "default",
       "targets": ["install"]
@@ -111,6 +125,10 @@
     {
       "name": "developer",
       "configurePreset": "developer"
+    },
+    {
+      "name": "ci",
+      "configurePreset": "ci"
     },
     {
       "name": "unit",

@@ -3,46 +3,66 @@ name: CMake CI
 on:
   push:
     branches: [master, main]
+    paths-ignore:
+      - "**/*.md"
+      - ".vscode/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE*"
   pull_request:
     branches: [master, main]
+    paths-ignore:
+      - "**/*.md"
+      - ".vscode/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE*"
   # Enables triggering the workflow manually (on any branch) from the Actions tab
   workflow_dispatch:
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      CCACHE_DIR: ~/.cache/ccache
+      CCACHE_MAXSIZE: 500M
+      CCACHE_COMPRESS: "true"
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ${{ runner.os }}-ccache-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', '.github/workflows/cmake.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-
+
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential \
-            cmake \
-            flex \
-            bison \
             libxml2-dev \
             libcurl4-openssl-dev \
             uuid-dev \
             libcppunit-dev \
             libtirpc-dev \
-            libfl-dev
+            libfl-dev \
+            ccache
 
-      - name: Configure (CMake)
+      - name: Configure (CMake preset)
         run: |
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
+          ccache --zero-stats || true
+          cmake --preset ci
 
       - name: Build
         run: |
-          cd build
-          make -j$(nproc)
+          cmake --build --preset ci --parallel "$(nproc)"
 
       - name: Run tests (if applicable)
         run: |
-          cd build
-          ctest --output-on-failure -j$(nproc)
+          ctest --preset ci --output-on-failure --parallel "$(nproc)"
+
+      - name: Show ccache stats
+        if: always()
+        run: ccache --show-stats || true
