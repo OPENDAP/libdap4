@@ -52,11 +52,6 @@ addons:
       - libfl-dev # needed for focal, but not xenial. jhrg 1/18/24
       - libtool-bin
       - ccache
-    # - openjdk-17-jre  # Removed, see hack in before_install: jhrg 1/23/24
-    # remove support for debian packages. jhrg 2/23/21
-    # - build-essential
-    # - lintian
-    # - fakeroot
 
 env:
   global:
@@ -84,6 +79,7 @@ env:
     # GIT_PSWD travis-ci-opendap
     - secure: "Oi3LunWs6lnFSW83d8z1llVBGIfUx3E+0d6wRAnkO0Q3muTMr8zm/bmaBt7XxnUQ3uKjRp9Uwkqtt7jJDHfTMeO5mXqYz018mc+PxwPmfFk6mnCQVbu1fk2tDRFbKYBPxILk0lvkShqzfKJJ9g/5b1IBJ/oxZAErf21qMqi1IHU="
 
+# only install things when needed to save time. jhrg 4/1/26
 before_install:
   - if test -n "$AWS_ACCESS_KEY_ID" -a \( "$TRAVIS_JOB_NAME" = "make" -o "$TRAVIS_JOB_NAME" = "asan" -o "$TRAVIS_JOB_NAME" = "distcheck" \); then pip install --user awscli; fi
   # fix for Java 17 install for Sonar from Travis CI support. jhrg 1/23/24
@@ -196,6 +192,13 @@ jobs:
     - stage: package
       name: "source distribution"
       env: CACHE_NAME=srcdist
+      # Use a workspace to pass the source distribution tarball and version file to the next
+      # stage that triggers the BES build. jhrg 4/1/26
+      workspaces:
+        create:
+          name: snapshot-release
+          paths:
+            - .travis-workspace/snapshot
       script:
         - export LIBDAP_BUILD=srcdist
         - mkdir -p $TRAVIS_BUILD_DIR/package
@@ -213,11 +216,6 @@ jobs:
         - cp libdap_VERSION $TRAVIS_BUILD_DIR/.travis-workspace/snapshot/
         - cp libdap-$SOURCE_VERSION.tar.gz $TRAVIS_BUILD_DIR/.travis-workspace/snapshot/
         - cp libdap-snapshot.tar.gz $TRAVIS_BUILD_DIR/.travis-workspace/snapshot/
-      workspaces:
-        create:
-          name: snapshot-release
-          paths:
-            - .travis-workspace/snapshot
 
     - stage: hyrax-bes-trigger
       name: "Hyrax BES Trigger"
