@@ -8,6 +8,7 @@
   "C_Cpp.default.cppStandard": "c++14",
   "C_Cpp.default.intelliSenseMode": "macos-clang-arm64",
   "C_Cpp.vcFormat.indent.namespaceContents": false,
+  "C_Cpp.default.includePath": ["${workspaceFolder}/**"],
   // Makefile settings. jhrg 3/11/26
   "files.associations": {
     "*.am": "makefile"
