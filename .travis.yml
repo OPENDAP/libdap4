@@ -65,6 +65,8 @@ env:
     - CCACHE_BASEDIR=$TRAVIS_BUILD_DIR
     - CCACHE_MAXSIZE=10G
     - CCACHE_COMPRESS=true
+    # Added to reduce cache misses due config.h rebuilds. jhrg 4/2/26
+    - CCACHE_SLOPPINESS=include_file_mtime,time_macros
 
     # SONAR_LOGIN, created using travis encrypt --org -r OPENDAP/libdap4 SONAR_LOGIN=<sonar login key>
     - secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw="
