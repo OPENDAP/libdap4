@@ -96,7 +96,7 @@ public:
      * @param constrained Ignored for scalar values.
      * @return Number of bytes used by this value.
      */
-    int64_t width_ll(bool constrained = false) const override { return sizeof(dods_int32); }
+    int64_t width_ll(bool = false) const override { return sizeof(dods_int32); }
 
     // DAP2
     bool serialize(ConstraintEvaluator &eval, DDS &dds, Marshaller &m, bool ce_eval = true) override;

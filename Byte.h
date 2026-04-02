@@ -94,7 +94,7 @@ public:
      * @param constrained Ignored for scalar byte values.
      * @return Number of bytes used by the byte value.
      */
-    int64_t width_ll(bool constrained = false) const override { return sizeof(dods_byte); }
+    int64_t width_ll(bool = false) const override { return sizeof(dods_byte); }
 
     BaseType *ptr_duplicate() override;
 

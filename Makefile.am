@@ -116,9 +116,6 @@ clean-local:
 
 HTML_DOCS=html
 
-doxy.conf: doxy.conf.in
-	config.status --no-create --file=$@ $<
-
 # This target only builds the documents, it does not move them to
 # github. See README.gh-pages.md for that
 .PHONY: docs
