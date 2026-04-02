@@ -22,13 +22,13 @@ compiler: gcc # Could add clang
 # Build only 'master,' 'main,' or '.*-test-deploy' branches. This is used down in the
 # "stages" section where we assume the build process is only run for branches that
 # match those patterns. jhrg 8/22/22
-# Added '.*test-scan' to the list of branches that can trigger a build. jhrg 1/18/24
+# Added '.*-test-scan' to the list of branches that can trigger a build. jhrg 1/18/24
 branches:
   only:
     - master
     - main
     - /^(.*-test-deploy)$/
-    - /^(.*test-scan)$/ # enables running only the scan. jhrg 1/18/24
+    - /^(.*-test-scan)$/ # enables running only the scan. jhrg 1/18/24
 
 # This cache is used to speed up sonar scan runs. See https://docs.travis-ci.com/user/caching.
 # Each branch gets its own cache. jhrg 2/11/22
