@@ -22,22 +22,26 @@ compiler: gcc # Could add clang
 # Build only 'master,' 'main,' or '.*-test-deploy' branches. This is used down in the
 # "stages" section where we assume the build process is only run for branches that
 # match those patterns. jhrg 8/22/22
-# Added '.*test-scan' to the list of branches that can trigger a build. jhrg 1/18/24
+# Added '.*-test-scan' to the list of branches that can trigger a build. jhrg 1/18/24
 branches:
   only:
     - master
     - main
     - /^(.*-test-deploy)$/
-    - /^(.*test-scan)$/ # enables running only the scan. jhrg 1/18/24
+    - /^(.*-test-scan)$/ # enables running only the scan. jhrg 1/18/24
 
 # This cache is used to speed up sonar scan runs. See https://docs.travis-ci.com/user/caching.
 # Each branch gets its own cache. jhrg 2/11/22
 cache:
+  ccache: true
+  pip: true
+  apt: true
   directories:
     - ./.cache/sonar/
 
 addons:
-  sonarcloud: true
+  sonarcloud:
+    organization: "opendap"
   apt:
     packages:
       - libxml2-dev
@@ -47,11 +51,7 @@ addons:
       - gcovr
       - libfl-dev # needed for focal, but not xenial. jhrg 1/18/24
       - libtool-bin
-    # - openjdk-17-jre  # Removed, see hack in before_install: jhrg 1/23/24
-    # remove support for debian packages. jhrg 2/23/21
-    # - build-essential
-    # - lintian
-    # - fakeroot
+      - ccache
 
 env:
   global:
@@ -60,32 +60,32 @@ env:
     # $HOME is /home/travis
     - prefix=$HOME/install
     - PATH=$prefix/bin:$PATH
-    - TESTSUITEFLAGS=-j7
+    - BUILD_PROCS=$(nproc)
+    - TESTSUITEFLAGS=-j$BUILD_PROCS
 
-    # SONAR_LOGIN, created using travis encrypt --org -r OPENDAP/libdap4 SONAR_LOGIN=<sonar login key>
-    - secure: "LTrO/VZTxJ+Qo1FO106zCPILBMb09zezLeGcixd4BcXDICiVtVAtgw7LzCkBWn5Vxvhzd+Hs+uDHfqT8cKI8lewjJd79uHQ1I2CSqZdBs6ERQzndKpoRNm+t63qWQc7A+wDyj2m4odtO9zrhxDR3Poo38G7UtJmQLFrBf5QmLAw="
-
-    # For the AWS user ci-user: travis encrypt --org -r OPENDAP/libdap4 AWS_ACCESS_KEY_ID=
-    # - secure: "QIk09Kg5l6QLKE44W2fqlJ840b82PpGBhb74p/fWjQPmnuUTlCnBN2/BqD5egeoTetDbtwo5K3tNTFlFbiLjO6vTKmj6L2EZL6ghaPkidBv+5Tmp1oj/UwbINakdUV3S4Y/jJ5Z3iahIW9+wiwGAnxGSNbgRhOnpivZEY787qRM="
-    # travis encrypt --org -r OPENDAP/libdap4 AWS_SECRET_ACCESS_KEY=
-    # - secure: "MYuhqdkVABYLrY+a/wgjDsmFn0y3jXAMZMaY9UADG/wHayv7tO26gdLblLu3Y8LqzA9sq9R1aI0n1vJB//UwCMkhpSQeuNo/vYZBaRB5+uvPovdzewqJ/7Y5e806QCalTuZNtKldZE8O8ANxwy+8M7t7es6hXjImPyI+wMpdsjc="
+    - CCACHE_DIR=$HOME/.ccache
+    - CCACHE_BASEDIR=$TRAVIS_BUILD_DIR
+    - CCACHE_MAXSIZE=10G
+    - CCACHE_COMPRESS=true
+    # Added to reduce cache misses due to config.h rebuilds. jhrg 4/2/26
+    - CCACHE_SLOPPINESS=include_file_mtime,time_macros
 
     # GIT_UID travis-ci-opendap
     - secure: "g+SL53aSnULaToAu+HJO86Ljr6//j+aVSlVh7ROj6h80PDVmSW0xyiLUQRkA24vMrQqNY/rj6+qAXgVGORCPs2JBGcKjELzLr30eNDXfUNOjB+0actXI8sKD8I3eTZMHawOpedtk9v884Z+iQJauh04tD70sUMBp/WpCp+mXgQE="
     # GIT_PSWD travis-ci-opendap
     - secure: "Oi3LunWs6lnFSW83d8z1llVBGIfUx3E+0d6wRAnkO0Q3muTMr8zm/bmaBt7XxnUQ3uKjRp9Uwkqtt7jJDHfTMeO5mXqYz018mc+PxwPmfFk6mnCQVbu1fk2tDRFbKYBPxILk0lvkShqzfKJJ9g/5b1IBJ/oxZAErf21qMqi1IHU="
 
+# only install things when needed to save time. jhrg 4/1/26
 before_install:
-  - pip install --user awscli
+  - if test -n "$AWS_ACCESS_KEY_ID" -a \( "$TRAVIS_JOB_NAME" = "make" -o "$TRAVIS_JOB_NAME" = "asan" -o "$TRAVIS_JOB_NAME" = "distcheck" \); then pip install --user awscli; fi
   # fix for Java 17 install for Sonar from Travis CI support. jhrg 1/23/24
-  - curl -s "https://get.sdkman.io" | bash
-  - source "$HOME/.sdkman/bin/sdkman-init.sh"
-  - sdk install java 17.0.2-open
-  - sdk use java 17.0.2-open
-  - java -version
+  - if test "$TRAVIS_JOB_NAME" = "scan"; then curl -s "https://get.sdkman.io" | bash; fi
+  - if test "$TRAVIS_JOB_NAME" = "scan"; then source "$HOME/.sdkman/bin/sdkman-init.sh"; fi
+  - if test "$TRAVIS_JOB_NAME" = "scan"; then sdk install java 17.0.2-open; fi
+  - if test "$TRAVIS_JOB_NAME" = "scan"; then sdk use java 17.0.2-open; fi
+  - if test "$TRAVIS_JOB_NAME" = "scan"; then java -version; fi
 
 install:
-  # $HOME is /home/travis and $TRAVIS_BUILD_DIR is /home/travis/build/OPENDAP/libdap4
   - which bison flex
   - bison --version
   - flex --version
@@ -97,59 +97,65 @@ before_script:
   - source travis/travis_libdap_build_offset.sh
   - export LIBDAP_BUILD_NUMBER=$(expr $TRAVIS_BUILD_NUMBER - $LIBDAP_TRAVIS_BUILD_OFFSET)
   - echo "LIBDAP_BUILD_NUMBER is ${LIBDAP_BUILD_NUMBER} = ${TRAVIS_BUILD_NUMBER} - ${LIBDAP_TRAVIS_BUILD_OFFSET}"
-  # moved down below to individual steps. jhrg 3/23/21 autoreconf --force --install --verbose
+  - ccache --zero-stats || true
+  - ccache --max-size "$CCACHE_MAXSIZE" || true
 
 stages:
   - name: build
     if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
   - name: scan
-    if: branch = master OR branch = main OR branch =~ ^(.*test-scan)$
+    if: branch = master OR branch = main OR branch =~ ^(.*-test-scan)$
   - name: package
     if: branch = master OR branch = main OR branch =~ ^(.*-test-deploy)$
   - name: hyrax-bes-trigger
     # This stage is used to trigger a build of the Hyrax BES. It is triggered by a successful
     # build but only for things that are not pull requests with the sole exception that branches
     # that end in '-test-deploy' are also allowed to trigger a BES build. jhrg 1/18/24
-    if: type != pull_request AND NOT branch =~ ^(.*test-scan)$ OR branch =~ ^(.*-test-deploy)$
+    if: type != pull_request AND NOT branch =~ ^(.*-test-scan)$ OR branch =~ ^(.*-test-deploy)$
 
 jobs:
   include:
     - stage: build
       name: "make"
+      env: CACHE_NAME=make
       script:
         - export LIBDAP_BUILD=main
         - autoreconf --force --install --verbose
         - ./configure --disable-dependency-tracking --prefix=$prefix
-        - make -j7 && make check -j7 && make install
+        - make -j$BUILD_PROCS && make check -j$BUILD_PROCS && make install
 
     - stage: build
       name: "asan"
+      env: CACHE_NAME=asan
       script:
         - export LIBDAP_BUILD=asan
         - autoreconf --force --install --verbose
         - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
-        - make -j7 && make check -j7
+        - make -j$BUILD_PROCS && make check -j$BUILD_PROCS
 
     - stage: build
       name: "distcheck"
+      env: CACHE_NAME=distcheck
       script:
         - export LIBDAP_BUILD=distcheck
         - autoreconf --force --install --verbose
         - ./configure --disable-dependency-tracking --prefix=$prefix
-        - make distcheck -j7
+        - make distcheck -j$BUILD_PROCS
 
     - stage: scan
       name: "scan"
+      env: CACHE_NAME=scan
       script:
         - export LIBDAP_BUILD=sonar
+        - export SONAR_TOKEN=$SONAR_LOGIN
         - autoreconf --force --install --verbose
         - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-coverage
-        - build-wrapper-linux-x86-64 --out-dir bw-output make -j7
-        - make check -j7
+        - build-wrapper-linux-x86-64 --out-dir bw-output make -j$BUILD_PROCS
+        - make check -j$BUILD_PROCS
         - gcovr --config gcovr.config --sonarqube coverage.xml
-        - sonar-scanner -Dsonar.token=$SONAR_LOGIN # Dsonar.login --> Dsonar.token. Fix a warning. jhrg 1/18/24
-        # Test the result of the scan and fail a PR/build if the quality gate fails
-        - curl -s https://sonarcloud.io/api/project_badges/quality_gate?project=OPENDAP-libdap4 | grep "QUALITY GATE PASS"
+        - sonar-scanner
+        # The scanner waits for the quality gate because sonar.qualitygate.wait=true is set
+        # in sonar-project.properties, so no extra badge/API polling is needed here.
 
     - stage: package
       name: "rocky8 RPMs"
@@ -179,30 +185,45 @@ jobs:
 
     - stage: package
       name: "source distribution"
+      env: CACHE_NAME=srcdist
+      # Use a workspace to pass the source distribution tarball and version file to the next
+      # stage that triggers the BES build. jhrg 4/1/26
+      workspaces:
+        create:
+          name: snapshot-release
+          paths:
+            - .travis-workspace/snapshot
       script:
         - export LIBDAP_BUILD=srcdist
         - mkdir -p $TRAVIS_BUILD_DIR/package
+        - mkdir -p $TRAVIS_BUILD_DIR/.travis-workspace/snapshot
         - autoreconf --force --install --verbose
         - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
-        - make dist -j7
+        - make dist -j$BUILD_PROCS
         # Make both a libdap-<version>-<build num> and libdap-snapshot tar.gz. This will simplify
         # other operations that use the libdap source code like the bes build. Note that the VERSION
         # file holds a string that is the version number as set by the configure script and the build
         # number passed into configure when it is run. jhrg 3/23/21
         - SOURCE_VERSION=$(cat libdap_VERSION)
         - mv libdap-*.tar.gz libdap-$SOURCE_VERSION.tar.gz
-        - cp libdap-$SOURCE_VERSION.tar.gz libdap-snapshot.tar.gz;
+        - cp libdap-$SOURCE_VERSION.tar.gz libdap-snapshot.tar.gz
+        - cp libdap_VERSION $TRAVIS_BUILD_DIR/.travis-workspace/snapshot/
+        - cp libdap-$SOURCE_VERSION.tar.gz $TRAVIS_BUILD_DIR/.travis-workspace/snapshot/
+        - cp libdap-snapshot.tar.gz $TRAVIS_BUILD_DIR/.travis-workspace/snapshot/
 
     - stage: hyrax-bes-trigger
       name: "Hyrax BES Trigger"
+      env: CACHE_NAME=hyrax-bes-trigger
+      workspaces:
+        use: snapshot-release
       script:
         - export STAGE=hyrax-bes
         - echo $STAGE
-        - autoreconf --force --install --verbose
-        - ./configure --disable-dependency-tracking --prefix=$prefix --with-build=$LIBDAP_BUILD_NUMBER
+        - cp .travis-workspace/snapshot/libdap_VERSION ./libdap_VERSION
         - ./travis/trigger-bes-build.sh
 
 after_script:
+  - ccache --show-stats || true
   - ./travis/upload-test-results.sh
 
 before_deploy:
@@ -223,7 +244,7 @@ before_deploy:
   # rocky9 distribution prep
   - if test "$LIBDAP_BUILD" = "rocky9"; then ./travis/rpm-to-package-dir.sh "el9"; fi
   # Src dist distribution prep
-  - if test "$BES_BUILD" = "srcdist"; then cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package; fi
+  - if test "$LIBDAP_BUILD" = "srcdist"; then cp libdap-*.tar.gz $TRAVIS_BUILD_DIR/package; fi
   # Check for the stuff...
   - ls -lR $TRAVIS_BUILD_DIR/package
 
@@ -239,5 +260,5 @@ deploy:
     all_branches: true
     # Was "branch: master". Now supports the *-test-deploy feature and also
     # using 'main' as the branch name. jhrg 8/22/22
-    condition: $LIBDAP_BUILD =~ ^main|srddist|rocky8|rocky9$
+    condition: $LIBDAP_BUILD =~ ^(main|srcdist|rocky8|rocky9)$
     # Added  'rocky9|' ndp 11/19/25

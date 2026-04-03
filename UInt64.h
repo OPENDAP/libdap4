@@ -89,7 +89,7 @@ public:
      * @param constrained Ignored for scalar values.
      * @return Number of bytes used by this value.
      */
-    int64_t width_ll(bool constrained = false) const override { return sizeof(dods_uint64); }
+    int64_t width_ll(bool = false) const override { return sizeof(dods_uint64); }
 
     // DAP4
     void compute_checksum(Crc32 &checksum) override;

@@ -3,46 +3,113 @@ name: CMake CI
 on:
   push:
     branches: [master, main]
+    paths-ignore:
+      - "**/*.md"
+      - ".vscode/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE*"
   pull_request:
     branches: [master, main]
+    paths-ignore:
+      - "**/*.md"
+      - ".vscode/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE*"
   # Enables triggering the workflow manually (on any branch) from the Actions tab
   workflow_dispatch:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: Linux
+          - os: macos-15-intel
+            name: macOS Intel
+          # For a reason I don't entirely understand, with this build, some of the expr-tests fail.exclude:
+          # Investigate on a clean OSX M4 machine. jhrg 4/2/26
+          #- os: macos-15
+          #  name: macOS arm64
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      # From the logs, it looks like the needed cache is a little over 8GB. jhrg 4/1/26
+      CCACHE_MAXSIZE: 10G
+      CCACHE_COMPRESS: "true"
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Create ccache directory
+        run: mkdir -p "$CCACHE_DIR"
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ runner.os }}-${{ runner.arch }}-ccache-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', '.github/workflows/cmake.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-ccache-
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential \
-            cmake \
-            flex \
-            bison \
             libxml2-dev \
             libcurl4-openssl-dev \
             uuid-dev \
             libcppunit-dev \
             libtirpc-dev \
-            libfl-dev
+            libfl-dev \
+            ccache
 
-      - name: Configure (CMake)
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
         run: |
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
+          brew install \
+            bison \
+            ccache \
+            cppunit \
+            flex \
+            libtirpc
+
+      - name: Configure macOS build environment
+        if: runner.os == 'macOS'
+        run: |
+          BREW_PREFIX="$(brew --prefix)"
+          echo "$BREW_PREFIX/opt/bison/bin" >> "$GITHUB_PATH"
+          echo "$BREW_PREFIX/opt/flex/bin" >> "$GITHUB_PATH"
+          echo "CMAKE_PREFIX_PATH=$BREW_PREFIX" >> "$GITHUB_ENV"
+
+      - name: Determine parallelism
+        run: |
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            echo "BUILD_JOBS=$(sysctl -n hw.logicalcpu)" >> "$GITHUB_ENV"
+          else
+            echo "BUILD_JOBS=$(nproc)" >> "$GITHUB_ENV"
+          fi
+
+      - name: Configure (CMake preset)
+        run: |
+          ccache --zero-stats || true
+          ccache --max-size "$CCACHE_MAXSIZE" || true
+          cmake --preset ci
 
       - name: Build
         run: |
-          cd build
-          make -j$(nproc)
+          cmake --build --preset ci --parallel "$BUILD_JOBS"
 
       - name: Run tests (if applicable)
         run: |
-          cd build
-          ctest --output-on-failure -j$(nproc)
+          ctest --preset ci --output-on-failure --parallel "$BUILD_JOBS"
+
+      - name: Show ccache stats
+        if: always()
+        run: ccache --show-stats || true

@@ -10,7 +10,7 @@ aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
 AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU -I$(top_srcdir)/http_dap $(XML2_CFLAGS) $(TIRPC_CFLAGS)
-AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align -Wno-deprecated-register
+AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align -Wno-unknown-pragmas -Wno-deprecated-register
 
 CXXFLAGS_DEBUG = -g3 -O0
 
@@ -115,9 +115,6 @@ clean-local:
 	-rm -rf gcovr-output
 
 HTML_DOCS=html
-
-doxy.conf: doxy.conf.in
-	config.status --no-create --file=$@ $<
 
 # This target only builds the documents, it does not move them to
 # github. See README.gh-pages.md for that

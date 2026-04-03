@@ -208,15 +208,10 @@ public:
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wself-assign-overloaded"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wself-assign"
 #endif
         a1 = a1;
 #if defined(__clang__)
 #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
 #endif
         Array *after = &a1;
         CPPUNIT_ASSERT_MESSAGE("The pointers should be the same", before == after);

@@ -202,13 +202,13 @@ void ErrorAssignmentTest::test_self_assignment() {
 
 // Act: Assign the object to itself.
 // Suppress compiler warnings for intentional self-assignment.
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-assign-overloaded"
 #endif
     *error_lhs = *error_lhs;
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
+#if defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 
     // Assert: Check that the object's state remains unchanged.

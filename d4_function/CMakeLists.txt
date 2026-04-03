@@ -4,6 +4,18 @@ cmake_minimum_required(VERSION 3.10)
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
+# Some macOS/Homebrew setups provide a flex executable whose matching
+# FlexLexer.h is not on the compiler's default include path. Prefer the
+# header that ships with the discovered flex tool when CMake did not
+# populate FLEX_INCLUDE_DIRS itself.
+if(NOT FLEX_INCLUDE_DIRS AND FLEX_EXECUTABLE)
+    get_filename_component(_flex_bin_dir "${FLEX_EXECUTABLE}" DIRECTORY)
+    get_filename_component(_flex_prefix "${_flex_bin_dir}/.." ABSOLUTE)
+    if(EXISTS "${_flex_prefix}/include/FlexLexer.h")
+        set(FLEX_INCLUDE_DIRS "${_flex_prefix}/include")
+    endif()
+endif()
+
 # Options inherited from top-level CMakeLists
 #option(BUILD_DEVELOPER "Developer mode" OFF)
 #option(USE_ASAN "Enable Address Sanitizer" OFF)
@@ -65,6 +77,10 @@ target_include_directories(d4_function_parser
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/d4_ce
 )
+
+if(FLEX_INCLUDE_DIRS)
+    target_include_directories(d4_function_parser PRIVATE ${FLEX_INCLUDE_DIRS})
+endif()
 
 target_include_directories(d4_function_parser PRIVATE ${LIBXML2_INCLUDE_DIR})
 

@@ -343,22 +343,26 @@ public:
                  << endl);
         ostringstream oss;
         try {
-            D4StreamMarshaller dsm(oss, true, checksums);
-            vector<unsigned char> buf(32768);
-            for (int i = 0; i < 32768; ++i)
-                buf[i] = i % (1 << 7);
+            {
+                D4StreamMarshaller dsm(oss, true, checksums);
+                vector<unsigned char> buf(32768);
+                for (int i = 0; i < 32768; ++i)
+                    buf[i] = i % (1 << 7);
 
-            dsm.reset_checksum();
-
-            dsm.put_opaque_dap4(reinterpret_cast<char *>(buf.data()), 32768);
-            if (checksums) {
-                dsm.put_checksum();
-                DBG(cerr << prolog << "dsm.put_opaque_dap4() checksum: " << dsm.get_checksum() << endl);
                 dsm.reset_checksum();
+
+                dsm.put_opaque_dap4(reinterpret_cast<char *>(buf.data()), 32768);
+                if (checksums) {
+                    dsm.put_checksum();
+                    DBG(cerr << prolog << "dsm.put_opaque_dap4() checksum: " << dsm.get_checksum() << endl);
+                    dsm.reset_checksum();
+                }
             }
+
+            const auto data = oss.str();
             if (write_baselines)
-                write_binary_file(oss.str().data(), oss.str().length(), baseline_file);
-            CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), baseline_file));
+                write_binary_file(data.data(), data.length(), baseline_file);
+            CPPUNIT_ASSERT(cmp(data.data(), data.length(), baseline_file));
         } catch (Error &e) {
             cerr << "Error: " << e.get_error_message() << endl;
             CPPUNIT_FAIL("Caught an exception.");
@@ -375,48 +379,50 @@ public:
                  << endl);
         ostringstream oss;
         try {
-            D4StreamMarshaller dsm(oss, true, checksums);
-            vector<unsigned char> buf1(num_elements);
-            for (int i = 0; i < num_elements; ++i)
-                buf1[i] = i % (1 << 7);
+            {
+                D4StreamMarshaller dsm(oss, true, checksums);
+                vector<unsigned char> buf1(num_elements);
+                for (int i = 0; i < num_elements; ++i)
+                    buf1[i] = i % (1 << 7);
 
-            dsm.reset_checksum();
-
-            dsm.put_vector(reinterpret_cast<char *>(buf1.data()), num_elements);
-            if (checksums) {
-                dsm.put_checksum();
-                DBG(cerr << prolog << "dsm.put_vector(unsigned char) checksum: " << dsm.get_checksum() << endl);
                 dsm.reset_checksum();
-            }
 
-            vector<dods_int32> buf2(num_elements);
-            for (int i = 0; i < num_elements; ++i)
-                buf2[i] = i % (1 << 9);
+                dsm.put_vector(reinterpret_cast<char *>(buf1.data()), num_elements);
+                if (checksums) {
+                    dsm.put_checksum();
+                    DBG(cerr << prolog << "dsm.put_vector(unsigned char) checksum: " << dsm.get_checksum() << endl);
+                    dsm.reset_checksum();
+                }
 
-            dsm.put_vector(reinterpret_cast<char *>(buf2.data()), num_elements, sizeof(dods_int32));
-            if (checksums) {
-                dsm.put_checksum();
-                DBG(cerr << prolog << "dsm.put_vector(int32) checksum: " << dsm.get_checksum() << endl);
-                dsm.reset_checksum();
-            }
+                vector<dods_int32> buf2(num_elements);
+                for (int i = 0; i < num_elements; ++i)
+                    buf2[i] = i % (1 << 9);
 
-            vector<dods_float64> buf3(num_elements);
-            for (int i = 0; i < num_elements; ++i)
-                buf3[i] = i % (1 << 9);
+                dsm.put_vector(reinterpret_cast<char *>(buf2.data()), num_elements, sizeof(dods_int32));
+                if (checksums) {
+                    dsm.put_checksum();
+                    DBG(cerr << prolog << "dsm.put_vector(int32) checksum: " << dsm.get_checksum() << endl);
+                    dsm.reset_checksum();
+                }
 
-            dsm.put_vector_float64(reinterpret_cast<char *>(buf3.data()), num_elements);
-            if (checksums) {
-                dsm.put_checksum();
-                DBG(cerr << prolog << "dsm.put_vector_float64() checksum: " << dsm.get_checksum() << endl);
+                vector<dods_float64> buf3(num_elements);
+                for (int i = 0; i < num_elements; ++i)
+                    buf3[i] = i % (1 << 9);
+
+                dsm.put_vector_float64(reinterpret_cast<char *>(buf3.data()), num_elements);
+                if (checksums) {
+                    dsm.put_checksum();
+                    DBG(cerr << prolog << "dsm.put_vector_float64() checksum: " << dsm.get_checksum() << endl);
+                }
             }
 
             if (!baseline_file.empty()) {
+                const auto data = oss.str();
 
                 if (write_baselines) {
-                    write_binary_file(oss.str().data(), oss.str().length(), baseline_file);
+                    write_binary_file(data.data(), data.length(), baseline_file);
                 }
 
-                const auto data = oss.str();
                 const auto str_len = data.length();
                 CPPUNIT_ASSERT(cmp(data.c_str(), str_len, baseline_file));
             }
@@ -425,48 +431,6 @@ public:
             CPPUNIT_FAIL("Caught an exception.");
         }
     }
-#if 0
-    void test_varying_vector() {
-        ostringstream oss;
-        try {
-            D4StreamMarshaller dsm(oss);
-            vector<unsigned char> buf1(32768);
-            for (int i = 0; i < 32768; ++i)
-            buf1[i] = i % (1 << 7);
-
-            dsm.reset_checksum();
-
-            dsm.put_varying_vector(reinterpret_cast<char*>(buf1.data()), 32768);
-            dsm.put_checksum();
-            DBG(cerr << prolog << "test_varying_vector: first checksum: " << dsm.get_checksum() << endl);
-            dsm.reset_checksum();
-
-            vector<dods_int32> buf2(32768);
-            for (int i = 0; i < 32768; ++i)
-            buf2[i] = i % (1 << 9);
-
-            dsm.put_varying_vector(reinterpret_cast<char*>(buf2.data()), 32768, sizeof(dods_int32));
-            dsm.put_checksum();
-            DBG(cerr << prolog << "second checksum: " << dsm.get_checksum() << endl);
-            dsm.reset_checksum();
-
-            vector<dods_float64> buf3(32768);
-            for (int i = 0; i < 32768; ++i)
-            buf3[i] = i % (1 << 9);
-
-            dsm.put_varying_vector(reinterpret_cast<char*>(buf3.data()), 32768, sizeof(dods_float64), dods_float64_c);
-            dsm.put_checksum();
-            DBG(cerr << prolog << "third checksum: " << dsm.get_checksum() << endl);
-
-            if (write_baselines) write_binary_file(oss.str().data(), oss.str().length(), path + "/test_vector_2_bin.dat");
-            CPPUNIT_ASSERT(cmp(oss.str().data(), oss.str().length(), path + "/test_vector_2_bin.dat"));
-        }
-        catch (Error &e) {
-            cerr << "Error: " << e.get_error_message() << endl;
-            CPPUNIT_FAIL("Caught an exception.");
-        }
-    }
-#endif
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(D4MarshallerTest);

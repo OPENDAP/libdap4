@@ -134,15 +134,10 @@ public:
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wself-assign-overloaded"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wself-assign"
 #endif
         b4 = b4;
 #if defined(__clang__)
 #pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
 #endif
         CPPUNIT_ASSERT(b4.value() == 42);
     }
