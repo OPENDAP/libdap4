@@ -145,11 +145,9 @@ foreach(autotest_suite IN LISTS AUTOTEST_SUITES)
 	list(APPEND AUTOTEST_GENERATED_SCRIPTS "${autotest_output}")
 endforeach()
 
-add_custom_target(autotest-suites DEPENDS ${AUTOTEST_GENERATED_SCRIPTS})
-
 add_custom_target(tests ALL
 		DEPENDS
-			autotest-suites
+			${AUTOTEST_GENERATED_SCRIPTS}
 			das-test
 			dds-test
 			expr-test

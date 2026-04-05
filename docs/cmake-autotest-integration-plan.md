@@ -1,5 +1,8 @@
 # CMake Autotest Integration Plan
 
+Note: running the tests this was save ~1,000 lines of cmake code and requires
+no change to the existing autotest tests. jhrg 4/4/26
+
 ## Goal
 
 Support CMake builds that run the existing autotools/autotest-based integration
