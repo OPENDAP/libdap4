@@ -1,9 +1,6 @@
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 find_program(AUTOCONF_EXECUTABLE autoconf REQUIRED)
 find_program(AUTOM4TE_EXECUTABLE autom4te REQUIRED)
-find_program(AUTOHEADER_EXECUTABLE autoheader)
 
 add_library(test-types STATIC
 		TestArray.cc TestD4Sequence.cc TestInt32.cc TestTypeFactory.cc
@@ -84,16 +81,6 @@ if(TIRPC_FOUND)
 	# message(STATUS "dmr-test, TIRPC_INCLUDE_DIRS: ${TIRPC_INCLUDE_DIRS}")
 	target_link_libraries(dmr-test PRIVATE ${TIRPC_LIBRARIES})
 endif()
-
-## This is me playing around with ways to clean up the stuff left over from
-## test runs. 7/14/25 jhrg.
-add_custom_target(clean-tests
-		COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_CURRENT_BINARY_DIR}/*.out"
-		COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_CURRENT_BINARY_DIR}/*.diff"
-		COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_CURRENT_BINARY_DIR}/*.bin"
-		COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_CURRENT_BINARY_DIR}/*.out_univ"
-		COMMENT "Cleaning up integration tests generated artifacts."
-)
 
 set(TESTS_AUTOCONF_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/configure.ac")
 set(TESTS_CONFIGURE_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/configure")
