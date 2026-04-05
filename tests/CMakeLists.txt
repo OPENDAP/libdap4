@@ -147,7 +147,7 @@ endforeach()
 
 add_custom_target(autotest-suites DEPENDS ${AUTOTEST_GENERATED_SCRIPTS})
 
-add_custom_target(tests
+add_custom_target(tests ALL
 		DEPENDS
 			autotest-suites
 			das-test

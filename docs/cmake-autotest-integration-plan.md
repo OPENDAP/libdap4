@@ -42,7 +42,14 @@ tests while keeping the current CMake CppUnit tests intact.
    dependencies plus serial/parallel behavior for the autotest suite wrappers
    so `ctest` and the top-level `integration-test` and `check` targets
    continue to work.
-7. Validate with a focused CMake configure/build plus `ctest` over the
+7. Fold the integration-test build artifacts into the default CMake `ALL`
+   target so `cmake --build --preset <preset>` builds both the unit-test and
+   integration-test executables plus the generated autotest suite drivers,
+   without changing when tests are executed.
+8. Remove the now-unused hand-maintained CMake integration modules and any
+   supporting `tests/CMakeLists.txt` logic that existed only for that older
+   path.
+9. Validate with a focused CMake configure/build plus `ctest` over the
    integration label, then note any suites that still depend on autotools-era
    assumptions such as generated `package.m4`, working directory layout, or
    network access in `getdapTest`.
@@ -87,7 +94,7 @@ CTest registrations and shell snippets.
 
 ## Implementation Status
 
-Steps 2 through 6 are now implemented in the CMake build:
+Steps 2 through 9 are now implemented in the CMake build:
 
 - `tests/configure.ac` provides a minimal autotest-only configure input that
   computes `ac_word_order` and configures `atlocal` plus `package.m4`.
@@ -95,9 +102,12 @@ Steps 2 through 6 are now implemented in the CMake build:
   autotest support files in the CMake test build tree, and builds the
   `DASTest`, `DDSTest`, `EXPRTest`, `DMRTest`, and `getdapTest` drivers from
   the existing `*.at` sources.
-- The old hand-maintained per-case CMake integration modules are no longer used
-  by `tests/CMakeLists.txt`; the CMake path now registers one CTest test per
-  autotest suite.
+- The `tests` custom target is now part of the default `ALL` target, so a
+  plain `cmake --build --preset <preset>` also builds the integration-test
+  executables and generated autotest suite drivers.
+- The old hand-maintained per-case CMake integration modules have been removed,
+  along with the unused `tests/CMakeLists.txt` setup that supported that older
+  path; the CMake path now registers one CTest test per autotest suite.
 - The suite wrappers are labeled under `integration` and run serially at the
   CTest layer. Any desired intra-suite parallelism should be passed through
   `TESTSUITEFLAGS`, matching the autotools `make check` model.
@@ -105,7 +115,7 @@ Steps 2 through 6 are now implemented in the CMake build:
   through the existing `tests` target dependency chain, while CMake CppUnit
   coverage and unit-test labels remain unchanged.
 
-## Step 7 Validation
+## Step 9 Validation
 
 Validation was run with the repository-style environment:
 
@@ -119,10 +129,15 @@ Focused CMake validation used:
 ```sh
 cmake -S . -B /tmp/libdap4-cmake-autotest-build-prefix \
   -DCMAKE_INSTALL_PREFIX=$prefix -DBUILD_DEVELOPER=ON
-cmake --build /tmp/libdap4-cmake-autotest-build-prefix --target tests -j2
+cmake --build /tmp/libdap4-cmake-autotest-build-prefix -j2
 ctest --test-dir /tmp/libdap4-cmake-autotest-build-prefix \
   --output-on-failure -L integration
 ```
+
+During the default build, CMake generated `tests/configure`, `atlocal`,
+`package.m4`, and the `DASTest`, `DDSTest`, `EXPRTest`, `DMRTest`, and
+`getdapTest` autotest driver scripts without requiring an explicit
+`--target tests`.
 
 Observed suite results:
 
