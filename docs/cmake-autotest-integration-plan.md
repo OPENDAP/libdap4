@@ -84,3 +84,68 @@ CTest registrations and shell snippets.
 - Some suites may assume a specific working directory layout under `tests/`.
 - `getdapTest` depends on network access and should stay clearly labeled as an
   integration test.
+
+## Implementation Status
+
+Steps 2 through 6 are now implemented in the CMake build:
+
+- `tests/configure.ac` provides a minimal autotest-only configure input that
+  computes `ac_word_order` and configures `atlocal` plus `package.m4`.
+- `tests/CMakeLists.txt` now finds `autoconf` and `autom4te`, generates the
+  autotest support files in the CMake test build tree, and builds the
+  `DASTest`, `DDSTest`, `EXPRTest`, `DMRTest`, and `getdapTest` drivers from
+  the existing `*.at` sources.
+- The old hand-maintained per-case CMake integration modules are no longer used
+  by `tests/CMakeLists.txt`; the CMake path now registers one CTest test per
+  autotest suite.
+- The suite wrappers are labeled under `integration` and run serially at the
+  CTest layer. Any desired intra-suite parallelism should be passed through
+  `TESTSUITEFLAGS`, matching the autotools `make check` model.
+- The top-level CMake `integration-test` and `check` targets continue to work
+  through the existing `tests` target dependency chain, while CMake CppUnit
+  coverage and unit-test labels remain unchanged.
+
+## Step 7 Validation
+
+Validation was run with the repository-style environment:
+
+```sh
+prefix=/Users/jimg/src/opendap/hyrax/build
+PATH=$prefix/bin:$prefix/deps/bin:$PATH
+```
+
+Focused CMake validation used:
+
+```sh
+cmake -S . -B /tmp/libdap4-cmake-autotest-build-prefix \
+  -DCMAKE_INSTALL_PREFIX=$prefix -DBUILD_DEVELOPER=ON
+cmake --build /tmp/libdap4-cmake-autotest-build-prefix --target tests -j2
+ctest --test-dir /tmp/libdap4-cmake-autotest-build-prefix \
+  --output-on-failure -L integration
+```
+
+Observed suite results:
+
+- `DASTest`: passed
+- `DDSTest`: passed
+- `DMRTest`: passed
+- `EXPRTest`: failed
+- `getdapTest`: failed
+
+Current autotools-era assumptions or runtime issues still exposed by the CMake
+path:
+
+- `EXPRTest` runs successfully as an autotest suite, but on this machine many
+  `expr-test -w ...` cases fail while the matching `-W` cases pass. This now
+  appears to be a runtime/behavior difference in `expr-test`, not a missing
+  CMake/autotest integration input.
+- `getdapTest` still depends on network access and also hit a local HTTP cache
+  locking failure in `HTTPCache.cc`, followed by a segmentation fault in
+  `getdap`. This is likewise a runtime issue surfaced by the suite, not a
+  driver-generation problem.
+- The generated suites expect to run from the CMake `tests/` build directory so
+  that autotest can create its `*.dir` work areas relative to the configured
+  `atconfig`/`atlocal` files.
+- `package.m4` is required by `autom4te` for all five suites and is now being
+  generated in the CMake build tree rather than assumed from the autotools
+  build.

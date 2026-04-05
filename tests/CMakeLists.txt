@@ -1,6 +1,10 @@
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+find_program(AUTOCONF_EXECUTABLE autoconf REQUIRED)
+find_program(AUTOM4TE_EXECUTABLE autom4te REQUIRED)
+find_program(AUTOHEADER_EXECUTABLE autoheader)
+
 add_library(test-types STATIC
 		TestArray.cc TestD4Sequence.cc TestInt32.cc TestTypeFactory.cc
 		TestByte.cc TestFloat32.cc TestInt64.cc TestUInt16.cc
@@ -91,9 +95,100 @@ add_custom_target(clean-tests
 		COMMENT "Cleaning up integration tests generated artifacts."
 )
 
-## Setup the tests.
-include(das-tests)
-include(dds-tests)
-include(dmr-tests)
-include(getdap-tests)
-include(expr-tests)
+set(TESTS_AUTOCONF_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/configure.ac")
+set(TESTS_CONFIGURE_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/configure")
+set(TESTS_ATCONFIG "${CMAKE_CURRENT_BINARY_DIR}/atconfig")
+set(TESTS_ATLOCAL "${CMAKE_CURRENT_BINARY_DIR}/atlocal")
+set(TESTS_PACKAGE_M4 "${CMAKE_CURRENT_BINARY_DIR}/package.m4")
+
+add_custom_command(
+		OUTPUT "${TESTS_CONFIGURE_SCRIPT}"
+		COMMAND "${AUTOCONF_EXECUTABLE}" "--output=${TESTS_CONFIGURE_SCRIPT}" "${TESTS_AUTOCONF_INPUT}"
+		DEPENDS "${TESTS_AUTOCONF_INPUT}"
+		COMMENT "Generating tests/configure from ${TESTS_AUTOCONF_INPUT}"
+		VERBATIM
+)
+
+add_custom_command(
+		OUTPUT "${TESTS_ATCONFIG}" "${TESTS_ATLOCAL}" "${TESTS_PACKAGE_M4}"
+		COMMAND "${TESTS_CONFIGURE_SCRIPT}" "--srcdir=${CMAKE_CURRENT_SOURCE_DIR}"
+		DEPENDS
+			"${TESTS_CONFIGURE_SCRIPT}"
+			"${CMAKE_CURRENT_SOURCE_DIR}/atlocal.in"
+			"${CMAKE_CURRENT_SOURCE_DIR}/package.m4.in"
+		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+		COMMENT "Configuring autotest support files in ${CMAKE_CURRENT_BINARY_DIR}"
+		VERBATIM
+)
+
+set(AUTOTEST_SUITES
+		DASTest
+		DDSTest
+		EXPRTest
+		DMRTest
+		getdapTest
+)
+
+set(AUTOTEST_GENERATED_SCRIPTS "")
+
+foreach(autotest_suite IN LISTS AUTOTEST_SUITES)
+	set(autotest_input "${CMAKE_CURRENT_SOURCE_DIR}/${autotest_suite}.at")
+	set(autotest_output "${CMAKE_CURRENT_BINARY_DIR}/${autotest_suite}")
+
+	add_custom_command(
+			OUTPUT "${autotest_output}"
+			COMMAND
+				"${AUTOM4TE_EXECUTABLE}"
+				"--language=autotest"
+				"-I" "${CMAKE_CURRENT_SOURCE_DIR}"
+				"-I" "${CMAKE_CURRENT_BINARY_DIR}"
+				"-o" "${autotest_output}.tmp"
+				"${autotest_input}"
+			COMMAND "${CMAKE_COMMAND}" -E rename "${autotest_output}.tmp" "${autotest_output}"
+			DEPENDS
+				"${autotest_input}"
+				"${TESTS_ATCONFIG}"
+				"${TESTS_ATLOCAL}"
+				"${TESTS_PACKAGE_M4}"
+			WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+			COMMENT "Generating autotest driver ${autotest_suite}"
+			VERBATIM
+	)
+
+	list(APPEND AUTOTEST_GENERATED_SCRIPTS "${autotest_output}")
+endforeach()
+
+add_custom_target(autotest-suites DEPENDS ${AUTOTEST_GENERATED_SCRIPTS})
+
+add_custom_target(tests
+		DEPENDS
+			autotest-suites
+			das-test
+			dds-test
+			expr-test
+			dmr-test
+			getdap
+)
+
+function(add_autotest_suite_test suite_name suite_label)
+	set(suite_script "${CMAKE_CURRENT_BINARY_DIR}/${suite_name}")
+
+	add_test(
+			NAME ${suite_name}
+			COMMAND /bin/sh -c "eval \"exec \\\"\$1\\\" \$TESTSUITEFLAGS\"" _ "${suite_script}"
+	)
+
+	# Keep the suite wrappers serial at the CTest layer and rely on
+	# TESTSUITEFLAGS (for example, --jobs=N) for any intra-suite parallelism.
+	set_tests_properties(${suite_name} PROPERTIES
+			LABELS "integration;${suite_label}"
+			RUN_SERIAL TRUE
+			WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+	)
+endfunction()
+
+add_autotest_suite_test(DASTest das)
+add_autotest_suite_test(DDSTest dds)
+add_autotest_suite_test(EXPRTest expr)
+add_autotest_suite_test(DMRTest dmr)
+add_autotest_suite_test(getdapTest getdap)
