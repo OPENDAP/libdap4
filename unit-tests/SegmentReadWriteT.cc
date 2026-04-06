@@ -6,8 +6,8 @@
 
 #include <cppunit/TextTestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <sys/stat.h> // POSIX header
 #include <cstring>
+#include <sys/stat.h> // POSIX header
 
 // #define DODS_DEBUG
 #include "util.h"
@@ -513,3 +513,4 @@ class SegmentReadWriteT : public TestFixture {
     CPPUNIT_TEST_SUITE_REGISTRATION(SegmentReadWriteT);
 
     int main(int argc, char *argv[]) { return run_tests<SegmentReadWriteT>(argc, argv) ? 0 : 1; }
+    
