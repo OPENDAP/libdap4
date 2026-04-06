@@ -33,8 +33,7 @@ public:
 
         if (mkdir(path_str.c_str(), mode) == 0) {
             DBG(cerr << "Directory '" << path_str << "' created successfully." << endl);
-        }
-        else{
+        } else {
             DBG(cerr << "Unable to create " << path_str << endl);
         }
     } // end setUp()
@@ -52,7 +51,8 @@ public:
 
     bool gen_large_test_file(uint64_t size, string filepath) {
         // use dd to gen and write an extremely large file here
-        auto command = "dd if=/dev/urandom of=" + filepath + " bs=" + to_string(size) + "c iflag=fullblock count=1 status=none";
+        auto command =
+            "dd if=/dev/urandom of=" + filepath + " bs=" + to_string(size) + "c iflag=fullblock count=1 status=none";
 
         DBG(cerr << "Running command: " << command << endl);
 
@@ -87,7 +87,7 @@ public:
         DBG(cerr << "Buffer written to output.bin as binary data." << endl);
     } // end write_buffer_to_file(...)
 
-    vector<char> read_file_to_buffer(string filepath){
+    vector<char> read_file_to_buffer(string filepath) {
         ifstream file(filepath, ios::binary); // Open in binary mode for raw bytes
         if (!file) {
             DBG(cerr << "Error: Could not open the file " << filepath << endl);
@@ -109,7 +109,7 @@ public:
         // call seg_read on file
         vector<char> buff(bytes);
         int v = 0;
-        for (auto &c : buff){
+        for (auto &c : buff) {
             c = (char) v;
             v++;
         }
@@ -155,7 +155,6 @@ public:
             CPPUNIT_ASSERT_MESSAGE("char should be 0", c == 9);
             fb.close();
         }
-
 
     } // end seg_write_test_0()
 
@@ -490,22 +489,22 @@ public:
     CPPUNIT_TEST(seg_write_test_0);
 
     // 2GB tests
-    CPPUNIT_TEST(seg_read_test_1);    // seg_read test 2^31
-    CPPUNIT_TEST(seg_read_test_2);    // seg_read test 2^31 - 1
-    CPPUNIT_TEST(seg_read_test_3);    // seg_read test 2^31 + 1
+    CPPUNIT_TEST(seg_read_test_1); // seg_read test 2^31
+    CPPUNIT_TEST(seg_read_test_2); // seg_read test 2^31 - 1
+    CPPUNIT_TEST(seg_read_test_3); // seg_read test 2^31 + 1
 
-    CPPUNIT_TEST(seg_write_test_1);   // seg_write test 2^31
-    CPPUNIT_TEST(seg_write_test_2);   // seg_write test 2^31 - 1
-    CPPUNIT_TEST(seg_write_test_3);   // seg_write test 2^31 + 1
+    CPPUNIT_TEST(seg_write_test_1); // seg_write test 2^31
+    CPPUNIT_TEST(seg_write_test_2); // seg_write test 2^31 - 1
+    CPPUNIT_TEST(seg_write_test_3); // seg_write test 2^31 + 1
 
     // 4GB tests
-    CPPUNIT_TEST(seg_read_test_4);    // seg_read test 2^32
-    CPPUNIT_TEST(seg_read_test_5);    // seg_read test 2^32 - 1
-    CPPUNIT_TEST(seg_read_test_6);    // seg_read test 2^32 + 1
+    CPPUNIT_TEST(seg_read_test_4); // seg_read test 2^32
+    CPPUNIT_TEST(seg_read_test_5); // seg_read test 2^32 - 1
+    CPPUNIT_TEST(seg_read_test_6); // seg_read test 2^32 + 1
 
-    CPPUNIT_TEST(seg_write_test_4);   // seg_write test 2^32
-    CPPUNIT_TEST(seg_write_test_5);   // seg_write test 2^32 - 1
-    CPPUNIT_TEST(seg_write_test_6);   // seg_write test 2^32 + 1
+    CPPUNIT_TEST(seg_write_test_4); // seg_write test 2^32
+    CPPUNIT_TEST(seg_write_test_5); // seg_write test 2^32 - 1
+    CPPUNIT_TEST(seg_write_test_6); // seg_write test 2^32 + 1
 
     CPPUNIT_TEST_SUITE_END();
 };
