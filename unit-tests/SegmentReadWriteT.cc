@@ -74,7 +74,7 @@ class SegmentReadWriteT : public TestFixture {
 
             if (!outfile) {
                 DBG(cerr << "Error opening file" << endl);
-                return;
+                throw std::system_error(errno, generic_category(), "Failed to open " + filepath);
             }
 
             // Write the buffer to the file
