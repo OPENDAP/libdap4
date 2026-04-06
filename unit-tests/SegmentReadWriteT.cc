@@ -110,7 +110,7 @@ public:
         vector<char> buff(bytes);
         int v = 0;
         for (auto &c : buff) {
-            c = (char) v;
+            c = (char)v;
             v++;
         }
         write_buffer_to_file(buff.data(), bytes, filepath);
@@ -133,8 +133,8 @@ public:
         // call seg_read on file
         vector<char> buff(bytes);
         int v = 0;
-        for (auto &c : buff){
-            c = (char) v;
+        for (auto &c : buff) {
+            c = (char)v;
             v++;
         }
 
