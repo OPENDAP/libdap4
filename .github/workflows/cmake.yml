@@ -66,6 +66,7 @@ jobs:
             libcppunit-dev \
             libtirpc-dev \
             libfl-dev \
+            autoconf \
             ccache
 
       - name: Install macOS dependencies
