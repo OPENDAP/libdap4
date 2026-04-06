@@ -78,8 +78,8 @@ jobs:
             ccache \
             cppunit \
             flex \
-            autoconf \
-            libtirpc
+            autoconf
+            # libtirpc
 
       - name: Configure macOS build environment
         if: runner.os == 'macOS'
