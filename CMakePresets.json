@@ -15,7 +15,7 @@
         "CMAKE_CXX_STANDARD": "14",
         "CMAKE_CXX_STANDARD_REQUIRED": "ON",
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_INSTALL_PREFIX": "$prefix",
+        "CMAKE_INSTALL_PREFIX": "$env{prefix}",
         "BUILD_TESTING": "ON",
         "USE_CPP_11_REGEX": "ON",
         "USE_ASAN": "OFF",
