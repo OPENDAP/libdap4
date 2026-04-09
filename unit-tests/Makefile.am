@@ -116,7 +116,7 @@ endif
 # kln 11/19/24
 if CPPUNIT
 if USE_BA
-UNIT_TESTS += BigArrayTest
+UNIT_TESTS += BigArrayTest SegmentReadWriteLT
 endif
 endif
 
@@ -213,6 +213,8 @@ SequenceTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 SignalHandlerTest_SOURCES = SignalHandlerTest.cc
 
 SegmentReadWriteT_SOURCES = SegmentReadWriteT.cc
+
+SegmentReadWriteLT_SOURCES = SegmentReadWriteLT.cc
 
 arrayT_SOURCES = arrayT.cc
 arrayT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
