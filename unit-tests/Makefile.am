@@ -89,7 +89,7 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	Int32Test UInt32Test Int64Test UInt64Test Float32Test Float64Test \
 	D4BaseTypeFactoryTest BaseTypeFactoryTest util_mitTest ErrorTest \
 	MarshallerFutureTest ConstraintEvaluatorTest MarshallerThreadTest \
-	DAPCache3Test BaseTypeTest
+	DAPCache3Test BaseTypeTest SegmentReadWriteT
 
 # Unit tests for DAP4-only code. jhrg 2/4/22
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
@@ -116,7 +116,7 @@ endif
 # kln 11/19/24
 if CPPUNIT
 if USE_BA
-UNIT_TESTS += BigArrayTest
+UNIT_TESTS += BigArrayTest SegmentReadWriteLT
 endif
 endif
 
@@ -211,6 +211,10 @@ SequenceTest_SOURCES = SequenceTest.cc
 SequenceTest_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
 
 SignalHandlerTest_SOURCES = SignalHandlerTest.cc
+
+SegmentReadWriteT_SOURCES = SegmentReadWriteT.cc
+
+SegmentReadWriteLT_SOURCES = SegmentReadWriteLT.cc
 
 arrayT_SOURCES = arrayT.cc
 arrayT_LDADD = ../tests/libtest-types.a ../libdap.la $(AM_LDADD)
