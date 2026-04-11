@@ -14,6 +14,9 @@ These instructions apply to the entire `libdap4` repository.
 
 - Prefer autotools for day-to-day work unless the task is explicitly CMake-focused.
 - Keep both autotools and CMake build paths healthy when changing shared build logic.
+- For all the builds the 'prefix' environment variable should be set.
+- $prefix is the full path to the 'build' directory in the directory above 'libdap4'.
+- The PATH env var should have $prefix/bin and $prefix/deps/bin prepended.
 
 ## Autotools Workflow (preferred)
 

@@ -1,5 +1,6 @@
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+find_program(AUTOCONF_EXECUTABLE autoconf REQUIRED)
+find_program(AUTOM4TE_EXECUTABLE autom4te REQUIRED)
 
 add_library(test-types STATIC
 		TestArray.cc TestD4Sequence.cc TestInt32.cc TestTypeFactory.cc
@@ -35,17 +36,24 @@ install(TARGETS test-types
 		ARCHIVE DESTINATION lib
 		INCLUDES DESTINATION include/libdap/test)
 
-set(TEST_HEADERS
-		TestD4Enum.h		TestGrid.h			TestStructure.h TestD4Group.h
-		TestInt16.h			TestTypeFactory.h 	TestD4Opaque.h	TestInt32.h
-		TestUInt16.h 		TestD4Sequence.h	TestInt64.h		TestUInt32.h
-		TestArray.h			TestFloat32.h		TestInt8.h		TestUInt64.h
-		TestByte.h			TestFloat64.h		TestSequence.h	TestUrl.h
-		TestCommon.h		TestFunction.h		TestStr.h
-		D4TestFunction.h	D4TestTypeFactory.h)
+# This is an alternative to the set(VAR ...) and install(FILES ...) pattern
+# I used in the top-level CMakeLists file. It will install every header here
+# which makes it more robust when files change/move but also easier to install
+# something that should be private. 6/27/25 jhrg
+file(GLOB TEST_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 
-install(FILES ${TEST_HEADERS}
-		DESTINATION include/libdap/test)
+# TODO Remove dead code
+# set(TEST_HEADERS
+# 		TestD4Enum.h		TestGrid.h			TestStructure.h TestD4Group.h
+# 		TestInt16.h			TestTypeFactory.h 	TestD4Opaque.h	TestInt32.h
+# 		TestUInt16.h 		TestD4Sequence.h	TestInt64.h		TestUInt32.h
+# 		TestArray.h			TestFloat32.h		TestInt8.h		TestUInt64.h
+# 		TestByte.h			TestFloat64.h		TestSequence.h	TestUrl.h
+# 		TestCommon.h		TestFunction.h		TestStr.h
+# 		D4TestFunction.h	D4TestTypeFactory.h)
+
+# install(FILES ${TEST_HEADERS}
+# 		DESTINATION include/libdap/test)
 
 add_executable(das-test das-test.cc)
 target_link_libraries(das-test PRIVATE test-types dapserver dap)
@@ -81,19 +89,98 @@ if(TIRPC_FOUND)
 	target_link_libraries(dmr-test PRIVATE ${TIRPC_LIBRARIES})
 endif()
 
-## This is me playing around with ways to clean up the stuff left over from
-## test runs. 7/14/25 jhrg.
-add_custom_target(clean-tests
-		COMMAND ${CMAKE_COMMAND} -E rm -rf "${CMAKE_CURRENT_BINARY_DIR}/*.out"
-		COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_CURRENT_BINARY_DIR}/*.diff"
-		COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_CURRENT_BINARY_DIR}/*.bin"
-		COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_CURRENT_BINARY_DIR}/*.out_univ"
-		COMMENT "Cleaning up integration tests generated artifacts."
+set(TESTS_AUTOCONF_INPUT "${CMAKE_CURRENT_SOURCE_DIR}/configure.ac")
+set(TESTS_CONFIGURE_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/configure")
+set(TESTS_ATCONFIG "${CMAKE_CURRENT_BINARY_DIR}/atconfig")
+set(TESTS_ATLOCAL "${CMAKE_CURRENT_BINARY_DIR}/atlocal")
+set(TESTS_PACKAGE_M4 "${CMAKE_CURRENT_BINARY_DIR}/package.m4")
+
+add_custom_command(
+		OUTPUT "${TESTS_CONFIGURE_SCRIPT}"
+		COMMAND "${AUTOCONF_EXECUTABLE}" "--output=${TESTS_CONFIGURE_SCRIPT}" "${TESTS_AUTOCONF_INPUT}"
+		DEPENDS "${TESTS_AUTOCONF_INPUT}"
+		COMMENT "Generating tests/configure from ${TESTS_AUTOCONF_INPUT}"
+		VERBATIM
 )
 
-## Setup the tests.
-include(das-tests)
-include(dds-tests)
-include(dmr-tests)
-include(getdap-tests)
-include(expr-tests)
+add_custom_command(
+		OUTPUT "${TESTS_ATCONFIG}" "${TESTS_ATLOCAL}" "${TESTS_PACKAGE_M4}"
+		COMMAND "${TESTS_CONFIGURE_SCRIPT}" "--srcdir=${CMAKE_CURRENT_SOURCE_DIR}"
+		DEPENDS
+			"${TESTS_CONFIGURE_SCRIPT}"
+			"${CMAKE_CURRENT_SOURCE_DIR}/atlocal.in"
+			"${CMAKE_CURRENT_SOURCE_DIR}/package.m4.in"
+		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+		COMMENT "Configuring autotest support files in ${CMAKE_CURRENT_BINARY_DIR}"
+		VERBATIM
+)
+
+set(AUTOTEST_SUITES
+		DASTest
+		DDSTest
+		EXPRTest
+		DMRTest
+		getdapTest
+)
+
+set(AUTOTEST_GENERATED_SCRIPTS "")
+
+foreach(autotest_suite IN LISTS AUTOTEST_SUITES)
+	set(autotest_input "${CMAKE_CURRENT_SOURCE_DIR}/${autotest_suite}.at")
+	set(autotest_output "${CMAKE_CURRENT_BINARY_DIR}/${autotest_suite}")
+
+	add_custom_command(
+			OUTPUT "${autotest_output}"
+			COMMAND
+				"${AUTOM4TE_EXECUTABLE}"
+				"--language=autotest"
+				"-I" "${CMAKE_CURRENT_SOURCE_DIR}"
+				"-I" "${CMAKE_CURRENT_BINARY_DIR}"
+				"-o" "${autotest_output}.tmp"
+				"${autotest_input}"
+			COMMAND "${CMAKE_COMMAND}" -E rename "${autotest_output}.tmp" "${autotest_output}"
+			DEPENDS
+				"${autotest_input}"
+				"${TESTS_ATCONFIG}"
+				"${TESTS_ATLOCAL}"
+				"${TESTS_PACKAGE_M4}"
+			WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+			COMMENT "Generating autotest driver ${autotest_suite}"
+			VERBATIM
+	)
+
+	list(APPEND AUTOTEST_GENERATED_SCRIPTS "${autotest_output}")
+endforeach()
+
+add_custom_target(tests ALL
+		DEPENDS
+			${AUTOTEST_GENERATED_SCRIPTS}
+			das-test
+			dds-test
+			expr-test
+			dmr-test
+			getdap
+)
+
+function(add_autotest_suite_test suite_name suite_label)
+	set(suite_script "${CMAKE_CURRENT_BINARY_DIR}/${suite_name}")
+
+	add_test(
+			NAME ${suite_name}
+			COMMAND /bin/sh -c "eval \"exec \\\"\$1\\\" \$TESTSUITEFLAGS\"" _ "${suite_script}"
+	)
+
+	# Keep the suite wrappers serial at the CTest layer and rely on
+	# TESTSUITEFLAGS (for example, --jobs=N) for any intra-suite parallelism.
+	set_tests_properties(${suite_name} PROPERTIES
+			LABELS "integration;${suite_label}"
+			RUN_SERIAL TRUE
+			WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+	)
+endfunction()
+
+add_autotest_suite_test(DASTest das)
+add_autotest_suite_test(DDSTest dds)
+add_autotest_suite_test(EXPRTest expr)
+add_autotest_suite_test(DMRTest dmr)
+add_autotest_suite_test(getdapTest getdap)
