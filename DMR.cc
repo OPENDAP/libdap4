@@ -68,6 +68,7 @@ void DMR::m_duplicate(const DMR &dmr) {
     d_dap_version = dmr.d_dap_version; // String version of the protocol
 
     d_dmr_version = dmr.d_dmr_version;
+    d_serialization = dmr.d_serialization;
 
     d_request_xml_base = dmr.d_request_xml_base;
 
@@ -332,7 +333,11 @@ void DMR::print_dap4(XMLWriter &xml, bool constrained) {
 
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"dmrVersion",
                                     (const xmlChar *)dmr_version().c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dapVersion");
+        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dmrVersion");
+
+    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"dap:serialization",
+                                    (const xmlChar *)serialization().c_str()) < 0)
+        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dap:serialization");
 
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");

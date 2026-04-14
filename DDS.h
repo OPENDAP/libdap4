@@ -286,6 +286,9 @@ public:
     /** @brief Returns the DAP4 DMR version corresponding to DDS exports. */
     string get_dmr_version() const { return "1.0"; }
 
+    /** @brief Returns the DAP4 data serialization scheme. */
+    string get_serialization() const { return "4.0"; }
+
     /// @deprecated
     void set_dap_major(int p);
     /// @deprecated

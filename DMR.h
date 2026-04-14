@@ -73,8 +73,15 @@ private:
     /// The version of the DMR document
     /// Version 1.0 is the original serialization scheme - Groups were serialized first,
     /// then the top-level variables.
-    /// The 2.0 version indicates the DAP4 Serialization bug fix.
-    std::string d_dmr_version = "2.0";
+    std::string d_dmr_version = "1.0";
+
+    /// The version of the DMR document
+    /// Version 1.0 is the original serialization scheme - Groups were serialized first,
+    /// then the top-level variables.
+    /// When we fixed the DAP4 Serialization bug we added this along
+    /// with a Dataset xml attribute dap:serialization to express this state.
+    /// the original patch changed the d_dmr_version to 2.0 - ndp 4/14/26
+    std::string d_serialization = "4.0";
 
     /// The URL for the request base
     std::string d_request_xml_base;
@@ -178,6 +185,15 @@ public:
      * @param v DMR version value.
      */
     void set_dmr_version(const std::string &v) { d_dmr_version = v; }
+
+    /** @brief Returns the DAP4 serialization that the source service will deliver. */
+    std::string serialization() const { return d_serialization; }
+
+    /**
+     * @brief Sets the DMR document version string.
+     * @param v DMR version value.
+     */
+    void set_serialization(const std::string &v) { d_serialization = v; }
 
     /// Get the URL that will return this DMR
     std::string request_xml_base() const { return d_request_xml_base; }

@@ -651,6 +651,9 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
         if (parser->check_attribute("dmrVersion"))
             parser->dmr()->set_dmr_version(parser->xml_attrs["dmrVersion"].value);
 
+        if (parser->check_attribute("dap:serialization"))
+            parser->dmr()->set_serialization(parser->xml_attrs["dap:serialization"].value);
+
         if (parser->check_attribute("base"))
             parser->dmr()->set_request_xml_base(parser->xml_attrs["base"].value);
 
