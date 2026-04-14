@@ -71,16 +71,15 @@ private:
     std::string d_dap_version = "4.0";
 
     /// The version of the DMR document
-    /// Version 1.0 is the original serialization scheme - Groups were serialized first,
-    /// then the top-level variables.
     std::string d_dmr_version = "1.0";
 
-    /// The version of the DMR document
-    /// Version 1.0 is the original serialization scheme - Groups were serialized first,
-    /// then the top-level variables.
-    /// When we fixed the DAP4 Serialization bug we added this along
-    /// with a Dataset xml attribute dap:serialization to express this state.
-    /// the original patch changed the d_dmr_version to 2.0 - ndp 4/14/26
+    /// The version of the DAP4 serialization used to encode the data response values.
+    /// Prior to adding this indicator variable and its expression in the DMR
+    /// a non-dap4 compliant serialization scheme, in which Groups were serialized first
+    /// and then the top-level variables was implemented.
+    /// We mended this problem with dap4 serialization add added this state
+    /// variable along with a Dataset xml attribute dap:serialization to express this state.
+    /// The original patch changed the d_dmr_version to 2.0 - ndp 4/14/26
     std::string d_serialization = "4.0";
 
     /// The URL for the request base
