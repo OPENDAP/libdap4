@@ -312,8 +312,10 @@ uint64_t DMR::request_size_kb(bool constrained) { return d_root->request_size_kb
  * @param xml use this XMLWriter to build the XML.
  * @param constrained Should the DMR be subject to a constraint? Defaults to
  * False
+ * @param add_serialization_attr Add the servers serialization version
+ * attribute to the Dataset element
  */
-void DMR::print_dap4(XMLWriter &xml, bool constrained) {
+void DMR::print_dap4(XMLWriter &xml, bool constrained, bool add_serialization_attr) {
     if (xmlTextWriterStartElement(xml.get_writer(), (const xmlChar *)"Dataset") < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write Dataset element");
 
@@ -335,9 +337,11 @@ void DMR::print_dap4(XMLWriter &xml, bool constrained) {
                                     (const xmlChar *)dmr_version().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dmrVersion");
 
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"dap:serialization",
-                                    (const xmlChar *)serialization().c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dap:serialization");
+    if (add_serialization_attr) {
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"dap:serialization",
+                                        (const xmlChar *)serialization().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dap:serialization");
+    }
 
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for name");

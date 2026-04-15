@@ -131,10 +131,15 @@ public:
             dmr = build_dmr(dds_file, attr);
             XMLWriter xml;
             dmr->print_dap4(xml);
-            DBG(cerr << "DMR: " << endl << xml.get_doc() << endl);
+            string dmr_doc(xml.get_doc());
+            DBG(cerr << "DMR: " << endl << dmr_doc << endl);
 
-            string prefix = string(TEST_SRC_DIR) + "/dmr-testsuite/";
-            CPPUNIT_ASSERT(string(xml.get_doc()) == read_test_baseline(prefix + dmr_baseline));
+            string baseline_file = string(TEST_SRC_DIR) + "/dmr-testsuite/" + dmr_baseline;
+            DBG(cerr << "baseline_file: " << baseline_file << endl);
+            string baseline = read_test_baseline(baseline_file);
+            DBG(cerr << "BASELINE: " << endl << baseline << endl);
+
+            CPPUNIT_ASSERT(dmr_doc == baseline);
             delete dmr;
         } catch (Error &e) {
             delete dmr;

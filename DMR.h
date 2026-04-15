@@ -270,7 +270,8 @@ public:
 
     virtual bool is_dap4_projected(std::vector<string> &inventory);
 
-    void print_dap4(XMLWriter &xml, bool constrained = false);
+    // void print_dap4(XMLWriter &xml, bool constrained = false){print_dap4(xml,constrained,false);};
+    void print_dap4(XMLWriter &xml, bool constrained = false, bool add_serialization_attr = false);
 
     void dump(std::ostream &strm) const override;
 

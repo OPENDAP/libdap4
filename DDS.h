@@ -418,7 +418,7 @@ public:
     void print_xml_writer(ostream &out, bool constrained, const string &blob = "");
 
     // Print the DAP4 DMR 'object'
-    void print_dmr(ostream &out, bool constrained);
+    void print_dmr(ostream &out, bool constrained, bool add_serialization_attr = false);
 
     void print_das(ostream &out);
     DAS *get_das();

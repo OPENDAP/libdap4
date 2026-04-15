@@ -341,7 +341,7 @@ void read_local_dap4(D4Connect &url, const string &name, const bool get_dmr_flag
 
         // Always write the DMR
         XMLWriter xml;
-        dmr.print_dap4(xml);
+        dmr.print_dap4(xml, false, true);
         cout << xml.get_doc() << endl;
 
         if (get_data_flag)

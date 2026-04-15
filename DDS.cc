@@ -1225,7 +1225,7 @@ void DDS::print_xml_writer(ostream &out, bool constrained, const string &blob) {
  * @param out Write the XML to this stream
  * @param constrained Should the DMR be subject to a constraint?
  */
-void DDS::print_dmr(ostream &out, bool constrained) {
+void DDS::print_dmr(ostream &out, bool constrained, bool add_serialization_attr) {
     if (get_dap_major() < 4)
         throw InternalErr(__FILE__, __LINE__, "Tried to print a DMR with DAP major version less than 4");
 
@@ -1259,9 +1259,11 @@ void DDS::print_dmr(ostream &out, bool constrained) {
                                     (const xmlChar *)get_dmr_version().c_str()) < 0)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dmrVersion");
 
-    if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"dap:serialization",
-                                    (const xmlChar *)get_serialization().c_str()) < 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dap:serialization");
+    if (add_serialization_attr) {
+        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"dap:serialization",
+                                        (const xmlChar *)get_serialization().c_str()) < 0)
+            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dap:serialization");
+    }
 
     if (!get_request_xml_base().empty()) {
         if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"xml:base",

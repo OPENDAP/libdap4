@@ -135,7 +135,7 @@ void D4ResponseBuilder::send_dap(ostream &out, DMR &dmr, bool with_mime_headers,
 
         // Write the DMR
         XMLWriter xml;
-        dmr.print_dap4(xml, constrained);
+        dmr.print_dap4(xml, constrained, true);
 
         // now make the chunked output stream; set the size to be at least chunk_size
         // but make sure that the whole of the xml plus the CRLF can fit in the first
