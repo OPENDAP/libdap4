@@ -89,7 +89,7 @@ m4_define([DMR_TRANS], [
         AT_CHECK([cat stdout stderr > $baseline.tmp])
         ],
         [
-        AT_CHECK([$abs_builddir/dmr-test -d -C -x -t $input || true], [], [stdout], [stderr])
+        AT_CHECK([$abs_builddir/dmr-test -C -x -t $input || true], [], [stdout], [stderr])
         AT_CHECK([diff -b -B $baseline stdout || diff -b -B $baseline stderr], [], [ignore],[],[])
 
         AT_XFAIL_IF([test "$2" = "xfail"])
