@@ -41,8 +41,10 @@ namespace libdap {
  * @param xml
  * @param dap4_namespace_name
  */
-static void add_serialization_patch_attribute(libdap::XMLWriter &xml, const string &dap4_namespace_name) {
+static void add_serialization_patch_attribute(libdap::XMLWriter &xml, const string &) {
 
+    /*
+    TODO - If we don't need a namespace prefix we can drop this bit.
     if (!dap4_namespace_name.empty()) {
         // Oddly, the dap namespace prefix is not defined by default. We have to add it to
         // namespace prefix our special attribute.
@@ -50,6 +52,7 @@ static void add_serialization_patch_attribute(libdap::XMLWriter &xml, const stri
                                         (const xmlChar *)dap4_namespace_name.c_str()) < 0)
             throw libdap::InternalErr(__FILE__, __LINE__, "Could not write attribute for xmlns:dap");
     }
+    */
 
     // TODO - Is this really just a hyrax thing? Rethink this attribute name!
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)CEREALIZATION_PATCH_ATTR_NAME,
