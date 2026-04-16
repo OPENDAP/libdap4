@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:swe="http://www.opengis.net/swe/2.0" dapVersion="4.0" dmrVersion="2.0" name="Global_0p25deg_best_hs002.nc" >
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:swe="http://www.opengis.net/swe/2.0" dapVersion="4.0" dmrVersion="1.0" name="Global_0p25deg_best_hs002.nc" >
     <Dimension name="time" size="112"/>
     <Dimension name="isobaric" size="31"/>
     <Dimension name="lat" size="361"/>
