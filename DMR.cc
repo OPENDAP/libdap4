@@ -46,6 +46,7 @@
 #include "DDS.h" // Included so DMRs can be built using a DDS for 'legacy' handlers
 
 #include "DapIndent.h"
+#include "cerealization_patch.h"
 #include "debug.h"
 
 using namespace std;
@@ -68,7 +69,9 @@ void DMR::m_duplicate(const DMR &dmr) {
     d_dap_version = dmr.d_dap_version; // String version of the protocol
 
     d_dmr_version = dmr.d_dmr_version;
-    d_serialization = dmr.d_serialization;
+
+    // TODO - Do we need a state variable for the serialization flag? (I don't think so...)
+    // d_serialization = dmr.d_serialization;
 
     d_request_xml_base = dmr.d_request_xml_base;
 
@@ -338,9 +341,7 @@ void DMR::print_dap4(XMLWriter &xml, bool constrained, bool add_serialization_at
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dmrVersion");
 
     if (add_serialization_attr) {
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"dap:serialization",
-                                        (const xmlChar *)serialization().c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dap:serialization");
+        add_serialization_patch_attribute(xml, get_namespace());
     }
 
     if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"name", (const xmlChar *)name().c_str()) < 0)

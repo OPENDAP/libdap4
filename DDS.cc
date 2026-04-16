@@ -71,6 +71,7 @@
 #include "DapIndent.h"
 #include "Error.h"
 #include "InternalErr.h"
+#include "cerealization_patch.h"
 #include "debug.h"
 #include "escaping.h"
 #include "parser.h"
@@ -1260,9 +1261,7 @@ void DDS::print_dmr(ostream &out, bool constrained, bool add_serialization_attr)
         throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dmrVersion");
 
     if (add_serialization_attr) {
-        if (xmlTextWriterWriteAttribute(xml.get_writer(), (const xmlChar *)"dap:serialization",
-                                        (const xmlChar *)get_serialization().c_str()) < 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not write attribute for dap:serialization");
+        add_serialization_patch_attribute(xml, get_namespace());
     }
 
     if (!get_request_xml_base().empty()) {

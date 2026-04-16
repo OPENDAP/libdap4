@@ -218,7 +218,7 @@ DAP4_ONLY_HDR = D4StreamMarshaller.h D4StreamUnMarshaller.h Int64.h \
         D4Maps.h D4Dimensions.h D4EnumDefs.h D4Group.h DMR.h D4Attributes.h \
         D4AttributeType.h D4Enum.h chunked_stream.h chunked_ostream.h \
         chunked_istream.h D4Sequence.h crc.h D4Opaque.h D4AsyncUtil.h \
-        D4Function.h D4RValue.h D4FilterClause.h
+        D4Function.h D4RValue.h D4FilterClause.h cerealization_patch.h
 
 if USE_C99_TYPES
 dods-datatypes.h: dods-datatypes-static.h

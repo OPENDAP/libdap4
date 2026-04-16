@@ -83,7 +83,8 @@ private:
     /// We mended this problem with dap4 serialization add added this state
     /// variable along with a Dataset xml attribute dap:serialization to express this state.
     /// The original patch changed the d_dmr_version to 2.0 - ndp 4/14/26
-    std::string d_serialization = "4.0";
+    // TODO - Do we need a DMR state variable for the serialization flag? (I don't think so...)
+    // std::string d_serialization = "4.0";
 
     /// The URL for the request base
     std::string d_request_xml_base;
@@ -188,14 +189,18 @@ public:
      */
     void set_dmr_version(const std::string &v) { d_dmr_version = v; }
 
-    /** @brief Returns the DAP4 serialization that the source service will deliver. */
-    std::string serialization() const { return d_serialization; }
+    /**
+     * @brief Returns the DAP4 serialization that the source service will deliver.
+     * TODO - Do we need a DMR state variable for the serialization flag? (I don't think so...)
+     */
+    // std::string serialization() const { return d_serialization; }
 
     /**
-     * @brief Sets the DMR document version string.
-     * @param v DMR version value.
+     * @brief Sets the DAP4 serialization string.
+     * TODO - Do we need a DMR state variable for the serialization flag? (I don't think so...)
+     * @param v DAP4 serialization value.
      */
-    void set_serialization(const std::string &v) { d_serialization = v; }
+    // void set_serialization(const std::string &v) { d_serialization = v; }
 
     /// Get the URL that will return this DMR
     std::string request_xml_base() const { return d_request_xml_base; }

@@ -43,6 +43,7 @@
 #include "D4ParserSax2.h"
 #include "DapXmlNamespaces.h"
 
+#include "cerealization_patch.h"
 #include "debug.h"
 #include "util.h"
 
@@ -651,8 +652,9 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
         if (parser->check_attribute("dmrVersion"))
             parser->dmr()->set_dmr_version(parser->xml_attrs["dmrVersion"].value);
 
-        if (parser->check_attribute("dap:serialization"))
-            parser->dmr()->set_serialization(parser->xml_attrs["dap:serialization"].value);
+        // TODO - Do we ever need/want to read serialization flag into a DMR state variable? (I don't think so...)
+        // if (parser->check_attribute(CEREALIZATION_PATCH_ATTR_NAME))
+        //     parser->dmr()->set_serialization(parser->xml_attrs[CEREALIZATION_PATCH_ATTR_NAME].value);
 
         if (parser->check_attribute("base"))
             parser->dmr()->set_request_xml_base(parser->xml_attrs["base"].value);
