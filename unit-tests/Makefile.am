@@ -116,7 +116,7 @@ endif
 # kln 11/19/24
 if CPPUNIT
 if USE_BA
-UNIT_TESTS += BigArrayTest
+UNIT_TESTS += BigArrayTest 
 endif
 endif
 

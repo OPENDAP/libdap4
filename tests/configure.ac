@@ -4,7 +4,7 @@ dnl needed by the CMake integration-test path.
 
 AC_PREREQ([2.69])
 
-AC_INIT([libdap],[3.21.1],[opendap-tech@opendap.org])
+AC_INIT([libdap],[3.21.1],[support@opendap.org])
 AC_CONFIG_SRCDIR([DASTest.at])
 AC_CONFIG_TESTDIR([.], [.])
 
