@@ -72,8 +72,6 @@ jobs:
         if: runner.os == 'macOS'
         env:
           HOMEBREW_NO_AUTO_UPDATE: "1"
-        # I was installing libtirpc but that causes XDRStreamMarshaller and XDRFileUnMarshaller
-        # to fail on the OSX/ARM64 build. jhrg 4/6/26
         run: |
           brew install \
             bison \
