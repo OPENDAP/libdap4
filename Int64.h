@@ -52,27 +52,45 @@ class Int64 : public BaseType {
     }
     // virtual unsigned int buf2val(void **) { throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64"); }
     unsigned int buf2val(void **) override;
-    void print_val(FILE *, string, bool) override {
+    void print_val(FILE *, string, bool, bool) override {
         throw InternalErr(__FILE__, __LINE__, "Not implemented for Int64");
     }
 
 protected:
+    /// Stored scalar 64-bit signed integer value.
     dods_int64 d_buf;
 
 public:
     Int64(const string &n);
     Int64(const string &n, const string &d);
 
+    /**
+     * @brief Copy-constructs from another 64-bit signed integer variable.
+     *
+     * @param copy_from Source instance.
+     */
     Int64(const Int64 &copy_from);
 
+    /**
+     * @brief Assigns from another 64-bit signed integer variable.
+     *
+     * @param rhs Source instance.
+     * @return This instance after assignment.
+     */
     Int64 &operator=(const Int64 &rhs);
 
-    virtual ~Int64();
+    ~Int64() override;
 
     BaseType *ptr_duplicate() override;
 
     unsigned int width(bool = false) const override { return sizeof(dods_int64); }
 
+    /**
+     * @brief Returns the storage width in bytes.
+     *
+     * @param constrained Ignored for scalar values.
+     * @return Number of bytes used by this value.
+     */
     int64_t width_ll(bool = false) const override { return sizeof(dods_int64); }
 
     // DAP4
@@ -80,10 +98,29 @@ public:
     void serialize(D4StreamMarshaller &m, DMR &dmr, /*ConstraintEvaluator &eval,*/ bool filter = false) override;
     void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
 
+    /**
+     * @brief Sets the current value.
+     *
+     * @param i New signed 64-bit value.
+     * @return True when the value is accepted.
+     */
     virtual bool set_value(dods_int64 i);
+    /**
+     * @brief Returns the current value.
+     *
+     * @return Stored signed 64-bit value.
+     */
     virtual dods_int64 value() const;
 
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    /**
+     * @brief Writes this value using C++ stream output.
+     *
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in the root group context.
+     */
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     bool ops(BaseType *b, int op) override;
     bool d4_ops(BaseType *b, int op) override;

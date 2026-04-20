@@ -28,14 +28,15 @@
 
 #define ATTR 1
 
-#include <string.h>
-
+#include <cstring>
 #include <iostream>
 #include <map>
 #include <stack>
 #include <string>
 
-#include <libxml/parserInternals.h>
+#include <libxml/SAX2.h>
+
+#include "BaseType.h"
 
 #define CRLF "\r\n"
 #define D4_PARSE_BUFF_SIZE 1048576
@@ -125,25 +126,25 @@ private:
     DMR *dmr() const { return d_dmr; }
 
     // These stacks hold the state of the parse as it progresses.
-    stack<ParseState> s; // Current parse state
+    std::stack<ParseState> s; // Current parse state
     void push_state(D4ParserSax2::ParseState state) { s.push(state); }
     D4ParserSax2::ParseState get_state() const { return s.top(); }
     void pop_state() { s.pop(); }
     bool empty_state() const { return s.empty(); }
 
-    stack<BaseType *> btp_stack; // current variable(s)
+    std::stack<BaseType *> btp_stack; // current variable(s)
     void push_basetype(BaseType *btp) { btp_stack.push(btp); }
     BaseType *top_basetype() const { return btp_stack.top(); }
     void pop_basetype() { btp_stack.pop(); }
     bool empty_basetype() const { return btp_stack.empty(); }
 
-    stack<D4Group *> grp_stack; // current groups(s)
+    std::stack<D4Group *> grp_stack; // current groups(s)
     void push_group(D4Group *grp) { grp_stack.push(grp); }
     D4Group *top_group() const { return grp_stack.top(); }
     void pop_group() { grp_stack.pop(); }
     bool empty_group() const { return grp_stack.empty(); }
 
-    stack<D4Attributes *> d_attrs_stack; // DAP4 Attributes
+    std::stack<D4Attributes *> d_attrs_stack; // DAP4 Attributes
     void push_attributes(D4Attributes *attr) { d_attrs_stack.push(attr); }
     D4Attributes *top_attributes() const { return d_attrs_stack.top(); }
     void pop_attributes() { d_attrs_stack.pop(); }
@@ -158,7 +159,7 @@ private:
     void clear_dim_def() { d_dim_def = 0; }
 
     // Accumulate stuff inside an 'OtherXML' DAP attribute here
-    string other_xml;
+    std::string other_xml;
 
     // When we're parsing unknown XML, how deeply is it nested? This is used
     // for the OtherXML DAP attributes.
@@ -166,14 +167,14 @@ private:
     unsigned int unknown_depth;
 
     // These are used for processing errors.
-    string d_error_msg;         // Error message(s), if any.
+    std::string d_error_msg;    // Error message(s), if any.
     xmlParserCtxtPtr d_context; // used for error message line numbers
 
     // These hold temporary values read during the parse.
-    string dods_attr_name; // DAP4 attributes, not XML attributes
-    string dods_attr_type; // ... not XML ...
-    string char_data;      // char data in value elements; null after use
-    string root_ns;        // What is the namespace of the root node (Group)
+    std::string dods_attr_name; // DAP4 attributes, not XML attributes
+    std::string dods_attr_type; // ... not XML ...
+    std::string char_data;      // char data in value elements; null after use
+    std::string root_ns;        // What is the namespace of the root node (Group)
 
     bool d_debug;
     bool debug() const { return d_debug; }
@@ -182,9 +183,9 @@ private:
 
     class XMLAttribute {
     public:
-        string prefix;
-        string nsURI;
-        string value;
+        std::string prefix;
+        std::string nsURI;
+        std::string value;
 
         void clone(const XMLAttribute &src) {
             prefix = src.prefix;
@@ -193,16 +194,17 @@ private:
         }
 
         XMLAttribute() : prefix(""), nsURI(""), value("") {}
-        XMLAttribute(const string &p, const string &ns, const string &v) : prefix(p), nsURI(ns), value(v) {}
+        XMLAttribute(const std::string &p, const std::string &ns, const std::string &v)
+            : prefix(p), nsURI(ns), value(v) {}
         // 'attributes' as passed from libxml2 is a five element array but this
         // ctor gets the back four elements.
-        XMLAttribute(const xmlChar **attributes /*[4]*/) {
+        explicit XMLAttribute(const xmlChar **attributes /*[4]*/) {
             prefix = attributes[0] != 0 ? (const char *)attributes[0] : "";
             nsURI = attributes[1] != 0 ? (const char *)attributes[1] : "";
-            value = string((const char *)attributes[2], (const char *)attributes[3]);
+            value = std::string((const char *)attributes[2], (const char *)attributes[3]);
         }
         XMLAttribute(const XMLAttribute &rhs) { clone(rhs); }
-        ~XMLAttribute() {}
+        ~XMLAttribute() = default;
         XMLAttribute &operator=(const XMLAttribute &rhs) {
             if (this == &rhs)
                 return *this;
@@ -211,14 +213,14 @@ private:
         }
     };
 
-    typedef map<string, XMLAttribute> XMLAttrMap;
+    typedef std::map<std::string, XMLAttribute> XMLAttrMap;
     XMLAttrMap xml_attrs; // dump XML attributes here
 
     XMLAttrMap::iterator xml_attr_begin() { return xml_attrs.begin(); }
 
     XMLAttrMap::iterator xml_attr_end() { return xml_attrs.end(); }
 
-    map<string, string> namespace_table;
+    std::map<std::string, std::string> namespace_table;
 
     void cleanup_parse();
 
@@ -230,13 +232,9 @@ private:
     //@{
     void transfer_xml_attrs(const xmlChar **attrs, int nb_attributes);
     void transfer_xml_ns(const xmlChar **namespaces, int nb_namespaces);
-    bool check_required_attribute(const string &attr);
-    bool check_attribute(const string &attr);
+    bool check_required_attribute(const std::string &attr);
+    bool check_attribute(const std::string &attr);
     void process_variable_helper(Type t, ParseState s, const xmlChar **attrs, int nb_attributes);
-
-    void process_enum_const_helper(const xmlChar **attrs, int nb_attributes);
-    void process_enum_def_helper(const xmlChar **attrs, int nb_attributes);
-
     bool process_dimension(const char *name, const xmlChar **attrs, int nb_attrs);
     bool process_dimension_def(const char *name, const xmlChar **attrs, int nb_attrs);
     bool process_map(const char *name, const xmlChar **attrs, int nb_attributes);
@@ -245,8 +243,6 @@ private:
     bool process_group(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_enum_def(const char *name, const xmlChar **attrs, int nb_attributes);
     bool process_enum_const(const char *name, const xmlChar **attrs, int nb_attributes);
-
-    void finish_variable(const char *tag, Type t, const char *expected);
     //@}
 
     friend class D4ParserSax2Test;
@@ -273,13 +269,32 @@ public:
         d_dmr_sax_parser.endElementNs = &D4ParserSax2::dmr_end_element;
     }
 
-    void intern(istream &f, DMR *dest_dmr, bool debug = false);
+    /** @brief Parse a DMR document from an input stream.
+     * @param f Stream containing XML DMR text.
+     * @param dest_dmr Destination DMR populated by parsing.
+     * @param debug Enable parser debug tracing when true.
+     */
+    void intern(std::istream &f, DMR *dest_dmr, bool debug = false);
+
     // Deprecated - this does not read from a file, it parses text in the string 'document'
-    void intern(const string &document, DMR *dest_dmr, bool debug = false);
+    /** @brief Parse a DMR document from in-memory XML text.
+     * @param document XML DMR document text.
+     * @param dest_dmr Destination DMR populated by parsing.
+     * @param debug Enable parser debug tracing when true.
+     */
+    void intern(const std::string &document, DMR *dest_dmr, bool debug = false);
+
+    /** @brief Parse a DMR document from a raw memory buffer.
+     * @param buffer Pointer to XML DMR bytes.
+     * @param size Number of bytes available in `buffer`.
+     * @param dest_dmr Destination DMR populated by parsing.
+     * @param debug Enable parser debug tracing when true.
+     */
     void intern(const char *buffer, int size, DMR *dest_dmr, bool debug = false);
 
     /**
-     * @defgroup strict The 'strict' mode
+     * @name strict
+     * The 'strict' mode
      * @{
      * The strict mode of the parser is the default. In this mode any error
      * will result in an exception and parsing will stop. When strict mode

@@ -178,7 +178,7 @@ public:
         CPPUNIT_ASSERT(not_equal->value(dmr));
     }
 
-    /** @defgroup type_conv Tests for type promotion
+    /** @name type_conv Tests for type promotion
      * @{
      */
     void Byte_and_int_test() {

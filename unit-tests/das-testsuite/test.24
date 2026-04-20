@@ -11,7 +11,7 @@ Attributes {
 	    String name "A part of the whole";
 	}
     }
-    
+
     # Alias `var2' to the existing `var1.component'.
     Alias component2 var1.component1;
 }

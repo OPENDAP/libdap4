@@ -24,9 +24,6 @@
 
 #include "config.h"
 
-#include <cppunit/TextTestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-
 #include <sstream>
 
 #include "Array.h"
@@ -45,23 +42,6 @@
 #include "testFile.h"
 #include "test_config.h"
 
-static bool debug2 = false;
-
-#undef DBG
-#define DBG(x)                                                                                                         \
-    do {                                                                                                               \
-        if (debug) {                                                                                                   \
-            x;                                                                                                         \
-        }                                                                                                              \
-    } while (false)
-#undef DBG2
-#define DBG2(x)                                                                                                        \
-    do {                                                                                                               \
-        if (debug2) {                                                                                                  \
-            x;                                                                                                         \
-        }                                                                                                              \
-    } while (false)
-
 using namespace CppUnit;
 using namespace std;
 using namespace libdap;
@@ -71,7 +51,7 @@ static string THE_TESTS_DIR("/dmr-rt-testsuite/");
 class DmrRoundTripTest : public TestFixture {
 private:
     string d_prefix = string(TEST_SRC_DIR) + THE_TESTS_DIR;
-    string d_build_prefix = string(TEST_BUILD_DIR) + THE_TESTS_DIR;
+    string d_build_prefix = string(TEST_BUILD_DIR) + "/";
 
 public:
     DmrRoundTripTest() = default;

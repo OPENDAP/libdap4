@@ -27,3 +27,7 @@ d4_function/position.hh
 d4_function/stack.hh
 d4_function/*.tab.cc
 d4_function/*.tab.hh
+
+unit-tests/D4-type-testsuite/*
+
+retired/*

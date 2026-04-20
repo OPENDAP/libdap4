@@ -1,0 +1,42 @@
+{
+  // See https://code.visualstudio.com/docs/editor/settings for more information about this file.
+  // This file can be edited to chnage prefix and PATH. jhrg 3//10/26
+  "prefix": "/Users/jimg/src/opendap/hyrax/build",
+  "PATH": "${config:prefix}/bin:${config:prefix}/deps/bin:${env:PATH}",
+  "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/compile_commands.json",
+  "C_Cpp.default.cppStandard": "c++14",
+  "C_Cpp.default.intelliSenseMode": "macos-clang-arm64",
+  "C_Cpp.vcFormat.indent.namespaceContents": false,
+  "C_Cpp.default.includePath": ["${workspaceFolder}/**"],
+  // Makefile settings. jhrg 3/11/26
+  "files.associations": {
+    "*.am": "makefile"
+  },
+  "[makefile]": {
+    "editor.insertSpaces": false
+  },
+  // Exclude object files from the file explorer. jhrg 3/29/26
+  "files.exclude": {
+    "**/*.o": true,
+    "**/*.lo": true
+  },
+  "terminal.integrated.env.osx": {
+    "prefix": "${config:prefix}",
+    "PATH": "${config:PATH}"
+  },
+  "terminal.integrated.env.linux": {
+    "prefix": "${config:prefix}",
+    "PATH": "${config:PATH}"
+  },
+  "cSpell.words": [
+    "asan",
+    "autoreconf",
+    "autotools",
+    "ctest",
+    "Doxygen",
+    "libdap",
+    "TESTSUITEFLAGS",
+    "worktree"
+  ]
+}

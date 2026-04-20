@@ -1276,9 +1276,9 @@ void AttrTable::simple_print(ostream &out, string pad, Attr_iter i, bool derefer
         // Leave here and may check this later. KY 2022-09-22
 #if 0
         for (const auto &attr:(*sxp)) {
-            if (attr != (*sxp).back())  
+            if (attr != (*sxp).back())
                 write_string_attribute_for_das(out, attr, ", ",(*i)->is_utf8_str);
-            else 
+            else
                 write_string_attribute_for_das(out, attr, ";\n",(*i)->is_utf8_str);
         }
 #endif

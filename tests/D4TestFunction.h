@@ -56,7 +56,7 @@ public:
 
         setFunction(function_scale_dap4);
     }
-    virtual ~D4TestFunction() {}
+    ~D4TestFunction() override {}
 };
 
 } // namespace libdap

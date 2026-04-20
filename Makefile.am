@@ -10,7 +10,7 @@ aclocaldir=$(datadir)/aclocal
 pkgconfigdir=$(libdir)/pkgconfig
 
 AM_CPPFLAGS = -I$(top_builddir)/gl -I$(top_srcdir)/gl -I$(top_srcdir)/GNU -I$(top_srcdir)/http_dap $(XML2_CFLAGS) $(TIRPC_CFLAGS)
-AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align -Wno-deprecated-register -Wno-inconsistent-missing-override
+AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align -Wno-unknown-pragmas -Wno-deprecated-register
 
 CXXFLAGS_DEBUG = -g3 -O0
 
@@ -39,7 +39,7 @@ lib_LTLIBRARIES = libdap.la libdapclient.la libdapserver.la
 
 bin_SCRIPTS = dap-config dap-config-pkgconfig
 
-bin_PROGRAMS = getdap getdap4
+bin_PROGRAMS = getdap getdap4 dmr_memory_cache
 
 # Including the generated grammar sources in BUILT_SOURCES ensures
 # they are built first. jhrg 6/18/15
@@ -51,9 +51,15 @@ man_MANS = getdap.1 dap-config.1 getdap4.1
 %.1: %.man1
 	groff -t -e -mandoc -Tascii $< | col -bx > $@
 
-libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)  
+libparsers_la_SOURCES = $(FLEX_SRC) $(BISON_SRC)
 libparsers_la_CPPFLAGS =  $(XML2_CFLAGS) $(TIRPC_CFLAGS)
 libparsers_la_LIBADD = $(XML2_LIBS)
+
+# Suppress sign-compare warnings from flex-generated scanners only.
+libparsers_la-lex.das.lo \
+libparsers_la-lex.dds.lo \
+libparsers_la-lex.ce_expr.lo \
+libparsers_la-lex.Error.lo: AM_CXXFLAGS += -Wno-sign-compare
 
 libdap_la_SOURCES = $(DAP_SRC) $(GNU_SRC)  $(DAP4_ONLY_SRC)
 
@@ -83,6 +89,10 @@ getdap4_SOURCES = getdap4.cc
 getdap4_LDADD = libdapclient.la libdap.la
 getdap4_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/http_dap $(CURL_CFLAGS)
 
+dmr_memory_cache_SOURCES = dmr_mcache_test.cc
+dmr_memory_cache_LDADD = libdapclient.la libdap.la
+dmr_memory_cache_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/http_dap $(CURL_CFLAGS)
+
 LEX_YACC_EXTRA = das.lex das.yy dds.lex dds.yy ce_expr.lex ce_expr.yy \
 Error.lex Error.yy
 
@@ -94,8 +104,8 @@ EXTRA_DIST = ChangeLog COPYING README.md README.dodsrc COPYRIGHT_URI	    \
 dist_aclocal_DATA = conf/libdap.m4
 pkgconfig_DATA = libdap.pc libdapclient.pc libdapserver.pc
 
-CLEANFILES = *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) \
-	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1 \
+CLEANFILES = *.output *.gcda *.gcno *.gcov $(BISON_SRC) $(FLEX_SRC) doxy.conf doxygen.log \
+	dods-datatypes.h xdr-datatypes.h getdap.1 dap-config.1 getdap4.1 dmr_memory_cache.1 \
 	GNU/*.gcda GNU/*.gcno
 
 DISTCLEAN = libdap.spec
@@ -105,13 +115,12 @@ clean-local:
 	-rm -rf gcovr-output
 
 HTML_DOCS=html
-DOXYGEN_CONF=doxy.conf
 
 # This target only builds the documents, it does not move them to
 # github. See README.gh-pages.md for that
 .PHONY: docs
-docs: ${DOXYGEN_CONF} main_page.doxygen
-	doxygen ${DOXYGEN_CONF}
+docs: doxy.conf
+	doxygen doxy.conf > doxygen.log
 
 # cccc computes metrics like Lines of code and McCabe. It's available
 # on the web...
@@ -125,7 +134,6 @@ cccc:
 
 # dist-hook:
 #	if test -n "$$VERSION"; then cat $$VERSION NEWS > NEWS.tmp; mv NEWS.tmp NEWS; fi
-
 
 # Build linux RPMs. Use the environment variable 'RPM_OPTIONS' to pass in
 # extra options like --nodeps and --macros
@@ -146,14 +154,14 @@ deb: dist
 
 #############################################################################
 # Library sources
-# 
+#
 
 GNU_SRC = GNU/GetOpt.cc GNU/GNURegex.cc
 
 GNU_HDR = GNU/GetOpt.h GNU/GNURegex.h
 
 BISON_SRC = das.tab.cc das.tab.hh dds.tab.cc	dds.tab.hh \
-	ce_expr.tab.cc ce_expr.tab.hh Error.tab.cc Error.tab.hh 
+	ce_expr.tab.cc ce_expr.tab.hh Error.tab.cc Error.tab.hh
 
 FLEX_SRC = lex.das.cc lex.dds.cc lex.ce_expr.cc lex.Error.cc
 
@@ -196,7 +204,7 @@ DAP_HDR = AttrTable.h DAS.h DDS.h DataDDS.h DDXParserSAX2.h		\
 	Grid.h UInt32.h Int16.h UInt16.h Float32.h BaseTypeFactory.h	\
 	ObjectType.h EncodingType.h SignalHandler.h Error.h		\
 	InternalErr.h util.h escaping.h parser.h debug.h dods-limits.h	\
-	dods-datatypes.h Type.h		\
+	dods-datatypes.h Type.h	diagnostic_suppression.h	\
 	util_mit.h expr.h Clause.h RValue.h ConstraintEvaluator.h	\
 	ce_parser.h DapIndent.h DapObj.h XDRFileMarshaller.h		\
 	Marshaller.h UnMarshaller.h XDRFileUnMarshaller.h		\
@@ -245,7 +253,7 @@ clion-source-discovery:
 # Special rules for the grammars. I tried to use the automake grammar support
 # but these grammars are so hacked that it was taking too much time. Maybe if
 # each grammar was converted one by one... jhrg 6/22/05
-# 
+#
 # I switched to using flex options instead of sed and mv. jhrg 02/28/08
 #
 # Build the DAS scanner and parser

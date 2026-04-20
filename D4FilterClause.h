@@ -48,16 +48,25 @@ private:
     void m_duplicate(const D4FilterClauseList &src);
 
 public:
+    /** @brief Mutable iterator over filter-clause pointers. */
     typedef std::vector<D4FilterClause *>::iterator iter;
+    /** @brief Read-only iterator over filter-clause pointers. */
     typedef std::vector<D4FilterClause *>::const_iterator citer;
 
     D4FilterClauseList() {}
+    /** @brief Copy-constructs a filter-clause list. @param src Source clause list. */
     D4FilterClauseList(const D4FilterClauseList &src) { m_duplicate(src); }
 
+    /** @brief Builds a one-element filter-clause list. @param c Initial clause pointer. */
     D4FilterClauseList(D4FilterClause *c) { add_clause(c); }
 
     virtual ~D4FilterClauseList();
 
+    /**
+     * @brief Assigns this list from another list.
+     * @param rhs Source list.
+     * @return This list after assignment.
+     */
     D4FilterClauseList &operator=(const D4FilterClauseList &rhs) {
         if (this == &rhs)
             return *this;
@@ -67,13 +76,25 @@ public:
         return *this;
     }
 
+    /**
+     * @brief Appends a filter clause pointer.
+     * @param c Clause pointer to append.
+     */
     void add_clause(D4FilterClause *c) { d_clauses.push_back(c); }
 
+    /**
+     * @brief Returns a clause by index.
+     * @param i Zero-based clause index.
+     * @return Clause pointer at index `i`.
+     */
     D4FilterClause *get_clause(unsigned int i) { return d_clauses.at(i); }
 
+    /** @brief Returns a const iterator to the first clause. */
     citer cbegin() const { return d_clauses.begin(); }
+    /** @brief Returns a const iterator one past the last clause. */
     citer cend() const { return d_clauses.end(); }
 
+    /** @brief Returns the number of clauses in this list. */
     unsigned int size() const { return d_clauses.size(); }
 
     // get the clause value; this version supports functional clauses
@@ -108,6 +129,7 @@ public:
  */
 class D4FilterClause {
 public:
+    /** @brief Comparison and special operators for DAP4 filter clauses. */
     enum ops {
         // Stock relops
         null = 0,
@@ -166,8 +188,14 @@ public:
         assert(arg2 && "null arg2");
     }
 
+    /** @brief Copy-constructs a filter clause. @param src Source clause. */
     D4FilterClause(const D4FilterClause &src) { m_duplicate(src); }
 
+    /**
+     * @brief Assigns this clause from another clause.
+     * @param rhs Source clause.
+     * @return This clause after assignment.
+     */
     D4FilterClause &operator=(const D4FilterClause &rhs) {
         if (this == &rhs)
             return *this;

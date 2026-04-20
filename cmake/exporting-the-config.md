@@ -1,4 +1,5 @@
-Yes — if you want **downstream projects** (i.e., other software that uses `libdap`) to find your configuration and build environment easily, you can set up `libdap` to export a proper **CMake package config**. This includes:
+Yes — if you want **downstream projects** (i.e., other software that uses `libdap`) to find your configuration
+and build environment easily, you can set up `libdap` to export a proper **CMake package config**. This includes:
 
 1. Exported targets like `libdap`, `libdapclient`, etc.
 2. An installable `libdapConfig.cmake` (or `libdapTargets.cmake`)
@@ -153,12 +154,12 @@ cmake -DCMAKE_PREFIX_PATH=/opt/libdap ..
 
 ---
 
-## ✅ Optional: Export detection results (e.g., HAVE\_STRFTIME)
+## ✅ Optional: Export detection results (e.g., HAVE_STRFTIME)
 
 If your downstream needs `config.h`-style values, you can:
 
-* Install `libdapConfig.h` (a sanitized version of `config.h`)
-* Or provide `libdapOptions.cmake` for optional values
+- Install `libdapConfig.h` (a sanitized version of `config.h`)
+- Or provide `libdapOptions.cmake` for optional values
 
 But that’s usually best for tightly coupled consumers.
 

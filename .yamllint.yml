@@ -1,0 +1,33 @@
+# .yamllint.yml
+# YAML linting rules for consistent, clean YAML across CI/CD, configs, etc.
+#
+# Written by ChatGPT. jhrg 10/31/25
+
+extends: default
+
+rules:
+  line-length:
+    max: 120
+    level: warning
+
+  # IMPORTANT: indent sequences (e.g., steps:) by 2 spaces under their parent
+  indentation:
+    spaces: 2
+    indent-sequences: true
+
+  trailing-spaces: enable
+  new-line-at-end-of-file: enable
+
+  document-start: disable
+  truthy:
+    check-keys: false
+  empty-values: disable
+
+  comments:
+    require-starting-space: true
+    min-spaces-from-content: 1
+
+  # Allow compact inline lists in workflows:
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1

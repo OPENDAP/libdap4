@@ -73,6 +73,8 @@
 #include "parser.h"
 #include "util.h"
 
+#include "../TempFile.h"
+
 #include "debug.h"
 
 using namespace std;
@@ -105,35 +107,34 @@ extern int ce_exprdebug;
 const string version = "version 1.12";
 const string prompt = "expr-test: ";
 const string options = "sS:bdecvp:w:W:f:k:vx?";
-const string usage = "\
-\nexpr-test [-s [-S string] -d -c -v [-p dds-file]\
-\n[-e expr] [-w|-W dds-file] [-f data-file] [-k expr]]\
-\nTest the expression evaluation software.\
-\nOptions:\
-\n  -s: Feed the input stream directly into the expression scanner, does\
-\n      not parse.\
-\n  -S: <string> Scan the string as if it was standard input.\
-\n  -d: Turn on expression parser debugging.\
-\n  -c: Print the constrained DDS (the one that will be returned\
-\n      prepended to a data transmission. Must also supply -p and -e \
-\n  -V: Print the version of expr-test\
-\n  -p: DDS-file: Read the DDS from DDS-file and create a DDS object,\
-\n      then prompt for an expression and parse that expression, given\
-\n      the DDS object.\
-\n  -e: Evaluate the constraint expression. Must be used with -p.\
-\n  -w: Do the whole enchilada. You don't need to supply -p, -e, ...\
-\n      This prompts for the constraint expression and the optional\
-\n      data file name. NOTE: The CE parser Error objects do not print\
-\n      with this option.\
-\n  -W: Similar to -w but uses the new (11/2007) intern_data() methods\
-\n      in place of the serialize()/deserialize() combination.\
-\n  -b: Use periodic/cyclic/changing values. For testing Sequence CEs.\
-\n  -f: A file to use for data. Currently only used by -w for sequences.\
-\n  -k: A constraint expression to use with the data. Works with -p,\
-\n      -e, -t and -w\
-\n  -x: Print declarations using the XML syntax. Does not work with the\
-\n      data printouts.\
-\n  -?: Print usage information";
+const string usage = R"(expr-test [-s [-S string] -d -c -v [-p dds-file]\
+[-e expr] [-w|-W dds-file] [-f data-file] [-k expr]]
+Test the expression evaluation software.
+Options:
+  -s: Feed the input stream directly into the expression scanner, does
+      not parse.
+  -S: <string> Scan the string as if it was standard input.
+  -d: Turn on expression parser debugging.
+  -c: Print the constrained DDS (the one that will be returned
+      prepended to a data transmission. Must also supply -p and -e
+  -V: Print the version of expr-test
+  -p: DDS-file: Read the DDS from DDS-file and create a DDS object,
+      then prompt for an expression and parse that expression, given
+      the DDS object.
+  -e: Evaluate the constraint expression. Must be used with -p.
+  -w: Do the whole enchilada. You don't need to supply -p, -e, ...
+      This prompts for the constraint expression and the optional
+      data file name. NOTE: The CE parser Error objects do not print
+      with this option.
+  -W: Similar to -w but uses the new (11/2007) intern_data() methods
+      in place of the serialize()/deserialize() combination.
+  -b: Use periodic/cyclic/changing values. For testing Sequence CEs.
+  -f: A file to use for data. Currently only used by -w for sequences.
+  -k: A constraint expression to use with the data. Works with -p,
+      -e, -t and -w
+  -x: Print declarations using the XML syntax. Does not work with the
+      data printouts.
+  -?: Print usage information)";
 
 int main(int argc, char *argv[]) {
     GetOpt getopt(argc, argv, options.c_str());
@@ -420,10 +421,14 @@ void evaluate_dds(DDS &table, bool print_constrained, bool xml_syntax) {
 void parse_mime(FILE *data_source) {
     char line[256];
 
-    fgets(line, 256, data_source);
+    auto ret = fgets(line, 256, data_source);
+    if (ret == nullptr)
+        return;
 
     while (strncmp(line, CRLF, 2) != 0)
-        fgets(line, 256, data_source);
+        ret = fgets(line, 256, data_source);
+    if (ret == nullptr)
+        return;
 }
 
 void set_series_values(DDS &dds, bool state) {
@@ -480,12 +485,12 @@ void constrained_trans(const string &dds_name, const bool constraint_expr, const
     df.set_ce(ce);
     df.set_dataset_name(dds_name);
 
-    ofstream out("expr-test-data.bin", ios::out | ios::trunc | ios::binary);
-    df.send_data(out, server, eval, true);
-    out.close();
+    auto expr_temp_file = TempFile("expr-test-data.XXXXXX");
+    df.send_data(expr_temp_file.stream(), server, eval, true);
+    expr_temp_file.flush();
 
     // Now do what Connect::request_data() does:
-    FILE *fp = fopen("expr-test-data.bin", "r");
+    FILE *fp = fopen(expr_temp_file.path().c_str(), "r");
 
     Response r(fp, 400);
     Connect c("http://dummy_argument");

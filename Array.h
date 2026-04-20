@@ -57,6 +57,7 @@ class XMLWriter;
 class D4Dimension;
 class D4Dimensions;
 
+/** @brief Legacy maximum array size for 32-bit DAP2 interfaces. */
 const int DODS_MAX_ARRAY = DODS_INT_MAX;
 
 /** This class is used to hold arrays of data. The elements of the array can
@@ -159,8 +160,17 @@ public:
 
         dimension() = default;
 
+        /**
+         * @brief Builds a dimension descriptor from size and optional name.
+         * @param s Unconstrained dimension size.
+         * @param n Dimension name.
+         */
         dimension(int64_t s, string n) : size(s), name(std::move(n)), stop(s - 1), c_size(s) {}
 
+        /**
+         * @brief Builds a dimension descriptor from a shared DAP4 dimension.
+         * @param d Shared dimension definition.
+         */
         explicit dimension(D4Dimension *d);
     };
 
@@ -171,18 +181,21 @@ public:
     // by another module. However, there are issues in the current BES
     // that prevent us from implementing in this way.
     // So we need to use libdap to do the job.
+    /** @brief Per-chunk direct-I/O metadata for a variable. */
     struct var_chunk_info_t {
-        unsigned int filter_mask;
-        unsigned long long chunk_direct_io_offset;
-        unsigned long long chunk_buffer_size;
-        vector<unsigned long long> chunk_coords;
+        unsigned int filter_mask;                  ///< Enabled filter bit-mask for this chunk.
+        unsigned long long chunk_direct_io_offset; ///< On-disk byte offset for direct I/O.
+        unsigned long long chunk_buffer_size;      ///< Compressed chunk size in bytes.
+        vector<unsigned long long> chunk_coords;   ///< Multidimensional chunk coordinates.
     };
 
+    /** @brief Storage layout and filter metadata for direct-I/O reads. */
     struct var_storage_info {
-        string filter;
-        vector<unsigned int> deflate_levels;
-        vector<size_t> chunk_dims;
-        vector<var_chunk_info_t> var_chunk_info;
+        bool has_filled_chunks;                  ///< Whether this array has chunks that only contain filled values.
+        string filter;                           ///< Filter pipeline description.
+        vector<unsigned int> deflate_levels;     ///< Deflate levels per filter stage.
+        vector<size_t> chunk_dims;               ///< Chunk dimensions in row-major order.
+        vector<var_chunk_info_t> var_chunk_info; ///< Per-chunk metadata records.
     };
 
 private:
@@ -193,19 +206,44 @@ private:
     bool direct_io_flag = false;
     var_storage_info vs_info;
 
-    void update_dimension_pointers(D4Dimensions *old_dims, D4Dimensions *new_dims);
+    float storage_size_ratio = 1;
+
+    void update_dimension_pointers(D4Group *grp);
     void print_dim_element(const XMLWriter &xml, const dimension &d, bool constrained);
 
     friend class ArrayTest;
     friend class D4Group;
 
 protected:
+    /**
+     * @brief Copies Array-specific members from another array.
+     * @param a Source array.
+     */
     void _duplicate(const Array &a);
 
-    uint64_t print_array(FILE *out, uint64_t index, unsigned int dims, uint64_t shape[]);
+    /**
+     * @brief Prints array values recursively to a C stdio stream.
+     * @param out Output file stream.
+     * @param index Current flat element index.
+     * @param dims Number of dimensions remaining in recursion.
+     * @param shape Constrained dimension sizes.
+     * @param is_root_grp True when printing in root-group context.
+     * @return Next flat index after printing.
+     */
+    uint64_t print_array(FILE *out, uint64_t index, unsigned int dims, uint64_t shape[], bool is_root_grp);
 
-    uint64_t print_array(ostream &out, uint64_t index, unsigned int dims, uint64_t shape[]);
+    /**
+     * @brief Prints array values recursively to a C++ stream.
+     * @param out Output stream.
+     * @param index Current flat element index.
+     * @param dims Number of dimensions remaining in recursion.
+     * @param shape Constrained dimension sizes.
+     * @param is_root_grp True when printing in root-group context.
+     * @return Next flat index after printing.
+     */
+    uint64_t print_array(ostream &out, uint64_t index, unsigned int dims, uint64_t shape[], bool is_root_grp);
 
+    /** @brief Returns mutable access to the internal dimension list. */
     std::vector<dimension> &shape() { return _shape; }
 
 public:
@@ -224,37 +262,96 @@ public:
         @see dim_end() */
     typedef std::vector<dimension>::iterator Dim_iter;
 
+    /**
+     * @brief Constructs an array with element prototype.
+     * @param n Variable name.
+     * @param v Element prototype.
+     * @param is_dap4 True when this variable is part of a DAP4 model.
+     */
     Array(const string &n, BaseType *v, bool is_dap4 = false);
+    /**
+     * @brief Constructs an array with declaration metadata and prototype.
+     * @param n Variable name.
+     * @param d Declaration context.
+     * @param v Element prototype.
+     * @param is_dap4 True when this variable is part of a DAP4 model.
+     */
     Array(const string &n, const string &d, BaseType *v, bool is_dap4 = false);
     Array(const Array &rhs);
-    virtual ~Array();
+    ~Array() override;
 
+    /**
+     * @brief Assigns from another array.
+     * @param rhs Source array.
+     * @return This instance after assignment.
+     */
     Array &operator=(const Array &rhs);
     BaseType *ptr_duplicate() override;
 
+    /** @brief Returns true when this array is being used as a DAP2 Grid map/array component. */
     bool is_dap2_grid();
     void transform_to_dap4(D4Group *root, Constructor *container) override;
+    /**
+     * @brief Converts this DAP4 array into equivalent DAP2 values.
+     * @param parent_attr_table Destination attribute table for converted metadata.
+     * @param show_shared_dims True to include shared-dimension annotations.
+     * @return Heap-allocated list of DAP2 values derived from this array.
+     */
     std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false) override;
 
     void add_var(BaseType *v, Part p = nil) override;
+    /**
+     * @brief Adds a child variable without copying.
+     * @param v Variable to append.
+     * @param p Constructor part selector.
+     */
     void add_var_nocopy(BaseType *v, Part p = nil) override;
 
     void append_dim(int size, const string &name = "");
+    /**
+     * @brief Appends a new dimension using 64-bit size.
+     * @param size Unconstrained dimension size.
+     * @param name Optional dimension name.
+     */
     void append_dim_ll(int64_t size, const string &name = "");
+    /**
+     * @brief Appends a shared DAP4 dimension.
+     * @param dim Shared dimension definition.
+     */
     void append_dim(D4Dimension *dim);
     void prepend_dim(int size, const string &name = "");
+    /**
+     * @brief Prepends a shared DAP4 dimension.
+     * @param dim Shared dimension definition.
+     */
     void prepend_dim(D4Dimension *dim);
     void clear_all_dims();
     void rename_dim(const string &oldName = "", const string &newName = "");
 
     virtual void add_constraint(Dim_iter i, int start, int stride, int stop);
+    /**
+     * @brief Applies a 64-bit slice constraint to one dimension.
+     * @param i Iterator to the target dimension.
+     * @param start Slice start index.
+     * @param stride Slice stride.
+     * @param stop Slice stop index.
+     */
     virtual void add_constraint_ll(Dim_iter i, int64_t start, int64_t stride, int64_t stop);
+    /**
+     * @brief Applies a shared-dimension-based constraint to one dimension.
+     * @param i Iterator to the target dimension.
+     * @param dim Shared dimension carrying the active slice.
+     */
     virtual void add_constraint(Dim_iter i, D4Dimension *dim);
     virtual void reset_constraint();
 
     virtual void clear_constraint(); // deprecated
 
-    virtual void update_length(int size = 0);                   // should be used internally only
+    virtual void update_length(int size = 0); // should be used internally only
+    /**
+     * @brief Recomputes total element count using 64-bit arithmetic.
+     * @param size Optional explicit size override; zero recomputes from dimensions.
+     */
     virtual void update_length_ll(unsigned long long size = 0); // should be used internally only
 
     Dim_iter dim_begin();
@@ -265,29 +362,88 @@ public:
     virtual int dimension_stop(Dim_iter i, bool constrained = false);
     virtual int dimension_stride(Dim_iter i, bool constrained = false);
 
+    /**
+     * @brief Returns unconstrained or constrained dimension size.
+     * @param i Dimension iterator.
+     * @param constrained True to use constrained size.
+     * @return Dimension size as a 64-bit value.
+     */
     virtual int64_t dimension_size_ll(Dim_iter i, bool constrained = false);
+    /**
+     * @brief Returns unconstrained or constrained dimension start index.
+     * @param i Dimension iterator.
+     * @param constrained True to use constrained start.
+     * @return Dimension start index as a 64-bit value.
+     */
     virtual int64_t dimension_start_ll(Dim_iter i, bool constrained = false);
+    /**
+     * @brief Returns unconstrained or constrained dimension stop index.
+     * @param i Dimension iterator.
+     * @param constrained True to use constrained stop.
+     * @return Dimension stop index as a 64-bit value.
+     */
     virtual int64_t dimension_stop_ll(Dim_iter i, bool constrained = false);
+    /**
+     * @brief Returns unconstrained or constrained dimension stride.
+     * @param i Dimension iterator.
+     * @param constrained True to use constrained stride.
+     * @return Dimension stride as a 64-bit value.
+     */
     virtual int64_t dimension_stride_ll(Dim_iter i, bool constrained = false);
 
     virtual string dimension_name(Dim_iter i);
+    /**
+     * @brief Returns the DAP4 shared-dimension object used by a dimension.
+     * @param i Dimension iterator.
+     * @return Shared dimension pointer, or null for local dimensions.
+     */
     virtual D4Dimension *dimension_D4dim(Dim_iter i);
 
     virtual unsigned int dimensions(bool constrained = false);
 
+    /**
+     * @brief Returns this array's DAP4 map collection.
+     * @return Map collection pointer, or null when none is attached.
+     */
     virtual D4Maps *maps();
 
     void print_dap4(XMLWriter &xml, bool constrained = false) override;
 
     // These are all DAP2 output methods
 
+    /**
+     * @brief Prints the declaration using C++ streams.
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_semi True to print a trailing semicolon.
+     * @param constraint_info True to include projection details.
+     * @param constrained True to print constrained declarations.
+     * @param is_root_grp True when printing in root-group context.
+     * @param array_member True when printing as an array member declaration.
+     */
     void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                    bool constrained = false) override;
+                    bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
 
     void print_xml(ostream &out, string space = "    ", bool constrained = false) override;
 
+    /**
+     * @brief Prints XML representation using an XML writer.
+     * @param xml Output XML writer.
+     * @param constrained True to emit constrained form.
+     */
     void print_xml_writer(XMLWriter &xml, bool constrained = false) override;
+    /**
+     * @brief Prints XML writer output for a configurable XML tag.
+     * @param out Output XML writer.
+     * @param constrained True to emit constrained form.
+     * @param tag XML tag name.
+     */
     virtual void print_xml_writer_core(XMLWriter &out, bool constrained, string tag);
+    /**
+     * @brief Prints this array as a Grid map element using XML writer output.
+     * @param xml Output XML writer.
+     * @param constrained True to emit constrained form.
+     */
     virtual void print_as_map_xml_writer(XMLWriter &xml, bool constrained);
 
     virtual void print_xml_core(FILE *out, string space, bool constrained, string tag);
@@ -296,13 +452,37 @@ public:
     // not used (?)
     virtual void print_as_map_xml(ostream &out, string space = "    ", bool constrained = false);
 
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    /**
+     * @brief Prints values using C++ streams.
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in root-group context.
+     */
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     void print_xml(FILE *out, string space = "    ", bool constrained = false) override;
     virtual void print_as_map_xml(FILE *out, string space = "    ", bool constrained = false);
-    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    /**
+     * @brief Prints values using C stdio.
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in root-group context.
+     */
+    void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
+    /**
+     * @brief Prints the declaration using C stdio.
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_semi True to print a trailing semicolon.
+     * @param constraint_info True to include projection details.
+     * @param constrained True to print constrained declarations.
+     * @param child_grp True when printing a nested-group context.
+     * @param array_member True when printing as an array member declaration.
+     */
     void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                    bool constrained = false) override;
+                    bool constrained = false, bool child_grp = true, bool array_member = false) override;
 
     bool check_semantics(string &msg, bool all = false) override;
 
@@ -311,10 +491,31 @@ public:
     void dump(ostream &strm) const override;
 
     // The following methods are for direct IO optimization.
+    /** @brief Returns whether direct-I/O metadata is enabled for this array. */
     bool get_dio_flag() const { return direct_io_flag; }
+    /**
+     * @brief Enables or disables direct-I/O metadata behavior.
+     * @param dio_flag_value True to enable direct-I/O metadata.
+     */
     void set_dio_flag(bool dio_flag_value = true) { direct_io_flag = dio_flag_value; }
+    /** @brief Returns mutable access to direct-I/O storage metadata. */
     var_storage_info &get_var_storage_info() { return vs_info; }
+    /**
+     * @brief Replaces direct-I/O storage metadata.
+     * @param my_vs_info New storage metadata.
+     */
     void set_var_storage_info(const var_storage_info &my_vs_info);
+
+    // The following methods are for the applications that care about storage size.
+
+    /** @brief Returns the ratio of logical size to the real storage size for this array. */
+    float get_storage_size_ratio() const { return storage_size_ratio; }
+
+    /**
+     * @brief set the ratio of the logical size to the real storage size for this array.
+     * @param the ratio of the logical size to the real storage size for this array.
+     */
+    void set_storage_size_ratio(float sr) { storage_size_ratio = sr; }
 };
 
 } // namespace libdap

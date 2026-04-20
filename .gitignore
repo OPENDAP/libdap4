@@ -1,56 +1,84 @@
-## directories
-.autotools
-.deps
-.libs
+## OS/editor metadata
+.DS_Store
+*/.DS_Store
 .idea
-.dirstamp
+.vscode/*.json
 .cproject
 .project
 .settings
-.DS_Store
-*/.DS_Store
+
+## Build directories and caches
+.autotools
+.deps
+.libs
+.dirstamp
+autom4te.cache
+build/**
+cmake-build-*
 gcovr-output/
 gcov-data/
+/bw-output/
+/.scannerwork/
 
-autom4te.cache
-Default
-docs
-html
-tmp
-libdap_VERSION
-libdap.spec
-
-libdap4-autotest-*
-
-# CLion CMake directory; might make this visible later on... jhrg 2/8/17
-cmake-build-*
-
-## file ptterns
+## Generic generated file patterns
 *~
 *.o
 *.lo
-*.output
-*.tab.cc
-*.tab.hh
-lex.*.cc
 *.la
-# Assuming there's a ...pc.in it's built from
 *.pc
 *.log
 *.trs
 *.docs
+*.output
+*.tab.cc
+*.tab.hh
+lex.*.cc
 *.gcov
 *.gcno
 *.gcda
-
-# OSX Instruments run-time profiling 
 *.trace
 
-# literal files
-libdap.spec
+## Top-level generated artifacts
+Default
+html
+latex
+tmp
+compile_commands.json
 libdap_VERSION
+libdap.spec
+libdap4-autotest-*
+libdap-*.tar.gz
+libdap-*
+
+## Autotools/configure outputs
 Makefile
 Makefile.in
+aclocal.m4
+config.h
+config.h.in
+config.status
+configure
+libtool
+stamp-h?
+
+## Project generated files
+abi_checker.xml
+dap-config
+dap-config.1
+dods-datatypes-config.h
+dods-datatypes.h
+getdap
+getdap.1
+getdap4
+getdap4.1
+xdr-datatypes-config.h
+xdr-datatypes.h
+dmr_memory_cache
+doxy.conf
+doxygen_warnings.txt
+doxygen.log
+
+## conf/ generated files
 conf/compile
 conf/config.guess
 conf/config.sub
@@ -64,38 +92,15 @@ conf/ltversion.m4
 conf/lt~obsolete.m4
 conf/missing
 conf/test-driver
-config.h
-config.h.in
-config.status
-configure
-stamp-h?
-aclocal.m4
-libtool
-doxy.conf
-doxygen_warnings.txt
-main_page.doxygen
 
-## libdap specific files
+## gnulib generated files
 gl/*.h
-
-dap-config
-dap-config.1
-dods-datatypes-config.h
-dods-datatypes.h
-getdap
-getdap.1
-getdap4
-getdap4.1
-xdr-datatypes-config.h
-xdr-datatypes.h
-
-abi_checker.xml
-
 gl/charset.alias
 gl/ref-add.sed
 gl/ref-del.sed
 gl/sys/
 
+## Parser generator outputs
 d4_ce/location.hh
 d4_ce/position.hh
 d4_ce/stack.hh
@@ -103,10 +108,11 @@ d4_function/location.hh
 d4_function/position.hh
 d4_function/stack.hh
 
+## Integration/unit test artifacts (http_dap)
 http_dap/unit-tests/HTTPCacheTest
 http_dap/unit-tests/HTTPConnectTest
+http_dap/unit-tests/HTTPThreadsConnectTest
 http_dap/unit-tests/test_config.h
-
 http_dap/unit-tests/cache-testsuite/cleanup.sh
 http_dap/unit-tests/cache-testsuite/dods_cache/
 http_dap/unit-tests/cache-testsuite/gc_cache/
@@ -114,45 +120,76 @@ http_dap/unit-tests/cache-testsuite/header_cache/
 http_dap/unit-tests/cache-testsuite/purge_cache/
 http_dap/unit-tests/cache-testsuite/singleton_cache/
 
-libdap-*.tar.gz
-libdap-*
-
-html
-latex
-
+## Integration/unit test artifacts (tests)
 tests/DASTest
 tests/DDSTest
+tests/DMRTest
 tests/EXPRTest
+tests/getdapTest
+tests/*Test.dir
 tests/atconfig
 tests/atlocal
 tests/das-test
 tests/dds-test
+tests/dmr-test
 tests/expr-test
 tests/libtest-types.a
 tests/package.m4
-tests/DMRTest
-tests/dmr-test
-tests/getdapTest
-tests/*Test.dir
 
+## Integration/unit test artifacts (unit-tests)
 unit-tests/*.file
 unit-tests/*.strm
 unit-tests/.dodsrc
 unit-tests/ArrayTest
 unit-tests/AttrTableTest
+unit-tests/BaseTypeFactoryTest
+unit-tests/BaseTypeTest
 unit-tests/ByteTest
+unit-tests/ConstraintEvaluatorTest
+unit-tests/D4AsyncDocTest
+unit-tests/D4AttributesTest
+unit-tests/D4BaseTypeFactoryTest
+unit-tests/D4DimensionsTest
+unit-tests/D4EnumDefsTest
+unit-tests/D4EnumTest
+unit-tests/D4FilterClauseTest
+unit-tests/D4GroupTest
+unit-tests/D4MarshallerTest
+unit-tests/D4ParserSax2Test
+unit-tests/D4SequenceTest
+unit-tests/D4StreamRoundTripTest
+unit-tests/D4UnMarshallerTest
+unit-tests/DAPCache3Test
 unit-tests/DASTest
 unit-tests/DDSTest
 unit-tests/DDXParserTest
+unit-tests/DMRTest
+unit-tests/DmrRoundTripTest
+unit-tests/DmrToDap2Test
+unit-tests/ErrorTest
+unit-tests/Float32Test
+unit-tests/Float64Test
+unit-tests/generalUtilTest
+unit-tests/GridTest
 unit-tests/HTTPCacheTest
 unit-tests/HTTPConnectTest
+unit-tests/Int16Test
+unit-tests/Int32Test
+unit-tests/Int64Test
+unit-tests/Int8Test
+unit-tests/IsDap4ProjectedTest
 unit-tests/MIMEUtilTest
+unit-tests/MarshallerFutureTest
 unit-tests/MarshallerTest
+unit-tests/MarshallerThreadTest
 unit-tests/RCReaderTest
 unit-tests/RegexTest
 unit-tests/SequenceTest
 unit-tests/ServerFunctionsListUnitTest
 unit-tests/SignalHandlerTest
+unit-tests/UInt16Test
+unit-tests/UInt32Test
+unit-tests/UInt64Test
 unit-tests/ancT
 unit-tests/arrayT
 unit-tests/attrTableT
@@ -163,49 +200,32 @@ unit-tests/cache-testsuite/header_cache/
 unit-tests/cache-testsuite/http_connect_cache/
 unit-tests/cache-testsuite/purge_cache/
 unit-tests/cache-testsuite/singleton_cache/
+unit-tests/chunked-io/
+unit-tests/chunked_iostream_test
+unit-tests/dapcache3test.*
 unit-tests/dasT
 unit-tests/ddsT
-unit-tests/generalUtilTest
+unit-tests/dmr_memory_cache
 unit-tests/marshT
 unit-tests/parserUtilTest
 unit-tests/sequenceT
 unit-tests/structT
 unit-tests/test_config.h
-unit-tests/D4AsyncDocTest
-unit-tests/D4AttributesTest
-unit-tests/D4DimensionsTest
-unit-tests/D4EnumDefsTest
-unit-tests/D4EnumTest
-unit-tests/D4GroupTest
-unit-tests/D4MarshallerTest
-unit-tests/D4ParserSax2Test
-unit-tests/D4UnMarshallerTest
-unit-tests/DMRTest
-unit-tests/DmrRoundTripTest
-unit-tests/DmrToDap2Test
-unit-tests/chunked_iostream_test
-unit-tests/D4FilterClauseTest
-unit-tests/D4SequenceTest
-unit-tests/BaseTypeFactoryTest
-unit-tests/D4BaseTypeFactoryTest
-unit-tests/Float32Test
-unit-tests/Float64Test
-unit-tests/Int16Test
-unit-tests/Int32Test
-unit-tests/Int64Test
-unit-tests/Int8Test
-unit-tests/UInt16Test
-unit-tests/UInt32Test
-unit-tests/UInt64Test
-unit-tests/GridTest
-unit-tests/IsDap4ProjectedTest
 unit-tests/util_mitTest
-unit-tests/MarshallerFutureTest
 
+## d4_ce unit tests
 d4_ce/unit-tests/D4ConstraintEvaluatorTest
 d4_ce/unit-tests/test_config.h
-http_dap/unit-tests/HTTPThreadsConnectTest
 
-unit-tests/chunked-io/
-/bw-output/
-/.scannerwork/
+## CMake generated files (out-of-source build artifacts)
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+install_manifest.txt
+CPackConfig.cmake
+CPackSourceConfig.cmake
+*_CPack_Packages/
+/unit-tests/SegmentReadWriteLT
+/unit-tests/SegmentReadWriteT

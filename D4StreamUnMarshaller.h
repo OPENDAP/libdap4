@@ -64,6 +64,7 @@ class Vector;
  */
 class D4StreamUnMarshaller : public UnMarshaller {
 public:
+    /** @brief Number of bytes used by a serialized checksum trailer. */
     const static unsigned int c_checksum_length = 4;
 
 private:
@@ -85,10 +86,19 @@ private:
     void m_twidle_vector_elements(char *vals, int64_t num, int width);
 
 public:
+    /**
+     * @brief Builds a DAP4 stream unmarshaller.
+     * @param in Source stream.
+     * @param twiddle_bytes True when multi-byte values must be byte-swapped.
+     */
     D4StreamUnMarshaller(istream &in, bool twiddle_bytes);
     D4StreamUnMarshaller(istream &in);
-    virtual ~D4StreamUnMarshaller();
+    ~D4StreamUnMarshaller() override;
 
+    /**
+     * @brief Enables or disables byte swapping for multi-byte values.
+     * @param twiddle True to swap bytes.
+     */
     void set_twiddle_bytes(bool twiddle) { d_twiddle_bytes = twiddle; }
 
     /**
@@ -105,34 +115,69 @@ public:
         return (is_host_big_endian() && !d_twiddle_bytes) || (!is_host_big_endian() && d_twiddle_bytes);
     }
 
+    /**
+     * @brief Reads and returns the checksum value from the stream.
+     * @return Decoded checksum.
+     */
     Crc32::checksum get_checksum();
+    /**
+     * @brief Reads and returns the checksum as hex text.
+     * @return Checksum string.
+     */
     string get_checksum_str();
     int64_t get_count();
 
+    /** @copydoc UnMarshaller::get_byte */
     void get_byte(dods_byte &val) override;
+    /** @brief Deserialize one DAP4 `Int8` value.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_int8(dods_int8 &val);
 
+    /** @copydoc UnMarshaller::get_int16 */
     void get_int16(dods_int16 &val) override;
+    /** @copydoc UnMarshaller::get_int32 */
     void get_int32(dods_int32 &val) override;
 
+    /** @brief Deserialize one DAP4 `Int64` value.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_int64(dods_int64 &val);
 
+    /** @copydoc UnMarshaller::get_float32 */
     void get_float32(dods_float32 &val) override;
+    /** @copydoc UnMarshaller::get_float64 */
     void get_float64(dods_float64 &val) override;
 
+    /** @copydoc UnMarshaller::get_uint16 */
     void get_uint16(dods_uint16 &val) override;
+    /** @copydoc UnMarshaller::get_uint32 */
     void get_uint32(dods_uint32 &val) override;
 
+    /** @brief Deserialize one DAP4 `UInt64` value.
+     * @param val Destination for the decoded value.
+     */
     virtual void get_uint64(dods_uint64 &val);
 
+    /** @copydoc UnMarshaller::get_str */
     void get_str(string &val) override;
+    /** @copydoc UnMarshaller::get_url */
     void get_url(string &val) override;
 
     void get_opaque(char *, unsigned int) override {
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4, use get_opaque_dap4() instead.");
     }
 
+    /**
+     * @brief Deserialize DAP4 opaque bytes into a caller-owned buffer.
+     * @param val Output pointer to allocated byte buffer.
+     * @param len Number of decoded bytes.
+     */
     virtual void get_opaque_dap4(char **val, int64_t &len);
+    /**
+     * @brief Deserialize DAP4 opaque bytes into a vector.
+     * @param val Destination byte vector.
+     */
     virtual void get_opaque_dap4(vector<uint8_t> &val);
 
     void get_int(int &) override { throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4"); }
@@ -149,9 +194,30 @@ public:
         throw InternalErr(__FILE__, __LINE__, "Not implemented for DAP4");
     }
 
+    /**
+     * @brief Deserialize a fixed-size byte block.
+     * @param val Destination buffer.
+     * @param num_bytes Number of bytes to read.
+     */
     virtual void get_vector(char *val, int64_t num_bytes);
+    /**
+     * @brief Deserialize fixed-size elements into a caller buffer.
+     * @param val Destination buffer.
+     * @param num_elem Number of elements to read.
+     * @param elem_size Bytes per element.
+     */
     virtual void get_vector(char *val, int64_t num_elem, int elem_size);
+    /**
+     * @brief Deserialize `Float32` elements.
+     * @param val Destination buffer.
+     * @param num_elem Number of elements to read.
+     */
     virtual void get_vector_float32(char *val, int64_t num_elem);
+    /**
+     * @brief Deserialize `Float64` elements.
+     * @param val Destination buffer.
+     * @param num_elem Number of elements to read.
+     */
     virtual void get_vector_float64(char *val, int64_t num_elem);
 
     void dump(ostream &strm) const override;

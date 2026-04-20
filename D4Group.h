@@ -63,23 +63,38 @@ private:
     D4Group *find_grp_internal(const string &grp_path);
 
 protected:
+    /**
+     * @brief Deep-copies group-local members from another group.
+     * @param g Source group.
+     */
     void m_duplicate(const D4Group &g);
 
 public:
+    /** @brief Mutable iterator over child groups. */
     typedef vector<D4Group *>::iterator groupsIter;
+    /** @brief Read-only iterator over child groups. */
     typedef vector<D4Group *>::const_iterator groupsCIter;
 
+    /** @brief Builds a group with a name. @param name Group name. */
     D4Group(const string &name);
+    /** @brief Builds a group with name and dataset context. @param name Group name. @param dataset Dataset context. */
     D4Group(const string &name, const string &dataset);
 
     D4Group(const D4Group &rhs);
-    virtual ~D4Group();
+    ~D4Group() override;
 
+    /**
+     * @brief Assigns this group from another group.
+     * @param rhs Source group.
+     * @return This group after assignment.
+     */
     D4Group &operator=(const D4Group &rhs);
 
     // This method returned a D4Group * previously. jhrg 11/17/16
     BaseType *ptr_duplicate() override;
 
+    /** @brief Updates array dimension pointers after copy/parse operations. */
+    void update_variables_d4dimension_pointers();
     // TODO Wire up the new D4Dimensions object to have this group as its parent. jhrg 8/22/22
     /// Get the dimensions defined for this Group
     D4Dimensions *dims() {
@@ -95,6 +110,11 @@ public:
 
     Array *find_map_source(const string &path);
 
+    /**
+     * @brief Finds an enumeration definition by path.
+     * @param path Enumeration definition path.
+     * @return Matching definition or null.
+     */
     D4EnumDef *find_enum_def(const string &path);
 
     /// Get  the enumerations defined for this Group
@@ -109,11 +129,23 @@ public:
     /// Check if this group contains enumerations.
     bool has_enum_defs() const { return (d_enum_defs != nullptr); }
 
+    /**
+     * @brief Finds the first variable in this group hierarchy that uses a dimension.
+     * @param dim Dimension to search for.
+     * @return First matching variable or null.
+     */
     BaseType *find_first_var_that_uses_dimension(D4Dimension *dim);
+
+    /**
+     * @brief Finds the first variable in this group hierarchy that uses an enumeration.
+     * @param enum_def Enumeration definition to search for.
+     * @return First matching variable or null.
+     */
     BaseType *find_first_var_that_uses_enumeration(D4EnumDef *enum_def);
 
     BaseType *find_var(const string &name);
 
+    /** @brief Returns all immediate child groups. */
     const vector<D4Group *> &groups() const { return d_groups; }
 
     /// Get an iterator to the start of the values
@@ -122,17 +154,36 @@ public:
     /// Get an iterator to the end of the values
     groupsIter grp_end() { return d_groups.end(); }
 
+    /**
+     * @brief Appends a deep copy of a child group.
+     * @param g Child group to copy and append.
+     */
     void add_group(const D4Group *g) { add_group_nocopy(new D4Group(*g)); }
 
+    /**
+     * @brief Appends a child group pointer without copying.
+     * @param g Child group to append.
+     */
     void add_group_nocopy(D4Group *g) {
         g->set_parent(this);
         d_groups.push_back(g);
     }
+
+    /**
+     * @brief Inserts a child group pointer before the given iterator.
+     * @param g Child group to insert.
+     * @param i Insertion point.
+     */
     void insert_group_nocopy(D4Group *g, groupsIter i) {
         g->set_parent(this);
         d_groups.insert(i, g);
     }
 
+    /**
+     * @brief Finds an immediate child group by name.
+     * @param grp_name Child group name.
+     * @return Matching child group or null.
+     */
     D4Group *find_child_grp(const string &grp_name);
 
     long request_size(bool constrained);
@@ -151,12 +202,12 @@ public:
     void print_dap4(XMLWriter &xml, bool constrained = false) override;
 
     void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                    bool constrained = false) override;
+                    bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
     void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                    bool constrained = false) override;
+                    bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
 
-    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false) override;
 };

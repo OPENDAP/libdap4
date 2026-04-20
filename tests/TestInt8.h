@@ -40,18 +40,18 @@ public:
     TestInt8(const string &n, const string &d);
     TestInt8(const TestInt8 &rhs);
 
-    virtual ~TestInt8() {}
+    ~TestInt8() override {}
 
     TestInt8 &operator=(const TestInt8 &rhs);
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
-    virtual bool read();
+    bool read() override;
 
-    virtual void output_values(std::ostream &out);
+    void output_values(std::ostream &out) override;
 
-    void set_series_values(bool sv) { d_series_values = sv; }
-    bool get_series_values() { return d_series_values; }
+    void set_series_values(bool sv) override { d_series_values = sv; }
+    bool get_series_values() override { return d_series_values; }
 };
 
 #endif // _testint8_h

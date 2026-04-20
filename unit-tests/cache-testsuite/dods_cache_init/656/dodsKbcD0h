@@ -6,7 +6,7 @@
 
 <body>
 The purpose of this page is to generate a 304 response when accessed using a
-given date and an If-Modified-Since header and/or the correct etag. 
+given date and an If-Modified-Since header and/or the correct etag.
 
 <b>Please don't modify this file!</b>
 

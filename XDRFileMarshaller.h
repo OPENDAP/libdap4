@@ -49,27 +49,44 @@ private:
     XDRFileMarshaller &operator=(const XDRFileMarshaller &);
 
 public:
+    /**
+     * @brief Builds an XDR marshaller that writes to a `FILE*`.
+     * @param out Destination file stream.
+     */
     XDRFileMarshaller(FILE *out);
-    virtual ~XDRFileMarshaller();
+    ~XDRFileMarshaller() override;
 
+    /** @copydoc Marshaller::put_byte */
     void put_byte(dods_byte val) override;
 
+    /** @copydoc Marshaller::put_int16 */
     void put_int16(dods_int16 val) override;
+    /** @copydoc Marshaller::put_int32 */
     void put_int32(dods_int32 val) override;
 
+    /** @copydoc Marshaller::put_float32 */
     void put_float32(dods_float32 val) override;
+    /** @copydoc Marshaller::put_float64 */
     void put_float64(dods_float64 val) override;
 
+    /** @copydoc Marshaller::put_uint16 */
     void put_uint16(dods_uint16 val) override;
+    /** @copydoc Marshaller::put_uint32 */
     void put_uint32(dods_uint32 val) override;
 
+    /** @copydoc Marshaller::put_str */
     void put_str(const string &val) override;
+    /** @copydoc Marshaller::put_url */
     void put_url(const string &val) override;
 
+    /** @copydoc Marshaller::put_opaque */
     void put_opaque(char *val, unsigned int len) override;
+    /** @copydoc Marshaller::put_int */
     void put_int(int val) override;
 
+    /** @copydoc Marshaller::put_vector(char *, int, Vector &) */
     void put_vector(char *val, int num, Vector &vec) override;
+    /** @copydoc Marshaller::put_vector(char *, int, int, Vector &) */
     void put_vector(char *val, int num, int width, Vector &vec) override;
 
     void dump(ostream &strm) const override;

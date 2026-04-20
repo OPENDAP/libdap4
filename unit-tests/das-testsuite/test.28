@@ -10,7 +10,7 @@ Attributes {
 	    Float64 g 6.02e23;
 	    String name "A part of the whole";
 	}
-	
+
 	Alias z component1.g;
     }
 }

@@ -133,9 +133,9 @@ unsigned int UInt64::buf2val(void **val)
     return width();
 }
 
-void UInt64::print_val(ostream &out, string space, bool print_decl_p) {
+void UInt64::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     if (print_decl_p) {
-        print_decl(out, space, false);
+        print_decl(out, space, false, false, false, is_root_grp);
         out << " = " << d_buf << ";\n";
     } else
         out << d_buf;
@@ -218,21 +218,7 @@ bool UInt64::d4_ops(BaseType *b, int op) {
  *
  * @return A pointer to the transformed variable
  */
-std::vector<BaseType *> *UInt64::transform_to_dap2(AttrTable *, bool show_shared_dims) {
-
-#if 0
-    BaseType *dest = this->ptr_duplicate();
-    // convert the d4 attributes to a dap2 attribute table.
-    AttrTable *attrs = this->attributes()->get_AttrTable();
-    attrs->set_name(name());
-    dest->set_attr_table(*attrs);
-    dest->set_is_dap4(false);
-    // attrs->print(cerr,"",true);
-    return dest;
-#endif
-
-    return NULL;
-}
+std::vector<BaseType *> *UInt64::transform_to_dap2(AttrTable *, bool) { return nullptr; }
 
 /**
  * When send_p() is true a description of the instance is added to the inventory and true is returned.

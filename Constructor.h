@@ -44,20 +44,53 @@ private:
     void m_duplicate(const Constructor &s);
 
 protected:
+    /** @brief Child variables owned by this constructor instance. */
     std::vector<BaseType *> d_vars;
 
+    /**
+     * @brief Finds a descendant variable by leaf-name match.
+     * @param name Name fragment to match.
+     * @param s Optional stack used to record the match path.
+     * @return Matching variable, or null when none is found.
+     */
     BaseType *m_leaf_match(const string &name, btp_stack *s = nullptr);
+    /**
+     * @brief Finds a descendant variable by exact fully-qualified match.
+     * @param name Fully-qualified name to match.
+     * @param s Optional stack used to record the match path.
+     * @return Matching variable, or null when none is found.
+     */
     BaseType *m_exact_match(const string &name, btp_stack *s = nullptr);
 
+    /**
+     * @brief Constructs a constructor type with name and explicit type.
+     * @param name Variable name.
+     * @param type Concrete constructor type.
+     * @param is_dap4 True when this variable is part of a DAP4 model.
+     */
     Constructor(const string &name, const Type &type, bool is_dap4 = false) : BaseType(name, type, is_dap4) {}
+    /**
+     * @brief Constructs a constructor type with dataset declaration metadata.
+     * @param name Variable name.
+     * @param dataset Declaration context.
+     * @param type Concrete constructor type.
+     * @param is_dap4 True when this variable is part of a DAP4 model.
+     */
     Constructor(const string &name, const string &dataset, const Type &type, bool is_dap4 = false)
         : BaseType(name, dataset, type, is_dap4) {}
 
+    /**
+     * @brief Copy-constructs a constructor and duplicates child variables.
+     * @param copy_from Source constructor.
+     */
     Constructor(const Constructor &copy_from) : BaseType(copy_from) { m_duplicate(copy_from); }
 
 public:
+    /** @brief Iterator type for read-only traversal of child variables. */
     typedef std::vector<BaseType *>::const_iterator Vars_citer;
+    /** @brief Iterator type for mutable traversal of child variables. */
     typedef std::vector<BaseType *>::iterator Vars_iter;
+    /** @brief Reverse iterator type for mutable traversal of child variables. */
     typedef std::vector<BaseType *>::reverse_iterator Vars_riter;
 
     Constructor() = delete; // Why? jhrg 4/25/22
@@ -67,6 +100,11 @@ public:
             delete var;
     }
 
+    /**
+     * @brief Assigns this constructor from another.
+     * @param rhs Source constructor.
+     * @return This instance after assignment.
+     */
     Constructor &operator=(const Constructor &rhs) {
         if (this == &rhs)
             return *this;
@@ -126,6 +164,7 @@ public:
 
     // DAP4
     void compute_checksum(Crc32 &checksum) override;
+    /** @brief Reads any required DAP4-side data into this constructor. */
     void intern_data() override;
     void serialize(D4StreamMarshaller &m, DMR &dmr, bool filter = false) override;
     void deserialize(D4StreamUnMarshaller &um, DMR &dmr) override;
@@ -142,25 +181,70 @@ public:
 
     void set_in_selection(bool state) override;
 
+    /**
+     * @brief Prints the declaration using C++ streams.
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_semi True to print a trailing semicolon.
+     * @param constraint_info True to include projection details.
+     * @param constrained True to print constrained declarations.
+     * @param is_root_grp True when printing in root-group context.
+     * @param array_member True when printing as an array member declaration.
+     */
     void print_decl(ostream &out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                    bool constrained = false) override;
+                    bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
 
     void print_xml(ostream &out, string space = "    ", bool constrained = false) override;
 
     void print_dap4(XMLWriter &xml, bool constrained = false) override;
 
+    /**
+     * @brief Prints XML representation using an XML writer.
+     * @param xml Output XML writer.
+     * @param constrained True to emit constrained form.
+     */
     void print_xml_writer(XMLWriter &xml, bool constrained = false) override;
 
+    /**
+     * @brief Prints the declaration using C stdio.
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_semi True to print a trailing semicolon.
+     * @param constraint_info True to include projection details.
+     * @param constrained True to print constrained declarations.
+     * @param is_root_grp True when printing in root-group context.
+     * @param array_member True when printing as an array member declaration.
+     */
     void print_decl(FILE *out, string space = "    ", bool print_semi = true, bool constraint_info = false,
-                    bool constrained = false) override;
+                    bool constrained = false, bool is_root_grp = true, bool array_member = false) override;
+
     void print_xml(FILE *out, string space = "    ", bool constrained = false) override;
 
-    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    /**
+     * @brief Prints values using C stdio.
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in root-group context.
+     */
+    void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
+    /**
+     * @brief Prints values using C++ streams.
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in root-group context.
+     */
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     bool check_semantics(string &msg, bool all = false) override;
 
     void transfer_attributes(AttrTable *at) override;
+    /**
+     * @brief Builds an attribute table that stores dropped-variable metadata.
+     * @param dropped_vars Variables omitted from a transformed response.
+     * @return Newly allocated attribute table describing dropped variables.
+     */
     static AttrTable *make_dropped_vars_attr_table(vector<BaseType *> *dropped_vars);
 
     void dump(ostream &strm) const override;

@@ -29,9 +29,12 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 
 #include <sstream>
+#include <string>
 
 #include "Array.h"
 #include "Byte.h"
+#include "D4Dimensions.h"
+#include "D4Group.h"
 #include "Float32.h"
 #include "Float64.h"
 #include "Grid.h"
@@ -52,9 +55,9 @@
 
 #include "GNURegex.h"
 
-#include "debug.h"
 #include "util.h"
 
+// To use DBG, go to run_tests_cppunit.h and manually change debug to true
 #include "run_tests_cppunit.h"
 #include "testFile.h"
 #include "test_config.h"
@@ -156,6 +159,10 @@ public:
     CPPUNIT_TEST(test_copy_ctor_2);
     CPPUNIT_TEST(test_copy_ctor_3);
     CPPUNIT_TEST(test_copy_ctor_4);
+    CPPUNIT_TEST(test_copy_ctor_group_d4dim);
+    CPPUNIT_TEST(test_copy_ctor_group_d4dim_complex);
+    CPPUNIT_TEST(test_copy_ctor_group_d4dim_complex_2);
+    CPPUNIT_TEST(test_copy_ctor_group_d4dim_complex_3);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -316,6 +323,178 @@ public:
         dmr_3->print_dap4(xml3);
         dmr_dest = string(xml3.get_doc());
         DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+        CPPUNIT_ASSERT(dmr_src == dmr_dest);
+
+        delete dmr_3;
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+
+    // Test when the DAP4 dimension is not under the same group as the variable.
+    // The DAP4 dimension "dim" is under the root; the variable "var" is under the group /g.
+    void test_copy_ctor_group_d4dim() {
+
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+
+        D4BaseTypeFactory d4_factory;
+        DMR *dmr = new DMR(&d4_factory, "test_grp_d4_dim");
+        D4Group *root_grp = dmr->root();
+        D4Dimensions *root_dims = root_grp->dims();
+        auto d4_dim_unique = make_unique<D4Dimension>("dim", 2);
+        root_dims->add_dim_nocopy(d4_dim_unique.release());
+        auto g_ptr = make_unique<D4Group>("g");
+        auto grp = g_ptr.get();
+        auto d_int32 = new Int32("var");
+        auto var = new Array("var", d_int32);
+        auto var_d4_dim = root_dims->find_dim("dim");
+        var->append_dim(var_d4_dim);
+        grp->add_var_nocopy(var);
+        root_grp->add_group_nocopy(g_ptr.release());
+        delete d_int32;
+
+        XMLWriter xml;
+        dmr->print_dap4(xml);
+        string dmr_src = string(xml.get_doc());
+
+        DBG(cerr << "dmr_src: " << endl << dmr_src << endl);
+
+        DMR *dmr_2 = new DMR(*dmr);
+
+        delete dmr;
+
+        XMLWriter xml2;
+        dmr_2->print_dap4(xml2);
+        string dmr_dest = string(xml2.get_doc());
+        DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+        delete dmr_2;
+
+        CPPUNIT_ASSERT(dmr_src == dmr_dest);
+
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+
+    // The simple group test that has one child group and a few variables under the root and the child group.
+    void test_copy_ctor_group_d4dim_complex() {
+
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        D4BaseTypeFactory factory;
+        DMR *dmr = new DMR(&factory, "simple_group");
+
+        string prefix = string(TEST_SRC_DIR) + "/D4-xml/DMR_SimpleGroup.nc4.h5.xml";
+        ifstream ifs(prefix.c_str());
+        D4ParserSax2 parser;
+        parser.intern(ifs, dmr);
+
+        DMR *dmr_2 = new DMR(*dmr);
+
+        XMLWriter xml;
+        dmr->print_dap4(xml);
+        string dmr_src = string(xml.get_doc());
+        DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
+
+        delete dmr;
+
+        XMLWriter xml2;
+        dmr_2->print_dap4(xml2);
+        string dmr_dest = string(xml2.get_doc());
+        DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+        CPPUNIT_ASSERT(dmr_src == dmr_dest);
+
+        DMR *dmr_3 = new DMR();
+        *dmr_3 = *dmr_2;
+        delete dmr_2;
+
+        XMLWriter xml3;
+        dmr_3->print_dap4(xml3);
+        dmr_dest = string(xml3.get_doc());
+        DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+
+        CPPUNIT_ASSERT(dmr_src == dmr_dest);
+
+        delete dmr_3;
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+
+    // We have two groups under the root group.
+    // Each group has variables that share the dimensions of the root and the current group.
+    void test_copy_ctor_group_d4dim_complex_2() {
+
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        D4BaseTypeFactory factory;
+        DMR *dmr = new DMR(&factory, "two_groups");
+
+        string prefix = string(TEST_SRC_DIR) + "/D4-xml/DMR_nc4_2_groups.nc.xml";
+        ifstream ifs(prefix.c_str());
+        D4ParserSax2 parser;
+        parser.intern(ifs, dmr);
+
+        DMR *dmr_2 = new DMR(*dmr);
+
+        XMLWriter xml;
+        dmr->print_dap4(xml);
+        string dmr_src = string(xml.get_doc());
+        DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
+
+        delete dmr;
+
+        XMLWriter xml2;
+        dmr_2->print_dap4(xml2);
+        string dmr_dest = string(xml2.get_doc());
+        DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+        CPPUNIT_ASSERT(dmr_src == dmr_dest);
+
+        DMR *dmr_3 = new DMR();
+        *dmr_3 = *dmr_2;
+        delete dmr_2;
+
+        XMLWriter xml3;
+        dmr_3->print_dap4(xml3);
+        dmr_dest = string(xml3.get_doc());
+        DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+
+        CPPUNIT_ASSERT(dmr_src == dmr_dest);
+
+        delete dmr_3;
+        DBG(cerr << __func__ << "() - END" << endl);
+    }
+    // We have two groups under the root group. Under each group, there is another group.
+    // Each group has variables that share the dimensions of the root and/or the parent group or the current group.
+    // The dimensions of the variables are across there own group and their ancestors.
+    // root->g1->g11, root->g2->g21.
+    void test_copy_ctor_group_d4dim_complex_3() {
+
+        DBG(cerr << endl << __func__ << "() - BEGIN" << endl);
+        D4BaseTypeFactory factory;
+        DMR *dmr = new DMR(&factory, "two_groups");
+
+        string prefix = string(TEST_SRC_DIR) + "/D4-xml/DMR_nc4_4_groups.nc.xml";
+        ifstream ifs(prefix.c_str());
+        D4ParserSax2 parser;
+        parser.intern(ifs, dmr);
+
+        DMR *dmr_2 = new DMR(*dmr);
+
+        XMLWriter xml;
+        dmr->print_dap4(xml);
+        string dmr_src = string(xml.get_doc());
+        DBG(cerr << "DMR SRC: " << endl << dmr_src << endl);
+
+        delete dmr;
+
+        XMLWriter xml2;
+        dmr_2->print_dap4(xml2);
+        string dmr_dest = string(xml2.get_doc());
+        DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+        CPPUNIT_ASSERT(dmr_src == dmr_dest);
+
+        DMR *dmr_3 = new DMR();
+        *dmr_3 = *dmr_2;
+        delete dmr_2;
+
+        XMLWriter xml3;
+        dmr_3->print_dap4(xml3);
+        dmr_dest = string(xml3.get_doc());
+        DBG(cerr << "DMR DEST: " << endl << dmr_dest << endl);
+
         CPPUNIT_ASSERT(dmr_src == dmr_dest);
 
         delete dmr_3;

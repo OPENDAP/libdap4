@@ -39,6 +39,7 @@
 
 namespace libdap {
 
+/** @brief Stream buffer that decodes DAP4 chunked input frames. */
 class chunked_inbuf : public std::streambuf {
 private:
     std::istream &d_is;
@@ -108,13 +109,17 @@ public:
 
     int_type read_next_chunk();
 
+    /** @brief Returns unread bytes currently available in the buffer. */
     int bytes_in_buffer() const { return (egptr() - gptr()); }
 
     // d_twiddle_bytes is false initially and is set to the correct value
     // once the first chunk is read.
+    /** @brief Returns whether byte-swapping is required for multi-byte values. */
     bool twiddle_bytes() const { return d_twiddle_bytes; }
 
+    /** @brief Returns true if an error chunk has been read. */
     bool error() const { return d_error; }
+    /** @brief Returns the last error message extracted from an error chunk. */
     std::string error_message() const { return d_error_message; }
 
 protected:
@@ -123,13 +128,20 @@ protected:
     virtual std::streamsize xsgetn(char *s, std::streamsize num);
 };
 
+/** @brief `std::istream` wrapper for DAP4 chunked input streams. */
 class chunked_istream : public std::istream {
 protected:
-    chunked_inbuf d_cbuf;
+    chunked_inbuf d_cbuf; ///< Backing chunked stream buffer.
 
 public:
+    /**
+     * @brief Builds a chunked input stream wrapper.
+     * @param is Source stream.
+     * @param size Initial internal chunk buffer size.
+     */
     chunked_istream(std::istream &is, int size) : std::istream(&d_cbuf), d_cbuf(is, size) {}
 
+    /** @brief Reads the next chunk header/body into the internal buffer. */
     int read_next_chunk() { return d_cbuf.read_next_chunk(); }
 
     /**
@@ -149,7 +161,9 @@ public:
      * although that can be inferred.
      */
     bool twiddle_bytes() const { return d_cbuf.twiddle_bytes(); }
+    /** @brief Returns true if the underlying chunked buffer is in error state. */
     bool error() const { return d_cbuf.error(); }
+    /** @brief Returns the last error message reported by the underlying chunked buffer. */
     std::string error_message() const { return d_cbuf.error_message(); }
 };
 

@@ -82,6 +82,9 @@ void DMR::m_duplicate(const DMR &dmr) {
     // Deep copy, using ptr_duplicate()
     // d_root can only be a D4Group, so the thing returned by ptr_duplicate() must be a D4Group.
     d_root = static_cast<D4Group *>(dmr.d_root->ptr_duplicate());
+    // We need to update the DAP4 dimensions for all the variables under this group after
+    // all the objects including the DAP4 dimensions under the groups are copiled. KY 2025-10-31
+    d_root->update_variables_d4dimension_pointers();
     DBG(cerr << "dmr.d_root: " << dmr.d_root << endl);
     DBG(cerr << "d_root (from ptr_dup(): " << d_root << endl);
 }

@@ -54,17 +54,19 @@ void D4Dimension::set_size(const string &size) {
 string D4Dimension::fully_qualified_name() const {
     string name = d_name;
 
-    // d_parent is the D4Dimensions container and its parent is the Group where
+    // d_parent is the D4Dimensions container, and its parent is the Group where
     // this Dimension is defined.
-    D4Group *grp = d_parent->parent();
-    while (grp) {
-        // The root group is named "/" (always); this avoids '//name'
-        name = (grp->name() == "/") ? "/" + name : grp->name() + "/" + name;
+    if (d_parent) {
+        const D4Group *grp = d_parent->parent();
+        while (grp) {
+            // The root group is named "/" (always); this avoids '//name'
+            name = (grp->name() == "/") ? "/" + name : grp->name() + "/" + name;
 
-        if (grp->get_parent())
-            grp = static_cast<D4Group *>(grp->get_parent());
-        else
-            grp = 0;
+            if (grp->get_parent())
+                grp = dynamic_cast<D4Group *>(grp->get_parent());
+            else
+                grp = nullptr;
+        }
     }
 
     return name;

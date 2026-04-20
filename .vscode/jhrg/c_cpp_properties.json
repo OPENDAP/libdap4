@@ -1,0 +1,28 @@
+{
+  "version": 4,
+  "configurations": [
+    {
+      "name": "macOS",
+      "compilerPath": "/usr/bin/clang++",
+      "cStandard": "c11",
+      "cppStandard": "c++14",
+      "intelliSenseMode": "macos-clang-arm64",
+      "compileCommands": "${workspaceFolder}/compile_commands.json",
+      "includePath": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/**",
+        "/Users/jhrg/src/hyrax/build/include",
+        "/Users/jhrg/src/hyrax/build/deps/include",
+        "/opt/homebrew/include/cppunit"
+      ],
+      "defines": [],
+      "macFrameworkPath": [
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+      ],
+      "browse": {
+        "path": ["${workspaceFolder}", "${workspaceFolder}/**"],
+        "limitSymbolsToIncludedHeaders": true
+      }
+    }
+  ]
+}

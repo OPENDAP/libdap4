@@ -12,12 +12,12 @@
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
  version 2.1 of the License, or (at your option) any later version.
- 
+
  This library is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Lesser General Public License for more details.
- 
+
  You should have received a copy of the GNU Lesser General Public
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -25,7 +25,7 @@
  You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
  (c) COPYRIGHT URI/MIT 1994-1996,1998,1999
-*/ 
+*/
 
 /*
   Scanner for the Error object. It recognizes the five keywords in the
@@ -73,7 +73,7 @@ void store_integer();
 void store_string();
 
 %}
-    
+
 %option noyywrap
 %option nounput
 %option noinput
@@ -120,8 +120,8 @@ NEVER   [^a-zA-Z0-9_/.+\-{}:;,]
 <quote>[^"\n\\]*	yymore();
 <quote>[^"\n\\]*\n	yymore(); ++error_line_num;
 <quote>\\.		yymore();
-<quote>\"		{ 
-    			  BEGIN(INITIAL); 
+<quote>\"		{
+    			  BEGIN(INITIAL);
 			  store_string();
 			  return SCAN_STR;
                         }
@@ -175,4 +175,3 @@ store_string()
 {
     Errorlval.string = yytext;
 }
-

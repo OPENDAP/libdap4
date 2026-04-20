@@ -146,9 +146,9 @@ protected:
     // instances of BaseTypeRow objects which hold instances of BaseType.
     //
     // Allow these values to be accessed by subclasses
-    D4SeqValues d_values;
+    D4SeqValues d_values; ///< Sequence rows, where each row is a vector of `BaseType*` values.
 
-    int64_t d_length; // How many elements are in the sequence; -1 if not currently known
+    int64_t d_length; ///< Number of sequence rows; `-1` if unknown.
 
 #if INDEX_SUBSETTING
     int d_starting_row_number;
@@ -156,6 +156,10 @@ protected:
     int d_ending_row_number;
 #endif
 
+    /**
+     * @brief Deep-copies sequence-local members from another sequence.
+     * @param s Source sequence.
+     */
     void m_duplicate(const D4Sequence &s);
 
     // Specialize this if you have a data source that requires read()
@@ -170,8 +174,13 @@ public:
 
     D4Sequence(const D4Sequence &rhs);
 
-    virtual ~D4Sequence();
+    ~D4Sequence() override;
 
+    /**
+     * @brief Assigns this sequence from another sequence.
+     * @param rhs Source sequence.
+     * @return This sequence after assignment.
+     */
     D4Sequence &operator=(const D4Sequence &rhs);
 
     BaseType *ptr_duplicate() override;
@@ -291,13 +300,41 @@ public:
     virtual D4SeqValues &value_ref() { return d_values; }
 
     virtual D4SeqRow *row_value(size_t row);
+    /**
+     * @brief Returns a variable value by row number and member name.
+     * @param row Row index.
+     * @param row_num Alias used by some implementations for the row index.
+     * @param name Member variable name.
+     * @return Value object for the requested cell.
+     */
     virtual BaseType *var_value(size_t row, const string &name);
+    /**
+     * @brief Returns a variable value by row number and member index.
+     * @param row Row index.
+     * @param row_num Alias used by some implementations for the row index.
+     * @param i Member index within the row.
+     * @return Value object for the requested cell.
+     */
     virtual BaseType *var_value(size_t row, size_t i);
 
+    /**
+     * @brief Prints one sequence row.
+     * @param out Output stream.
+     * @param row Row index.
+     * @param space Indentation prefix.
+     * @param print_row_num True to include row number prefixes.
+     */
     virtual void print_one_row(ostream &out, int row, string space, bool print_row_num = false);
+    /**
+     * @brief Prints all sequence rows.
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to print declaration text.
+     * @param print_row_numbers True to print row-number prefixes.
+     */
     virtual void print_val_by_rows(ostream &out, string space = "", bool print_decl_p = true,
                                    bool print_row_numbers = true);
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     void dump(ostream &strm) const override;
 };

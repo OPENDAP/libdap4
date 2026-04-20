@@ -202,21 +202,47 @@ private:
     friend class DDSTest;
 
 protected:
+    /**
+     * @brief Copies state from another DDS.
+     * @param dds Source DDS.
+     */
     void duplicate(const DDS &dds);
+
+    /**
+     * @brief Finds a variable by leaf-name match.
+     * @param name Leaf name to match.
+     * @param s Optional stack used to record match path.
+     * @return Matching variable, or null when none is found.
+     */
     BaseType *leaf_match(const string &name, BaseType::btp_stack *s = 0);
+
+    /**
+     * @brief Finds a variable by exact fully-qualified name.
+     * @param name Fully-qualified variable name.
+     * @param s Optional stack used to record match path.
+     * @return Matching variable, or null when none is found.
+     */
     BaseType *exact_match(const string &name, BaseType::btp_stack *s = 0);
 
 public:
+    /** @brief Iterator type for read-only traversal of top-level variables. */
     typedef std::vector<BaseType *>::const_iterator Vars_citer;
+    /** @brief Iterator type for mutable traversal of top-level variables. */
     typedef std::vector<BaseType *>::iterator Vars_iter;
+    /** @brief Reverse iterator type for mutable traversal of top-level variables. */
     typedef std::vector<BaseType *>::reverse_iterator Vars_riter;
 
     DDS(BaseTypeFactory *factory, const string &name = "");
     DDS(BaseTypeFactory *factory, const string &name, const string &version);
     DDS(const DDS &dds);
 
-    virtual ~DDS();
+    ~DDS() override;
 
+    /**
+     * @brief Assigns this DDS from another DDS.
+     * @param rhs Source DDS.
+     * @return This DDS after assignment.
+     */
     DDS &operator=(const DDS &rhs);
 
     virtual void transfer_attributes(DAS *das);
@@ -253,7 +279,11 @@ public:
     int get_dap_minor() const { return d_dap_minor; }
 
     void set_dap_version(const string &version_string = "2.0");
+
+    /** @brief Returns the DAP protocol version string. */
     string get_dap_version() const { return d_dap_version; }
+
+    /** @brief Returns the DAP4 DMR version corresponding to DDS exports. */
     string get_dmr_version() const { return "1.0"; }
 
     /// @deprecated
@@ -389,6 +419,11 @@ public:
 
     void print_das(ostream &out);
     DAS *get_das();
+
+    /**
+     * @brief Populates a DAS object from this DDS's global and variable attributes.
+     * @param das Destination DAS to populate.
+     */
     void get_das(DAS *das);
 
     void mark_all(bool state);

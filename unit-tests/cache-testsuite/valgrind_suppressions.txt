@@ -1,5 +1,5 @@
 
-# The contents of this file may be moot, but without it, valgrind returns 
+# The contents of this file may be moot, but without it, valgrind returns
 # an error and the cleanup.sh script here is not run, leading to failed tests.
 
 {
@@ -9,4 +9,3 @@
    obj:/usr/bin/find
    ...
 }
-

@@ -1,7 +1,7 @@
 
 On some systems 'make check' will report that the script config.guess' could
 not be found. If that happens, create a symbolic link from ../conf/config.guess
-to either this directory or the libdap-* directory (one level up). The check 
+to either this directory or the libdap-* directory (one level up). The check
 target should now work.
 
 Tests that are known/expected to fail
@@ -16,4 +16,3 @@ situation described in ticket #995 - a nested sequence is not correctly
 processed by the intern_data() methods. This problem will show up in the JGOFS
 handler when ASCII responses are requested, but will not affect other
 Sequence data sets such as the file servers' data.
-

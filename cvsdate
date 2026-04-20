@@ -48,6 +48,6 @@ sub check_revisions() {
 	    return ($file, $selected);
 	}
     }
-    
+
     return ("EOF", 0);
 }

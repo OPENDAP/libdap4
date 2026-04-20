@@ -4,16 +4,28 @@ cmake_minimum_required(VERSION 3.10)
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
+# Some macOS/Homebrew setups provide a flex executable whose matching
+# FlexLexer.h is not on the compiler's default include path. Prefer the
+# header that ships with the discovered flex tool when CMake did not
+# populate FLEX_INCLUDE_DIRS itself.
+if(NOT FLEX_INCLUDE_DIRS AND FLEX_EXECUTABLE)
+    get_filename_component(_flex_bin_dir "${FLEX_EXECUTABLE}" DIRECTORY)
+    get_filename_component(_flex_prefix "${_flex_bin_dir}/.." ABSOLUTE)
+    if(EXISTS "${_flex_prefix}/include/FlexLexer.h")
+        set(FLEX_INCLUDE_DIRS "${_flex_prefix}/include")
+    endif()
+endif()
+
 # Define options similarly as your top-level (inherited)
-option(BUILD_DEVELOPER "Developer mode" OFF)
-option(USE_ASAN "Enable Address Sanitizer" OFF)
+#option(BUILD_DEVELOPER "Developer mode" OFF)
+#option(USE_ASAN "Enable Address Sanitizer" OFF)
 
 # Set compiler flags
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Basic CXX flags
-set(D4_CE_CXXFLAGS -Wall -Wcast-align -Wno-inconsistent-missing-override)
+set(D4_CE_CXXFLAGS -Wall -Wcast-align)
 
 if (BUILD_DEVELOPER)
     list(APPEND D4_CE_CXXFLAGS -g3 -O0)
@@ -64,6 +76,10 @@ target_include_directories(d4_ce_parser
         ${CMAKE_SOURCE_DIR}
         ${CMAKE_BINARY_DIR}
 )
+
+if(FLEX_INCLUDE_DIRS)
+    target_include_directories(d4_ce_parser PRIVATE ${FLEX_INCLUDE_DIRS})
+endif()
 
 target_include_directories(d4_ce_parser PRIVATE ${LIBXML2_INCLUDE_DIR})
 

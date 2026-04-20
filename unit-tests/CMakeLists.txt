@@ -20,7 +20,9 @@ set(TESTS_DAP_ONLY
 		D4DimensionsTest.cc  D4EnumDefsTest.cc D4GroupTest.cc D4ParserSax2Test.cc
 		D4AttributesTest.cc D4EnumTest.cc chunked_iostream_test.cc D4AsyncDocTest.cc
 		DMRTest.cc DmrRoundTripTest.cc DmrToDap2Test.cc D4FilterClauseTest.cc
-		IsDap4ProjectedTest.cc MarshallerFutureTest.cc
+		IsDap4ProjectedTest.cc MarshallerFutureTest.cc TempFileTest.cc
+		DAPCache3Test.cc D4StreamRoundTripTest.cc ConstraintEvaluatorTest.cc MarshallerThreadTest.cc
+		BaseTypeTest.cc
 )
 
 # BigArrayTest.cc seems to break things. jhrg 6/12/25
@@ -72,6 +74,9 @@ foreach(src ${TESTS_DAP_ONLY})
 	build_test(${tgt} ${src})
 endforeach()
 
+# DAPCache3 is not part of libdap, so compile its implementation into the test.
+target_sources(DAPCache3Test PRIVATE ${CMAKE_SOURCE_DIR}/DAPCache3.cc)
+
 foreach(src ${TESTS_DAPCLIENT})
 	get_filename_component(tgt ${src} NAME_WE)
 	build_test(${tgt} ${src})
@@ -101,6 +106,7 @@ endif()
 
 # Set TEST_SRC_DIR to the absolute path of the test sources
 set(abs_srcdir "${CMAKE_CURRENT_SOURCE_DIR}")
+set(abs_builddir "${CMAKE_CURRENT_BINARY_DIR}")
 
 # Generate test_config.h from the template
 configure_file(

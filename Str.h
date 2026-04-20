@@ -50,6 +50,7 @@ namespace libdap {
 // term solution is to fix libdap, but strings should not routinely be > 32k
 // for the time being... jhrg 4/30/97
 
+/** @brief Maximum string length accepted by XDR string deserialization paths. */
 const unsigned int max_str_len = DODS_USHRT_MAX - 1;
 
 /** @brief Holds character string data.
@@ -60,22 +61,40 @@ const unsigned int max_str_len = DODS_USHRT_MAX - 1;
 
 class Str : public BaseType {
 protected:
+    /// Stored scalar string value.
     string d_buf;
 
 public:
     Str(const string &n);
     Str(const string &n, const string &d);
 
-    virtual ~Str() {}
+    ~Str() override {}
 
+    /**
+     * @brief Copy-constructs from another string variable.
+     *
+     * @param copy_from Source instance.
+     */
     Str(const Str &copy_from);
 
+    /**
+     * @brief Assigns from another string variable.
+     *
+     * @param rhs Source instance.
+     * @return This instance after assignment.
+     */
     Str &operator=(const Str &rhs);
 
     BaseType *ptr_duplicate() override;
 
     unsigned int width(bool = false) const override { return sizeof(string); }
 
+    /**
+     * @brief Returns the storage width in bytes.
+     *
+     * @param constrained Ignored for scalar values.
+     * @return Number of bytes used by the in-memory string object.
+     */
     int64_t width_ll(bool = false) const override { return sizeof(string); }
 
     // Return the length of the stored string or zero if no string has been
@@ -100,8 +119,24 @@ public:
 
     virtual string esc_string_variable_value(const string &s);
 
-    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    /**
+     * @brief Writes this value using C stdio output.
+     *
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in the root group context.
+     */
+    void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
+    /**
+     * @brief Writes this value using C++ stream output.
+     *
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in the root group context.
+     */
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     bool ops(BaseType *b, int op) override;
     bool d4_ops(BaseType *b, int op) override;

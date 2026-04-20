@@ -10,7 +10,7 @@
 		<value>2</value>
 	    </Attribute>
 	    <Int32 name="bogus"/>
-        </Attribute>	    
+        </Attribute>
     </Byte>
 
     <dataBLOB href="huh.blob"/>

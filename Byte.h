@@ -58,20 +58,42 @@ namespace libdap {
     */
 class Byte : public BaseType {
 protected:
+    /// Stored scalar byte value.
     dods_byte d_buf;
 
 public:
     Byte(const string &n);
     Byte(const string &n, const string &d);
 
-    virtual ~Byte() {}
+    ~Byte() override {}
 
+    /**
+     * @brief Copy-constructs a byte variable from another instance.
+     *
+     * The new instance copies the source value and metadata.
+     *
+     * @param copy_from Source instance to copy.
+     */
     Byte(const Byte &copy_from);
 
+    /**
+     * @brief Assigns from another byte variable.
+     *
+     * Replaces this instance's value and metadata with those of `rhs`.
+     *
+     * @param rhs Source instance.
+     * @return This instance after assignment.
+     */
     Byte &operator=(const Byte &rhs);
 
     unsigned int width(bool = false) const override { return sizeof(dods_byte); }
 
+    /**
+     * @brief Returns the storage width in bytes.
+     *
+     * @param constrained Ignored for scalar byte values.
+     * @return Number of bytes used by the byte value.
+     */
     int64_t width_ll(bool = false) const override { return sizeof(dods_byte); }
 
     BaseType *ptr_duplicate() override;
@@ -91,11 +113,34 @@ public:
     virtual bool set_value(const dods_byte value);
     virtual dods_byte value() const;
 
-    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    /**
+     * @brief Writes this value using C stdio output.
+     *
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in the root group context.
+     */
+    void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
+    /**
+     * @brief Writes this value using C++ stream output.
+     *
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in the root group context.
+     */
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     bool ops(BaseType *b, int op) override;
     bool d4_ops(BaseType *b, int op) override;
+    /**
+     * @brief Converts this DAP4 value into equivalent DAP2 value objects.
+     *
+     * @param parent_attr_table Destination attribute table for converted metadata.
+     * @param show_shared_dims True to include shared-dimension annotations.
+     * @return A heap-allocated list of DAP2 values corresponding to this object.
+     */
     std::vector<BaseType *> *transform_to_dap2(AttrTable *parent_attr_table, bool show_shared_dims = false) override;
 
     void dump(ostream &strm) const override;

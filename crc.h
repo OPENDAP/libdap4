@@ -40,8 +40,10 @@ static const uint32_t kCrc32Table[256] = {
     0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d,
 }; // kCrc32Table
 
+/** @brief Incremental CRC-32 checksum calculator. */
 class Crc32 {
 public:
+    /// 32-bit checksum value type.
     typedef uint32_t checksum;
 
     /**

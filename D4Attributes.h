@@ -40,6 +40,7 @@ namespace libdap {
 class AttrTable;
 class D4Attributes;
 
+/** @brief Represents one DAP4 attribute value or container node. */
 class D4Attribute : public DapObj {
     string d_name;
     D4AttributeType d_type; // Attributes are limited to the simple types
@@ -58,46 +59,111 @@ class D4Attribute : public DapObj {
     void m_duplicate(const D4Attribute &src);
 
 public:
+    /** @brief Mutable iterator over scalar attribute values. */
     typedef vector<string>::iterator D4AttributeIter;
+    /** @brief Read-only iterator over scalar attribute values. */
     typedef vector<string>::const_iterator D4AttributeCIter;
 
     D4Attribute() : d_name(""), d_type(attr_null_c), d_attributes(0) {}
+
+    /**
+     * @brief Builds an attribute with a name and declared type.
+     * @param name Attribute name.
+     * @param type Attribute type.
+     */
     D4Attribute(const string &name, D4AttributeType type) : d_name(name), d_type(type), d_attributes(0) {}
 
+    /**
+     * @brief Copy-constructs an attribute.
+     * @param src Source attribute.
+     */
     D4Attribute(const D4Attribute &src);
-    ~D4Attribute();
+    ~D4Attribute() override;
+
+    /**
+     * @brief Assigns this attribute from another attribute.
+     * @param rhs Source attribute.
+     * @return This attribute after assignment.
+     */
     D4Attribute &operator=(const D4Attribute &rhs);
 
+    /** @brief Returns the attribute name. */
     string name() const { return d_name; }
+
+    /**
+     * @brief Sets the attribute name.
+     * @param name Attribute name.
+     */
     void set_name(const string &name) { d_name = name; }
 
+    /** @brief Returns the attribute type. */
     D4AttributeType type() const { return d_type; }
+
+    /**
+     * @brief Sets the attribute type.
+     * @param type Attribute type.
+     */
     void set_type(D4AttributeType type) { d_type = type; }
 
+    /** @brief Returns whether string values should be interpreted as UTF-8. */
     bool get_utf8_str_flag() const { return is_utf8_str; }
+
+    /**
+     * @brief Sets whether string values should be interpreted as UTF-8.
+     * @param utf8_str_flag True when string values are UTF-8 encoded text.
+     */
     void set_utf8_str_flag(bool utf8_str_flag) { is_utf8_str = utf8_str_flag; }
 
+    /**
+     * @brief Appends one scalar value.
+     * @param value Value to append.
+     */
     void add_value(const string &value) { d_values.push_back(value); }
+
+    /**
+     * @brief Replaces scalar values with a vector of values.
+     * @param values New scalar values.
+     */
     void add_value_vector(const vector<string> &values) { d_values = values; }
 
+    /** @brief Returns an iterator to the first scalar value. */
     D4AttributeIter value_begin() { return d_values.begin(); }
+    /** @brief Returns an iterator one past the last scalar value. */
     D4AttributeIter value_end() { return d_values.end(); }
 
+    /** @brief Returns the number of scalar values. */
     unsigned int num_values() const { return d_values.size(); }
+
+    /**
+     * @brief Returns one scalar value by index.
+     * @param i Zero-based value index.
+     * @return The requested value.
+     */
     string value(unsigned int i) const { return d_values[i]; }
 
+    /**
+     * @brief Returns the nested attribute container for `attr_container_c` attributes.
+     * @return Nested attribute container.
+     */
     D4Attributes *attributes();
 
     bool is_dap4_type(const std::string &path, std::vector<std::string> &inventory);
 
+    /**
+     * @brief Prints this attribute in DAP4 DMR form.
+     * @param xml Destination XML writer.
+     */
     void print_dap4(XMLWriter &xml) const;
 
     void dump(ostream &strm) const override;
 };
 
+/** @brief Container for a variable's DAP4 attributes. */
 class D4Attributes : public DapObj {
 public:
+    /** @brief Mutable iterator over `D4Attribute` pointers. */
     typedef vector<D4Attribute *>::iterator D4AttributesIter;
+    /** @brief Read-only iterator over `D4Attribute` pointers. */
     typedef vector<D4Attribute *>::const_iterator D4AttributesCIter;
 
 private:
@@ -114,15 +180,25 @@ private:
 
 public:
     D4Attributes() {}
+
+    /**
+     * @brief Copy-constructs an attribute collection.
+     * @param rhs Source collection.
+     */
     D4Attributes(const D4Attributes &rhs) { m_duplicate(rhs); }
 
-    virtual ~D4Attributes() {
+    ~D4Attributes() override {
         D4AttributesIter i = d_attrs.begin();
         while (i != d_attrs.end()) {
             delete *i++;
         }
     }
 
+    /**
+     * @brief Assigns this collection from another collection.
+     * @param rhs Source collection.
+     * @return This collection after assignment.
+     */
     D4Attributes &operator=(const D4Attributes &rhs) {
         if (this == &rhs)
             return *this;
@@ -133,10 +209,19 @@ public:
     void transform_to_dap4(AttrTable &at);
     void transform_attrs_to_dap2(AttrTable *d2_attr_table);
 
+    /** @brief Returns true when this collection has no attributes. */
     bool empty() const { return d_attrs.empty(); }
 
+    /**
+     * @brief Appends a deep copy of an attribute.
+     * @param attr Source attribute.
+     */
     void add_attribute(D4Attribute *attr) { d_attrs.push_back(new D4Attribute(*attr)); }
 
+    /**
+     * @brief Appends an attribute pointer without copying.
+     * @param attr Attribute pointer to store.
+     */
     void add_attribute_nocopy(D4Attribute *attr) { d_attrs.push_back(attr); }
 
     /// Get an iterator to the start of the enumerations
@@ -145,6 +230,11 @@ public:
     /// Get an iterator to the end of the enumerations
     D4AttributesIter attribute_end() { return d_attrs.end(); }
 
+    /**
+     * @brief Finds an attribute by name.
+     * @param name Attribute name.
+     * @return Matching attribute or null.
+     */
     D4Attribute *find(const string &name);
     D4Attribute *get(const string &fqn);
     void erase(const string &fqn);
@@ -159,6 +249,10 @@ public:
 
     bool has_dap4_types(const std::string &path, std::vector<std::string> &inventory) const;
 
+    /**
+     * @brief Prints all attributes in DAP4 DMR form.
+     * @param xml Destination XML writer.
+     */
     void print_dap4(XMLWriter &xml) const;
 
     void dump(ostream &strm) const override;

@@ -89,27 +89,27 @@ public:
     };
 
 protected:
-    bool d_comp;        // True if the output should be compressed.
-    bool d_bad_options; // True if the options (argc,argv) are bad.
-    bool d_conditional_request;
+    bool d_comp;                ///< True if the output should be compressed.
+    bool d_bad_options;         ///< True if command-line options were invalid.
+    bool d_conditional_request; ///< True when request includes conditional headers.
 
-    string d_program_name; // Name of the filter program
-    string d_dataset;      // Name of the dataset/database
-    string d_dap2ce;       // DAP2 Constraint expression
-    string d_cgi_ver;      // Version of CGI script (caller)
-    string d_anc_dir;      // Look here for ancillary files
-    string d_anc_file;     // Use this for ancillary file name
-    string d_cache_dir;    // Use this for cache files
-    string d_url;          // URL minus CE.
+    string d_program_name; ///< Name of the filter program.
+    string d_dataset;      ///< Dataset/database identifier.
+    string d_dap2ce;       ///< DAP2 constraint expression.
+    string d_cgi_ver;      ///< CGI caller version string.
+    string d_anc_dir;      ///< Ancillary-file directory path.
+    string d_anc_file;     ///< Ancillary-file base name.
+    string d_cache_dir;    ///< Cache directory path.
+    string d_url;          ///< Request URL without CE.
 
-    Response d_response; // enum name of the response to generate
-    string d_action;     // string name of the response to generate
+    Response d_response; ///< Enumerated response type to generate.
+    string d_action;     ///< String action/response token.
 
-    int d_timeout; // Server timeout after N seconds
+    int d_timeout; ///< Server timeout in seconds.
 
-    time_t d_anc_das_lmt;       // Last modified time of the anc. DAS.
-    time_t d_anc_dds_lmt;       // Last modified time of the anc. DDS.
-    time_t d_if_modified_since; // Time from a conditional request.
+    time_t d_anc_das_lmt;       ///< Last-modified time of ancillary DAS.
+    time_t d_anc_dds_lmt;       ///< Last-modified time of ancillary DDS.
+    time_t d_if_modified_since; ///< `If-Modified-Since` request timestamp.
 
     void initialize();
     void initialize(int argc, char *argv[]);
@@ -125,7 +125,7 @@ public:
         this class contains. They can currently only be set using the
         argc/argv command line parameters. */
     DODSFilter() { initialize(); }
-    DODSFilter(int argc, char *argv[]) throw(Error);
+    DODSFilter(int argc, char *argv[]);
 
     virtual ~DODSFilter();
 
@@ -135,9 +135,17 @@ public:
     virtual void set_cgi_version(string version);
 
     virtual string get_ce() const;
+    /**
+     * @brief Sets the DAP2 constraint expression text.
+     * @param _ce Constraint expression.
+     */
     virtual void set_ce(string _ce);
 
     virtual string get_dataset_name() const;
+    /**
+     * @brief Sets the dataset name/path token.
+     * @param _dataset Dataset identifier.
+     */
     virtual void set_dataset_name(const string _dataset);
 
     virtual string get_URL() const;
@@ -165,23 +173,64 @@ public:
 
     int get_timeout() const;
 
+    /**
+     * @brief Arms timeout handling for stream writes.
+     * @param stream Output stream associated with response generation.
+     */
     virtual void establish_timeout(ostream &stream) const;
 
     virtual void print_usage() const;
 
     virtual void send_version_info() const;
 
+    /**
+     * @brief Writes DAS response (with optional MIME headers) to standard output.
+     * @param das DAS object to serialize.
+     * @param anc_location Optional ancillary resource location.
+     * @param with_mime_headers True to emit MIME headers.
+     */
     virtual void send_das(DAS &das, const string &anc_location = "", bool with_mime_headers = true) const;
     virtual void send_das(ostream &out, DAS &das, const string &anc_location = "", bool with_mime_headers = true) const;
 
+    /**
+     * @brief Writes DDS response (with optional MIME headers) to standard output.
+     * @param dds DDS object to serialize.
+     * @param eval Constraint evaluator context.
+     * @param constrained True to emit constrained form.
+     * @param anc_location Optional ancillary resource location.
+     * @param with_mime_headers True to emit MIME headers.
+     */
     virtual void send_dds(DDS &dds, ConstraintEvaluator &eval, bool constrained = false,
                           const string &anc_location = "", bool with_mime_headers = true) const;
     virtual void send_dds(ostream &out, DDS &dds, ConstraintEvaluator &eval, bool constrained = false,
                           const string &anc_location = "", bool with_mime_headers = true) const;
     // deprecated
+    /**
+     * @brief Writes a function-result response body to a C++ stream.
+     * @param var Function-result variable.
+     * @param dds Dataset descriptor.
+     * @param eval Constraint evaluator context.
+     * @param out Output stream.
+     */
     virtual void functional_constraint(BaseType &var, DDS &dds, ConstraintEvaluator &eval, ostream &out) const;
 
+    /**
+     * @brief Writes a constrained dataset response to a C++ stream.
+     * @param dds Dataset descriptor.
+     * @param eval Constraint evaluator context.
+     * @param out Output stream.
+     * @param ce_eval True to evaluate CE selections before serialization.
+     */
     virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval, ostream &out, bool ce_eval = true) const;
+    /**
+     * @brief Writes a constrained dataset DDX multipart response.
+     * @param dds Dataset descriptor.
+     * @param eval Constraint evaluator context.
+     * @param out Output stream.
+     * @param boundary MIME multipart boundary.
+     * @param start MIME content-id for the root part.
+     * @param ce_eval True to evaluate CE selections before serialization.
+     */
     virtual void dataset_constraint_ddx(DDS &dds, ConstraintEvaluator &eval, ostream &out, const string &boundary,
                                         const string &start, bool ce_eval = true) const;
 
@@ -192,13 +241,31 @@ public:
                                const string &boundary, const string &anc_location = "",
                                bool with_mime_headers = true) const;
 
+    /**
+     * @brief Arms timeout handling for C stdio writes.
+     * @param stream Output C stream associated with response generation.
+     */
     virtual void establish_timeout(FILE *stream) const;
     virtual void send_das(FILE *out, DAS &das, const string &anc_location = "", bool with_mime_headers = true) const;
     virtual void send_dds(FILE *out, DDS &dds, ConstraintEvaluator &eval, bool constrained = false,
                           const string &anc_location = "", bool with_mime_headers = true) const;
     // deprecated
+    /**
+     * @brief Writes function-result response body to a C stdio stream.
+     * @param var Function-result variable.
+     * @param dds Dataset descriptor.
+     * @param eval Constraint evaluator context.
+     * @param out Output file stream.
+     */
     virtual void functional_constraint(BaseType &var, DDS &dds, ConstraintEvaluator &eval, FILE *out) const;
 
+    /**
+     * @brief Writes a constrained dataset response to a C stdio stream.
+     * @param dds Dataset descriptor.
+     * @param eval Constraint evaluator context.
+     * @param out Output file stream.
+     * @param ce_eval True to evaluate CE selections before serialization.
+     */
     virtual void dataset_constraint(DDS &dds, ConstraintEvaluator &eval, FILE *out, bool ce_eval = true) const;
     virtual void send_data(DDS &dds, ConstraintEvaluator &eval, FILE *data_stream, const string &anc_location = "",
                            bool with_mime_headers = true) const;

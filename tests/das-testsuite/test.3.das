@@ -3,7 +3,7 @@ Attributes {
 	String comment "One thing about these long comments is that they
 might cause problems with memory - overwrites, ...";
 	String comment2 "This quote tests a \"quote within a quote\", he said";
-	String quote1 "\"";		
+	String quote1 "\"";
 	String quote2 "\7 seven";
     }
 }

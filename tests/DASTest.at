@@ -11,7 +11,7 @@ AT_INIT([das-test])
 
 # Usage: _AT_TEST_*(<das source>, <baseline file>)
 
-m4_define([_AT_DAS_TEST],   
+m4_define([_AT_DAS_TEST],
 [# AT_BANNER([Test $1 $2])
 AT_SETUP([DAS $1])
 AT_KEYWORDS([das])

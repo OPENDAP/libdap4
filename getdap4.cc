@@ -108,21 +108,21 @@ static void usage(const string &) {
     In the second form of the command, assume the files are DAP4 data
     responses (stored in files or read from pipes)
 
-    Options: 
-            d: For each URL, get the (DAP4) DMR object. Does not get data. 
-            D: For each URL, get the DAP4 Data response. 
+    Options:
+            d: For each URL, get the (DAP4) DMR object. Does not get data.
+            D: For each URL, get the DAP4 Data response.
 
-            v: Verbose output. 
-            V: Version of this client 
-            i: For each URL, get the server version. 
-            m: Request the same URL <num> times. 
-            z: Ask the server to compress data. 
-            s: Print Sequences using numbered rows. 
-            M: Assume data read from a file has no MIME headers; use only 
-               with files 
+            v: Verbose output.
+            V: Version of this client
+            i: For each URL, get the server version.
+            m: Request the same URL <num> times.
+            z: Ask the server to compress data.
+            s: Print Sequences using numbered rows.
+            M: Assume data read from a file has no MIME headers; use only
+               with files
 
-            c: <expr> is a constraint expression. Used with -d/D 
-               NB: You can use a `?' for the CE also. 
+            c: <expr> is a constraint expression. Used with -d/D
+               NB: You can use a `?' for the CE also.
             S: Used in conjunction with -d and will report the total size
                of the data referenced in the DMR.
             C: Used in conjunction with -D will cause the DAP4 service to
@@ -167,16 +167,16 @@ static void read_response_from_file(D4Connect &url, DMR &dmr, Response &r, bool 
     }
 }
 
-static void print_group_data(const D4Group *g, bool print_rows = false) {
+static void print_group_data(const D4Group *g, bool print_rows, bool is_root_grp) {
     for (const auto var : g->variables()) {
         if (print_rows && var->type() == dods_sequence_c)
             dynamic_cast<D4Sequence &>(*var).print_val_by_rows(cout);
         else
-            var->print_val(cout);
+            var->print_val(cout, "", true, is_root_grp);
     }
 
     for (const auto group : g->groups()) {
-        print_group_data(group, print_rows);
+        print_group_data(group, print_rows, false);
     }
 }
 
@@ -185,7 +185,7 @@ static void print_data(DMR &dmr, bool print_rows = false) {
 
     const auto g = dmr.root();
 
-    print_group_data(g, print_rows);
+    print_group_data(g, print_rows, true);
 
     cout << endl << flush;
 }

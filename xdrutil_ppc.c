@@ -15,9 +15,9 @@ XDR *
 new_xdrstdio(FILE *stream, enum xdr_op xop)
 {
     XDR *xdr = (XDR *)malloc(sizeof(XDR));
-    
+
     xdrstdio_create(xdr, stream, xop);
-    
+
     return xdr;
 }
 
@@ -25,7 +25,7 @@ XDR *
 set_xdrstdio(XDR *xdr, FILE *stream, enum xdr_op xop)
 {
     xdrstdio_create(xdr, stream, xop);
-    
+
     return xdr;
 }
 

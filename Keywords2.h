@@ -51,9 +51,11 @@ namespace libdap {
  */
 class Keywords {
 public:
-    // convenience types
+    /// Convenience alias for a keyword token.
     typedef string keyword;
+    /// Convenience alias for a single keyword value.
     typedef string keyword_value;
+    /// Allowed values for one keyword.
     typedef set<keyword_value> value_set_t;
 
 private:
@@ -73,7 +75,11 @@ public:
     virtual string parse_keywords(const string &ce);
 
     // Is this keyword in the dictionary?
-    virtual bool is_known_keyword(const string &s) const;
+    /** @brief Determine whether a keyword is recognized.
+     * @param word Keyword token to test.
+     * @return True if `word` is in the known keyword dictionary.
+     */
+    virtual bool is_known_keyword(const string &word) const;
 
     // Get a list of all of the keywords parsed
     virtual list<keyword> get_keywords() const;
@@ -81,6 +87,10 @@ public:
     virtual bool has_keyword(const keyword &kw) const;
 
     // Get the parsed keyword (and it's dictionary value) of a particular kind
+    /** @brief Get the parsed value for one keyword.
+     * @param kw Keyword whose parsed value should be returned.
+     * @return Parsed keyword value.
+     */
     virtual keyword_value get_keyword_value(const keyword &kw) const;
 };
 

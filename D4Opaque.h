@@ -34,21 +34,32 @@ class Crc32;
 
 namespace libdap {
 
+/** @brief DAP4 opaque binary blob type. */
 class D4Opaque : public BaseType {
 public:
+    /** @brief In-memory container type for opaque bytes. */
     typedef std::vector<uint8_t> dods_opaque;
 
 protected:
-    dods_opaque d_buf;
+    dods_opaque d_buf; ///< Stored opaque bytes.
 
 public:
+    /** @brief Builds an opaque variable with a name. @param n Variable name. */
     D4Opaque(const std::string &n) : BaseType(n, dods_opaque_c, true /*is_dap4*/), d_buf(0) {}
+    /** @brief Builds an opaque variable with name and dataset context. @param n Variable name. @param d Dataset
+     * context. */
     D4Opaque(const std::string &n, const std::string &d) : BaseType(n, d, dods_opaque_c, true /*is_dap4*/), d_buf(0) {}
 
     ~D4Opaque() override {}
 
+    /** @brief Copy-constructs an opaque variable. @param copy_from Source variable. */
     D4Opaque(const D4Opaque &copy_from) : BaseType(copy_from) { d_buf = copy_from.d_buf; }
 
+    /**
+     * @brief Assigns this opaque variable from another one.
+     * @param rhs Source variable.
+     * @return This variable after assignment.
+     */
     D4Opaque &operator=(const D4Opaque &rhs);
 
     BaseType *ptr_duplicate() override { return new D4Opaque(*this); }
@@ -85,10 +96,12 @@ public:
     virtual bool set_value(const dods_opaque &value);
     virtual dods_opaque value() const;
 
-    void print_val(FILE *, std::string = "", bool = true) override {
+    void print_val(FILE *, std::string = "", bool = true, bool = true) override {
         throw InternalErr(__FILE__, __LINE__, "Unimplemented method");
     }
-    void print_val(std::ostream &out, std::string space = "", bool print_decl_p = true) override;
+
+    void print_val(std::ostream &out, std::string space = "", bool print_decl_p = true,
+                   bool is_root_grp = true) override;
 
     bool ops(BaseType *, int) override { throw InternalErr(__FILE__, __LINE__, "Unimplemented method"); }
 

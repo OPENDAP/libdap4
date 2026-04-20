@@ -57,21 +57,39 @@ namespace libdap {
 
 class Float64 : public BaseType {
 protected:
+    /// Stored scalar 64-bit floating-point value.
     dods_float64 d_buf;
 
 public:
     Float64(const string &n);
     Float64(const string &n, const string &d);
-    virtual ~Float64() {}
+    ~Float64() override {}
 
+    /**
+     * @brief Copy-constructs from another 64-bit floating point variable.
+     *
+     * @param copy_from Source instance.
+     */
     Float64(const Float64 &copy_from);
 
+    /**
+     * @brief Assigns from another 64-bit floating point variable.
+     *
+     * @param rhs Source instance.
+     * @return This instance after assignment.
+     */
     Float64 &operator=(const Float64 &rhs);
 
     BaseType *ptr_duplicate() override;
 
     unsigned int width(bool = false) const override { return sizeof(dods_float64); }
 
+    /**
+     * @brief Returns the storage width in bytes.
+     *
+     * @param constrained Ignored for scalar values.
+     * @return Number of bytes used by this value.
+     */
     int64_t width_ll(bool = false) const override { return sizeof(dods_float64); }
 
     // DAP2
@@ -87,10 +105,32 @@ public:
     unsigned int buf2val(void **val) override;
 
     virtual dods_float64 value() const;
+    /**
+     * @brief Sets the current value.
+     *
+     * @param val New 64-bit floating point value.
+     * @return True when the value is accepted.
+     */
     virtual bool set_value(dods_float64 val);
 
-    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    /**
+     * @brief Writes this value using C stdio output.
+     *
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in the root group context.
+     */
+    void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
+    /**
+     * @brief Writes this value using C++ stream output.
+     *
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in the root group context.
+     */
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
     bool ops(BaseType *b, int op) override;
     bool d4_ops(BaseType *b, int op) override;

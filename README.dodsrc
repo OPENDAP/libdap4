@@ -15,7 +15,7 @@ for the .dodsrc file in the following locations: C:\Dods; %APPDATA%; %TEMP%;
 and %TMP%. If no .dodsrc file is found, the library will create one in
 %APPDATA%. Note that on some Windows XP machines a user's 'Application Data'
 directory is hidden. To see and edit the .dodsrc file, open a file browser
-window from the Start menu, go to your home directory and then type in 
+window from the Start menu, go to your home directory and then type in
 'Application Data'. The .dodsrc file will be created by the first OPeNDAP
 client to run if there's not a copy already there.
 
@@ -27,7 +27,7 @@ New feature added with libdap version 3.7.3 (7 Nov 2006)
 
 The configuration file can now be used to control client-side behavior when
 accessing servers using SSL. By default, certificates must be signed by a
-certificate authority. The libcurl package recognizes a large set of 
+certificate authority. The libcurl package recognizes a large set of
 CAs; you can sign your own certificates as well (but see the OpenSSL
 documentation for more information). In addition, server hosts must identify
 themselves using the same name as is used in the certificate.
@@ -58,11 +58,11 @@ file; they've been added to make the description clearer):
 9	PROXY_SERVER=http,http://jimg:password@dcz.dods.org/
 10	NO_PROXY_FOR=http,dcz.dods.org
 11	AIS_DATABASE=.ais_sst_database
-    
-COMMENTS 
-Starting a line with a `#' makes that line a comment. 
 
-CACHING 
+COMMENTS
+Starting a line with a `#' makes that line a comment.
+
+CACHING
 
 The parameters on lines 1 through 6 determine how the DAP++ library will use
 its HTTP 1.1 cache. If the value of USE_CACHE is 1, the cache is active. A
@@ -108,7 +108,7 @@ expiration and validate algorithm.
 
 CONTROLLING DATA COMPRESSION
 
-If the DEFLATE parameter is set to one (DEFLATE=1) then clients will request 
+If the DEFLATE parameter is set to one (DEFLATE=1) then clients will request
 that servers compress data transmissions. Servers may or may not honor this
 request depending on their abilities.
 

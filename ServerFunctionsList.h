@@ -43,13 +43,10 @@ namespace libdap {
 class ServerFunctionsListUnitTest;
 class ConstraintEvaluator;
 
+/** @brief Singleton registry of server-callable functions. */
 class ServerFunctionsList {
 private:
-    static ServerFunctionsList *d_instance;
     std::multimap<std::string, ServerFunction *> d_func_list;
-
-    static void initialize_instance();
-    static void delete_instance();
 
     virtual ~ServerFunctionsList();
 
@@ -60,9 +57,18 @@ protected:
 
 public:
     // Added typedefs to reduce clutter jhrg 3/12/14
+    /** @brief Mutable iterator over `(name, function)` entries. */
     typedef std::multimap<std::string, ServerFunction *>::iterator SFLIter;
+    /** @brief Read-only iterator over `(name, function)` entries. */
     typedef std::multimap<std::string, ServerFunction *>::const_iterator SFLCIter;
 
+    ServerFunctionsList(const ServerFunctionsList &) = delete;
+    ServerFunctionsList &operator=(const ServerFunctionsList &) = delete;
+
+    /**
+     * @brief Returns the singleton function registry instance.
+     * @return Global function registry.
+     */
     static ServerFunctionsList *TheList();
 
     virtual void add_function(ServerFunction *func);
@@ -76,6 +82,10 @@ public:
     SFLIter end();
     ServerFunction *getFunction(SFLIter it);
 
+    /**
+     * @brief Populates a vector with registered function names.
+     * @param names Destination vector for function names.
+     */
     virtual void getFunctionNames(std::vector<std::string> *names);
 };
 

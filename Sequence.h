@@ -199,32 +199,87 @@ private:
     friend class SequenceTest;
 
 protected:
+    /**
+     * @brief Copies Sequence-specific state from another sequence.
+     * @param s Source sequence.
+     */
     void m_duplicate(const Sequence &s);
+    /** @brief Stack used while recursively collecting nested sequence values. */
     typedef stack<SequenceValues *> sequence_values_stack_t;
 
+    /**
+     * @brief Serializes the parent portion of a nested sequence (part one).
+     * @param dds DDS context.
+     * @param eval Active constraint evaluator.
+     * @param m Output marshaller.
+     * @return True when data was emitted.
+     */
     virtual bool serialize_parent_part_one(DDS &dds, ConstraintEvaluator &eval, Marshaller &m);
+    /**
+     * @brief Serializes the parent portion of a nested sequence (part two).
+     * @param dds DDS context.
+     * @param eval Active constraint evaluator.
+     * @param m Output marshaller.
+     */
     virtual void serialize_parent_part_two(DDS &dds, ConstraintEvaluator &eval, Marshaller &m);
+    /**
+     * @brief Serializes a leaf sequence.
+     * @param dds DDS context.
+     * @param eval Active constraint evaluator.
+     * @param m Output marshaller.
+     * @param ce_eval True to apply constraint evaluation.
+     * @return True when data was emitted.
+     */
     virtual bool serialize_leaf(DDS &dds, ConstraintEvaluator &eval, Marshaller &m, bool ce_eval);
 
+    /**
+     * @brief Interns sequence data for parent and leaf cases.
+     * @param eval Active constraint evaluator.
+     * @param dds DDS context.
+     * @param sequence_values_stack Stack of active sequence value buffers.
+     */
     virtual void intern_data_private(ConstraintEvaluator &eval, DDS &dds,
                                      sequence_values_stack_t &sequence_values_stack);
+    /**
+     * @brief Interns data for a leaf sequence instance.
+     * @param dds DDS context.
+     * @param eval Active constraint evaluator.
+     * @param sequence_values_stack Stack of active sequence value buffers.
+     */
     virtual void intern_data_for_leaf(DDS &dds, ConstraintEvaluator &eval,
                                       sequence_values_stack_t &sequence_values_stack);
 
+    /**
+     * @brief Interns parent-sequence data before child traversal.
+     * @param dds DDS context.
+     * @param eval Active constraint evaluator.
+     * @param sequence_values_stack Stack of active sequence value buffers.
+     */
     virtual void intern_data_parent_part_one(DDS &dds, ConstraintEvaluator &eval,
                                              sequence_values_stack_t &sequence_values_stack);
 
+    /**
+     * @brief Interns parent-sequence data after child traversal.
+     * @param dds DDS context.
+     * @param eval Active constraint evaluator.
+     * @param sequence_values_stack Stack of active sequence value buffers.
+     */
     virtual void intern_data_parent_part_two(DDS &dds, ConstraintEvaluator &eval,
                                              sequence_values_stack_t &sequence_values_stack);
 
 public:
-    Sequence(const string &n);
+    explicit Sequence(const string &n);
     Sequence(const string &n, const string &d);
 
     Sequence(const Sequence &rhs);
 
-    virtual ~Sequence();
+    ~Sequence() override;
 
+    /**
+     * @brief Assigns from another sequence.
+     * @param rhs Source sequence.
+     * @return This instance after assignment.
+     */
     Sequence &operator=(const Sequence &rhs);
 
     BaseType *ptr_duplicate() override;
@@ -241,6 +296,10 @@ public:
 
     int length() const override;
 
+    /**
+     * @brief Returns the number of rows currently stored.
+     * @return Row count.
+     */
     virtual int number_of_rows() const;
 
     virtual bool read_row(int row, DDS &dds, ConstraintEvaluator &eval, bool ce_eval = true);
@@ -254,7 +313,15 @@ public:
     // I added a second method instead of a param with a default value because I think
     // this will result only in an addition to the ABI/API, not a change. 5/16/15 jhrg
     void reset_row_number(bool recur);
+    /**
+     * @brief Advances the current row index.
+     * @param i Number of rows to advance.
+     */
     void increment_row_number(unsigned int i) { d_row_number += i; }
+    /**
+     * @brief Returns the current row index.
+     * @return Current row number.
+     */
     int get_row_number() const { return d_row_number; }
 
     int get_starting_row_number();
@@ -275,23 +342,85 @@ public:
     virtual SequenceValues value();
     virtual SequenceValues &value_ref();
 
+    /**
+     * @brief Returns the value of one column in one row by name.
+     * @param row Row index.
+     * @param name Column name.
+     * @return Pointer to the stored value.
+     */
     virtual BaseType *var_value(size_t row, const string &name);
 
+    /**
+     * @brief Returns the value of one column in one row by column index.
+     * @param row Row index.
+     * @param i Column index.
+     * @return Pointer to the stored value.
+     */
     virtual BaseType *var_value(size_t row, size_t i);
 
     virtual BaseTypeRow *row_value(size_t row);
+    /**
+     * @brief Prints one row using C++ streams.
+     * @param out Output stream.
+     * @param row Row index.
+     * @param space Indentation prefix.
+     * @param print_row_num True to include the row number in output.
+     */
     virtual void print_one_row(ostream &out, int row, string space, bool print_row_num = false);
+    /**
+     * @brief Prints all rows using C++ streams.
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param print_row_numbers True to include row numbers in output.
+     */
     virtual void print_val_by_rows(ostream &out, string space = "", bool print_decl_p = true,
                                    bool print_row_numbers = true);
-    void print_val(ostream &out, string space = "", bool print_decl_p = true) override;
+    /**
+     * @brief Prints sequence values using C++ streams.
+     * @param out Output stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in root-group context.
+     */
+    void print_val(ostream &out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
+    /**
+     * @brief Prints one row using C stdio.
+     * @param out Output file stream.
+     * @param row Row index.
+     * @param space Indentation prefix.
+     * @param print_row_num True to include the row number in output.
+     */
     virtual void print_one_row(FILE *out, int row, string space, bool print_row_num = false);
+    /**
+     * @brief Prints all rows using C stdio.
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param print_row_numbers True to include row numbers in output.
+     */
     virtual void print_val_by_rows(FILE *out, string space = "", bool print_decl_p = true,
                                    bool print_row_numbers = true);
-    void print_val(FILE *out, string space = "", bool print_decl_p = true) override;
+    /**
+     * @brief Prints sequence values using C stdio.
+     * @param out Output file stream.
+     * @param space Indentation prefix.
+     * @param print_decl_p True to include declaration text.
+     * @param is_root_grp True when printing in root-group context.
+     */
+    void print_val(FILE *out, string space = "", bool print_decl_p = true, bool is_root_grp = true) override;
 
+    /**
+     * @brief Marks whether this sequence should behave as a leaf.
+     * @param state True to treat as leaf sequence.
+     */
     virtual void set_leaf_p(bool state);
 
+    /**
+     * @brief Reports whether this sequence is marked as a leaf.
+     * @return True when this sequence is a leaf.
+     */
     virtual bool is_leaf_sequence();
 
     virtual void set_leaf_sequence(int lvl = 1);

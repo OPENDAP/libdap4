@@ -65,13 +65,27 @@ public:
     StdinResponse(std::istream &in) : Response(), d_stdin(0), d_cin(&in) {}
 
     /** Destructor. Does not close standard input. */
-    virtual ~StdinResponse() {}
+    ~StdinResponse() override {}
 
-    virtual FILE *get_stream() const { return d_stdin; }
-    virtual void set_stream(FILE *s) { d_stdin = s; }
+    /** @brief Return the `FILE*` input stream.
+     * @return Stored C stdio input stream.
+     */
+    FILE *get_stream() const override { return d_stdin; }
 
-    virtual std::istream *get_cpp_stream() const { return d_cin; }
-    virtual void set_cpp_stream(std::istream *in) { d_cin = in; }
+    /** @brief Set the `FILE*` input stream.
+     * @param s C stdio input stream.
+     */
+    void set_stream(FILE *s) override { d_stdin = s; }
+
+    /** @brief Return the C++ input stream.
+     * @return Stored C++ input stream pointer.
+     */
+    std::istream *get_cpp_stream() const override { return d_cin; }
+
+    /** @brief Set the C++ input stream.
+     * @param in C++ input stream pointer.
+     */
+    void set_cpp_stream(std::istream *in) override { d_cin = in; }
 };
 
 } // namespace libdap

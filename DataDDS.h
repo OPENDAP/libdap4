@@ -91,7 +91,7 @@ public:
     // #ifdef DEFAULT_BASETYPE_FACTORY
     // DataDDS(const string &n = "", const string &v = "");
     // #endif
-    virtual ~DataDDS() {}
+    ~DataDDS() override {}
 
     /** Sets the version string.  This typically looks something like:
     <tt>DODS/2.15</tt>, where ``2'' is the major version number, and ``15''
@@ -107,12 +107,22 @@ public:
     /** @brief Returns the minor version number. */
     int get_version_minor() const { return d_server_version_minor; }
 
+    /**
+     * @brief Sets the protocol version string and updates parsed major/minor fields.
+     * @param p Protocol version string from a response header.
+     */
     void set_protocol(const string &p) {
         d_protocol_version = p;
         m_protocol_string_to_numbers();
     }
+
+    /** @brief Returns the raw protocol version string. */
     string get_protocol() const { return d_protocol_version; }
+
+    /** @brief Returns the parsed protocol major version number. */
     int get_protocol_major() const { return d_server_protocol_major; }
+
+    /** @brief Returns the parsed protocol minor version number. */
     int get_protocol_minor() const { return d_server_protocol_minor; }
 
     void dump(ostream &strm) const override;

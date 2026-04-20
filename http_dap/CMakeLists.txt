@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 
 # Options consistent with top-level configuration
-option(BUILD_DEVELOPER "Developer mode" OFF)
-option(USE_ASAN "Enable Address Sanitizer" OFF)
+#option(BUILD_DEVELOPER "Developer mode" OFF)
+#option(USE_ASAN "Enable Address Sanitizer" OFF)
 
 # Basic CXX compilation settings
 set(CMAKE_CXX_STANDARD 14)

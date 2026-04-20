@@ -1,6 +1,6 @@
 Parse successful
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="1.0" name="AIRS.2015.09.21.L3.RetStd_IR001.v6.0.31.0.G15281122640.nc.h5">
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" dapVersion="4.0" dmrVersion="2.0" name="AIRS.2015.09.21.L3.RetStd_IR001.v6.0.31.0.G15281122640.nc.h5">
     <Dimension name="Latitude" size="180"/>
     <Dimension name="Longitude" size="360"/>
     <Dimension name="StdPressureLev" size="24"/>
@@ -16730,4 +16730,3 @@ END
 </Value>
     </Attribute>
 </Dataset>
-

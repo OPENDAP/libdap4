@@ -45,6 +45,12 @@ public:
     CPPUNIT_TEST(check_byte_test);
     CPPUNIT_TEST(check_float32_test);
     CPPUNIT_TEST(check_float64_test);
+    CPPUNIT_TEST(check_int32_test);
+    CPPUNIT_TEST(check_uint32_test);
+    CPPUNIT_TEST(check_int64_test);
+    CPPUNIT_TEST(check_uint64_test);
+    CPPUNIT_TEST(get_int32_test);
+    CPPUNIT_TEST(get_uint32_test);
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -121,6 +127,44 @@ public:
         CPPUNIT_ASSERT(!check_float64("-1.8E+308"));
         CPPUNIT_ASSERT(!check_float64("2.0E-308"));
         CPPUNIT_ASSERT(!check_float64("-2.0E-308"));
+    }
+
+    void check_int32_test() {
+        CPPUNIT_ASSERT(check_int32("2147483647"));
+        CPPUNIT_ASSERT(check_int32("-2147483648"));
+        CPPUNIT_ASSERT(!check_int32("2147483648"));
+        CPPUNIT_ASSERT(!check_int32("-2147483649"));
+    }
+
+    void check_uint32_test() {
+        CPPUNIT_ASSERT(check_uint32("0"));
+        CPPUNIT_ASSERT(check_uint32("4294967295"));
+        CPPUNIT_ASSERT(!check_uint32("4294967296"));
+        CPPUNIT_ASSERT(!check_uint32("-1"));
+    }
+
+    void check_int64_test() {
+        CPPUNIT_ASSERT(check_int64("9223372036854775807"));
+        CPPUNIT_ASSERT(check_int64("-9223372036854775808"));
+        CPPUNIT_ASSERT(!check_int64("9223372036854775808"));
+        CPPUNIT_ASSERT(!check_int64("-9223372036854775809"));
+    }
+
+    void check_uint64_test() {
+        CPPUNIT_ASSERT(check_uint64("0"));
+        CPPUNIT_ASSERT(check_uint64("18446744073709551615"));
+        CPPUNIT_ASSERT(!check_uint64("18446744073709551616"));
+        CPPUNIT_ASSERT(!check_uint64("-1"));
+    }
+
+    void get_int32_test() {
+        CPPUNIT_ASSERT_EQUAL(123, get_int32("123"));
+        CPPUNIT_ASSERT_THROW(get_int32("not_an_int"), Error);
+    }
+
+    void get_uint32_test() {
+        CPPUNIT_ASSERT_EQUAL((unsigned int)42, get_uint32("42"));
+        CPPUNIT_ASSERT_THROW(get_uint32("-1"), Error);
     }
 };
 

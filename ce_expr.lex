@@ -12,12 +12,12 @@
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
  version 2.1 of the License, or (at your option) any later version.
- 
+
  This library is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Lesser General Public License for more details.
- 
+
  You should have received a copy of the GNU Lesser General Public
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -25,7 +25,7 @@
  You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
  (c) COPYRIGHT URI/MIT 1994-1999
-*/ 
+*/
 
 /*
   Scanner for constraint expressions. The scanner returns tokens for each of
@@ -33,7 +33,7 @@
   or newer.
 
   The scanner is not reentrant, but can share a name space with other
-  scanners. 
+  scanners.
 
    Note:
    1) The `defines' file expr.tab.h is built using `bison -d'.
@@ -85,7 +85,7 @@ static void store_op(int op);
 /* %option outfile="lex.ce_expr.cc" */
 
 %x quote
-    
+
 /* In the DAS and DDS parsers I removed the INT and FLOAT lexemes. However,
    not having them here complicates parsing since you must check to see if a
    word is a number (like 2.3) or a variable called `2.3.' I'm assuming that
@@ -98,7 +98,7 @@ static void store_op(int op);
 NAN		[Nn][Aa][Nn]
 INF		[Ii][Nn][Ff]
 /* See das.lex for comments about the characters allowed in a WORD.
-   10/31/2001 jhrg 
+   10/31/2001 jhrg
 
    I've added '*' to the set of characters in a WORD for both the DDS and DAS
    scanners, but not here because it'll conflict with the url dereference
@@ -168,8 +168,8 @@ NEVER		[^\-+a-zA-Z0-9_/%.\\:,(){}[\]&<>=~]
 
 <quote>\\.	yymore();
 
-<quote>\"	{ 
-    		  BEGIN(INITIAL); 
+<quote>\"	{
+    		  BEGIN(INITIAL);
               store_str();
               return SCAN_STR;
             }
@@ -245,4 +245,3 @@ store_op(int op)
 {
     ce_exprlval.op = op;
 }
-

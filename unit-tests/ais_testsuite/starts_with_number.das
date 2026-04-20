@@ -1,6 +1,6 @@
 
 # Used to test matching data sources to AIS resources using regular
-# expresssions. 
+# expresssions.
 
 Attributes {
     NC_GLOBAL {

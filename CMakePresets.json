@@ -1,0 +1,148 @@
+{
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base-make",
+      "hidden": true,
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "14",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_INSTALL_PREFIX": "$env{prefix}",
+        "BUILD_TESTING": "ON",
+        "USE_CPP_11_REGEX": "ON",
+        "USE_ASAN": "OFF",
+        "BUILD_DEVELOPER": "OFF",
+        "BIG_ARRAY_TEST": "OFF"
+      }
+    },
+    {
+      "name": "default",
+      "displayName": "Default (Makefiles, RWD)",
+      "inherits": "base-make"
+    },
+    {
+      "name": "release",
+      "displayName": "Release (Makefiles)",
+      "inherits": "base-make",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_DEVELOPER": "OFF"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug (Makefiles)",
+      "inherits": "base-make",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "developer",
+      "displayName": "Developer (flags + Debug)",
+      "inherits": "base-make",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_DEVELOPER": "ON"
+      }
+    },
+    {
+      "name": "asan",
+      "displayName": "ASAN + UBSan (Debug)",
+      "inherits": "base-make",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "USE_ASAN": "ON",
+        "BUILD_DEVELOPER": "ON"
+      }
+    },
+    {
+      "name": "ci",
+      "displayName": "CI (Makefiles, Release, ccache)",
+      "inherits": "release",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+      }
+    },
+    {
+      "name": "Custom configure preset",
+      "displayName": "Custom configure preset",
+      "description": "Sets Ninja generator, build and install directory",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "developer",
+      "configurePreset": "developer"
+    },
+    {
+      "name": "asan",
+      "configurePreset": "asan"
+    },
+    {
+      "name": "ci",
+      "configurePreset": "ci"
+    },
+    {
+      "name": "install",
+      "configurePreset": "default",
+      "targets": ["install"]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
+      "name": "developer",
+      "configurePreset": "developer"
+    },
+    {
+      "name": "ci",
+      "configurePreset": "ci"
+    },
+    {
+      "name": "unit",
+      "configurePreset": "developer",
+      "filter": {
+        "includeLabel": ["unit"]
+      }
+    },
+    {
+      "name": "int",
+      "configurePreset": "developer",
+      "filter": {
+        "includeLabel": ["integration"]
+      }
+    }
+  ]
+}

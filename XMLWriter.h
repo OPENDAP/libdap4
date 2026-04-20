@@ -36,6 +36,7 @@
 
 namespace libdap {
 
+/** @brief Small RAII wrapper around libxml2's `xmlTextWriter` APIs. */
 class XMLWriter {
 private:
     // Various xml writer stuff
@@ -49,11 +50,19 @@ private:
     void m_cleanup();
 
 public:
+    /**
+     * @brief Builds a writer backed by an in-memory XML buffer.
+     * @param pad Indentation string used for pretty output.
+     * @param ENCODING XML output encoding label.
+     */
     XMLWriter(const std::string &pad = "    ", const std::string &ENCODING = "ISO-8859-1");
     virtual ~XMLWriter();
 
+    /** @brief Returns the underlying libxml2 writer pointer. */
     xmlTextWriterPtr get_writer() const { return d_writer; }
+    /** @brief Returns the serialized document bytes as a C string. */
     const char *get_doc();
+    /** @brief Returns the serialized document size in bytes. */
     unsigned int get_doc_size();
 };
 

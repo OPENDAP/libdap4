@@ -27,16 +27,20 @@ AC_ARG_WITH(cppunit-exec-prefix,[  --with-cppunit-exec-prefix=PFX  Exec prefix w
 
   AC_MSG_CHECKING(for Cppunit - version >= $cppunit_version_min)
   no_cppunit=""
-  if test "$CPPUNIT_CONFIG" = "no" ; then
-    CPPUNIT_CFLAGS=`pkg-config cppunit --cflags`
-    CPPUNIT_LIBS=`pkg-config cppunit --libs`
-    cppunit_version=`pkg-config cppunit --modversion`
+  cppunit_version=
+  if test "$CPPUNIT_CONFIG" = "no"; then
+    CPPUNIT_CFLAGS=`pkg-config cppunit --cflags --silence-errors`
+    CPPUNIT_LIBS=`pkg-config cppunit --libs --silence-errors`
+    cppunit_version=`pkg-config cppunit --modversion --silence-errors`
   else
     CPPUNIT_CFLAGS=`$CPPUNIT_CONFIG --cflags`
     CPPUNIT_LIBS=`$CPPUNIT_CONFIG --libs`
     cppunit_version=`$CPPUNIT_CONFIG --version`
   fi
 
+  cppunit_version_proper=0
+
+  if test -n "$cppunit_version"; then
     cppunit_major_version=`echo $cppunit_version | \
            sed 's/\([[0-9]]*\).\([[0-9]]*\).\([[0-9]]*\)/\1/'`
     cppunit_minor_version=`echo $cppunit_version | \
@@ -69,6 +73,7 @@ AC_ARG_WITH(cppunit-exec-prefix,[  --with-cppunit-exec-prefix=PFX  Exec prefix w
         $cppunit_major_version \= $cppunit_major_min \& \
         $cppunit_minor_version \= $cppunit_minor_min \& \
         $cppunit_micro_version \>= $cppunit_micro_min `
+  fi
 
     if test "$cppunit_version_proper" = "1" ; then
       AC_MSG_RESULT([$cppunit_major_version.$cppunit_minor_version.$cppunit_micro_version])

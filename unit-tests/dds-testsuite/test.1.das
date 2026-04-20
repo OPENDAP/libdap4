@@ -8,4 +8,3 @@ Attributes {
 	int32 coefs 2, 3, 4;
     }
 }
-

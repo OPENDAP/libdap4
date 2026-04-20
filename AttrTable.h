@@ -156,30 +156,35 @@ public:
 
     This struct is public because its type is used in public typedefs. */
     struct entry {
-        string name;
-        AttrType type;
+        string name;   ///< Attribute name within the containing table.
+        AttrType type; ///< Attribute type tag.
 
-        bool is_alias;
-        string aliased_to;
+        bool is_alias;     ///< True when this entry aliases another entry's value/container.
+        string aliased_to; ///< Alias target path or name.
 
-        bool is_global; // use this to mark non-container attributes. see below.
+        bool is_global; ///< Marks non-container attributes that are global to their constructor context.
 
-        bool is_utf8_str = false;
+        bool is_utf8_str = false; ///< True when string values should be emitted as UTF-8 text.
 
         // If type == Attr_container, use attributes to read the contained
         // table, otherwise use attr to read the vector of values.
-        AttrTable *attributes;
-        std::vector<string> *attr; // a vector of values. jhrg 12/5/94
+        AttrTable *attributes;     ///< Nested container table when `type == Attr_container`.
+        std::vector<string> *attr; ///< Scalar/vector values for non-container attributes.
 
         entry()
             : name(""), type(Attr_unknown), is_alias(false), aliased_to(""), is_global(true), attributes(0), attr(0) {}
 
+        /**
+         * @brief Copy-constructs an entry.
+         * @param rhs Entry to copy.
+         */
         entry(const entry &rhs)
             : name(rhs.name), type(rhs.type), is_alias(rhs.is_alias), aliased_to(rhs.aliased_to),
               is_global(rhs.is_global), attributes(0), attr(0) {
             clone(rhs);
         }
 
+        /** @brief Deletes owned value or container storage for this entry. */
         void delete_entry() {
             if (is_alias) // alias copies the pointers.
                 return;
@@ -194,6 +199,10 @@ public:
 
         virtual ~entry() { delete_entry(); }
 
+        /**
+         * @brief Clones entry payload from another entry.
+         * @param rhs Entry that provides value/container payload.
+         */
         void clone(const entry &rhs) {
 #if 0
             name = rhs.name;
@@ -222,6 +231,11 @@ public:
             }
         }
 
+        /**
+         * @brief Assigns this entry from another entry.
+         * @param rhs Entry to copy.
+         * @return This entry after assignment.
+         */
         entry &operator=(const entry &rhs) {
             if (this != &rhs) {
                 delete_entry();
@@ -254,7 +268,9 @@ public:
         }
     };
 
+    /** @brief Read-only iterator over attribute entries. */
     typedef std::vector<entry *>::const_iterator Attr_citer;
+    /** @brief Mutable iterator over attribute entries. */
     typedef std::vector<entry *>::iterator Attr_iter;
 
 private:
@@ -283,7 +299,7 @@ protected:
 public:
     AttrTable();
     AttrTable(const AttrTable &rhs);
-    virtual ~AttrTable();
+    ~AttrTable() override;
     AttrTable &operator=(const AttrTable &rhs);
 
     virtual void erase();
@@ -297,7 +313,16 @@ public:
         @return A pointer to the parent AttrTable. */
     virtual AttrTable *get_parent() const { return d_parent; }
 
+    /**
+     * @brief Reports whether this table models global attributes.
+     * @return True when this container is marked as global.
+     */
     virtual bool is_global_attribute() const { return d_is_global_attribute; }
+
+    /**
+     * @brief Marks whether this table models global attributes.
+     * @param ga True to mark the table as global.
+     */
     virtual void set_is_global_attribute(bool ga) { d_is_global_attribute = ga; }
 
     virtual unsigned int append_attr(const string &name, const string &type, const string &value);
@@ -313,6 +338,11 @@ public:
     virtual AttrTable *recurrsive_find(const string &target, Attr_iter *location);
 
     Attr_iter simple_find(const string &target);
+    /**
+     * @brief Finds a direct child container by name.
+     * @param target Child container name.
+     * @return Matching child container or null.
+     */
     AttrTable *simple_find_container(const string &target);
 
     virtual AttrTable *get_attr_table(const string &name);
@@ -344,6 +374,12 @@ public:
     virtual bool attr_alias(const string &alias, const string &name);
 
     bool has_dap4_types(const std::string &path, std::vector<std::string> &inventory) const;
+    /**
+     * @brief Reports whether this table contains DAP4-only attribute types.
+     * @param path Path prefix used when recording discovered attributes.
+     * @param inventory Output list populated with names of DAP4-typed attributes.
+     * @return True if at least one DAP4-only attribute type is present.
+     */
     bool is_dap4_type(const std::string &path, std::vector<std::string> &inventory) const;
 
     virtual void print(FILE *out, string pad = "    ", bool dereference = false);
@@ -352,6 +388,10 @@ public:
     virtual void print_xml(FILE *out, string pad = "    ", bool constrained = false);
     virtual void print_xml(ostream &out, string pad = "    ", bool constrained = false);
 
+    /**
+     * @brief Prints this table using the XML writer API.
+     * @param xml Destination XML writer.
+     */
     void print_xml_writer(XMLWriter &xml);
 
     void print_dap4(XMLWriter &xml);

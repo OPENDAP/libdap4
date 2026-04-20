@@ -50,18 +50,18 @@ public:
     TestGrid(const string &n, const string &d);
     TestGrid(const TestGrid &rhs);
 
-    virtual ~TestGrid();
+    ~TestGrid() override;
 
     TestGrid &operator=(const TestGrid &rhs);
 
-    virtual BaseType *ptr_duplicate();
+    BaseType *ptr_duplicate() override;
 
-    virtual bool read();
+    bool read() override;
 
-    virtual void output_values(std::ostream &out);
+    void output_values(std::ostream &out) override;
 
-    void set_series_values(bool);
-    bool get_series_values() { return d_series_values; }
+    void set_series_values(bool) override;
+    bool get_series_values() override { return d_series_values; }
 };
 
 #endif // _testgrid_h

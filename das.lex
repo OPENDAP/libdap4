@@ -12,12 +12,12 @@
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
  version 2.1 of the License, or (at your option) any later version.
- 
+
  This library is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Lesser General Public License for more details.
- 
+
  You should have received a copy of the GNU Lesser General Public
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -25,7 +25,7 @@
  You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
 
  (c) COPYRIGHT URI/MIT 1994-2000
-*/ 
+*/
 
 /*
    Scanner for the DAS. This file works with gnu's flex scanner generator. It
@@ -38,10 +38,10 @@
    The scanner returns quoted strings as VALs. Any characters may appear in a
    quoted string except backslash (\) and quote("). To include these escape
    them with a backslash.
-   
+
    The scanner is not reentrant, but can share name spaces with other
    scanners.
-   
+
    Note:
    1) The `defines' file das.tab.h is built using `bison -d'.
    2) Define YY_DECL such that the scanner is called `daslex'.
@@ -51,12 +51,12 @@
    escapes to work and because we want line counts to work too. In order to
    properly scan a quoted string two C functions are used: one to remove the
    escape characters from escape sequences and one to remove the trailing
-   quote on the end of the string. 
+   quote on the end of the string.
 
-   jhrg 7/12/94 
+   jhrg 7/12/94
 
    NB: We don't remove the \'s or ending quotes any more -- that way the
-   printed das can be re-parsed. 9/28/94. 
+   printed das can be re-parsed. 9/28/94.
 */
 
 %{
@@ -97,14 +97,14 @@ int das_line_num = 1;
 static int start_line;		/* used in quote and comment error handlers */
 
 %}
-    
+
 %option noyywrap
 %option nounput
 %option noinput
 %option 8bit
 %option prefix="das"
 /* %option outfile="lex.das.cc" */
- 
+
 %x quote
 %x comment
 %x xml
@@ -124,7 +124,7 @@ URL	URL|Url|url
 XML     OTHERXML|OtherXML|OtherXml|otherxml
 
 /* Comment chars (#) are treated specially. Lets hope nobody wants to start
-   A variable name with one... Note that the DAS allows Identifiers to have 
+   A variable name with one... Note that the DAS allows Identifiers to have
    parens and colons while the DDS and expr scanners don't. It's too hard to
    disambiguate functions when IDs have parens in them and adding colons
    makes parsing the array projections hard. 10/31/2001 jhrg */
@@ -150,8 +150,8 @@ NEVER   [^\-+a-zA-Z0-9_/%.:\\()#{};,[\]]
 {XML}                   daslval = yytext; return SCAN_XML;
 
 {WORD}	    	    	{
-			    daslval = yytext; 
-			    DBG(cerr << "WORD: " << yytext << endl); 
+			    daslval = yytext;
+			    DBG(cerr << "WORD: " << yytext << endl);
 			    return SCAN_WORD;
 			}
 
@@ -175,8 +175,8 @@ NEVER   [^\-+a-zA-Z0-9_/%.:\\()#{};,[\]]
 <quote>[^"\r\n\\]*\n    yymore(); ++das_line_num;
 <quote>[^"\r\n\\]*\r\n  yymore(); ++das_line_num;
 <quote>\\.              yymore();
-<quote>\"               { 
-                          BEGIN(INITIAL); 
+<quote>\"               {
+                          BEGIN(INITIAL);
 
                           daslval = yytext;
 
@@ -220,4 +220,3 @@ das_delete_buffer(void *buf)
 {
     das_delete_buffer((YY_BUFFER_STATE)buf);
 }
-

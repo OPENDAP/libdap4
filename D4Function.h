@@ -38,6 +38,7 @@ class DMR;
 // to a function that takes...' but I used this to make the code fit more closely to
 // the pattern established by the DAP2 CE functions. jhrg 3/10/14
 
+/** @brief Signature type for DAP4 server-side function handlers. */
 typedef BaseType *(*D4Function)(D4RValueList *, DMR &);
 
 } // namespace libdap

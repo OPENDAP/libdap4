@@ -6,7 +6,7 @@ AUTOMAKE_OPTIONS = foreign
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/GNU -I$(top_srcdir)/d4_ce \
     -I$(top_srcdir)/d4_function -I$(top_srcdir)/http_dap $(XML2_CFLAGS) \
      $(CURL_CFLAGS) $(TIRPC_CFLAGS)
-AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align -Wno-inconsistent-missing-override
+AM_CXXFLAGS = $(CXX_STD_FLAG) -Wall -W -Wcast-align
 
 CXXFLAGS_DEBUG = -g3 -O0
 
@@ -53,10 +53,10 @@ testheaders_HEADERS = $(TEST_HDR)
 AM_LDFLAGS += -static
 
 das_test_SOURCES = das-test.cc
-das_test_LDADD =  libtest-types.a ../libdapserver.la ../libdap.la 
+das_test_LDADD =  libtest-types.a ../libdapserver.la ../libdap.la
 
 dds_test_SOURCES = dds-test.cc
-dds_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la 
+dds_test_LDADD = libtest-types.a ../libdapserver.la ../libdap.la
 
 expr_test_SOURCES = expr-test.cc ResponseBuilder.cc ResponseBuilder.h
 expr_test_LDADD = libtest-types.a ../libdapserver.la ../libdapclient.la ../libdap.la
@@ -70,8 +70,6 @@ TESTSRCS = TestByte.cc TestInt32.cc TestFloat64.cc TestStr.cc TestUrl.cc \
 	   TestFloat32.cc TestTypeFactory.cc D4TestTypeFactory.cc \
 	   TestD4Group.cc TestInt8.cc TestInt64.cc TestUInt64.cc TestD4Sequence.cc \
 	   TestD4Enum.cc TestD4Opaque.cc TestFunction.cc D4TestFunction.cc
-
-# TestCommon.cc Removed jhrg 3/12/15
 
 TEST_HDR = TestArray.h TestByte.h TestCommon.h TestFloat32.h TestFloat64.h    \
 	TestGrid.h TestInt16.h TestInt32.h TestSequence.h TestStr.h	      \
@@ -111,7 +109,7 @@ DMRTESTSUITE = $(srcdir)/DMRTest
 GETDAPTESTSUITE = $(srcdir)/getdapTest
 
 check-local: atconfig atlocal $(DASTESTSUITE) $(DDSTESTSUITE) \
-$(EXPRTESTSUITE) $(DMRTESTSUITE) $(GETDAPTESTSUITE) 
+$(EXPRTESTSUITE) $(DMRTESTSUITE) $(GETDAPTESTSUITE)
 	$(SHELL) '$(DASTESTSUITE)' $(TESTSUITEFLAGS)
 	$(SHELL) '$(DDSTESTSUITE)' $(TESTSUITEFLAGS)
 	$(SHELL) '$(EXPRTESTSUITE)' $(TESTSUITEFLAGS)
@@ -121,7 +119,7 @@ $(EXPRTESTSUITE) $(DMRTESTSUITE) $(GETDAPTESTSUITE)
 # Make sure there are no spaces after the DASTESTSUITE names. jhrg 3/16/15
 # Delete the scripts here and not using CLEANFILES because this target is
 # run after the 'regular' clean: and we need the test scripts to run their
-# --clean option. Once that's done, then remove them. 
+# --clean option. Once that's done, then remove them.
 clean-local:
 	test ! -f '$(DASTESTSUITE)' || $(SHELL) $(DASTESTSUITE) --clean
 	test ! -f '$(DDSTESTSUITE)' || $(SHELL) $(DDSTESTSUITE) --clean
@@ -164,4 +162,3 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	echo 'm4_define([AT_PACKAGE_STRING],    [@PACKAGE_STRING@])' && \
 	echo 'm4_define([AT_PACKAGE_BUGREPORT], [@PACKAGE_BUGREPORT@])'; \
 	} >'$(srcdir)/package.m4'
-

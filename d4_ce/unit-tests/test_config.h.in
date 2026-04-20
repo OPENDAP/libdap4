@@ -4,4 +4,3 @@
 #define TEST_SRC_DIR "@abs_srcdir@"
 
 #endif
-

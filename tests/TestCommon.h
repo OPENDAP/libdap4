@@ -28,13 +28,12 @@
 #ifndef _test_common_h
 #define _test_common_h 1
 
-// #include <stdio.h>
 #include <iostream>
 
 class TestCommon {
 public:
-    TestCommon() {}
-    virtual ~TestCommon() {}
+    TestCommon() = default;
+    virtual ~TestCommon() = default;
 
     /** Write out values. Does not test the read_p property first.
 
@@ -55,7 +54,7 @@ public:
     /** Get the value of the series_value property. If true, the TestByte, ...,
         classes should produce values that vary in a fashion similar to the DTS.
         If false, they should exhibit the old behavior where the values are static.
-        For arrays, grids and structures the 'series_value' doesn't mean much, but
+        For arrays, grids and structures, the 'series_value' doesn't mean much, but
         for sequences it's a big deal since those are constrained by value in
         addition to by position. */
     virtual bool get_series_values() = 0;

@@ -87,7 +87,7 @@ void D4Enum::m_duplicate(const D4Enum &src) {
  *
  * @param attr AttrTable pointer, ignored by this method.
  */
-std::vector<BaseType *> *D4Enum::transform_to_dap2(AttrTable *, bool show_shared_dims) {
+std::vector<BaseType *> *D4Enum::transform_to_dap2(AttrTable *, bool) {
     BaseType *btp;
 
     DBG(cerr << __func__ << "() - BEGIN" << endl;);
@@ -571,9 +571,9 @@ unsigned int D4Enum::buf2val(void **val) {
     return width();
 }
 
-void D4Enum::print_val(ostream &out, string space, bool print_decl_p) {
+void D4Enum::print_val(ostream &out, string space, bool print_decl_p, bool is_root_grp) {
     if (print_decl_p) {
-        print_decl(out, space, false);
+        print_decl(out, space, false, false, false, is_root_grp, false);
         out << " = ";
     }
 

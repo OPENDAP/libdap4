@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" 
-    xml:base="file:DMR_1.xml"    
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#"
+    xml:base="file:DMR_1.xml"
     name="DMR_1"
     dapVersion="4.0"
     dmrVersion="1.0">
@@ -43,5 +43,5 @@
     <Float64 name="k">
         <Dim name="dim1"/>
     </Float64>
-    
-</Dataset>   
+
+</Dataset>

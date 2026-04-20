@@ -45,7 +45,7 @@ attributes to completely replace those of the primary resource. If the
 fallback rule is specified, the AIS resource's attributes are used only if
 the primary resource has *no* attributes.
 
-How to use the AIS: 
+How to use the AIS:
 
 Keep in mind that this is a prototype and is far, far from
 'feature-complete.'

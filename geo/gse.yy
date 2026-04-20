@@ -11,18 +11,18 @@
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
 // You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.
- 
+
 // (c) COPYRIGHT URI/MIT 1999
 // Please read the full copyright statement in the file COPYRIGHT_URI.
 //
@@ -64,7 +64,7 @@ GSEClause *build_gse_clause(gse_arg *arg, char id[ID_MAX], int op, double val);
 GSEClause *build_rev_gse_clause(gse_arg *arg, char id[ID_MAX], int op,
 				double val);
 GSEClause *
-build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1, 
+build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 		      int op2, double val2);
 
 } // code
@@ -125,7 +125,7 @@ clause:	identifier relop constant
 		}
 ;
 
-identifier:	SCAN_WORD 
+identifier:	SCAN_WORD
 ;
 
 constant: SCAN_INT
@@ -200,12 +200,12 @@ build_gse_clause(gse_arg *arg, char id[ID_MAX], int op, double val)
 GSEClause *
 build_rev_gse_clause(gse_arg *arg, char id[ID_MAX], int op, double val)
 {
-    return new GSEClause(arg->get_grid(), (string)id, val, 
+    return new GSEClause(arg->get_grid(), (string)id, val,
 			 decode_inverse_relop(op));
 }
 
 GSEClause *
-build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1, 
+build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 		      int op2, double val2)
 {
     // Check that the operands (op1 and op2) and the values (val1 and val2)
@@ -217,13 +217,13 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
       case dods_less_op:
       case dods_less_equal_op:
 	if (rop2 == dods_less_op || rop2 == dods_less_equal_op)
-	    throw Error(malformed_expr, 
+	    throw Error(malformed_expr,
 "GSE Clause operands must define a monotonic interval.");
 	break;
       case dods_greater_op:
       case dods_greater_equal_op:
 	if (rop2 == dods_greater_op || rop2 == dods_greater_equal_op)
-	    throw Error(malformed_expr, 
+	    throw Error(malformed_expr,
 "GSE Clause operands must define a monotonic interval.");
 	break;
       case dods_equal_op:
@@ -234,4 +234,3 @@ build_dual_gse_clause(gse_arg *arg, char id[ID_MAX], int op1, double val1,
 
     return new GSEClause(arg->get_grid(), (string)id, val1, rop1, val2, rop2);
 }
-

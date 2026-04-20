@@ -6,4 +6,3 @@
 #
 
 export LIBDAP_TRAVIS_BUILD_OFFSET=1392
-
