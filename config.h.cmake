@@ -54,7 +54,7 @@
 /* Client version number */
 #define CVER "@LIBDAP_VERSION@"
 /* Client name and version combined */
-#define DVR "@PROJECT_NAME@/LIBDAP_VERSION@"
+#define DVR "@PROJECT_NAME@/@LIBDAP_VERSION@"
 
 /* Install prefix for libdap */
 #define LIBDAP_ROOT "@LIBDAP_ROOT@"
