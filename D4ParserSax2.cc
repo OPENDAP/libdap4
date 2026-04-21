@@ -649,7 +649,8 @@ void D4ParserSax2::dmr_start_element(void *p, const xmlChar *l, const xmlChar *p
             parser->dmr()->set_dap_version(parser->xml_attrs["dapVersion"].value);
 
         if (parser->check_attribute("dmrVersion"))
-            parser->dmr()->set_dmr_version(parser->xml_attrs["dmrVersion"].value);
+            parser->dmr()->set_dmr_version("1.0");
+        // parser->dmr()->set_dmr_version(parser->xml_attrs["dmrVersion"].value);
 
         if (parser->check_attribute("base"))
             parser->dmr()->set_request_xml_base(parser->xml_attrs["base"].value);
