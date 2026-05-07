@@ -311,6 +311,10 @@ void D4ConstraintEvaluator::use_explicit_projection(Array *a, const Array::Dim_i
 D4Dimension *D4ConstraintEvaluator::slice_dimension(const std::string &id, const index &i) {
     D4Dimension *dim = dmr()->root()->find_dim(id);
 
+    if(!dim) {
+        throw Error(malformed_expr,
+                    "The dimension name '" + id + "' cannot be found");
+    }
     if ((uint64_t)i.stride > dim->size())
         throw Error(malformed_expr,
                     "For '" + id + "', the index stride value is greater than the size of the dimension");
