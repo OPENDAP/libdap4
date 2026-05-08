@@ -312,8 +312,7 @@ D4Dimension *D4ConstraintEvaluator::slice_dimension(const std::string &id, const
     D4Dimension *dim = dmr()->root()->find_dim(id);
 
     if(!dim) {
-        throw Error(malformed_expr,
-                    "The dimension name '" + id + "' cannot be found");
+        throw Error(malformed_expr, "The dimension name '" + id + "' cannot be found");
     }
     if ((uint64_t)i.stride > dim->size())
         throw Error(malformed_expr,
