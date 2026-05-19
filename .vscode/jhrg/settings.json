@@ -16,6 +16,11 @@
   "[makefile]": {
     "editor.insertSpaces": false
   },
+   "[cpp]": {
+    "editor.rulers": [80, 120]
+  },
+  "rewrap.wholeComment": true,
+  "rewrap.autoWrap.enabled": true,
   // Exclude object files from the file explorer. jhrg 3/29/26
   "files.exclude": {
     "**/*.o": true,
