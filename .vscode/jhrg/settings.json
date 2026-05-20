@@ -3,12 +3,18 @@
   // This file can be edited to chnage prefix and PATH. jhrg 3//10/26
   "prefix": "/Users/jimg/src/opendap/hyrax/build",
   "PATH": "${config:prefix}/bin:${config:prefix}/deps/bin:${env:PATH}",
-  "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
-  "C_Cpp.default.compileCommands": "${workspaceFolder}/compile_commands.json",
+  "HOMEBREW": "/opt/homebrew",
+  // "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+  //"C_Cpp.default.compileCommands": "${workspaceFolder}/compile_commands.json",
   "C_Cpp.default.cppStandard": "c++14",
   "C_Cpp.default.intelliSenseMode": "macos-clang-arm64",
   "C_Cpp.vcFormat.indent.namespaceContents": false,
-  "C_Cpp.default.includePath": ["${workspaceFolder}/**"],
+  "C_Cpp.default.includePath": [
+    "${workspaceFolder}/**",
+    "${config:prefix}/include/**",
+        "${config:prefix}/deps/include",
+        "${config:HOMEBREW}/include/**"
+      ],
   // Makefile settings. jhrg 3/11/26
   "files.associations": {
     "*.am": "makefile"
