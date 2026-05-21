@@ -26,7 +26,7 @@ jobs:
         include:
           - os: ubuntu-latest
             name: Linux
-          - os: macos-15-intel
+          - os: blacksmith-6vcpu-macos-15
             name: macOS Intel
           # For a reason I don't entirely understand, with this build, some of the expr-tests fail.exclude:
           # Investigate on a clean OSX M4 machine. jhrg 4/2/26
