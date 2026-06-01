@@ -27,7 +27,9 @@ jobs:
           - os: ubuntu-latest
             name: Linux
           - os: macos-15
-            name: macOS arm64
+            name: macOS 15 arm64
+          - os: macos-26
+            name: macOS 26 arm64
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     env:
