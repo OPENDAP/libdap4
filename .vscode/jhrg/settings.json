@@ -12,9 +12,9 @@
   "C_Cpp.default.includePath": [
     "${workspaceFolder}/**",
     "${config:prefix}/include/**",
-        "${config:prefix}/deps/include",
-        "${config:HOMEBREW}/include/**"
-      ],
+    "${config:prefix}/deps/include",
+    "${config:HOMEBREW}/include/**"
+  ],
   // Makefile settings. jhrg 3/11/26
   "files.associations": {
     "*.am": "makefile"
@@ -22,7 +22,7 @@
   "[makefile]": {
     "editor.insertSpaces": false
   },
-   "[cpp]": {
+  "[cpp]": {
     "editor.rulers": [80, 120]
   },
   "rewrap.wholeComment": true,
