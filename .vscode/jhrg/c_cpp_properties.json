@@ -7,7 +7,7 @@
       "cStandard": "c11",
       "cppStandard": "c++14",
       "intelliSenseMode": "macos-clang-arm64",
-      "compileCommands": "${workspaceFolder}/compile_commands.json",
+      //"compileCommands": "${workspaceFolder}/compile_commands.json",
       "includePath": [
         "${workspaceFolder}",
         "${workspaceFolder}/**",
