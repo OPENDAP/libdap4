@@ -3,7 +3,7 @@
 ---
 
 [![Build Status](https://app.travis-ci.com/OPENDAP/libdap4.svg?token=sZ7AH1JNbtUbge4Y4gRA&branch=master&status=passed)](https://app.travis-ci.com/github/OPENDAP/libdap4)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1013914.svg)](https://doi.org/10.5281/zenodo.1013914)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14646648.svg)](https://doi.org/10.5281/zenodo.14646648)
 
 ---
 
