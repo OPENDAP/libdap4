@@ -145,6 +145,7 @@ jobs:
     - stage: scan
       name: "scan"
       env: CACHE_NAME=scan
+        TESTSUITEFLAGS=-J1
       script:
         - export LIBDAP_BUILD=sonar
         - export SONAR_TOKEN=$SONAR_LOGIN
