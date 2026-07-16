@@ -48,7 +48,7 @@ addons:
       - uuid-dev
       - libcurl4-openssl-dev
       - libcppunit-dev
-      - gcovr
+      # - gcovr Later we force version 8.2. Using apt install 4.2 which has bugs. jhrg 7/16/26
       - libfl-dev # needed for focal, but not xenial. jhrg 1/18/24
       - libtool-bin
       - ccache
@@ -153,6 +153,11 @@ jobs:
         - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-coverage
         - build-wrapper-linux-x86-64 --out-dir bw-output make -j$BUILD_PROCS
         - make check -j$BUILD_PROCS
+        # Force version 8.2 to work around an issue with the version bound to focal.
+        # Using apt (the addons section at line 42) installs version 4.2 which has bugs
+        # that break SonarScan. jhrg 7/16/26
+        - pip3 install --user gcovr==8.2
+        - export PATH="$HOME/.local/bin:$PATH"
         - gcovr --version
         - gcovr --config gcovr.config --sonarqube coverage.xml
         - sonar-scanner
