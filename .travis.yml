@@ -153,6 +153,7 @@ jobs:
         - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-coverage
         - build-wrapper-linux-x86-64 --out-dir bw-output make -j$BUILD_PROCS
         - make check -j$BUILD_PROCS
+        - gcovr --version
         - gcovr --config gcovr.config --sonarqube coverage.xml
         - sonar-scanner
         # The scanner waits for the quality gate because sonar.qualitygate.wait=true is set
