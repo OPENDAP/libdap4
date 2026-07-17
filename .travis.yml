@@ -160,6 +160,11 @@ jobs:
         - export PATH="$HOME/.local/bin:$PATH"
         - gcovr --version
         - gcovr --config gcovr.config --sonarqube coverage.xml
+        # Diagnostic: flag any file gcovr has coverage data for that never made it
+        # into build-wrapper's compile_commands.json -- Sonar's C-family analyzer
+        # can't attach coverage to files it doesn't know about, regardless of what
+        # coverage.xml says. Does not fail the build; just logs the gap. jhrg 7/17/26
+        - python3 travis/check-coverage-compile-commands.py coverage.xml bw-output/compile_commands.json
         - sonar-scanner
         # The scanner waits for the quality gate because sonar.qualitygate.wait=true is set
         # in sonar-project.properties, so no extra badge/API polling is needed here.
