@@ -152,7 +152,7 @@ jobs:
         - autoreconf --force --install --verbose
         - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-coverage
         - build-wrapper-linux-x86-64 --out-dir bw-output make -j$BUILD_PROCS
-        - make check -j$BUILD_PROCS
+        - build-wrapper-linux-x86-64 --out-dir bw-output make check -j$BUILD_PROCS
         # Force version 8.2 to work around an issue with the version bound to focal.
         # Using apt (the addons section at line 42) installs version 4.2 which has bugs
         # that break SonarScan. jhrg 7/16/26
@@ -164,7 +164,7 @@ jobs:
         # into build-wrapper's compile_commands.json -- Sonar's C-family analyzer
         # can't attach coverage to files it doesn't know about, regardless of what
         # coverage.xml says. Does not fail the build; just logs the gap. jhrg 7/17/26
-        - python3 travis/check-coverage-compile-commands.py coverage.xml bw-output/compile_commands.json
+        # - python3 travis/check-coverage-compile-commands.py coverage.xml bw-output/compile_commands.json
         - sonar-scanner
         # The scanner waits for the quality gate because sonar.qualitygate.wait=true is set
         # in sonar-project.properties, so no extra badge/API polling is needed here.
