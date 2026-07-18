@@ -152,7 +152,8 @@ jobs:
         - autoreconf --force --install --verbose
         - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-coverage
         - build-wrapper-linux-x86-64 --out-dir bw-output make -j$BUILD_PROCS
-        - build-wrapper-linux-x86-64 --out-dir bw-output make check -j$BUILD_PROCS
+        - make check -j$BUILD_PROCS
+        # - build-wrapper-linux-x86-64 --out-dir bw-output make check -j$BUILD_PROCS
         # Force version 8.2 to work around an issue with the version bound to focal.
         # Using apt (the addons section at line 42) installs version 4.2 which has bugs
         # that break SonarScan. jhrg 7/16/26
