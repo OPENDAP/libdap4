@@ -1,9 +1,9 @@
 # Test Coverage
 
-Test coverage can be computed by fist configuring and building the code for coverage.
+Test coverage can be computed by first configuring and building the code for coverage.
 Once done, run both `make` and `make check`. The build process will produce a number of
-_.gcda and _.gcno files that contain the coverage information. Once that is done, use
-the `gcovr` too to get a summary of coverage and a set of HTML pages that contain statistics
+`*.gcda` and `*.gcno` files that contain the coverage information. Once that is done, use
+the `gcovr` tool to get a summary of coverage and a set of HTML pages that contain statistics
 for each source file and a map of which lines are (or are not) covered by either the
 unit- or integration tests.
 
@@ -15,13 +15,14 @@ unit- or integration tests.
 
 To configure a build for coverage analysis, use configure with the --enable-coverage option.
 
-```
+```bash
+export prefix=<the hyrax prefix dir>
 ./configure --prefix=$prefix --enable-developer --enable-coverage
 ```
 
 To build, run make and make check as normal. For example:
 
-```
+```bash
 make -j20
 make -j20 check
 ```
@@ -36,20 +37,20 @@ resulting in code marked as 'covered' by a test when it was not.
 
 ## Getting the Coverage Report
 
-Use the gcovr tool to get coverage data in a usable form.
+Use the `gcovr` tool to get coverage data in a usable form.
 
 ### Settings for `gcovr`
 
-We have a small setting file for `gcovr`; see `gcovr.config` This excludes things that should
+We have a small settings file for `gcovr`; see `gcovr.config` This excludes things that should
 not be counted. Some part of this file should be synchronized with the text in `sonar-project.properties`
-or the results show in teh SonarScan outout will be off.
+or the results show in the SonarScan output will be off.
 
 ### Installing `gcovr`
 
 Install `gcovr` using homebrew, apt, pip, etc. However, be sure you are installing and
-using version 8.2 or greater of gcovr since since older versions have various issues.
-These include, not working with parallel test runs emitting broken data for SonarScan and
-generally under reporting coverage.
+using version 8.2 or greater of gcovr since older versions have various issues.
+These include, not working with parallel test runs, emitting broken data for SonarScan, and
+under-reporting coverage.
 
 > [!NOTE]
 > Note that Ubuntu Focal uses `gcovr` 4.x by default, and thus in Travis we force the 'scan'
@@ -60,7 +61,7 @@ generally under reporting coverage.
 
 To collect coverage data, use:
 
-```
+```bash
 gcovr --config gcovr.config
 ```
 
@@ -70,7 +71,7 @@ completely useful, but there are probably tools that use it.
 To get the summary stats and set of web pages that are easy to use but entail some clicking
 around:
 
-```
+```bash
 gcovr --config gcovr.config --html-details coverage-html/coverage.html
 ```
 
@@ -78,11 +79,11 @@ Then open `coverage-html/coverage.html` as a file in your web browser.
 
 For sonarscan, we build the coverage data using:
 
-```
+```bash
 gcovr --config gcovr.config --sonarqube coverage.xml
 ```
 
-See [.tavis.yml](.travis.yml) in the `scan` block for code that collects coverage data
+See [.travis.yml](.travis.yml) in the `scan` block for code that collects coverage data
 for sonarscan. The data are uploaded to sonarscan using `sonar.coverageReportPaths=coverage.xml`
 in [sonar-project.properties](sonar-project.properties). I mention that here because it
 is hardly obvious from the Travis yaml just how the `coverage.xml` file gets uploaded to
