@@ -19,8 +19,6 @@ language: cpp
 
 compiler: gcc # Could add clang
 
-jdk: openjdk21
-
 # Build only 'master,' 'main,' or '.*-test-deploy' branches. This is used down in the
 # "stages" section where we assume the build process is only run for branches that
 # match those patterns. jhrg 8/22/22
@@ -80,6 +78,10 @@ env:
 # only install things when needed to save time. jhrg 4/1/26
 before_install:
   - if test -n "$AWS_ACCESS_KEY_ID" -a \( "$TRAVIS_JOB_NAME" = "make" -o "$TRAVIS_JOB_NAME" = "asan" -o "$TRAVIS_JOB_NAME" = "distcheck" \); then pip install --user awscli; fi
+  - sudo apt-get update
+  - sudo apt-get install -y openjdk-21-jdk
+  - export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+  - export PATH=$JAVA_HOME/bin:$PATH
   # fix for Java 17 install for Sonar from Travis CI support. jhrg 1/23/24
   #- if test "$TRAVIS_JOB_NAME" = "scan"; then curl -s "https://get.sdkman.io" | bash; fi
   #- if test "$TRAVIS_JOB_NAME" = "scan"; then source "$HOME/.sdkman/bin/sdkman-init.sh"; fi
