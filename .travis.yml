@@ -81,10 +81,10 @@ before_install:
   - if [ "$TRAVIS_JOB_NAME" = "scan" ]; then \
     sudo apt-get update; \
     sudo apt-get install -y openjdk-21-jdk; \
-    export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64; \
-    export PATH=$JAVA_HOME/bin:$PATH; \
+    export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"; \
+    export PATH="$JAVA_HOME/bin:$PATH"; \
     java -version; \
-    fi
+    fi ;
 
 # fix for Java 17 install for Sonar from Travis CI support. jhrg 1/23/24
 #- if test "$TRAVIS_JOB_NAME" = "scan"; then curl -s "https://get.sdkman.io" | bash; fi
