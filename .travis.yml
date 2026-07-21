@@ -10,7 +10,7 @@
 # virt: lxd             # use a lxd container
 # arch: amd64           # optional, this is the default, routes to a full VM
 # os: linux             # optional, this is the default
-dist: focal # xenial (Ubuntu 16) is the default; focal is Ubuntu 20
+dist: jammy # xenial (Ubuntu 16) is the default; focal is Ubuntu 20; jammy is Ubuntu 22
 
 vm:
   size: x-large
@@ -79,11 +79,11 @@ env:
 before_install:
   - if test -n "$AWS_ACCESS_KEY_ID" -a \( "$TRAVIS_JOB_NAME" = "make" -o "$TRAVIS_JOB_NAME" = "asan" -o "$TRAVIS_JOB_NAME" = "distcheck" \); then pip install --user awscli; fi
   # fix for Java 17 install for Sonar from Travis CI support. jhrg 1/23/24
-  - if test "$TRAVIS_JOB_NAME" = "scan"; then curl -s "https://get.sdkman.io" | bash; fi
-  - if test "$TRAVIS_JOB_NAME" = "scan"; then source "$HOME/.sdkman/bin/sdkman-init.sh"; fi
-  - if test "$TRAVIS_JOB_NAME" = "scan"; then sdk install java 17.0.2-open; fi
-  - if test "$TRAVIS_JOB_NAME" = "scan"; then sdk use java 17.0.2-open; fi
-  - if test "$TRAVIS_JOB_NAME" = "scan"; then java -version; fi
+  #- if test "$TRAVIS_JOB_NAME" = "scan"; then curl -s "https://get.sdkman.io" | bash; fi
+  #- if test "$TRAVIS_JOB_NAME" = "scan"; then source "$HOME/.sdkman/bin/sdkman-init.sh"; fi
+  #- if test "$TRAVIS_JOB_NAME" = "scan"; then sdk install openjdk-21-jre-headless -y; fi
+  #- if test "$TRAVIS_JOB_NAME" = "scan"; then sdk use java openjdk-21; fi
+  #- if test "$TRAVIS_JOB_NAME" = "scan"; then java -version; fi
 
 install:
   - which bison flex
@@ -144,6 +144,7 @@ jobs:
 
     - stage: scan
       name: "scan"
+      jdk: openjdk21
       env: CACHE_NAME=scan
         TESTSUITEFLAGS=-j1
       script:
