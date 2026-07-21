@@ -6,9 +6,9 @@
 
 	#370 coverage cleanup and #365 Document coverage data
 	generation (PR #371)
-	* Remove python script that tested coverge data validity
+	* Remove python script that tested coverage data validity
 	* Added a note to README.md about README.coverage.md
-	* Added a pre-commit tempate
+	* Added a pre-commit template
 
 	Sonar fixes for HTTP -vs- HTTPS and '/tmp' use
 
@@ -31,7 +31,7 @@
 	Remove DAPCache3Test from the CMake builds
 	Sync sonar-project.properties and gcovr.config
 	Added gcovr version print to .travis.yml
-	Removed macos 15 build - we don't that OS any more
+	Removed macos 15 build - we don't use that OS any more
 	Move from the buggy (WRT sonarscan) gcovr 4.2 to 8.2
 
 2026-07-14  James Gallagher  <jgallagher@opendap.org>
@@ -90,7 +90,7 @@
 	(#320)" (#355)
 	* Revert "Jhrg/hyrax-1963 dmr version bump (#320)"
 	This reverts commit e3bf0b3d8c2f0665bd3758c54fdd4a11b802130f.
-	* Force D4ParserSax2 to always set dmrVersion="1.0" earn
+	* Force D4ParserSax2 to always set dmrVersion="1.0" when
 	parsing a DMR
 
 2026-04-20  James Gallagher  <jgallagher@opendap.org>
@@ -159,11 +159,11 @@
 	the array size to the real storage size. Application needs to feed in
 	the number. This member can apply to both the whole array or the subset.
 	* HYRAX-1950, make the switch-branch work.
-	* HYRAX-1950, add a two new fields. One for the direct chunk
+	* HYRAX-1950, add two new fields. One for the direct chunk
 	IO, one for the optimization to see if compression should be turned on
 	in the fileout netCDF module.
 	* HYRAX-1950, use clang-format.
-	* HYRAX-1950, set the filled chunk flag for the varaible
+	* HYRAX-1950, set the filled chunk flag for the variable
 	storage info.
 	* HYRAX-1950, follow clang-format.
 	* HYRAX-1950, reduce a sonar cloud code smell
@@ -225,7 +225,7 @@
 
 2026-03-02  James Gallagher  <jgallagher@opendap.org>
 
-	I made a settings.json.template si settings.json can be
+	I made a settings.json.template so settings.json can be
 	customized (#338)
 	I also modified tasks.json and launch.json so they use info in
 	the
@@ -233,7 +233,7 @@
 	changes
 	to the hyrax $prefix env var. I added settings.json to
 	.gitignore
-	so that one persons $prefix paths don't over write someone
+	so that one person's $prefix paths don't over write someone
 	elses.
 
 	HYRAX-1903: Use 'override' where appropriate (#337)
@@ -323,7 +323,7 @@
 	make cmake tests tolerable (#329)
 	Remove integration test .out files for das, dds, ...,  tests
 	Added baseline generation for the das, dds, ...,  tests
-	For the dmr tess, move the test COMMAND to a bash script,
+	For the dmr tests, move the test COMMAND to a bash script,
 	adding a level of
 	indirection but simplifying debugging.
 	dmr-test and expr-test now support parallel tests
@@ -531,8 +531,8 @@
 	* All the DMR tests use numbers - the odd names are gone.
 	* More cleaned up the string quoting.;Wrapping strings
 	in "" is often not needed in cmake. I removed more, but
-	it seems somewhat pointless. Still,it's good to know. Any
-	function argument with a ';' needsto be double-quoted.
+	it seems somewhat pointless. Still, it's good to know. Any
+	function argument with a ';' needs to be double-quoted.
 	* I removed two tests from HTTPThreadConnect Test. See
 	HYRAX-1849.
 
@@ -659,7 +659,7 @@
 
 2025-05-13  James Gallagher  <jgallagher@opendap.org>
 
-	Retred the ErrorAssignmentTest - subsumed by ErrorTest
+	Retired the ErrorAssignmentTest - subsumed by ErrorTest
 	[skip ci]
 
 	Coverage 2.0 (#281)
@@ -791,7 +791,7 @@
 
 	Updated the documentation build date
 
-	Mionr update to build-gh-docs.sh
+	Minor update to build-gh-docs.sh
 
 	Merge branch 'gh-docs-fix'
 
@@ -890,7 +890,7 @@
 
 	Remove warnings 1 (#255)
 	Removed some unary_ and binary_function classes.
-	Other chnages: sprintf to snprintf and string compare warnings;
+	Other changes: sprintf to snprintf and string compare warnings;
 	Updated README.pre-commit.md; Bison version nonsense - when \
 	will RHEL8 upgrade?; More refactoring and some compiler warnings
 	ignored;  Added <memory> to HTTPConnect.cc for RHEL8.
