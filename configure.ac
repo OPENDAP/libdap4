@@ -95,9 +95,9 @@ dnl increment AGE, set REVISION to 0.
 dnl Interfaces removed or changed (BAD, breaks upward compatibility):
 dnl ==> Increment CURRENT, set AGE and REVISION to 0.
 
-DAPLIB_CURRENT=30
+DAPLIB_CURRENT=31
 DAPLIB_REVISION=0
-DAPLIB_AGE=3
+DAPLIB_AGE=0
 
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_REVISION)
