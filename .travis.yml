@@ -144,7 +144,7 @@ jobs:
 
     - stage: scan
       name: "scan"
-      jdk: openjdk21
+      jdk: jdk21
       env: CACHE_NAME=scan
         TESTSUITEFLAGS=-j1
       script:
