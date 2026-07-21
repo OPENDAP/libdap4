@@ -10,7 +10,7 @@ dnl 'pc' files and tarball for the source. See
 dnl libdap4/travis/travis_libdap_build_offset.sh for info about setting the
 dnl base value for the build number. jhrg 3/22/21
 
-AC_INIT([libdap],[3.21.1],[opendap-tech@opendap.org])
+AC_INIT([libdap],[3.22.0],[opendap-tech@opendap.org])
 
 # Get today's date in ISO 8601 format (YYYY-MM-DD)
 CONFIG_DATE=$(date +%Y-%m-%d)
