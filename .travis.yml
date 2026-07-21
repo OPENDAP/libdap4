@@ -88,13 +88,6 @@ before_install:
       java -version
     fi
 
-# fix for Java 17 install for Sonar from Travis CI support. jhrg 1/23/24
-#- if test "$TRAVIS_JOB_NAME" = "scan"; then curl -s "https://get.sdkman.io" | bash; fi
-#- if test "$TRAVIS_JOB_NAME" = "scan"; then source "$HOME/.sdkman/bin/sdkman-init.sh"; fi
-#- if test "$TRAVIS_JOB_NAME" = "scan"; then sdk install java 17.0.2-open; fi
-#- if test "$TRAVIS_JOB_NAME" = "scan"; then sdk use java 17.0.2-open; fi
-#- if test "$TRAVIS_JOB_NAME" = "scan"; then java -version; fi
-
 install:
   - which bison flex
   - bison --version
@@ -128,7 +121,7 @@ stages:
 jobs:
   include:
     # build
-    - stage: never
+    - stage: build
       name: "make"
       env: CACHE_NAME=make
       script:
@@ -138,7 +131,7 @@ jobs:
         - make -j$BUILD_PROCS && make check -j$BUILD_PROCS && make install
 
     # build
-    - stage: never
+    - stage: build
       name: "asan"
       env: CACHE_NAME=asan
       script:
@@ -147,7 +140,7 @@ jobs:
         - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
         - make -j$BUILD_PROCS && make check -j$BUILD_PROCS
     # build
-    - stage: never
+    - stage: build
       name: "distcheck"
       env: CACHE_NAME=distcheck
       script:
@@ -161,7 +154,7 @@ jobs:
       env: CACHE_NAME=scan
         TESTSUITEFLAGS=-j1
       script:
-        - echo "---------------------------------------------------------------------"
+        - echo "------  BEGIN scan  ---------------------------------------------------------"
         - java -version
         - export LIBDAP_BUILD=sonar
         - export SONAR_TOKEN=$SONAR_LOGIN
