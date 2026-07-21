@@ -1,121 +1,121 @@
 2026-07-21  Miguel Jimenez-Urias  <mjimenez@opendap.org>
-	
+
 	update build offset number
-	
+
 2026-07-20  James Gallagher  <jgallagher@opendap.org>
-	
-	#370 coverage cleanup and #365 Document coverage data 
+
+	#370 coverage cleanup and #365 Document coverage data
 	generation (PR #371)
 	* Remove python script that tested coverge data validity
 	* Added a note to README.md about README.coverage.md
 	* Added a pre-commit tempate
-	
+
 	Sonar fixes for HTTP -vs- HTTPS and '/tmp' use
-	
+
 2026-07-18  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Backed out the use of Sonar build wrapper on make check for now
-	This will take more work - seemed trivial, but it introduces 
+	This will take more work - seemed trivial, but it introduces
 	more
 	code to the analysis. Pick this up on a branch.
-	
+
 2026-07-17  James Gallagher  <jgallagher@opendap.org>
-	
-	Turn off the 'diff script' and add 'build wrapper' to make 
+
+	Turn off the 'diff script' and add 'build wrapper' to make
 	check in the scan step
-	
-	Diff the gcovr coverage.xml and compile commands JSON built by 
+
+	Diff the gcovr coverage.xml and compile commands JSON built by
 	Sonar
-	
+
 	Changes for test coverage (#366)
 	Remove DAPCache3Test from the CMake builds
 	Sync sonar-project.properties and gcovr.config
 	Added gcovr version print to .travis.yml
 	Removed macos 15 build - we don't that OS any more
 	Move from the buggy (WRT sonarscan) gcovr 4.2 to 8.2
-	
+
 2026-07-14  James Gallagher  <jgallagher@opendap.org>
-	
+
 	I removed the code in tidy-warnings (#361)
-	
+
 2026-07-07  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Change DOI badge to new link
 	Updated DOI badge link in README.md. This DOI points to the
 	latest version of the software on Zenodo.
-	
+
 2026-06-04  kyang2014  <kyang2014@users.noreply.github.com>
-	
-	HYRAX-2176, fix the segmentation fault bug when a DAP4 
-	attribute container doesn't contain attributes and the find menthod is 
+
+	HYRAX-2176, fix the segmentation fault bug when a DAP4
+	attribute container doesn't contain attributes and the find menthod is
 	called. (#359)
-	
+
 2026-06-01  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Added mac os 26 to the GHA workflow
-	
+
 	HYRAX-2119 Remove macos-intel from GHA (#358)
 	* Remove macos-intel from GHA
 	* Tweak to settings.json for vscode
-	
+
 2026-05-19  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Fixes to settings.json
 	[skip ci]
-	
+
 2026-05-18  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Added rulers to vscode C++
-	
+
 2026-05-10  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Merge branch 'master' of https://github.com/OPENDAP/libdap4
-	
+
 	cleanup
-	
+
 2026-05-08  kyang2014  <kyang2014@users.noreply.github.com>
-	
-	HYRAX-2149, add the error message when a DAP4 dimension cannot 
+
+	HYRAX-2149, add the error message when a DAP4 dimension cannot
 	be fou… (#356)
-	* HYRAX-2149, add the error message when a DAP4 dimension 
-	cannot be found in a DAP4 expression constraint. Previously a 
-	segmentation fault occurs. Verify with an example and it returns the 
+	* HYRAX-2149, add the error message when a DAP4 dimension
+	cannot be found in a DAP4 expression constraint. Previously a
+	segmentation fault occurs. Verify with an example and it returns the
 	expected output.
 	* clang-format
 	* more clang-format
-	
+
 2026-04-21  Nathan Potter  <ndp@opendap.org>
-	
-	Revert dmrVersion change "Jhrg/hyrax-1963 dmr version bump 
+
+	Revert dmrVersion change "Jhrg/hyrax-1963 dmr version bump
 	(#320)" (#355)
 	* Revert "Jhrg/hyrax-1963 dmr version bump (#320)"
 	This reverts commit e3bf0b3d8c2f0665bd3758c54fdd4a11b802130f.
-	* Force D4ParserSax2 to always set dmrVersion="1.0" earn 
+	* Force D4ParserSax2 to always set dmrVersion="1.0" earn
 	parsing a DMR
-	
+
 2026-04-20  James Gallagher  <jgallagher@opendap.org>
 	    Hannah Robertson  <hannahilea@users.noreply.github.com>
-	
+
 	cmake with autotest (#350)
-	This idea is a different take on using cmake to build libdap4. 
+	This idea is a different take on using cmake to build libdap4.
 	The same build process
-	is in place. I changed how the integration tests are run. 
+	is in place. I changed how the integration tests are run.
 	Before, I made them
-	use ctest and more completely integrated then with the cmake 
+	use ctest and more completely integrated then with the cmake
 	system. The problem
-	was that about 1k lines of python were needed and the result 
+	was that about 1k lines of python were needed and the result
 	was less useful than
-	using autotest. I switched to using ctest/cmake for the unit 
+	using autotest. I switched to using ctest/cmake for the unit
 	tests but autotest for the
-	integration tests. The downside is that developers need both 
+	integration tests. The downside is that developers need both
 	systems (cmake and
-	autoconf) on their machines. That seems like a small price to 
+	autoconf) on their machines. That seems like a small price to
 	pay for better tests.
 	---------
-	
+
 2026-04-10  Sam Lloyd  <sawerlloyd7@gmail.com>
 	    James Gallagher  <jgallagher@opendap.org>
-	
+
 	HYRAX-1758 seg_read_write_unittests
 	* seg_read tests, broken
 	* little baby tests
@@ -128,438 +128,438 @@
 	* more clang psuedo fixes III
 	* splitting of the segReadWrite unit tests
 	---------
-	
+
 2026-04-03  James Gallagher  <jgallagher@opendap.org>
-	
-	HYRAX-2087 D4StreamMarshallerTest fix and gh workflow speedup 
+
+	HYRAX-2087 D4StreamMarshallerTest fix and gh workflow speedup
 	(#349)
-	I experimented with a number of ways to reduce CICD times. The 
+	I experimented with a number of ways to reduce CICD times. The
 	most effective seem to be
-	using path-ignore and caching of previous builds. These changes 
+	using path-ignore and caching of previous builds. These changes
 	can be transferred to the BES
-	where build times are quite long. In the course of doing this, 
+	where build times are quite long. In the course of doing this,
 	I addressed a warning that made the
-	CICD build output hard to read and fixed the issue in 
+	CICD build output hard to read and fixed the issue in
 	HYRAX-2087.
-	
+
 2026-03-24  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Added AI doc about repo layout
-	
+
 	Added the prompts I used for the questions about AI
-	
+
 	Merge branch 'master' of https://github.com/OPENDAP/libdap4
-	
+
 	Added notes about codex in vscode
-	
+
 2026-03-16  kyang2014  <kyang2014@users.noreply.github.com>
-	
+
 	Hyrax 1950 (#347)
-	* HYRAX-2007, add a member and a method to store the ratio of 
-	the array size to the real storage size. Application needs to feed in 
+	* HYRAX-2007, add a member and a method to store the ratio of
+	the array size to the real storage size. Application needs to feed in
 	the number. This member can apply to both the whole array or the subset.
 	* HYRAX-1950, make the switch-branch work.
-	* HYRAX-1950, add a two new fields. One for the direct chunk 
-	IO, one for the optimization to see if compression should be turned on 
+	* HYRAX-1950, add a two new fields. One for the direct chunk
+	IO, one for the optimization to see if compression should be turned on
 	in the fileout netCDF module.
 	* HYRAX-1950, use clang-format.
-	* HYRAX-1950, set the filled chunk flag for the varaible 
+	* HYRAX-1950, set the filled chunk flag for the varaible
 	storage info.
 	* HYRAX-1950, follow clang-format.
 	* HYRAX-1950, reduce a sonar cloud code smell
-	
+
 2026-03-12  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Improvements to the libdap README documentation (#346)
 	- Added README.vscode.md
 	- Normalized NEWS and README.md
 	- Removed silly text about the DOI - I figured out how to get a
 	DOI to the latest release. Zenodo actually has one so that the
 	README does not have to be changed for each release.
-	
+
 2026-03-10  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Minor tweak to my vscode stuff
-	
+
 	Add (more) documentation to libdap (#342)
 	Start of more complete documentation for libdap.
 	Stage 1 docs from the Doxygen-plan.md and the AGENTS.md file
-	Ran stage 2, ..., 9 with a separate approval and commit for 
+	Ran stage 2, ..., 9 with a separate approval and commit for
 	each stage
 	plan. Additional steps I took:
 	- Documentation build date to main page
 	- Replaced @defgroup with @name. @defgroup names a 'module' not
-	a group of related methods. @name is used to group 
+	a group of related methods. @name is used to group
 	documentation for
 	a related group of methods in a class.
-	
+
 	Could this be the last vscode branch? (#344)
 	Moved versioned vscode files to .vscode/jhrg
-	
+
 	Refactored configure.ac (#345)
 	Added the DAP 2 spec and a codex-generated deep-dive
-	Used codex to write and implement a plan to streamline 
+	Used codex to write and implement a plan to streamline
 	configure.ac
 	The plan is in the docs dir as configure-ac-refactor-plan.md
-	
+
 	Fixed minor errors in run_tests_cppunit.h (#340)
 	Fixed the DBG macros when they hold 2++ statements
-	
+
 2026-03-09  James Gallagher  <jgallagher@opendap.org>
-	
+
 	More .vscode support (#343)
-	tasks.json for vscode needs $prefix's value - used a template 
+	tasks.json for vscode needs $prefix's value - used a template
 	file.
-	
+
 2026-03-03  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Merge branch 'master' of https://github.com/OPENDAP/libdap4
-	
+
 	Added the Doxygen-documentation-plan.md
 	[skip-ci]
-	
+
 	Added the suggested README for the vscode edits (#339)
 	Also removed the generated compile_commands.json file from git.
 	Normalized NEWS and README.md
 	Added some missing requirements to the README
-	
+
 2026-03-02  James Gallagher  <jgallagher@opendap.org>
-	
-	I made a settings.json.template si settings.json can be 
+
+	I made a settings.json.template si settings.json can be
 	customized (#338)
-	I also modified tasks.json and launch.json so they use info in 
+	I also modified tasks.json and launch.json so they use info in
 	the
-	settings.json file, eliminating the need to edit those for 
+	settings.json file, eliminating the need to edit those for
 	changes
-	to the hyrax $prefix env var. I added settings.json to 
+	to the hyrax $prefix env var. I added settings.json to
 	.gitignore
-	so that one persons $prefix paths don't over write someone 
+	so that one persons $prefix paths don't over write someone
 	elses.
-	
+
 	HYRAX-1903: Use 'override' where appropriate (#337)
-	Updated code to use override, dropped 
+	Updated code to use override, dropped
 	-Wno-inconsistent-missing-override.
 	Also, fixed self-assignment tests and suppressed warnings
-	
+
 	Add support for the autotools build with vscode. (#336)
 	* Added a named configuration to .vscode/settings.json
-	* For debugger support that is more complete, I fixed issues in 
+	* For debugger support that is more complete, I fixed issues in
 	launch.json.
-	I still had to make the  dSYM lib by hand, the command to make 
+	I still had to make the  dSYM lib by hand, the command to make
 	the dSYM lib was:
 	dsymutil .libs/libdap.27.dylib -o .libs/libdap.27.dylib.dSYM
-	* The four compiler warnings from the flex scanner code are now 
+	* The four compiler warnings from the flex scanner code are now
 	suppressed.
-	* /Users/jhrg --> ~ in PATH settings. This will need more work, 
+	* /Users/jhrg --> ~ in PATH settings. This will need more work,
 	but it's good enough.
-	
+
 2026-02-24  James Gallagher  <jgallagher@opendap.org>
 	    Hannah Robertson  <hannahilea@users.noreply.github.com>
-	
+
 	Unit test experiment - these were written by codex (#335)
 	Added BaseTypeTest.cc.
-	Fixed my hack to include DAPCache3Test w/o adding it to the 
+	Fixed my hack to include DAPCache3Test w/o adding it to the
 	library.
-	
+
 2026-01-27  James Gallagher  <jgallagher@opendap.org>
-	
+
 	auto * --> auto in MarshallerTest and marshT
-	
+
 	Resolve conflicts
-	
+
 	Merge branch 'master' of https://github.com/OPENDAP/libdap4
-	
-	Revert "Switched so edits to use 'auto' and not 'auto *' for 
+
+	Revert "Switched so edits to use 'auto' and not 'auto *' for
 	pointer types."
 	This reverts commit aef651e6a4d0b08121f410dc794f6b0ab1545c10.
-	
-	Switched so edits to use 'auto' and not 'auto *' for pointer 
+
+	Switched so edits to use 'auto' and not 'auto *' for pointer
 	types.
-	
+
 	Add comment about warning suppression.
-	
+
 	Add comment about warning suppression.
-	
+
 	HYRAX-2000 warnings in tests (#333)
 	RCReaderTest fixed
 	More fixes for RCReaderTest
 	Fixed warnings in MarshallerTest
 	Suppress warnings for a range of lines in XDRUtil.cc
 	Added diagnostic_suppression.h to Makefile.am for distcheck
-	
+
 	Added diagnostic_suppression.h to Makefile.am for distcheck
-	
+
 	Reinstate <cstring> in MarshallerTest
-	
+
 	Reinstate <cstring> in RCReaderTest
-	
+
 2026-01-26  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Reinstate <cstring>
-	
+
 	Added reference for the warning suppression macro
-	
+
 	Suppress warnings for a range of lines in XDRUtil.cc
-	
+
 	more fixes in MarshallerTest
-	
+
 	more fixes in MarshallerTest
-	
+
 	Fixed warnings in MarshallerTest
-	
+
 	More fixes for RCReaderTest
-	
+
 	RCReaderTest fixed
-	
+
 2026-01-22  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Jhrg/hyrax-1963 dmr version bump (#320)
 	I bumped up the DMR version number to 2.0 from 1.0
 	This indicates the change in the serialization algorithm
 	to match the DAP4 specification.
-	
+
 2026-01-06  James Gallagher  <jgallagher@opendap.org>
-	
+
 	make cmake tests tolerable (#329)
 	Remove integration test .out files for das, dds, ...,  tests
 	Added baseline generation for the das, dds, ...,  tests
-	For the dmr tess, move the test COMMAND to a bash script, 
+	For the dmr tess, move the test COMMAND to a bash script,
 	adding a level of
 	indirection but simplifying debugging.
 	dmr-test and expr-test now support parallel tests
 	Added TempFileTest unit test to the cmake build
-	
+
 2025-12-29  James Gallagher  <jgallagher@opendap.org>
-	
+
 	I fixed several unit tests that were not being run
-	
+
 2025-12-22  Nathan Potter  <ndp@opendap.org>
-	
+
 	Adding support for test deployment tracking (#321)
-	
+
 2025-12-01  James Gallagher  <jgallagher@opendap.org>
-	
+
 	jhrg/libdap4-305, HYRAX-1948, serialization bug (#306)
-	The DAP4 specification was/is confusing about the order of 
+	The DAP4 specification was/is confusing about the order of
 	serialization
-	of datasets that contain Groups. The order is specified, but in 
+	of datasets that contain Groups. The order is specified, but in
 	the best
-	form of a specification, the explanation is spread across two 
+	form of a specification, the explanation is spread across two
 	parts of the
 	spec.
-	The variables in the root group are now serialized first, then 
+	The variables in the root group are now serialized first, then
 	variables in
 	child groups.
-	Added tests for this bug and a fix for the broken 
+	Added tests for this bug and a fix for the broken
 	implementation in libdap.
-	Tested the fix against the NSIDC OA application, which is the 
+	Tested the fix against the NSIDC OA application, which is the
 	only NGAP
-	we are aware of that makes direct use of the DAP4 binary 
+	we are aware of that makes direct use of the DAP4 binary
 	responses using
 	client code from Unidata.
-	
+
 2025-11-25  James Gallagher  <jgallagher@opendap.org>
-	
+
 	HYRAX-1960: Fix cppunit search by configure (#319)
-	
+
 2025-11-19  Nathan Potter  <ndp@opendap.org>
-	
+
 	Additional RHEL9 work. (#318)
-	* Dropped AWS creds from docker invocation when building rocky9 
+	* Dropped AWS creds from docker invocation when building rocky9
 	rpms.
 	* Added rocky9 stuff to before_deploy and deploy
-	
+
 2025-11-18  Nathan Potter  <ndp@opendap.org>
-	
+
 	Rhel9 (#317)
-	* Made a specialized version of the rpm build scripts both  
+	* Made a specialized version of the rpm build scripts both
 	rhel8 and rhel9
 	* Added Travis stage for rhel9 rpms
-	
+
 2025-11-12  James Gallagher  <jgallagher@opendap.org>
-	
-	HYRAX-1911: Fixed the broken shared library version numbers in 
+
+	HYRAX-1911: Fixed the broken shared library version numbers in
 	the cmake build. (#316)
-	
+
 2025-11-07  James Gallagher  <jgallagher@opendap.org>
-	
-	HYRAX-1945: Warnings found on the GitHub actions build fixed 
+
+	HYRAX-1945: Warnings found on the GitHub actions build fixed
 	(#315)
 	Warnings found on the GitHub actions build fixed
-	
+
 2025-11-06  James Gallagher  <jgallagher@opendap.org>
 	    Hannah Robertson  <hannahilea@users.noreply.github.com>
-	
+
 	HYRAX-1923: cmake presets (#313)
-	There is a problem with the precommit code and languages like 
+	There is a problem with the precommit code and languages like
 	yaml and json.
 	Also, the preset-based build failed a test (ErrorTest)
-	
+
 2025-11-05  kyang2014  <kyang2014@users.noreply.github.com>
-	
+
 	Hyrax 1709 (#310)
-	* HYRAX-1709, make getdap4 prints the full path for variables 
+	* HYRAX-1709, make getdap4 prints the full path for variables
 	under a non-root group.
 	* HYRAX-1709, make the seqeuence data print the row again.
 	* HYRAX-1709, make the source code to following clang-format.
 	* HYRAX-1709, reduce code smells detected by sonar cloud.
 	* HYRAX-1709, reduce another code smell.
 	* HYRAX-1709, remove some debugging info.
-	
+
 2025-10-31  kyang2014  <kyang2014@users.noreply.github.com>
 	    James Gallagher  <jgallagher@opendap.org>
-	
+
 	Hyrax 1906 dev final (#312)
 	* HYRAX-1906, add a debug unit-test
-	* HYRAX-1906, create a simple program to duplicate the call of 
+	* HYRAX-1906, create a simple program to duplicate the call of
 	dmr memory cache
 	* HYRAX-1906-test-deploy add the dmr memory testing code
 	* include the memory header
 	* Correct typo in order to build rpm successfully
-	* Fix to D4EnumDefs parent pointer assignment in 
+	* Fix to D4EnumDefs parent pointer assignment in
 	D4Group::m_duplicate
 	* changing the order of releasing the resource.
-	* HYRAX-1906, add a check to the parent pointer in the 
+	* HYRAX-1906, add a check to the parent pointer in the
 	fully_qualified_names() to make sure it is not null.
 	* Add another check for nullptr.
 	* HYRAX-1906, WIP
 	* HYRAX-1906, Still WIP. Add more debugging info.
-	* HYRAX-1906, WIP update the DAP4 dimensons after copying the 
+	* HYRAX-1906, WIP update the DAP4 dimensons after copying the
 	objects.
 	* HYRAX-1906, turn off some debugging information.
 	* HYRAX-1906, trigger another hyrax trivis test
-	* HYRAX-1906, add three more complex units as well as the 
-	corresponding xml files to test the copy constructor of DMR that 
+	* HYRAX-1906, add three more complex units as well as the
+	corresponding xml files to test the copy constructor of DMR that
 	contains the groups and the dimensions.
 	* HYRAX-1906, more clean up
 	* HYRAX-1906, clean up and make the code follow clang-format.
 	* HYRAX-1906, another file to follow the clang-format
-	* HYRAX-1905, reduce code smells and update method names, 
+	* HYRAX-1905, reduce code smells and update method names,
 	comments.
 	* HYRAX-1906, update a method name.
 	---------
-	
+
 2025-10-28  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Merge remote-tracking branch 'origin/master'
-	
+
 	Removed encrypted information
-	
+
 2025-10-27  Nathan Potter  <ndp@opendap.org>
-	
+
 	It's TravisCI Time
-	
+
 2025-10-21  James Gallagher  <jgallagher@opendap.org>
-	
-	HYRAX-1909: Changed #include of libxml/parserInternals.h to 
+
+	HYRAX-1909: Changed #include of libxml/parserInternals.h to
 	libxml/SAX2.h (#311)
 	Add #include <cstring> to ErrorTest for strerror on Ubuntu
-	
+
 2025-10-03  Sam Lloyd  <sawerlloyd7@gmail.com>
-	
+
 	Sbl hyrax 1351 meyers libdap singletons (#309)
 	* singleton fixes first pass, broken unit-tests
 	* singletons changes, travis test run
 	* removed comments and '#if 0' blocks [skip ci]
 	* review changes
-	
+
 2025-08-08  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Repaired the BUILD_DEVELOPER and USE_ASAN options
 	These were set in the sub-CmakeLists files - not needed -
 	and there was a name mix up.
-	
+
 2025-08-07  James Gallagher  <jgallagher@opendap.org>
-	
+
 	HYRAX-1857 Removed TestCommon.cc from the cmake build (#303)
 	It was already gone from the autotools build
-	
+
 	Jhrg/hyrax 1856 dmr dap2 (#302)
-	Fixed result file writing for cmake builds, baselines for 
+	Fixed result file writing for cmake builds, baselines for
 	...nc.das
 	Fixed issues '\' representation.
 	Fixed DmrRoundTripTest's write-result-on-debug feature:
 	This needed a change to work with the cmake build since
 	it was writing to a directory that does not exist with
 	that build.
-	
+
 2025-08-05  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Jhrg/hyrax 1855 warnings (#301)
 	Edits to remove warnings about missing 'override'
 	Fixed the annoying chunk[] warning in D4Connect.cc
 	Added my python code to hack warnings.
 	Removed redundant 'virtual' on 'override' declarations.
-	
+
 2025-08-05  ndp-opendap  <ndp@opendap.org>
-	
+
 	hail-mary
-	
+
 2025-08-05  Nathan Potter  <ndp@opendap.org>
-	
+
 	Optional checksums redux (#299)
-	* Making it so that optional checksums also means optional 
+	* Making it so that optional checksums also means optional
 	computation of said checksums
-	
+
 2025-08-04  James Gallagher  <jgallagher@opendap.org>
 	    Slav Korolev  <slav.korolev@nasa.gov>
 	    ndp-opendap  <ndp@opendap.org>
-	
+
 	Jhrg/hyrax 1854 dmr2dds branches (#300)
 	HK-450. Made show shared dimensions condition.
 	The test (DmrRoundTripTest) now passes.
 	Fixed memory leak in DmrRoundtripTest
 	Removed #if 0 stuff.
 	---------
-	
+
 2025-07-31  James Gallagher  <jgallagher@opendap.org>
 	    ndp-opendap  <ndp@opendap.org>
-	
+
 	Jhrg/hyrax 1849 http test checksums (#298)
 	HTTPThreadConnectTest fixed for 'empty end chunk' behavior
 	See HYRAX-1849
-	
+
 2025-07-30  James Gallagher  <jgallagher@opendap.org>
-	
-	Fixed the mysterious disappearing config.log with make clean 
+
+	Fixed the mysterious disappearing config.log with make clean
 	(#297)
 	Also fixed a bug in the HTTPThreadConnectTestb
-	
+
 2025-07-21  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Jhrg/HYRAX-1847-DMR-tests-to-numbers (#294)
 	* All the DMR tests use numbers - the odd names are gone.
 	* More cleaned up the string quoting.;Wrapping strings
 	in "" is often not needed in cmake. I removed more, but
 	it seems somewhat pointless. Still,it's good to know. Any
 	function argument with a ';' needsto be double-quoted.
-	* I removed two tests from HTTPThreadConnect Test. See 
+	* I removed two tests from HTTPThreadConnect Test. See
 	HYRAX-1849.
-	
+
 2025-07-20  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Fixed HTTPThreadConnectTest for the new no crc server.
-	
+
 2025-07-18  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Jhrg/hyrax 1836 cmake part 4 (#291)
 	Added the DMR integration tests
 	Most of the expr tests now work, but there are 2 problems
 	1. I think there are still some broken baselines
 	2. There are some problems with quoting the CEs for strings
-	Now all 500+ tests work in/with cmake. The parallel option 
+	Now all 500+ tests work in/with cmake. The parallel option
 	works.
 	Started moving the DMR tests to use numbers.
-	
+
 2025-07-17  James Gallagher  <jgallagher@opendap.org>
-	
+
 	More bad baselines fixed. (#293)
-	
+
 2025-07-17  Nathan Potter  <ndp@opendap.org>
 	    James Gallagher  <jgallagher@opendap.org>
-	
+
 	Optional checksum (#289)
-	* Added DMR state and evaluation for optional checksum 
+	* Added DMR state and evaluation for optional checksum
 	computation
 	* Added checksum option to getdap4 and down into D4Connect
 	* getdap4 supports optional checksums
@@ -567,128 +567,128 @@
 	* Fixed function tests in dmr-test
 	* getdap4 refactor main()
 	* dmr-test.cc debugging ftw
-	* Simplified use of DConnect and eliminated the use of new and 
+	* Simplified use of DConnect and eliminated the use of new and
 	delete from its lifecycle in getdap4
 	---------
-	
+
 2025-07-16  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Fixed null baselines. See HYRAX-1839. (#292)
-	A bunch of our libdap4 regression tests had empty baseline 
+	A bunch of our libdap4 regression tests had empty baseline
 	files. I fixed this,
-	and it was not as widespread as it could have been. But the bug 
+	and it was not as widespread as it could have been. But the bug
 	was that our
-	test macro for the 'expr-test' program was using a logical OR 
+	test macro for the 'expr-test' program was using a logical OR
 	to test if the
-	baseline was equal to the stdout OR stderr output. If the 
+	baseline was equal to the stdout OR stderr output. If the
 	expr-test program
-	ran correctly, then the stderr output was null, so the tests 
+	ran correctly, then the stderr output was null, so the tests
 	will null baselines
 	passed no matter what expr-test put on stdout!
-	
+
 2025-07-10  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Jhrg/hyrax 1811 cmake part3 (#290)
 	Added das-test, dds-test, expr-test, and dmr-test to the build
 	Adding das integration tests..
 	Added dds tests, and added comments about the dds tests.
 	Might move the various tests to *.cmake files that are included,
-	but that's for the next PR, when the tests will get more 
+	but that's for the next PR, when the tests will get more
 	complex.
-	
+
 2025-06-30  James Gallagher  <jgallagher@opendap.org>
-	
+
 	jhrg/HYRAX-1796-cmake-install (#286)
 	Added a cmake config script. See the end of the TL CMakeLists.
-	I used OBJECT type libraries to make the convenience libraries. 
+	I used OBJECT type libraries to make the convenience libraries.
 	This was needed to get the
 	objects they contained copied into the installed libraries.
 	Added two missing source files to libtest-types.
 	Typo fixed in test/CMakeLists.txt
-	
+
 2025-06-24  James Gallagher  <jgallagher@opendap.org>
 	    Hannah Robertson  <hannahilea@users.noreply.github.com>
-	
+
 	CMake build of libdap4 (#284)
 	Added CMake support
 	Bailed on byteswap and the idea of using libgnu, for now.
 	Added unit tests work - includes a fix for Regex.
 	Fixed dods- and xdr-datatypes, BigArrayTest
-	Downgrade the bison version to 3.0 or greater for the Rocky8 
+	Downgrade the bison version to 3.0 or greater for the Rocky8
 	build.
 	---------
-	
+
 2025-05-28  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Jhrg/xsputn part1 (#283)
 	This patch calls ostream::write() multiple times when data
 	greater than 2GB are returned as a data response. Each call
 	will be no more (2^31)-1 bytes. Tests with a 4 and 8GB variable
 	worked.
-	The bulk of the time (99.3%) to test these large data transfers 
+	The bulk of the time (99.3%) to test these large data transfers
 	is
-	in TestArray where it builds a monster array (i.e., 8GB). 
+	in TestArray where it builds a monster array (i.e., 8GB).
 	Looking
 	for ways to reduce that...
 	Tests pass for both --disable-threads and the default build.
-	Parallel I/O with libdap now works with variables that are 2^33 
+	Parallel I/O with libdap now works with variables that are 2^33
 	bytes.
 	Added a new class MarshallerFuture (header only) and unit tests.
-	This is not used, but could be a replacement for 
+	This is not used, but could be a replacement for
 	MarshallerThread,
-	which uses the old and cumbersome pthreads library. This new 
+	which uses the old and cumbersome pthreads library. This new
 	class
-	uses the C++11/14 futures and also supports shared_ptr buffers 
+	uses the C++11/14 futures and also supports shared_ptr buffers
 	for
 	potential reductions in memory use.
-	
+
 2025-05-20  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Coverage 3.0 (#282)
-	Added comments to gcovr.config and added --sort to the coverage 
+	Added comments to gcovr.config and added --sort to the coverage
 	target.
-	With these changes, the Makefiles now include a target that 
+	With these changes, the Makefiles now include a target that
 	will compute coverage
-	for libdap and build HTML pages that show coverage by line. 
+	for libdap and build HTML pages that show coverage by line.
 	Very easy to use.
-	At the same time, the Travis-CI 'scan' target will build a 
+	At the same time, the Travis-CI 'scan' target will build a
 	coverage.xml  file
-	that sonarqube can use. The two coverage measures are not 
+	that sonarqube can use. The two coverage measures are not
 	exactly the same,
 	but they are close and each is useful in its own way.
-	
+
 2025-05-13  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Retred the ErrorAssignmentTest - subsumed by ErrorTest
 	[skip ci]
-	
+
 	Coverage 2.0 (#281)
 	Unit test hackery - Error.cc/h
-	Fixed ErrorTest.cc, removed sort=uncovered-percent since it 
+	Fixed ErrorTest.cc, removed sort=uncovered-percent since it
 	triggers a warning
-	Remove the gcov-ignore-errors = no_working_dir_found option 
+	Remove the gcov-ignore-errors = no_working_dir_found option
 	since this seems
 	to break the coverage.xml used by sonarqube.
-	
+
 2025-05-08  James Gallagher  <jgallagher@opendap.org>
 	    dh-opendap  <dholloway@opendap.org>
-	
+
 	Code coverage changes (#280)
 	Use gcovr and the --sonarqube option.
 	Added gcovr.config
 	Removed travis/sonar-scanner-coverage.sh
 	---------
-	
+
 2025-05-02  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Fix to HTTPConnect (#278)
 	Prefer explicit over implicit captures in a C++ lambda
 	Changed the lambda in HTTPConnect::header_match to
 	explicitly capture a value instead of using the [=] notation
 	to implicitly capture all variables used by the lambda.
-	
+
 2025-04-21  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Enum dmr test fix (#279)
 	Fixed the DMRTest tests for enums
 	For test macros like PARSE and PARSE_CE, there are no word
@@ -699,170 +699,170 @@
 	multibyte values, so the same binary data is represented
 	differently in the architectures and thus has a different
 	checksum.
-	
+
 2025-04-16  kyang2014  <kyang2014@users.noreply.github.com>
-	
+
 	Merge pull request #277 from OPENDAP/hyrax-1736
-	HYRAX-1736, add a convenient method to check if a DAP4 group 
+	HYRAX-1736, add a convenient method to check if a DAP4 group
 	contains…
-	
+
 2025-04-15  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Minor fix to clion-source-discovery
-	
+
 2025-04-15  myang6  <myang6@hdfgroup.org>
-	
-	HYRAX-1736, clang-format and reduce code smell according to 
+
+	HYRAX-1736, clang-format and reduce code smell according to
 	sonar cloud.
-	
-	HYRAX-1736, add a convenient method to check if a DAP4 group 
+
+	HYRAX-1736, add a convenient method to check if a DAP4 group
 	contains an enum constant.
-	
+
 2025-04-10  ndp-opendap  <ndp@opendap.org>
-	
+
 	Rewind: Drop the (unused) git creds from .travis.yml
-	
+
 	Drop the (unused) git creds from .travis.yml
-	
+
 	Rewind The R0b0t Travis info
-	
+
 	Update The R0b0t Travis info
-	
+
 	Update The R0b0t Travis info
-	
+
 	Update The R0b0t Travis info
-	
+
 	Update The R0b0t Travis info
-	
+
 	Merge branch 'master' of https://github.com/OPENDAP/libdap4
-	
+
 	Update The R0b0t Travis info
-	
+
 2025-04-09  kyang2014  <kyang2014@users.noreply.github.com>
-	
+
 	Merge pull request #275 from OPENDAP/hyrax-1705
-	HYRAX-1705, the enum handling code doesn't work for the group 
+	HYRAX-1705, the enum handling code doesn't work for the group
 	that ha…
-	
+
 2025-04-09  myang6  <myang6@hdfgroup.org>
-	
+
 	use nullptr instead of 0 and add a comment for a private method.
-	
+
 2025-04-08  myang6  <myang6@hdfgroup.org>
-	
-	HYRAX-1706, add a test that includes enum variables in nested 
+
+	HYRAX-1706, add a test that includes enum variables in nested
 	groups.
-	
+
 2025-04-07  myang6  <myang6@hdfgroup.org>
-	
+
 	HYRAX-1705, use clang-format.
-	
-	HYRAX-1705, the enum handling code doesn't work for the group 
-	that have more than one level. This check-in fixes this by adding a 
+
+	HYRAX-1705, the enum handling code doesn't work for the group
+	that have more than one level. This check-in fixes this by adding a
 	method to recursively checking the nested group path
-	
+
 2025-03-26  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Update Makefile.am regarding gh-pages.
 	[skip ci]
-	
+
 	Added README about gh-pages build
 	[skip ci]
-	
+
 2025-03-25  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Doxygen mainpage update to the date
 	[skip ci]
-	
+
 	Added 'edge: true' to .travis.yml
 	A potential fix for a CICD build issue.
-	
+
 2025-03-24  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Removed old docs
-	
+
 	more fixes to the gh-docs script and makefile target
-	
+
 	Added new docs
-	
+
 	More fixes to build-gh-pages.sh
-	
+
 	Syntax error in build-gh-docs.sh
-	
+
 	Updated the documentation build date
-	
+
 	Mionr update to build-gh-docs.sh
-	
+
 	Merge branch 'gh-docs-fix'
-	
+
 	Small change to the doxygen mainpage
 	[skip ci]
-	
+
 	Added new docs
-	
+
 	Working on the doxygen pages.
 	[skip ci]
-	
+
 	Removed old docs
-	
+
 	Removed old docs
-	
+
 	Try fix for gh-docs
-	
+
 	Added new docs
-	
+
 	Removed old docs
-	
+
 	Added new docs
-	
+
 2025-03-18  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Minor refactor of the D4Sequence code (#274)
-	
+
 2025-03-13  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Removed -fsanitize=undefined from the ASAN options
 	This seems to be causing a number of issues when we have
 	other problems that asan finds that are more important.
 	Work those, then reintroduce this.
 	[skip ci]
-	
+
 2025-03-13  ndp-opendap  <ndp@opendap.org>
-	
+
 	Trigger TravisCI
-	
+
 2025-02-18  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Changes to configure.ac for autoconf 2.72 (#273)
 	Dropped the autoconf version to 2.69 in configure.ac
 	Removed AC_CHECK_INCLUDES_DEFAULT in configure.ac; wait for 2.70
-	
+
 2025-02-11  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Refactor dmr-test in advance to working on an ASAN bug. (#272)
 	See HYRAX-1651
-	
+
 2025-02-10  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Switch to the Meyers singleton pattern for HTTPCache (#271)
 	Switch to the Meyers singleton pattern for HTTPCache
 	Removed second unique ptr for HTTPCacheTable
 	Fixed a memory leak in HTTPResponse in transform_to_cpp().
-	Better fix for double-free/memory-leak issues with Response and 
+	Better fix for double-free/memory-leak issues with Response and
 	Cpp Streams
-	
+
 2025-02-07  James Gallagher  <jgallagher@opendap.org>
-	
-	Build/install fix: add to pkginclude_HEADERS to fix BES build 
+
+	Build/install fix: add to pkginclude_HEADERS to fix BES build
 	issue.
 	HTTPCache.h and HTTPCacheDisconnectedMode.h were added.
 	Commit and push w/o the usual PR cycle since this is a simple
-	fix to the installation process that clearly fixes an issue 
+	fix to the installation process that clearly fixes an issue
 	that's
 	breaking our CI/CD pipeline.
-	
+
 2025-02-04  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Response refactor works (#223)
 	Move HTTP code to new subdir http_dap as convenience lib
 	Minor improvements to HTTPCacheTest.cc
@@ -870,48 +870,48 @@
 	Removed most (all?) of the pthreads code in HTTPCache
 	Change the initialization of the 'readers' atomic
 	Removed HTTPCacheInterruptHandler.h
-	The (HTTP)cache table is now a vector of vector of CacheEntry 
+	The (HTTP)cache table is now a vector of vector of CacheEntry
 	pointers
-	Cleanup - better RAII for the MP cache lock. No RAII for 
+	Cleanup - better RAII for the MP cache lock. No RAII for
 	CacheEntry
 	Added multithreaded tests of HTTPConnect (and thus HTTPCache).
-	
+
 2025-01-28  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Improvements to chunked_iostream_test (#270)
 	Improvements to chunked_iostream_test
 	The improvements include making the huge write test added to
-	do profiling and timing tests and not a unit-test per se 
+	do profiling and timing tests and not a unit-test per se
 	optional.
 	This saves CI-CD build times and and keeps the check target
 	from writing 10GB of test data.
-	
+
 2025-01-27  James Gallagher  <jgallagher@opendap.org>
-	
+
 	Remove warnings 1 (#255)
 	Removed some unary_ and binary_function classes.
 	Other chnages: sprintf to snprintf and string compare warnings;
 	Updated README.pre-commit.md; Bison version nonsense - when \
 	will RHEL8 upgrade?; More refactoring and some compiler warnings
 	ignored;  Added <memory> to HTTPConnect.cc for RHEL8.
-	
+
 2025-01-13  Mikejmnez  <mjimenez@opendap.org>
-	
+
 	update offset
-	
+
 2025-01-13  Miguel Jimenez  <mjimenez@opendap.org>
-	
+
 	Merge pull request #269 from OPENDAP/3.21.1
 	version 3.21.1
-	
+
 2025-01-13  ndp-opendap  <ndp@opendap.org>
-	
+
 	Trigger CI
-	
+
 2025-01-13  Mikejmnez  <mjimenez@opendap.org>
-	
+
 	update travis offset
-	
+
 	changes for releasing version 3.21.1
 2024-12-31  kyang2014  <kyang2014@users.noreply.github.com>
 
