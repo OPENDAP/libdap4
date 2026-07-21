@@ -112,10 +112,13 @@ stages:
     # build but only for things that are not pull requests with the sole exception that branches
     # that end in '-test-deploy' are also allowed to trigger a BES build. jhrg 1/18/24
     if: type != pull_request AND NOT branch =~ ^(.*-test-scan)$ OR branch =~ ^(.*-test-deploy)$
+  - name: never
+    if: branch = never
 
 jobs:
   include:
-    - stage: build
+    # build
+    - stage: never
       name: "make"
       env: CACHE_NAME=make
       script:
@@ -124,7 +127,8 @@ jobs:
         - ./configure --disable-dependency-tracking --prefix=$prefix
         - make -j$BUILD_PROCS && make check -j$BUILD_PROCS && make install
 
-    - stage: build
+    # build
+    - stage: never
       name: "asan"
       env: CACHE_NAME=asan
       script:
@@ -132,8 +136,8 @@ jobs:
         - autoreconf --force --install --verbose
         - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
         - make -j$BUILD_PROCS && make check -j$BUILD_PROCS
-
-    - stage: build
+    # build
+    - stage: never
       name: "distcheck"
       env: CACHE_NAME=distcheck
       script:
