@@ -78,16 +78,20 @@ env:
 # only install things when needed to save time. jhrg 4/1/26
 before_install:
   - if test -n "$AWS_ACCESS_KEY_ID" -a \( "$TRAVIS_JOB_NAME" = "make" -o "$TRAVIS_JOB_NAME" = "asan" -o "$TRAVIS_JOB_NAME" = "distcheck" \); then pip install --user awscli; fi
-  - sudo apt-get update
-  - sudo apt-get install -y openjdk-21-jdk
-  - export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-  - export PATH=$JAVA_HOME/bin:$PATH
-  # fix for Java 17 install for Sonar from Travis CI support. jhrg 1/23/24
-  #- if test "$TRAVIS_JOB_NAME" = "scan"; then curl -s "https://get.sdkman.io" | bash; fi
-  #- if test "$TRAVIS_JOB_NAME" = "scan"; then source "$HOME/.sdkman/bin/sdkman-init.sh"; fi
-  #- if test "$TRAVIS_JOB_NAME" = "scan"; then sdk install java 17.0.2-open; fi
-  #- if test "$TRAVIS_JOB_NAME" = "scan"; then sdk use java 17.0.2-open; fi
-  #- if test "$TRAVIS_JOB_NAME" = "scan"; then java -version; fi
+  - if [ "$TRAVIS_JOB_NAME" = "scan" ]; then \
+    sudo apt-get update; \
+    sudo apt-get install -y openjdk-21-jdk; \
+    export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64; \
+    export PATH=$JAVA_HOME/bin:$PATH; \
+    java -version; \
+    fi
+
+# fix for Java 17 install for Sonar from Travis CI support. jhrg 1/23/24
+#- if test "$TRAVIS_JOB_NAME" = "scan"; then curl -s "https://get.sdkman.io" | bash; fi
+#- if test "$TRAVIS_JOB_NAME" = "scan"; then source "$HOME/.sdkman/bin/sdkman-init.sh"; fi
+#- if test "$TRAVIS_JOB_NAME" = "scan"; then sdk install java 17.0.2-open; fi
+#- if test "$TRAVIS_JOB_NAME" = "scan"; then sdk use java 17.0.2-open; fi
+#- if test "$TRAVIS_JOB_NAME" = "scan"; then java -version; fi
 
 install:
   - which bison flex
