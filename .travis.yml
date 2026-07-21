@@ -148,6 +148,7 @@ jobs:
       env: CACHE_NAME=scan
         TESTSUITEFLAGS=-j1
       script:
+        - echo "# Java Version is '$(java -version)'"
         - export LIBDAP_BUILD=sonar
         - export SONAR_TOKEN=$SONAR_LOGIN
         - autoreconf --force --install --verbose
