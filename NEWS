@@ -3,6 +3,37 @@
 This file is the canonical, version-by-version record of user-visible changes.
 Keep entries in reverse chronological order (newest first).
 
+## Version 3.22.0
+
+- Multi-pass overhaul of the test coverage tooling: switched to gcovr-based reporting (including a SonarQube-compatible format), fixed issues, and documented how to generate the coverage data.
+- Recurring warnings cleanup across the codebase: removed legacy `unary_function` usage, added `override` throughout, and fixed warnings surfaced in tests and on GitHub Actions builds over several passes.
+- Fixed a segmentation fault caused by bad data in a DAP4 attribute.
+- Removed the macos-intel runner from the GitHub Actions CI matrix.
+- Added an error message for when a DAP4 dimension can't be found.
+- Bumped the DMR version, then reverted it after it caused compatibility problems.
+- CMake migration: initial CMake build, install step, shared-library versioning fixes, presets, integration test support (DAS/DMR/EXPR), and cleanup, ending with CMake plus autotest support.
+- Sped up the GitHub Actions workflow.
+- Added unit tests for `utils::segmented_read()` and `utils::segmented_write()`.
+- Expanded and improved the libdap README and general documentation.
+- Autotools/configure fixes: updated configure.ac for autoconf 2.72, fixed cppunit detection, stopped `make clean` from deleting config.log, then refactored configure.ac further.
+- Added and iterated on VS Code support for the autotools build (tasks/launch config, customizable settings.json, supporting README).
+- Experimented with Codex-generated unit tests, which surfaced a real bug in the process.
+- Added support for tracking test deployments.
+- Added RHEL9 build/packaging support to CI.
+- Swapped a libxml include to fix a build issue.
+- Switched libdap/HTTPCache singletons over to the Meyers singleton pattern.
+- Fixed a DAP4 serialization bug.
+- Fixed and merged in long-stale DMR-to-DAP2/DDS conversion work.
+- Made DAP4 checksums optional and fixed related HTTP test handling.
+- Fixed a batch of tests with bad/null baseline files.
+- Refactored streaming code (xsputn) to support sending variables larger than 2GB.
+- Fixed DAP4 enum handling for nested groups and added a way to check whether a group contains a given enum.
+- Fix to HTTPConnect.
+- Minor refactor of the D4Sequence code.
+- Refactored dmr-test ahead of investigating an ASAN bug.
+- Made the large chunked_iostream_test data write optional to speed up CI runs.
+- Checkpointed a large response-handling refactor (not yet safe for multi-process use).
+
 ## Version 3.21.1
 
 - Initial support for UTF-8
