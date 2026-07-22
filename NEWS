@@ -3,7 +3,7 @@
 This file is the canonical, version-by-version record of user-visible changes.
 Keep entries in reverse chronological order (newest first).
 
-## Version 3.22.0
+## Version 3.22.0-0
 
 - Multi-pass overhaul of the test coverage tooling: switched to gcovr-based reporting (including a SonarQube-compatible format), fixed issues, and documented how to generate the coverage data.
 - Recurring warnings cleanup across the codebase: removed legacy `unary_function` usage, added `override` throughout, and fixed warnings surfaced in tests and on GitHub Actions builds over several passes.
