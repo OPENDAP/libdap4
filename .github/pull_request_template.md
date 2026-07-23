@@ -1,4 +1,4 @@
-# Title
+# Title <!-- Edit this -->
 
 ## Description
 
@@ -8,8 +8,6 @@
 **Reference ticket:** (HYRAX-xxx, #xxx)
 
 <!-- Description of task -->
-
-TODO
 
 ## Tasks
 
