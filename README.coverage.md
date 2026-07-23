@@ -53,7 +53,7 @@ These include, not working with parallel test runs, emitting broken data for Son
 under-reporting coverage.
 
 > [!NOTE]
-> Note that Ubuntu Focal uses `gcovr` 4.x by default, and thus in Travis we force the 'scan'
+> Note that Ubuntu Jammy uses `gcovr` 5.x by default, and thus in Travis we force the 'scan'
 > step to use 8.2 using a `pip` install. Make sure to test the version of `gcovr` using
 > `gcovr --version`.
 
