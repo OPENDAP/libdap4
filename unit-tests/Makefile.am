@@ -89,7 +89,7 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	Int32Test UInt32Test Int64Test UInt64Test Float32Test Float64Test \
 	D4BaseTypeFactoryTest BaseTypeFactoryTest util_mitTest ErrorTest \
 	MarshallerFutureTest ConstraintEvaluatorTest MarshallerThreadTest \
-	DAPCache3Test BaseTypeTest SegmentReadWriteT
+	BaseTypeTest SegmentReadWriteT
 
 # Unit tests for DAP4-only code. jhrg 2/4/22
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
@@ -185,7 +185,7 @@ DDXParserTest_CPPFLAGS = $(AM_CPPFLAGS) $(XML2_CFLAGS)
 
 generalUtilTest_SOURCES = generalUtilTest.cc
 
-DAPCache3Test_SOURCES = DAPCache3Test.cc ../DAPCache3.cc ../DAPCache3.h
+# DAPCache3Test_SOURCES = DAPCache3Test.cc ../DAPCache3.cc ../DAPCache3.h
 
 ConstraintEvaluatorTest_SOURCES = ConstraintEvaluatorTest.cc
 

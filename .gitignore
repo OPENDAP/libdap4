@@ -19,6 +19,7 @@ gcovr-output/
 gcov-data/
 /bw-output/
 /.scannerwork/
+coverage-html*/**
 
 ## Generic generated file patterns
 *~

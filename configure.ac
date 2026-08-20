@@ -10,7 +10,7 @@ dnl 'pc' files and tarball for the source. See
 dnl libdap4/travis/travis_libdap_build_offset.sh for info about setting the
 dnl base value for the build number. jhrg 3/22/21
 
-AC_INIT([libdap],[3.21.1],[opendap-tech@opendap.org])
+AC_INIT([libdap],[3.22.0],[opendap-tech@opendap.org])
 
 # Get today's date in ISO 8601 format (YYYY-MM-DD)
 CONFIG_DATE=$(date +%Y-%m-%d)
@@ -95,9 +95,9 @@ dnl increment AGE, set REVISION to 0.
 dnl Interfaces removed or changed (BAD, breaks upward compatibility):
 dnl ==> Increment CURRENT, set AGE and REVISION to 0.
 
-DAPLIB_CURRENT=30
+DAPLIB_CURRENT=31
 DAPLIB_REVISION=0
-DAPLIB_AGE=3
+DAPLIB_AGE=0
 
 AC_SUBST(DAPLIB_CURRENT)
 AC_SUBST(DAPLIB_REVISION)

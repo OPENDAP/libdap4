@@ -28,7 +28,8 @@ From a release tarball:
 ./configure
 make
 make check
-make install
+make clean
+make dist
 ```
 
 From a git checkout:
@@ -39,6 +40,9 @@ autoreconf --force --install --verbose
 make
 make check
 ```
+
+Consider using `--prefix=$prefix --enable-developer` for any build where you will be
+working on the code.
 
 ## Requirements (summary)
 
@@ -57,6 +61,7 @@ For exact versions and platform notes, see [`INSTALL`](INSTALL).
 - [`NEWS`](NEWS): version-by-version release notes.
 - [`ChangeLog`](ChangeLog): detailed historical changes.
 - [`INSTALL`](INSTALL): build and install instructions.
+- [`README.coverage.md`](README.coverage.md): How to build coverage data.
 - [`README.dodsrc`](README.dodsrc): client `.dodsrc` behavior and options.
 - [`README.AIS`](README.AIS): historical AIS notes.
 - [`README.gh-pages.md`](README.gh-pages.md): publishing and maintenance notes for GitHub Pages docs.

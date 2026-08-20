@@ -430,9 +430,19 @@ D4Attribute *D4Attributes::find_depth_first(const string &name, D4AttributesIter
         return 0;
     else if ((*i)->name() == name)
         return *i;
-    else if ((*i)->type() == attr_container_c)
-        return find_depth_first(name, (*i)->attributes()->attribute_begin());
-    else
+    else if ((*i)->type() == attr_container_c) {
+        // We cannot just pass (*i)->attributes()->attribute_begin() to the second parameter of
+        // the find_depth_first().
+        // (*i)->attributes() creates a new D4Attributes object if d_attributes is nullptr(see the method attributes()).
+        // This new D4Attributes object doesn't contain any D4Attribute. When the attribute_begin() of this new
+        // D4Attributes passes to find_depth_first, it will compare with the original D4Attributes object's
+        // attribute_end(). If it doesn't match and there is no attribute in this container, it will call (*i)->name()
+        // and cause segmentation fault. We need to obtain the instance of (*i)->attributes() and use this instance to
+        // call find_depth_first. KY 2026-06-03
+        auto container_d4_attrs = (*i)->attributes();
+
+        return container_d4_attrs->find_depth_first(name, container_d4_attrs->attribute_begin());
+    } else
         return find_depth_first(name, ++i);
 }
 
