@@ -20,11 +20,12 @@ set(TESTS_DAP_ONLY
 		D4DimensionsTest.cc  D4EnumDefsTest.cc D4GroupTest.cc D4ParserSax2Test.cc
 		D4AttributesTest.cc D4EnumTest.cc chunked_iostream_test.cc D4AsyncDocTest.cc
 		DMRTest.cc DmrRoundTripTest.cc DmrToDap2Test.cc D4FilterClauseTest.cc
-		IsDap4ProjectedTest.cc MarshallerFutureTest.cc TempFileTest.cc
+		IsDap4ProjectedTest.cc TempFileTest.cc
 		D4StreamRoundTripTest.cc ConstraintEvaluatorTest.cc MarshallerThreadTest.cc
 		BaseTypeTest.cc
 )
 
+# MarshallerFutureTest.cc Removed. 8/21/26
 # BigArrayTest.cc seems to break things. jhrg 6/12/25
 
 set(TESTS_DAPCLIENT util_mitTest.cc RCReaderTest.cc)

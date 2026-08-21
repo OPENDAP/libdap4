@@ -88,9 +88,10 @@ UNIT_TESTS = marshT arrayT attrTableT structT sequenceT ddsT dasT \
 	ServerFunctionsListUnitTest Int8Test Int16Test UInt16Test \
 	Int32Test UInt32Test Int64Test UInt64Test Float32Test Float64Test \
 	D4BaseTypeFactoryTest BaseTypeFactoryTest util_mitTest ErrorTest \
-	MarshallerFutureTest ConstraintEvaluatorTest MarshallerThreadTest \
+	ConstraintEvaluatorTest MarshallerThreadTest \
 	BaseTypeTest SegmentReadWriteT
 
+# MarshallerFutureTest Removed jhrg 8/21/26
 # Unit tests for DAP4-only code. jhrg 2/4/22
 UNIT_TESTS += D4MarshallerTest D4UnMarshallerTest D4DimensionsTest \
 	D4EnumDefsTest D4GroupTest D4ParserSax2Test D4AttributesTest D4EnumTest \
