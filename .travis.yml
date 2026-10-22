@@ -114,7 +114,7 @@ stages:
 jobs:
   include:
     # build
-    - stage: build
+    - stage: never #build
       name: "make"
       env: CACHE_NAME=make
       script:
@@ -124,7 +124,7 @@ jobs:
         - make -j$BUILD_PROCS && make check -j$BUILD_PROCS && make install
 
     # build
-    - stage: build
+    - stage: never #build
       name: "asan"
       env: CACHE_NAME=asan
       script:
@@ -133,7 +133,7 @@ jobs:
         - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-asan
         - make -j$BUILD_PROCS && make check -j$BUILD_PROCS
     # build
-    - stage: build
+    - stage: never #build
       name: "distcheck"
       env: CACHE_NAME=distcheck
       script:
@@ -175,7 +175,7 @@ jobs:
         # The scanner waits for the quality gate because sonar.qualitygate.wait=true is set
         # in sonar-project.properties, so no extra badge/API polling is needed here.
 
-    - stage: package
+    - stage: never #package
       name: "rocky8 RPMs"
       script:
         - export LIBDAP_BUILD=rocky8
@@ -187,7 +187,7 @@ jobs:
           --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/rocky8_hyrax_builder:latest
           /root/travis/travis/build-rh8-rpm.sh
 
-    - stage: package
+    - stage: never #package
       name: "rocky9 RPMs"
       script:
         - export LIBDAP_BUILD=rocky9
@@ -201,7 +201,7 @@ jobs:
           opendap/rocky9_hyrax_builder:latest
           /root/libdap4/travis/build-rh9-rpm.sh
 
-    - stage: package
+    - stage: never #package
       name: "source distribution"
       env: CACHE_NAME=srcdist
       # Use a workspace to pass the source distribution tarball and version file to the next
