@@ -42,7 +42,7 @@ cache:
 addons:
   sonarcloud:
     organization: "opendap"
-    token: $SONAR_TOKEN
+    # jhrg 10/22/26 token: $SONAR_TOKEN
     
   apt:
     packages:
@@ -155,7 +155,7 @@ jobs:
         - export PATH="$JAVA_HOME/bin:$PATH"
         - java -version
         - export LIBDAP_BUILD=sonar
-        - export SONAR_TOKEN=$SONAR_LOGIN
+        #j hrg 10/22/26 - export SONAR_TOKEN=$SONAR_LOGIN
         - autoreconf --force --install --verbose
         - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-coverage
         - build-wrapper-linux-x86-64 --out-dir bw-output make -j$BUILD_PROCS
