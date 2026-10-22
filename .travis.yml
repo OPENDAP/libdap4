@@ -42,6 +42,7 @@ cache:
 addons:
   sonarcloud:
     organization: "opendap"
+    token: $SONAR_TOKEN
     
   apt:
     packages:
