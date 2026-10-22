@@ -13,7 +13,7 @@
 dist: focal # xenial (Ubuntu 16) is the default; focal is Ubuntu 20; jammy is Ubuntu 22
 
 vm:
-  size: x-large
+  size: 2x-large
 
 language: cpp
 
@@ -42,6 +42,8 @@ cache:
 addons:
   sonarcloud:
     organization: "opendap"
+    # our token is an encrypted value stored in the Travis-CI web interface. jhrg 10/22/26
+
   apt:
     packages:
       - libxml2-dev
@@ -153,7 +155,6 @@ jobs:
         - export PATH="$JAVA_HOME/bin:$PATH"
         - java -version
         - export LIBDAP_BUILD=sonar
-        - export SONAR_TOKEN=$SONAR_LOGIN
         - autoreconf --force --install --verbose
         - ./configure --disable-dependency-tracking --prefix=$prefix --enable-developer --enable-coverage
         - build-wrapper-linux-x86-64 --out-dir bw-output make -j$BUILD_PROCS
