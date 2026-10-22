@@ -13,7 +13,7 @@
 dist: focal # xenial (Ubuntu 16) is the default; focal is Ubuntu 20; jammy is Ubuntu 22
 
 vm:
-  size: x-large
+  size: 2x-large
 
 language: cpp
 
@@ -42,6 +42,7 @@ cache:
 addons:
   sonarcloud:
     organization: "opendap"
+    
   apt:
     packages:
       - libxml2-dev
