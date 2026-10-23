@@ -1,0 +1,141 @@
+# This runs a set of ABI comparisons and checks to determine if there are
+# significant ABI changes from the current libraries with respect to the last
+# released libraries.
+
+name: "ABI Checks"
+
+on:
+  push:
+    branches: [master, main]
+    paths-ignore:
+      - "**/*.md"
+      - ".vscode/**"
+      - ".github/*template*"
+  pull_request:
+    branches: [master, main]
+    paths-ignore:
+      - "**/*.md"
+      - ".vscode/**"
+      - ".github/*template*"
+  # Enables triggering the workflow manually (on any branch) from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: Linux
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      # From the logs, it looks like the needed cache is a little over 8GB. jhrg 4/1/26
+      CCACHE_MAXSIZE: 20G
+      CCACHE_COMPRESS: "true"
+
+    steps:
+      - name: "Checkout (current)"
+        uses: actions/checkout@v7
+        with:
+          path: current
+          fetch-tags: true
+          fetch-depth: 0
+
+      - name: "Get Release Tag"
+        id: get-release-tag
+        run: |
+          cd current
+          RELEASE_TAG=$(git tag --list --sort=-version:refname --no-contains=HEAD | grep -E "^[0-9.]+$" | head -1)
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "No numeric release tag found" >&2
+            exit 1
+          fi
+          echo "RELEASE_TAG=${RELEASE_TAG}" >> "${GITHUB_OUTPUT}"
+
+      - name: "Checkout (release)"
+        uses: actions/checkout@v7
+        with:
+          path: release
+          ref: ${{ steps.get-release-tag.outputs.RELEASE_TAG }}
+
+      - name: "Create ccache directory"
+        run: mkdir -p "$CCACHE_DIR"
+
+      - name: "Restore ccache"
+        uses: actions/cache@v6
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ runner.os }}-${{ runner.arch }}-ccache-${{ hashFiles('current/CMakeLists.txt', 'current/CMakePresets.json', 'current/.github/workflows/cmake.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-ccache-
+
+      - name: "Setup ccache"
+        run: |
+          ccache --zero-stats || true
+          ccache --max-size "$CCACHE_MAXSIZE" || true
+
+      - name: "Install Linux dependencies"
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxml2-dev \
+            libcurl4-openssl-dev \
+            uuid-dev \
+            libcppunit-dev \
+            libtirpc-dev \
+            libfl-dev \
+            ccache \
+            ninja-build \
+            abigail-tools
+
+      - name: "Generate (Release)"
+        run: |
+          cd release
+          cmake --preset ci -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build --preset ci
+          cmake --install build/ci --prefix ${PWD}/build/ci-install
+
+      - name: "Generate (Current)"
+        run: |
+          cd current
+          cmake --preset ci -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build --preset ci
+          cmake --install build/ci --prefix ${PWD}/build/ci-install
+
+      - name: "Compare ABI (libdap)"
+        run: |
+          abidiff \
+            --headers-dir1 release/build/ci-install/include/libdap \
+            --headers-dir2 current/build/ci-install/include/libdap \
+            --added-binaries-dir1 release/build/ci-install/lib \
+            --added-binaries-dir2 current/build/ci-install/lib \
+            release/build/ci-install/lib/libdap.so \
+            current/build/ci-install/lib/libdap.so
+
+      - name: "Compare ABI (libdapclient)"
+        run: |
+          abidiff \
+            --headers-dir1 release/build/ci-install/include/libdap \
+            --headers-dir2 current/build/ci-install/include/libdap \
+            --added-binaries-dir1 release/build/ci-install/lib \
+            --added-binaries-dir2 current/build/ci-install/lib \
+            release/build/ci-install/lib/libdapclient.so \
+            current/build/ci-install/lib/libdapclient.so
+
+      - name: "Compare ABI (libdapserver)"
+        run: |
+          abidiff \
+            --headers-dir1 release/build/ci-install/include/libdap \
+            --headers-dir2 current/build/ci-install/include/libdap \
+            --added-binaries-dir1 release/build/ci-install/lib \
+            --added-binaries-dir2 current/build/ci-install/lib \
+            release/build/ci-install/lib/libdapserver.so \
+            current/build/ci-install/lib/libdapserver.so
+
+      - name: Show ccache stats
+        if: always()
+        run: ccache --show-stats || true
