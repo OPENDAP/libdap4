@@ -73,7 +73,7 @@ private:
 class ChildLocker {
 public:
     ChildLocker() = delete;
-    ChildLocker(const Locker &rhs) = delete;
+    ChildLocker(const ChildLocker &rhs) = delete;
     ChildLocker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count);
     virtual ~ChildLocker();
 
