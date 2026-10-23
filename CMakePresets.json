@@ -134,14 +134,14 @@
       "name": "unit",
       "configurePreset": "developer",
       "filter": {
-        "includeLabel": ["unit"]
+        "include": { "label": "unit" }
       }
     },
     {
       "name": "int",
       "configurePreset": "developer",
       "filter": {
-        "includeLabel": ["integration"]
+        "include": { "label": "integration" }
       }
     }
   ]
