@@ -32,15 +32,17 @@
 #include "config.h"
 
 #include <fcntl.h>
-#include <pthread.h>
+#include <memory>
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <cstring>
+#include <future>
+#include <iostream>
+#include <memory>
 #include <ostream>
 #include <sstream>
 
-#include "Error.h"
-#include "InternalErr.h"
 #include "MarshallerThread.h"
 #include "debug.h"
 #include "util.h"
@@ -57,7 +59,10 @@ using namespace std;
 #define USE_SEGMENTED_WRITE 1
 
 #if TIMING
-bool MarshallerThread::print_time = false;
+
+namespace {
+bool marshaller_thread_print_time = false;
+}
 
 /**
  * Use this with timeval structures returned by gettimeofday() to compute
@@ -83,221 +88,55 @@ static double time_diff_to_hundredths(struct timeval *stop, struct timeval *star
 }
 #endif
 
-/**
- * Lock the mutex then wait for the child thread to signal using the
- * condition variable 'cond'. Once the signal is received, re-test count
- * to make sure it's zero (there are no child threads).
- *
- * This is used to lock the main thread and ensure that a second child
- * (writer) thread is not started until any current child thread completes,
- * which keeps the write operations in the correct order.
- */
-Locker::Locker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count) : m_mutex(lock) {
-    int status = pthread_mutex_lock(&m_mutex);
+MarshallerThread::MarshallerThread() {}
 
-    DBG(cerr << "Locking the mutex! (waiting; " << pthread_self() << ")" << endl);
+MarshallerThread::~MarshallerThread() { wait(); }
 
-    if (status != 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not lock m_mutex");
-    while (count != 0) {
-        status = pthread_cond_wait(&cond, &m_mutex);
-        if (status != 0)
-            throw InternalErr(__FILE__, __LINE__, "Could not wait on m_cond");
-    }
-
-    DBG(cerr << "Locked! (" << pthread_self() << ")" << endl);
-}
-
-/**
- * Unlock the mutex
- */
-Locker::~Locker() {
-    DBG(cerr << "Unlocking the mutex! (" << pthread_self() << ")" << endl);
-
-    (void)pthread_mutex_unlock(&m_mutex);
-}
-
-/**
- * Lock the mutex, but do not wait on the condition variable.
- * This is used by the child thread; it helps ensure that the
- * mutex is unlocked and the predicate is reset no matter how the
- * child thread is exited.
- *
- * Note we how a reference to the shared 'count' predicate that
- * tells how many (0 or 1) child threads exist so that when this
- * version of the Locker object is destroyed, we can zero that.
- * This enables us to use RAII in the child thread and ensure
- * the invariant if there is an error and the code exits with a
- * summary return.
- */
-
-ChildLocker::ChildLocker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count)
-    : m_mutex(lock), m_cond(cond), m_count(count) {
-    int status = pthread_mutex_lock(&m_mutex);
-
-    DBG(cerr << "Locking the mutex! (simple; " << pthread_self() << ")" << endl);
-
-    if (status != 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not lock m_mutex");
-
-    DBG(cerr << "Locked! (" << pthread_self() << ")" << endl);
-}
-
-ChildLocker::~ChildLocker() {
-    DBG(cerr << "Unlocking the mutex! (" << pthread_self() << ")" << endl);
-
-    m_count = 0;
-
-    (void)pthread_cond_signal(&m_cond);
-    (void)pthread_mutex_unlock(&m_mutex);
-}
-
-MarshallerThread::MarshallerThread() {
-    if (pthread_attr_init(&d_thread_attr) != 0)
-        throw Error(internal_error, "Failed to initialize pthread attributes.");
-    if (pthread_attr_setdetachstate(&d_thread_attr, PTHREAD_CREATE_DETACHED /*PTHREAD_CREATE_JOINABLE*/) != 0)
-        throw Error(internal_error, "Failed to complete pthread attribute initialization.");
-
-    if (pthread_mutex_init(&d_out_mutex, nullptr) != 0)
-        throw Error(internal_error, "Failed to initialize mutex.");
-    if (pthread_cond_init(&d_out_cond, nullptr) != 0)
-        throw Error(internal_error, "Failed to initialize cond.");
-}
-
-MarshallerThread::~MarshallerThread() {
-    (void)pthread_mutex_lock(&d_out_mutex);
-    // d_child_thread_count is passed into the thread in a structure (see write_thread())
-    // and is decremented by the ChildLocker dtor when write_thread() exits. jhrg 2/7/19
-    if (d_child_thread_count != 0) {
-        (void)pthread_cond_wait(&d_out_cond, &d_out_mutex);
-        d_child_thread_count = 0;
-    }
-
-    (void)pthread_mutex_unlock(&d_out_mutex);
-
-    pthread_mutex_destroy(&d_out_mutex);
-    pthread_cond_destroy(&d_out_cond);
-
-    pthread_attr_destroy(&d_thread_attr);
-}
-
-// not a static method
-/**
- * Start the child thread, using the arguments given. This will write 'bytes'
- * bytes from 'byte_buf' to the output stream 'out'
- *
- */
-void MarshallerThread::start_thread(void *(*thread)(void *arg), ostream &out, char *byte_buf, std::streamsize bytes) {
-    auto *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, out, byte_buf, bytes);
-    int status = pthread_create(&d_thread, &d_thread_attr, thread, args);
-    if (status != 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
-}
-
-/**
- * Write 'bytes' bytes from 'byte_buf' to the file descriptor 'fd'.
- */
-void MarshallerThread::start_thread(void *(*thread)(void *arg), int fd, char *byte_buf, std::streamsize bytes) {
-    auto *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, fd, byte_buf, bytes);
-    int status = pthread_create(&d_thread, &d_thread_attr, thread, args);
-    if (status != 0)
-        throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
-}
-
-/**
- * This static method is used to write data to the ostream referenced
- * by the ostream element of write_args. This is used by start_thread()
- * and passed to pthread_create()
- *
- * @note The write_args argument may contain either a file descriptor
- * (d_out_file) or an ostream& (d_out). If the file descriptor is not
- * -1, then use that, else use the ostream reference.
- */
-void *MarshallerThread::write_thread(void *arg) {
-    auto *args = reinterpret_cast<write_args *>(arg);
-
-    ChildLocker lock(args->d_mutex, args->d_cond, args->d_count); // RAII; will unlock on exit
-
+void MarshallerThread::write_out(std::ostream &out, const char *val, int64_t num_bytes) {
 #if TIMING
     struct timeval tp_s;
-    if (print_time && gettimeofday(&tp_s, 0) != 0)
-        cerr << "could not read time" << endl;
+    if (marshaller_thread_print_time && gettimeofday(&tp_s, 0) != 0)
+        std::cerr << "could not read time\n";
 #endif
 
-    // force an error
-    // return (void*)-1;
-
-    if (args->d_out_file != -1) {
-        auto bytes_written = write(args->d_out_file, args->d_buf, args->d_num);
-        if (bytes_written != args->d_num)
-            return (void *)-1;
-    } else {
 #if USE_SEGMENTED_WRITE
-        segmented_write(args->d_out, args->d_buf, args->d_num);
+    segmented_write(out, val, num_bytes);
 #else
-        args->d_out.write(args->d_buf, args->d_num);
+    out.write(val, num_bytes);
 #endif
-        if (args->d_out.fail()) {
-            ostringstream oss;
-            oss << "Could not write data: " << __FILE__ << ":" << __LINE__;
-            args->d_error = oss.str();
-            return (void *)-1;
-        }
+    if (out.fail()) {
+        std::cerr << "Could not write data: " << __FILE__ << ":" << __LINE__;
     }
-
-    delete[] args->d_buf;
-    delete args;
 
 #if TIMING
     struct timeval tp_e;
-    if (print_time) {
+    if (marshaller_thread_print_time) {
         if (gettimeofday(&tp_e, 0) != 0)
-            cerr << "could not read time" << endl;
+            std::cerr << "could not read time\n";
 
-        cerr << "time for child thread write: " << time_diff_to_hundredths(&tp_e, &tp_s) << endl;
+        std::cerr << "time for child thread write: " << time_diff_to_hundredths(&tp_e, &tp_s) << "\n";
     }
 #endif
-
-    return nullptr;
 }
 
-/**
- * This static method is used to write data to the ostream referenced
- * by the ostream element of write_args. This is used by start_thread()
- * and passed to pthread_create()
- *
- * @note This differs from MarshallerThread::write_thread() in that it
- * writes data starting _after_ the four-byte length prefix that XDR
- * adds to the data. It is used for the put_vector_part() calls in
- * XDRStreamMarshaller.
- *
- * @return 0 if successful, -1 otherwise.
- */
-void *MarshallerThread::write_thread_part(void *arg) {
-    auto *args = reinterpret_cast<write_args *>(arg);
+void MarshallerThread::write(std::ostream &out, const char *val, int64_t num_bytes) {
+    wait();
+    write_out(out, val, num_bytes);
+}
 
-    ChildLocker lock(args->d_mutex, args->d_cond, args->d_count); // RAII; will unlock on exit
+void MarshallerThread::write_async(std::ostream &out, const char *val, int64_t num_bytes) {
+    wait();
 
-    if (args->d_out_file != -1) {
-        auto bytes_written = write(args->d_out_file, args->d_buf, args->d_num);
-        if (bytes_written != args->d_num)
-            return (void *)-1;
-    } else {
-#if USE_SEGMENTED_WRITE
-        segmented_write(args->d_out, args->d_buf + 4, args->d_num);
-#else
-        args->d_out.write(args->d_buf + 4, args->d_num);
-#endif
-        if (args->d_out.fail()) {
-            ostringstream oss;
-            oss << "Could not write data: " << __FILE__ << ":" << __LINE__;
-            args->d_error = oss.str();
-            return (void *)-1;
-        }
+    std::unique_ptr<char[]> buf{new char[num_bytes]};
+    std::memcpy(buf.get(), val, num_bytes);
+
+    d_future = std::async(std::launch::async,
+                          [this, &out, buf = std::move(buf), num_bytes]() { write_out(out, buf.get(), num_bytes); });
+}
+
+void MarshallerThread::wait() {
+    if (d_future.valid()) {
+        d_future.wait();
+        d_future = std::future<void>();
     }
-
-    delete[] args->d_buf;
-    delete args;
-
-    return nullptr;
 }

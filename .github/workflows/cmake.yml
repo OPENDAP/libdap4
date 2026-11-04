@@ -2,7 +2,7 @@ name: CMake CI
 
 on:
   push:
-    branches: [master, main]
+    branches: [master, main, feature/**, features/**]
     paths-ignore:
       - "**/*.md"
       - ".vscode/**"
@@ -35,21 +35,23 @@ jobs:
       # From the logs, it looks like the needed cache is a little over 8GB. jhrg 4/1/26
       CCACHE_MAXSIZE: 10G
       CCACHE_COMPRESS: "true"
+      CMAKE_PRESET: ci
+      # CMAKE_PRESET: release
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Create ccache directory
         run: mkdir -p "$CCACHE_DIR"
 
       - name: Restore ccache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ${{ runner.os }}-${{ runner.arch }}-ccache-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', '.github/workflows/cmake.yml') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-cmake-${{ hashFiles('CMakeLists.txt', 'CMakePresets.json', '.github/workflows/cmake.yml') }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-ccache-
+            ${{ runner.os }}-${{ runner.arch }}-cmake-
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
@@ -84,6 +86,15 @@ jobs:
           echo "$BREW_PREFIX/opt/flex/bin" >> "$GITHUB_PATH"
           echo "CMAKE_PREFIX_PATH=$BREW_PREFIX" >> "$GITHUB_ENV"
 
+      - name: Information
+        run: |
+          which bison
+          bison --version
+          which flex
+          flex --version
+          which ccache
+          ccache --version
+
       - name: Determine parallelism
         run: |
           if [ "$RUNNER_OS" = "macOS" ]; then
@@ -96,15 +107,22 @@ jobs:
         run: |
           ccache --zero-stats || true
           ccache --max-size "$CCACHE_MAXSIZE" || true
-          cmake --preset ci
+          cmake --preset $CMAKE_PRESET
 
       - name: Build
         run: |
-          cmake --build --preset ci --parallel "$BUILD_JOBS"
+          cmake --build --preset $CMAKE_PRESET --parallel "$BUILD_JOBS"
+
+      - name: Install
+        if: ${{ runner.os == 'Linux' || runner.os == 'macOS' }}
+        run: |
+          cmake --install build/$CMAKE_PRESET --prefix ${PWD}/build/$CMAKE_PRESET-install
+          ls -laF ${PWD}/build/$CMAKE_PRESET-install/lib
 
       - name: Run tests (if applicable)
+        timeout-minutes: 5
         run: |
-          ctest --preset ci --output-on-failure --parallel "$BUILD_JOBS"
+          ctest --preset $CMAKE_PRESET --output-on-failure --parallel "$BUILD_JOBS"
 
       - name: Show ccache stats
         if: always()

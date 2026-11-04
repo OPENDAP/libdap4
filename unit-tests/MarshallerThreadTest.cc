@@ -28,17 +28,10 @@ public:
         stringstream out(ios::in | ios::out | ios::binary);
 
         const string payload = "threaded-write";
-        char *buf = new char[payload.size()];
-        memcpy(buf, payload.data(), payload.size());
+        mt.write_async(out, payload.data(), payload.size());
 
-        {
-            Locker lock(mt.get_mutex(), mt.get_cond(), mt.get_child_thread_count());
-            mt.increment_child_thread_count();
-            mt.start_thread(&MarshallerThread::write_thread, out, buf, payload.size());
-        }
-
-        // Wait for the child thread to finish.
-        { Locker wait(mt.get_mutex(), mt.get_cond(), mt.get_child_thread_count()); }
+        // Wait for the write to finish.
+        mt.wait();
 
         CPPUNIT_ASSERT_EQUAL(payload, out.str());
     }
