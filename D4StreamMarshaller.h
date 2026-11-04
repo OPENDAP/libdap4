@@ -28,6 +28,9 @@
 #ifndef I_D4StreamMarshaller_h
 #define I_D4StreamMarshaller_h 1
 
+#include <cstdint>
+#include <ostream>
+
 // By default, only support platforms that use IEEE754 for floating point values.
 // Hacked up code leftover from an older version of the class; largely untested.
 // jhrg 10/3/13
@@ -194,6 +197,19 @@ public:
     void put_vector_end() override {}
 
     void dump(std::ostream &strm) const override;
+
+protected:
+    /// @brief Writes the val buffer to the stream synchronously.
+    /// @param out The stream to write the buffer to.
+    /// @param val The buffer to write out. The buffer is used immediately, without copying.
+    /// @param num_bytes How much of the buffer to write out.
+    void write(std::ostream &out, const char *val, int64_t num_bytes);
+
+    /// @brief Asynchronously writes the val buffer to the stream.
+    /// @param out The stream to write the buffer to.
+    /// @param val The buffer to write out. The buffer is copied for the write.
+    /// @param num_bytes How much of the buffer to write out.
+    void write_async(std::ostream &out, const char *val, int64_t num_bytes);
 };
 
 } // namespace libdap
