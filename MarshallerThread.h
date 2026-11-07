@@ -156,6 +156,21 @@ public:
     // are passed to pthread_create()
     static void *write_thread(void *arg);
     static void *write_thread_part(void *arg);
+
+    /// @brief Writes the val buffer to the stream synchronously.
+    /// @param out The stream to write the buffer to.
+    /// @param val The buffer to write out. The buffer is used immediately, without copying.
+    /// @param num_bytes How much of the buffer to write out.
+    void write(std::ostream &out, const char *val, int64_t num_bytes);
+
+    /// @brief Asynchronously writes the val buffer to the stream.
+    /// @param out The stream to write the buffer to.
+    /// @param val The buffer to write out. The buffer is copied for the write.
+    /// @param num_bytes How much of the buffer to write out.
+    void write_async(std::ostream &out, const char *val, int64_t num_bytes);
+
+    /// @brief Wait for pending async writes to complete.
+    void wait();
 };
 
 } // namespace libdap

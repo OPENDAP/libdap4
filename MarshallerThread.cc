@@ -36,6 +36,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <cstring>
 #include <ostream>
 #include <sstream>
 
@@ -228,7 +229,7 @@ void *MarshallerThread::write_thread(void *arg) {
     // return (void*)-1;
 
     if (args->d_out_file != -1) {
-        auto bytes_written = write(args->d_out_file, args->d_buf, args->d_num);
+        auto bytes_written = ::write(args->d_out_file, args->d_buf, args->d_num);
         if (bytes_written != args->d_num)
             return (void *)-1;
     } else {
@@ -279,7 +280,7 @@ void *MarshallerThread::write_thread_part(void *arg) {
     ChildLocker lock(args->d_mutex, args->d_cond, args->d_count); // RAII; will unlock on exit
 
     if (args->d_out_file != -1) {
-        auto bytes_written = write(args->d_out_file, args->d_buf, args->d_num);
+        auto bytes_written = ::write(args->d_out_file, args->d_buf, args->d_num);
         if (bytes_written != args->d_num)
             return (void *)-1;
     } else {
@@ -301,3 +302,20 @@ void *MarshallerThread::write_thread_part(void *arg) {
 
     return nullptr;
 }
+
+void MarshallerThread::write(std::ostream &out, const char *val, int64_t num_bytes) {
+    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+    out.write(val, num_bytes);
+}
+
+void MarshallerThread::write_async(std::ostream &out, const char *val, int64_t num_bytes) {
+    Locker lock(d_out_mutex, d_out_cond, d_child_thread_count);
+
+    char *buf = new char[num_bytes];
+    std::memcpy(buf, val, num_bytes);
+
+    ++d_child_thread_count;
+    start_thread(MarshallerThread::write_thread, out, buf, num_bytes);
+}
+
+void MarshallerThread::wait() { Locker lock(d_out_mutex, d_out_cond, d_child_thread_count); }

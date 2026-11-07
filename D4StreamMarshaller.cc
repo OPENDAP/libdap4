@@ -27,15 +27,10 @@
 #include "config.h"
 
 #include <cassert>
-#include <cstring>
 
 #include <iomanip>
 #include <limits>
 #include <sstream>
-
-#ifdef HAVE_PTHREAD_H
-#include <pthread.h>
-#endif
 
 #include "D4StreamMarshaller.h"
 #ifdef USE_POSIX_THREADS
@@ -49,7 +44,6 @@
 
 #include "DapIndent.h"
 #include "debug.h"
-#include "util.h"
 
 using namespace std;
 
@@ -588,21 +582,16 @@ void D4StreamMarshaller::dump(ostream &strm) const {
 void D4StreamMarshaller::write(std::ostream &out, const char *val, int64_t num_bytes) {
 #ifdef USE_POSIX_THREADS
     assert(tm);
-    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
-#endif
+    tm->write(out, val, num_bytes);
+#else
     out.write(val, num_bytes);
+#endif
 }
 
 void D4StreamMarshaller::write_async(std::ostream &out, const char *val, int64_t num_bytes) {
 #ifdef USE_POSIX_THREADS
     assert(tm);
-    Locker lock(tm->get_mutex(), tm->get_cond(), tm->get_child_thread_count());
-
-    char *buf = new char[num_bytes];
-    memcpy(buf, val, num_bytes);
-
-    tm->increment_child_thread_count();
-    tm->start_thread(MarshallerThread::write_thread, out, buf, num_bytes);
+    tm->write_async(out, val, num_bytes);
 #else
     segmented_write(out, val, num_bytes);
 #endif
