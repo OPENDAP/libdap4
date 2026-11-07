@@ -198,7 +198,7 @@ public:
 
     void dump(std::ostream &strm) const override;
 
-protected:
+private:
     /// @brief Writes the val buffer to the stream synchronously.
     /// @param out The stream to write the buffer to.
     /// @param val The buffer to write out. The buffer is used immediately, without copying.
