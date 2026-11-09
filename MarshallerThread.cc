@@ -84,6 +84,83 @@ static double time_diff_to_hundredths(struct timeval *stop, struct timeval *star
 }
 #endif
 
+namespace {
+
+/**
+ * RAII for the MarshallerThread mutex and condition variable. Used by the
+ * Main thread. The constructor locks the mutex and then, if the count of
+ * child threads is not zero, blocks on the associated condition variable.
+ * When signaled by the child thread using the condition variable (the child
+ * thread count should then be zero), the mutex is (re)locked and the ctor
+ * returns. The destructor unlocks the mutex.
+ */
+class Locker {
+public:
+    Locker() = delete;
+    Locker(const Locker &rhs) = delete;
+    Locker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count);
+    virtual ~Locker();
+
+private:
+    pthread_mutex_t &m_mutex;
+};
+
+/**
+ * Synchronization for the child thread in the multi-threaded version of
+ * the DAP2 and DAP4 (when it gets implemented) 'Marshaller' class used to
+ * send data. The class declared below (MarshallerThread) manages the
+ * child thread.
+ *
+ * The ctor of this class simply
+ * locks the mutex; the dtor clears the child thread count, signals that
+ * count has changed and unlocks the mutex.
+ */
+class ChildLocker {
+public:
+    ChildLocker() = delete;
+    ChildLocker(const ChildLocker &rhs) = delete;
+    ChildLocker(pthread_mutex_t &lock, pthread_cond_t &cond, int &count);
+    virtual ~ChildLocker();
+
+private:
+    pthread_mutex_t &m_mutex;
+    pthread_cond_t &m_cond;
+    int &m_count;
+};
+
+/**
+ * Used to pass information into the static methods that run the
+ * simple stream writer threads. This can pass both an ostream or
+ * a file descriptor. If a fd is passed, the ostream reference is
+ * set to stderr (i.e., std::cerr).
+ */
+struct MarshallerThreadArgs {
+    pthread_mutex_t &d_mutex;
+    pthread_cond_t &d_cond;
+    int &d_count;
+    std::string &d_error;
+    std::ostream &d_out;   // The output stream protected by the mutex, ...
+    int d_out_file;        // file descriptor; if not -1, use this.
+    char *d_buf;           // The data to write to the stream
+    std::streamsize d_num; // The size of d_buf
+
+    /**
+     * Build args for an ostream. The file descriptor is set to -1
+     */
+    MarshallerThreadArgs(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, std::ostream &s, char *vals,
+                         std::streamsize num)
+        : d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(s), d_out_file(-1), d_buf(vals), d_num(num) {}
+
+    /**
+     * Build args for a file descriptr. The ostream is set to cerr (because it is
+     * a reference and has to be initialized to something).
+     */
+    MarshallerThreadArgs(pthread_mutex_t &m, pthread_cond_t &c, int &count, std::string &e, int fd, char *vals,
+                         std::streamsize num)
+        : d_mutex(m), d_cond(c), d_count(count), d_error(e), d_out(std::cerr), d_out_file(fd), d_buf(vals), d_num(num) {
+    }
+};
+
 /**
  * Lock the mutex then wait for the child thread to signal using the
  * condition variable 'cond'. Once the signal is received, re-test count
@@ -153,6 +230,8 @@ ChildLocker::~ChildLocker() {
     (void)pthread_mutex_unlock(&m_mutex);
 }
 
+} // namespace
+
 MarshallerThread::MarshallerThread() {
     if (pthread_attr_init(&d_thread_attr) != 0)
         throw Error(internal_error, "Failed to initialize pthread attributes.");
@@ -189,7 +268,8 @@ MarshallerThread::~MarshallerThread() {
  *
  */
 void MarshallerThread::start_thread(void *(*thread)(void *arg), ostream &out, char *byte_buf, std::streamsize bytes) {
-    auto *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, out, byte_buf, bytes);
+    auto *args =
+        new MarshallerThreadArgs(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, out, byte_buf, bytes);
     int status = pthread_create(&d_thread, &d_thread_attr, thread, args);
     if (status != 0)
         throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
@@ -199,7 +279,8 @@ void MarshallerThread::start_thread(void *(*thread)(void *arg), ostream &out, ch
  * Write 'bytes' bytes from 'byte_buf' to the file descriptor 'fd'.
  */
 void MarshallerThread::start_thread(void *(*thread)(void *arg), int fd, char *byte_buf, std::streamsize bytes) {
-    auto *args = new write_args(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, fd, byte_buf, bytes);
+    auto *args =
+        new MarshallerThreadArgs(d_out_mutex, d_out_cond, d_child_thread_count, d_thread_error, fd, byte_buf, bytes);
     int status = pthread_create(&d_thread, &d_thread_attr, thread, args);
     if (status != 0)
         throw InternalErr(__FILE__, __LINE__, "Could not start child thread");
@@ -207,15 +288,15 @@ void MarshallerThread::start_thread(void *(*thread)(void *arg), int fd, char *by
 
 /**
  * This static method is used to write data to the ostream referenced
- * by the ostream element of write_args. This is used by start_thread()
+ * by the ostream element of MarshallerThreadArgs. This is used by start_thread()
  * and passed to pthread_create()
  *
- * @note The write_args argument may contain either a file descriptor
+ * @note The MarshallerThreadArgs argument may contain either a file descriptor
  * (d_out_file) or an ostream& (d_out). If the file descriptor is not
  * -1, then use that, else use the ostream reference.
  */
 void *MarshallerThread::write_thread(void *arg) {
-    auto *args = reinterpret_cast<write_args *>(arg);
+    auto *args = reinterpret_cast<MarshallerThreadArgs *>(arg);
 
     ChildLocker lock(args->d_mutex, args->d_cond, args->d_count); // RAII; will unlock on exit
 
@@ -264,7 +345,7 @@ void *MarshallerThread::write_thread(void *arg) {
 
 /**
  * This static method is used to write data to the ostream referenced
- * by the ostream element of write_args. This is used by start_thread()
+ * by the ostream element of MarshallerThreadArgs. This is used by start_thread()
  * and passed to pthread_create()
  *
  * @note This differs from MarshallerThread::write_thread() in that it
@@ -275,7 +356,7 @@ void *MarshallerThread::write_thread(void *arg) {
  * @return 0 if successful, -1 otherwise.
  */
 void *MarshallerThread::write_thread_part(void *arg) {
-    auto *args = reinterpret_cast<write_args *>(arg);
+    auto *args = reinterpret_cast<MarshallerThreadArgs *>(arg);
 
     ChildLocker lock(args->d_mutex, args->d_cond, args->d_count); // RAII; will unlock on exit
 

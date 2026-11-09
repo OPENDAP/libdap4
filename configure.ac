@@ -88,44 +88,31 @@ dnl to default values otherwise.
 AC_CANONICAL_HOST
 AC_SUBST(host)
 
-dnl How to set these SO variables:
-dnl No interfaces changed, only implementations (good): ==> Increment REVISION.
-dnl Interfaces added, none removed (good): ==> Increment CURRENT,
-dnl increment AGE, set REVISION to 0.
-dnl Interfaces removed or changed (BAD, breaks upward compatibility):
-dnl ==> Increment CURRENT, set AGE and REVISION to 0.
+# The ABI versions defines binary compatibility irrespective of the API
+# compatibility. Increment the ABI version for each library when each changes
+# in an ABI incompatible way. The ABI changes when:
+#
+# * Functions (non-virtual method or free) are removed.
+# * Virtual methods are added or removed.
+# * The arguments, argument types, or return type of any function is changed.
+# * Interfaces change in size from added or removed data members.
+#
+# Consult the ABI check CI tests for a guide on when to increment the ABI
+# version.
 
 DAPLIB_CURRENT=31
-DAPLIB_REVISION=0
-DAPLIB_AGE=0
 
-AC_SUBST(DAPLIB_CURRENT)
-AC_SUBST(DAPLIB_REVISION)
-AC_SUBST(DAPLIB_AGE)
-
-LIBDAP_VERSION="$DAPLIB_CURRENT:$DAPLIB_REVISION:$DAPLIB_AGE"
+LIBDAP_VERSION="$(($DAPLIB_CURRENT + $PACKAGE_MAJOR_VERSION)):$PACKAGE_MINOR_VERSION:$PACKAGE_MAJOR_VERSION"
 AC_SUBST(LIBDAP_VERSION)
 
 CLIENTLIB_CURRENT=8
-CLIENTLIB_REVISION=0
-CLIENTLIB_AGE=2
 
-AC_SUBST(CLIENTLIB_CURRENT)
-AC_SUBST(CLIENTLIB_REVISION)
-AC_SUBST(CLIENTLIB_AGE)
-
-CLIENTLIB_VERSION="$CLIENTLIB_CURRENT:$CLIENTLIB_REVISION:$CLIENTLIB_AGE"
+CLIENTLIB_VERSION="$(($CLIENTLIB_CURRENT + $PACKAGE_MAJOR_VERSION)):$PACKAGE_MINOR_VERSION:$PACKAGE_MAJOR_VERSION"
 AC_SUBST(CLIENTLIB_VERSION)
 
 SERVERLIB_CURRENT=14
-SERVERLIB_REVISION=0
-SERVERLIB_AGE=7
 
-AC_SUBST(SERVERLIB_CURRENT)
-AC_SUBST(SERVERLIB_REVISION)
-AC_SUBST(SERVERLIB_AGE)
-
-SERVERLIB_VERSION="$SERVERLIB_CURRENT:$SERVERLIB_REVISION:$SERVERLIB_AGE"
+SERVERLIB_VERSION="$(($SERVERLIB_CURRENT + $PACKAGE_MAJOR_VERSION)):$PACKAGE_MINOR_VERSION:$PACKAGE_MAJOR_VERSION"
 AC_SUBST(SERVERLIB_VERSION)
 
 dnl Suppress the default values automake supplies for these. You can still

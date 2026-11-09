@@ -108,7 +108,7 @@ jobs:
 
       - name: "Compare ABI (libdap)"
         run: |
-          abidiff \
+          ./current/.github/workflows/abi_check.sh \
             --suppressions current/.github/workflows/cmake_abi-libdap.ini \
             --headers-dir1 release/build/ci-install/include/libdap \
             --headers-dir2 current/build/ci-install/include/libdap \
@@ -119,7 +119,7 @@ jobs:
 
       - name: "Compare ABI (libdapclient)"
         run: |
-          abidiff \
+          ./current/.github/workflows/abi_check.sh \
             --headers-dir1 release/build/ci-install/include/libdap \
             --headers-dir2 current/build/ci-install/include/libdap \
             --added-binaries-dir1 release/build/ci-install/lib \
@@ -129,7 +129,7 @@ jobs:
 
       - name: "Compare ABI (libdapserver)"
         run: |
-          abidiff \
+          ./current/.github/workflows/abi_check.sh \
             --headers-dir1 release/build/ci-install/include/libdap \
             --headers-dir2 current/build/ci-install/include/libdap \
             --added-binaries-dir1 release/build/ci-install/lib \

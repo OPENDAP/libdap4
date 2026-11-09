@@ -242,26 +242,40 @@ set_directory_properties(PROPERTIES
 )
 
 # Define libraries
+
+string(REPLACE "." ";" LIBDAP_VERSION_LIST ${LIBDAP_VERSION})
+list(GET LIBDAP_VERSION_LIST 0 LIBDAP_API_VERSION_MAJOR)
+list(GET LIBDAP_VERSION_LIST 1 LIBDAP_API_VERSION_MINOR)
+list(GET LIBDAP_VERSION_LIST 2 LIBDAP_API_VERSION_PATCH)
+
+# The API version defines the source level compatibility of the libraries.
+set(LIBDAP_API_VERSION "${LIBDAP_API_VERSION_MAJOR}.${LIBDAP_API_VERSION_MINOR}")
+
+# The ABI versions defines binary compatibility irrespective of the API
+# compatibility. Increment the ABI version for each library when each changes
+# in an ABI incompatible way. The ABI changes when:
+#
+# * Functions (non-virtual method or free) are removed.
+# * Virtual methods are added or removed.
+# * The arguments, argument types, or return type of any function is changed.
+# * Interfaces change in size from added or removed data members.
+#
+# Consult the ABI check CI tests for a guide on when to increment the ABI
+# version.
+
+SET(DAPLIB_ABI_VERSION 31)
+SET(CLIENTLIB_ABI_VERSION 8)
+SET(SERVERLIB_ABI_VERSION 14)
+
+message(STATUS "Versions:")
+message(STATUS "  LIBDAP_VERSION: ${LIBDAP_VERSION}")
+message(STATUS "  LIBDAP_API_VERSION: ${LIBDAP_API_VERSION}")
+message(STATUS "  DAPLIB_ABI_VERSION: ${DAPLIB_ABI_VERSION}")
+message(STATUS "  CLIENTLIB_ABI_VERSION: ${CLIENTLIB_ABI_VERSION}")
+message(STATUS "  SERVERLIB_ABI_VERSION: ${SERVERLIB_ABI_VERSION}")
+
+
 ### Set the SO/dylib versions
-
-# How to set these SO variables:
-# No interfaces changed, only implementations (good): ==> Increment REVISION.
-# Interfaces added, none removed (good): ==> Increment CURRENT,
-# increment AGE, set REVISION to 0.
-# Interfaces removed or changed (BAD, breaks upward compatibility):
-# ==> Increment CURRENT, set AGE and REVISION to 0.
-
-SET(DAPLIB_CURRENT 30)
-SET(DAPLIB_REVISION 0)
-SET(DAPLIB_AGE 3)
-
-SET(CLIENTLIB_CURRENT 8)
-SET(CLIENTLIB_REVISION 0)
-SET(CLIENTLIB_AGE 2)
-
-SET(SERVERLIB_CURRENT 14)
-SET(SERVERLIB_REVISION 0)
-SET(SERVERLIB_AGE 7)
 
 add_library(parsers OBJECT ${GENERATED_PARSER_SRC})
 target_include_directories(parsers PRIVATE ${LIBXML2_INCLUDE_DIR})
@@ -284,12 +298,9 @@ if(TIRPC_FOUND)
     target_link_libraries(dap PRIVATE ${TIRPC_LIBRARIES})
 endif()
 target_link_libraries(dap PRIVATE ${LIBXML2_LIBRARIES} Threads::Threads)
-# Derive VERSION/SOVERSION from libtool semantics
-math(EXPR DAPLIB_SONAME_MAJOR "${DAPLIB_CURRENT} - ${DAPLIB_AGE}")
-set(DAPLIB_VERSION "${DAPLIB_SONAME_MAJOR}.${DAPLIB_AGE}.${DAPLIB_REVISION}")
 set_target_properties(dap PROPERTIES
-		SOVERSION "${DAPLIB_SONAME_MAJOR}"
-		VERSION   "${DAPLIB_VERSION}"
+        SOVERSION "${DAPLIB_ABI_VERSION}"
+        VERSION "${DAPLIB_ABI_VERSION}.${LIBDAP_API_VERSION}"
 )
 
 # message(STATUS "INCLUDE PATHS for dap:")
@@ -309,12 +320,9 @@ if(TIRPC_FOUND)
 endif()
 target_link_libraries(dapclient PRIVATE dap)
 target_link_libraries(dapclient PRIVATE ${CURL_LIBRARIES} Threads::Threads)
-
-math(EXPR CLIENTLIB_SONAME_MAJOR "${CLIENTLIB_CURRENT} - ${CLIENTLIB_AGE}")
-set(CLIENTLIB_VERSION "${CLIENTLIB_SONAME_MAJOR}.${CLIENTLIB_AGE}.${CLIENTLIB_REVISION}")
 set_target_properties(dapclient PROPERTIES
-		SOVERSION "${CLIENTLIB_SONAME_MAJOR}"
-		VERSION   "${CLIENTLIB_VERSION}"
+        SOVERSION "${CLIENTLIB_ABI_VERSION}"
+        VERSION "${CLIENTLIB_ABI_VERSION}.${LIBDAP_API_VERSION}"
 )
 
 # message(STATUS "INCLUDE PATHS for dapclient:")
@@ -329,11 +337,9 @@ if(TIRPC_FOUND)
     target_include_directories(dapserver PRIVATE ${TIRPC_INCLUDE_DIRS})
     target_link_libraries(dapserver PRIVATE ${TIRPC_LIBRARIES})
 endif()
-math(EXPR SERVERLIB_SONAME_MAJOR "${SERVERLIB_CURRENT} - ${SERVERLIB_AGE}")
-set(SERVERLIB_VERSION "${SERVERLIB_SONAME_MAJOR}.${SERVERLIB_AGE}.${SERVERLIB_REVISION}")
 set_target_properties(dapserver PROPERTIES
-		SOVERSION "${SERVERLIB_SONAME_MAJOR}"
-		VERSION   "${SERVERLIB_VERSION}"
+        SOVERSION "${SERVERLIB_ABI_VERSION}"
+        VERSION "${SERVERLIB_ABI_VERSION}.${LIBDAP_API_VERSION}"
 )
 
 # message(STATUS "INCLUDE PATHS for dapserver:")
