@@ -7,7 +7,7 @@ Keep entries in reverse chronological order (newest first).
 
 - Fixed an issue with ChildLocker copy ctor deletion.
 - A collection of changes to the CICD and production rules.
-- ABI remains changed.
+- ABI remains unchanged.
 
 
 ## Version 3.22.0-0
