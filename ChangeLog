@@ -1,3 +1,160 @@
+
+##############################################################################
+# 3.22.1 (Hyrax-1.18.1) November 10, 2026
+#
+
+2026-11-04  Rene Ferdinand Rivera Morell  <rmorell@opendap.org>
+
+	Add a persistent place for user cmake presets.
+	Starting with myself, cmake user presets are useful to keep around but can´t
+	collide with others. So start by putting the in .vscode/<user> subdir.
+
+
+2026-10-29  ndp  <ndp@opendap.org>
+
+	Trigger build to pickup the updated hyrax-dependencies.
+
+2026-10-27  René Ferdinand Rivera Morell  <rmorell@opendap.org>
+
+	Merge pull request #380 from OPENDAP/fix/377-childlocker-copy-ctor
+	Fix ChildLocker copy ctor deletion.
+	(fixes #377)
+
+2026-10-27  Rene Ferdinand Rivera Morell  <rmorell@opendap.org>
+
+	Fix ChildLocker copy ctor deletion.
+	While refactoring the copy ctor for ChildLocker was attempted declared
+	but the given argument was given the type of the superclass instead of
+	the subclass. This was not an issue as we never try and copy these.
+	This change corrects the argument to actually delete the copy ctor
+	(which prevents the other copy ctors from being generated).
+	Fixes #377
+
+2026-10-27  René Ferdinand Rivera Morell  <rmorell@opendap.org>
+
+	Merge pull request #381 from OPENDAP/feature/abi-checks
+	Add CI check for ABI changes.
+
+2026-10-27  Rene Ferdinand Rivera Morell  <rmorell@opendap.org>
+
+	Add CI check for ABI changes.
+	This adds a GH action that uses the libabigail tools to compare
+	ABI differences of the installed libraries from release to current.
+
+2026-10-23  René Ferdinand Rivera Morell  <rmorell@opendap.org>
+
+	Merge pull request #378 from OPENDAP/fix/cmake-presets-syntax
+	Fix cmake testPresets filter syntax.
+
+2026-10-22  René Ferdinand Rivera Morell  <rmorell@opendap.org>
+
+	Fix cmake testPresets filter syntax.
+	The specification for the unit/int tests in the cmake presets used an
+	unknown "includeLabel" field. This would cause some tools, like the
+	cmake-tools vscode plugin, to error and not work. The fix is to use
+	the "include"+"label" regex specification to get equivalent functionality.
+
+2026-10-22  René Ferdinand Rivera Morell  <rmorell@opendap.org>
+	    James Gallagher  <jgallagher@opendap.org>
+
+	Fix errors from pre-commit checks. (#379)
+	The pre-commit checks fail from not-prettied README.cmake.md file.
+	This change does the edits that the prettier step does.
+	Additional CI changes fix sonar token problems.
+
+2026-09-03  James Gallagher  <jgallagher@opendap.org>
+
+	update to the CMake README
+	[skip-ci]
+
+2026-08-21  James Gallagher  <jgallagher@opendap.org>
+
+	Build fix for removed code.
+
+2026-08-20  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+	Move gtest plan to the docs directory
+
+2026-08-18  James Gallagher  <jgallagher@opendap.org>
+
+	Updated the libdap4 version number oin the cmake build to 3.22.0
+
+2026-07-30  Nathan Potter  <ndp@opendap.org>
+
+	Update README.md DOI to the DOI for latest. (#376)
+
+2026-07-27  James Gallagher  <jgallagher@opendap.org>
+
+	Merge branch 'master' of https://github.com/OPENDAP/libdap4
+
+2026-07-23  James Gallagher  <jgallagher@opendap.org>
+
+	Added pR Template
+
+2026-07-23  Nathan Potter  <ndp@opendap.org>
+	    Miguel Jimenez-Urias  <mjimenez@opendap.org>
+
+	Roll back travis host to focal (#373)
+	* update build offset number
+
+2026-07-23  Miguel Jimenez  <mjimenez@opendap.org>
+	    ndp-opendap  <ndp@opendap.org>
+
+	Release hyrax-1.18.0, libdap-3.22.0 (#372)
+	- Updated numbers for new release (3.22.0 & hyrax-1.18.0)
+	- Using the raw travis build number for PR builds and only use the
+	  build offset for master/main builds.
+	---------
+
+2026-07-20  James Gallagher  <jgallagher@opendap.org>
+
+	#370 coverage cleanup and #365 Document coverage data generation (PR #371)
+	* Remove python script that tested coverage data validity
+	* Added a note to README.md about README.coverage.md
+	* Added a pre-commit template
+
+	Sonar fixes for HTTP -vs- HTTPS and '/tmp' use
+
+2026-07-18  James Gallagher  <jgallagher@opendap.org>
+
+	Backed out the use of Sonar build wrapper on make check for now
+	This will take more work - seemed trivial, but it introduces more
+	code to the analysis. Pick this up on a branch.
+
+2026-07-17  James Gallagher  <jgallagher@opendap.org>
+
+	Turn off the 'diff script' and add 'build wrapper' to make check in the scan step
+
+	Diff the gcovr coverage.xml and compile commands JSON built by Sonar
+
+	Changes for test coverage (#366)
+	Remove DAPCache3Test from the CMake builds
+	Sync sonar-project.properties and gcovr.config
+	Added gcovr version print to .travis.yml
+	Removed macos 15 build - we don't that OS any more
+	Move from the buggy (WRT sonarscan) gcovr 4.2 to 8.2
+
+2026-07-14  James Gallagher  <jgallagher@opendap.org>
+
+	I removed the code in tidy-warnings (#361)
+
+2026-07-07  James Gallagher  <jgallagher@opendap.org>
+
+	Change DOI badge to new link
+	Updated DOI badge link in README.md. This DOI points to the
+	latest version of the software on Zenodo.
+
+2026-06-04  kyang2014  <kyang2014@users.noreply.github.com>
+
+	HYRAX-2176, fix the segmentation fault bug when a DAP4 attribute
+	container doesn't contain attributes and the find method is called. (#359)
+
+##############################################################################
+# 3.22.0 (Hyrax-1.18.0) July 29, 2026
+#
+
 2026-07-21  Miguel Jimenez-Urias  <mjimenez@opendap.org>
 
 	update build offset number
