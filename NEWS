@@ -3,6 +3,13 @@
 This file is the canonical, version-by-version record of user-visible changes.
 Keep entries in reverse chronological order (newest first).
 
+## Version 3.22.1
+
+- Fixed an issue with ChildLocker copy ctor deletion.
+- A collection of changes to the CICD and production rules.
+- ABI remains changed.
+
+
 ## Version 3.22.0-0
 
 - Multi-pass overhaul of the test coverage tooling: switched to gcovr-based reporting (including a SonarQube-compatible format), fixed issues, and documented how to generate the coverage data.
