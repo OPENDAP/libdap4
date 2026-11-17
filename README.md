@@ -69,4 +69,4 @@ For exact versions and platform notes, see [`INSTALL`](INSTALL).
 - [`README.vscode.md`](README.vscode.md): VS Code workspace and task configuration notes.
 - Zenodo GitHub integration/settings for `OPENDAP/libdap4`: <https://zenodo.org/account/settings/github/repository/OPENDAP/libdap4>
 
-<!-- build me -->
+<!-- build me nao -->
