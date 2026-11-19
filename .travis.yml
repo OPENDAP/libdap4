@@ -175,18 +175,6 @@ jobs:
         # in sonar-project.properties, so no extra badge/API polling is needed here.
 
     - stage: package
-      name: "rocky8 RPMs"
-      script:
-        - export LIBDAP_BUILD=rocky8
-        # $prefix = $HOME/install which is /home/travis/install here but should be /root/install in the image.
-        - mkdir -p $prefix/rpmbuild
-        - docker run --env prefix=/root/install --volume $prefix/rpmbuild:/root/rpmbuild
-          --volume $TRAVIS_BUILD_DIR:/root/travis --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-          --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY --env os=rocky8
-          --env LIBDAP_BUILD_NUMBER=$LIBDAP_BUILD_NUMBER opendap/rocky8_hyrax_builder:latest
-          /root/travis/travis/build-rh8-rpm.sh
-
-    - stage: package
       name: "rocky9 RPMs"
       script:
         - export LIBDAP_BUILD=rocky9
