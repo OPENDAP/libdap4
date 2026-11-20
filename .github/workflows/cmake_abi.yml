@@ -6,7 +6,7 @@ name: "ABI Checks"
 
 on:
   push:
-    branches: [master, main]
+    branches: [master, main, feature/**, features/**]
     paths-ignore:
       - "**/*.md"
       - ".vscode/**"
@@ -35,6 +35,8 @@ jobs:
       # From the logs, it looks like the needed cache is a little over 8GB. jhrg 4/1/26
       CCACHE_MAXSIZE: 20G
       CCACHE_COMPRESS: "true"
+      CMAKE_PRESET: ci
+      # CMAKE_PRESET: release
 
     steps:
       - name: "Checkout (current)"
@@ -68,9 +70,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ${{ runner.os }}-${{ runner.arch }}-ccache-${{ hashFiles('current/CMakeLists.txt', 'current/CMakePresets.json', 'current/.github/workflows/cmake.yml') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-cmake-${{ hashFiles('current/CMakeLists.txt', 'current/CMakePresets.json', 'current/.github/workflows/cmake_abi.yml') }}
           restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-ccache-
+            ${{ runner.os }}-${{ runner.arch }}-cmake-
 
       - name: "Setup ccache"
         run: |
@@ -95,46 +97,47 @@ jobs:
       - name: "Generate (Release)"
         run: |
           cd release
-          cmake --preset ci -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
-          cmake --build --preset ci
-          cmake --install build/ci --prefix ${PWD}/build/ci-install
+          cmake --preset $CMAKE_PRESET -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build --preset $CMAKE_PRESET
+          cmake --install build/$CMAKE_PRESET --prefix ${PWD}/build/$CMAKE_PRESET-install
 
       - name: "Generate (Current)"
         run: |
           cd current
-          cmake --preset ci -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
-          cmake --build --preset ci
-          cmake --install build/ci --prefix ${PWD}/build/ci-install
+          cmake --preset $CMAKE_PRESET -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build --preset $CMAKE_PRESET
+          cmake --install build/$CMAKE_PRESET --prefix ${PWD}/build/$CMAKE_PRESET-install
 
       - name: "Compare ABI (libdap)"
         run: |
-          abidiff \
-            --headers-dir1 release/build/ci-install/include/libdap \
-            --headers-dir2 current/build/ci-install/include/libdap \
-            --added-binaries-dir1 release/build/ci-install/lib \
-            --added-binaries-dir2 current/build/ci-install/lib \
-            release/build/ci-install/lib/libdap.so \
-            current/build/ci-install/lib/libdap.so
+          ./current/.github/workflows/abi_check.sh \
+            --suppressions current/.github/workflows/cmake_abi-libdap.ini \
+            --headers-dir1 release/build/$CMAKE_PRESET-install/include/libdap \
+            --headers-dir2 current/build/$CMAKE_PRESET-install/include/libdap \
+            --added-binaries-dir1 release/build/$CMAKE_PRESET-install/lib \
+            --added-binaries-dir2 current/build/$CMAKE_PRESET-install/lib \
+            release/build/$CMAKE_PRESET-install/lib/libdap.so \
+            current/build/$CMAKE_PRESET-install/lib/libdap.so
 
       - name: "Compare ABI (libdapclient)"
         run: |
-          abidiff \
-            --headers-dir1 release/build/ci-install/include/libdap \
-            --headers-dir2 current/build/ci-install/include/libdap \
-            --added-binaries-dir1 release/build/ci-install/lib \
-            --added-binaries-dir2 current/build/ci-install/lib \
-            release/build/ci-install/lib/libdapclient.so \
-            current/build/ci-install/lib/libdapclient.so
+          ./current/.github/workflows/abi_check.sh \
+            --headers-dir1 release/build/$CMAKE_PRESET-install/include/libdap \
+            --headers-dir2 current/build/$CMAKE_PRESET-install/include/libdap \
+            --added-binaries-dir1 release/build/$CMAKE_PRESET-install/lib \
+            --added-binaries-dir2 current/build/$CMAKE_PRESET-install/lib \
+            release/build/$CMAKE_PRESET-install/lib/libdapclient.so \
+            current/build/$CMAKE_PRESET-install/lib/libdapclient.so
 
       - name: "Compare ABI (libdapserver)"
         run: |
-          abidiff \
-            --headers-dir1 release/build/ci-install/include/libdap \
-            --headers-dir2 current/build/ci-install/include/libdap \
-            --added-binaries-dir1 release/build/ci-install/lib \
-            --added-binaries-dir2 current/build/ci-install/lib \
-            release/build/ci-install/lib/libdapserver.so \
-            current/build/ci-install/lib/libdapserver.so
+          ./current/.github/workflows/abi_check.sh \
+            --headers-dir1 release/build/$CMAKE_PRESET-install/include/libdap \
+            --headers-dir2 current/build/$CMAKE_PRESET-install/include/libdap \
+            --added-binaries-dir1 release/build/$CMAKE_PRESET-install/lib \
+            --added-binaries-dir2 current/build/$CMAKE_PRESET-install/lib \
+            release/build/$CMAKE_PRESET-install/lib/libdapserver.so \
+            current/build/$CMAKE_PRESET-install/lib/libdapserver.so
 
       - name: Show ccache stats
         if: always()
